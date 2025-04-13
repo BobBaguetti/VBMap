@@ -1,15 +1,28 @@
-/* Base Styles */
+/* Base Styles - Enhanced for full dark theme */
 body, html {
   margin: 0;
   padding: 0;
   height: 100%;
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #1a1a1a; /* Dark background */
+  background-color: #1a1a1a !important; /* Forces dark background */
   color: #e0e0e0;
   overflow: hidden;
 }
 
-/* Sidebar */
+/* Map Container - Critical Fix */
+#map {
+  height: 100vh;
+  margin-left: 250px;
+  background-color: #1a1a1a !important; /* Explicit dark background */
+}
+
+/* Leaflet Overrides - Prevents white flash */
+.leaflet-container {
+  background-color: #1a1a1a !important;
+  background: #1a1a1a !important; /* Double protection */
+}
+
+/* Sidebar - No changes needed (already correct) */
 #sidebar {
   width: 250px;
   height: 100vh;
@@ -18,46 +31,17 @@ body, html {
   box-sizing: border-box;
   float: left;
   overflow-y: auto;
+  position: relative; /* Ensures proper stacking */
+  z-index: 1000; /* Keeps sidebar above map */
 }
 
-.sidebar-section {
-  margin-bottom: 20px;
-  border-bottom: 1px solid #333;
-  padding-bottom: 15px;
+/* Additional Fixes for Leaflet Elements */
+.leaflet-control {
+  background-color: #333 !important;
+  color: white !important;
 }
 
-.toggle-group {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-/* Map Container */
-#map {
-  height: 100vh;
-  margin-left: 250px; /* Matches sidebar width */
-}
-
-/* Popup Styling */
-.leaflet-popup-content {
-  min-width: 200px;
-}
-
-.popup-rarity-common { background-color: #3a3a3a; }
-.popup-rarity-uncommon { background-color: #2e7d32; }
-.popup-rarity-rare { background-color: #1565c0; }
-.popup-rarity-epic { background-color: #6a1b9a; }
-.popup-rarity-legendary { background-color: #ff8f00; }
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  #sidebar {
-    width: 100%;
-    height: auto;
-    float: none;
-  }
-  #map {
-    margin-left: 0;
-    height: calc(100vh - 200px);
-  }
+.leaflet-popup-content-wrapper {
+  background: #222 !important;
+  color: #e0e0e0 !important;
 }
