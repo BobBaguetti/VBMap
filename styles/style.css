@@ -1,0 +1,43 @@
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: Arial, sans-serif;
+}
+
+#map {
+  position: absolute;
+  top: 0;
+  left: 200px;
+  right: 0;
+  bottom: 0;
+}
+
+#sidebar {
+  width: 200px;
+  background: #222;
+  color: #fff;
+  padding: 10px;
+  position: absolute;
+  height: 100%;
+  overflow-y: auto;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.popup-rarity-common    { background: #ccc; padding: 6px; border-radius: 4px; }
+.popup-rarity-rare      { background: #4e7cff; padding: 6px; border-radius: 4px; color: #fff; }
+.popup-rarity-epic      { background: #a74aff; padding: 6px; border-radius: 4px; color: #fff; }
+.popup-rarity-legendary { background: #ff9f0f; padding: 6px; border-radius: 4px; color: #000; }
+
+.popup-flavor {
+  background: #1d1d1d;
+  padding: 6px;
+  border-radius: 4px;
+  font-style: italic;
+  margin-top: 6px;
+  color: #aaa;
+}

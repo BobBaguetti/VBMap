@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vaultbreakers Interactive Map</title>
+  <link rel="stylesheet" href="styles/style.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+</head>
+<body>
+  <div id="sidebar">
+    <h2>Map Filters</h2>
+    <label><input type="checkbox" checked data-type="teleports" /> Teleports</label><br/>
+    <label><input type="checkbox" checked data-type="extracts" /> Extractions</label><br/>
+    <label><input type="checkbox" checked data-type="items" /> Items</label><br/>
+
+    <div id="settings">
+      <h3>Settings</h3>
+      <label><input type="checkbox" id="togglePopupMode" checked /> Popups on hover</label>
+    </div>
+  </div>
+
+  <div id="map"></div>
+  <script src="scripts/script.js"></script>
+</body>
+</html>

@@ -1,0 +1,24 @@
+[
+  {
+    "type": "teleports",
+    "name": "Teleport 1",
+    "coords": [1000, 1200],
+    "description": "Leads to Teleport 2.",
+    "quantity": 1,
+    "image": "images/teleport.png",
+    "rarity": "common",
+    "flavor": "Ancient tech hums softly.",
+    "usage": "Instantly transport to linked teleport."
+  },
+  {
+    "type": "items",
+    "name": "Vault Key",
+    "coords": [1600, 1900],
+    "description": "Used to unlock rare vaults.",
+    "quantity": 1,
+    "image": "images/vaultkey.png",
+    "rarity": "epic",
+    "flavor": "A mysterious relic with glowing lines.",
+    "usage": "Needed to open vaults. <a href='#'>[Watch Demo]</a>"
+  }
+]
