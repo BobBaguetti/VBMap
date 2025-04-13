@@ -9,10 +9,10 @@ body, html {
   overflow: hidden;
 }
 
-/* Map Container */
+/* Map Container - Adjusted for wider sidebar */
 #map {
   height: 100vh;
-  margin-left: 250px;
+  margin-left: 300px; /* Increased from 250px */
   background-color: #1a1a1a !important;
 }
 
@@ -22,9 +22,9 @@ body, html {
   background: #1a1a1a !important;
 }
 
-/* Sidebar */
+/* Sidebar - Wider version */
 #sidebar {
-  width: 250px;
+  width: 300px; /* Increased from 250px */
   height: 100vh;
   background-color: #222;
   padding: 15px;
