@@ -1,4 +1,4 @@
-console.log("Script loaded!");  // Check if this appears in F12 → Console
+console.log("Script loaded!");
 
 // Initialize Map
 const map = L.map('map', {
@@ -7,9 +7,9 @@ const map = L.map('map', {
   maxZoom: 4
 });
 
-// Set map bounds (match your upscaled image dimensions)
+// Set map bounds
 const bounds = [[0, 0], [3000, 3000]];
-const imageUrl = './images/tempmap.png';  // Fixed path (removed extra dot)
+const imageUrl = './images/tempmap.png';
 
 L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
@@ -21,33 +21,79 @@ const layers = {
   items: L.layerGroup().addTo(map)
 };
 
+// Custom icon creation function
+function createCustomIcon(marker) {
+  return L.divIcon({
+    html: `
+      <div class="custom-marker">
+        <div class="marker-border"></div>
+        ${marker.image ? `<img src="${marker.image}" class="marker-icon"/>` : ''}
+      </div>
+    `,
+    className: 'custom-marker-container',
+    iconSize: [32, 32]
+  });
+}
+
+// Enhanced popup creation function
+function createPopupContent(marker) {
+  return `
+    <div class="custom-popup">
+      <div class="popup-buttons">
+        ${marker.crafting ? `<div class="popup-button crafting-button">C</div>` : ''}
+        ${marker.quests ? `<div class="popup-button quests-button">Q</div>` : ''}
+      </div>
+      
+      <div class="popup-header">
+        ${marker.image ? `<img src="${marker.image}" class="popup-icon"/>` : ''}
+        <div class="popup-title">
+          <h3 class="popup-name">${marker.name}</h3>
+          <p class="popup-type">${marker.type || 'Item'}</p>
+          <p class="popup-rarity rarity-${marker.rarity || 'common'}">${marker.rarity || 'Common'}</p>
+        </div>
+      </div>
+      
+      <div class="popup-body">
+        ${marker.location ? `<p class="popup-location">${marker.location}</p>` : ''}
+        <div class="popup-notes">
+          ${marker.notes ? marker.notes.map(note => `<p>${note}</p>`).join('') : ''}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
 // Load markers from JSON
 fetch('./data/markerData.json')
   .then(response => response.json())
   .then(data => {
     data.forEach(marker => {
-  const icon = L.divIcon({
-    html: `<div class="custom-marker" data-type="${marker.type}">${marker.name}</div>`,
-    className: ''
-  });
+      const markerObj = L.marker(
+        [marker.coords[0], marker.coords[1]],
+        { icon: createCustomIcon(marker) }
+      ).addTo(layers[marker.type]);
 
-  const markerObj = L.marker(
-    [marker.coords[0], marker.coords[1]],  // Correct coordinate array
-    { icon: icon }
-  ).addTo(layers[marker.type]);  // Correct closing
-      
-      // Popup content
-      const popupContent = `
-        <div class="popup-rarity-${marker.rarity || 'common'}">
-          <h3>${marker.name}</h3>
-          ${marker.image ? `<img src="${marker.image}" width="100"/>` : ''}
-          <p>${marker.description}</p>
-          ${marker.flavor ? `<div class="flavor-text">${marker.flavor}</div>` : ''}
-          ${marker.usage ? `<div class="usage">${marker.usage}</div>` : ''}
-        </div>
-      `;
+      markerObj.bindPopup(createPopupContent(marker), {
+        className: 'custom-popup-wrapper',
+        maxWidth: 350
+      });
 
-      markerObj.bindPopup(popupContent);
+      // Add button functionality when popup opens
+      markerObj.on('popupopen', () => {
+        if (marker.crafting) {
+          document.querySelector('.crafting-button')?.addEventListener('click', () => {
+            // Show crafting requirements
+            console.log("Crafting recipes for:", marker.name);
+          });
+        }
+        
+        if (marker.quests) {
+          document.querySelector('.quests-button')?.addEventListener('click', () => {
+            // Show quest requirements
+            console.log("Quest requirements for:", marker.name);
+          });
+        }
+      });
     });
   });
 
