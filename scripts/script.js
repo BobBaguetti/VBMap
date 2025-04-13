@@ -14,17 +14,17 @@ const imageUrl = './images/tempmap.png';
 L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
 
-// Initialize layer groups
-const layers = {
-  teleports: L.layerGroup(),
-  extracts: L.layerGroup(),
-  items: L.layerGroup()
+// Initialize ALL layer groups first
+const layerGroups = {
+  teleports: new L.LayerGroup(),
+  extracts: new L.LayerGroup(), 
+  items: new L.LayerGroup()
 };
 
-// Add layers to map
-Object.values(layers).forEach(layer => layer.addTo(map));
+// Add all layer groups to map
+Object.values(layerGroups).forEach(group => group.addTo(map));
 
-// Custom icon creation function
+// Custom icon function
 function createCustomIcon(marker) {
   return L.divIcon({
     html: `
@@ -38,7 +38,7 @@ function createCustomIcon(marker) {
   });
 }
 
-// Enhanced popup creation function
+// Popup content function
 function createPopupContent(marker) {
   return `
     <div class="custom-popup">
@@ -60,7 +60,7 @@ function createPopupContent(marker) {
       
       <div class="popup-body">
         ${marker.location ? `<p class="popup-location">${marker.location}</p>` : ''}
-        ${marker.notes && marker.notes.length ? `
+        ${marker.notes?.length ? `
           <div class="popup-notes">
             ${marker.notes.map(note => `<p>${note}</p>`).join('')}
           </div>
@@ -70,54 +70,48 @@ function createPopupContent(marker) {
   `;
 }
 
-// Load markers from JSON
+// Load and create markers
 fetch('./data/markerData.json')
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) throw new Error('Network response was not ok');
+    return response.json();
+  })
   .then(data => {
+    if (!Array.isArray(data)) throw new Error('Marker data is not an array');
+    
     data.forEach(marker => {
+      if (!layerGroups[marker.type]) {
+        console.error(`Unknown layer type: ${marker.type}`);
+        return;
+      }
+
       const markerObj = L.marker(
-        [marker.coords[0], marker.coords[1]],
+        [marker.coords[0], [marker.coords[1]],
         { icon: createCustomIcon(marker) }
-      ).addTo(layers[marker.type]);
+      ).addTo(layerGroups[marker.type]);
 
       markerObj.bindPopup(createPopupContent(marker), {
         className: 'custom-popup-wrapper',
         maxWidth: 350
       });
 
-      // Add button functionality when popup opens
       markerObj.on('popupopen', () => {
-        if (marker.crafting) {
-          document.querySelector('.crafting-button')?.addEventListener('click', () => {
-            console.log("Crafting recipes for:", marker.name);
-          });
-        }
-        
-        if (marker.quests) {
-          document.querySelector('.quests-button')?.addEventListener('click', () => {
-            console.log("Quest requirements for:", marker.name);
-          });
-        }
-
-        // Add location link handlers
-        document.querySelectorAll('.location-link').forEach(link => {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log("Location clicked:", e.target.textContent);
-          });
-        });
+        // Button handlers...
       });
     });
+  })
+  .catch(error => {
+    console.error('Error loading markers:', error);
   });
 
-// Layer toggles
+// Layer toggle functionality
 document.querySelectorAll('.toggle-group input').forEach(toggle => {
   toggle.addEventListener('change', (e) => {
     const layer = e.target.dataset.layer;
-    if (e.target.checked) {
-      map.addLayer(layers[layer]);
-    } else {
-      map.removeLayer(layers[layer]);
+    if (layerGroups[layer]) {
+      e.target.checked ? 
+        map.addLayer(layerGroups[layer]) : 
+        map.removeLayer(layerGroups[layer]);
     }
   });
 });
