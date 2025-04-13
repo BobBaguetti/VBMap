@@ -1,3 +1,5 @@
+console.log("Script loaded!");  // Check if this appears in F12 → Console
+
 // Initialize Map
 const map = L.map('map', {
   crs: L.CRS.Simple,
@@ -7,7 +9,7 @@ const map = L.map('map', {
 
 // Set map bounds (match your upscaled image dimensions)
 const bounds = [[0, 0], [3000, 3000]];
-const imageUrl = '.images/tempmap.png';
+const imageUrl = './images/tempmap.png';  // Fixed path (removed extra dot)
 
 L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
@@ -29,8 +31,9 @@ fetch('./data/markerData.json')
         className: ''
       });
 
+      // Fixed marker creation - removed extra bracket
       const markerObj = L.marker(
-        [marker.coords[0], [marker.coords[1]], 
+        [marker.coords[0], marker.coords[1]], 
         { icon: icon }
       ).addTo(layers[marker.type]);
 
