@@ -14,11 +14,14 @@ const imageUrl = './images/tempmap.png';
 L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
 
-// Initialize layer groups
+// Initialize layer groups with all possible types
 const layers = {
   teleports: L.layerGroup(),
   extracts: L.layerGroup(),
-  items: L.layerGroup()
+  items: L.layerGroup(),
+  // Add any other types you might use
+  resources: L.layerGroup(),
+  enemies: L.layerGroup()
 };
 
 // Add layers to map
@@ -70,44 +73,55 @@ function createPopupContent(marker) {
   `;
 }
 
-// Load markers from JSON
+// Load markers from JSON with error handling
 fetch('./data/markerData.json')
-  .then(response => response.json())
+  .then(response => {
+    if (!response.ok) throw new Error('Network response was not ok');
+    return response.json();
+  })
   .then(data => {
+    if (!Array.isArray(data)) throw new Error('Marker data is not an array');
+    
     data.forEach(marker => {
-      // Fixed: Proper coordinate array format
-      const markerObj = L.marker(
-        [marker.coords[0], marker.coords[1]], // Fixed this line
-        { icon: createCustomIcon(marker) }
-      ).addTo(layers[marker.type]);
+      if (!marker.type || !layers[marker.type]) {
+        console.error(`Invalid or missing marker type: ${marker.type}`);
+        return;
+      }
 
-      markerObj.bindPopup(createPopupContent(marker), {
-        className: 'custom-popup-wrapper',
-        maxWidth: 350
-      });
+      try {
+        const markerObj = L.marker(
+          [marker.coords[0], marker.coords[1]],
+          { icon: createCustomIcon(marker) }
+        ).addTo(layers[marker.type]);
 
-      // Add button functionality when popup opens
-      markerObj.on('popupopen', () => {
-        if (marker.crafting) {
-          document.querySelector('.crafting-button')?.addEventListener('click', () => {
-            console.log("Crafting recipes for:", marker.name);
-          });
-        }
-        
-        if (marker.quests) {
-          document.querySelector('.quests-button')?.addEventListener('click', () => {
-            console.log("Quest requirements for:", marker.name);
-          });
-        }
+        markerObj.bindPopup(createPopupContent(marker), {
+          className: 'custom-popup-wrapper',
+          maxWidth: 350
+        });
 
-        // Add location link handlers
-        document.querySelectorAll('.location-link').forEach(link => {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log("Location clicked:", e.target.textContent);
+        markerObj.on('popupopen', () => {
+          if (marker.crafting) {
+            document.querySelector('.crafting-button')?.addEventListener('click', () => {
+              console.log("Crafting recipes for:", marker.name);
+            });
+          }
+          
+          if (marker.quests) {
+            document.querySelector('.quests-button')?.addEventListener('click', () => {
+              console.log("Quest requirements for:", marker.name);
+            });
+          }
+
+          document.querySelectorAll('.location-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+              e.preventDefault();
+              console.log("Location clicked:", e.target.textContent);
+            });
           });
         });
-      });
+      } catch (error) {
+        console.error(`Error creating marker ${marker.name}:`, error);
+      }
     });
   })
   .catch(error => {
@@ -118,10 +132,10 @@ fetch('./data/markerData.json')
 document.querySelectorAll('.toggle-group input').forEach(toggle => {
   toggle.addEventListener('change', (e) => {
     const layer = e.target.dataset.layer;
-    if (e.target.checked) {
-      map.addLayer(layers[layer]);
-    } else {
-      map.removeLayer(layers[layer]);
+    if (layers[layer]) {
+      e.target.checked ? 
+        map.addLayer(layers[layer]) : 
+        map.removeLayer(layers[layer]);
     }
   });
 });
