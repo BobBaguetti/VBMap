@@ -4,6 +4,10 @@ body, html {
   height: 100%;
   font-family: Arial, sans-serif;
 }
+body {
+  background-color: #1e1e1e;
+  color: white; /* Optional: ensures text is readable on dark bg */
+}
 
 #map {
   position: absolute;
