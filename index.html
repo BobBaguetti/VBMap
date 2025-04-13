@@ -5,23 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Vaultbreakers Interactive Map</title>
   <link rel="stylesheet" href="styles/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 </head>
 <body>
-  <div id="sidebar">
-    <h2>Map Filters</h2>
-    <label><input type="checkbox" checked data-type="teleports" /> Teleports</label><br/>
-    <label><input type="checkbox" checked data-type="extracts" /> Extractions</label><br/>
-    <label><input type="checkbox" checked data-type="items" /> Items</label><br/>
-
-    <div id="settings">
-      <h3>Settings</h3>
-      <label><input type="checkbox" id="togglePopupMode" checked /> Popups on hover</label>
+  <div id="sidebar" class="collapsed">
+    <div class="sidebar-header">
+      <h2>Map Filters</h2>
+      <button id="toggleSidebar" class="toggle-btn"><i class="fas fa-chevron-right"></i></button>
+    </div>
+    <div class="sidebar-content">
+      <div class="filter-group">
+        <h3>Categories</h3>
+        <label><input type="checkbox" checked data-type="teleports" /> Teleports</label>
+        <label><input type="checkbox" checked data-type="extracts" /> Extractions</label>
+        <label><input type="checkbox" checked data-type="items" /> Items</label>
+      </div>
+      <div class="filter-group">
+        <h3>Items</h3>
+        <label><input type="checkbox" data-type="iron-ore" /> Iron Ore</label>
+        <label><input type="checkbox" data-type="vault-keys" /> Vault Keys</label>
+      </div>
+      <div id="settings">
+        <h3>Settings</h3>
+        <label><input type="checkbox" id="togglePopupMode" checked /> Popups on hover</label>
+      </div>
     </div>
   </div>
 
   <div id="map"></div>
+  <div id="video-modal" class="modal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <video controls autoplay></video>
+    </div>
+  </div>
   <script src="scripts/script.js"></script>
 </body>
 </html>
