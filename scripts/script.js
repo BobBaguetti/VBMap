@@ -26,17 +26,16 @@ fetch('./data/markerData.json')
   .then(response => response.json())
   .then(data => {
     data.forEach(marker => {
-      const icon = L.divIcon({
-        html: `<div class="custom-marker" data-type="${marker.type}">${marker.name}</div>`,
-        className: ''
-      });
+  const icon = L.divIcon({
+    html: `<div class="custom-marker" data-type="${marker.type}">${marker.name}</div>`,
+    className: ''
+  });
 
-      // Fixed marker creation - removed extra bracket
-      const markerObj = L.marker(
-        [marker.coords[0], marker.coords[1]], 
-        { icon: icon }
-      ).addTo(layers[marker.type]);
-
+  const markerObj = L.marker(
+    [marker.coords[0], marker.coords[1]],  // Correct coordinate array
+    { icon: icon }
+  ).addTo(layers[marker.type]);  // Correct closing
+      
       // Popup content
       const popupContent = `
         <div class="popup-rarity-${marker.rarity || 'common'}">
