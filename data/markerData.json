@@ -8,7 +8,7 @@
     "image": "images/teleport.png",
     "rarity": "common",
     "flavor": "Ancient tech hums softly.",
-    "usage": "Instantly transport to linked teleport."
+    "usage": "Instantly teleports you to <a href=\"#\" class=\"video-trigger\" data-video=\"videos/TPexample.mp4\">How to use this</a><div class=\"video-preview\" style=\"display:none;\"><video src=\"videos/TPexample.mp4\" autoplay muted loop playsinline></video></div> here."
   },
   {
     "type": "items",
@@ -19,6 +19,6 @@
     "image": "images/vaultkey.png",
     "rarity": "epic",
     "flavor": "A mysterious relic with glowing lines.",
-    "usage": "Needed to open vaults. <a href='#'>[Watch Demo]</a>"
+    "usage": "Needed to open vaults. <a href=\"#\" class=\"video-trigger\" data-video=\"videos/vaultkey-demo.mp4\">[Watch Demo]</a>"
   }
 ]
