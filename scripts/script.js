@@ -20,7 +20,7 @@ const layers = {
 };
 
 // Load markers from JSON
-fetch('data/markerData.json')
+fetch('.data/markerData.json')
   .then(response => response.json())
   .then(data => {
     data.forEach(marker => {
