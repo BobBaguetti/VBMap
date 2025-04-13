@@ -1,3 +1,5 @@
+console.log("Script loaded!");  // Check if this appears in F12 → Console
+
 // Initialize Map
 const map = L.map('map', {
   crs: L.CRS.Simple,
