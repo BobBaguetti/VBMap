@@ -11,7 +11,6 @@ map.fitBounds(bounds);
 fetch('data/markerData.json')
   .then(res => res.json())
   .then(data => {
-    const popupMode = { hover: true };
     const layers = {};
 
     data.forEach(marker => {
@@ -27,27 +26,31 @@ fetch('data/markerData.json')
           <div>${marker.usage}</div>
         </div>`;
 
+      markerEl.bindPopup(popupContent, { autoClose: false, closeOnClick: false });
+
+      // Click-to-toggle popup logic
+      markerEl.on('click', () => {
+        if (markerEl.isPopupOpen()) {
+          markerEl.closePopup();
+        } else {
+          markerEl.openPopup();
+        }
+      });
+
+      // Grouping by type
       if (!layers[marker.type]) layers[marker.type] = L.layerGroup().addTo(map);
       markerEl.addTo(layers[marker.type]);
-
-    marker.on('click', () => {
-      if (marker.isPopupOpen()) {
-        marker.closePopup();
-      } else {
-        marker.openPopup();
-      }
     });
 
+    // Sidebar toggle filters
     document.querySelectorAll('#sidebar input[type="checkbox"]').forEach(cb => {
       if (cb.dataset.type) {
         cb.addEventListener('change', () => {
-          if (cb.checked) map.addLayer(layers[cb.dataset.type]);
-          else map.removeLayer(layers[cb.dataset.type]);
-        });
-      } else if (cb.id === 'togglePopupMode') {
-        cb.addEventListener('change', () => {
-          popupMode.hover = cb.checked;
-          location.reload(); // simple way to re-bind
+          if (cb.checked) {
+            map.addLayer(layers[cb.dataset.type]);
+          } else {
+            map.removeLayer(layers[cb.dataset.type]);
+          }
         });
       }
     });
