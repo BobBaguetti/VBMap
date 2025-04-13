@@ -14,12 +14,15 @@ const imageUrl = './images/tempmap.png';
 L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
 
-// Marker layers
+// Initialize layer groups FIRST
 const layers = {
-  teleports: L.layerGroup().addTo(map),
-  extracts: L.layerGroup().addTo(map),
-  items: L.layerGroup().addTo(map)
+  teleports: L.layerGroup(),
+  extracts: L.layerGroup(),
+  items: L.layerGroup()
 };
+
+// THEN add them to map
+Object.values(layers).forEach(layer => layer.addTo(map));
 
 // Custom icon creation function
 function createCustomIcon(marker) {
