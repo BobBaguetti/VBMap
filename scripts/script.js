@@ -30,10 +30,11 @@ fetch('data/markerData.json')
       if (!layers[marker.type]) layers[marker.type] = L.layerGroup().addTo(map);
       markerEl.addTo(layers[marker.type]);
 
-      if (popupMode.hover) {
-        markerEl.bindTooltip(popupContent, { direction: 'top', sticky: true });
+    marker.on('click', () => {
+      if (marker.isPopupOpen()) {
+        marker.closePopup();
       } else {
-        markerEl.bindPopup(popupContent);
+        marker.openPopup();
       }
     });
 
