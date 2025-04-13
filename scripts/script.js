@@ -39,25 +39,29 @@ function createCustomIcon(marker) {
 function createPopupContent(marker) {
   return `
     <div class="custom-popup">
-      <div class="popup-buttons">
-        ${marker.crafting ? `<div class="popup-button crafting-button">C</div>` : ''}
-        ${marker.quests ? `<div class="popup-button quests-button">Q</div>` : ''}
-      </div>
+      ${marker.crafting || marker.quests ? `
+        <div class="popup-buttons">
+          ${marker.crafting ? `<div class="popup-button crafting-button">C</div>` : ''}
+          ${marker.quests ? `<div class="popup-button quests-button">Q</div>` : ''}
+        </div>
+      ` : ''}
       
       <div class="popup-header">
         ${marker.image ? `<img src="${marker.image}" class="popup-icon"/>` : ''}
         <div class="popup-title">
           <h3 class="popup-name">${marker.name}</h3>
-          <p class="popup-type">${marker.type || 'Item'}</p>
-          <p class="popup-rarity rarity-${marker.rarity || 'common'}">${marker.rarity || 'Common'}</p>
+          ${marker.type ? `<p class="popup-type">${marker.type}</p>` : ''}
+          ${marker.rarity ? `<p class="popup-rarity rarity-${marker.rarity}">${marker.rarity}</p>` : ''}
         </div>
       </div>
       
       <div class="popup-body">
         ${marker.location ? `<p class="popup-location">${marker.location}</p>` : ''}
-        <div class="popup-notes">
-          ${marker.notes ? marker.notes.map(note => `<p>${note}</p>`).join('') : ''}
-        </div>
+        ${marker.notes && marker.notes.length ? `
+          <div class="popup-notes">
+            ${marker.notes.map(note => `<p>${note}</p>`).join('')}
+          </div>
+        ` : ''}
       </div>
     </div>
   `;
@@ -82,17 +86,23 @@ fetch('./data/markerData.json')
       markerObj.on('popupopen', () => {
         if (marker.crafting) {
           document.querySelector('.crafting-button')?.addEventListener('click', () => {
-            // Show crafting requirements
             console.log("Crafting recipes for:", marker.name);
           });
         }
         
         if (marker.quests) {
           document.querySelector('.quests-button')?.addEventListener('click', () => {
-            // Show quest requirements
             console.log("Quest requirements for:", marker.name);
           });
         }
+
+        // Add location link handlers
+        document.querySelectorAll('.location-link').forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            console.log("Location clicked:", e.target.textContent);
+          });
+        });
       });
     });
   });
