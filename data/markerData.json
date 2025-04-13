@@ -28,5 +28,21 @@
     "rarity": "epic",
     "flavor": "Glows with mysterious energy",
     "usage": "Combine with <a href='#'>Relic</a> to activate"
-  }
+  },
+  {
+    "type": "items",
+    "name": "Iron Ore",
+    "coords": [1500, 1500],
+    "image": "images/iron_ore.png",
+    "type": "Crafting Material",
+    "rarity": "common",
+    "location": "Found in Wolfswood, primarily around",
+    "notes": [
+      "Required to start X",
+      "Consumed on use"
+  ],
+  "crafting": true,
+  "quests": true
+}
+  
 ]
