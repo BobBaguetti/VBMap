@@ -9,18 +9,18 @@
   },
   {
     "type": "extracts",
-    "name": "Extraction Point",
-    "coords": [1111, 2000],
+    "name": "North Extraction",
+    "coords": [800, 500],
     "image": "images/extract.png",
     "description": "Random extraction point",
     "usage": "15-second wait time"
   },
   {
     "type": "items",
+    "subtype": "Key Item",
     "name": "Vault Key",
     "coords": [1100, 1000],
     "image": "images/key.png",
-    "type": "Key Item",
     "rarity": "epic",
     "location": "Found in Ancient Ruins",
     "notes": [
@@ -31,10 +31,10 @@
   },
   {
     "type": "items",
+    "subtype": "Crafting Material",
     "name": "Iron Ore",
-    "coords": [900, 1500],
+    "coords": [1500, 1500],
     "image": "images/iron_ore.png",
-    "type": "Crafting Material",
     "rarity": "common",
     "location": "Found in <a href='#' class='location-link'>Wolfswood</a>, primarily around rocky outcrops",
     "notes": [
