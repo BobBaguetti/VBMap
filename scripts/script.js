@@ -7,7 +7,7 @@ const map = L.map('map', {
 
 // Set map bounds (match your upscaled image dimensions)
 const bounds = [[0, 0], [3000, 3000]];
-const imageUrl = 'images/map.png';
+const imageUrl = 'images/tempmap.png';
 
 L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
