@@ -1,4 +1,4 @@
-/* Base Styles - Enhanced for full dark theme */
+/* Base Styles */
 body, html {
   margin: 0;
   padding: 0;
@@ -9,22 +9,21 @@ body, html {
   overflow: hidden;
 }
 
-/* Map Container - Adjusted for wider sidebar */
+/* Map Container */
 #map {
   height: 100vh;
-  margin-left: 300px; /* Increased from 250px */
+  margin-left: 300px;
   background-color: #1a1a1a !important;
 }
 
 /* Leaflet Overrides */
 .leaflet-container {
   background-color: #1a1a1a !important;
-  background: #1a1a1a !important;
 }
 
-/* Sidebar - Wider version */
+/* Sidebar */
 #sidebar {
-  width: 300px; /* Increased from 250px */
+  width: 300px;
   height: 100vh;
   background-color: #222;
   padding: 15px;
@@ -35,18 +34,31 @@ body, html {
   z-index: 1000;
 }
 
-/* Leaflet Controls */
-.leaflet-control {
-  background-color: #333 !important;
-  color: white !important;
-}
-
+/* Popup Styling */
 .leaflet-popup-content-wrapper {
-  background: #222 !important;
-  color: #e0e0e0 !important;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
 }
 
-/* Custom Marker Styling */
+.leaflet-popup-tip-container {
+  display: none;
+}
+
+.custom-popup-wrapper {
+  background: transparent !important;
+}
+
+.custom-popup {
+  background: rgba(40, 40, 40, 0.92) !important;
+  border-radius: 8px;
+  padding: 15px;
+  width: 300px;
+  color: #e0e0e0;
+  border: none !important;
+}
+
+/* Marker Styling */
 .custom-marker-container {
   background: transparent !important;
   border: none !important;
@@ -76,16 +88,7 @@ body, html {
   object-fit: contain;
 }
 
-/* Custom Popup Styling */
-.custom-popup {
-  background: rgba(40, 40, 40, 0.92) !important;
-  border-radius: 8px;
-  border: 1px solid #555;
-  padding: 15px;
-  width: 300px;
-  color: #e0e0e0;
-}
-
+/* Popup Content Styling */
 .popup-header {
   display: flex;
   align-items: center;
