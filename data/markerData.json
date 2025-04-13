@@ -9,8 +9,8 @@
   },
   {
     "type": "extracts",
-    "name": "North Extraction",
-    "coords": [800, 500],
+    "name": "Extraction Point",
+    "coords": [1111, 2000],
     "image": "images/extract.png",
     "description": "Random extraction point",
     "usage": "15-second wait time"
@@ -32,7 +32,7 @@
   {
     "type": "items",
     "name": "Iron Ore",
-    "coords": [1500, 1500],
+    "coords": [900, 1500],
     "image": "images/iron_ore.png",
     "type": "Crafting Material",
     "rarity": "common",
