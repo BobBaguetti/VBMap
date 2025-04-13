@@ -22,7 +22,7 @@
   {
     "type": "items",
     "name": "Vault Key",
-    "coords": [1500, 1800],
+    "coords": [1100, 1000],
     "image": "images/key.png",
     "description": "Opens high-tier vaults",
     "rarity": "epic",
