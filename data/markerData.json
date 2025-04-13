@@ -1,29 +1,32 @@
 [
   {
     "type": "teleports",
-    "name": "Ancient Teleporter",
+    "name": "Teleport 1",
     "coords": [1000, 1200],
-    "description": "Instant transportation to another location.",
     "image": "images/teleport.png",
-    "rarity": "rare",
-    "flavor": "The ancient technology hums with unstable energy.",
-    "usage": "Activate to teleport to <a href='#' class='video-trigger' data-video='videos/teleport_usage.mp4'>paired location</a>.",
-    "properties": {
-      "cooldown": "30s",
-      "linked_location": "Ruins of Eld"
-    }
+    "description": "Links to Teleport 3",
+    "rarity": "uncommon",
+    "flavor": "Ancient technology hums softly",
+    "usage": "Instant travel to paired teleport"
+  },
+  {
+    "type": "extracts",
+    "name": "North Extraction",
+    "coords": [800, 500],
+    "image": "images/extract.png",
+    "description": "Random extraction point",
+    "rarity": "common",
+    "flavor": "Evac ship landing zone",
+    "usage": "15-second wait time"
   },
   {
     "type": "items",
-    "subtype": "iron-ore",
-    "name": "Iron Ore Vein",
-    "coords": [1450, 1780],
-    "description": "A rich deposit of iron ore.",
-    "quantity": "3-5",
-    "image": "images/iron_ore.png",
-    "rarity": "common",
-    "flavor": "The metallic glint catches your eye even in low light.",
-    "usage": "Requires a <a href='#' class='video-trigger' data-video='videos/mining_tutorial.mp4'>pickaxe</a> to extract.",
-    "respawn_time": "15 minutes"
+    "name": "Vault Key",
+    "coords": [1500, 1800],
+    "image": "images/key.png",
+    "description": "Opens high-tier vaults",
+    "rarity": "epic",
+    "flavor": "Glows with mysterious energy",
+    "usage": "Combine with <a href='#'>Relic</a> to activate"
   }
 ]

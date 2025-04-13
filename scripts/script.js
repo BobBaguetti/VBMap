@@ -1,111 +1,62 @@
-// Initialize map
+// Initialize Map
 const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: -2,
-  maxZoom: 2,
+  maxZoom: 4
 });
 
+// Set map bounds (match your upscaled image dimensions)
 const bounds = [[0, 0], [3000, 3000]];
-L.imageOverlay('images/map.png', bounds).addTo(map);
+const imageUrl = 'images/map.png';
+
+L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
 
-// Video modal functionality
-const videoModal = document.getElementById('video-modal');
-const modalVideo = videoModal.querySelector('video');
-const modalClose = videoModal.querySelector('.close');
-
-document.addEventListener('click', (e) => {
-  if (e.target.classList.contains('video-trigger')) {
-    e.preventDefault();
-    const videoSrc = e.target.dataset.video;
-    modalVideo.src = videoSrc;
-    videoModal.style.display = 'block';
-  }
-});
-
-modalClose.onclick = () => {
-  videoModal.style.display = 'none';
-  modalVideo.pause();
+// Marker layers
+const layers = {
+  teleports: L.layerGroup().addTo(map),
+  extracts: L.layerGroup().addTo(map),
+  items: L.layerGroup().addTo(map)
 };
 
-// Sidebar toggle
-document.getElementById('toggleSidebar').addEventListener('click', () => {
-  document.getElementById('sidebar').classList.toggle('collapsed');
-});
-
-// Marker creation with hover/click behavior
+// Load markers from JSON
 fetch('data/markerData.json')
-  .then(res => res.json())
+  .then(response => response.json())
   .then(data => {
-    const layers = {};
-    const popupMode = document.getElementById('togglePopupMode');
-
     data.forEach(marker => {
-      if (!layers[marker.type]) {
-        layers[marker.type] = L.layerGroup().addTo(map);
-      }
-
-      const markerIcon = L.divIcon({
-        className: `marker-icon marker-${marker.type} marker-rarity-${marker.rarity}`,
-        html: marker.type === 'items' ? `<i class="fas fa-circle"></i>` : `<i class="fas fa-map-marker-alt"></i>`,
-        iconSize: [20, 20]
+      const icon = L.divIcon({
+        html: `<div class="custom-marker" data-type="${marker.type}">${marker.name}</div>`,
+        className: ''
       });
 
-      const markerEl = L.marker(marker.coords, { icon: markerIcon });
-      const rarityClass = `popup-rarity-${marker.rarity || 'common'}`;
-      
+      const markerObj = L.marker(
+        [marker.coords[0], [marker.coords[1]], 
+        { icon: icon }
+      ).addTo(layers[marker.type]);
+
+      // Popup content
       const popupContent = `
-        <div class="popup-container ${rarityClass}">
+        <div class="popup-rarity-${marker.rarity || 'common'}">
           <h3>${marker.name}</h3>
-          ${marker.image ? `<img src="${marker.image}" class="popup-image" />` : ''}
-          <div class="popup-description">${marker.description}</div>
-          ${marker.quantity ? `<div class="popup-quantity">Quantity: ${marker.quantity}</div>` : ''}
-          ${marker.flavor ? `<div class="popup-flavor">${marker.flavor}</div>` : ''}
-          ${marker.usage ? `<div class="popup-usage">${marker.usage}</div>` : ''}
-        </div>`;
+          ${marker.image ? `<img src="${marker.image}" width="100"/>` : ''}
+          <p>${marker.description}</p>
+          ${marker.flavor ? `<div class="flavor-text">${marker.flavor}</div>` : ''}
+          ${marker.usage ? `<div class="usage">${marker.usage}</div>` : ''}
+        </div>
+      `;
 
-      markerEl.bindPopup(popupContent, {
-        className: `custom-popup ${rarityClass}`,
-        maxWidth: 300
-      });
-
-      // Hover behavior based on settings
-      markerEl.on(popupMode.checked ? 'mouseover' : 'click', () => {
-        markerEl.openPopup();
-      });
-
-      if (popupMode.checked) {
-        markerEl.on('mouseout', () => {
-          markerEl.closePopup();
-        });
-      }
-
-      markerEl.addTo(layers[marker.type]);
-    });
-
-    // Filter controls
-    document.querySelectorAll('#sidebar input[type="checkbox"]').forEach(cb => {
-      if (cb.dataset.type) {
-        cb.addEventListener('change', () => {
-          layers[cb.dataset.type][cb.checked ? 'addTo' : 'removeFrom'](map);
-        });
-      }
-    });
-
-    // Popup mode toggle
-    popupMode.addEventListener('change', () => {
-      map.eachLayer(layer => {
-        if (layer instanceof L.Marker) {
-          layer.off('mouseover mouseout click');
-          layer.on(popupMode.checked ? 'mouseover' : 'click', () => {
-            layer.openPopup();
-          });
-          if (popupMode.checked) {
-            layer.on('mouseout', () => {
-              layer.closePopup();
-            });
-          }
-        }
-      });
+      markerObj.bindPopup(popupContent);
     });
   });
+
+// Layer toggles
+document.querySelectorAll('.toggle-group input').forEach(toggle => {
+  toggle.addEventListener('change', (e) => {
+    const layer = e.target.dataset.layer;
+    if (e.target.checked) {
+      map.addLayer(layers[layer]);
+    } else {
+      map.removeLayer(layers[layer]);
+    }
+  });
+});

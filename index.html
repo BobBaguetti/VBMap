@@ -1,46 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Vaultbreakers Interactive Map</title>
-  <link rel="stylesheet" href="styles/style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles/style.css">
+  <!-- Font Awesome for icons (optional) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-  <div id="sidebar" class="collapsed">
-    <div class="sidebar-header">
-      <h2>Map Filters</h2>
-      <button id="toggleSidebar" class="toggle-btn"><i class="fas fa-chevron-right"></i></button>
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <h1><i class="fas fa-map-marked-alt"></i> VBMap</h1>
+    
+    <!-- Map Layers Toggle -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-layer-group"></i> Layers</h2>
+      <div class="toggle-group">
+        <label><input type="checkbox" checked data-layer="teleports"> Teleports</label>
+        <label><input type="checkbox" checked data-layer="extracts"> Extraction Points</label>
+        <label><input type="checkbox" checked data-layer="items"> Items</label>
+      </div>
     </div>
-    <div class="sidebar-content">
-      <div class="filter-group">
-        <h3>Categories</h3>
-        <label><input type="checkbox" checked data-type="teleports" /> Teleports</label>
-        <label><input type="checkbox" checked data-type="extracts" /> Extractions</label>
-        <label><input type="checkbox" checked data-type="items" /> Items</label>
-      </div>
-      <div class="filter-group">
-        <h3>Items</h3>
-        <label><input type="checkbox" data-type="iron-ore" /> Iron Ore</label>
-        <label><input type="checkbox" data-type="vault-keys" /> Vault Keys</label>
-      </div>
-      <div id="settings">
-        <h3>Settings</h3>
-        <label><input type="checkbox" id="togglePopupMode" checked /> Popups on hover</label>
-      </div>
+
+    <!-- Settings -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-cog"></i> Settings</h2>
+      <label><input type="checkbox" id="hover-toggle"> Enable hover popups</label>
+    </div>
+
+    <!-- Search -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-search"></i> Search</h2>
+      <input type="text" id="search-bar" placeholder="Search items/locations...">
     </div>
   </div>
 
+  <!-- Map Container -->
   <div id="map"></div>
-  <div id="video-modal" class="modal">
-    <div class="modal-content">
-      <span class="close">&times;</span>
-      <video controls autoplay></video>
-    </div>
-  </div>
+
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Main JS -->
   <script src="scripts/script.js"></script>
 </body>
 </html>
