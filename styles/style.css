@@ -12,8 +12,9 @@ body, html {
 /* Map Container */
 #map {
   height: 100vh;
-  margin-left: 300px;
+  margin-left: 300px;  /* When sidebar is visible */
   background-color: #1a1a1a !important;
+  transition: margin-left 0.5s ease;  /* Smooth transition */
 }
 
 /* Leaflet Overrides */
@@ -25,25 +26,20 @@ body, html {
 #sidebar {
   width: 300px;
   height: 100vh;
+  position: absolute;  /* Changed from float to absolute */
+  top: 0;
+  left: 0;
   background-color: #222;
   padding: 15px;
   box-sizing: border-box;
-  float: left;
-  overflow: auto;
-  position: relative;
   z-index: 1000;
-  /* Removed transition so collapse is instant;
-     If you'd prefer an animated collapse that doesn't reflow text,
-     you could add: white-space: nowrap; and text-overflow: clip; */
+  overflow: auto;
+  transition: transform 0.5s ease;
 }
 
-/* Collapsed sidebar: fully hidden */
+/* When sidebar is hidden, slide it fully off-screen */
 #sidebar.hidden {
-  width: 0 !important;
-  padding: 0 !important;
-  overflow: hidden;
-  white-space: nowrap;
-  text-overflow: clip;
+  transform: translateX(-100%);
 }
 
 /* Popup Styling */

@@ -138,16 +138,18 @@ fetch('./data/markerData.json')
 // Sidebar toggle: remove animation so it simply disappears, preventing text from reflowing vertically
 document.getElementById('sidebar-toggle').addEventListener('click', function() {
   const sidebar = document.getElementById('sidebar');
-  sidebar.classList.toggle('hidden');
-  
-  // Adjust the map container margin accordingly
   const mapDiv = document.getElementById('map');
+
+  // Toggle the 'hidden' class to slide the sidebar off-screen
+  sidebar.classList.toggle('hidden');
+
+  // Adjust the map's left margin based on sidebar visibility:
   if (sidebar.classList.contains('hidden')) {
     mapDiv.style.marginLeft = '0';
   } else {
     mapDiv.style.marginLeft = '300px';
   }
-  
+
   // Invalidate map size so Leaflet properly redraws the map
   map.invalidateSize();
 });
