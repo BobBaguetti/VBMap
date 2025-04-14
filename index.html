@@ -48,21 +48,18 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Include required scripts IN THIS ORDER (placed just before closing </body>) -->
-  
+  <!-- Include the required scripts in proper order at the end of the body -->
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  
   <!-- Firebase App (compat) and Firestore -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  
-  <!-- Main JS (your custom script) -->
+  <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
-  <!-- Custom Edit Modal for Marker Editing (Admin Mode) -->
+  <!-- Custom Edit Modal for Marker Editing -->
   <div id="edit-modal" style="display:none; position:absolute; background:#fff; padding:20px; border:1px solid #ccc; z-index:2100;">
     <h3>Edit Marker</h3>
     <form id="edit-form">
@@ -85,7 +82,7 @@
         <textarea id="edit-description" rows="3"></textarea>
       </label>
       <br /><br />
-      <!-- Additional fields can be added here for advanced marker types -->
+      <!-- Additional fields can be added here -->
       <button type="submit">Save</button>
       <button type="button" id="edit-cancel">Cancel</button>
     </form>
