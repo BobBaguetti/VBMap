@@ -198,12 +198,15 @@ body, html {
 .rarity-epic { color: #9b59b6; }
 .rarity-legendary { color: #f39c12; }
 
-/* Context Menu Styles */
+/* Context Menu Styles (Dark Mode) */
 #context-menu {
   font-family: Arial, sans-serif;
   font-size: 14px;
   border-radius: 3px;
+  background: #333;
+  color: #eee;
+  border: 1px solid #555;
 }
 #context-menu div:hover {
-  background-color: #eee;
+  background-color: #555;
 }

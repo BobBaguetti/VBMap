@@ -21,21 +21,26 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
     <!-- Map Layers Toggle -->
     <div class="sidebar-section">
       <h2><i class="fas fa-layer-group"></i> Layers</h2>
       <div class="toggle-group">
-        <label><input type="checkbox" checked data-layer="teleports" /> Teleports</label>
-        <label><input type="checkbox" checked data-layer="extracts" /> Extraction Points</label>
-        <label><input type="checkbox" checked data-layer="items" /> Items</label>
+        <!-- Note: renamed types are managed in code; the toggle labels can show display names -->
+        <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
+        <label><input type="checkbox" checked data-layer="Extraction Portal" /> Extraction Portal</label>
+        <label><input type="checkbox" checked data-layer="Item" /> Item</label>
+        <label><input type="checkbox" checked data-layer="Door" /> Door</label>
       </div>
     </div>
 
     <!-- Settings -->
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
-      <label><input type="checkbox" id="hover-toggle" /> Enable hover popups</label>
+      <!-- Added new toggle for disabling marker clustering -->
+      <label>
+        <input type="checkbox" id="disable-grouping" />
+        Disable Marker Grouping
+      </label>
     </div>
 
     <!-- Search -->
@@ -48,7 +53,7 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Include the required scripts in proper order at the end of the body -->
+  <!-- Include the required scripts at the end of the body -->
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- MarkerCluster JS -->
@@ -60,7 +65,7 @@
   <script src="scripts/script.js"></script>
   
   <!-- Custom Edit Modal for Marker Editing -->
-  <div id="edit-modal" style="display:none; position:absolute; background:#fff; padding:20px; border:1px solid #ccc; z-index:2100;">
+  <div id="edit-modal" style="display:none; position:absolute; background:#222; color:#eee; padding:20px; border:1px solid #555; z-index:2100;">
     <h3>Edit Marker</h3>
     <form id="edit-form">
       <label>
@@ -71,18 +76,58 @@
       <label>
         Type:<br />
         <select id="edit-type">
-          <option value="teleports">Teleports</option>
-          <option value="extracts">Extraction Points</option>
-          <option value="items">Items</option>
+          <option value="Teleport">Teleport</option>
+          <option value="Extraction Portal">Extraction Portal</option>
+          <option value="Item">Item</option>
+          <option value="Door">Door</option>
         </select>
       </label>
       <br /><br />
+      <!-- Extra fields for Item markers (shown only if type is "Item") -->
+      <div id="item-extra-fields" style="display:none;">
+        <label>
+          Rarity:<br />
+          <select id="edit-rarity">
+            <option value="">Select Rarity</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="epic">Epic</option>
+            <option value="legendary">Legendary</option>
+          </select>
+        </label>
+        <br /><br />
+        <label>
+          Item Type:<br />
+          <select id="edit-item-type">
+            <option value="">Select Item Type</option>
+            <option value="consumable">Consumable</option>
+            <option value="crafting material">Crafting Material</option>
+            <option value="key">Key</option>
+          </select>
+        </label>
+        <br /><br />
+        <label>
+          Extra Info 1:<br />
+          <input type="text" id="edit-extra-1" />
+        </label>
+        <br /><br />
+        <label>
+          Extra Info 2:<br />
+          <input type="text" id="edit-extra-2" />
+        </label>
+        <br /><br />
+        <label>
+          Extra Info 3:<br />
+          <input type="text" id="edit-extra-3" />
+        </label>
+        <br /><br />
+      </div>
       <label>
         Description:<br />
         <textarea id="edit-description" rows="3"></textarea>
       </label>
       <br /><br />
-      <!-- Additional fields can be added here -->
       <button type="submit">Save</button>
       <button type="button" id="edit-cancel">Cancel</button>
     </form>
