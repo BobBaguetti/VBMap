@@ -17,7 +17,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Static Files (organized to avoid duplication)
-app.use(express.static('public'));
+app.use(express.static('docs'));
 app.use('/admin', express.static('admin'));
 
 // Authentication
