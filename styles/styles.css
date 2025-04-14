@@ -9,7 +9,7 @@ body, html {
   overflow: hidden;
 }
 
-/* Map Container */ 
+/* Map Container */
 #map {
   height: 100vh;
   margin-left: 300px;
@@ -32,6 +32,14 @@ body, html {
   overflow-y: auto;
   position: relative;
   z-index: 1000;
+  transition: width 0.5s ease, padding 0.5s ease;
+}
+
+/* Collapsed sidebar: fully hidden */
+#sidebar.hidden {
+  width: 0 !important;
+  padding: 0 !important;
+  overflow: hidden;
 }
 
 /* Popup Styling */
@@ -160,7 +168,7 @@ body, html {
   border: 1px solid #ffcc00;
 }
 
-/* Add new styles for the More Info button here */
+/* More Info Button */
 .more-info-btn {
   background-color: #444;
   color: #fff;

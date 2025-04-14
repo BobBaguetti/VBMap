@@ -9,13 +9,11 @@ const map = L.map('map', {
 
 // Set map bounds
 const bounds = [[0, 0], [3000, 3000]];
-// Update the image path to point to the media folder
 const imageUrl = './media/images/tempmap.png';
-
 L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
 
-// Create layer groups – using marker clustering for the "items" layer
+// Create layer groups – clustering the "items" layer
 const layers = {
   teleports: L.layerGroup(),
   extracts: L.layerGroup(),
@@ -24,6 +22,9 @@ const layers = {
 
 // Add layers to map
 Object.values(layers).forEach(layer => layer.addTo(map));
+
+// Global array for marker search functionality
+let allMarkers = [];
 
 // Custom icon creation function
 function createCustomIcon(marker) {
@@ -49,7 +50,6 @@ function createPopupContent(marker) {
           ${marker.quests ? `<div class="popup-button quests-button">Q</div>` : ''}
         </div>
       ` : ''}
-      
       <div class="popup-header">
         ${marker.image ? `<img src="${marker.image}" class="popup-icon"/>` : ''}
         <div class="popup-title">
@@ -58,7 +58,6 @@ function createPopupContent(marker) {
           ${marker.rarity ? `<p class="popup-rarity rarity-${marker.rarity}">${marker.rarity}</p>` : ''}
         </div>
       </div>
-      
       <div class="popup-body">
         ${marker.location ? `<p class="popup-location">${marker.location}</p>` : ''}
         ${marker.notes && marker.notes.length ? `
@@ -88,7 +87,7 @@ fetch('./data/markerData.json')
         console.error(`Invalid marker type: ${marker.type}`);
         return;
       }
-
+      
       const markerObj = L.marker(
         [marker.coords[0], marker.coords[1]],
         { icon: createCustomIcon(marker) }
@@ -97,10 +96,11 @@ fetch('./data/markerData.json')
         className: 'custom-popup-wrapper',
         maxWidth: 350
       });
-
       layers[marker.type].addLayer(markerObj);
-
-      // Add event listener on popup open
+      
+      // Save marker for search functionality
+      allMarkers.push({ markerObj, data: marker });
+      
       markerObj.on('popupopen', () => {
         if (marker.crafting) {
           document.querySelector('.crafting-button')?.addEventListener('click', () => {
@@ -113,14 +113,14 @@ fetch('./data/markerData.json')
             console.log("Quest requirements for:", marker.name);
           });
         }
-
+        
         document.querySelectorAll('.location-link').forEach(link => {
           link.addEventListener('click', (e) => {
             e.preventDefault();
             console.log("Location clicked:", e.target.textContent);
           });
         });
-
+        
         document.querySelector('.more-info-btn')?.addEventListener('click', () => {
           alert(`More details about ${marker.name}:\n\n${marker.description || 'No additional info.'}`);
         });
@@ -131,20 +131,34 @@ fetch('./data/markerData.json')
     console.error("Error loading markers:", error);
   });
 
-// Layer toggles for showing or hiding layers
-document.querySelectorAll('.toggle-group input').forEach(toggle => {
-  toggle.addEventListener('change', (e) => { 
-    const layer = e.target.dataset.layer;
-    if (layers[layer]) {
-      e.target.checked ? 
-        map.addLayer(layers[layer]) : 
-        map.removeLayer(layers[layer]);
-    }
-  });
-});
-
-// Sidebar Toggle
+// Sidebar toggle using class toggle to collapse entirely
 document.getElementById('sidebar-toggle').addEventListener('click', function() {
   const sidebar = document.getElementById('sidebar');
-  sidebar.style.display = (sidebar.style.display === 'none' ? 'block' : 'none');
+  sidebar.classList.toggle('hidden');
+  
+  // Adjust the map container margin accordingly
+  const mapDiv = document.getElementById('map');
+  if (sidebar.classList.contains('hidden')) {
+    mapDiv.style.marginLeft = '0';
+  } else {
+    mapDiv.style.marginLeft = '300px';
+  }
+  
+  // Invalidate map size so Leaflet properly redraws the map
+  map.invalidateSize();
+});
+
+// Basic search functionality (filter markers by name)
+document.getElementById('search-bar').addEventListener('input', function() {
+  const query = this.value.toLowerCase();
+  allMarkers.forEach(item => {
+    const markerName = item.data.name.toLowerCase();
+    if (markerName.includes(query)) {
+      if (!map.hasLayer(item.markerObj)) {
+        layers[item.data.type].addLayer(item.markerObj);
+      }
+    } else {
+      layers[item.data.type].removeLayer(item.markerObj);
+    }
+  });
 });
