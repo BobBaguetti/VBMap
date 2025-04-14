@@ -48,11 +48,45 @@
   <!-- Map Container -->
   <div id="map"></div>
   
+  <!-- Include the Main JS and Firebase scripts -->
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <!-- Firebase Firestore -->
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+  <!-- Custom Edit Modal for Marker Editing (Admin Mode) -->
+  <div id="edit-modal" style="display:none; position:absolute; background:#fff; padding:20px; border:1px solid #ccc; z-index:2100;">
+    <h3>Edit Marker</h3>
+    <form id="edit-form">
+      <label>
+        Name:<br/>
+        <input type="text" id="edit-name" required />
+      </label>
+      <br/><br/>
+      <label>
+        Type:<br/>
+        <select id="edit-type">
+          <option value="teleports">Teleports</option>
+          <option value="extracts">Extraction Points</option>
+          <option value="items">Items</option>
+        </select>
+      </label>
+      <br/><br/>
+      <label>
+        Description:<br/>
+        <textarea id="edit-description" rows="3"></textarea>
+      </label>
+      <br/><br/>
+      <!-- You can add more fields here for additional marker info -->
+      <button type="submit">Save</button>
+      <button type="button" id="edit-cancel">Cancel</button>
+    </form>
+  </div>
 </body>
 </html>

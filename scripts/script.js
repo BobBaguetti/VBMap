@@ -1,56 +1,69 @@
 console.log("Script loaded!");
 
-// Initialize Map (disable default zoom control)
+// ------------------------------
+// Firebase Firestore Initialization
+// ------------------------------
+const firebaseConfig = {
+  apiKey: "AIzaSyDwEdPK3UdPN5MB8YAuM_jb0K1iXfQ-tGQ",
+  authDomain: "vbmap-cc834.firebaseapp.com",
+  projectId: "vbmap-cc834",
+  storageBucket: "vbmap-cc834.firebasestorage.app",
+  messagingSenderId: "244112699360",
+  appId: "1:244112699360:web:95f50adb6e10b438238585",
+  measurementId: "G-7FDNWLRM95"
+};
+// Initialize Firebase (using compat version)
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ------------------------------
+// Map Initialization and Layers
+// ------------------------------
 const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: -2,
   maxZoom: 4,
-  zoomControl: false
+  zoomControl: false  // disable default zoom control
 });
+L.control.zoom({ position: 'topright' }).addTo(map);  // add custom zoom control
 
-// Add custom zoom control on the top right
-L.control.zoom({ position: 'topright' }).addTo(map);
-
-// Set map bounds
 const bounds = [[0, 0], [3000, 3000]];
 const imageUrl = './media/images/tempmap.png';
 L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
 
-// Create layer groups – clustering the "items" layer
+// Layer groups – note that the "items" layer uses marker clustering
 const layers = {
   teleports: L.layerGroup(),
   extracts: L.layerGroup(),
   items: L.markerClusterGroup()
 };
-
-// Add layers to map
 Object.values(layers).forEach(layer => layer.addTo(map));
 
-// Global array for marker search functionality
+// Global array for search functionality and editing reference
 let allMarkers = [];
 
-/* -----------------------------------------------------------
-   Utility Functions: Context Menu
-------------------------------------------------------------*/
-// Create a context menu element (appended to <body>)
+// ------------------------------
+// Utility: Custom Context Menu
+// ------------------------------
 const contextMenu = document.createElement('div');
 contextMenu.id = 'context-menu';
 document.body.appendChild(contextMenu);
-contextMenu.style.position = 'absolute';
-contextMenu.style.background = '#fff';
-contextMenu.style.border = '1px solid #ccc';
-contextMenu.style.padding = '5px';
-contextMenu.style.display = 'none';
-contextMenu.style.zIndex = '2000';
-contextMenu.style.boxShadow = '0px 2px 6px rgba(0,0,0,0.3)';
+Object.assign(contextMenu.style, {
+  position: 'absolute',
+  background: '#fff',
+  border: '1px solid #ccc',
+  padding: '5px',
+  display: 'none',
+  zIndex: '2000',
+  boxShadow: '0px 2px 6px rgba(0,0,0,0.3)'
+});
 
 function showContextMenu(x, y, options) {
-  contextMenu.innerHTML = ''; // Clear previous content
+  contextMenu.innerHTML = ''; // Clear previous contents
   options.forEach(option => {
-    let menuItem = document.createElement('div');
+    const menuItem = document.createElement('div');
     menuItem.innerText = option.text;
-    // Basic menu item styling
     menuItem.style.padding = '5px 10px';
     menuItem.style.cursor = 'pointer';
     menuItem.style.whiteSpace = 'nowrap';
@@ -65,16 +78,68 @@ function showContextMenu(x, y, options) {
   contextMenu.style.display = 'block';
 }
 
-// Hide context menu on any click elsewhere
 document.addEventListener('click', () => {
   contextMenu.style.display = 'none';
 });
 
-/* -----------------------------------------------------------
-   Utility Function: Add Marker
-------------------------------------------------------------*/
+// ------------------------------
+// Utility: Custom Edit Modal
+// ------------------------------
+// Assuming an edit modal exists in the HTML with id "edit-modal".
+const editModal = document.getElementById('edit-modal');
+const editForm = document.getElementById('edit-form');
+const editNameInput = document.getElementById('edit-name');
+const editTypeSelect = document.getElementById('edit-type');
+const editDescription = document.getElementById('edit-description');
+let currentEditMarker = null; // To store marker reference for editing
+
+// Hide modal function
+function hideEditModal() {
+  editModal.style.display = 'none';
+  currentEditMarker = null;
+}
+
+// Handle form submission
+editForm.addEventListener('submit', function(e) {
+  e.preventDefault();
+  if (!currentEditMarker) return;
+  // Update marker data with values from form
+  const updatedData = currentEditMarker.data;
+  updatedData.name = editNameInput.value;
+  updatedData.type = editTypeSelect.value;
+  updatedData.description = editDescription.value;
+  // Update popup content on the marker
+  currentEditMarker.markerObj.setPopupContent(createPopupContent(updatedData));
+  // Save updated marker in Firestore
+  updateMarkerInFirestore(updatedData);
+  hideEditModal();
+});
+
+// Cancel button
+document.getElementById('edit-cancel').addEventListener('click', hideEditModal);
+
+// ------------------------------
+// Firebase: Update Marker Function
+// ------------------------------
+function updateMarkerInFirestore(markerData) {
+  if (markerData.id) {
+    db.collection("markers").doc(markerData.id).set(markerData)
+      .then(() => { console.log("Marker updated successfully"); })
+      .catch(error => { console.error("Error updating marker:", error); });
+  } else {
+    db.collection("markers").add(markerData)
+      .then(docRef => {
+        markerData.id = docRef.id;
+        console.log("Marker added with ID:", docRef.id);
+      })
+      .catch(error => { console.error("Error adding marker:", error); });
+  }
+}
+
+// ------------------------------
+// Utility: Add Marker Function
+// ------------------------------
 function addMarker(markerData) {
-  // Create marker with optional drag disabled initially
   const markerObj = L.marker(
     [markerData.coords[0], markerData.coords[1]],
     { icon: createCustomIcon(markerData), draggable: false }
@@ -84,49 +149,58 @@ function addMarker(markerData) {
     maxWidth: 350
   });
   layers[markerData.type].addLayer(markerObj);
-
-  // Save marker for search functionality
-  allMarkers.push({ markerObj: markerObj, data: markerData });
-
-  // Attach contextmenu event on the marker for editing options
+  allMarkers.push({ markerObj, data: markerData });
+  
+  // Attach custom context menu on right-click for marker editing
   markerObj.on('contextmenu', function(e) {
     e.originalEvent.preventDefault();
-    // Show context menu with options for this marker
     showContextMenu(e.originalEvent.pageX, e.originalEvent.pageY, [
       {
         text: 'Edit Marker',
         action: function() {
-          const newName = prompt("Enter new marker name:", markerData.name);
-          if (newName) {
-            markerData.name = newName;
-            markerObj.setPopupContent(createPopupContent(markerData));
-          }
+          // Open custom edit modal next to the cursor
+          currentEditMarker = { markerObj, data: markerData };
+          editNameInput.value = markerData.name || "";
+          editTypeSelect.value = markerData.type || "items";
+          editDescription.value = markerData.description || "";
+          // Position the modal (for example, near the cursor)
+          editModal.style.left = e.originalEvent.pageX + 10 + "px";
+          editModal.style.top = e.originalEvent.pageY + 10 + "px";
+          editModal.style.display = 'block';
         }
       },
       {
         text: 'Duplicate Marker',
         action: function() {
-          // Create a copy of the marker data and add to map
-          let duplicate = Object.assign({}, markerData);
+          const duplicate = Object.assign({}, markerData);
           duplicate.name = markerData.name + " (copy)";
           addMarker(duplicate);
+          updateMarkerInFirestore(duplicate);
         }
       },
       {
-        text: 'Enable Drag',
+        text: (markerObj.dragging.enabled() ? 'Disable Drag' : 'Enable Drag'),
         action: function() {
-          markerObj.dragging.enable();
-          alert("Marker is now draggable. Drag it to a new location.");
-          // Optionally, you could add a "Disable Drag" option later.
+          if (markerObj.dragging.enabled()) {
+            markerObj.dragging.disable();
+          } else {
+            markerObj.dragging.enable();
+          }
+          // Save new position when dragging stops (optional)
+          markerObj.on('dragend', function() {
+            const latlng = markerObj.getLatLng();
+            markerData.coords = [latlng.lat, latlng.lng];
+            updateMarkerInFirestore(markerData);
+          });
         }
       }
     ]);
   });
 }
 
-/* -----------------------------------------------------------
-   Custom Icon & Popup Creation Functions
-------------------------------------------------------------*/
+// ------------------------------
+// Custom Icon & Popup Creation Functions
+// ------------------------------
 function createCustomIcon(marker) {
   return L.divIcon({
     html: `
@@ -172,76 +246,105 @@ function createPopupContent(marker) {
   `;
 }
 
-/* -----------------------------------------------------------
-   Load Markers from JSON Data
-------------------------------------------------------------*/
-fetch('./data/markerData.json')
-  .then(response => {
-    if (!response.ok) throw new Error('Network response was not ok');
-    return response.json();
-  })
-  .then(data => {
-    if (!Array.isArray(data)) throw new Error('Marker data is not an array');
-    
-    data.forEach(marker => {
-      if (!marker.type || !layers[marker.type]) {
-        console.error(`Invalid marker type: ${marker.type}`);
-        return;
-      }
-      addMarker(marker);
+// ------------------------------
+// Load Markers from Firestore (or fallback to JSON)
+// ------------------------------
+function loadMarkers() {
+  db.collection("markers").get()
+    .then(querySnapshot => {
+      querySnapshot.forEach(doc => {
+        const markerData = doc.data();
+        markerData.id = doc.id;
+        if (!markerData.type || !layers[markerData.type]) {
+          console.error(`Invalid marker type: ${markerData.type}`);
+          return;
+        }
+        addMarker(markerData);
+      });
+    })
+    .catch(error => {
+      console.error("Error loading markers from Firestore:", error);
+      // Fallback to local JSON if needed:
+      fetch('./data/markerData.json')
+        .then(response => {
+          if (!response.ok) throw new Error('Network response was not ok');
+          return response.json();
+        })
+        .then(data => {
+          if (!Array.isArray(data)) throw new Error('Marker data is not an array');
+          data.forEach(marker => {
+            if (!marker.type || !layers[marker.type]) {
+              console.error(`Invalid marker type: ${marker.type}`);
+              return;
+            }
+            addMarker(marker);
+          });
+        })
+        .catch(err => console.error("Error loading markers from JSON:", err));
     });
-  })
-  .catch(error => {
-    console.error("Error loading markers:", error);
-  });
+}
+loadMarkers();
 
-/* -----------------------------------------------------------
-   Right-Click on Map to Create New Marker
-------------------------------------------------------------*/
+// ------------------------------
+// Right-Click on Map to Create New Marker
+// ------------------------------
 map.on('contextmenu', function(e) {
-  // When right-clicking on the map (not on an existing marker),
-  // show a menu to create a new marker.
+  // If right-click on map (not marker), show menu to create a new marker.
   showContextMenu(e.originalEvent.pageX, e.originalEvent.pageY, [
     {
       text: 'Create New Marker',
       action: function() {
-        const markerName = prompt("Enter new marker name:");
-        if (markerName) {
+        // Instead of using prompt(), open the edit modal with empty fields.
+        currentEditMarker = null;  // New marker mode.
+        // Pre-fill with default values:
+        editNameInput.value = "";
+        editTypeSelect.value = "items";
+        editDescription.value = "";
+        // Position the modal near the click:
+        editModal.style.left = e.originalEvent.pageX + 10 + "px";
+        editModal.style.top = e.originalEvent.pageY + 10 + "px";
+        editModal.style.display = 'block';
+        // When the form is submitted, create a new marker at the clicked position.
+        editForm.onsubmit = function(ev) {
+          ev.preventDefault();
           const newMarker = {
-            type: 'items', // Default type; adjust as needed
-            name: markerName,
+            type: editTypeSelect.value,
+            name: editNameInput.value || "New Marker",
             coords: [e.latlng.lat, e.latlng.lng],
-            image: '',  // Optionally prompt or leave blank
-            location: '',
+            image: "",
+            description: editDescription.value,
+            location: "",
             notes: []
           };
           addMarker(newMarker);
-        }
+          updateMarkerInFirestore(newMarker);
+          hideEditModal();
+          // Reset the form submission handler back to default.
+          editForm.onsubmit = null;
+        };
       }
     }
   ]);
 });
 
-/* -----------------------------------------------------------
-   Sidebar Toggle (Slide Off-screen) & Map Margin Adjustment
-------------------------------------------------------------*/
+// ------------------------------
+// Sidebar Toggle (Slide Off-Screen) & Map Margin Adjustment
+// ------------------------------
 document.getElementById('sidebar-toggle').addEventListener('click', function() {
   const sidebar = document.getElementById('sidebar');
   const mapDiv = document.getElementById('map');
   sidebar.classList.toggle('hidden');
-  
   if (sidebar.classList.contains('hidden')) {
     mapDiv.style.marginLeft = '0';
   } else {
     mapDiv.style.marginLeft = '300px';
   }
-  
   map.invalidateSize();
 });
 
-/* -----------------------------------------------------------
-   Basic Search Functionality (Filter Markers by Name)
-------------------------------------------------------------*/
+// ------------------------------
+// Basic Search Functionality (Filter Markers by Name)
+// ------------------------------
 document.getElementById('search-bar').addEventListener('input', function() {
   const query = this.value.toLowerCase();
   allMarkers.forEach(item => {
