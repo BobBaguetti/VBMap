@@ -1,234 +1,118 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Map Editor</title>
+  <title>VBMap Editor</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
   <style>
-    body { margin: 0; font-family: Arial; }
-    #map { height: 100vh; width: 75%; float: left; }
-    #editor-panel { 
-      width: 25%; float: right; height: 100vh; 
-      overflow-y: auto; padding: 15px; background: #f5f5f5;
+    body { 
+      margin: 0;
+      font-family: 'Arial', sans-serif;
+      overflow: hidden;
     }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input, select, textarea { 
-      width: 100%; padding: 8px; border: 1px solid #ddd; 
-      border-radius: 4px; 
+    #map-container {
+      display: flex;
+      height: 100vh;
+    }
+    #map {
+      flex: 3;
+      height: 100%;
+    }
+    #editor-panel {
+      flex: 1;
+      padding: 15px;
+      background: #f8f9fa;
+      overflow-y: auto;
+      border-left: 1px solid #ddd;
+    }
+    .form-group {
+      margin-bottom: 15px;
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+    select, input, textarea {
+      width: 100%;
+      padding: 8px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      box-sizing: border-box;
     }
     button {
-      background: #4CAF50; color: white; border: none;
-      padding: 10px 15px; cursor: pointer; border-radius: 4px;
+      background: #4CAF50;
+      color: white;
+      border: none;
+      padding: 10px 15px;
+      margin-right: 5px;
+      border-radius: 4px;
+      cursor: pointer;
     }
-    #marker-form { display: none; }
-    .marker-item { 
-      padding: 10px; border-bottom: 1px solid #eee; 
-      cursor: pointer; 
+    button.secondary {
+      background: #6c757d;
     }
-    .marker-item:hover { background: #eee; }
+    #marker-form {
+      display: none;
+      background: white;
+      padding: 15px;
+      border-radius: 5px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    .marker-item {
+      padding: 10px;
+      border-bottom: 1px solid #eee;
+      cursor: pointer;
+    }
+    .marker-item:hover {
+      background: #f0f0f0;
+    }
+    .temp-marker {
+      background: red;
+      border-radius: 50%;
+      width: 15px !important;
+      height: 15px !important;
+    }
   </style>
 </head>
 <body>
-  <div id="map"></div>
-  <div id="editor-panel">
-    <h2>Map Editor</h2>
-    <div id="marker-form">
-      <div class="form-group">
-        <label>Marker Type</label>
-        <select id="marker-type" class="js-select2">
-          <option value="items">Item</option>
-          <option value="teleports">Teleport</option>
-          <option value="extracts">Extraction</option>
-        </select>
+  <div id="map-container">
+    <div id="map"></div>
+    <div id="editor-panel">
+      <h2>Marker Editor</h2>
+      
+      <!-- Right-Click Form -->
+      <div id="marker-form">
+        <div class="form-group">
+          <label>Marker Type</label>
+          <select id="marker-type" class="js-select">
+            <option value="item">Item</option>
+            <option value="teleport">Teleport</option>
+            <option value="extraction">Extraction</option>
+          </select>
+        </div>
+        
+        <div id="dynamic-fields">
+          <!-- Fields will be injected here based on type -->
+        </div>
+        
+        <button id="save-marker">Save Marker</button>
+        <button id="cancel-marker" class="secondary">Cancel</button>
       </div>
       
-      <div class="form-group">
-        <label>Subtype</label>
-        <select id="marker-subtype" class="js-select2">
-          <option value="Key Item">Key Item</option>
-          <option value="Crafting Material">Crafting Material</option>
-          <option value="Consumable">Consumable</option>
-        </select>
+      <!-- Marker List -->
+      <div id="marker-list">
+        <h3>Existing Markers</h3>
+        <input type="text" id="search-markers" placeholder="Search markers..." style="width: 100%; padding: 8px; margin-bottom: 10px;">
+        <div id="marker-items"></div>
       </div>
-      
-      <div class="form-group">
-        <label>Name</label>
-        <input type="text" id="marker-name" placeholder="Iron Ore">
-      </div>
-      
-      <div class="form-group">
-        <label>Rarity</label>
-        <select id="marker-rarity" class="js-select2">
-          <option value="common">Common</option>
-          <option value="uncommon">Uncommon</option>
-          <option value="rare">Rare</option>
-          <option value="epic">Epic</option>
-        </select>
-      </div>
-      
-      <div class="form-group">
-        <label>Location Description</label>
-        <textarea id="marker-location" rows="3"></textarea>
-      </div>
-      
-      <button id="save-marker">Save Marker</button>
-      <button id="cancel-marker" style="background: #ccc;">Cancel</button>
-    </div>
-    
-    <div id="marker-list">
-      <h3>Existing Markers</h3>
-      <!-- Filled dynamically -->
     </div>
   </div>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
-  <script>
-    const map = L.map('map').setView([1500, 1500], 2);
-    L.imageOverlay('./images/tempmap.png', [[0,0],[3000,3000]]).addTo(map);
-    
-    let markers = [];
-    let tempMarker = null;
-    let editingMarker = null;
-
-    // Initialize select2 dropdowns
-    $(document).ready(() => {
-      $('.js-select2').select2();
-      loadMarkers();
-    });
-
-    // Right-click to add marker
-    map.on('contextmenu', e => {
-      if (tempMarker) map.removeLayer(tempMarker);
-      
-      tempMarker = L.marker(e.latlng, {
-        draggable: true,
-        icon: L.divIcon({className: 'temp-marker'})
-      }).addTo(map);
-      
-      showMarkerForm();
-      editingMarker = null;
-    });
-
-    // Show form when existing marker is clicked
-    map.on('click', e => {
-      if (e.originalEvent.target.classList.contains('marker-icon')) {
-        const markerId = e.originalEvent.target.getAttribute('data-marker-id');
-        editingMarker = markers.find(m => m.id === markerId);
-        if (editingMarker) {
-          populateForm(editingMarker);
-          showMarkerForm();
-        }
-      }
-    });
-
-    function showMarkerForm() {
-      document.getElementById('marker-form').style.display = 'block';
-      document.getElementById('marker-list').style.display = 'none';
-    }
-
-    function hideMarkerForm() {
-      document.getElementById('marker-form').style.display = 'none';
-      document.getElementById('marker-list').style.display = 'block';
-      if (tempMarker) {
-        map.removeLayer(tempMarker);
-        tempMarker = null;
-      }
-    }
-
-    function populateForm(marker) {
-      document.getElementById('marker-type').value = marker.type;
-      document.getElementById('marker-subtype').value = marker.subtype;
-      document.getElementById('marker-name').value = marker.name;
-      document.getElementById('marker-rarity').value = marker.rarity;
-      document.getElementById('marker-location').value = marker.location;
-    }
-
-    document.getElementById('save-marker').addEventListener('click', () => {
-      const markerData = {
-        id: editingMarker?.id || Date.now().toString(),
-        coords: tempMarker ? [tempMarker.getLatLng().lat, tempMarker.getLatLng().lng] : editingMarker.coords,
-        type: document.getElementById('marker-type').value,
-        subtype: document.getElementById('marker-subtype').value,
-        name: document.getElementById('marker-name').value,
-        rarity: document.getElementById('marker-rarity').value,
-        location: document.getElementById('marker-location').value,
-        image: `images/${document.getElementById('marker-type').value}.png`
-      };
-
-      if (editingMarker) {
-        Object.assign(editingMarker, markerData);
-      } else {
-        markers.push(markerData);
-      }
-
-      saveMarkers();
-      hideMarkerForm();
-    });
-
-    document.getElementById('cancel-marker').addEventListener('click', hideMarkerForm);
-
-    function loadMarkers() {
-      fetch('/data/markerData.json')
-        .then(r => r.json())
-        .then(data => {
-          markers = data;
-          renderMarkers();
-          renderMarkerList();
-        });
-    }
-
-    function saveMarkers() {
-      fetch('/api/save-markers', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(markers)
-      }).then(() => {
-        renderMarkers();
-        renderMarkerList();
-      });
-    }
-
-    function renderMarkers() {
-      // Clear existing markers
-      map.eachLayer(layer => {
-        if (layer instanceof L.Marker && layer !== tempMarker) {
-          map.removeLayer(layer);
-        }
-      });
-
-      // Add all markers
-      markers.forEach(marker => {
-        L.marker([marker.coords[0], marker.coords[1]], {
-          icon: L.divIcon({
-            html: `<div class="custom-marker" data-marker-id="${marker.id}">${marker.name}</div>`,
-            className: 'marker-icon'
-          })
-        })
-        .addTo(map)
-        .bindPopup(`<b>${marker.name}</b><br>${marker.type}`);
-      });
-    }
-
-    function renderMarkerList() {
-      const list = document.getElementById('marker-list');
-      list.innerHTML = '<h3>Existing Markers</h3>';
-      
-      markers.forEach(marker => {
-        const item = document.createElement('div');
-        item.className = 'marker-item';
-        item.innerHTML = `
-          <strong>${marker.name}</strong> (${marker.type})
-          <div style="font-size:12px">${marker.location.substring(0,50)}...</div>
-        `;
-        item.addEventListener('click', () => {
-          map.setView([marker.coords[0], marker.coords[1]], 4);
-        });
-        list.appendChild(item);
-      });
-    }
-  </script>
+  <script src="/admin/admin.js"></script>
 </body>
 </html>
