@@ -133,7 +133,7 @@ fetch('./data/markerData.json')
 
 // Layer toggles for showing or hiding layers
 document.querySelectorAll('.toggle-group input').forEach(toggle => {
-  toggle.addEventListener('change', (e) => {
+  toggle.addEventListener('change', (e) => { 
     const layer = e.target.dataset.layer;
     if (layers[layer]) {
       e.target.checked ? 

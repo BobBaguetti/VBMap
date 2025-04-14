@@ -9,7 +9,7 @@ body, html {
   overflow: hidden;
 }
 
-/* Map Container */
+/* Map Container */ 
 #map {
   height: 100vh;
   margin-left: 300px;

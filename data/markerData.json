@@ -37,7 +37,7 @@
     "image": "media/images/iron_ore.png",
     "rarity": "common",
     "location": "Found in <a href='#' class='location-link'>Wolfswood</a>, primarily around rocky outcrops",
-    "notes": [
+    "notes": [ 
       "Required to start X",
       "Consumed on use"
     ],
