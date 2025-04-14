@@ -3,7 +3,7 @@
     "type": "teleports",
     "name": "Teleport 1",
     "coords": [1000, 1200],
-    "image": "images/teleport.png",
+    "image": "media/images/teleport.png",
     "description": "Links to Teleport 3",
     "usage": "Instant travel to paired teleport"
   },
@@ -11,7 +11,7 @@
     "type": "extracts",
     "name": "North Extraction",
     "coords": [800, 500],
-    "image": "images/extract.png",
+    "image": "media/images/extract.png",
     "description": "Random extraction point",
     "usage": "15-second wait time"
   },
@@ -20,7 +20,7 @@
     "subtype": "Key Item",
     "name": "Vault Key",
     "coords": [1100, 1000],
-    "image": "images/key.png",
+    "image": "media/images/key.png",
     "rarity": "epic",
     "location": "Found in Ancient Ruins",
     "notes": [
@@ -34,7 +34,7 @@
     "subtype": "Crafting Material",
     "name": "Iron Ore",
     "coords": [1500, 1500],
-    "image": "images/iron_ore.png",
+    "image": "media/images/iron_ore.png",
     "rarity": "common",
     "location": "Found in <a href='#' class='location-link'>Wolfswood</a>, primarily around rocky outcrops",
     "notes": [

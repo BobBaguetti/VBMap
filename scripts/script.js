@@ -9,23 +9,23 @@ const map = L.map('map', {
 
 // Set map bounds
 const bounds = [[0, 0], [3000, 3000]];
-const imageUrl = './images/tempmap.png';
+// Update the image path to point to the media folder
+const imageUrl = './media/images/tempmap.png';
 
 L.imageOverlay(imageUrl, bounds).addTo(map);
 map.fitBounds(bounds);
 
-// Instead of plain layer groups, create marker cluster groups for types that may have many markers.
-// For example, let's add clustering for "items" layer.
+// Create layer groups – using marker clustering for the "items" layer
 const layers = {
-  teleports: L.layerGroup(), // if you prefer clustering for these too, use L.markerClusterGroup()
+  teleports: L.layerGroup(),
   extracts: L.layerGroup(),
-  items: L.markerClusterGroup() // using clustering for items
+  items: L.markerClusterGroup()
 };
 
 // Add layers to map
 Object.values(layers).forEach(layer => layer.addTo(map));
 
-// Custom icon creation function remains the same.
+// Custom icon creation function
 function createCustomIcon(marker) {
   return L.divIcon({
     html: `
@@ -66,6 +66,9 @@ function createPopupContent(marker) {
             ${marker.notes.map(note => `<p>${note}</p>`).join('')}
           </div>
         ` : ''}
+        ${marker.description ? `<p>${marker.description}</p>` : ''}
+        ${marker.usage ? `<p><em>${marker.usage}</em></p>` : ''}
+        <button class="more-info-btn">More Info</button>
       </div>
     </div>
   `;
@@ -95,9 +98,9 @@ fetch('./data/markerData.json')
         maxWidth: 350
       });
 
-      // Instead of adding directly to the layer (for clustered items, this ensures they are clustered)
       layers[marker.type].addLayer(markerObj);
 
+      // Add event listener on popup open
       markerObj.on('popupopen', () => {
         if (marker.crafting) {
           document.querySelector('.crafting-button')?.addEventListener('click', () => {
@@ -117,6 +120,10 @@ fetch('./data/markerData.json')
             console.log("Location clicked:", e.target.textContent);
           });
         });
+
+        document.querySelector('.more-info-btn')?.addEventListener('click', () => {
+          alert(`More details about ${marker.name}:\n\n${marker.description || 'No additional info.'}`);
+        });
       });
     });
   })
@@ -132,13 +139,11 @@ document.querySelectorAll('.toggle-group input').forEach(toggle => {
       e.target.checked ? 
         map.addLayer(layers[layer]) : 
         map.removeLayer(layers[layer]);
-
-
     }
   });
 });
 
-// Add this at the end of script.js, after your other event listeners:
+// Sidebar Toggle
 document.getElementById('sidebar-toggle').addEventListener('click', function() {
   const sidebar = document.getElementById('sidebar');
   sidebar.style.display = (sidebar.style.display === 'none' ? 'block' : 'none');
