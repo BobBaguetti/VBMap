@@ -26,7 +26,7 @@ body, html {
 #sidebar {
   width: 300px;
   height: 100vh;
-  position: absolute;  /* Changed from float to absolute */
+  position: absolute;  /* Allows sliding off-screen */
   top: 0;
   left: 0;
   background-color: #222;
@@ -37,7 +37,7 @@ body, html {
   transition: transform 0.5s ease;
 }
 
-/* When sidebar is hidden, slide it fully off-screen */
+/* When sidebar is hidden, slide it off-screen */
 #sidebar.hidden {
   transform: translateX(-100%);
 }
@@ -187,7 +187,6 @@ body, html {
   font-weight: bold;
   transition: color 0.2s;
 }
-
 .location-link:hover {
   color: #4d9de0 !important;
 }

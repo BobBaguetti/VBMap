@@ -48,7 +48,7 @@ Object.values(layers).forEach(layer => layer.addTo(map));
 let allMarkers = [];
 
 // ------------------------------
-// Utility: Custom Context Menu (for admin mode only)
+// Utility: Custom Context Menu (only for admin mode)
 const contextMenu = document.createElement("div");
 contextMenu.id = "context-menu";
 document.body.appendChild(contextMenu);
@@ -190,7 +190,7 @@ function createPopupContent(marker) {
 }
 
 // ------------------------------
-// Add Marker Utility Function
+// Utility: Add Marker
 function addMarker(markerData) {
   const markerObj = L.marker(
     [markerData.coords[0], markerData.coords[1]],
@@ -211,7 +211,7 @@ function addMarker(markerData) {
         {
           text: "Edit Marker",
           action: function () {
-            // Populate the edit modal with current marker data and show it
+            // Populate edit modal with marker data and display it
             currentEditMarker = { markerObj, data: markerData };
             editNameInput.value = markerData.name || "";
             editTypeSelect.value = markerData.type || "items";
@@ -252,7 +252,7 @@ function addMarker(markerData) {
 }
 
 // ------------------------------
-// Load Markers (from Firestore with JSON fallback)
+// Load Markers from Firestore with JSON fallback
 function loadMarkers() {
   db.collection("markers")
     .get()
@@ -269,7 +269,7 @@ function loadMarkers() {
     })
     .catch(error => {
       console.error("Error loading markers from Firestore:", error);
-      // Fallback: load from local JSON file
+      // Fallback: load markers from local JSON file
       fetch("./data/markerData.json")
         .then(response => {
           if (!response.ok) throw new Error("Network response was not ok");
@@ -298,7 +298,7 @@ if (isAdmin) {
       {
         text: "Create New Marker",
         action: function () {
-          // Open edit modal in "new marker" mode with empty fields
+          // Open edit modal for a new marker (with empty fields)
           currentEditMarker = null;
           editNameInput.value = "";
           editTypeSelect.value = "items";
@@ -322,7 +322,7 @@ if (isAdmin) {
             addMarker(newMarker);
             updateMarkerInFirestore(newMarker);
             hideEditModal();
-            // Reset onsubmit after creation
+            // Reset onsubmit handler
             editForm.onsubmit = null;
           };
         }
