@@ -1,178 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Game Map</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <style>
-        #map {
-            height: 600px;
-            width: 100%;
-        }
-        .popup-content {
-            padding: 8px;
-            background: white;
-            border-radius: 4px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vaultbreakers Interactive Map</title>
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <!-- MarkerCluster CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <!-- Custom CSS -->
+  <link rel="stylesheet" href="styles/style.css">
+  <!-- Font Awesome for icons (optional) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <div id="map"></div>
+  <!-- Add the sidebar toggle button here -->
+  <button id="sidebar-toggle" style="position:absolute; top:10px; left:10px; z-index:1100;">☰</button>
+  <!-- Sidebar -->
+  <div id="sidebar">
+    <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
+    
+    <!-- Map Layers Toggle -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-layer-group"></i> Layers</h2>
+      <div class="toggle-group">
+        <label><input type="checkbox" checked data-layer="teleports"> Teleports</label>
+        <label><input type="checkbox" checked data-layer="extracts"> Extraction Points</label>
+        <label><input type="checkbox" checked data-layer="items"> Items</label>
+      </div>
+    </div>
 
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
-    <script>
-        // Initialize map
-        let map;
-        const markersData = {
-            teleports: [],
-            items: [],
-            extractionPoints: []
-        };
+    <!-- Settings -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-cog"></i> Settings</h2>
+      <label><input type="checkbox" id="hover-toggle"> Enable hover popups</label>
+    </div>
 
-        // Example data - replace with your actual data
-        const areas = {
-            area1: {
-                name: "Area 1",
-                position: [51.505, -0.09],
-                description: "This is Area 1."
-            },
-            area2: {
-                name: "Area 2", 
-                position: [51.51, -0.1], 
-                description: "This is Area 2."
-            }
-        };
+    <!-- Search -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-search"></i> Search</h2>
+      <input type="text" id="search-bar" placeholder="Search items/locations...">
+    </div>
+  </div>
 
-        const items = {
-            item1: {
-                id: "item1",
-                name: "Item 1",
-                type: "Magic",
-                rarity: "Common",
-                description: "A powerful magical item.",
-                imageUrl: "path/to/item1.png"
-            },
-            item2: {
-                id: "item2",
-                name: "Item 2",
-                type: "Rare",
-                rarity: "Epic",
-                description: "A rare treasure.",
-                imageUrl: "path/to/item2.png"
-            }
-        };
+  <!-- Map Container --> 
+  <div id="map"></div>
 
-        const craftingRecipes = {
-            // Replace with actual recipe data
-            item1: "Requires: Wood + Stone",
-            item2: "Requires: Water + Fire"
-        };
-
-        const questRequirements = {
-            // Replace with actual quest data
-            item1: "Complete Quest 1",
-            item2: "Complete Quest 2"
-        };
-
-        function initMap() {
-            map = L.map('map').setView([51.505, -0.09], 13);
-            
-            // Add OpenStreetMap tiles
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-            }).addTo(map);
-        }
-
-        function createTeleportMarker(teleport) {
-            return L.marker(teleport.position).addTo(map)
-                .bindPopup(`${teleport.name}<br>${teleport.description}`);
-        }
-
-        function createItemMarker(item) {
-            return L.marker(item.location, {
-                icon: L.icon({
-                    iconUrl: item.imageUrl,
-                    iconSize: [32, 32],
-                    iconAnchor: [16, 32]
-                })
-            }).addTo(map)
-                .bindPopup(`${item.name}<br>Type: ${item.type}<br>Rarity: ${item.rarity}`);
-        }
-
-        function createExtractionPointMarker(point) {
-            return L.marker(point.coords, {
-                color: 'red'
-            }).addTo(map)
-                .bindPopup(`Extraction Point: ${point.name}`);
-        }
-
-        function initialize() {
-            // Initialize map
-            initMap();
-
-            // Add all markers
-            markersData.teleports.forEach(createTeleportMarker);
-            markersData.items.forEach(createItemMarker);
-            markersData.extractionPoints.forEach(createExtractionPointMarker);
-
-            // Example: Add areas as circles
-            Object.values(areas).forEach(area => {
-                L.geoJSON({
-                    type: 'Feature',
-                    geometry: {
-                        type: 'Circle',
-                        coordinates: area.position,
-                        properties: { radius: 1000 }
-                    },
-                    properties: {
-                        name: area.name,
-                        description: area.description
-                    }
-                }).addTo(map).bindPopup(`${area.name}<br>${area.description}`);
-            });
-
-            // Example: Add item icons (replace with your actual item data)
-            Object.values(items).forEach(item => {
-                createItemMarker(item);
-            });
-        }
-
-        // Replace this with your actual data initialization
-        function initializeData() {
-            // Example teleport points
-            markersData.teleports.push({
-                name: "Teleport 1",
-                position: [51.505, -0.09],
-                description: "Fast travel to Area 1."
-            });
-
-            markersData.teleports.push({
-                name: "Teleport 2", 
-                position: [51.51, -0.1], 
-                description: "Fast travel to Area 2."
-            });
-
-            // Example extraction points
-            markersData.extractionPoints.push({
-                name: "Extraction Point 1",
-                coords: [51.507, -0.095]
-            });
-        }
-
-        // Replace this with your actual data loading logic
-        function loadData() {
-            // This is where you would typically fetch data from an API or a file
-            console.log("Loading data...");
-            initializeData();
-        }
-
-        // Start the application
-        window.onload = () => {
-            loadData();
-            initialize();
-        };
-    </script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- MarkerCluster JS -->
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <!-- Main JS -->
+  <script src="./scripts/script.js"></script>
 </body>
 </html>
