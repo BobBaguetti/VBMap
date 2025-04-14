@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const basicAuth = require('express-basic-auth');
 
-const app = express();
+const app = express(); 
 const PORT = 3000;
 
 // Admin credentials (store these securely in production!)
@@ -35,3 +35,11 @@ app.get('*', (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// Serve static files from correct locations
+app.use(express.static('public')); // Public assets
+app.use('/admin', express.static('admin')); // Admin assets
+
+// Route handling
+app.get('/', (req, res) => res.sendFile(__dirname + '/public/index.html'));
+app.get('/admin', (req, res) => res.sendFile(__dirname + '/admin/index.html'));
