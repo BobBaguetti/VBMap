@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3000;
 // Configuration
 const DATA_FILE = path.join(__dirname, 'data/markerData.json'); // Using your existing filename
 const ADMIN_CREDENTIALS = { 
-  admin: process.env.ADMIN_PASSWORD || 'your_secure_password' 
+  admin: process.env.ADMIN_PASSWORD || '1' 
 };
 
 // Middleware
