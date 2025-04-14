@@ -1,11 +1,15 @@
 console.log("Script loaded!");
 
-// Initialize Map
+// Initialize Map (disable default zoom control)
 const map = L.map('map', {
   crs: L.CRS.Simple,
   minZoom: -2,
-  maxZoom: 4
+  maxZoom: 4,
+  zoomControl: false
 });
+
+// Add custom zoom control on the top right
+L.control.zoom({ position: 'topright' }).addTo(map);
 
 // Set map bounds
 const bounds = [[0, 0], [3000, 3000]];
@@ -131,7 +135,7 @@ fetch('./data/markerData.json')
     console.error("Error loading markers:", error);
   });
 
-// Sidebar toggle using class toggle to collapse entirely
+// Sidebar toggle: remove animation so it simply disappears, preventing text from reflowing vertically
 document.getElementById('sidebar-toggle').addEventListener('click', function() {
   const sidebar = document.getElementById('sidebar');
   sidebar.classList.toggle('hidden');

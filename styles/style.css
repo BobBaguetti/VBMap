@@ -29,10 +29,12 @@ body, html {
   padding: 15px;
   box-sizing: border-box;
   float: left;
-  overflow-y: auto;
+  overflow: auto;
   position: relative;
   z-index: 1000;
-  transition: width 0.5s ease, padding 0.5s ease;
+  /* Removed transition so collapse is instant;
+     If you'd prefer an animated collapse that doesn't reflow text,
+     you could add: white-space: nowrap; and text-overflow: clip; */
 }
 
 /* Collapsed sidebar: fully hidden */
@@ -40,6 +42,8 @@ body, html {
   width: 0 !important;
   padding: 0 !important;
   overflow: hidden;
+  white-space: nowrap;
+  text-overflow: clip;
 }
 
 /* Popup Styling */
