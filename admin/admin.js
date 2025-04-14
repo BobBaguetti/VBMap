@@ -1,11 +1,21 @@
-// Initialize Map
-const map = L.map('map').setView([0, 0], 2);
-L.tileLayer('./images/map.png').addTo(map);
+// Initialize Map with your map.png
+const map = L.map('map-admin').setView([1500, 1500], 2);
+L.imageOverlay('../docs/media/images/map.png', [[0, 0], [3000, 3000]]).addTo(map);
 
 // State Management
 let markers = [];
 let tempMarker = null;
-let currentMarker = null;
+
+// Load Markers
+function loadMarkers() {
+  fetch('../docs/data/markerData.json')
+    .then(response => response.json())
+    .then(data => {
+      markers = data;
+      renderMarkerList();
+    })
+    .catch(error => console.error('Error loading markers:', error));
+}
 
 // Right-Click Handler
 map.on('contextmenu', (e) => {
@@ -49,7 +59,14 @@ function updateDynamicFields(type) {
     item: `
       <div class="form-group">
         <label>Item Name</label>
-        <input type="text" id="marker-name" placeholder="e.g. Rusted Key">
+        <input type="text" id="marker-name" placeholder="e.g. Iron Ore">
+      </div>
+      <div class="form-group">
+        <label>Image</label>
+        <select id="marker-image" class="js-select">
+          <option value="iron_ore.png">Iron Ore</option>
+          <!-- Add more item images as options -->
+        </select>
       </div>
       <div class="form-group">
         <label>Rarity</label>
@@ -58,10 +75,6 @@ function updateDynamicFields(type) {
           <option value="uncommon">Uncommon</option>
           <option value="rare">Rare</option>
         </select>
-      </div>
-      <div class="form-group">
-        <label>Description</label>
-        <textarea id="marker-desc" rows="3"></textarea>
       </div>
     `,
     teleport: `
@@ -87,7 +100,7 @@ function updateDynamicFields(type) {
   };
   
   document.getElementById('dynamic-fields').innerHTML = fields[type] || '';
-  $('.js-select').select2(); // Reinitialize Select2
+  $('.js-select').select2();
 }
 
 // Save Marker
@@ -97,53 +110,27 @@ document.getElementById('save-marker').addEventListener('click', () => {
     type: document.getElementById('marker-type').value,
     name: document.getElementById('marker-name').value,
     coords: [tempMarker.getLatLng().lat, tempMarker.getLatLng().lng],
-    // Additional fields based on type:
-    ...(document.getElementById('marker-rarity') && { 
-      rarity: document.getElementById('marker-rarity').value 
-    },
-    ...(document.getElementById('marker-desc') && { 
-      description: document.getElementById('marker-desc').value 
-    }
+    image: document.getElementById('marker-image')?.value || '',
+    rarity: document.getElementById('marker-rarity')?.value || '',
+    timestamp: new Date().toISOString()
   };
   
   markers.push(markerData);
-  saveToDatabase(markerData);
+  saveMarkers();
   renderMarkerList();
   hideMarkerForm();
 });
 
-// Cancel Button
-document.getElementById('cancel-marker').addEventListener('click', hideMarkerForm);
-
-// Type Change Listener
-document.getElementById('marker-type').addEventListener('change', (e) => {
-  updateDynamicFields(e.target.value);
-});
-
-// Initialize
-$(document).ready(() => {
-  $('.js-select').select2();
-  loadMarkers();
-});
-
-// Database Functions
-function loadMarkers() {
-  fetch('/data/markers.json')
-    .then(response => response.json())
-    .then(data => {
-      markers = data;
-      renderMarkerList();
-    });
-}
-
-function saveToDatabase(marker) {
-  fetch('/api/save-markers', {
+// Save to JSON
+function saveMarkers() {
+  fetch('http://localhost:3000/api/save-markers', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(marker)
-  });
+    body: JSON.stringify(markers)
+  }).then(() => console.log('Markers saved'));
 }
 
+// Render Marker List
 function renderMarkerList() {
   const container = document.getElementById('marker-items');
   container.innerHTML = '';
@@ -156,8 +143,22 @@ function renderMarkerList() {
       <div>${marker.type} (${marker.coords[0].toFixed(2)}, ${marker.coords[1].toFixed(2)})</div>
     `;
     item.addEventListener('click', () => {
-      map.flyTo(marker.coords, 15);
+      map.flyTo([marker.coords[0], marker.coords[1]], 15);
     });
     container.appendChild(item);
   });
 }
+
+// Initialize
+$(document).ready(() => {
+  $('.js-select').select2();
+  loadMarkers();
+  
+  // Type change listener
+  document.getElementById('marker-type').addEventListener('change', (e) => {
+    updateDynamicFields(e.target.value);
+  });
+  
+  // Cancel button
+  document.getElementById('cancel-marker').addEventListener('click', hideMarkerForm);
+});

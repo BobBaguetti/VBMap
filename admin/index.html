@@ -4,17 +4,13 @@
   <title>VBMap Editor</title>
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/css/select2.min.css" rel="stylesheet" />
+  <link href="../docs/css/style.css" rel="stylesheet" />
   <style>
-    body { 
-      margin: 0;
-      font-family: 'Arial', sans-serif;
-      overflow: hidden;
-    }
     #map-container {
       display: flex;
       height: 100vh;
     }
-    #map {
+    #map-admin {
       flex: 3;
       height: 100%;
     }
@@ -78,11 +74,10 @@
 </head>
 <body>
   <div id="map-container">
-    <div id="map"></div>
+    <div id="map-admin"></div>
     <div id="editor-panel">
       <h2>Marker Editor</h2>
       
-      <!-- Right-Click Form -->
       <div id="marker-form">
         <div class="form-group">
           <label>Marker Type</label>
@@ -94,14 +89,13 @@
         </div>
         
         <div id="dynamic-fields">
-          <!-- Fields will be injected here based on type -->
+          <!-- Fields injected by JavaScript -->
         </div>
         
         <button id="save-marker">Save Marker</button>
         <button id="cancel-marker" class="secondary">Cancel</button>
       </div>
       
-      <!-- Marker List -->
       <div id="marker-list">
         <h3>Existing Markers</h3>
         <input type="text" id="search-markers" placeholder="Search markers..." style="width: 100%; padding: 8px; margin-bottom: 10px;">
@@ -113,6 +107,6 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0/dist/js/select2.min.js"></script>
-  <script src="/admin/admin.js"></script>
+  <script src="admin.js"></script>
 </body>
 </html>
