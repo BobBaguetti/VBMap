@@ -30,7 +30,103 @@ Object.values(layers).forEach(layer => layer.addTo(map));
 // Global array for marker search functionality
 let allMarkers = [];
 
-// Custom icon creation function
+/* -----------------------------------------------------------
+   Utility Functions: Context Menu
+------------------------------------------------------------*/
+// Create a context menu element (appended to <body>)
+const contextMenu = document.createElement('div');
+contextMenu.id = 'context-menu';
+document.body.appendChild(contextMenu);
+contextMenu.style.position = 'absolute';
+contextMenu.style.background = '#fff';
+contextMenu.style.border = '1px solid #ccc';
+contextMenu.style.padding = '5px';
+contextMenu.style.display = 'none';
+contextMenu.style.zIndex = '2000';
+contextMenu.style.boxShadow = '0px 2px 6px rgba(0,0,0,0.3)';
+
+function showContextMenu(x, y, options) {
+  contextMenu.innerHTML = ''; // Clear previous content
+  options.forEach(option => {
+    let menuItem = document.createElement('div');
+    menuItem.innerText = option.text;
+    // Basic menu item styling
+    menuItem.style.padding = '5px 10px';
+    menuItem.style.cursor = 'pointer';
+    menuItem.style.whiteSpace = 'nowrap';
+    menuItem.addEventListener('click', () => {
+      option.action();
+      contextMenu.style.display = 'none';
+    });
+    contextMenu.appendChild(menuItem);
+  });
+  contextMenu.style.left = x + 'px';
+  contextMenu.style.top = y + 'px';
+  contextMenu.style.display = 'block';
+}
+
+// Hide context menu on any click elsewhere
+document.addEventListener('click', () => {
+  contextMenu.style.display = 'none';
+});
+
+/* -----------------------------------------------------------
+   Utility Function: Add Marker
+------------------------------------------------------------*/
+function addMarker(markerData) {
+  // Create marker with optional drag disabled initially
+  const markerObj = L.marker(
+    [markerData.coords[0], markerData.coords[1]],
+    { icon: createCustomIcon(markerData), draggable: false }
+  );
+  markerObj.bindPopup(createPopupContent(markerData), {
+    className: 'custom-popup-wrapper',
+    maxWidth: 350
+  });
+  layers[markerData.type].addLayer(markerObj);
+
+  // Save marker for search functionality
+  allMarkers.push({ markerObj: markerObj, data: markerData });
+
+  // Attach contextmenu event on the marker for editing options
+  markerObj.on('contextmenu', function(e) {
+    e.originalEvent.preventDefault();
+    // Show context menu with options for this marker
+    showContextMenu(e.originalEvent.pageX, e.originalEvent.pageY, [
+      {
+        text: 'Edit Marker',
+        action: function() {
+          const newName = prompt("Enter new marker name:", markerData.name);
+          if (newName) {
+            markerData.name = newName;
+            markerObj.setPopupContent(createPopupContent(markerData));
+          }
+        }
+      },
+      {
+        text: 'Duplicate Marker',
+        action: function() {
+          // Create a copy of the marker data and add to map
+          let duplicate = Object.assign({}, markerData);
+          duplicate.name = markerData.name + " (copy)";
+          addMarker(duplicate);
+        }
+      },
+      {
+        text: 'Enable Drag',
+        action: function() {
+          markerObj.dragging.enable();
+          alert("Marker is now draggable. Drag it to a new location.");
+          // Optionally, you could add a "Disable Drag" option later.
+        }
+      }
+    ]);
+  });
+}
+
+/* -----------------------------------------------------------
+   Custom Icon & Popup Creation Functions
+------------------------------------------------------------*/
 function createCustomIcon(marker) {
   return L.divIcon({
     html: `
@@ -44,7 +140,6 @@ function createCustomIcon(marker) {
   });
 }
 
-// Enhanced popup creation function
 function createPopupContent(marker) {
   return `
     <div class="custom-popup">
@@ -77,7 +172,9 @@ function createPopupContent(marker) {
   `;
 }
 
-// Load markers from JSON
+/* -----------------------------------------------------------
+   Load Markers from JSON Data
+------------------------------------------------------------*/
 fetch('./data/markerData.json')
   .then(response => {
     if (!response.ok) throw new Error('Network response was not ok');
@@ -91,70 +188,60 @@ fetch('./data/markerData.json')
         console.error(`Invalid marker type: ${marker.type}`);
         return;
       }
-      
-      const markerObj = L.marker(
-        [marker.coords[0], marker.coords[1]],
-        { icon: createCustomIcon(marker) }
-      );
-      markerObj.bindPopup(createPopupContent(marker), {
-        className: 'custom-popup-wrapper',
-        maxWidth: 350
-      });
-      layers[marker.type].addLayer(markerObj);
-      
-      // Save marker for search functionality
-      allMarkers.push({ markerObj, data: marker });
-      
-      markerObj.on('popupopen', () => {
-        if (marker.crafting) {
-          document.querySelector('.crafting-button')?.addEventListener('click', () => {
-            console.log("Crafting recipes for:", marker.name);
-          });
-        }
-        
-        if (marker.quests) {
-          document.querySelector('.quests-button')?.addEventListener('click', () => {
-            console.log("Quest requirements for:", marker.name);
-          });
-        }
-        
-        document.querySelectorAll('.location-link').forEach(link => {
-          link.addEventListener('click', (e) => {
-            e.preventDefault();
-            console.log("Location clicked:", e.target.textContent);
-          });
-        });
-        
-        document.querySelector('.more-info-btn')?.addEventListener('click', () => {
-          alert(`More details about ${marker.name}:\n\n${marker.description || 'No additional info.'}`);
-        });
-      });
+      addMarker(marker);
     });
   })
   .catch(error => {
     console.error("Error loading markers:", error);
   });
 
-// Sidebar toggle: remove animation so it simply disappears, preventing text from reflowing vertically
+/* -----------------------------------------------------------
+   Right-Click on Map to Create New Marker
+------------------------------------------------------------*/
+map.on('contextmenu', function(e) {
+  // When right-clicking on the map (not on an existing marker),
+  // show a menu to create a new marker.
+  showContextMenu(e.originalEvent.pageX, e.originalEvent.pageY, [
+    {
+      text: 'Create New Marker',
+      action: function() {
+        const markerName = prompt("Enter new marker name:");
+        if (markerName) {
+          const newMarker = {
+            type: 'items', // Default type; adjust as needed
+            name: markerName,
+            coords: [e.latlng.lat, e.latlng.lng],
+            image: '',  // Optionally prompt or leave blank
+            location: '',
+            notes: []
+          };
+          addMarker(newMarker);
+        }
+      }
+    }
+  ]);
+});
+
+/* -----------------------------------------------------------
+   Sidebar Toggle (Slide Off-screen) & Map Margin Adjustment
+------------------------------------------------------------*/
 document.getElementById('sidebar-toggle').addEventListener('click', function() {
   const sidebar = document.getElementById('sidebar');
   const mapDiv = document.getElementById('map');
-
-  // Toggle the 'hidden' class to slide the sidebar off-screen
   sidebar.classList.toggle('hidden');
-
-  // Adjust the map's left margin based on sidebar visibility:
+  
   if (sidebar.classList.contains('hidden')) {
     mapDiv.style.marginLeft = '0';
   } else {
     mapDiv.style.marginLeft = '300px';
   }
-
-  // Invalidate map size so Leaflet properly redraws the map
+  
   map.invalidateSize();
 });
 
-// Basic search functionality (filter markers by name)
+/* -----------------------------------------------------------
+   Basic Search Functionality (Filter Markers by Name)
+------------------------------------------------------------*/
 document.getElementById('search-bar').addEventListener('input', function() {
   const query = this.value.toLowerCase();
   allMarkers.forEach(item => {

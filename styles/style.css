@@ -198,3 +198,13 @@ body, html {
 .rarity-rare { color: #3498db; }
 .rarity-epic { color: #9b59b6; }
 .rarity-legendary { color: #f39c12; }
+
+/* Context Menu Styles */
+#context-menu {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  border-radius: 3px;
+}
+#context-menu div:hover {
+  background-color: #eee;
+}
