@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Map Editor</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <style>
+    body { margin: 0; padding: 0; }
+    #map { height: 100vh; width: 70%; float: left; }
+    #editor { width: 30%; float: right; height: 100vh; overflow-y: auto; padding: 20px; }
+    .marker-form { margin-bottom: 20px; }
+  </style>
+</head>
+<body>
+  <div id="map"></div>
+  <div id="editor">
+    <h2>Marker Editor</h2>
+    <div class="marker-form">
+      <select id="marker-type">
+        <option value="items">Item</option>
+        <option value="teleports">Teleport</option>
+        <option value="extracts">Extraction</option>
+      </select>
+      <input type="text" id="marker-name" placeholder="Name">
+      <input type="text" id="marker-subtype" placeholder="Subtype (e.g. Key Item)">
+      <button id="add-marker">Add Marker at Click Position</button>
+      <button id="save-all">Save All Markers</button>
+    </div>
+    <div id="marker-list"></div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script>
+    const map = L.map('map').setView([1500, 1500], 2);
+    L.tileLayer('./images/tempmap.png', { bounds: [[0,0],[3000,3000]] }).addTo(map);
+    
+    let markers = [];
+    let currentMarker = null;
+
+    // Load existing markers
+    fetch('/data/markerData.json')
+      .then(r => r.json())
+      .then(data => {
+        markers = data;
+        renderMarkers();
+      });
+
+    // Add new marker on map click
+    map.on('click', e => {
+      currentMarker = {
+        coords: [e.latlng.lat, e.latlng.lng],
+        type: document.getElementById('marker-type').value,
+        name: document.getElementById('marker-name').value,
+        subtype: document.getElementById('marker-subtype').value
+      };
+      
+      const marker = L.marker(e.latlng).addTo(map)
+        .bindPopup(`<b>${currentMarker.name}</b><br>${currentMarker.type}`);
+      
+      marker.on('popupopen', () => {
+        document.getElementById('marker-name').value = currentMarker.name;
+        document.getElementById('marker-subtype').value = currentMarker.subtype;
+      });
+    });
+
+    // Save all markers
+    document.getElementById('save-all').addEventListener('click', () => {
+      fetch('/api/save-markers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(markers)
+      }).then(() => alert('Markers saved!'));
+    });
+
+    function renderMarkers() {
+      // Clear existing markers
+      map.eachLayer(layer => {
+        if (layer instanceof L.Marker) map.removeLayer(layer);
+      });
+      
+      // Add all markers
+      markers.forEach(m => {
+        L.marker([m.coords[0], m.coords[1]])
+          .addTo(map)
+          .bindPopup(`<b>${m.name}</b><br>${m.type}`);
+      });
+    }
+  </script>
+</body>
+</html>
