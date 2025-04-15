@@ -52,16 +52,12 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Load Leaflet JS -->
+  <!-- Load JS Libraries -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Load MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  <!-- Firebase App (compat) and Firestore -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <!-- Pickr JavaScript (custom color picker) -->
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-  <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
   <!-- Edit Modal -->
@@ -115,14 +111,13 @@
           <div class="color-btn" id="pickr-desc-item"></div>
         </div>
 
-        <!-- Dividing Line Above Extra Info -->
+        <!-- Extra Info -->
         <hr style="border:1px solid #555; margin:10px 0;" />
         <div class="field-row" style="margin-bottom:0;">
           <label>Extra Info:</label>
           <button type="button" id="add-extra-line" style="width:auto; margin-left:10px;">+</button>
         </div>
         <div id="extra-lines"></div>
-        <!-- Dividing Line Between Extra Info and Images -->
         <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
 

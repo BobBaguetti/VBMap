@@ -4,12 +4,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------------
   // Firebase Firestore Initialization
   const firebaseConfig = {
-    apiKey: "YOUR_API_KEY",
-    authDomain: "yourproject.firebaseapp.com",
-    projectId: "yourproject",
-    storageBucket: "yourproject.appspot.com",
-    messagingSenderId: "YOUR_SENDER_ID",
-    appId: "YOUR_APP_ID"
+    apiKey: "AIzaSyDwEdPK3UdPN5MB8YAuM_jb0K1iXfQ-tGQ",
+    authDomain: "vbmap-cc834.firebaseapp.com",
+    projectId: "vbmap-cc834",
+    storageBucket: "vbmap-cc834.firebasestorage.app",
+    messagingSenderId: "244112699360",
+    appId: "1:244112699360:web:95f50adb6e10b438238585",
+    measurementId: "G-7FDNWLRM95"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
@@ -23,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
     zoomControl: false
   });
   L.control.zoom({ position: "topright" }).addTo(map);
-  const bounds = [[0,0],[3000,3000]];
+  const bounds = [[0, 0], [3000, 3000]];
   const imageUrl = "./media/images/tempmap.png";
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
@@ -40,7 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let allMarkers = [];
 
   // ------------------------------
-  // Context Menu
+  // Global variables for duplicate marker sticky behavior
+  let duplicatingMarker = null;
+  let duplicatingData = null;
+
+  // ------------------------------
+  // Context Menu Setup
   const contextMenu = document.createElement("div");
   contextMenu.id = "context-menu";
   document.body.appendChild(contextMenu);
@@ -77,29 +83,27 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Draggable Edit Modal (via handle)
+  // Draggable Edit Modal Setup
   const editModal = document.getElementById("edit-modal");
   const editModalHandle = document.getElementById("edit-modal-handle");
-  let isDragging = false, offsetX, offsetY;
+  let isDragging = false, modalOffsetX = 0, modalOffsetY = 0;
   editModalHandle.addEventListener("mousedown", (e) => {
     isDragging = true;
     const style = window.getComputedStyle(editModal);
-    offsetX = e.clientX - parseInt(style.left, 10);
-    offsetY = e.clientY - parseInt(style.top, 10);
+    modalOffsetX = e.clientX - parseInt(style.left, 10);
+    modalOffsetY = e.clientY - parseInt(style.top, 10);
     e.preventDefault();
   });
   document.addEventListener("mousemove", (e) => {
     if (isDragging) {
-      editModal.style.left = (e.clientX - offsetX) + "px";
-      editModal.style.top = (e.clientY - offsetY) + "px";
+      editModal.style.left = (e.clientX - modalOffsetX) + "px";
+      editModal.style.top = (e.clientY - modalOffsetY) + "px";
     }
   });
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
+  document.addEventListener("mouseup", () => { isDragging = false; });
 
   // ------------------------------
-  // Video Popup
+  // Video Popup Setup
   const videoPopup = document.getElementById("video-popup");
   const videoPlayer = document.getElementById("video-player");
   const videoSource = document.getElementById("video-source");
@@ -117,7 +121,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openVideoPopup = openVideoPopup;
 
   // ------------------------------
-  // Edit Modal Fields and Custom Color Pickers (Pickr)
+  // Edit Modal Fields and Color Pickers
   const editForm = document.getElementById("edit-form");
   const editName = document.getElementById("edit-name");
   const pickrName = Pickr.create({
@@ -131,7 +135,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const editImageBig = document.getElementById("edit-image-big");
   const editVideoURL = document.getElementById("edit-video-url");
 
-  // Item fields
+  // Item-specific fields
   const itemExtraFields = document.getElementById("item-extra-fields");
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = Pickr.create({
@@ -154,11 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
     default: '#ffffff',
     components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
   });
-  const extraLinesContainer = document.getElementById("extra-lines");
-  const addExtraLineBtn = document.getElementById("add-extra-line");
-  let extraLines = [];
-
-  // Non-item fields
+  // Non-item description field
   const nonItemDescription = document.getElementById("edit-description-non-item");
   const pickrDescNonItem = Pickr.create({
     el: '#pickr-desc-nonitem',
@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentEditMarker = null;
 
-  // Rarity defaults
+  // Rarity default colors for quick selection
   const defaultRarityColors = {
     "common": "#CCCCCC",
     "uncommon": "#56DE56",
@@ -183,7 +183,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Show/hide item fields based on type
+  // Show/hide item fields based on type in the edit form
   editType.addEventListener("change", () => {
     if (editType.value === "Item") {
       itemExtraFields.style.display = "block";
@@ -194,14 +194,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Cancel Button
-  document.getElementById("edit-cancel").addEventListener("click", () => {
-    editModal.style.display = "none";
-    currentEditMarker = null;
-    extraLines = [];
-  });
-
-  // Dynamic Extra Info Rows
+  // Extra Info - Dynamic Rows
+  let extraLines = [];
+  const extraLinesContainer = document.getElementById("extra-lines");
+  const addExtraLineBtn = document.getElementById("add-extra-line");
   function renderExtraLines() {
     extraLinesContainer.innerHTML = "";
     extraLines.forEach((lineObj, idx) => {
@@ -214,9 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
       textInput.value = lineObj.text;
       textInput.style.background = "#E5E6E8";
       textInput.style.color = "#000";
-      textInput.addEventListener("input", () => {
-        extraLines[idx].text = textInput.value;
-      });
+      textInput.addEventListener("input", () => { extraLines[idx].text = textInput.value; });
 
       const colorDiv = document.createElement("div");
       colorDiv.className = "color-btn";
@@ -236,20 +230,16 @@ document.addEventListener("DOMContentLoaded", () => {
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
 
-      // Instantiate Pickr for each extra info row
-      const pickr = Pickr.create({
+      const linePickr = Pickr.create({
         el: colorDiv,
         theme: 'nano',
         default: lineObj.color || '#ffffff',
         components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
       });
-      pickr.on('change', (color) => {
-        const hex = color.toHEXA().toString();
-        extraLines[idx].color = hex;
+      linePickr.on('change', (color) => {
+        extraLines[idx].color = color.toHEXA().toString();
       });
-      pickr.on('save', () => {
-        pickr.hide();
-      });
+      linePickr.on('save', () => { linePickr.hide(); });
     });
   }
   addExtraLineBtn.addEventListener("click", () => {
@@ -257,7 +247,34 @@ document.addEventListener("DOMContentLoaded", () => {
     renderExtraLines();
   });
 
-  // Submit Handler
+  // ------------------------------
+  // Duplicate Marker Sticky Behavior
+  // Global listeners to move and drop duplicate marker
+  map.on("mousemove", (ev) => {
+    if (duplicatingMarker) {
+      duplicatingMarker.setLatLng(ev.latlng);
+    }
+  });
+  map.on("click", (ev) => {
+    if (duplicatingMarker) {
+      duplicatingData.coords = [ev.latlng.lat, ev.latlng.lng];
+      updateMarkerInFirestore(duplicatingData);
+      duplicatingMarker.dragging.disable();
+      duplicatingMarker = null;
+      duplicatingData = null;
+    }
+  });
+
+  // ------------------------------
+  // Cancel Button in Edit Modal
+  document.getElementById("edit-cancel").addEventListener("click", () => {
+    editModal.style.display = "none";
+    currentEditMarker = null;
+    extraLines = [];
+  });
+
+  // ------------------------------
+  // Form Submit Handler (Save changes in Edit Modal)
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -268,7 +285,6 @@ document.addEventListener("DOMContentLoaded", () => {
     data.imageSmall = editImageSmall.value;
     data.imageBig = editImageBig.value;
     data.videoURL = editVideoURL.value || "";
-
     if (data.type === "Item") {
       data.rarity = editRarity.value;
       data.rarityColor = pickrRarity.getColor().toHEXA().toString();
@@ -294,7 +310,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Marker Icon and Popup Creation
+  // Helper: Create a Pickr instance
+  function createPickr(el) {
+    return Pickr.create({
+      el: el,
+      theme: 'nano',
+      default: '#ffffff',
+      components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+    });
+  }
+
+  // ------------------------------
+  // Marker Icon & Popup Creation
   function createCustomIcon(m) {
     return L.divIcon({
       html: `
@@ -333,18 +360,18 @@ document.addEventListener("DOMContentLoaded", () => {
         descHTML = `<p style="margin:5px 0;color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
       }
     }
-    const scaledImage = m.imageBig 
+    const nameHTML = `<h3 style="margin:0;font-size:20px;color:${m.nameColor||"#fff"};">${m.name}</h3>`;
+    const scaledImg = m.imageBig 
       ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`
       : "";
-    const nameHTML = `<h3 style="margin:0;font-size:20px;color:${m.nameColor||"#fff"};">${m.name}</h3>`;
     let videoBtn = "";
     if (m.videoURL) {
       videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
     }
     return `
       <div class="custom-popup">
-        <div class="popup-header">
-          ${scaledImage}
+        <div class="popup-header" style="display:flex; gap:15px;">
+          ${scaledImg}
           <div style="margin-left:15px;">
             ${nameHTML}
             ${itemTypeHTML}
@@ -383,10 +410,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ------------------------------
   // Add Marker Function (with Delete option)
   function addMarker(m) {
-    const markerObj = L.marker(
-      [m.coords[0], m.coords[1]],
-      { icon: createCustomIcon(m), draggable: false }
-    );
+    const markerObj = L.marker([m.coords[0], m.coords[1]], {
+      icon: createCustomIcon(m),
+      draggable: false
+    });
     markerObj.bindPopup(createPopupContent(m), {
       className: "custom-popup-wrapper",
       maxWidth: 350
@@ -403,7 +430,7 @@ document.addEventListener("DOMContentLoaded", () => {
             currentEditMarker = { markerObj, data: m };
             editName.value = m.name || "";
             pickrName.setColor(m.nameColor || "#ffffff");
-            editType.value = m.type || "Item";
+            editType.value = m.type || "Door";
             editImageSmall.value = m.imageSmall || "";
             editImageBig.value = m.imageBig || "";
             editVideoURL.value = m.videoURL || "";
@@ -436,22 +463,10 @@ document.addEventListener("DOMContentLoaded", () => {
             dup.name = `${m.name} (copy)`;
             dup.coords = [...m.coords];
             const newMarkerObj = addMarker(dup);
+            // Start sticky duplicate behavior:
             newMarkerObj.dragging.enable();
-            const moveHandler = (ev2) => {
-              const latlng = map.layerPointToLatLng(L.point(ev2.clientX, ev2.clientY));
-              newMarkerObj.setLatLng(latlng);
-            };
-            const dropHandler = () => {
-              const latlng = newMarkerObj.getLatLng();
-              dup.coords = [latlng.lat, latlng.lng];
-              updateMarkerInFirestore(dup);
-              newMarkerObj.dragging.disable();
-              document.removeEventListener("mousemove", moveHandler);
-              document.removeEventListener("click", dropHandler);
-            };
-            document.addEventListener("mousemove", moveHandler);
-            document.addEventListener("click", dropHandler);
-            updateMarkerInFirestore(dup);
+            duplicatingMarker = newMarkerObj;
+            duplicatingData = dup;
           }
         },
         {
@@ -470,92 +485,44 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       ];
-      if (m.id) {
-        options.push({
-          text: "Delete Marker",
-          action: () => {
-            layers[m.type].removeLayer(markerObj);
-            const idx = allMarkers.findIndex(obj => obj.data.id === m.id);
-            if (idx !== -1) {
-              allMarkers.splice(idx, 1);
-            }
+      // ALWAYS include Delete Marker option (regardless of m.id)
+      options.push({
+        text: "Delete Marker",
+        action: () => {
+          layers[m.type].removeLayer(markerObj);
+          const idx = allMarkers.findIndex(o => o.data.id === m.id);
+          if (idx !== -1) {
+            allMarkers.splice(idx, 1);
+          }
+          if (m.id) {
             deleteMarkerInFirestore(m.id);
           }
-        });
-      }
+        }
+      });
       showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
     });
     return markerObj;
   }
 
   // ------------------------------
-  // Render Dynamic Extra Lines
-  function renderExtraLines() {
-    extraLinesContainer.innerHTML = "";
-    extraLines.forEach((lineObj, idx) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
-
-      const textInput = document.createElement("input");
-      textInput.type = "text";
-      textInput.value = lineObj.text;
-      textInput.style.background = "#E5E6E8";
-      textInput.style.color = "#000";
-      textInput.addEventListener("input", () => {
-        extraLines[idx].text = textInput.value;
-      });
-
-      const colorDiv = document.createElement("div");
-      colorDiv.className = "color-btn";
-      colorDiv.style.marginLeft = "5px";
-
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.textContent = "x";
-      removeBtn.style.marginLeft = "5px";
-      removeBtn.addEventListener("click", () => {
-        extraLines.splice(idx, 1);
-        renderExtraLines();
-      });
-
-      row.appendChild(textInput);
-      row.appendChild(colorDiv);
-      row.appendChild(removeBtn);
-      extraLinesContainer.appendChild(row);
-
-      const pickr = Pickr.create({
-        el: colorDiv,
-        theme: 'nano',
-        default: lineObj.color || '#ffffff',
-        components: {
-          preview: true,
-          opacity: true,
-          hue: true,
-          interaction: {
-            hex: true,
-            rgba: true,
-            input: true,
-            save: true
-          }
-        }
-      });
-      pickr.on('change', (color) => {
-        const hex = color.toHEXA().toString();
-        extraLines[idx].color = hex;
-      });
-      pickr.on('save', () => {
-        pickr.hide();
-      });
-    });
-  }
-  addExtraLineBtn.addEventListener("click", () => {
-    extraLines.push({ text: "", color: "#ffffff" });
-    renderExtraLines();
+  // Global Duplicate Marker Behavior
+  map.on("mousemove", (ev) => {
+    if (duplicatingMarker) {
+      duplicatingMarker.setLatLng(ev.latlng);
+    }
+  });
+  map.on("click", (ev) => {
+    if (duplicatingMarker) {
+      duplicatingData.coords = [ev.latlng.lat, ev.latlng.lng];
+      updateMarkerInFirestore(duplicatingData);
+      duplicatingMarker.dragging.disable();
+      duplicatingMarker = null;
+      duplicatingData = null;
+    }
   });
 
   // ------------------------------
-  // Load Markers from Firestore (or fallback)
+  // Load Markers from Firestore (Fallback to JSON if needed)
   function loadMarkers() {
     db.collection("markers").get().then(querySnapshot => {
       querySnapshot.forEach(doc => {
@@ -587,7 +554,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadMarkers();
 
   // ------------------------------
-  // Right-click on Map => Create Marker
+  // Right-click on Map -> Create New Marker
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -596,7 +563,7 @@ document.addEventListener("DOMContentLoaded", () => {
           currentEditMarker = null;
           editName.value = "";
           pickrName.setColor("#ffffff");
-          editType.value = "Item";
+          editType.value = "Door";
           editImageSmall.value = "";
           editImageBig.value = "";
           editVideoURL.value = "";
@@ -608,13 +575,12 @@ document.addEventListener("DOMContentLoaded", () => {
           pickrDescItem.setColor("#ffffff");
           extraLines = [];
           renderExtraLines();
-          itemExtraFields.style.display = "block";
+          // Hide item-specific sections since default is Door
+          itemExtraFields.style.display = "none";
           nonItemDescription.style.display = "none";
-
           editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
           editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
           editModal.style.display = "block";
-
           editForm.onsubmit = (e2) => {
             e2.preventDefault();
             const newMarker = {
@@ -660,7 +626,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Basic Search
+  // Basic Search Functionality
   document.getElementById("search-bar").addEventListener("input", function() {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
@@ -676,7 +642,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Toggle Marker Grouping
+  // Toggle Marker Grouping for Item Markers
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
     if (this.checked) {
