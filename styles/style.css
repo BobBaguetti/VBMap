@@ -40,7 +40,7 @@ body, html {
   transform: translateX(-100%);
 }
 
-/* Popup & Marker Styles */
+/* Popup Styling */
 .leaflet-popup-content-wrapper {
   background: transparent !important;
   border: none !important;
@@ -60,6 +60,8 @@ body, html {
   color: #e0e0e0;
   border: none !important;
 }
+
+/* Marker Styling */
 .custom-marker-container {
   background: transparent !important;
   border: none !important;
@@ -75,7 +77,7 @@ body, html {
   height: 100%;
   border: 3px solid #777;
   border-radius: 50%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
 }
 .marker-icon {
   position: absolute;
@@ -86,7 +88,7 @@ body, html {
   object-fit: contain;
 }
 
-/* Popup Header/Body */
+/* Popup Content */
 .popup-header {
   display: flex;
   align-items: center;
@@ -123,7 +125,7 @@ body, html {
 #edit-modal {
   display: none;
   position: absolute;
-  width: 550px;
+  width: 450px;
   background: #222;
   color: #eee;
   padding: 20px;
@@ -148,100 +150,51 @@ body, html {
 .field-row {
   display: flex;
   align-items: center;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
 }
 .field-row label {
-  width: 120px;
+  width: 90px;
   text-align: left;
   margin-right: 5px;
   flex-shrink: 0;
 }
-.full-width {
-  flex: 1;
-  box-sizing: border-box;
-}
 .field-row input[type="text"],
-.field-row textarea,
-.field-row select {
+.field-row select,
+.field-row textarea {
   background: #E5E6E8;
   color: #000;
   border: 1px solid #999;
   padding: 4px 6px;
   font-size: 14px;
-  flex: 1;
-  box-sizing: border-box;
+  width: 100%;
 }
 .field-row textarea {
-  resize: vertical;
+  resize: none;
 }
-
-/* Type Row Layout */
-#type-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-#type-row select {
-  flex: 1;
-  box-sizing: border-box;
-}
-
-/* Rarity Dropdown */
-.rarity-dropdown {
-  width: 110px;
-  background: #E5E6E8;
-  color: #000;
-  border: 1px solid #999;
-  padding: 4px 6px;
-  font-size: 14px;
-  flex-shrink: 0;
-  box-sizing: border-box;
-}
-
-/* Item Type Row */
-#itemtype-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-#itemtype-row select {
-  flex: 1;
-  box-sizing: border-box;
-}
-
-/* Color Button */
 .color-btn {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   background: #666;
   border: 1px solid #333;
   border-radius: 2px;
   cursor: pointer;
-  margin-left: 9px;
   flex-shrink: 0;
-}
-
-/* Dividers */
-.divider {
-  border: 1px solid #555;
-  margin: 10px 0;
+  margin-left: 6px;
 }
 
 /* Extra Info Section */
-#extra-lines .field-row {
-  margin-left: 120px;
-  flex: 1;
+.extra-info-section {
+  margin-top: 10px;
+  padding-top: 10px;
+}
+#extra-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-left: 90px;
 }
 
-/* Plus Button for Extra Info */
-#add-extra-line {
-  height: 24px;
-  line-height: 18px;
-  padding: 0 6px;
-  margin-left: 10px;
-}
-
-/* Buttons in Field Rows */
+/* Buttons */
 .field-row button {
   background: #444;
   color: #fff;
@@ -250,4 +203,26 @@ body, html {
   border-radius: 4px;
   padding: 3px 8px;
   font-size: 14px;
+}
+
+/* Video Popup */
+#video-popup {
+  display: none;
+  position: absolute;
+  background: #000;
+  z-index: 2200;
+  padding: 10px;
+  border: 2px solid #444;
+  width: 340px;
+  max-height: 300px;
+  overflow: hidden;
+}
+#video-close {
+  float: right;
+  cursor: pointer;
+  color: #fff;
+  background: #444;
+  border: none;
+  font-size: 16px;
+  margin-bottom: 5px;
 }
