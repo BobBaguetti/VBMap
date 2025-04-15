@@ -105,11 +105,6 @@ body, html {
 .popup-title {
   margin-left: 15px;
 }
-.popup-name {
-  font-size: 20px;
-  font-weight: bold;
-  margin: 0 0 2px 0;
-}
 .popup-body {
   margin-top: 10px;
   font-size: 16px;
@@ -141,54 +136,76 @@ body, html {
 #edit-modal {
   display: none;
   position: absolute;
+  width: 450px;
   background: #222;
   color: #eee;
   padding: 20px;
   border: 1px solid #555;
   z-index: 2100;
   cursor: default;
-  width: 400px;
 }
 #edit-modal-handle {
   cursor: move;
   padding-bottom: 5px;
   border-bottom: 1px solid #555;
   margin-bottom: 10px;
+  font-size: 16px;
 }
 
-/* Form Layout */
+/* Edit Form Layout */
 #edit-form {
   display: flex;
   flex-direction: column;
   gap: 10px;
-  color: #E5E6E8;
 }
-.row {
+.field-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
-.extra-info-section {
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #555;
+.field-row label {
+  width: 120px;
+  margin-right: 8px;
+  text-align: right;
 }
-#extra-lines > div {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-bottom: 5px;
+.field-row input[type="text"],
+.field-row select,
+.field-row textarea {
+  background: #E5E6E8;
+  color: #000;
+  border: 1px solid #999;
+  padding: 3px 6px;
+  font-size: 14px;
+  flex: 1;
 }
-
-/* Input Color Picker Styling */
-input[type="color"] {
+.field-row input[type="color"] {
   width: 24px;
   height: 24px;
-  padding: 0;
   border: none;
-  margin-left: 5px;
+  margin-left: 6px;
   cursor: pointer;
+}
+
+/* For the + and x buttons */
+.field-row button {
+  background: #444;
+  color: #fff;
+  border: 1px solid #333;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+
+/* Extra Info Container */
+.extra-info-section {
+  margin-top: 10px;
+  border-top: 1px solid #555;
+  padding-top: 10px;
+}
+#extra-lines {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
 
 /* Video Popup */
