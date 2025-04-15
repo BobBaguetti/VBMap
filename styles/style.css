@@ -175,7 +175,7 @@ body, html {
   resize: vertical;
 }
 
-/* Type row for Item: side-by-side Type and Rarity */
+/* Type Row Layout */
 #type-row {
   display: flex;
   align-items: center;
@@ -186,7 +186,7 @@ body, html {
   box-sizing: border-box;
 }
 
-/* Rarity dropdown styling */
+/* Rarity Dropdown */
 .rarity-dropdown {
   width: 110px;
   background: #E5E6E8;
@@ -198,7 +198,7 @@ body, html {
   box-sizing: border-box;
 }
 
-/* Item Type row */
+/* Item Type Row */
 #itemtype-row {
   display: flex;
   align-items: center;
@@ -221,13 +221,13 @@ body, html {
   flex-shrink: 0;
 }
 
-/* Dividers for Extra Info */
+/* Dividers */
 .divider {
   border: 1px solid #555;
   margin: 10px 0;
 }
 
-/* Extra Info rows */
+/* Extra Info Rows */
 #extra-lines .field-row {
   margin-left: 120px;
   flex: 1;
@@ -241,7 +241,7 @@ body, html {
   margin-left: 10px;
 }
 
-/* Buttons in field rows */
+/* Field Row Buttons */
 .field-row button {
   background: #444;
   color: #fff;

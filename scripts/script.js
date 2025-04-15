@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const db = firebase.firestore();
 
   // ===========================
-  // Leaflet Map Initialization
+  // Map Initialization
   // ===========================
   const map = L.map("map", {
     crs: L.CRS.Simple,
@@ -82,11 +82,11 @@ document.addEventListener("DOMContentLoaded", () => {
   // ===========================
   const editModal = document.getElementById("edit-modal");
   if (!editModal) {
-    console.error("Edit modal element not found. Please ensure your HTML includes <div id='edit-modal'>.");
+    console.error("Edit modal element not found!");
   } else {
     const editModalHandle = document.getElementById("edit-modal-handle");
     if (!editModalHandle) {
-      console.error("Edit modal handle element not found. Please check your HTML.");
+      console.error("Edit modal handle not found!");
     } else {
       let isDragging = false, offsetX = 0, offsetY = 0;
       editModalHandle.addEventListener("mousedown", e => {
@@ -102,9 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
           editModal.style.top = (e.clientY - offsetY) + "px";
         }
       });
-      document.addEventListener("mouseup", () => {
-        isDragging = false;
-      });
+      document.addEventListener("mouseup", () => { isDragging = false; });
     }
   }
 
@@ -133,20 +131,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const editName = document.getElementById("edit-name");
   const pickrName = createPickr("#pickr-name");
 
-  // Type, Rarity, and Item Type Logic
+  // Type, Rarity, and Item Type Elements
   const editType = document.getElementById("edit-type");
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = createPickr("#pickr-rarity");
-  // Hide Rarity by default
-  editRarity.style.display = "none";
-  document.getElementById("pickr-rarity").style.display = "none";
-
+  // Hide rarity elements by default
+  if (editRarity) {
+    editRarity.style.display = "none";
+  }
   const itemtypeRow = document.getElementById("itemtype-row");
   const editItemSubtype = document.getElementById("edit-item-type");
   const pickrItemType = createPickr("#pickr-itemtype");
-  itemtypeRow.style.display = "none";
+  if (itemtypeRow) {
+    itemtypeRow.style.display = "none";
+  }
 
-  // Description & its color picker
+  // Description Elements
   const editDescription = document.getElementById("edit-description");
   const pickrDesc = createPickr("#pickr-desc");
 
@@ -171,14 +171,12 @@ document.addEventListener("DOMContentLoaded", () => {
       textInput.value = line.text;
       textInput.style.background = "#E5E6E8";
       textInput.style.color = "#000";
-      textInput.addEventListener("input", () => {
-        extraLines[idx].text = textInput.value;
-      });
-
+      textInput.addEventListener("input", () => { extraLines[idx].text = textInput.value; });
+      
       const colorDiv = document.createElement("div");
       colorDiv.className = "color-btn";
       colorDiv.style.marginLeft = "5px";
-
+      
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
       removeBtn.textContent = "x";
@@ -187,12 +185,12 @@ document.addEventListener("DOMContentLoaded", () => {
         extraLines.splice(idx, 1);
         renderExtraLines();
       });
-
+      
       row.appendChild(textInput);
       row.appendChild(colorDiv);
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
-
+      
       const linePickr = createPickr(colorDiv);
       linePickr.on("change", color => {
         extraLines[idx].color = color.toHEXA().toString();
@@ -201,9 +199,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Non-Item Description (if needed—here we use the same description)
-  // For this version, we use editDescription for all.
-  
   // Image and Video Fields
   const editImageS = document.getElementById("edit-image-s");
   const editImageL = document.getElementById("edit-image-l");
@@ -218,7 +213,7 @@ document.addEventListener("DOMContentLoaded", () => {
     extraLines = [];
   });
 
-  // Form Submission
+  // Form Submit Handler
   editForm.addEventListener("submit", e => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -269,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Marker Icon & Popup Creation
+  // Marker Icon & Popup
   // ===========================
   function createCustomIcon(m) {
     return L.divIcon({
@@ -314,7 +309,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor||"#fff"};">${m.name}</h3>`;
     let scaledImg = "";
     if (m.imageBig) {
-      scaledImg = `<img src="${m.imageBig}" style="width:64px; height:64px; object-fit:contain; border:2px solid #777; border-radius:4px;" />`;
+      scaledImg = `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`;
     }
     let videoBtn = "";
     if (m.videoURL) {
@@ -340,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Firestore Persistence Functions
+  // Firestore Persistence
   // ===========================
   function updateMarkerInFirestore(m) {
     if (m.id) {
@@ -374,7 +369,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     layers[m.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: m });
-
     markerObj.on("contextmenu", evt => {
       evt.originalEvent.preventDefault();
       const opts = [
@@ -470,7 +464,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Load Markers from Firestore or JSON
+  // Load Markers
   // ===========================
   function loadMarkers() {
     db.collection("markers").get()
@@ -598,7 +592,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ===========================
-  // Toggle Marker Grouping for Item markers
+  // Toggle Marker Grouping (for Item markers)
   // ===========================
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
