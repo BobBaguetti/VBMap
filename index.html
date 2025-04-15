@@ -56,64 +56,39 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  
-  <!-- Firebase App (compat) and Firestore -->
+  <!-- Firebase (compat) -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  
+
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
-  <!-- Custom Edit Modal for Marker Editing -->
+  <!-- Edit Modal -->
   <div id="edit-modal">
-    <!-- Drag Handle for the modal -->
     <div id="edit-modal-handle">
       <strong>Edit Marker</strong>
     </div>
-    
     <form id="edit-form">
-      <!-- Name + Color -->
+      <!-- Name + color -->
       <div class="field-row">
         <label>Name:</label>
         <input type="text" id="edit-name" required />
         <input type="color" id="edit-name-color" value="#ffffff" title="Name text color" />
       </div>
 
-      <!-- Type -->
+      <!-- Type (Alphabetically: Door, Extraction Portal, Item, Teleport) -->
       <div class="field-row">
         <label>Type:</label>
         <select id="edit-type">
-          <option value="Teleport">Teleport</option>
+          <option value="Door">Door</option>
           <option value="Extraction Portal">Extraction Portal</option>
           <option value="Item">Item</option>
-          <option value="Door">Door</option>
+          <option value="Teleport">Teleport</option>
         </select>
       </div>
-
-      <!-- Moved Image Small & Image Big above Video URL -->
-      <div class="field-row">
-        <label>Image Small:</label>
-        <input type="text" id="edit-image-small" />
-      </div>
-      <div class="field-row">
-        <label>Image Big:</label>
-        <input type="text" id="edit-image-big" />
-      </div>
       
-      <!-- Video URL -->
-      <div class="field-row">
-        <label>Video URL:</label>
-        <input type="text" id="edit-video-url" />
-      </div>
-
-      <!-- Item-specific fields -->
+      <!-- Rarity, Item Type, Description row -->
       <div id="item-extra-fields" style="display:none;">
-        <div class="field-row">
-          <label>Item Type:</label>
-          <input type="text" id="edit-item-type" />
-          <input type="color" id="edit-item-type-color" value="#ffffff" title="Item type color" />
-        </div>
-        
         <div class="field-row">
           <label>Rarity:</label>
           <select id="edit-rarity">
@@ -126,33 +101,56 @@
           </select>
           <input type="color" id="edit-rarity-color" value="#ffffff" title="Rarity text color" />
         </div>
-        
+
+        <div class="field-row">
+          <label>Item Type:</label>
+          <input type="text" id="edit-item-type" />
+          <input type="color" id="edit-item-type-color" value="#ffffff" title="Item type color" />
+        </div>
+
         <div class="field-row">
           <label>Description:</label>
           <textarea id="edit-description" rows="2"></textarea>
           <input type="color" id="edit-description-color" value="#ffffff" title="Description text color" />
         </div>
-        
-        <!-- Extra Info lines -->
-        <div class="extra-info-section">
-          <div class="field-row" style="justify-content:space-between; align-items:center;">
-            <label>Extra Info:</label>
-            <button type="button" id="add-extra-line">+</button>
-          </div>
-          <div id="extra-lines"></div>
+
+        <!-- Extra Info in the same row, then new lines for fields -->
+        <div class="field-row" style="justify-content:flex-start;margin-top:10px;">
+          <label style="margin-right:5px;">Extra Info:</label>
+          <button type="button" id="add-extra-line">+</button>
         </div>
+        <div id="extra-lines"></div>
+
+        <!-- Another dividing line after item fields -->
+        <hr style="border:1px solid #555;margin:10px 0;" />
+
       </div>
 
-      <!-- Non-item description field -->
+      <!-- For non-item markers: a simpler Description -->
       <div id="non-item-description" style="display:none;">
         <div class="field-row">
           <label>Description:</label>
           <textarea id="edit-description-non-item" rows="3"></textarea>
           <input type="color" id="edit-description-non-item-color" value="#ffffff" title="Description text color" />
         </div>
+        <hr style="border:1px solid #555;margin:10px 0;" />
+      </div>
+
+      <!-- Image & Video -->
+      <div class="field-row">
+        <label>Image Small:</label>
+        <input type="text" id="edit-image-small" />
+      </div>
+      <div class="field-row">
+        <label>Image Big:</label>
+        <input type="text" id="edit-image-big" />
+      </div>
+      <div class="field-row">
+        <label>Video:</label>
+        <input type="text" id="edit-video-url" />
       </div>
       
-      <!-- Save / Cancel Buttons -->
+      <!-- Buttons -->
       <div class="field-row" style="justify-content:center;margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>
