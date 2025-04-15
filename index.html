@@ -23,7 +23,6 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
     <div class="sidebar-section">
       <h2><i class="fas fa-layer-group"></i> Layers</h2>
       <div class="toggle-group">
@@ -34,7 +33,6 @@
         <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
       </div>
     </div>
-
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -42,7 +40,6 @@
         Disable Marker Grouping
       </label>
     </div>
-
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
@@ -52,14 +49,14 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Load Leaflet JS -->
+  <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- Load MarkerCluster JS -->
+  <!-- MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <!-- Firebase App (compat) and Firestore -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <!-- Pickr JavaScript (custom color picker) -->
+  <!-- Pickr JS (custom color picker) -->
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
@@ -70,29 +67,25 @@
       <strong>Edit Marker</strong>
     </div>
     <form id="edit-form">
-      <!-- Name Field -->
       <div class="field-row">
         <label>Name:</label>
         <input type="text" id="edit-name" required />
         <div class="color-btn" id="pickr-name"></div>
       </div>
-
-      <!-- Type Field (Alphabetical Order) -->
       <div class="field-row">
         <label>Type:</label>
-        <select id="edit-type">
+        <select id="edit-type" class="select-wide">
           <option value="Door">Door</option>
           <option value="Extraction Portal">Extraction Portal</option>
           <option value="Item">Item</option>
           <option value="Teleport">Teleport</option>
         </select>
       </div>
-      
       <!-- Item-specific Fields -->
       <div id="item-extra-fields" style="display:none;">
         <div class="field-row">
           <label>Rarity:</label>
-          <select id="edit-rarity">
+          <select id="edit-rarity" class="select-wide">
             <option value="">Select Rarity</option>
             <option value="common">Common</option>
             <option value="uncommon">Uncommon</option>
@@ -102,31 +95,28 @@
           </select>
           <div class="color-btn" id="pickr-rarity"></div>
         </div>
-
         <div class="field-row">
           <label>Item Type:</label>
           <input type="text" id="edit-item-type" />
           <div class="color-btn" id="pickr-itemtype"></div>
         </div>
-
         <div class="field-row">
           <label>Description:</label>
           <textarea id="edit-description" rows="2"></textarea>
           <div class="color-btn" id="pickr-desc-item"></div>
         </div>
-
-        <!-- Dividing Line Above Extra Info -->
         <hr style="border:1px solid #555; margin:10px 0;" />
+        <!-- Dividing line above extra info -->
+        <hr style="border:1px solid #555; margin:10px 0 0 0;" />
         <div class="field-row" style="margin-bottom:0;">
           <label>Extra Info:</label>
-          <button type="button" id="add-extra-line" style="width:auto; margin-left:10px;">+</button>
+          <button type="button" id="add-extra-line" style="height:24px; margin-left:10px;">+</button>
         </div>
         <div id="extra-lines"></div>
-        <!-- Dividing Line Between Extra Info and Images -->
+        <!-- Dividing line below extra info -->
         <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
-      <!-- Non-Item Description Field -->
+      <!-- Non-item Fields -->
       <div id="non-item-description" style="display:none;">
         <div class="field-row">
           <label>Description:</label>
@@ -135,7 +125,6 @@
         </div>
         <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
       <!-- Image and Video Fields -->
       <div class="field-row">
         <label>Image S:</label>
@@ -149,15 +138,13 @@
         <label>Video:</label>
         <input type="text" id="edit-video-url" />
       </div>
-      
-      <!-- Save / Cancel Buttons -->
       <div class="field-row" style="justify-content:center; margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>
       </div>
     </form>
   </div>
-
+  
   <!-- Video Popup -->
   <div id="video-popup">
     <button id="video-close">X</button>

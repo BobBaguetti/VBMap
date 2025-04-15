@@ -171,26 +171,30 @@ body, html {
 .field-row textarea {
   resize: none;
 }
+/* Ensure select boxes use same styling */
+.select-wide {
+  width: 130px;
+  background: #E5E6E8;
+  color: #000;
+  border: 1px solid #999;
+  padding: 4px 6px;
+  font-size: 14px;
+}
+
+/* Custom Color Button */
 .color-btn {
-  width: 32px;
-  height: 32px;
+  width: 30px;
+  height: 30px;
   background: #666;
   border: 1px solid #333;
   border-radius: 2px;
   cursor: pointer;
+  margin-left: 9px;
   flex-shrink: 0;
-  margin-left: 6px;
 }
 
 /* Extra Info Section */
-.extra-info-section {
-  margin-top: 10px;
-  padding-top: 10px;
-}
-#extra-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
+#extra-lines .field-row {
   margin-left: 90px;
 }
 
