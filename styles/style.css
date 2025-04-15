@@ -175,14 +175,18 @@ body, html {
   resize: vertical;
 }
 
-/* For the Type row when not Item, keep full width; when Item, later JS will adjust */
+/* Type row for Item: side-by-side Type and Rarity */
+#type-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 #type-row select {
-  /* Default full width */
   flex: 1;
   box-sizing: border-box;
 }
 
-/* Rarity dropdown (narrower) */
+/* Rarity dropdown styling */
 .rarity-dropdown {
   width: 110px;
   background: #E5E6E8;
@@ -205,7 +209,7 @@ body, html {
   box-sizing: border-box;
 }
 
-/* Color Button for Pickr */
+/* Color Button */
 .color-btn {
   width: 30px;
   height: 30px;
@@ -217,19 +221,19 @@ body, html {
   flex-shrink: 0;
 }
 
-/* Dividers */
+/* Dividers for Extra Info */
 .divider {
   border: 1px solid #555;
   margin: 10px 0;
 }
 
-/* Extra Info Section - extra rows align with other fields */
+/* Extra Info rows */
 #extra-lines .field-row {
   margin-left: 120px;
   flex: 1;
 }
 
-/* + Button for Extra Info */
+/* Plus Button for Extra Info */
 #add-extra-line {
   height: 24px;
   line-height: 18px;

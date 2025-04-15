@@ -29,7 +29,6 @@ document.addEventListener("DOMContentLoaded", () => {
   L.imageOverlay("./media/images/tempmap.png", bounds).addTo(map);
   map.fitBounds(bounds);
 
-  // Marker layers
   let itemLayer = L.markerClusterGroup();
   const layers = {
     "Door": L.layerGroup(),
@@ -57,7 +56,9 @@ document.addEventListener("DOMContentLoaded", () => {
     zIndex: 2000,
     boxShadow: "0px 2px 6px rgba(0,0,0,0.5)"
   });
-  document.addEventListener("click", () => { contextMenu.style.display = "none"; });
+  document.addEventListener("click", () => {
+    contextMenu.style.display = "none";
+  });
   function showContextMenu(x, y, options) {
     contextMenu.innerHTML = "";
     options.forEach(opt => {
@@ -80,22 +81,32 @@ document.addEventListener("DOMContentLoaded", () => {
   // Draggable Edit Modal
   // ===========================
   const editModal = document.getElementById("edit-modal");
-  const editModalHandle = document.getElementById("edit-modal-handle");
-  let isDragging = false, offsetX = 0, offsetY = 0;
-  editModalHandle.addEventListener("mousedown", e => {
-    isDragging = true;
-    const style = window.getComputedStyle(editModal);
-    offsetX = e.clientX - parseInt(style.left, 10);
-    offsetY = e.clientY - parseInt(style.top, 10);
-    e.preventDefault();
-  });
-  document.addEventListener("mousemove", e => {
-    if (isDragging) {
-      editModal.style.left = (e.clientX - offsetX) + "px";
-      editModal.style.top = (e.clientY - offsetY) + "px";
+  if (!editModal) {
+    console.error("Edit modal element not found. Please ensure your HTML includes <div id='edit-modal'>.");
+  } else {
+    const editModalHandle = document.getElementById("edit-modal-handle");
+    if (!editModalHandle) {
+      console.error("Edit modal handle element not found. Please check your HTML.");
+    } else {
+      let isDragging = false, offsetX = 0, offsetY = 0;
+      editModalHandle.addEventListener("mousedown", e => {
+        isDragging = true;
+        const style = window.getComputedStyle(editModal);
+        offsetX = e.clientX - parseInt(style.left, 10);
+        offsetY = e.clientY - parseInt(style.top, 10);
+        e.preventDefault();
+      });
+      document.addEventListener("mousemove", e => {
+        if (isDragging) {
+          editModal.style.left = (e.clientX - offsetX) + "px";
+          editModal.style.top = (e.clientY - offsetY) + "px";
+        }
+      });
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
     }
-  });
-  document.addEventListener("mouseup", () => { isDragging = false; });
+  }
 
   // ===========================
   // Video Popup
@@ -107,7 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
     videoPopup.style.display = "none";
     videoPlayer.pause();
   });
-  window.openVideoPopup = function(x, y, url) {
+  window.openVideoPopup = (x, y, url) => {
     videoSource.src = url;
     videoPlayer.load();
     videoPopup.style.left = x + "px";
@@ -116,30 +127,30 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // ===========================
-  // Edit Modal Fields and Pickr Instances
+  // Edit Form & Fields
   // ===========================
   const editForm = document.getElementById("edit-form");
   const editName = document.getElementById("edit-name");
   const pickrName = createPickr("#pickr-name");
 
+  // Type, Rarity, and Item Type Logic
   const editType = document.getElementById("edit-type");
-  // Rarity elements (hidden unless type Item)
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = createPickr("#pickr-rarity");
+  // Hide Rarity by default
   editRarity.style.display = "none";
   document.getElementById("pickr-rarity").style.display = "none";
 
-  // Item Type row: appears if type is Item
   const itemtypeRow = document.getElementById("itemtype-row");
   const editItemSubtype = document.getElementById("edit-item-type");
   const pickrItemType = createPickr("#pickr-itemtype");
   itemtypeRow.style.display = "none";
 
-  // Description and its color picker
+  // Description & its color picker
   const editDescription = document.getElementById("edit-description");
   const pickrDesc = createPickr("#pickr-desc");
 
-  // Extra Info dynamic fields
+  // Extra Info Dynamic Fields
   let extraLines = [];
   const extraLinesContainer = document.getElementById("extra-lines");
   const addExtraLineBtn = document.getElementById("add-extra-line");
@@ -152,9 +163,9 @@ document.addEventListener("DOMContentLoaded", () => {
     extraLines.forEach((line, idx) => {
       const row = document.createElement("div");
       row.className = "field-row";
-      row.style.marginLeft = "120px"; // aligns with input fields after label
+      row.style.marginLeft = "120px";
       row.style.marginBottom = "5px";
-
+      
       const textInput = document.createElement("input");
       textInput.type = "text";
       textInput.value = line.text;
@@ -183,16 +194,16 @@ document.addEventListener("DOMContentLoaded", () => {
       extraLinesContainer.appendChild(row);
 
       const linePickr = createPickr(colorDiv);
-      linePickr.on("change", (color) => {
+      linePickr.on("change", color => {
         extraLines[idx].color = color.toHEXA().toString();
       });
       linePickr.setColor(line.color);
     });
   }
 
-  // Non-Item Description (if needed; you may choose to always use the same description)
-  // For this version we use the same description field for all, so we omit a separate non-item description.
-
+  // Non-Item Description (if needed—here we use the same description)
+  // For this version, we use editDescription for all.
+  
   // Image and Video Fields
   const editImageS = document.getElementById("edit-image-s");
   const editImageL = document.getElementById("edit-image-l");
@@ -207,7 +218,7 @@ document.addEventListener("DOMContentLoaded", () => {
     extraLines = [];
   });
 
-  // Form Submit Handler
+  // Form Submission
   editForm.addEventListener("submit", e => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -242,7 +253,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEditMarker = null;
   });
 
-  // Helper: Create Pickr instance
+  // Helper: Create a Pickr instance
   function createPickr(el) {
     return Pickr.create({
       el: el,
@@ -303,7 +314,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor||"#fff"};">${m.name}</h3>`;
     let scaledImg = "";
     if (m.imageBig) {
-      scaledImg = `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`;
+      scaledImg = `<img src="${m.imageBig}" style="width:64px; height:64px; object-fit:contain; border:2px solid #777; border-radius:4px;" />`;
     }
     let videoBtn = "";
     if (m.videoURL) {
@@ -459,7 +470,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Load Markers (Firestore or fallback JSON)
+  // Load Markers from Firestore or JSON
   // ===========================
   function loadMarkers() {
     db.collection("markers").get()
@@ -520,7 +531,7 @@ document.addEventListener("DOMContentLoaded", () => {
           extraLines = [];
           renderExtraLines();
           document.getElementById("item-extra-fields").style.display = "none";
-          document.getElementById("itemtype-row").style.display = "none";
+          itemtypeRow.style.display = "none";
           editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
           editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
           editModal.style.display = "block";
