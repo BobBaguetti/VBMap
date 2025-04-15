@@ -88,22 +88,11 @@ body, html {
   object-fit: contain;
 }
 
-/* Popup Content Styling */
+/* Popup Content */
 .popup-header {
   display: flex;
   align-items: center;
   margin-bottom: 12px;
-}
-.popup-icon {
-  width: 64px;
-  height: 64px;
-  border: 2px solid #777;
-  border-radius: 4px;
-  object-fit: contain;
-  background: #2a2a2a;
-}
-.popup-title {
-  margin-left: 15px;
 }
 .popup-body {
   margin-top: 10px;
@@ -143,8 +132,6 @@ body, html {
   border: 1px solid #555;
   z-index: 2100;
   cursor: default;
-  left: 50px;
-  top: 50px;
 }
 #edit-modal-handle {
   cursor: move;
@@ -164,12 +151,11 @@ body, html {
   display: flex;
   align-items: center;
   margin-bottom: 8px;
-  justify-content: flex-start;
 }
 .field-row label {
-  width: 85px;
+  width: 90px;
   text-align: left;
-  margin-right: 6px;
+  margin-right: 5px;
 }
 .field-row input[type="text"],
 .field-row select,
@@ -185,24 +171,13 @@ body, html {
   resize: none;
 }
 .field-row input[type="color"] {
-  width: 30px;
-  height: 30px;
+  width: 32px;
+  height: 32px;
   border: none;
-  margin-left: 6px;
   cursor: pointer;
+  margin-left: 6px;
+  /* no padding so it looks bigger */
   padding: 0;
-}
-
-/* Extra Info Section */
-.extra-info-section {
-  margin-top: 10px;
-  padding-top: 10px;
-}
-#extra-lines {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-  margin-left: 85px; /* align with fields */
 }
 
 /* Buttons */

@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles/style.css" />
-  <!-- Font Awesome for icons (optional) -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
@@ -21,19 +21,17 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
-    <!-- Map Layers Toggle -->
+
     <div class="sidebar-section">
       <h2><i class="fas fa-layer-group"></i> Layers</h2>
       <div class="toggle-group">
-        <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
+        <label><input type="checkbox" checked data-layer="Door" /> Door</label>
         <label><input type="checkbox" checked data-layer="Extraction Portal" /> Extraction Portal</label>
         <label><input type="checkbox" checked data-layer="Item" /> Item</label>
-        <label><input type="checkbox" checked data-layer="Door" /> Door</label>
+        <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
       </div>
     </div>
 
-    <!-- Settings -->
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -42,7 +40,6 @@
       </label>
     </div>
 
-    <!-- Search -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
@@ -56,10 +53,11 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  <!-- Firebase (compat) -->
+  
+  <!-- Firebase App (compat) and Firestore -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-
+  
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
@@ -76,7 +74,7 @@
         <input type="color" id="edit-name-color" value="#ffffff" title="Name text color" />
       </div>
 
-      <!-- Type (Alphabetically: Door, Extraction Portal, Item, Teleport) -->
+      <!-- Type (Alphabetical) -->
       <div class="field-row">
         <label>Type:</label>
         <select id="edit-type">
@@ -87,7 +85,7 @@
         </select>
       </div>
       
-      <!-- Rarity, Item Type, Description row -->
+      <!-- Rarity, Item Type, etc. for Items only -->
       <div id="item-extra-fields" style="display:none;">
         <div class="field-row">
           <label>Rarity:</label>
@@ -114,19 +112,18 @@
           <input type="color" id="edit-description-color" value="#ffffff" title="Description text color" />
         </div>
 
-        <!-- Extra Info in the same row, then new lines for fields -->
-        <div class="field-row" style="justify-content:flex-start;margin-top:10px;">
-          <label style="margin-right:5px;">Extra Info:</label>
-          <button type="button" id="add-extra-line">+</button>
-        </div>
-        <div id="extra-lines"></div>
-
-        <!-- Another dividing line after item fields -->
         <hr style="border:1px solid #555;margin:10px 0;" />
-
+        
+        <!-- Extra Info label & dividing line above it -->
+        <hr style="border:1px solid #555;margin:10px 0;" />
+        <div class="field-row">
+          <label>Extra Info:</label>
+          <input type="text" id="edit-extra-info" style="background:#E5E6E8;color:#000;flex:1;" />
+          <input type="color" id="edit-extra-info-color" value="#ffffff" title="Extra info color" />
+        </div>
       </div>
 
-      <!-- For non-item markers: a simpler Description -->
+      <!-- Non-item description -->
       <div id="non-item-description" style="display:none;">
         <div class="field-row">
           <label>Description:</label>
@@ -136,7 +133,7 @@
         <hr style="border:1px solid #555;margin:10px 0;" />
       </div>
 
-      <!-- Image & Video -->
+      <!-- Images & Video -->
       <div class="field-row">
         <label>Image Small:</label>
         <input type="text" id="edit-image-small" />
