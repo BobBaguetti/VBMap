@@ -40,7 +40,7 @@ body, html {
   transform: translateX(-100%);
 }
 
-/* Popup Styling */
+/* Popup */
 .leaflet-popup-content-wrapper {
   background: transparent !important;
   border: none !important;
@@ -61,7 +61,7 @@ body, html {
   border: none !important;
 }
 
-/* Marker Styling */
+/* Marker Icon */
 .custom-marker-container {
   background: transparent !important;
   border: none !important;
@@ -176,8 +176,7 @@ body, html {
   border: none;
   cursor: pointer;
   margin-left: 6px;
-  /* no padding so it looks bigger */
-  padding: 0;
+  padding: 0; /* remove internal padding */
 }
 
 /* Buttons */

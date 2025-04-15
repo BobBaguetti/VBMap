@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles/style.css" />
-  <!-- Font Awesome -->
+  <!-- Font Awesome for icons (optional) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 </head>
 <body>
@@ -21,7 +21,8 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-
+    
+    <!-- Map Layers Toggle -->
     <div class="sidebar-section">
       <h2><i class="fas fa-layer-group"></i> Layers</h2>
       <div class="toggle-group">
@@ -32,6 +33,7 @@
       </div>
     </div>
 
+    <!-- Settings -->
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -40,6 +42,7 @@
       </label>
     </div>
 
+    <!-- Search -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
@@ -85,7 +88,7 @@
         </select>
       </div>
       
-      <!-- Rarity, Item Type, etc. for Items only -->
+      <!-- Rarity, Item Type, Description for Items -->
       <div id="item-extra-fields" style="display:none;">
         <div class="field-row">
           <label>Rarity:</label>
@@ -112,15 +115,18 @@
           <input type="color" id="edit-description-color" value="#ffffff" title="Description text color" />
         </div>
 
+        <!-- Single dividing line above Extra Info -->
         <hr style="border:1px solid #555;margin:10px 0;" />
         
-        <!-- Extra Info label & dividing line above it -->
-        <hr style="border:1px solid #555;margin:10px 0;" />
-        <div class="field-row">
+        <!-- Extra Info label, + button on same row, dynamic lines below -->
+        <div class="field-row" style="margin-bottom:0;">
           <label>Extra Info:</label>
-          <input type="text" id="edit-extra-info" style="background:#E5E6E8;color:#000;flex:1;" />
-          <input type="color" id="edit-extra-info-color" value="#ffffff" title="Extra info color" />
+          <button type="button" id="add-extra-line" style="width:auto; margin-left:10px;">+</button>
         </div>
+        <div id="extra-lines"></div>
+
+        <!-- Another dividing line between extra info & images -->
+        <hr style="border:1px solid #555;margin:10px 0;" />
       </div>
 
       <!-- Non-item description -->
@@ -133,13 +139,13 @@
         <hr style="border:1px solid #555;margin:10px 0;" />
       </div>
 
-      <!-- Images & Video -->
+      <!-- Image S, Image L, Video -->
       <div class="field-row">
-        <label>Image Small:</label>
+        <label>Image S:</label>
         <input type="text" id="edit-image-small" />
       </div>
       <div class="field-row">
-        <label>Image Big:</label>
+        <label>Image L:</label>
         <input type="text" id="edit-image-big" />
       </div>
       <div class="field-row">
