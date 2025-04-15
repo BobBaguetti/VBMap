@@ -11,13 +11,13 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles/style.css" />
-  <!-- Font Awesome (optional for icons) -->
+  <!-- Font Awesome for icons (optional) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Pickr CSS (custom color picker) -->
+  <!-- Pickr CSS (for custom color picker) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
 </head>
 <body>
-  <!-- Sidebar Toggle Button -->
+  <!-- Sidebar Toggle -->
   <button id="sidebar-toggle" style="position:absolute; top:10px; left:10px; z-index:1100;">☰</button>
   
   <!-- Sidebar -->
@@ -61,6 +61,7 @@
   <div id="edit-modal">
     <div id="edit-modal-handle"><strong>Edit Marker</strong></div>
     <form id="edit-form">
+      
       <!-- Row 1: Name & Color -->
       <div class="field-row">
         <label>Name:</label>
@@ -77,7 +78,7 @@
           <option value="Item">Item</option>
           <option value="Teleport">Teleport</option>
         </select>
-        <!-- Rarity (hidden unless Type==Item) -->
+        <!-- Rarity dropdown and its color picker, hidden unless Type == "Item" -->
         <select id="edit-rarity" class="rarity-dropdown" style="display:none;">
           <option value="">Select Rarity</option>
           <option value="common">Common</option>
@@ -89,7 +90,7 @@
         <div class="color-btn" id="pickr-rarity" style="display:none;"></div>
       </div>
       
-      <!-- Row 3: Item Type (if Type == Item) -->
+      <!-- Row 3: Item Type (if Type == "Item") -->
       <div class="field-row" id="itemtype-row" style="display:none;">
         <label>Item Type:</label>
         <select id="edit-item-type" class="full-width">
@@ -133,7 +134,7 @@
         <input type="text" id="edit-video" class="full-width" />
       </div>
       
-      <!-- Save / Cancel -->
+      <!-- Save/Cancel Buttons -->
       <div class="field-row" style="justify-content:center; margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>

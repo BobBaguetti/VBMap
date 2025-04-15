@@ -227,7 +227,7 @@ body, html {
   margin: 10px 0;
 }
 
-/* Extra Info Rows */
+/* Extra Info Section */
 #extra-lines .field-row {
   margin-left: 120px;
   flex: 1;
@@ -241,7 +241,7 @@ body, html {
   margin-left: 10px;
 }
 
-/* Field Row Buttons */
+/* Buttons in Field Rows */
 .field-row button {
   background: #444;
   color: #fff;

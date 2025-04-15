@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Script loaded!");
 
   // ===========================
-  // Firebase Setup
+  // Firebase Setup (Replace placeholders with your config)
   // ===========================
   const firebaseConfig = {
     apiKey: "YOUR_API_KEY",
@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const db = firebase.firestore();
 
   // ===========================
-  // Map Initialization
+  // Leaflet Map Initialization
   // ===========================
   const map = L.map("map", {
     crs: L.CRS.Simple,
@@ -41,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let allMarkers = [];
 
   // ===========================
-  // Context Menu
+  // Context Menu (Right-click)
   // ===========================
   const contextMenu = document.createElement("div");
   contextMenu.id = "context-menu";
@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Draggable Edit Modal
+  // Draggable Edit Modal (Defensive check)
   // ===========================
   const editModal = document.getElementById("edit-modal");
   if (!editModal) {
@@ -86,7 +86,7 @@ document.addEventListener("DOMContentLoaded", () => {
   } else {
     const editModalHandle = document.getElementById("edit-modal-handle");
     if (!editModalHandle) {
-      console.error("Edit modal handle not found!");
+      console.error("Edit modal handle element not found!");
     } else {
       let isDragging = false, offsetX = 0, offsetY = 0;
       editModalHandle.addEventListener("mousedown", e => {
@@ -102,7 +102,9 @@ document.addEventListener("DOMContentLoaded", () => {
           editModal.style.top = (e.clientY - offsetY) + "px";
         }
       });
-      document.addEventListener("mouseup", () => { isDragging = false; });
+      document.addEventListener("mouseup", () => {
+        isDragging = false;
+      });
     }
   }
 
@@ -131,22 +133,18 @@ document.addEventListener("DOMContentLoaded", () => {
   const editName = document.getElementById("edit-name");
   const pickrName = createPickr("#pickr-name");
 
-  // Type, Rarity, and Item Type Elements
+  // Type / Rarity / Item Type logic
   const editType = document.getElementById("edit-type");
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = createPickr("#pickr-rarity");
   // Hide rarity elements by default
-  if (editRarity) {
-    editRarity.style.display = "none";
-  }
+  if (editRarity) { editRarity.style.display = "none"; }
   const itemtypeRow = document.getElementById("itemtype-row");
   const editItemSubtype = document.getElementById("edit-item-type");
   const pickrItemType = createPickr("#pickr-itemtype");
-  if (itemtypeRow) {
-    itemtypeRow.style.display = "none";
-  }
+  if (itemtypeRow) { itemtypeRow.style.display = "none"; }
 
-  // Description Elements
+  // Description
   const editDescription = document.getElementById("edit-description");
   const pickrDesc = createPickr("#pickr-desc");
 
@@ -171,7 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
       textInput.value = line.text;
       textInput.style.background = "#E5E6E8";
       textInput.style.color = "#000";
-      textInput.addEventListener("input", () => { extraLines[idx].text = textInput.value; });
+      textInput.addEventListener("input", () => {
+        extraLines[idx].text = textInput.value;
+      });
       
       const colorDiv = document.createElement("div");
       colorDiv.className = "color-btn";
@@ -264,7 +264,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Marker Icon & Popup
+  // Marker Icon & Popup Creation
   // ===========================
   function createCustomIcon(m) {
     return L.divIcon({
@@ -369,6 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     layers[m.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: m });
+
     markerObj.on("contextmenu", evt => {
       evt.originalEvent.preventDefault();
       const opts = [
@@ -464,7 +465,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Load Markers
+  // Load Markers (Firestore then fallback)
   // ===========================
   function loadMarkers() {
     db.collection("markers").get()
@@ -502,7 +503,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadMarkers();
 
   // ===========================
-  // Right-click on Map => Create Marker
+  // Right-click on Map -> Create New Marker
   // ===========================
   map.on("contextmenu", evt => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
@@ -524,7 +525,9 @@ document.addEventListener("DOMContentLoaded", () => {
           pickrDesc.setColor("#ffffff");
           extraLines = [];
           renderExtraLines();
-          document.getElementById("item-extra-fields").style.display = "none";
+          // Hide item-specific sections since default Type is "Door"
+          document.getElementById("edit-rarity").style.display = "none";
+          document.getElementById("pickr-rarity").style.display = "none";
           itemtypeRow.style.display = "none";
           editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
           editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
@@ -592,7 +595,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ===========================
-  // Toggle Marker Grouping (for Item markers)
+  // Toggle Marker Grouping for Item markers
   // ===========================
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
