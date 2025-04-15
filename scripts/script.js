@@ -41,9 +41,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let allMarkers = [];
 
   // ------------------------------
-  // Global variables for Copy Marker / Paste Mode
-  let duplicatingMarker = null;
-  let duplicatingData = null;
+  // Global variable for Copy Marker Mode
+  let copiedMarkerData = null; // stores a deep copy of the marker data when Copy is selected
   const pasteTooltip = document.getElementById("paste-tooltip");
 
   // ------------------------------
@@ -81,11 +80,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.addEventListener("click", () => {
     contextMenu.style.display = "none";
-    // Cancel paste mode on right-click
-    if (duplicatingMarker) {
-      duplicatingMarker.dragging.disable();
-      duplicatingMarker = null;
-      duplicatingData = null;
+    // Right-click cancels copy mode
+    if (copiedMarkerData) {
+      copiedMarkerData = null;
       pasteTooltip.style.display = "none";
     }
   });
@@ -143,7 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const editImageBig = document.getElementById("edit-image-big");
   const editVideoURL = document.getElementById("edit-video-url");
 
-  // Item-specific fields
+  // Item-specific Fields
   const itemExtraFields = document.getElementById("item-extra-fields");
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = Pickr.create({
@@ -151,21 +148,21 @@ document.addEventListener("DOMContentLoaded", () => {
     theme: 'nano',
     default: '#E5E6E8',
     components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
+  }).on('save', instance => instance.hide());
   const editItemType = document.getElementById("edit-item-type");
   const pickrItemType = Pickr.create({
     el: '#pickr-itemtype',
     theme: 'nano',
     default: '#E5E6E8',
     components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
+  }).on('save', instance => instance.hide());
   const editDescription = document.getElementById("edit-description");
   const pickrDescItem = Pickr.create({
     el: '#pickr-desc-item',
     theme: 'nano',
     default: '#E5E6E8',
     components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
+  }).on('save', instance => instance.hide());
   // Non-item fields
   const nonItemDescription = document.getElementById("edit-description-non-item");
   const pickrDescNonItem = Pickr.create({
@@ -173,9 +170,9 @@ document.addEventListener("DOMContentLoaded", () => {
     theme: 'nano',
     default: '#E5E6E8',
     components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
+  }).on('save', instance => instance.hide());
 
-  // When editing marker, update the pickers with the saved colors so they don't default back to white (#E5E6E8)
+  // Function to populate edit form with marker data (so pickers update with stored colors)
   function populateEditForm(m) {
     editName.value = m.name || "";
     pickrName.setColor(m.nameColor || "#E5E6E8");
@@ -204,10 +201,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentEditMarker = null;
 
-  // Rarity default update on change – override previous custom color
+  // Rarity default colors for quick selection – update on change overrides custom color
+  const defaultRarityColors = {
+    "common": "#CCCCCC",
+    "uncommon": "#56DE56",
+    "rare": "#3498db",
+    "epic": "#9b59b6",
+    "legendary": "#f39c12"
+  };
   editRarity.addEventListener("change", function() {
     if (defaultRarityColors[this.value]) {
       pickrRarity.setColor(defaultRarityColors[this.value]);
+    }
+  });
+
+  // Show/hide item fields based on type
+  editType.addEventListener("change", () => {
+    if (editType.value === "Item") {
+      itemExtraFields.style.display = "block";
+      nonItemDescription.style.display = "none";
+    } else {
+      itemExtraFields.style.display = "none";
+      nonItemDescription.style.display = "block";
     }
   });
 
@@ -255,33 +270,37 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Global Duplicate (Copy) Marker Sticky Behavior
-  map.on("mousemove", (ev) => {
-    if (duplicatingMarker) {
-      duplicatingMarker.setLatLng(ev.latlng);
-      pasteTooltip.style.left = (ev.containerPoint.x + 15) + "px";
-      pasteTooltip.style.top = (ev.containerPoint.y + 15) + "px";
-      pasteTooltip.style.display = "block";
-    }
-  });
+  // Global Copy Marker Mode (New Logic)
+  // When "Copy Marker" is chosen from the context menu, we simply store a deep copy.
+  // Then each left-click on the map creates a new marker using that data.
   map.on("click", (ev) => {
-    if (duplicatingMarker) {
-      duplicatingData.coords = [ev.latlng.lat, ev.latlng.lng];
-      updateMarkerInFirestore(duplicatingData);
-      duplicatingMarker.dragging.disable();
-      duplicatingMarker = null;
-      duplicatingData = null;
-      pasteTooltip.style.display = "none";
+    if (copiedMarkerData) {
+      // Create a new marker data from copiedMarkerData,
+      // updating the coordinates from the click event.
+      const newData = JSON.parse(JSON.stringify(copiedMarkerData));
+      newData.coords = [ev.latlng.lat, ev.latlng.lng];
+      // Optionally, append " (copy)" to name
+      newData.name = newData.name + " (copy)";
+      addMarker(newData);
+      updateMarkerInFirestore(newData);
+      // The copy mode remains active so you can paste multiple markers.
     }
   });
+  // Right-click cancels copy mode
   document.addEventListener("contextmenu", (ev) => {
-    if (duplicatingMarker) {
-      duplicatingMarker.dragging.disable();
-      duplicatingMarker = null;
-      duplicatingData = null;
+    if (copiedMarkerData) {
+      copiedMarkerData = null;
       pasteTooltip.style.display = "none";
     }
   });
+
+  // ------------------------------
+  // In the context menu, the "Copy Marker" option now simply sets copiedMarkerData.
+  function setCopyMode(m) {
+    copiedMarkerData = JSON.parse(JSON.stringify(m));
+    // Show the paste tooltip near the cursor.
+    pasteTooltip.style.display = "block";
+  }
 
   // ------------------------------
   // Cancel Button in Edit Modal
@@ -327,7 +346,8 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEditMarker = null;
   });
 
-  // Helper: Format rarity
+  // ------------------------------
+  // Helper: Format rarity (first letter uppercase)
   function formatRarity(val) {
     if (!val) return "";
     return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
@@ -340,7 +360,19 @@ document.addEventListener("DOMContentLoaded", () => {
       theme: 'nano',
       default: '#E5E6E8',
       components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-    });
+    }).on('save', instance => instance.hide());
+  }
+
+  // ------------------------------
+  // Edit Modal Popup Positioning: Position so that its right edge is 10px to the right of the cursor, and vertically centered.
+  function setEditModalPosition(ev) {
+    // Ensure modal is temporarily visible to calculate dimensions
+    editModal.style.display = "block";
+    const modalWidth = editModal.offsetWidth;
+    const modalHeight = editModal.offsetHeight;
+    // Position: modal.right edge = ev.pageX + 10, so modal.left = ev.pageX - modalWidth + 10; vertical center aligned.
+    editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
+    editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
   }
 
   // ------------------------------
@@ -451,24 +483,18 @@ document.addEventListener("DOMContentLoaded", () => {
           action: () => {
             currentEditMarker = { markerObj, data: m };
             populateEditForm(m);
-            // Position edit modal so that its right edge is 10px right of cursor and vertically centered:
-            const modalWidth = editModal.offsetWidth;
-            const modalHeight = editModal.offsetHeight;
-            editModal.style.left = (evt.originalEvent.pageX - modalWidth + 10) + "px";
-            editModal.style.top = (evt.originalEvent.pageY - modalHeight / 2) + "px";
+            // Position edit modal with its right edge 10px right of the cursor, vertically centered
+            setEditModalPosition(evt.originalEvent);
             editModal.style.display = "block";
           }
         },
         {
           text: "Copy Marker",
           action: () => {
-            const dup = JSON.parse(JSON.stringify(m));
-            dup.name = `${m.name} (copy)`;
-            dup.coords = [...m.coords];
-            const newMarkerObj = addMarker(dup);
-            newMarkerObj.dragging.enable();
-            duplicatingMarker = newMarkerObj;
-            duplicatingData = dup;
+            // Instead of creating a new marker immediately, store a deep copy of the marker data
+            copiedMarkerData = JSON.parse(JSON.stringify(m));
+            // Optionally, add a suffix to indicate this is copy mode
+            pasteTooltip.style.display = "block";
           }
         },
         {
@@ -494,9 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
           layers[m.type].removeLayer(markerObj);
           const idx = allMarkers.findIndex(o => o.data.id === m.id);
           if (idx !== -1) allMarkers.splice(idx, 1);
-          if (m.id) {
-            deleteMarkerInFirestore(m.id);
-          }
+          if (m.id) deleteMarkerInFirestore(m.id);
         }
       });
       showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
@@ -505,30 +529,24 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------
-  // Global Copy Marker (Sticky Paste Mode) Listeners
-  map.on("mousemove", (ev) => {
-    if (duplicatingMarker) {
-      duplicatingMarker.setLatLng(ev.latlng);
+  // Global Copy Marker (Paste Mode) Behavior:
+  // Each left click on the map while copy mode is active creates a new marker using copiedMarkerData.
+  map.on("click", (ev) => {
+    if (copiedMarkerData) {
+      const newData = JSON.parse(JSON.stringify(copiedMarkerData));
+      newData.coords = [ev.latlng.lat, ev.latlng.lng];
+      newData.name = newData.name + " (copy)";
+      addMarker(newData);
+      updateMarkerInFirestore(newData);
       pasteTooltip.style.left = (ev.containerPoint.x + 15) + "px";
       pasteTooltip.style.top = (ev.containerPoint.y + 15) + "px";
-      pasteTooltip.style.display = "block";
+      // Continue to stay in paste mode until canceled by right-click
     }
   });
-  map.on("click", (ev) => {
-    if (duplicatingMarker) {
-      duplicatingData.coords = [ev.latlng.lat, ev.latlng.lng];
-      updateMarkerInFirestore(duplicatingData);
-      duplicatingMarker.dragging.disable();
-      duplicatingMarker = null;
-      duplicatingData = null;
-      pasteTooltip.style.display = "none";
-    }
-  });
+  // Right-click cancels copy mode
   document.addEventListener("contextmenu", (ev) => {
-    if (duplicatingMarker) {
-      duplicatingMarker.dragging.disable();
-      duplicatingMarker = null;
-      duplicatingData = null;
+    if (copiedMarkerData) {
+      copiedMarkerData = null;
       pasteTooltip.style.display = "none";
     }
   });
@@ -594,7 +612,7 @@ document.addEventListener("DOMContentLoaded", () => {
           renderExtraLines();
           itemExtraFields.style.display = "none";
           nonItemDescription.style.display = "none";
-          // Position edit modal relative to cursor (cursor is at modal's middle right with 10px gap)
+          // Position the edit modal so that its right edge is 10px right of the cursor, vertically centered.
           setEditModalPosition(evt.originalEvent);
           editModal.style.display = "block";
           editForm.onsubmit = (e2) => {
@@ -658,7 +676,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Toggle Marker Grouping (for Item markers)
+  // Toggle Marker Grouping for Item markers
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
     if (this.checked) {
@@ -675,19 +693,20 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Helper: Set edit modal position so that cursor is at middle right (with 10px gap)
+  // Helper: Position edit modal so that its right edge is 10px right of the cursor,
+  // and vertically centered relative to the cursor (only for edit modal)
   function setEditModalPosition(ev) {
-    // Using offsetWidth/offsetHeight after modal is made visible; so temporarily display it to measure
+    // Temporarily display modal to measure its dimensions.
     editModal.style.display = "block";
     const modalWidth = editModal.offsetWidth;
     const modalHeight = editModal.offsetHeight;
-    // Position so that the modal's right edge is 10px to the right of the cursor and vertically centered.
+    // Position: the modal's right edge will be at ev.pageX + 10
     editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
     editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
   }
 
   // ------------------------------
-  // Helper: Format rarity value (first letter uppercase)
+  // Helper: Format rarity (first letter uppercase)
   function formatRarity(val) {
     if (!val) return "";
     return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
