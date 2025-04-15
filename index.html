@@ -21,7 +21,6 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
     <!-- Map Layers Toggle -->
     <div class="sidebar-section">
       <h2><i class="fas fa-layer-group"></i> Layers</h2>
@@ -57,25 +56,26 @@
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  
   <!-- Firebase App (compat) and Firestore -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
   <!-- Custom Edit Modal for Marker Editing (Admin Mode) -->
   <div id="edit-modal" style="display:none; position:absolute; background:#222; color:#eee; padding:20px; border:1px solid #555; z-index:2100; cursor:default;">
-    <h3>Edit Marker</h3>
+    <!-- Drag Handle for Modal -->
+    <div id="edit-modal-handle" style="cursor:move; padding-bottom:5px; border-bottom:1px solid #555; margin-bottom:10px;">
+      <strong>Edit Marker</strong>
+    </div>
     <form id="edit-form">
       <label>
-        Name:<br/>
+        Name:<br />
         <input type="text" id="edit-name" required />
       </label>
-      <br/><br/>
+      <br /><br />
       <label>
-        Type:<br/>
+        Type:<br />
         <select id="edit-type">
           <option value="Teleport">Teleport</option>
           <option value="Extraction Portal">Extraction Portal</option>
@@ -83,21 +83,21 @@
           <option value="Door">Door</option>
         </select>
       </label>
-      <br/><br/>
+      <br /><br />
       <label>
-        Image Small (for icon):<br/>
+        Image Small (Icon URL):<br />
         <input type="text" id="edit-image-small" placeholder="URL for small image" />
       </label>
-      <br/><br/>
+      <br /><br />
       <label>
-        Image Big (for popup):<br/>
+        Image Big (Popup URL):<br />
         <input type="text" id="edit-image-big" placeholder="URL for big image" />
       </label>
-      <br/><br/>
+      <br /><br />
       <!-- Extra fields for Item markers -->
       <div id="item-extra-fields" style="display:none;">
         <label>
-          Rarity:<br/>
+          Rarity:<br />
           <select id="edit-rarity">
             <option value="">Select Rarity</option>
             <option value="common">Common</option>
@@ -107,9 +107,9 @@
             <option value="legendary">Legendary</option>
           </select>
         </label>
-        <br/><br/>
+        <br /><br />
         <label>
-          Item Type:<br/>
+          Item Type:<br />
           <select id="edit-item-type">
             <option value="">Select Item Type</option>
             <option value="consumable">Consumable</option>
@@ -117,31 +117,45 @@
             <option value="key">Key</option>
           </select>
         </label>
-        <br/><br/>
+        <br /><br />
         <label>
-          Extra Info 1:<br/>
+          Extra Info 1:<br />
           <input type="text" id="edit-extra-1" />
         </label>
-        <br/><br/>
+        <br /><br />
         <label>
-          Extra Info 2:<br/>
+          Extra Info 2:<br />
           <input type="text" id="edit-extra-2" />
         </label>
-        <br/><br/>
+        <br /><br />
         <label>
-          Extra Info 3:<br/>
+          Extra Info 3:<br />
           <input type="text" id="edit-extra-3" />
         </label>
-        <br/><br/>
+        <br /><br />
       </div>
       <label>
-        Description:<br/>
+        Description:<br />
         <textarea id="edit-description" rows="3"></textarea>
       </label>
-      <br/><br/>
+      <br /><br />
+      <label>
+        Video URL (optional):<br />
+        <input type="text" id="edit-video-url" placeholder="URL for video preview" />
+      </label>
+      <br /><br />
       <button type="submit">Save</button>
       <button type="button" id="edit-cancel">Cancel</button>
     </form>
+  </div>
+
+  <!-- Video Popup (for video previews) -->
+  <div id="video-popup" style="display:none; position:absolute; background:#000; z-index:2200; padding:10px; border:2px solid #444;">
+    <button id="video-close" style="float:right; cursor:pointer;">X</button>
+    <video id="video-player" width="320" controls style="display:block;">
+      <source id="video-source" src="" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
   </div>
 </body>
 </html>

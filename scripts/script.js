@@ -32,7 +32,7 @@ document.addEventListener("DOMContentLoaded", () => {
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
 
-  // Create display names mapping for marker types (as used in the sidebar)
+  // Display names for marker types
   const markerTypeDisplay = {
     "Teleport": "Teleport",
     "Extraction Portal": "Extraction Portal",
@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "Door": "Door"
   };
 
-  // Layer groups: For Item markers, default is marker clustering.
+  // Layer groups: For Item markers, default is clustering.
   let itemLayer = L.markerClusterGroup();
   const layers = {
     "Teleport": L.layerGroup(),
@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   Object.values(layers).forEach(layer => layer.addTo(map));
 
-  // Global array to hold markers (for search and editing)
+  // Global array to hold markers
   let allMarkers = [];
 
   // ------------------------------
@@ -91,33 +91,49 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Utility: Make an Element Draggable
-  function makeDraggable(element) {
-    let isMouseDown = false;
-    let offsetX, offsetY;
-    element.addEventListener("mousedown", (e) => {
-      isMouseDown = true;
-      offsetX = e.clientX - parseInt(window.getComputedStyle(element).left, 10);
-      offsetY = e.clientY - parseInt(window.getComputedStyle(element).top, 10);
-      element.style.cursor = "move";
+  // Utility: Make Edit Modal Draggable via Handle Only
+  function makeModalDraggable(modal, handle) {
+    let isDragging = false, offsetX, offsetY;
+    handle.addEventListener("mousedown", (e) => {
+      isDragging = true;
+      const computedStyle = window.getComputedStyle(modal);
+      offsetX = e.clientX - parseInt(computedStyle.left, 10);
+      offsetY = e.clientY - parseInt(computedStyle.top, 10);
+      e.preventDefault();
     });
     document.addEventListener("mousemove", (e) => {
-      if (isMouseDown) {
-        element.style.left = (e.clientX - offsetX) + "px";
-        element.style.top = (e.clientY - offsetY) + "px";
+      if (isDragging) {
+        modal.style.left = (e.clientX - offsetX) + "px";
+        modal.style.top = (e.clientY - offsetY) + "px";
       }
     });
     document.addEventListener("mouseup", () => {
-      isMouseDown = false;
-      element.style.cursor = "default";
+      isDragging = false;
     });
   }
-  // Make the edit modal draggable
-  makeDraggable(document.getElementById("edit-modal"));
+  const editModal = document.getElementById("edit-modal");
+  const editModalHandle = document.getElementById("edit-modal-handle");
+  makeModalDraggable(editModal, editModalHandle);
+
+  // ------------------------------
+  // Utility: Video Popup for Previews
+  const videoPopup = document.getElementById("video-popup");
+  const videoPlayer = document.getElementById("video-player");
+  const videoSource = document.getElementById("video-source");
+  document.getElementById("video-close").addEventListener("click", () => {
+    videoPopup.style.display = "none";
+    videoPlayer.pause();
+  });
+  function openVideoPopup(x, y, videoURL) {
+    videoSource.src = videoURL;
+    videoPlayer.load();
+    videoPopup.style.left = x + "px";
+    videoPopup.style.top = y + "px";
+    videoPopup.style.display = "block";
+  }
 
   // ------------------------------
   // Utility: Custom Edit Modal (for marker editing)
-  const editModal = document.getElementById("edit-modal");
   const editForm = document.getElementById("edit-form");
   const editNameInput = document.getElementById("edit-name");
   const editTypeSelect = document.getElementById("edit-type");
@@ -163,7 +179,6 @@ document.addEventListener("DOMContentLoaded", () => {
     hideEditModal();
   });
   document.getElementById("edit-cancel").addEventListener("click", hideEditModal);
-  // Show/hide extra fields when type changes
   editTypeSelect.addEventListener("change", function () {
     if (this.value === "Item") {
       itemExtraFields.style.display = "block";
@@ -217,43 +232,32 @@ document.addEventListener("DOMContentLoaded", () => {
         ${marker.extra3 ? `<p>Extra 3: ${marker.extra3}</p>` : ""}
       `;
     }
+    // If videoURL exists, add a button to play video
+    let videoButton = "";
+    if (marker.videoURL) {
+      videoButton = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${marker.videoURL}')">Play Video</button>`;
+    }
     return `
       <div class="custom-popup">
         <div class="popup-header">
           ${marker.imageBig ? `<img src="${marker.imageBig}" class="popup-icon"/>` : ""}
           <div class="popup-title">
             <h3 class="popup-name">${marker.name}</h3>
-            ${marker.rarity && marker.type === "Item" ? `<p class="popup-rarity rarity-${marker.rarity}">${marker.rarity}</p>` : ""}
+            ${marker.type === "Item" && marker.rarity ? `<p class="popup-rarity rarity-${marker.rarity}">${marker.rarity}</p>` : ""}
           </div>
         </div>
         <div class="popup-body">
           ${marker.description ? `<p>${marker.description}</p>` : ""}
           ${extraContent}
           ${marker.usage ? `<p><em>${marker.usage}</em></p>` : ""}
-          <button class="more-info-btn">More Info</button>
+          ${videoButton}
         </div>
       </div>
     `;
   }
 
-  // ------------------------------
-  // Option: Toggle Marker Clustering (for Item layer)
-  const disableGroupingCheckbox = document.getElementById("disable-grouping");
-  disableGroupingCheckbox.addEventListener("change", function () {
-    map.removeLayer(layers["Item"]);
-    if (this.checked) {
-      layers["Item"] = L.layerGroup();
-    } else {
-      layers["Item"] = L.markerClusterGroup();
-    }
-    // Re-add all "Item" markers
-    allMarkers.forEach(item => {
-      if (item.data.type === "Item") {
-        layers["Item"].addLayer(item.markerObj);
-      }
-    });
-    layers["Item"].addTo(map);
-  });
+  // Expose openVideoPopup for inline onclick usage
+  window.openVideoPopup = openVideoPopup;
 
   // ------------------------------
   // Utility: Add Marker
@@ -268,7 +272,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     layers[markerData.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: markerData });
-
+    
     markerObj.on("contextmenu", function (e) {
       e.originalEvent.preventDefault();
       showContextMenu(e.originalEvent.pageX, e.originalEvent.pageY, [
@@ -303,14 +307,22 @@ document.addEventListener("DOMContentLoaded", () => {
             duplicate.name = markerData.name + " (copy)";
             duplicate.coords = [...markerData.coords];
             const newMarkerObj = addMarker(duplicate);
-            // Set duplicate as draggable until dropped.
+            // Sticky duplicate: follow mouse until click to drop
             newMarkerObj.dragging.enable();
-            newMarkerObj.on("dragend", function () {
+            const moveHandler = function (e) {
+              const latlng = map.layerPointToLatLng(L.point(e.clientX, e.clientY));
+              newMarkerObj.setLatLng(latlng);
+            };
+            document.addEventListener("mousemove", moveHandler);
+            const dropHandler = function () {
               const latlng = newMarkerObj.getLatLng();
               duplicate.coords = [latlng.lat, latlng.lng];
               updateMarkerInFirestore(duplicate);
               newMarkerObj.dragging.disable();
-            });
+              document.removeEventListener("mousemove", moveHandler);
+              document.removeEventListener("click", dropHandler);
+            };
+            document.addEventListener("click", dropHandler);
             updateMarkerInFirestore(duplicate);
           }
         },
