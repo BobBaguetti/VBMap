@@ -51,7 +51,7 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Include the required scripts at the end of the body -->
+  <!-- Include scripts at the end -->
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- MarkerCluster JS -->
@@ -62,7 +62,7 @@
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
-  <!-- Custom Edit Modal for Marker Editing (Admin Mode) -->
+  <!-- Custom Edit Modal for Marker Editing -->
   <div id="edit-modal" style="display:none; position:absolute; background:#222; color:#eee; padding:20px; border:1px solid #555; z-index:2100; cursor:default;">
     <!-- Drag Handle for Modal -->
     <div id="edit-modal-handle" style="cursor:move; padding-bottom:5px; border-bottom:1px solid #555; margin-bottom:10px;">
@@ -97,7 +97,7 @@
       <!-- Extra fields for Item markers -->
       <div id="item-extra-fields" style="display:none;">
         <label>
-          Rarity:<br />
+          Rarity:<br/>
           <select id="edit-rarity">
             <option value="">Select Rarity</option>
             <option value="common">Common</option>
@@ -106,31 +106,31 @@
             <option value="epic">Epic</option>
             <option value="legendary">Legendary</option>
           </select>
+          <input type="color" id="edit-rarity-color" value="#ffffff" title="Rarity text color" />
         </label>
         <br /><br />
         <label>
-          Item Type:<br />
-          <select id="edit-item-type">
-            <option value="">Select Item Type</option>
-            <option value="consumable">Consumable</option>
-            <option value="crafting material">Crafting Material</option>
-            <option value="key">Key</option>
-          </select>
+          Item Type:<br/>
+          <input type="text" id="edit-item-type" placeholder="crafting material, consumable..." />
+          <input type="color" id="edit-item-type-color" value="#ffffff" title="Item Type text color" />
         </label>
         <br /><br />
         <label>
           Extra Info 1:<br />
           <input type="text" id="edit-extra-1" />
+          <input type="color" id="edit-extra-1-color" value="#ffffff" title="Extra Info 1 text color" />
         </label>
         <br /><br />
         <label>
           Extra Info 2:<br />
           <input type="text" id="edit-extra-2" />
+          <input type="color" id="edit-extra-2-color" value="#ffffff" title="Extra Info 2 text color" />
         </label>
         <br /><br />
         <label>
           Extra Info 3:<br />
           <input type="text" id="edit-extra-3" />
+          <input type="color" id="edit-extra-3-color" value="#ffffff" title="Extra Info 3 text color" />
         </label>
         <br /><br />
       </div>
