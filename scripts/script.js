@@ -41,10 +41,9 @@ document.addEventListener("DOMContentLoaded", () => {
   let allMarkers = [];
 
   // ------------------------------
-  // Global variables for Copy Marker (sticky paste mode)
+  // Global variables for copy/paste
   let duplicatingMarker = null;
   let duplicatingData = null;
-  // Paste tooltip element
   const pasteTooltip = document.getElementById("paste-tooltip");
 
   // ------------------------------
@@ -82,17 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.addEventListener("click", () => {
     contextMenu.style.display = "none";
-    // If right-click cancels paste mode, hide tooltip and clear duplicating globals
-    if (duplicatingMarker) {
-      duplicatingMarker.dragging.disable();
-      duplicatingMarker = null;
-      duplicatingData = null;
-      pasteTooltip.style.display = "none";
-    }
   });
 
   // ------------------------------
-  // Draggable Edit Modal Setup
+  // Draggable Edit Modal
   const editModal = document.getElementById("edit-modal");
   const editModalHandle = document.getElementById("edit-modal-handle");
   let isDragging = false, modalOffsetX = 0, modalOffsetY = 0;
@@ -112,7 +104,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("mouseup", () => { isDragging = false; });
 
   // ------------------------------
-  // Video Popup Setup
+  // Video Popup
   const videoPopup = document.getElementById("video-popup");
   const videoPlayer = document.getElementById("video-player");
   const videoSource = document.getElementById("video-source");
@@ -130,69 +122,28 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openVideoPopup = openVideoPopup;
 
   // ------------------------------
-  // Edit Modal Fields & Color Picker Initialization
+  // Edit Modal Fields / Pickers
   const editForm = document.getElementById("edit-form");
   const editName = document.getElementById("edit-name");
-  const pickrName = Pickr.create({
-    el: '#pickr-name',
-    theme: 'nano',
-    default: '#ffffff',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
+  const pickrName = createPickr('#pickr-name');
   const editType = document.getElementById("edit-type");
   const editImageSmall = document.getElementById("edit-image-small");
   const editImageBig = document.getElementById("edit-image-big");
   const editVideoURL = document.getElementById("edit-video-url");
 
-  // Item-specific fields (inside "item-extra-fields")
+  // Item-specific
   const itemExtraFields = document.getElementById("item-extra-fields");
   const editRarity = document.getElementById("edit-rarity");
-  const pickrRarity = Pickr.create({
-    el: '#pickr-rarity',
-    theme: 'nano',
-    default: '#ffffff',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
+  const pickrRarity = createPickr('#pickr-rarity');
   const editItemType = document.getElementById("edit-item-type");
-  const pickrItemType = Pickr.create({
-    el: '#pickr-itemtype',
-    theme: 'nano',
-    default: '#ffffff',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
+  const pickrItemType = createPickr('#pickr-itemtype');
   const editDescription = document.getElementById("edit-description");
-  const pickrDescItem = Pickr.create({
-    el: '#pickr-desc-item',
-    theme: 'nano',
-    default: '#ffffff',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
-  // Non-item description fields
+  const pickrDescItem = createPickr('#pickr-desc-item');
+  // Non-item
   const nonItemDescription = document.getElementById("edit-description-non-item");
-  const pickrDescNonItem = Pickr.create({
-    el: '#pickr-desc-nonitem',
-    theme: 'nano',
-    default: '#ffffff',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
+  const pickrDescNonItem = createPickr('#pickr-desc-nonitem');
 
-  let currentEditMarker = null;
-
-  // Rarity defaults formatting: force first letter uppercase
-  const defaultRarityColors = {
-    "common": "#CCCCCC",
-    "uncommon": "#56DE56",
-    "rare": "#3498db",
-    "epic": "#9b59b6",
-    "legendary": "#f39c12"
-  };
-  editRarity.addEventListener("change", function() {
-    if (defaultRarityColors[this.value]) {
-      pickrRarity.setColor(defaultRarityColors[this.value]);
-    }
-  });
-
-  // Show/hide item fields based on type in the edit form
+  // Show/hide item fields based on type
   editType.addEventListener("change", () => {
     if (editType.value === "Item") {
       itemExtraFields.style.display = "block";
@@ -203,11 +154,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ------------------------------
-  // Extra Info Dynamic Fields
+  // Extra Info dynamic
   let extraLines = [];
   const extraLinesContainer = document.getElementById("extra-lines");
-  const addExtraLineBtn = document.getElementById("add-extra-line");
+  document.getElementById("add-extra-line").addEventListener("click", () => {
+    extraLines.push({ text: "", color: "#E5E6E8" });  // default color is #E5E6E8
+    renderExtraLines();
+  });
   function renderExtraLines() {
     extraLinesContainer.innerHTML = "";
     extraLines.forEach((lineObj, idx) => {
@@ -240,82 +193,47 @@ document.addEventListener("DOMContentLoaded", () => {
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
 
-      const linePickr = Pickr.create({
-        el: colorDiv,
-        theme: 'nano',
-        default: lineObj.color || '#ffffff',
-        components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+      const linePickr = createPickr(colorDiv);
+      linePickr.setColor(lineObj.color || "#E5E6E8");
+      linePickr.on("change", (color) => {
+        extraLines[idx].color = color.toHEXA().toString();
       });
-      linePickr.on("change", (color) => { extraLines[idx].color = color.toHEXA().toString(); });
       linePickr.on("save", () => { linePickr.hide(); });
     });
   }
-  addExtraLineBtn.addEventListener("click", () => {
-    extraLines.push({ text: "", color: "#ffffff" });
-    renderExtraLines();
-  });
 
-  // ------------------------------
-  // Global Duplicate Marker (Copy Marker) Sticky Behavior
-  map.on("mousemove", (ev) => {
-    if (duplicatingMarker) {
-      duplicatingMarker.setLatLng(ev.latlng);
-      pasteTooltip.style.left = (ev.containerPoint.x + 15) + "px";
-      pasteTooltip.style.top = (ev.containerPoint.y + 15) + "px";
-      pasteTooltip.style.display = "block";
-    }
-  });
-  map.on("click", (ev) => {
-    if (duplicatingMarker) {
-      duplicatingData.coords = [ev.latlng.lat, ev.latlng.lng];
-      updateMarkerInFirestore(duplicatingData);
-      duplicatingMarker.dragging.disable();
-      duplicatingMarker = null;
-      duplicatingData = null;
-      pasteTooltip.style.display = "none";
-    }
-  });
-  // Right-click to cancel paste mode if active
-  document.addEventListener("contextmenu", (ev) => {
-    if (duplicatingMarker) {
-      duplicatingMarker.dragging.disable();
-      duplicatingMarker = null;
-      duplicatingData = null;
-      pasteTooltip.style.display = "none";
-    }
-  });
-
-  // ------------------------------
-  // Cancel Button in Edit Modal
+  // Cancel Button
   document.getElementById("edit-cancel").addEventListener("click", () => {
     editModal.style.display = "none";
     currentEditMarker = null;
     extraLines = [];
   });
 
-  // ------------------------------
-  // Form Submit Handler (Save changes from Edit Modal)
+  let currentEditMarker = null;
+
+  // When we click "Save" in the edit modal
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (!currentEditMarker) return;
     const data = currentEditMarker.data;
     data.name = editName.value;
-    data.nameColor = pickrName.getColor().toHEXA().toString();
+    data.nameColor = pickrName.getColor()?.toHEXA()?.toString() || "#E5E6E8";
     data.type = editType.value;
     data.imageSmall = editImageSmall.value;
     data.imageBig = editImageBig.value;
     data.videoURL = editVideoURL.value || "";
     if (data.type === "Item") {
+      // Format rarity to have uppercase first letter
       data.rarity = formatRarity(editRarity.value);
-      data.rarityColor = pickrRarity.getColor().toHEXA().toString();
+      data.rarityColor = pickrRarity.getColor()?.toHEXA()?.toString() || "#E5E6E8";
       data.itemType = editItemType.value;
-      data.itemTypeColor = pickrItemType.getColor().toHEXA().toString();
+      data.itemTypeColor = pickrItemType.getColor()?.toHEXA()?.toString() || "#E5E6E8";
       data.description = editDescription.value;
-      data.descriptionColor = pickrDescItem.getColor().toHEXA().toString();
+      data.descriptionColor = pickrDescItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
       data.extraLines = JSON.parse(JSON.stringify(extraLines));
     } else {
       data.description = nonItemDescription.value;
-      data.descriptionColor = pickrDescNonItem.getColor().toHEXA().toString();
+      data.descriptionColor = pickrDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
       delete data.rarity;
       delete data.rarityColor;
       delete data.itemType;
@@ -329,25 +247,28 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEditMarker = null;
   });
 
-  // Helper: Format rarity value with first letter uppercase
+  // Format rarity (uppercase first letter)
   function formatRarity(val) {
     if (!val) return "";
     return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
   }
 
-  // ------------------------------
-  // Helper: Create a Pickr instance (if needed elsewhere)
-  function createPickr(el) {
+  // Helper: createPickr
+  function createPickr(selector) {
     return Pickr.create({
-      el: el,
+      el: selector,
       theme: 'nano',
-      default: '#ffffff',
-      components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+      default: '#E5E6E8',  // default is #E5E6E8 if not assigned
+      components: {
+        preview: true,
+        opacity: true,
+        hue: true,
+        interaction: { hex: true, rgba: true, input: true, save: true }
+      }
     });
   }
 
-  // ------------------------------
-  // Marker Icon & Popup Creation
+  // Marker Icon / Popup
   function createCustomIcon(m) {
     return L.divIcon({
       html: `
@@ -365,29 +286,27 @@ document.addEventListener("DOMContentLoaded", () => {
     let rarityHTML = "";
     let descHTML = "";
     let extraHTML = "";
-
     if (m.type === "Item") {
       if (m.itemType) {
-        itemTypeHTML = `<div style="font-size:16px;color:${m.itemTypeColor||"#fff"};margin:2px 0;">${m.itemType}</div>`;
+        itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor||"#E5E6E8"}; margin:2px 0;">${m.itemType}</div>`;
       }
       if (m.rarity) {
-        rarityHTML = `<div style="font-size:16px;color:${m.rarityColor||"#fff"};margin:2px 0;">${formatRarity(m.rarity)}</div>`;
+        rarityHTML = `<div style="font-size:16px; color:${m.rarityColor||"#E5E6E8"}; margin:2px 0;">${formatRarity(m.rarity)}</div>`;
       }
       if (m.description) {
-        descHTML = `<p style="margin:5px 0;color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
+        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor||"#E5E6E8"};">${m.description}</p>`;
       }
       if (m.extraLines && m.extraLines.length) {
         m.extraLines.forEach(line => {
-          extraHTML += `<p style="margin:0;color:${line.color||"#fff"};">${line.text}</p>`;
+          extraHTML += `<p style="margin-top:5px; margin-bottom:0; color:${line.color || "#E5E6E8"};">${line.text}</p>`;
         });
       }
     } else {
       if (m.description) {
-        descHTML = `<p style="margin:5px 0;color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
+        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor||"#E5E6E8"};">${m.description}</p>`;
       }
     }
-    const nameHTML = `<h3 style="margin:0;font-size:20px;color:${m.nameColor||"#fff"};">${m.name}</h3>`;
-    // Reduce gap between image and text from 15px to 5px
+    const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor||"#E5E6E8"};">${m.name}</h3>`;
     const scaledImg = m.imageBig 
       ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`
       : "";
@@ -397,6 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return `
       <div class="custom-popup">
+        <!-- reduce gap to 5px between image/text -->
         <div class="popup-header" style="display:flex; gap:5px;">
           ${scaledImg}
           <div style="margin-left:5px;">
@@ -414,8 +334,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // ------------------------------
-  // Firestore Persistence Functions
+  // Firestore Functions
   function updateMarkerInFirestore(m) {
     if (m.id) {
       db.collection("markers").doc(m.id).set(m).then(() => {
@@ -434,8 +353,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }).catch(console.error);
   }
 
-  // ------------------------------
-  // Add Marker Function (with Delete and Copy Marker options)
+  // Add Marker
   function addMarker(m) {
     const markerObj = L.marker([m.coords[0], m.coords[1]], {
       icon: createCustomIcon(m),
@@ -450,33 +368,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
     markerObj.on("contextmenu", (evt) => {
       evt.originalEvent.preventDefault();
-      const options = [
+      const opts = [
         {
           text: "Edit Marker",
           action: () => {
             currentEditMarker = { markerObj, data: m };
+            // populate fields
             editName.value = m.name || "";
-            pickrName.setColor(m.nameColor || "#ffffff");
+            pickrName.setColor(m.nameColor || "#E5E6E8");
             editType.value = m.type || "Door";
             editImageSmall.value = m.imageSmall || "";
             editImageBig.value = m.imageBig || "";
             editVideoURL.value = m.videoURL || "";
+            // If item
             if (m.type === "Item") {
               itemExtraFields.style.display = "block";
               nonItemDescription.style.display = "none";
-              editRarity.value = m.rarity || "";
-              pickrRarity.setColor(m.rarityColor || "#ffffff");
-              editItemType.value = m.itemType || "";
-              pickrItemType.setColor(m.itemTypeColor || "#ffffff");
+              editRarity.value = m.rarity ? m.rarity.toLowerCase() : ""; 
+              pickrRarity.setColor(m.rarityColor || "#E5E6E8");
+              editItemType.value = m.itemType || "Crafting Material";
+              pickrItemType.setColor(m.itemTypeColor || "#E5E6E8");
               editDescription.value = m.description || "";
-              pickrDescItem.setColor(m.descriptionColor || "#ffffff");
+              pickrDescItem.setColor(m.descriptionColor || "#E5E6E8");
               extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
               renderExtraLines();
             } else {
               itemExtraFields.style.display = "none";
               nonItemDescription.style.display = "block";
               nonItemDescription.value = m.description || "";
-              pickrDescNonItem.setColor(m.descriptionColor || "#ffffff");
+              pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
             }
             editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
             editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
@@ -487,10 +407,9 @@ document.addEventListener("DOMContentLoaded", () => {
           text: "Copy Marker",
           action: () => {
             const dup = JSON.parse(JSON.stringify(m));
-            dup.name = `${m.name} (copy)`;
+            dup.name = `${dup.name} (copy)`;
             dup.coords = [...m.coords];
             const newMarkerObj = addMarker(dup);
-            // Enable sticky copy mode:
             newMarkerObj.dragging.enable();
             duplicatingMarker = newMarkerObj;
             duplicatingData = dup;
@@ -512,27 +431,24 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       ];
-      // Always include Delete Marker option
-      options.push({
+      // Always include Delete
+      opts.push({
         text: "Delete Marker",
         action: () => {
           layers[m.type].removeLayer(markerObj);
           const idx = allMarkers.findIndex(o => o.data.id === m.id);
-          if (idx !== -1) {
-            allMarkers.splice(idx, 1);
-          }
+          if (idx !== -1) allMarkers.splice(idx, 1);
           if (m.id) {
             deleteMarkerInFirestore(m.id);
           }
         }
       });
-      showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
+      showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, opts);
     });
     return markerObj;
   }
 
-  // ------------------------------
-  // Global Duplicate (Copy) Marker Sticky Behavior
+  // Map listeners for paste mode
   map.on("mousemove", (ev) => {
     if (duplicatingMarker) {
       duplicatingMarker.setLatLng(ev.latlng);
@@ -551,7 +467,7 @@ document.addEventListener("DOMContentLoaded", () => {
       pasteTooltip.style.display = "none";
     }
   });
-  // Right-click anywhere cancels paste mode
+  // Right-click cancels paste mode
   document.addEventListener("contextmenu", (ev) => {
     if (duplicatingMarker) {
       duplicatingMarker.dragging.disable();
@@ -561,40 +477,41 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // ------------------------------
-  // Load Markers from Firestore (or fallback JSON)
+  // Load markers from Firestore or fallback JSON
   function loadMarkers() {
-    db.collection("markers").get().then(querySnapshot => {
-      querySnapshot.forEach(doc => {
-        let data = doc.data();
-        data.id = doc.id;
-        if (!data.type || !layers[data.type]) {
-          console.error(`Invalid marker type: ${data.type}`);
-          return;
-        }
-        if (!data.coords) data.coords = [1500,1500];
-        addMarker(data);
-      });
-    }).catch(err => {
-      console.error("Error loading markers from Firestore:", err);
-      fetch("./data/markerData.json").then(resp => {
-        if (!resp.ok) throw new Error("Network response was not ok");
-        return resp.json();
-      }).then(jsonData => {
-        jsonData.forEach(m => {
-          if (!m.type || !layers[m.type]) {
-            console.error(`Invalid marker type: ${m.type}`);
+    db.collection("markers").get()
+      .then(querySnapshot => {
+        querySnapshot.forEach(doc => {
+          let data = doc.data();
+          data.id = doc.id;
+          if (!data.type || !layers[data.type]) {
+            console.error(`Invalid marker type: ${data.type}`);
             return;
           }
-          addMarker(m);
+          if (!data.coords) data.coords = [1500,1500];
+          addMarker(data);
         });
-      }).catch(err2 => console.error("Error loading local JSON:", err2));
-    });
+      })
+      .catch(err => {
+        console.error("Error loading markers from Firestore:", err);
+        // fallback
+        fetch("./data/markerData.json").then(resp => {
+          if (!resp.ok) throw new Error("Network response was not ok");
+          return resp.json();
+        }).then(jsonData => {
+          jsonData.forEach(m => {
+            if (!m.type || !layers[m.type]) {
+              console.error(`Invalid marker type: ${m.type}`);
+              return;
+            }
+            addMarker(m);
+          });
+        }).catch(err2 => console.error("Error loading local JSON:", err2));
+      });
   }
   loadMarkers();
 
-  // ------------------------------
-  // Right-click on Map -> Create New Marker (Edit Mode)
+  // Right-click on Map => Create New Marker
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -602,20 +519,20 @@ document.addEventListener("DOMContentLoaded", () => {
         action: () => {
           currentEditMarker = null;
           editName.value = "";
-          pickrName.setColor("#ffffff");
+          pickrName.setColor("#E5E6E8");
           editType.value = "Door";
           editImageSmall.value = "";
           editImageBig.value = "";
           editVideoURL.value = "";
           editRarity.value = "";
-          pickrRarity.setColor("#ffffff");
-          editItemType.value = "";
-          pickrItemType.setColor("#ffffff");
+          pickrRarity.setColor("#E5E6E8");
+          editItemType.value = "Crafting Material";
+          pickrItemType.setColor("#E5E6E8");
           editDescription.value = "";
-          pickrDescItem.setColor("#ffffff");
+          pickrDescItem.setColor("#E5E6E8");
           extraLines = [];
           renderExtraLines();
-          // Hide item-specific sections since default is Door
+          // Hide item-specific fields if "Door"
           itemExtraFields.style.display = "none";
           nonItemDescription.style.display = "none";
           editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
@@ -626,23 +543,23 @@ document.addEventListener("DOMContentLoaded", () => {
             const newMarker = {
               type: editType.value,
               name: editName.value || "New Marker",
-              nameColor: pickrName.getColor().toHEXA().toString(),
+              nameColor: pickrName.getColor()?.toHEXA()?.toString() || "#E5E6E8",
               coords: [evt.latlng.lat, evt.latlng.lng],
               imageSmall: editImageSmall.value,
               imageBig: editImageBig.value,
               videoURL: editVideoURL.value || ""
             };
             if (newMarker.type === "Item") {
-              newMarker.rarity = editRarity.value;
-              newMarker.rarityColor = pickrRarity.getColor().toHEXA().toString();
+              newMarker.rarity = formatRarity(editRarity.value);
+              newMarker.rarityColor = pickrRarity.getColor()?.toHEXA()?.toString() || "#E5E6E8";
               newMarker.itemType = editItemType.value;
-              newMarker.itemTypeColor = pickrItemType.getColor().toHEXA().toString();
+              newMarker.itemTypeColor = pickrItemType.getColor()?.toHEXA()?.toString() || "#E5E6E8";
               newMarker.description = editDescription.value;
-              newMarker.descriptionColor = pickrDescItem.getColor().toHEXA().toString();
+              newMarker.descriptionColor = pickrDescItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
               newMarker.extraLines = JSON.parse(JSON.stringify(extraLines));
             } else {
               newMarker.description = nonItemDescription.value;
-              newMarker.descriptionColor = pickrDescNonItem.getColor().toHEXA().toString();
+              newMarker.descriptionColor = pickrDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
             }
             addMarker(newMarker);
             updateMarkerInFirestore(newMarker);
@@ -655,7 +572,6 @@ document.addEventListener("DOMContentLoaded", () => {
     ]);
   });
 
-  // ------------------------------
   // Sidebar Toggle
   document.getElementById("sidebar-toggle").addEventListener("click", () => {
     const sidebar = document.getElementById("sidebar");
@@ -665,8 +581,7 @@ document.addEventListener("DOMContentLoaded", () => {
     map.invalidateSize();
   });
 
-  // ------------------------------
-  // Basic Search Functionality
+  // Basic Search
   document.getElementById("search-bar").addEventListener("input", function() {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
@@ -681,8 +596,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // ------------------------------
-  // Toggle Marker Grouping (for Item markers)
+  // Toggle Marker Grouping for item markers
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
     if (this.checked) {
