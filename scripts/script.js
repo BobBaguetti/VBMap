@@ -41,12 +41,12 @@ document.addEventListener("DOMContentLoaded", () => {
   let allMarkers = [];
 
   // ------------------------------
-  // Global variable for Copy Marker Mode
-  let copiedMarkerData = null; // stores a deep copy of the marker data when Copy is selected
+  // Copy Marker Mode
+  let copiedMarkerData = null;
   const pasteTooltip = document.getElementById("paste-tooltip");
 
   // ------------------------------
-  // Context Menu Setup
+  // Context Menu
   const contextMenu = document.createElement("div");
   contextMenu.id = "context-menu";
   document.body.appendChild(contextMenu);
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.addEventListener("click", () => {
     contextMenu.style.display = "none";
-    // Right-click cancels copy mode
+    // Right-click cancels paste mode
     if (copiedMarkerData) {
       copiedMarkerData = null;
       pasteTooltip.style.display = "none";
@@ -88,7 +88,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Draggable Edit Modal Setup
+  // Draggable Edit Modal
   const editModal = document.getElementById("edit-modal");
   const editModalHandle = document.getElementById("edit-modal-handle");
   let isDragging = false, modalOffsetX = 0, modalOffsetY = 0;
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.addEventListener("mouseup", () => { isDragging = false; });
 
   // ------------------------------
-  // Video Popup Setup
+  // Video Popup
   const videoPopup = document.getElementById("video-popup");
   const videoPlayer = document.getElementById("video-player");
   const videoSource = document.getElementById("video-source");
@@ -126,82 +126,50 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openVideoPopup = openVideoPopup;
 
   // ------------------------------
-  // Edit Modal Fields & Color Pickers
+  // Edit Modal Fields & Pickers
   const editForm = document.getElementById("edit-form");
   const editName = document.getElementById("edit-name");
-  const pickrName = Pickr.create({
-    el: '#pickr-name',
-    theme: 'nano',
-    default: '#E5E6E8',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  });
+  
+  // We'll define a helper that creates pickers with the correct callback signature:
+  function createPicker(selector) {
+    return Pickr.create({
+      el: selector,
+      theme: 'nano',
+      default: '#E5E6E8',
+      components: { 
+        preview: true, 
+        opacity: true, 
+        hue: true, 
+        interaction: { hex: true, rgba: true, input: true, save: true } 
+      }
+    })
+    .on('save', (color, pickr) => {
+      // pickr is actually the second argument
+      pickr.hide();
+    });
+  }
+
+  const pickrName = createPicker('#pickr-name');
   const editType = document.getElementById("edit-type");
   const editImageSmall = document.getElementById("edit-image-small");
   const editImageBig = document.getElementById("edit-image-big");
   const editVideoURL = document.getElementById("edit-video-url");
 
-  // Item-specific Fields
+  // Item fields
   const itemExtraFields = document.getElementById("item-extra-fields");
   const editRarity = document.getElementById("edit-rarity");
-  const pickrRarity = Pickr.create({
-    el: '#pickr-rarity',
-    theme: 'nano',
-    default: '#E5E6E8',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  }).on('save', instance => instance.hide());
+  const pickrRarity = createPicker('#pickr-rarity');
   const editItemType = document.getElementById("edit-item-type");
-  const pickrItemType = Pickr.create({
-    el: '#pickr-itemtype',
-    theme: 'nano',
-    default: '#E5E6E8',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  }).on('save', instance => instance.hide());
+  const pickrItemType = createPicker('#pickr-itemtype');
   const editDescription = document.getElementById("edit-description");
-  const pickrDescItem = Pickr.create({
-    el: '#pickr-desc-item',
-    theme: 'nano',
-    default: '#E5E6E8',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  }).on('save', instance => instance.hide());
-  // Non-item fields
+  const pickrDescItem = createPicker('#pickr-desc-item');
+  // Non-item
   const nonItemDescription = document.getElementById("edit-description-non-item");
-  const pickrDescNonItem = Pickr.create({
-    el: '#pickr-desc-nonitem',
-    theme: 'nano',
-    default: '#E5E6E8',
-    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-  }).on('save', instance => instance.hide());
-
-  // Function to populate edit form with marker data (so pickers update with stored colors)
-  function populateEditForm(m) {
-    editName.value = m.name || "";
-    pickrName.setColor(m.nameColor || "#E5E6E8");
-    editType.value = m.type || "Door";
-    editImageSmall.value = m.imageSmall || "";
-    editImageBig.value = m.imageBig || "";
-    editVideoURL.value = m.videoURL || "";
-    if (m.type === "Item") {
-      itemExtraFields.style.display = "block";
-      nonItemDescription.style.display = "none";
-      editRarity.value = m.rarity ? m.rarity.toLowerCase() : "";
-      pickrRarity.setColor(m.rarityColor || "#E5E6E8");
-      editItemType.value = m.itemType || "Crafting Material";
-      pickrItemType.setColor(m.itemTypeColor || "#E5E6E8");
-      editDescription.value = m.description || "";
-      pickrDescItem.setColor(m.descriptionColor || "#E5E6E8");
-      extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
-      renderExtraLines();
-    } else {
-      itemExtraFields.style.display = "none";
-      nonItemDescription.style.display = "block";
-      nonItemDescription.value = m.description || "";
-      pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
-    }
-  }
+  const pickrDescNonItem = createPicker('#pickr-desc-nonitem');
 
   let currentEditMarker = null;
 
-  // Rarity default colors for quick selection – update on change overrides custom color
+  // Rarity defaults
   const defaultRarityColors = {
     "common": "#CCCCCC",
     "uncommon": "#56DE56",
@@ -226,11 +194,42 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  // Function to populate the edit modal with marker data
+  function populateEditForm(m) {
+    editName.value = m.name || "";
+    pickrName.setColor(m.nameColor || "#E5E6E8");
+    editType.value = m.type || "Door";
+    editImageSmall.value = m.imageSmall || "";
+    editImageBig.value = m.imageBig || "";
+    editVideoURL.value = m.videoURL || "";
+    
+    if (m.type === "Item") {
+      itemExtraFields.style.display = "block";
+      nonItemDescription.style.display = "none";
+      editRarity.value = m.rarity ? m.rarity.toLowerCase() : "";
+      pickrRarity.setColor(m.rarityColor || "#E5E6E8");
+      editItemType.value = m.itemType || "Crafting Material";
+      pickrItemType.setColor(m.itemTypeColor || "#E5E6E8");
+      editDescription.value = m.description || "";
+      pickrDescItem.setColor(m.descriptionColor || "#E5E6E8");
+      extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
+      renderExtraLines();
+    } else {
+      itemExtraFields.style.display = "none";
+      nonItemDescription.style.display = "block";
+      nonItemDescription.value = m.description || "";
+      pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
+    }
+  }
+
   // ------------------------------
-  // Extra Info Dynamic Fields
+  // Extra Info Logic
   let extraLines = [];
   const extraLinesContainer = document.getElementById("extra-lines");
-  const addExtraLineBtn = document.getElementById("add-extra-line");
+  document.getElementById("add-extra-line").addEventListener("click", () => {
+    extraLines.push({ text: "", color: "#E5E6E8" });
+    renderExtraLines();
+  });
   function renderExtraLines() {
     extraLinesContainer.innerHTML = "";
     extraLines.forEach((lineObj, idx) => {
@@ -258,60 +257,38 @@ document.addEventListener("DOMContentLoaded", () => {
       row.appendChild(colorDiv);
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
-      const linePickr = createPickr(colorDiv);
+
+      // Create new pickr
+      const linePickr = Pickr.create({
+        el: colorDiv,
+        theme: 'nano',
+        default: '#E5E6E8',
+        components: {
+          preview: true,
+          opacity: true,
+          hue: true,
+          interaction: { hex: true, rgba: true, input: true, save: true }
+        }
+      })
+      .on('change', (color) => {
+        extraLines[idx].color = color.toHEXA().toString();
+      })
+      .on('save', (color, pickr) => {
+        pickr.hide();
+      });
+      
       linePickr.setColor(lineObj.color || "#E5E6E8");
-      linePickr.on("change", (color) => { extraLines[idx].color = color.toHEXA().toString(); });
-      linePickr.on("save", () => { linePickr.hide(); });
     });
   }
-  addExtraLineBtn.addEventListener("click", () => {
-    extraLines.push({ text: "", color: "#E5E6E8" });
-    renderExtraLines();
-  });
 
-  // ------------------------------
-  // Global Copy Marker Mode (New Logic)
-  // When "Copy Marker" is chosen from the context menu, we simply store a deep copy.
-  // Then each left-click on the map creates a new marker using that data.
-  map.on("click", (ev) => {
-    if (copiedMarkerData) {
-      // Create a new marker data from copiedMarkerData,
-      // updating the coordinates from the click event.
-      const newData = JSON.parse(JSON.stringify(copiedMarkerData));
-      newData.coords = [ev.latlng.lat, ev.latlng.lng];
-      // Optionally, append " (copy)" to name
-      newData.name = newData.name + " (copy)";
-      addMarker(newData);
-      updateMarkerInFirestore(newData);
-      // The copy mode remains active so you can paste multiple markers.
-    }
-  });
-  // Right-click cancels copy mode
-  document.addEventListener("contextmenu", (ev) => {
-    if (copiedMarkerData) {
-      copiedMarkerData = null;
-      pasteTooltip.style.display = "none";
-    }
-  });
-
-  // ------------------------------
-  // In the context menu, the "Copy Marker" option now simply sets copiedMarkerData.
-  function setCopyMode(m) {
-    copiedMarkerData = JSON.parse(JSON.stringify(m));
-    // Show the paste tooltip near the cursor.
-    pasteTooltip.style.display = "block";
-  }
-
-  // ------------------------------
-  // Cancel Button in Edit Modal
+  // Cancel button
   document.getElementById("edit-cancel").addEventListener("click", () => {
     editModal.style.display = "none";
     currentEditMarker = null;
     extraLines = [];
   });
 
-  // ------------------------------
-  // Form Submit Handler (Save Edit Modal)
+  // Save button
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -346,37 +323,79 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEditMarker = null;
   });
 
-  // ------------------------------
-  // Helper: Format rarity (first letter uppercase)
+  // Rarity format
   function formatRarity(val) {
     if (!val) return "";
     return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
   }
 
-  // Helper: Create a Pickr instance
-  function createPickr(selector) {
-    return Pickr.create({
-      el: selector,
-      theme: 'nano',
-      default: '#E5E6E8',
-      components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
-    }).on('save', instance => instance.hide());
+  // Create new marker
+  function addMarker(m) {
+    const markerObj = L.marker([m.coords[0], m.coords[1]], {
+      icon: createCustomIcon(m),
+      draggable: false
+    });
+    markerObj.bindPopup(createPopupContent(m), {
+      className: "custom-popup-wrapper",
+      maxWidth: 350
+    });
+    layers[m.type].addLayer(markerObj);
+    allMarkers.push({ markerObj, data: m });
+
+    // Right-click => context menu
+    markerObj.on("contextmenu", (evt) => {
+      evt.originalEvent.preventDefault();
+      const options = [
+        {
+          text: "Edit Marker",
+          action: () => {
+            currentEditMarker = { markerObj, data: m };
+            populateEditForm(m);
+            setEditModalPosition(evt.originalEvent);
+            editModal.style.display = "block";
+          }
+        },
+        {
+          text: "Copy Marker",
+          action: () => {
+            // Just store the marker data so we can paste multiple times
+            copiedMarkerData = JSON.parse(JSON.stringify(m));
+            pasteTooltip.style.display = "block";
+          }
+        },
+        {
+          text: markerObj.dragging.enabled() ? "Disable Drag" : "Enable Drag",
+          action: () => {
+            if (markerObj.dragging.enabled()) {
+              markerObj.dragging.disable();
+            } else {
+              markerObj.dragging.enable();
+              markerObj.on("dragend", () => {
+                const latlng = markerObj.getLatLng();
+                m.coords = [latlng.lat, latlng.lng];
+                updateMarkerInFirestore(m);
+              });
+            }
+          }
+        }
+      ];
+      options.push({
+        text: "Delete Marker",
+        action: () => {
+          layers[m.type].removeLayer(markerObj);
+          const idx = allMarkers.findIndex(o => o.data.id === m.id);
+          if (idx !== -1) allMarkers.splice(idx, 1);
+          if (m.id) {
+            deleteMarkerInFirestore(m.id);
+          }
+        }
+      });
+      showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
+    });
+    return markerObj;
   }
 
-  // ------------------------------
-  // Edit Modal Popup Positioning: Position so that its right edge is 10px to the right of the cursor, and vertically centered.
-  function setEditModalPosition(ev) {
-    // Ensure modal is temporarily visible to calculate dimensions
-    editModal.style.display = "block";
-    const modalWidth = editModal.offsetWidth;
-    const modalHeight = editModal.offsetHeight;
-    // Position: modal.right edge = ev.pageX + 10, so modal.left = ev.pageX - modalWidth + 10; vertical center aligned.
-    editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
-    editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
-  }
-
-  // ------------------------------
-  // Marker Icon & Popup Creation
+  // Create the custom icon
   function createCustomIcon(m) {
     return L.divIcon({
       html: `
@@ -389,6 +408,8 @@ document.addEventListener("DOMContentLoaded", () => {
       iconSize: [32, 32]
     });
   }
+
+  // Marker popup
   function createPopupContent(m) {
     let itemTypeHTML = "";
     let rarityHTML = "";
@@ -406,7 +427,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
       if (m.extraLines && m.extraLines.length) {
         m.extraLines.forEach(line => {
-          extraHTML += `<p style="margin-top:5px; margin-bottom:0; color:${line.color || "#E5E6E8"};">${line.text}</p>`;
+          extraHTML += `<p style="margin-top:5px; margin-bottom:0; color:${line.color||"#E5E6E8"};">${line.text}</p>`;
         });
       }
     } else {
@@ -416,7 +437,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor||"#E5E6E8"};">${m.name}</h3>`;
     const scaledImg = m.imageBig 
-      ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`
+      ? `<img src="${m.imageBig}" style="width:64px; height:64px; object-fit:contain; border:2px solid #777; border-radius:4px;" />`
       : "";
     let videoBtn = "";
     if (m.videoURL) {
@@ -441,8 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // ------------------------------
-  // Firestore Persistence Functions
+  // Save data to Firestore
   function updateMarkerInFirestore(m) {
     if (m.id) {
       db.collection("markers").doc(m.id).set(m).then(() => {
@@ -455,104 +475,14 @@ document.addEventListener("DOMContentLoaded", () => {
       }).catch(console.error);
     }
   }
+  // Delete from Firestore
   function deleteMarkerInFirestore(id) {
     db.collection("markers").doc(id).delete().then(() => {
       console.log("Deleted marker:", id);
     }).catch(console.error);
   }
 
-  // ------------------------------
-  // Add Marker Function (with Delete and Copy Marker options)
-  function addMarker(m) {
-    const markerObj = L.marker([m.coords[0], m.coords[1]], {
-      icon: createCustomIcon(m),
-      draggable: false
-    });
-    markerObj.bindPopup(createPopupContent(m), {
-      className: "custom-popup-wrapper",
-      maxWidth: 350
-    });
-    layers[m.type].addLayer(markerObj);
-    allMarkers.push({ markerObj, data: m });
-
-    markerObj.on("contextmenu", (evt) => {
-      evt.originalEvent.preventDefault();
-      const options = [
-        {
-          text: "Edit Marker",
-          action: () => {
-            currentEditMarker = { markerObj, data: m };
-            populateEditForm(m);
-            // Position edit modal with its right edge 10px right of the cursor, vertically centered
-            setEditModalPosition(evt.originalEvent);
-            editModal.style.display = "block";
-          }
-        },
-        {
-          text: "Copy Marker",
-          action: () => {
-            // Instead of creating a new marker immediately, store a deep copy of the marker data
-            copiedMarkerData = JSON.parse(JSON.stringify(m));
-            // Optionally, add a suffix to indicate this is copy mode
-            pasteTooltip.style.display = "block";
-          }
-        },
-        {
-          text: markerObj.dragging.enabled() ? "Disable Drag" : "Enable Drag",
-          action: () => {
-            if (markerObj.dragging.enabled()) {
-              markerObj.dragging.disable();
-            } else {
-              markerObj.dragging.enable();
-              markerObj.on("dragend", () => {
-                const latlng = markerObj.getLatLng();
-                m.coords = [latlng.lat, latlng.lng];
-                updateMarkerInFirestore(m);
-              });
-            }
-          }
-        }
-      ];
-      // Always include Delete Marker option:
-      options.push({
-        text: "Delete Marker",
-        action: () => {
-          layers[m.type].removeLayer(markerObj);
-          const idx = allMarkers.findIndex(o => o.data.id === m.id);
-          if (idx !== -1) allMarkers.splice(idx, 1);
-          if (m.id) deleteMarkerInFirestore(m.id);
-        }
-      });
-      showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
-    });
-    return markerObj;
-  }
-
-  // ------------------------------
-  // Global Copy Marker (Paste Mode) Behavior:
-  // Each left click on the map while copy mode is active creates a new marker using copiedMarkerData.
-  map.on("click", (ev) => {
-    if (copiedMarkerData) {
-      const newData = JSON.parse(JSON.stringify(copiedMarkerData));
-      newData.coords = [ev.latlng.lat, ev.latlng.lng];
-      newData.name = newData.name + " (copy)";
-      addMarker(newData);
-      updateMarkerInFirestore(newData);
-      pasteTooltip.style.left = (ev.containerPoint.x + 15) + "px";
-      pasteTooltip.style.top = (ev.containerPoint.y + 15) + "px";
-      // Continue to stay in paste mode until canceled by right-click
-    }
-  });
-  // Right-click cancels copy mode
-  document.addEventListener("contextmenu", (ev) => {
-    if (copiedMarkerData) {
-      copiedMarkerData = null;
-      pasteTooltip.style.display = "none";
-    }
-  });
-
-  // ------------------------------
-  // Load Markers from Firestore (or fallback JSON)
+  // Load from Firestore or fallback JSON
   function loadMarkers() {
     db.collection("markers").get()
       .then(querySnapshot => {
@@ -588,8 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   loadMarkers();
 
-  // ------------------------------
-  // Right-click on Map -> Create New Marker (Edit Mode)
+  // Right-click on Map => Create New Marker
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -612,9 +541,9 @@ document.addEventListener("DOMContentLoaded", () => {
           renderExtraLines();
           itemExtraFields.style.display = "none";
           nonItemDescription.style.display = "none";
-          // Position the edit modal so that its right edge is 10px right of the cursor, vertically centered.
           setEditModalPosition(evt.originalEvent);
           editModal.style.display = "block";
+
           editForm.onsubmit = (e2) => {
             e2.preventDefault();
             const newMarker = {
@@ -649,64 +578,16 @@ document.addEventListener("DOMContentLoaded", () => {
     ]);
   });
 
-  // ------------------------------
-  // Sidebar Toggle
-  document.getElementById("sidebar-toggle").addEventListener("click", () => {
-    const sidebar = document.getElementById("sidebar");
-    const mapDiv = document.getElementById("map");
-    sidebar.classList.toggle("hidden");
-    mapDiv.style.marginLeft = sidebar.classList.contains("hidden") ? "0" : "300px";
-    map.invalidateSize();
-  });
-
-  // ------------------------------
-  // Basic Search
-  document.getElementById("search-bar").addEventListener("input", function() {
-    const query = this.value.toLowerCase();
-    allMarkers.forEach(item => {
-      const markerName = item.data.name.toLowerCase();
-      if (markerName.includes(query)) {
-        if (!map.hasLayer(item.markerObj)) {
-          layers[item.data.type].addLayer(item.markerObj);
-        }
-      } else {
-        layers[item.data.type].removeLayer(item.markerObj);
-      }
-    });
-  });
-
-  // ------------------------------
-  // Toggle Marker Grouping for Item markers
-  document.getElementById("disable-grouping").addEventListener("change", function() {
-    map.removeLayer(layers["Item"]);
-    if (this.checked) {
-      layers["Item"] = L.layerGroup();
-    } else {
-      layers["Item"] = L.markerClusterGroup();
-    }
-    allMarkers.forEach(item => {
-      if (item.data.type === "Item") {
-        layers["Item"].addLayer(item.markerObj);
-      }
-    });
-    layers["Item"].addTo(map);
-  });
-
-  // ------------------------------
-  // Helper: Position edit modal so that its right edge is 10px right of the cursor,
-  // and vertically centered relative to the cursor (only for edit modal)
+  // Helper: Positioning the modal
   function setEditModalPosition(ev) {
-    // Temporarily display modal to measure its dimensions.
     editModal.style.display = "block";
     const modalWidth = editModal.offsetWidth;
     const modalHeight = editModal.offsetHeight;
-    // Position: the modal's right edge will be at ev.pageX + 10
     editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
     editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
   }
 
-  // ------------------------------
-  // Helper: Format rarity (first letter uppercase)
+  // Helper: Capitalize Rarity
   function formatRarity(val) {
     if (!val) return "";
     return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
