@@ -13,19 +13,21 @@
   <link rel="stylesheet" href="styles/style.css" />
   <!-- Font Awesome for icons (optional) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Pickr CSS (for custom color picker) -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
 </head>
 <body>
-  <!-- Sidebar toggle button -->
+  <!-- Sidebar Toggle Button -->
   <button id="sidebar-toggle" style="position:absolute; top:10px; left:10px; z-index:1100;">☰</button>
   
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
     
-    <!-- Map Layers Toggle -->
     <div class="sidebar-section">
       <h2><i class="fas fa-layer-group"></i> Layers</h2>
       <div class="toggle-group">
+        <!-- Alphabetical order: Door, Extraction Portal, Item, Teleport -->
         <label><input type="checkbox" checked data-layer="Door" /> Door</label>
         <label><input type="checkbox" checked data-layer="Extraction Portal" /> Extraction Portal</label>
         <label><input type="checkbox" checked data-layer="Item" /> Item</label>
@@ -33,7 +35,6 @@
       </div>
     </div>
 
-    <!-- Settings -->
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -42,7 +43,6 @@
       </label>
     </div>
 
-    <!-- Search -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
@@ -52,15 +52,15 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Leaflet JS -->
+  <!-- Load Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- MarkerCluster JS -->
+  <!-- Load MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  
   <!-- Firebase App (compat) and Firestore -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  
+  <!-- Pickr JavaScript (custom color picker) -->
+  <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
@@ -70,14 +70,14 @@
       <strong>Edit Marker</strong>
     </div>
     <form id="edit-form">
-      <!-- Name + color -->
+      <!-- Name Field -->
       <div class="field-row">
         <label>Name:</label>
         <input type="text" id="edit-name" required />
-        <input type="color" id="edit-name-color" value="#ffffff" title="Name text color" />
+        <div class="color-btn" id="pickr-name"></div>
       </div>
 
-      <!-- Type (Alphabetical) -->
+      <!-- Type Field (Alphabetical Order) -->
       <div class="field-row">
         <label>Type:</label>
         <select id="edit-type">
@@ -88,7 +88,7 @@
         </select>
       </div>
       
-      <!-- Rarity, Item Type, Description for Items -->
+      <!-- Item-specific Fields -->
       <div id="item-extra-fields" style="display:none;">
         <div class="field-row">
           <label>Rarity:</label>
@@ -100,46 +100,43 @@
             <option value="epic">Epic</option>
             <option value="legendary">Legendary</option>
           </select>
-          <input type="color" id="edit-rarity-color" value="#ffffff" title="Rarity text color" />
+          <div class="color-btn" id="pickr-rarity"></div>
         </div>
 
         <div class="field-row">
           <label>Item Type:</label>
           <input type="text" id="edit-item-type" />
-          <input type="color" id="edit-item-type-color" value="#ffffff" title="Item type color" />
+          <div class="color-btn" id="pickr-itemtype"></div>
         </div>
 
         <div class="field-row">
           <label>Description:</label>
           <textarea id="edit-description" rows="2"></textarea>
-          <input type="color" id="edit-description-color" value="#ffffff" title="Description text color" />
+          <div class="color-btn" id="pickr-desc-item"></div>
         </div>
 
-        <!-- Single dividing line above Extra Info -->
-        <hr style="border:1px solid #555;margin:10px 0;" />
-        
-        <!-- Extra Info label, + button on same row, dynamic lines below -->
+        <!-- Dividing Line Above Extra Info -->
+        <hr style="border:1px solid #555; margin:10px 0;" />
         <div class="field-row" style="margin-bottom:0;">
           <label>Extra Info:</label>
           <button type="button" id="add-extra-line" style="width:auto; margin-left:10px;">+</button>
         </div>
         <div id="extra-lines"></div>
-
-        <!-- Another dividing line between extra info & images -->
-        <hr style="border:1px solid #555;margin:10px 0;" />
+        <!-- Dividing Line Between Extra Info and Images -->
+        <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
 
-      <!-- Non-item description -->
+      <!-- Non-Item Description Field -->
       <div id="non-item-description" style="display:none;">
         <div class="field-row">
           <label>Description:</label>
           <textarea id="edit-description-non-item" rows="3"></textarea>
-          <input type="color" id="edit-description-non-item-color" value="#ffffff" title="Description text color" />
+          <div class="color-btn" id="pickr-desc-nonitem"></div>
         </div>
-        <hr style="border:1px solid #555;margin:10px 0;" />
+        <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
 
-      <!-- Image S, Image L, Video -->
+      <!-- Image and Video Fields -->
       <div class="field-row">
         <label>Image S:</label>
         <input type="text" id="edit-image-small" />
@@ -153,8 +150,8 @@
         <input type="text" id="edit-video-url" />
       </div>
       
-      <!-- Buttons -->
-      <div class="field-row" style="justify-content:center;margin-top:10px;">
+      <!-- Save / Cancel Buttons -->
+      <div class="field-row" style="justify-content:center; margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>
       </div>

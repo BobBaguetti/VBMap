@@ -23,13 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
     zoomControl: false
   });
   L.control.zoom({ position: "topright" }).addTo(map);
-
   const bounds = [[0,0],[3000,3000]];
   const imageUrl = "./media/images/tempmap.png";
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
 
-  // Marker layers in alphabetical order
   let itemLayer = L.markerClusterGroup();
   const layers = {
     "Door": L.layerGroup(),
@@ -79,7 +77,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Draggable Edit Modal
+  // Draggable Edit Modal (via handle)
   const editModal = document.getElementById("edit-modal");
   const editModalHandle = document.getElementById("edit-modal-handle");
   let isDragging = false, offsetX, offsetY;
@@ -119,10 +117,15 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openVideoPopup = openVideoPopup;
 
   // ------------------------------
-  // Edit Modal Fields
+  // Edit Modal Fields and Custom Color Pickers (Pickr)
   const editForm = document.getElementById("edit-form");
   const editName = document.getElementById("edit-name");
-  const editNameColor = document.getElementById("edit-name-color");
+  const pickrName = Pickr.create({
+    el: '#pickr-name',
+    theme: 'nano',
+    default: '#ffffff',
+    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+  });
   const editType = document.getElementById("edit-type");
   const editImageSmall = document.getElementById("edit-image-small");
   const editImageBig = document.getElementById("edit-image-big");
@@ -131,20 +134,38 @@ document.addEventListener("DOMContentLoaded", () => {
   // Item fields
   const itemExtraFields = document.getElementById("item-extra-fields");
   const editRarity = document.getElementById("edit-rarity");
-  const editRarityColor = document.getElementById("edit-rarity-color");
+  const pickrRarity = Pickr.create({
+    el: '#pickr-rarity',
+    theme: 'nano',
+    default: '#ffffff',
+    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+  });
   const editItemType = document.getElementById("edit-item-type");
-  const editItemTypeColor = document.getElementById("edit-item-type-color");
+  const pickrItemType = Pickr.create({
+    el: '#pickr-itemtype',
+    theme: 'nano',
+    default: '#ffffff',
+    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+  });
   const editDescription = document.getElementById("edit-description");
-  const editDescriptionColor = document.getElementById("edit-description-color");
-
-  // Dynamic extra lines
+  const pickrDescItem = Pickr.create({
+    el: '#pickr-desc-item',
+    theme: 'nano',
+    default: '#ffffff',
+    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+  });
   const extraLinesContainer = document.getElementById("extra-lines");
   const addExtraLineBtn = document.getElementById("add-extra-line");
   let extraLines = [];
 
   // Non-item fields
   const nonItemDescription = document.getElementById("edit-description-non-item");
-  const nonItemDescriptionColor = document.getElementById("edit-description-non-item-color");
+  const pickrDescNonItem = Pickr.create({
+    el: '#pickr-desc-nonitem',
+    theme: 'nano',
+    default: '#ffffff',
+    components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+  });
 
   let currentEditMarker = null;
 
@@ -158,11 +179,11 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   editRarity.addEventListener("change", function() {
     if (defaultRarityColors[this.value]) {
-      editRarityColor.value = defaultRarityColors[this.value];
+      pickrRarity.setColor(defaultRarityColors[this.value]);
     }
   });
 
-  // Show/hide item vs non-item description
+  // Show/hide item fields based on type
   editType.addEventListener("change", () => {
     if (editType.value === "Item") {
       itemExtraFields.style.display = "block";
@@ -173,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Cancel
+  // Cancel Button
   document.getElementById("edit-cancel").addEventListener("click", () => {
     editModal.style.display = "none";
     currentEditMarker = null;
@@ -186,7 +207,6 @@ document.addEventListener("DOMContentLoaded", () => {
     extraLines.forEach((lineObj, idx) => {
       const row = document.createElement("div");
       row.className = "field-row";
-      row.style.alignItems = "center";
       row.style.marginBottom = "5px";
 
       const textInput = document.createElement("input");
@@ -198,18 +218,9 @@ document.addEventListener("DOMContentLoaded", () => {
         extraLines[idx].text = textInput.value;
       });
 
-      const colorInput = document.createElement("input");
-      colorInput.type = "color";
-      colorInput.value = lineObj.color || "#ffffff";
-      colorInput.style.width = "32px";
-      colorInput.style.height = "32px";
-      colorInput.style.border = "none";
-      colorInput.style.padding = "0";   // no internal padding
-      colorInput.style.cursor = "pointer";
-      colorInput.style.marginLeft = "5px";
-      colorInput.addEventListener("change", () => {
-        extraLines[idx].color = colorInput.value;
-      });
+      const colorDiv = document.createElement("div");
+      colorDiv.className = "color-btn";
+      colorDiv.style.marginLeft = "5px";
 
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
@@ -221,9 +232,24 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       row.appendChild(textInput);
-      row.appendChild(colorInput);
+      row.appendChild(colorDiv);
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
+
+      // Instantiate Pickr for each extra info row
+      const pickr = Pickr.create({
+        el: colorDiv,
+        theme: 'nano',
+        default: lineObj.color || '#ffffff',
+        components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
+      });
+      pickr.on('change', (color) => {
+        const hex = color.toHEXA().toString();
+        extraLines[idx].color = hex;
+      });
+      pickr.on('save', () => {
+        pickr.hide();
+      });
     });
   }
   addExtraLineBtn.addEventListener("click", () => {
@@ -231,13 +257,13 @@ document.addEventListener("DOMContentLoaded", () => {
     renderExtraLines();
   });
 
-  // Submit
-  editForm.addEventListener("submit", (evt) => {
-    evt.preventDefault();
+  // Submit Handler
+  editForm.addEventListener("submit", (e) => {
+    e.preventDefault();
     if (!currentEditMarker) return;
     const data = currentEditMarker.data;
     data.name = editName.value;
-    data.nameColor = editNameColor.value;
+    data.nameColor = pickrName.getColor().toHEXA().toString();
     data.type = editType.value;
     data.imageSmall = editImageSmall.value;
     data.imageBig = editImageBig.value;
@@ -245,15 +271,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (data.type === "Item") {
       data.rarity = editRarity.value;
-      data.rarityColor = editRarityColor.value;
+      data.rarityColor = pickrRarity.getColor().toHEXA().toString();
       data.itemType = editItemType.value;
-      data.itemTypeColor = editItemTypeColor.value;
+      data.itemTypeColor = pickrItemType.getColor().toHEXA().toString();
       data.description = editDescription.value;
-      data.descriptionColor = editDescriptionColor.value;
+      data.descriptionColor = pickrDescItem.getColor().toHEXA().toString();
       data.extraLines = JSON.parse(JSON.stringify(extraLines));
     } else {
       data.description = nonItemDescription.value;
-      data.descriptionColor = nonItemDescriptionColor.value;
+      data.descriptionColor = pickrDescNonItem.getColor().toHEXA().toString();
       delete data.rarity;
       delete data.rarityColor;
       delete data.itemType;
@@ -268,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Create Icon / Popup
+  // Marker Icon and Popup Creation
   function createCustomIcon(m) {
     return L.divIcon({
       html: `
@@ -289,35 +315,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (m.type === "Item") {
       if (m.itemType) {
-        itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor||"#fff"}; margin:2px 0;">${m.itemType}</div>`;
+        itemTypeHTML = `<div style="font-size:16px;color:${m.itemTypeColor||"#fff"};margin:2px 0;">${m.itemType}</div>`;
       }
       if (m.rarity) {
-        rarityHTML = `<div style="font-size:16px; color:${m.rarityColor||"#fff"}; margin:2px 0;">${m.rarity}</div>`;
+        rarityHTML = `<div style="font-size:16px;color:${m.rarityColor||"#fff"};margin:2px 0;">${m.rarity}</div>`;
       }
       if (m.description) {
-        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
+        descHTML = `<p style="margin:5px 0;color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
       }
       if (m.extraLines && m.extraLines.length) {
         m.extraLines.forEach(line => {
-          extraHTML += `<p style="margin:0; color:${line.color||"#fff"};">${line.text}</p>`;
+          extraHTML += `<p style="margin:0;color:${line.color||"#fff"};">${line.text}</p>`;
         });
       }
     } else {
       if (m.description) {
-        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
+        descHTML = `<p style="margin:5px 0;color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
       }
     }
-
     const scaledImage = m.imageBig 
       ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`
       : "";
-
-    let nameHTML = `<h3 style="margin:0;font-size:20px;color:${m.nameColor||"#fff"};">${m.name}</h3>`;
+    const nameHTML = `<h3 style="margin:0;font-size:20px;color:${m.nameColor||"#fff"};">${m.name}</h3>`;
     let videoBtn = "";
     if (m.videoURL) {
       videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
     }
-
     return `
       <div class="custom-popup">
         <div class="popup-header">
@@ -338,26 +361,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------
-  // Firestore Functions
-  function updateMarkerInFirestore(data) {
-    if (data.id) {
-      db.collection("markers").doc(data.id).set(data).then(() => {
-        console.log("Updated marker:", data.id);
+  // Firestore Persistence Functions
+  function updateMarkerInFirestore(m) {
+    if (m.id) {
+      db.collection("markers").doc(m.id).set(m).then(() => {
+        console.log("Updated marker:", m.id);
       }).catch(console.error);
     } else {
-      db.collection("markers").add(data).then(docRef => {
-        data.id = docRef.id;
+      db.collection("markers").add(m).then(docRef => {
+        m.id = docRef.id;
         console.log("Added marker with ID:", docRef.id);
       }).catch(console.error);
     }
   }
   function deleteMarkerInFirestore(id) {
     db.collection("markers").doc(id).delete().then(() => {
-      console.log("Marker deleted from Firestore:", id);
+      console.log("Deleted marker:", id);
     }).catch(console.error);
   }
 
-  // Add Marker
+  // ------------------------------
+  // Add Marker Function (with Delete option)
   function addMarker(m) {
     const markerObj = L.marker(
       [m.coords[0], m.coords[1]],
@@ -370,38 +394,35 @@ document.addEventListener("DOMContentLoaded", () => {
     layers[m.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: m });
 
-    // Right-click context
     markerObj.on("contextmenu", (evt) => {
       evt.originalEvent.preventDefault();
-      const contextOptions = [
+      const options = [
         {
           text: "Edit Marker",
           action: () => {
             currentEditMarker = { markerObj, data: m };
             editName.value = m.name || "";
-            editNameColor.value = m.nameColor || "#ffffff";
+            pickrName.setColor(m.nameColor || "#ffffff");
             editType.value = m.type || "Item";
             editImageSmall.value = m.imageSmall || "";
             editImageBig.value = m.imageBig || "";
             editVideoURL.value = m.videoURL || "";
-            
             if (m.type === "Item") {
               itemExtraFields.style.display = "block";
               nonItemDescription.style.display = "none";
               editRarity.value = m.rarity || "";
-              editRarityColor.value = m.rarityColor || "#ffffff";
+              pickrRarity.setColor(m.rarityColor || "#ffffff");
               editItemType.value = m.itemType || "";
-              editItemTypeColor.value = m.itemTypeColor || "#ffffff";
+              pickrItemType.setColor(m.itemTypeColor || "#ffffff");
               editDescription.value = m.description || "";
-              editDescriptionColor.value = m.descriptionColor || "#ffffff";
-              // dynamic lines
+              pickrDescItem.setColor(m.descriptionColor || "#ffffff");
               extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
               renderExtraLines();
             } else {
               itemExtraFields.style.display = "none";
               nonItemDescription.style.display = "block";
               nonItemDescription.value = m.description || "";
-              nonItemDescriptionColor.value = m.descriptionColor || "#ffffff";
+              pickrDescNonItem.setColor(m.descriptionColor || "#ffffff");
             }
             editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
             editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
@@ -415,7 +436,6 @@ document.addEventListener("DOMContentLoaded", () => {
             dup.name = `${m.name} (copy)`;
             dup.coords = [...m.coords];
             const newMarkerObj = addMarker(dup);
-            // sticky drag
             newMarkerObj.dragging.enable();
             const moveHandler = (ev2) => {
               const latlng = map.layerPointToLatLng(L.point(ev2.clientX, ev2.clientY));
@@ -433,39 +453,48 @@ document.addEventListener("DOMContentLoaded", () => {
             document.addEventListener("click", dropHandler);
             updateMarkerInFirestore(dup);
           }
+        },
+        {
+          text: markerObj.dragging.enabled() ? "Disable Drag" : "Enable Drag",
+          action: () => {
+            if (markerObj.dragging.enabled()) {
+              markerObj.dragging.disable();
+            } else {
+              markerObj.dragging.enable();
+              markerObj.on("dragend", () => {
+                const latlng = markerObj.getLatLng();
+                m.coords = [latlng.lat, latlng.lng];
+                updateMarkerInFirestore(m);
+              });
+            }
+          }
         }
       ];
-      // If it has an id, we can delete from Firestore
       if (m.id) {
-        contextOptions.push({
+        options.push({
           text: "Delete Marker",
           action: () => {
-            // Remove from map
             layers[m.type].removeLayer(markerObj);
-            // Remove from array
             const idx = allMarkers.findIndex(obj => obj.data.id === m.id);
             if (idx !== -1) {
               allMarkers.splice(idx, 1);
             }
-            // Delete from Firestore
             deleteMarkerInFirestore(m.id);
-            console.log("Marker deleted from map:", m.id);
           }
         });
       }
-      // Show final context menu
-      showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, contextOptions);
+      showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
     });
     return markerObj;
   }
 
-  // Render dynamic lines
+  // ------------------------------
+  // Render Dynamic Extra Lines
   function renderExtraLines() {
     extraLinesContainer.innerHTML = "";
     extraLines.forEach((lineObj, idx) => {
       const row = document.createElement("div");
       row.className = "field-row";
-      row.style.alignItems = "center";
       row.style.marginBottom = "5px";
 
       const textInput = document.createElement("input");
@@ -477,18 +506,9 @@ document.addEventListener("DOMContentLoaded", () => {
         extraLines[idx].text = textInput.value;
       });
 
-      const colorInput = document.createElement("input");
-      colorInput.type = "color";
-      colorInput.value = lineObj.color || "#ffffff";
-      colorInput.style.width = "32px";
-      colorInput.style.height = "32px";
-      colorInput.style.border = "none";
-      colorInput.style.padding = "0";
-      colorInput.style.cursor = "pointer";
-      colorInput.style.marginLeft = "5px";
-      colorInput.addEventListener("change", () => {
-        extraLines[idx].color = colorInput.value;
-      });
+      const colorDiv = document.createElement("div");
+      colorDiv.className = "color-btn";
+      colorDiv.style.marginLeft = "5px";
 
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
@@ -500,13 +520,42 @@ document.addEventListener("DOMContentLoaded", () => {
       });
 
       row.appendChild(textInput);
-      row.appendChild(colorInput);
+      row.appendChild(colorDiv);
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
+
+      const pickr = Pickr.create({
+        el: colorDiv,
+        theme: 'nano',
+        default: lineObj.color || '#ffffff',
+        components: {
+          preview: true,
+          opacity: true,
+          hue: true,
+          interaction: {
+            hex: true,
+            rgba: true,
+            input: true,
+            save: true
+          }
+        }
+      });
+      pickr.on('change', (color) => {
+        const hex = color.toHEXA().toString();
+        extraLines[idx].color = hex;
+      });
+      pickr.on('save', () => {
+        pickr.hide();
+      });
     });
   }
+  addExtraLineBtn.addEventListener("click", () => {
+    extraLines.push({ text: "", color: "#ffffff" });
+    renderExtraLines();
+  });
 
-  // Load Markers
+  // ------------------------------
+  // Load Markers from Firestore (or fallback)
   function loadMarkers() {
     db.collection("markers").get().then(querySnapshot => {
       querySnapshot.forEach(doc => {
@@ -521,7 +570,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }).catch(err => {
       console.error("Error loading markers from Firestore:", err);
-      // fallback to local JSON
       fetch("./data/markerData.json").then(resp => {
         if (!resp.ok) throw new Error("Network response was not ok");
         return resp.json();
@@ -538,7 +586,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   loadMarkers();
 
-  // Right-click on map => new marker
+  // ------------------------------
+  // Right-click on Map => Create Marker
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -546,17 +595,17 @@ document.addEventListener("DOMContentLoaded", () => {
         action: () => {
           currentEditMarker = null;
           editName.value = "";
-          editNameColor.value = "#ffffff";
+          pickrName.setColor("#ffffff");
           editType.value = "Item";
           editImageSmall.value = "";
           editImageBig.value = "";
           editVideoURL.value = "";
           editRarity.value = "";
-          editRarityColor.value = "#ffffff";
+          pickrRarity.setColor("#ffffff");
           editItemType.value = "";
-          editItemTypeColor.value = "#ffffff";
+          pickrItemType.setColor("#ffffff");
           editDescription.value = "";
-          editDescriptionColor.value = "#ffffff";
+          pickrDescItem.setColor("#ffffff");
           extraLines = [];
           renderExtraLines();
           itemExtraFields.style.display = "block";
@@ -566,12 +615,12 @@ document.addEventListener("DOMContentLoaded", () => {
           editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
           editModal.style.display = "block";
 
-          editForm.onsubmit = function(e2) {
+          editForm.onsubmit = (e2) => {
             e2.preventDefault();
             const newMarker = {
               type: editType.value,
               name: editName.value || "New Marker",
-              nameColor: editNameColor.value || "#ffffff",
+              nameColor: pickrName.getColor().toHEXA().toString(),
               coords: [evt.latlng.lat, evt.latlng.lng],
               imageSmall: editImageSmall.value,
               imageBig: editImageBig.value,
@@ -579,19 +628,20 @@ document.addEventListener("DOMContentLoaded", () => {
             };
             if (newMarker.type === "Item") {
               newMarker.rarity = editRarity.value;
-              newMarker.rarityColor = editRarityColor.value;
+              newMarker.rarityColor = pickrRarity.getColor().toHEXA().toString();
               newMarker.itemType = editItemType.value;
-              newMarker.itemTypeColor = editItemTypeColor.value;
+              newMarker.itemTypeColor = pickrItemType.getColor().toHEXA().toString();
               newMarker.description = editDescription.value;
-              newMarker.descriptionColor = editDescriptionColor.value;
+              newMarker.descriptionColor = pickrDescItem.getColor().toHEXA().toString();
               newMarker.extraLines = JSON.parse(JSON.stringify(extraLines));
             } else {
-              newMarker.description = document.getElementById("edit-description-non-item").value || "";
-              newMarker.descriptionColor = nonItemDescriptionColor.value;
+              newMarker.description = nonItemDescription.value;
+              newMarker.descriptionColor = pickrDescNonItem.getColor().toHEXA().toString();
             }
             addMarker(newMarker);
             updateMarkerInFirestore(newMarker);
             editModal.style.display = "none";
+            extraLines = [];
             editForm.onsubmit = null;
           };
         }
@@ -599,6 +649,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ]);
   });
 
+  // ------------------------------
   // Sidebar Toggle
   document.getElementById("sidebar-toggle").addEventListener("click", () => {
     const sidebar = document.getElementById("sidebar");
@@ -608,6 +659,7 @@ document.addEventListener("DOMContentLoaded", () => {
     map.invalidateSize();
   });
 
+  // ------------------------------
   // Basic Search
   document.getElementById("search-bar").addEventListener("input", function() {
     const query = this.value.toLowerCase();
@@ -623,6 +675,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
+  // ------------------------------
   // Toggle Marker Grouping
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
