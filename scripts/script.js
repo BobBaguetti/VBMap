@@ -2,16 +2,15 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Script loaded!");
 
   // ===========================
-  // Firebase Setup (replace placeholders with your actual config)
+  // Firebase Setup (replace with your config)
   // ===========================
   const firebaseConfig = {
-    apiKey: "AIzaSyDwEdPK3UdPN5MB8YAuM_jb0K1iXfQ-tGQ",
-    authDomain: "vbmap-cc834.firebaseapp.com",
-    projectId: "vbmap-cc834",
-    storageBucket: "vbmap-cc834.firebasestorage.app",
-    messagingSenderId: "244112699360",
-    appId: "1:244112699360:web:95f50adb6e10b438238585",
-    measurementId: "G-7FDNWLRM95"
+    apiKey: "YOUR_API_KEY",
+    authDomain: "yourproject.firebaseapp.com",
+    projectId: "yourproject",
+    storageBucket: "yourproject.appspot.com",
+    messagingSenderId: "YOUR_SENDER_ID",
+    appId: "YOUR_APP_ID"
   };
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
@@ -132,11 +131,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const editName = document.getElementById("edit-name");
   const pickrName = createPickr("#pickr-name");
 
-  // Type, Rarity, and Item Type Elements
+  // Type / Rarity / Item Type Elements
   const editType = document.getElementById("edit-type");
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = createPickr("#pickr-rarity");
-  // Hide rarity elements by default
   if (editRarity) { editRarity.style.display = "none"; }
   document.getElementById("pickr-rarity").style.display = "none";
   
@@ -145,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const pickrItemType = createPickr("#pickr-itemtype");
   if (itemtypeRow) { itemtypeRow.style.display = "none"; }
 
-  // Description Elements
+  // Description and its color picker
   const editDescription = document.getElementById("edit-description");
   const pickrDesc = createPickr("#pickr-desc");
 
@@ -196,7 +194,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Image and Video Fields
+  // Image & Video Fields
   const editImageS = document.getElementById("edit-image-s");
   const editImageL = document.getElementById("edit-image-l");
   const editVideo = document.getElementById("edit-video");
@@ -210,7 +208,7 @@ document.addEventListener("DOMContentLoaded", () => {
     extraLines = [];
   });
 
-  // Submit Handler
+  // Form Submit Handler
   editForm.addEventListener("submit", e => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -332,7 +330,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Firestore Persistence
+  // Firestore Persistence Functions
   // ===========================
   function updateMarkerInFirestore(m) {
     if (m.id) {
@@ -382,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (m.type === "Item") {
               editRarity.value = m.rarity || "";
               pickrRarity.setColor(m.rarityColor || "#ffffff");
-              // Ensure the rarity elements are visible
+              // Ensure rarity elements are visible
               document.getElementById("edit-rarity").style.display = "";
               document.getElementById("pickr-rarity").style.display = "";
               itemtypeRow.style.display = "";
@@ -462,7 +460,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Load Markers
+  // Load Markers from Firestore or fallback JSON
   // ===========================
   function loadMarkers() {
     db.collection("markers").get()
@@ -507,7 +505,6 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         text: "Create New Marker",
         action: () => {
-          // Clear fields for a new marker
           currentEditMarker = null;
           editName.value = "";
           pickrName.setColor("#ffffff");
@@ -515,19 +512,21 @@ document.addEventListener("DOMContentLoaded", () => {
           editImageS.value = "";
           editImageL.value = "";
           editVideo.value = "";
-          // Hide item-specific sections
-          document.getElementById("edit-rarity").style.display = "none";
-          document.getElementById("pickr-rarity").style.display = "none";
-          itemtypeRow.style.display = "none";
+          editRarity.value = "";
+          pickrRarity.setColor("#ffffff");
+          editItemSubtype.value = "Crafting Material";
+          pickrItemType.setColor("#ffffff");
           editDescription.value = "";
           pickrDesc.setColor("#ffffff");
           extraLines = [];
           renderExtraLines();
-          // Position modal and show
+          // Hide rarity and item type sections
+          document.getElementById("edit-rarity").style.display = "none";
+          document.getElementById("pickr-rarity").style.display = "none";
+          itemtypeRow.style.display = "none";
           editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
           editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
           editModal.style.display = "block";
-          // On form submit, create marker
           editForm.onsubmit = e2 => {
             e2.preventDefault();
             const newMarker = {
