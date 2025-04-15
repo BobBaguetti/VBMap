@@ -131,13 +131,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const editName = document.getElementById("edit-name");
   const pickrName = createPickr("#pickr-name");
 
-  // Type / Rarity / Item Type Elements
+  // Type, Rarity, and Item Type Elements
   const editType = document.getElementById("edit-type");
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = createPickr("#pickr-rarity");
   if (editRarity) { editRarity.style.display = "none"; }
-  document.getElementById("pickr-rarity").style.display = "none";
-  
+  const pickrRarityEl = document.getElementById("pickr-rarity");
+  if (pickrRarityEl) {
+    pickrRarityEl.style.display = "none";
+  } else {
+    console.error("Element 'pickr-rarity' not found!");
+  }
   const itemtypeRow = document.getElementById("itemtype-row");
   const editItemSubtype = document.getElementById("edit-item-type");
   const pickrItemType = createPickr("#pickr-itemtype");
@@ -380,7 +384,6 @@ document.addEventListener("DOMContentLoaded", () => {
             if (m.type === "Item") {
               editRarity.value = m.rarity || "";
               pickrRarity.setColor(m.rarityColor || "#ffffff");
-              // Ensure rarity elements are visible
               document.getElementById("edit-rarity").style.display = "";
               document.getElementById("pickr-rarity").style.display = "";
               itemtypeRow.style.display = "";
@@ -460,7 +463,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Load Markers from Firestore or fallback JSON
+  // Load Markers
   // ===========================
   function loadMarkers() {
     db.collection("markers").get()
@@ -520,7 +523,7 @@ document.addEventListener("DOMContentLoaded", () => {
           pickrDesc.setColor("#ffffff");
           extraLines = [];
           renderExtraLines();
-          // Hide rarity and item type sections
+          // Hide rarity and item type sections since default is "Door"
           document.getElementById("edit-rarity").style.display = "none";
           document.getElementById("pickr-rarity").style.display = "none";
           itemtypeRow.style.display = "none";
@@ -590,7 +593,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ===========================
-  // Toggle Marker Grouping (for Item markers)
+  // Toggle Marker Grouping for Item markers
   // ===========================
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);

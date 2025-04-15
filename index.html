@@ -78,7 +78,7 @@
           <option value="Item">Item</option>
           <option value="Teleport">Teleport</option>
         </select>
-        <!-- Rarity dropdown (hidden by default) -->
+        <!-- Rarity dropdown and its color picker, hidden unless Type == "Item" -->
         <select id="edit-rarity" class="rarity-dropdown" style="display:none;">
           <option value="">Select Rarity</option>
           <option value="common">Common</option>
@@ -87,7 +87,6 @@
           <option value="epic">Epic</option>
           <option value="legendary">Legendary</option>
         </select>
-        <!-- Rarity Color Picker -->
         <div class="color-btn" id="pickr-rarity" style="display:none;"></div>
       </div>
       
@@ -103,7 +102,7 @@
         <div class="color-btn" id="pickr-itemtype"></div>
       </div>
       
-      <!-- Row 4: Description -->
+      <!-- Row 4: Description (vertically resizable) -->
       <div class="field-row" style="align-items:flex-start;">
         <label>Description:</label>
         <textarea id="edit-description" rows="3" class="full-width"></textarea>
