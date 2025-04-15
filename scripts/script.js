@@ -2,7 +2,7 @@ document.addEventListener("DOMContentLoaded", () => {
   console.log("Script loaded!");
 
   // ===========================
-  // Firebase Setup (Replace placeholders with your config)
+  // Firebase Setup (replace placeholders with your actual config)
   // ===========================
   const firebaseConfig = {
     apiKey: "AIzaSyDwEdPK3UdPN5MB8YAuM_jb0K1iXfQ-tGQ",
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let allMarkers = [];
 
   // ===========================
-  // Context Menu (Right-click)
+  // Context Menu
   // ===========================
   const contextMenu = document.createElement("div");
   contextMenu.id = "context-menu";
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Draggable Edit Modal (Defensive check)
+  // Draggable Edit Modal
   // ===========================
   const editModal = document.getElementById("edit-modal");
   if (!editModal) {
@@ -103,9 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
           editModal.style.top = (e.clientY - offsetY) + "px";
         }
       });
-      document.addEventListener("mouseup", () => {
-        isDragging = false;
-      });
+      document.addEventListener("mouseup", () => { isDragging = false; });
     }
   }
 
@@ -134,18 +132,20 @@ document.addEventListener("DOMContentLoaded", () => {
   const editName = document.getElementById("edit-name");
   const pickrName = createPickr("#pickr-name");
 
-  // Type / Rarity / Item Type logic
+  // Type, Rarity, and Item Type Elements
   const editType = document.getElementById("edit-type");
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = createPickr("#pickr-rarity");
   // Hide rarity elements by default
   if (editRarity) { editRarity.style.display = "none"; }
+  document.getElementById("pickr-rarity").style.display = "none";
+  
   const itemtypeRow = document.getElementById("itemtype-row");
   const editItemSubtype = document.getElementById("edit-item-type");
   const pickrItemType = createPickr("#pickr-itemtype");
   if (itemtypeRow) { itemtypeRow.style.display = "none"; }
 
-  // Description
+  // Description Elements
   const editDescription = document.getElementById("edit-description");
   const pickrDesc = createPickr("#pickr-desc");
 
@@ -170,9 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
       textInput.value = line.text;
       textInput.style.background = "#E5E6E8";
       textInput.style.color = "#000";
-      textInput.addEventListener("input", () => {
-        extraLines[idx].text = textInput.value;
-      });
+      textInput.addEventListener("input", () => { extraLines[idx].text = textInput.value; });
       
       const colorDiv = document.createElement("div");
       colorDiv.className = "color-btn";
@@ -193,9 +191,7 @@ document.addEventListener("DOMContentLoaded", () => {
       extraLinesContainer.appendChild(row);
       
       const linePickr = createPickr(colorDiv);
-      linePickr.on("change", color => {
-        extraLines[idx].color = color.toHEXA().toString();
-      });
+      linePickr.on("change", color => { extraLines[idx].color = color.toHEXA().toString(); });
       linePickr.setColor(line.color);
     });
   }
@@ -214,7 +210,7 @@ document.addEventListener("DOMContentLoaded", () => {
     extraLines = [];
   });
 
-  // Form Submit Handler
+  // Submit Handler
   editForm.addEventListener("submit", e => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -370,7 +366,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     layers[m.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: m });
-
     markerObj.on("contextmenu", evt => {
       evt.originalEvent.preventDefault();
       const opts = [
@@ -387,6 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (m.type === "Item") {
               editRarity.value = m.rarity || "";
               pickrRarity.setColor(m.rarityColor || "#ffffff");
+              // Ensure the rarity elements are visible
               document.getElementById("edit-rarity").style.display = "";
               document.getElementById("pickr-rarity").style.display = "";
               itemtypeRow.style.display = "";
@@ -466,7 +462,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Load Markers (Firestore then fallback)
+  // Load Markers
   // ===========================
   function loadMarkers() {
     db.collection("markers").get()
@@ -511,6 +507,7 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         text: "Create New Marker",
         action: () => {
+          // Clear fields for a new marker
           currentEditMarker = null;
           editName.value = "";
           pickrName.setColor("#ffffff");
@@ -518,21 +515,19 @@ document.addEventListener("DOMContentLoaded", () => {
           editImageS.value = "";
           editImageL.value = "";
           editVideo.value = "";
-          editRarity.value = "";
-          pickrRarity.setColor("#ffffff");
-          editItemSubtype.value = "Crafting Material";
-          pickrItemType.setColor("#ffffff");
+          // Hide item-specific sections
+          document.getElementById("edit-rarity").style.display = "none";
+          document.getElementById("pickr-rarity").style.display = "none";
+          itemtypeRow.style.display = "none";
           editDescription.value = "";
           pickrDesc.setColor("#ffffff");
           extraLines = [];
           renderExtraLines();
-          // Hide item-specific sections since default Type is "Door"
-          document.getElementById("edit-rarity").style.display = "none";
-          document.getElementById("pickr-rarity").style.display = "none";
-          itemtypeRow.style.display = "none";
+          // Position modal and show
           editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
           editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
           editModal.style.display = "block";
+          // On form submit, create marker
           editForm.onsubmit = e2 => {
             e2.preventDefault();
             const newMarker = {
@@ -596,7 +591,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ===========================
-  // Toggle Marker Grouping for Item markers
+  // Toggle Marker Grouping (for Item markers)
   // ===========================
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
