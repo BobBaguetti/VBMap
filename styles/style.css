@@ -40,108 +40,7 @@ body, html {
   transform: translateX(-100%);
 }
 
-/* Edit Modal */
-#edit-modal {
-  display: none;
-  position: absolute;
-  width: 450px;
-  background: #222;
-  color: #eee;
-  padding: 20px;
-  border: 1px solid #555;
-  z-index: 2100;
-  cursor: default;
-}
-#edit-modal-handle {
-  cursor: move;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #555;
-  margin-bottom: 10px;
-  font-size: 16px;
-}
-
-/* Form Layout */
-#edit-form {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.field-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-}
-.field-row label {
-  width: 90px;
-  text-align: left;
-  margin-right: 5px;
-  flex-shrink: 0;
-}
-
-/* Uniform Input Fields – using the full available width minus the label width */
-.field-row input[type="text"],
-.field-row select,
-.field-row textarea {
-  background: #E5E6E8;
-  color: #000;
-  border: 1px solid #999;
-  padding: 4px 6px;
-  font-size: 14px;
-  width: calc(100% - 90px);
-  box-sizing: border-box;
-}
-.field-row textarea {
-  resize: none;
-}
-
-/* Custom Select boxes if needed */
-.select-wide {
-  width: calc(100% - 90px);
-  background: #E5E6E8;
-  color: #000;
-  border: 1px solid #999;
-  padding: 4px 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-/* Custom Color Button */
-.color-btn {
-  width: 30px;   /* 2px smaller than previous (32px -> 30px) */
-  height: 30px;
-  background: #666;
-  border: 1px solid #333;
-  border-radius: 2px;
-  cursor: pointer;
-  margin-left: 9px;  /* shifted 3px to the right (default was 6px) */
-  flex-shrink: 0;
-}
-
-/* Extra Info Section */
-#extra-lines .field-row {
-  margin-left: 90px;
-}
-
-/* + Button for Extra Info */
-#add-extra-line {
-  height: 24px;
-  line-height: 18px;
-  padding: 0 6px;
-  margin-left: 10px;
-}
-
-/* Buttons in field rows */
-.field-row button {
-  background: #444;
-  color: #fff;
-  border: 1px solid #333;
-  cursor: pointer;
-  border-radius: 4px;
-  padding: 3px 8px;
-  font-size: 14px;
-}
-
-/* Popup Styling */
+/* Popup & Markers */
 .leaflet-popup-content-wrapper {
   background: transparent !important;
   border: none !important;
@@ -187,7 +86,7 @@ body, html {
   object-fit: contain;
 }
 
-/* Popup Content Layout */
+/* Popup Header/Body */
 .popup-header {
   display: flex;
   align-items: center;
@@ -220,24 +119,127 @@ body, html {
   background-color: #555;
 }
 
-/* Video Popup */
-#video-popup {
+/* Edit Modal */
+#edit-modal {
   display: none;
   position: absolute;
-  background: #000;
-  z-index: 2200;
-  padding: 10px;
-  border: 2px solid #444;
-  width: 340px;
-  max-height: 300px;
-  overflow: hidden;
+  width: 550px; /* slightly wider than 450px to accommodate side-by-side type+rarity */
+  background: #222;
+  color: #eee;
+  padding: 20px;
+  border: 1px solid #555;
+  z-index: 2100;
+  cursor: default;
 }
-#video-close {
-  float: right;
-  cursor: pointer;
-  color: #fff;
-  background: #444;
-  border: none;
+#edit-modal-handle {
+  cursor: move;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #555;
+  margin-bottom: 10px;
   font-size: 16px;
-  margin-bottom: 5px;
+}
+
+/* Form Layout */
+#edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.field-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+.field-row label {
+  width: 120px; /* more label space */
+  text-align: left;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+.field-row input[type="text"],
+.field-row textarea,
+.field-row select {
+  background: #E5E6E8;
+  color: #000;
+  border: 1px solid #999;
+  padding: 4px 6px;
+  font-size: 14px;
+  /* fill available space */
+  flex: 1;
+  box-sizing: border-box;
+}
+.field-row textarea {
+  resize: vertical; /* allow it to expand vertically */
+}
+
+/* If Type = 'Item', place Type + Rarity side-by-side on the same row */
+#type-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Rarity dropdown narrower */
+.rarity-dropdown {
+  width: 110px;
+  background: #E5E6E8;
+  color: #000;
+  border: 1px solid #999;
+  padding: 4px 6px;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+
+/* Item Type row */
+#itemtype-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Full width if needed */
+.full-width {
+  flex: 1;
+}
+
+/* Color Button (Pickr placeholder) */
+.color-btn {
+  width: 30px; 
+  height: 30px;
+  background: #666;
+  border: 1px solid #333;
+  border-radius: 2px;
+  cursor: pointer;
+  margin-left: 9px; /* shift it right by 9px */
+  flex-shrink: 0;
+}
+
+/* Dividers around Extra Info */
+.divider {
+  border: 1px solid #555;
+  margin: 10px 0;
+}
+
+/* Extra Info lines */
+#extra-lines .field-row {
+  margin-left: 120px; /* align with other fields after the label */
+}
+
+/* The plus button for Extra Info */
+#add-extra-line {
+  height: 24px;
+  line-height: 18px;
+  padding: 0 6px;
+  margin-left: 10px;
+}
+
+/* Buttons in field rows */
+.field-row button {
+  background: #444;
+  color: #fff;
+  border: 1px solid #333;
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-size: 14px;
 }
