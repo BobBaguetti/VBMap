@@ -41,9 +41,11 @@ document.addEventListener("DOMContentLoaded", () => {
   let allMarkers = [];
 
   // ------------------------------
-  // Global variables for duplicate marker sticky behavior
+  // Global variables for Copy Marker (sticky paste mode)
   let duplicatingMarker = null;
   let duplicatingData = null;
+  // Paste tooltip element
+  const pasteTooltip = document.getElementById("paste-tooltip");
 
   // ------------------------------
   // Context Menu Setup
@@ -80,6 +82,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   document.addEventListener("click", () => {
     contextMenu.style.display = "none";
+    // If right-click cancels paste mode, hide tooltip and clear duplicating globals
+    if (duplicatingMarker) {
+      duplicatingMarker.dragging.disable();
+      duplicatingMarker = null;
+      duplicatingData = null;
+      pasteTooltip.style.display = "none";
+    }
   });
 
   // ------------------------------
@@ -121,7 +130,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openVideoPopup = openVideoPopup;
 
   // ------------------------------
-  // Edit Modal Fields and Color Pickers
+  // Edit Modal Fields & Color Picker Initialization
   const editForm = document.getElementById("edit-form");
   const editName = document.getElementById("edit-name");
   const pickrName = Pickr.create({
@@ -135,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const editImageBig = document.getElementById("edit-image-big");
   const editVideoURL = document.getElementById("edit-video-url");
 
-  // Item-specific fields
+  // Item-specific fields (inside "item-extra-fields")
   const itemExtraFields = document.getElementById("item-extra-fields");
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = Pickr.create({
@@ -158,7 +167,7 @@ document.addEventListener("DOMContentLoaded", () => {
     default: '#ffffff',
     components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
   });
-  // Non-item description field
+  // Non-item description fields
   const nonItemDescription = document.getElementById("edit-description-non-item");
   const pickrDescNonItem = Pickr.create({
     el: '#pickr-desc-nonitem',
@@ -169,7 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentEditMarker = null;
 
-  // Rarity default colors for quick selection
+  // Rarity defaults formatting: force first letter uppercase
   const defaultRarityColors = {
     "common": "#CCCCCC",
     "uncommon": "#56DE56",
@@ -194,7 +203,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Extra Info - Dynamic Rows
+  // ------------------------------
+  // Extra Info Dynamic Fields
   let extraLines = [];
   const extraLinesContainer = document.getElementById("extra-lines");
   const addExtraLineBtn = document.getElementById("add-extra-line");
@@ -236,10 +246,8 @@ document.addEventListener("DOMContentLoaded", () => {
         default: lineObj.color || '#ffffff',
         components: { preview: true, opacity: true, hue: true, interaction: { hex: true, rgba: true, input: true, save: true } }
       });
-      linePickr.on('change', (color) => {
-        extraLines[idx].color = color.toHEXA().toString();
-      });
-      linePickr.on('save', () => { linePickr.hide(); });
+      linePickr.on("change", (color) => { extraLines[idx].color = color.toHEXA().toString(); });
+      linePickr.on("save", () => { linePickr.hide(); });
     });
   }
   addExtraLineBtn.addEventListener("click", () => {
@@ -248,11 +256,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Duplicate Marker Sticky Behavior
-  // Global listeners to move and drop duplicate marker
+  // Global Duplicate Marker (Copy Marker) Sticky Behavior
   map.on("mousemove", (ev) => {
     if (duplicatingMarker) {
       duplicatingMarker.setLatLng(ev.latlng);
+      pasteTooltip.style.left = (ev.containerPoint.x + 15) + "px";
+      pasteTooltip.style.top = (ev.containerPoint.y + 15) + "px";
+      pasteTooltip.style.display = "block";
     }
   });
   map.on("click", (ev) => {
@@ -262,6 +272,16 @@ document.addEventListener("DOMContentLoaded", () => {
       duplicatingMarker.dragging.disable();
       duplicatingMarker = null;
       duplicatingData = null;
+      pasteTooltip.style.display = "none";
+    }
+  });
+  // Right-click to cancel paste mode if active
+  document.addEventListener("contextmenu", (ev) => {
+    if (duplicatingMarker) {
+      duplicatingMarker.dragging.disable();
+      duplicatingMarker = null;
+      duplicatingData = null;
+      pasteTooltip.style.display = "none";
     }
   });
 
@@ -274,7 +294,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Form Submit Handler (Save changes in Edit Modal)
+  // Form Submit Handler (Save changes from Edit Modal)
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -286,7 +306,7 @@ document.addEventListener("DOMContentLoaded", () => {
     data.imageBig = editImageBig.value;
     data.videoURL = editVideoURL.value || "";
     if (data.type === "Item") {
-      data.rarity = editRarity.value;
+      data.rarity = formatRarity(editRarity.value);
       data.rarityColor = pickrRarity.getColor().toHEXA().toString();
       data.itemType = editItemType.value;
       data.itemTypeColor = pickrItemType.getColor().toHEXA().toString();
@@ -309,8 +329,14 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEditMarker = null;
   });
 
+  // Helper: Format rarity value with first letter uppercase
+  function formatRarity(val) {
+    if (!val) return "";
+    return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
+  }
+
   // ------------------------------
-  // Helper: Create a Pickr instance
+  // Helper: Create a Pickr instance (if needed elsewhere)
   function createPickr(el) {
     return Pickr.create({
       el: el,
@@ -345,7 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
         itemTypeHTML = `<div style="font-size:16px;color:${m.itemTypeColor||"#fff"};margin:2px 0;">${m.itemType}</div>`;
       }
       if (m.rarity) {
-        rarityHTML = `<div style="font-size:16px;color:${m.rarityColor||"#fff"};margin:2px 0;">${m.rarity}</div>`;
+        rarityHTML = `<div style="font-size:16px;color:${m.rarityColor||"#fff"};margin:2px 0;">${formatRarity(m.rarity)}</div>`;
       }
       if (m.description) {
         descHTML = `<p style="margin:5px 0;color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
@@ -361,6 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
     const nameHTML = `<h3 style="margin:0;font-size:20px;color:${m.nameColor||"#fff"};">${m.name}</h3>`;
+    // Reduce gap between image and text from 15px to 5px
     const scaledImg = m.imageBig 
       ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`
       : "";
@@ -370,9 +397,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return `
       <div class="custom-popup">
-        <div class="popup-header" style="display:flex; gap:15px;">
+        <div class="popup-header" style="display:flex; gap:5px;">
           ${scaledImg}
-          <div style="margin-left:15px;">
+          <div style="margin-left:5px;">
             ${nameHTML}
             ${itemTypeHTML}
             ${rarityHTML}
@@ -408,7 +435,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------
-  // Add Marker Function (with Delete option)
+  // Add Marker Function (with Delete and Copy Marker options)
   function addMarker(m) {
     const markerObj = L.marker([m.coords[0], m.coords[1]], {
       icon: createCustomIcon(m),
@@ -457,13 +484,13 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         },
         {
-          text: "Duplicate Marker",
+          text: "Copy Marker",
           action: () => {
             const dup = JSON.parse(JSON.stringify(m));
             dup.name = `${m.name} (copy)`;
             dup.coords = [...m.coords];
             const newMarkerObj = addMarker(dup);
-            // Start sticky duplicate behavior:
+            // Enable sticky copy mode:
             newMarkerObj.dragging.enable();
             duplicatingMarker = newMarkerObj;
             duplicatingData = dup;
@@ -485,7 +512,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         }
       ];
-      // ALWAYS include Delete Marker option (regardless of m.id)
+      // Always include Delete Marker option
       options.push({
         text: "Delete Marker",
         action: () => {
@@ -505,10 +532,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------
-  // Global Duplicate Marker Behavior
+  // Global Duplicate (Copy) Marker Sticky Behavior
   map.on("mousemove", (ev) => {
     if (duplicatingMarker) {
       duplicatingMarker.setLatLng(ev.latlng);
+      pasteTooltip.style.left = (ev.containerPoint.x + 15) + "px";
+      pasteTooltip.style.top = (ev.containerPoint.y + 15) + "px";
+      pasteTooltip.style.display = "block";
     }
   });
   map.on("click", (ev) => {
@@ -518,11 +548,21 @@ document.addEventListener("DOMContentLoaded", () => {
       duplicatingMarker.dragging.disable();
       duplicatingMarker = null;
       duplicatingData = null;
+      pasteTooltip.style.display = "none";
+    }
+  });
+  // Right-click anywhere cancels paste mode
+  document.addEventListener("contextmenu", (ev) => {
+    if (duplicatingMarker) {
+      duplicatingMarker.dragging.disable();
+      duplicatingMarker = null;
+      duplicatingData = null;
+      pasteTooltip.style.display = "none";
     }
   });
 
   // ------------------------------
-  // Load Markers from Firestore (Fallback to JSON if needed)
+  // Load Markers from Firestore (or fallback JSON)
   function loadMarkers() {
     db.collection("markers").get().then(querySnapshot => {
       querySnapshot.forEach(doc => {
@@ -554,7 +594,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadMarkers();
 
   // ------------------------------
-  // Right-click on Map -> Create New Marker
+  // Right-click on Map -> Create New Marker (Edit Mode)
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -642,7 +682,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Toggle Marker Grouping for Item Markers
+  // Toggle Marker Grouping (for Item markers)
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
     if (this.checked) {

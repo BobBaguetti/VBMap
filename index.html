@@ -101,7 +101,12 @@
 
         <div class="field-row">
           <label>Item Type:</label>
-          <input type="text" id="edit-item-type" />
+          <select id="edit-item-type">
+            <option value="Crafting Material">Crafting Material</option>
+            <option value="Special">Special</option>
+            <option value="Consumable">Consumable</option>
+            <option value="Quest">Quest</option>
+          </select>
           <div class="color-btn" id="pickr-itemtype"></div>
         </div>
 
@@ -161,5 +166,8 @@
       Your browser does not support the video tag.
     </video>
   </div>
+  
+  <!-- Paste Mode Tooltip (hidden by default) -->
+  <div id="paste-tooltip" style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px;">Paste Mode ON</div>
 </body>
 </html>
