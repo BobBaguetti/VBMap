@@ -14,7 +14,7 @@ body, html {
   height: 100vh;
   margin-left: 300px;  /* When sidebar is visible */
   background-color: #1a1a1a !important;
-  transition: margin-left 0.5s ease;  /* Smooth transition */
+  transition: margin-left 0.5s ease;
 }
 
 /* Leaflet Overrides */
@@ -26,7 +26,7 @@ body, html {
 #sidebar {
   width: 300px;
   height: 100vh;
-  position: absolute;  /* Allows sliding off-screen */
+  position: absolute;
   top: 0;
   left: 0;
   background-color: #222;
@@ -36,8 +36,6 @@ body, html {
   overflow: auto;
   transition: transform 0.5s ease;
 }
-
-/* When sidebar is hidden, slide it off-screen */
 #sidebar.hidden {
   transform: translateX(-100%);
 }
@@ -48,15 +46,12 @@ body, html {
   border: none !important;
   box-shadow: none !important;
 }
-
 .leaflet-popup-tip-container {
   display: none;
 }
-
 .custom-popup-wrapper {
   background: transparent !important;
 }
-
 .custom-popup {
   background: rgba(40, 40, 40, 0.92) !important;
   border-radius: 8px;
@@ -71,13 +66,11 @@ body, html {
   background: transparent !important;
   border: none !important;
 }
-
 .custom-marker {
   position: relative;
   width: 32px;
   height: 32px;
 }
-
 .marker-border {
   position: absolute;
   width: 100%;
@@ -86,7 +79,6 @@ body, html {
   border-radius: 50%;
   background: rgba(0,0,0,0.5);
 }
-
 .marker-icon {
   position: absolute;
   width: 24px;
@@ -102,7 +94,6 @@ body, html {
   align-items: center;
   margin-bottom: 12px;
 }
-
 .popup-icon {
   width: 64px;
   height: 64px;
@@ -111,43 +102,35 @@ body, html {
   object-fit: contain;
   background: #2a2a2a;
 }
-
 .popup-title {
   margin-left: 15px;
 }
-
 .popup-name {
   font-size: 22px;
   font-weight: bold;
   margin: 0 0 4px 0;
 }
-
 .popup-type {
   font-size: 14px;
   color: #aaa;
   margin: 0 0 4px 0;
 }
-
 .popup-rarity {
   font-size: 14px;
   margin: 0;
 }
-
 .popup-body {
   margin-top: 15px;
   font-size: 16px;
 }
-
 .popup-location {
   color: #4d9de0;
   margin-bottom: 10px;
 }
-
 .popup-notes {
   margin-top: 10px;
   line-height: 1.5;
 }
-
 .popup-buttons {
   position: absolute;
   top: 15px;
@@ -155,14 +138,12 @@ body, html {
   display: flex;
   gap: 10px;
 }
-
 .popup-button {
   cursor: pointer;
   font-size: 14px;
   padding: 2px 6px;
   border-radius: 3px;
 }
-
 .crafting-button {
   color: #ffcc00;
   border: 1px solid #ffcc00;

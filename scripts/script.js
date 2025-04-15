@@ -32,16 +32,16 @@ document.addEventListener("DOMContentLoaded", () => {
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
 
-  // Create display names mapping for marker types
+  // Create display names mapping for marker types (as used in the sidebar)
   const markerTypeDisplay = {
-    "Item": "Item",
     "Teleport": "Teleport",
     "Extraction Portal": "Extraction Portal",
+    "Item": "Item",
     "Door": "Door"
   };
 
-  // Layer groups: note the "Item" group may be either a marker cluster or a layer group.
-  let itemLayer = L.markerClusterGroup(); // default clustering enabled
+  // Layer groups: For Item markers, default is marker clustering.
+  let itemLayer = L.markerClusterGroup();
   const layers = {
     "Teleport": L.layerGroup(),
     "Extraction Portal": L.layerGroup(),
@@ -50,11 +50,11 @@ document.addEventListener("DOMContentLoaded", () => {
   };
   Object.values(layers).forEach(layer => layer.addTo(map));
 
-  // Global array to hold markers for search/editing
+  // Global array to hold markers (for search and editing)
   let allMarkers = [];
 
   // ------------------------------
-  // Utility: Custom Context Menu (Dark UI)
+  // Utility: Custom Context Menu (Dark Mode)
   const contextMenu = document.createElement("div");
   contextMenu.id = "context-menu";
   document.body.appendChild(contextMenu);
@@ -91,18 +91,45 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
+  // Utility: Make an Element Draggable
+  function makeDraggable(element) {
+    let isMouseDown = false;
+    let offsetX, offsetY;
+    element.addEventListener("mousedown", (e) => {
+      isMouseDown = true;
+      offsetX = e.clientX - parseInt(window.getComputedStyle(element).left, 10);
+      offsetY = e.clientY - parseInt(window.getComputedStyle(element).top, 10);
+      element.style.cursor = "move";
+    });
+    document.addEventListener("mousemove", (e) => {
+      if (isMouseDown) {
+        element.style.left = (e.clientX - offsetX) + "px";
+        element.style.top = (e.clientY - offsetY) + "px";
+      }
+    });
+    document.addEventListener("mouseup", () => {
+      isMouseDown = false;
+      element.style.cursor = "default";
+    });
+  }
+  // Make the edit modal draggable
+  makeDraggable(document.getElementById("edit-modal"));
+
+  // ------------------------------
   // Utility: Custom Edit Modal (for marker editing)
   const editModal = document.getElementById("edit-modal");
   const editForm = document.getElementById("edit-form");
   const editNameInput = document.getElementById("edit-name");
   const editTypeSelect = document.getElementById("edit-type");
+  const editImageSmall = document.getElementById("edit-image-small");
+  const editImageBig = document.getElementById("edit-image-big");
   const editDescription = document.getElementById("edit-description");
-  const editRarity = document.getElementById("edit-rarity");         // may be null if not in modal
-  const editItemType = document.getElementById("edit-item-type");      // may be null
-  const editExtra1 = document.getElementById("edit-extra-1");          // optional fields
+  const itemExtraFields = document.getElementById("item-extra-fields");
+  const editRarity = document.getElementById("edit-rarity");
+  const editItemType = document.getElementById("edit-item-type");
+  const editExtra1 = document.getElementById("edit-extra-1");
   const editExtra2 = document.getElementById("edit-extra-2");
   const editExtra3 = document.getElementById("edit-extra-3");
-  const itemExtraFields = document.getElementById("item-extra-fields");
   let currentEditMarker = null;
   function hideEditModal() {
     editModal.style.display = "none";
@@ -115,16 +142,16 @@ document.addEventListener("DOMContentLoaded", () => {
     const updatedData = currentEditMarker.data;
     updatedData.name = editNameInput.value;
     updatedData.type = editTypeSelect.value;
+    updatedData.imageSmall = editImageSmall.value;
+    updatedData.imageBig = editImageBig.value;
     updatedData.description = editDescription.value;
-    // If type is Item, update extra fields:
     if (updatedData.type === "Item") {
-      updatedData.rarity = document.getElementById("edit-rarity").value;
-      updatedData.itemType = document.getElementById("edit-item-type").value;
-      updatedData.extra1 = document.getElementById("edit-extra-1").value;
-      updatedData.extra2 = document.getElementById("edit-extra-2").value;
-      updatedData.extra3 = document.getElementById("edit-extra-3").value;
+      updatedData.rarity = editRarity.value;
+      updatedData.itemType = editItemType.value;
+      updatedData.extra1 = editExtra1.value;
+      updatedData.extra2 = editExtra2.value;
+      updatedData.extra3 = editExtra3.value;
     } else {
-      // Remove extra fields if not Item
       delete updatedData.rarity;
       delete updatedData.itemType;
       delete updatedData.extra1;
@@ -136,13 +163,12 @@ document.addEventListener("DOMContentLoaded", () => {
     hideEditModal();
   });
   document.getElementById("edit-cancel").addEventListener("click", hideEditModal);
-
-  // Show/hide additional fields if type is "Item"
-  editTypeSelect.addEventListener("change", function() {
+  // Show/hide extra fields when type changes
+  editTypeSelect.addEventListener("change", function () {
     if (this.value === "Item") {
-      document.getElementById("item-extra-fields").style.display = "block";
+      itemExtraFields.style.display = "block";
     } else {
-      document.getElementById("item-extra-fields").style.display = "none";
+      itemExtraFields.style.display = "none";
     }
   });
 
@@ -173,7 +199,7 @@ document.addEventListener("DOMContentLoaded", () => {
       html: `
         <div class="custom-marker">
           <div class="marker-border"></div>
-          ${marker.image ? `<img src="${marker.image}" class="marker-icon"/>` : ""}
+          ${marker.imageSmall ? `<img src="${marker.imageSmall}" class="marker-icon"/>` : ""}
         </div>
       `,
       className: "custom-marker-container",
@@ -194,15 +220,13 @@ document.addEventListener("DOMContentLoaded", () => {
     return `
       <div class="custom-popup">
         <div class="popup-header">
-          ${marker.image ? `<img src="${marker.image}" class="popup-icon"/>` : ""}
+          ${marker.imageBig ? `<img src="${marker.imageBig}" class="popup-icon"/>` : ""}
           <div class="popup-title">
             <h3 class="popup-name">${marker.name}</h3>
-            ${marker.subtype ? `<p class="popup-type">${marker.subtype}</p>` : ""}
             ${marker.rarity && marker.type === "Item" ? `<p class="popup-rarity rarity-${marker.rarity}">${marker.rarity}</p>` : ""}
           </div>
         </div>
         <div class="popup-body">
-          ${marker.location ? `<p class="popup-location">${marker.location}</p>` : ""}
           ${marker.description ? `<p>${marker.description}</p>` : ""}
           ${extraContent}
           ${marker.usage ? `<p><em>${marker.usage}</em></p>` : ""}
@@ -216,16 +240,13 @@ document.addEventListener("DOMContentLoaded", () => {
   // Option: Toggle Marker Clustering (for Item layer)
   const disableGroupingCheckbox = document.getElementById("disable-grouping");
   disableGroupingCheckbox.addEventListener("change", function () {
-    // Remove current item layer
     map.removeLayer(layers["Item"]);
     if (this.checked) {
-      // If grouping disabled, create a standard layer group
       layers["Item"] = L.layerGroup();
     } else {
-      // Else, use marker clustering
       layers["Item"] = L.markerClusterGroup();
     }
-    // Re-add all item markers from global array that are of type "Item"
+    // Re-add all "Item" markers
     allMarkers.forEach(item => {
       if (item.data.type === "Item") {
         layers["Item"].addLayer(item.markerObj);
@@ -245,11 +266,9 @@ document.addEventListener("DOMContentLoaded", () => {
       className: "custom-popup-wrapper",
       maxWidth: 350
     });
-    // Use the renamed marker type for layering (display names)
     layers[markerData.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: markerData });
-    
-    // Attach context menu for editing
+
     markerObj.on("contextmenu", function (e) {
       e.originalEvent.preventDefault();
       showContextMenu(e.originalEvent.pageX, e.originalEvent.pageY, [
@@ -259,19 +278,19 @@ document.addEventListener("DOMContentLoaded", () => {
             currentEditMarker = { markerObj, data: markerData };
             editNameInput.value = markerData.name || "";
             editTypeSelect.value = markerData.type || "Item";
+            editImageSmall.value = markerData.imageSmall || "";
+            editImageBig.value = markerData.imageBig || "";
             editDescription.value = markerData.description || "";
-            // For Item markers, fill extra fields if they exist
             if (markerData.type === "Item") {
               document.getElementById("edit-rarity").value = markerData.rarity || "";
               document.getElementById("edit-item-type").value = markerData.itemType || "";
               document.getElementById("edit-extra-1").value = markerData.extra1 || "";
               document.getElementById("edit-extra-2").value = markerData.extra2 || "";
               document.getElementById("edit-extra-3").value = markerData.extra3 || "";
-              document.getElementById("item-extra-fields").style.display = "block";
+              itemExtraFields.style.display = "block";
             } else {
-              document.getElementById("item-extra-fields").style.display = "none";
+              itemExtraFields.style.display = "none";
             }
-            // Position modal near the click
             editModal.style.left = e.originalEvent.pageX + 10 + "px";
             editModal.style.top = e.originalEvent.pageY + 10 + "px";
             editModal.style.display = "block";
@@ -280,19 +299,17 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text: "Duplicate Marker",
           action: function () {
-            // Create duplicate marker; set duplicate to draggable (picked up state)
             const duplicate = Object.assign({}, markerData);
             duplicate.name = markerData.name + " (copy)";
-            duplicate.coords = [...markerData.coords]; // same coordinates initially
-            const newMarker = addMarker(duplicate);
-            // Set the duplicate marker to be draggable immediately
-            newMarker.dragging.enable();
-            // Listen for a left-click on the map to drop it (once dropped, disable dragging and update coordinates)
-            newMarker.on("dragend", function () {
-              const latlng = newMarker.getLatLng();
+            duplicate.coords = [...markerData.coords];
+            const newMarkerObj = addMarker(duplicate);
+            // Set duplicate as draggable until dropped.
+            newMarkerObj.dragging.enable();
+            newMarkerObj.on("dragend", function () {
+              const latlng = newMarkerObj.getLatLng();
               duplicate.coords = [latlng.lat, latlng.lng];
               updateMarkerInFirestore(duplicate);
-              newMarker.dragging.disable();
+              newMarkerObj.dragging.disable();
             });
             updateMarkerInFirestore(duplicate);
           }
@@ -314,7 +331,7 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       ]);
     });
-    return markerObj; // return markerObj so duplicate function can use it
+    return markerObj;
   }
 
   // ------------------------------
@@ -335,7 +352,6 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch(error => {
         console.error("Error loading markers from Firestore:", error);
-        // Fallback to local JSON if needed
         fetch("./data/markerData.json")
           .then(response => {
             if (!response.ok) throw new Error("Network response was not ok");
@@ -363,24 +379,24 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         text: "Create New Marker",
         action: function () {
-          // Open edit modal in "new marker" mode with blank fields
           currentEditMarker = null;
           editNameInput.value = "";
           editTypeSelect.value = "Item";
+          editImageSmall.value = "";
+          editImageBig.value = "";
           editDescription.value = "";
-          document.getElementById("item-extra-fields").style.display = "block";
-          // Position modal near the click
+          itemExtraFields.style.display = "block";
           editModal.style.left = e.originalEvent.pageX + 10 + "px";
           editModal.style.top = e.originalEvent.pageY + 10 + "px";
           editModal.style.display = "block";
-          // On form submit, create a new marker at the click location
           editForm.onsubmit = function (ev) {
             ev.preventDefault();
             const newMarker = {
               type: editTypeSelect.value,
               name: editNameInput.value || "New Marker",
               coords: [e.latlng.lat, e.latlng.lng],
-              image: "",
+              imageSmall: editImageSmall.value,
+              imageBig: editImageBig.value,
               description: editDescription.value,
               location: "",
               notes: []
