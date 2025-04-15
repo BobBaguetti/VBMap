@@ -1,10 +1,10 @@
 // mapSetup.js
 // This module handles initializing the Leaflet map, setting up layer groups, and loading markers.
 
-import L from "leaflet";
-import "leaflet.markercluster";
-import { db } from "./firebase.js";
-import { logError } from "./errorLogger.js";
+import L from 'leaflet';
+import 'leaflet.markercluster';
+import { db } from './firebase.js';
+import { logError } from './errorLogger.js'; // Make sure you have created errorLogger.js
 
 // Global variables within this module
 let map;
@@ -40,8 +40,7 @@ export function initMap() {
   return map;
 }
 
-// Function: Create a custom marker and add it to the map.
-// (For further modularity, you could move icon creation and popup construction to markerUtils.js later.)
+// Function: Create a custom marker based on the marker data.
 export function createCustomMarker(markerData) {
   const marker = L.marker(markerData.coords, {
     icon: L.divIcon({
@@ -67,7 +66,7 @@ export function createCustomMarker(markerData) {
   return marker;
 }
 
-// Helper function: Create popup content for a marker.
+// Helper: Create popup content for a marker.
 function createPopupContent(m) {
   let itemTypeHTML = "";
   let rarityHTML = "";
@@ -103,6 +102,7 @@ function createPopupContent(m) {
   if (m.videoURL) {
     videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
   }
+  
   return `
     <div class="custom-popup">
       <div class="popup-header" style="display:flex; gap:5px;">
@@ -122,7 +122,7 @@ function createPopupContent(m) {
   `;
 }
 
-// Function: Load markers from Firestore; fallback to a local JSON file on error.
+// Function: Load markers from Firestore; fallback to local JSON on error.
 export function loadMarkers() {
   db.collection("markers")
     .get()
@@ -141,7 +141,7 @@ export function loadMarkers() {
     })
     .catch((err) => {
       logError("Error loading markers from Firestore:", err);
-      // fallback to JSON file:
+      // Fallback to a local JSON file:
       fetch("./data/markerData.json")
         .then((resp) => {
           if (!resp.ok) throw new Error("Network response was not ok");
@@ -163,7 +163,7 @@ export function loadMarkers() {
     });
 }
 
-// Export a helper to get the map instance if needed
+// Export the map instance if needed elsewhere.
 export function getMap() {
   return map;
 }
