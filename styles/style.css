@@ -56,7 +56,7 @@ body, html {
   background: rgba(40, 40, 40, 0.92) !important;
   border-radius: 8px;
   padding: 15px;
-  width: 300px;
+  width: 320px;
   color: #e0e0e0;
   border: none !important;
 }
@@ -106,50 +106,14 @@ body, html {
   margin-left: 15px;
 }
 .popup-name {
-  font-size: 22px;
+  font-size: 20px;
   font-weight: bold;
-  margin: 0 0 4px 0;
-}
-.popup-type {
-  font-size: 14px;
-  color: #aaa;
-  margin: 0 0 4px 0;
-}
-.popup-rarity {
-  font-size: 14px;
-  margin: 0;
+  margin: 0 0 2px 0;
 }
 .popup-body {
-  margin-top: 15px;
+  margin-top: 10px;
   font-size: 16px;
 }
-.popup-location {
-  color: #4d9de0;
-  margin-bottom: 10px;
-}
-.popup-notes {
-  margin-top: 10px;
-  line-height: 1.5;
-}
-.popup-buttons {
-  position: absolute;
-  top: 15px;
-  right: 15px;
-  display: flex;
-  gap: 10px;
-}
-.popup-button {
-  cursor: pointer;
-  font-size: 14px;
-  padding: 2px 6px;
-  border-radius: 3px;
-}
-.crafting-button {
-  color: #ffcc00;
-  border: 1px solid #ffcc00;
-}
-
-/* More Info Button */
 .more-info-btn {
   background-color: #444;
   color: #fff;
@@ -160,26 +124,7 @@ body, html {
   margin-top: 10px;
 }
 
-/* Location Links */
-.location-link {
-  color: #6ab7ff !important;
-  text-decoration: underline;
-  cursor: pointer;
-  font-weight: bold;
-  transition: color 0.2s;
-}
-.location-link:hover {
-  color: #4d9de0 !important;
-}
-
-/* Rarity Colors */
-.rarity-common { color: #a0a0a0; }
-.rarity-uncommon { color: #2ecc71; }
-.rarity-rare { color: #3498db; }
-.rarity-epic { color: #9b59b6; }
-.rarity-legendary { color: #f39c12; }
-
-/* Context Menu Styles (Dark Mode) */
+/* Context Menu (Dark) */
 #context-menu {
   font-family: Arial, sans-serif;
   font-size: 14px;
@@ -192,14 +137,64 @@ body, html {
   background-color: #555;
 }
 
-/* Video Popup Styles */
-#video-popup {
-  background: #000;
-  padding: 10px;
-  border: 2px solid #444;
-  z-index: 2200;
+/* Edit Modal */
+#edit-modal {
   display: none;
   position: absolute;
+  background: #222;
+  color: #eee;
+  padding: 20px;
+  border: 1px solid #555;
+  z-index: 2100;
+  cursor: default;
+  width: 400px; /* a bit wider */
+}
+#edit-modal-handle {
+  cursor: move;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #555;
+  margin-bottom: 10px;
+}
+#edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: #E5E6E8;
+}
+#edit-form label {
+  margin-bottom: 2px;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+}
+.row label {
+  margin-bottom: 0;
+  width: 100px; 
+}
+#extra-lines > div {
+  display: flex;
+}
+/* For the dynamic extra line rows */
+.extra-info-section {
+  margin-top: 5px;
+  border-top: 1px solid #555;
+  padding-top: 5px;
+}
+
+/* Video Popup */
+#video-popup {
+  display: none;
+  position: absolute;
+  background: #000;
+  z-index: 2200;
+  padding: 10px;
+  border: 2px solid #444;
+  width: 340px;
+  max-height: 300px;
+  overflow: hidden;
 }
 #video-close {
   float: right;
@@ -208,7 +203,5 @@ body, html {
   background: #444;
   border: none;
   font-size: 16px;
+  margin-bottom: 5px;
 }
-
-
-

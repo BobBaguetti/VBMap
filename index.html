@@ -62,43 +62,48 @@
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
-  <!-- Custom Edit Modal for Marker Editing -->
-  <div id="edit-modal" style="display:none; position:absolute; background:#222; color:#eee; padding:20px; border:1px solid #555; z-index:2100; cursor:default;">
-    <!-- Drag Handle for Modal -->
-    <div id="edit-modal-handle" style="cursor:move; padding-bottom:5px; border-bottom:1px solid #555; margin-bottom:10px;">
+  <!-- Edit Modal -->
+  <div id="edit-modal">
+    <div id="edit-modal-handle">
       <strong>Edit Marker</strong>
     </div>
     <form id="edit-form">
-      <label>
-        Name:<br />
-        <input type="text" id="edit-name" required />
-      </label>
-      <br /><br />
-      <label>
-        Type:<br />
-        <select id="edit-type">
+      <div class="row">
+        <label>Name:</label>
+        <input type="text" id="edit-name" required style="background:#E5E6E8;color:#000;" />
+        <input type="color" id="edit-name-color" value="#ffffff" title="Name text color" />
+      </div>
+
+      <div class="row">
+        <label>Type:</label>
+        <select id="edit-type" style="background:#E5E6E8;color:#000;">
           <option value="Teleport">Teleport</option>
           <option value="Extraction Portal">Extraction Portal</option>
           <option value="Item">Item</option>
           <option value="Door">Door</option>
         </select>
-      </label>
-      <br /><br />
-      <label>
-        Image Small (Icon URL):<br />
-        <input type="text" id="edit-image-small" placeholder="URL for small image" />
-      </label>
-      <br /><br />
-      <label>
-        Image Big (Popup URL):<br />
-        <input type="text" id="edit-image-big" placeholder="URL for big image" />
-      </label>
-      <br /><br />
-      <!-- Extra fields for Item markers -->
+      </div>
+
+      <div class="row">
+        <label>Image Small (Icon URL):</label>
+        <input type="text" id="edit-image-small" style="background:#E5E6E8;color:#000;" />
+      </div>
+
+      <div class="row">
+        <label>Image Big (Popup URL):</label>
+        <input type="text" id="edit-image-big" style="background:#E5E6E8;color:#000;" />
+      </div>
+
+      <!-- Additional fields for Item markers -->
       <div id="item-extra-fields" style="display:none;">
-        <label>
-          Rarity:<br/>
-          <select id="edit-rarity">
+        <div class="row">
+          <label>Item Type:</label>
+          <input type="text" id="edit-item-type" style="background:#E5E6E8;color:#000;" />
+          <input type="color" id="edit-item-type-color" value="#ffffff" title="Item type color" />
+        </div>
+        <div class="row">
+          <label>Rarity:</label>
+          <select id="edit-rarity" style="background:#E5E6E8;color:#000;">
             <option value="">Select Rarity</option>
             <option value="common">Common</option>
             <option value="uncommon">Uncommon</option>
@@ -107,51 +112,44 @@
             <option value="legendary">Legendary</option>
           </select>
           <input type="color" id="edit-rarity-color" value="#ffffff" title="Rarity text color" />
-        </label>
-        <br /><br />
-        <label>
-          Item Type:<br/>
-          <input type="text" id="edit-item-type" placeholder="crafting material, consumable..." />
-          <input type="color" id="edit-item-type-color" value="#ffffff" title="Item Type text color" />
-        </label>
-        <br /><br />
-        <label>
-          Extra Info 1:<br />
-          <input type="text" id="edit-extra-1" />
-          <input type="color" id="edit-extra-1-color" value="#ffffff" title="Extra Info 1 text color" />
-        </label>
-        <br /><br />
-        <label>
-          Extra Info 2:<br />
-          <input type="text" id="edit-extra-2" />
-          <input type="color" id="edit-extra-2-color" value="#ffffff" title="Extra Info 2 text color" />
-        </label>
-        <br /><br />
-        <label>
-          Extra Info 3:<br />
-          <input type="text" id="edit-extra-3" />
-          <input type="color" id="edit-extra-3-color" value="#ffffff" title="Extra Info 3 text color" />
-        </label>
-        <br /><br />
+        </div>
+        <div class="row">
+          <label>Description:</label>
+          <textarea id="edit-description" rows="2" style="background:#E5E6E8;color:#000;"></textarea>
+        </div>
+
+        <div class="extra-info-section">
+          <div class="row">
+            <label>Extra Info</label>
+            <button type="button" id="add-extra-line">+</button>
+          </div>
+          <div id="extra-lines"></div>
+        </div>
       </div>
-      <label>
-        Description:<br />
-        <textarea id="edit-description" rows="3"></textarea>
-      </label>
-      <br /><br />
-      <label>
-        Video URL (optional):<br />
-        <input type="text" id="edit-video-url" placeholder="URL for video preview" />
-      </label>
-      <br /><br />
-      <button type="submit">Save</button>
-      <button type="button" id="edit-cancel">Cancel</button>
+
+      <!-- If the marker is not an Item, show a simpler Description field -->
+      <div id="non-item-description" style="display:none;">
+        <div class="row">
+          <label>Description:</label>
+          <textarea id="edit-description-non-item" rows="3" style="background:#E5E6E8;color:#000;"></textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <label>Video URL:</label>
+        <input type="text" id="edit-video-url" style="background:#E5E6E8;color:#000;" />
+      </div>
+
+      <div class="row" style="justify-content:center;margin-top:10px;">
+        <button type="submit" style="margin-right:10px;">Save</button>
+        <button type="button" id="edit-cancel">Cancel</button>
+      </div>
     </form>
   </div>
 
-  <!-- Video Popup (for video previews) -->
-  <div id="video-popup" style="display:none; position:absolute; background:#000; z-index:2200; padding:10px; border:2px solid #444;">
-    <button id="video-close" style="float:right; cursor:pointer;">X</button>
+  <!-- Video Popup -->
+  <div id="video-popup">
+    <button id="video-close">X</button>
     <video id="video-player" width="320" controls style="display:block;">
       <source id="video-source" src="" type="video/mp4">
       Your browser does not support the video tag.
