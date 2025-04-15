@@ -60,7 +60,7 @@ body, html {
   font-size: 16px;
 }
 
-/* field-row layout */
+/* Form Layout */
 #edit-form {
   display: flex;
   flex-direction: column;
@@ -78,21 +78,7 @@ body, html {
   flex-shrink: 0;
 }
 
-/* Shorter inputs: matches Name field visually, leaving enough space for color button */
-.field-row input[type="text"].input-short,
-.field-row select.input-short,
-.field-row textarea.input-short {
-  background: #E5E6E8;
-  color: #000;
-  border: 1px solid #999;
-  padding: 4px 6px;
-  font-size: 14px;
-  width: calc(100% - 60px); 
-  /* 60px total gap to accommodate the color button (30px wide) plus margin. 
-     Adjust if needed to fine-tune the spacing. */
-  box-sizing: border-box;
-}
-
+/* Uniform Input Fields – using the full available width minus the label width */
 .field-row input[type="text"],
 .field-row select,
 .field-row textarea {
@@ -101,32 +87,42 @@ body, html {
   border: 1px solid #999;
   padding: 4px 6px;
   font-size: 14px;
+  width: calc(100% - 90px);
+  box-sizing: border-box;
 }
 .field-row textarea {
   resize: none;
 }
 
-/* If any field doesn't have .input-short, it might still fill out the row. 
-   So for "Name", we can do: class="input-short" if needed. */
+/* Custom Select boxes if needed */
+.select-wide {
+  width: calc(100% - 90px);
+  background: #E5E6E8;
+  color: #000;
+  border: 1px solid #999;
+  padding: 4px 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
 
-/* Color Button: 2px smaller, +3px shift */
+/* Custom Color Button */
 .color-btn {
-  width: 30px;
+  width: 30px;   /* 2px smaller than previous (32px -> 30px) */
   height: 30px;
   background: #666;
   border: 1px solid #333;
   border-radius: 2px;
   cursor: pointer;
-  margin-left: 9px; /* 3px more than the default 6px */
+  margin-left: 9px;  /* shifted 3px to the right (default was 6px) */
   flex-shrink: 0;
 }
 
-/* Extra Info Rows */
+/* Extra Info Section */
 #extra-lines .field-row {
   margin-left: 90px;
 }
 
-/* The + button is 1px less tall */
+/* + Button for Extra Info */
 #add-extra-line {
   height: 24px;
   line-height: 18px;
@@ -145,7 +141,7 @@ body, html {
   font-size: 14px;
 }
 
-/* Popup, Markers, etc. */
+/* Popup Styling */
 .leaflet-popup-content-wrapper {
   background: transparent !important;
   border: none !important;
@@ -190,6 +186,8 @@ body, html {
   left: 4px;
   object-fit: contain;
 }
+
+/* Popup Content Layout */
 .popup-header {
   display: flex;
   align-items: center;
@@ -209,4 +207,37 @@ body, html {
   margin-top: 10px;
 }
 
-/* etc. */
+/* Context Menu */
+#context-menu {
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  border-radius: 3px;
+  background: #333;
+  color: #eee;
+  border: 1px solid #555;
+}
+#context-menu div:hover {
+  background-color: #555;
+}
+
+/* Video Popup */
+#video-popup {
+  display: none;
+  position: absolute;
+  background: #000;
+  z-index: 2200;
+  padding: 10px;
+  border: 2px solid #444;
+  width: 340px;
+  max-height: 300px;
+  overflow: hidden;
+}
+#video-close {
+  float: right;
+  cursor: pointer;
+  color: #fff;
+  background: #444;
+  border: none;
+  font-size: 16px;
+  margin-bottom: 5px;
+}

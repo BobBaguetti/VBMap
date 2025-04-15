@@ -23,7 +23,7 @@ document.addEventListener("DOMContentLoaded", () => {
     zoomControl: false
   });
   L.control.zoom({ position: "topright" }).addTo(map);
-  const bounds = [[0,0],[3000,3000]];
+  const bounds = [[0, 0], [3000, 3000]];
   const imageUrl = "./media/images/tempmap.png";
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Draggable Edit Modal
   const editModal = document.getElementById("edit-modal");
   const editModalHandle = document.getElementById("edit-modal-handle");
-  let isDragging = false, offsetX = 0, offsetY = 0;
+  let isDragging = false, offsetX, offsetY;
   editModalHandle.addEventListener("mousedown", (e) => {
     isDragging = true;
     const cs = window.getComputedStyle(editModal);
@@ -117,7 +117,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openVideoPopup = openVideoPopup;
 
   // ------------------------------
-  // Edit Modal + Fields
+  // Edit Modal Fields and Pickr Instances
   const editForm = document.getElementById("edit-form");
   const editName = document.getElementById("edit-name");
   const pickrName = createPickr('#pickr-name');
@@ -126,7 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const editImageBig = document.getElementById("edit-image-big");
   const editVideoURL = document.getElementById("edit-video-url");
 
-  // Item Fields
+  // Item-specific Fields
   const itemExtraFields = document.getElementById("item-extra-fields");
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = createPickr('#pickr-rarity');
@@ -140,13 +140,13 @@ document.addEventListener("DOMContentLoaded", () => {
   const addExtraLineBtn = document.getElementById("add-extra-line");
   let extraLines = [];
 
-  // Non-Item
+  // Non-item Field
   const nonItemDescription = document.getElementById("edit-description-non-item");
   const pickrDescNonItem = createPickr('#pickr-desc-nonitem');
 
   let currentEditMarker = null;
 
-  // Defaults for Rarity
+  // Rarity Defaults
   const defaultRarityColors = {
     "common": "#CCCCCC",
     "uncommon": "#56DE56",
@@ -160,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Show/Hide item fields
+  // Show/Hide Fields Based on Type
   editType.addEventListener("change", () => {
     if (editType.value === "Item") {
       itemExtraFields.style.display = "block";
@@ -171,7 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Extra Info
+  // Extra Info Dynamic Fields
   function renderExtraLines() {
     extraLinesContainer.innerHTML = "";
     extraLines.forEach((lineObj, idx) => {
@@ -206,7 +206,6 @@ document.addEventListener("DOMContentLoaded", () => {
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
 
-      // Create a new color pickr instance for each extra line
       const linePickr = Pickr.create({
         el: colorDiv,
         theme: 'nano',
@@ -236,7 +235,7 @@ document.addEventListener("DOMContentLoaded", () => {
     extraLines = [];
   });
 
-  // Submit Handler
+  // Form Submit Handler
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -247,7 +246,6 @@ document.addEventListener("DOMContentLoaded", () => {
     data.imageSmall = editImageSmall.value;
     data.imageBig = editImageBig.value;
     data.videoURL = editVideoURL.value || "";
-
     if (data.type === "Item") {
       data.rarity = editRarity.value;
       data.rarityColor = pickrRarity.getColor().toHEXA().toString();
@@ -272,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
     currentEditMarker = null;
   });
 
-  // Helper: Create a Pickr instance for color picking
+  // Helper to create a Pickr instance
   function createPickr(selector) {
     return Pickr.create({
       el: selector,
@@ -287,7 +285,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Marker Icon & Popup
+  // Marker Icon and Popup
   function createCustomIcon(m) {
     return L.divIcon({
       html: `
@@ -307,28 +305,28 @@ document.addEventListener("DOMContentLoaded", () => {
     let extraHTML = "";
     if (m.type === "Item") {
       if (m.itemType) {
-        itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor||"#fff"}; margin:2px 0;">${m.itemType}</div>`;
+        itemTypeHTML = `<div style="font-size:16px;color:${m.itemTypeColor||"#fff"};margin:2px 0;">${m.itemType}</div>`;
       }
       if (m.rarity) {
-        rarityHTML = `<div style="font-size:16px; color:${m.rarityColor||"#fff"}; margin:2px 0;">${m.rarity}</div>`;
+        rarityHTML = `<div style="font-size:16px;color:${m.rarityColor||"#fff"};margin:2px 0;">${m.rarity}</div>`;
       }
       if (m.description) {
-        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
+        descHTML = `<p style="margin:5px 0;color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
       }
       if (m.extraLines && m.extraLines.length) {
         m.extraLines.forEach(line => {
-          extraHTML += `<p style="margin:0; color:${line.color||"#fff"};">${line.text}</p>`;
+          extraHTML += `<p style="margin:0;color:${line.color||"#fff"};">${line.text}</p>`;
         });
       }
     } else {
       if (m.description) {
-        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
+        descHTML = `<p style="margin:5px 0;color:${m.descriptionColor||"#fff"};">${m.description}</p>`;
       }
     }
     const scaledImage = m.imageBig 
-      ? `<img src="${m.imageBig}" style="width:64px; height:64px; object-fit:contain; border:2px solid #777; border-radius:4px;" />`
+      ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`
       : "";
-    const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor||"#fff"};">${m.name}</h3>`;
+    const nameHTML = `<h3 style="margin:0;font-size:20px;color:${m.nameColor||"#fff"};">${m.name}</h3>`;
     let videoBtn = "";
     if (m.videoURL) {
       videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
@@ -352,7 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // Firestore Persistence
+  // Firestore Persistence Functions
   function updateMarkerInFirestore(m) {
     if (m.id) {
       db.collection("markers").doc(m.id).set(m).then(() => {
@@ -371,7 +369,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }).catch(console.error);
   }
 
-  // Add Marker
+  // Add Marker Function
   function addMarker(m) {
     const markerObj = L.marker(
       [m.coords[0], m.coords[1]],

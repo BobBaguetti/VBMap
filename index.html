@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles/style.css" />
-  <!-- Font Awesome for icons (optional) -->
+  <!-- Font Awesome (optional) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <!-- Pickr CSS (for custom color picker) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
@@ -23,20 +23,16 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
-    <!-- Layers Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-layer-group"></i> Layers</h2>
       <div class="toggle-group">
-        <!-- Alphabetical: Door, Extraction Portal, Item, Teleport -->
+        <!-- Alphabetical order: Door, Extraction Portal, Item, Teleport -->
         <label><input type="checkbox" checked data-layer="Door" /> Door</label>
         <label><input type="checkbox" checked data-layer="Extraction Portal" /> Extraction Portal</label>
         <label><input type="checkbox" checked data-layer="Item" /> Item</label>
         <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
       </div>
     </div>
-
-    <!-- Settings Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -44,8 +40,6 @@
         Disable Marker Grouping
       </label>
     </div>
-
-    <!-- Search Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
@@ -64,7 +58,6 @@
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <!-- Pickr JS (custom color picker) -->
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-  
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
@@ -80,23 +73,22 @@
         <input type="text" id="edit-name" required />
         <div class="color-btn" id="pickr-name"></div>
       </div>
-
-      <!-- Type (set narrower width to match Name) -->
+      <!-- Type Field -->
       <div class="field-row">
         <label>Type:</label>
-        <select id="edit-type" class="input-short">
+        <select id="edit-type" class="uniform-input">
           <option value="Door">Door</option>
           <option value="Extraction Portal">Extraction Portal</option>
           <option value="Item">Item</option>
           <option value="Teleport">Teleport</option>
         </select>
       </div>
-
+      
       <!-- Item-specific Fields -->
       <div id="item-extra-fields" style="display:none;">
         <div class="field-row">
           <label>Rarity:</label>
-          <select id="edit-rarity" class="input-short">
+          <select id="edit-rarity" class="uniform-input">
             <option value="">Select Rarity</option>
             <option value="common">Common</option>
             <option value="uncommon">Uncommon</option>
@@ -106,61 +98,60 @@
           </select>
           <div class="color-btn" id="pickr-rarity"></div>
         </div>
-
         <div class="field-row">
           <label>Item Type:</label>
-          <input type="text" id="edit-item-type" class="input-short" />
+          <input type="text" id="edit-item-type" class="uniform-input" />
           <div class="color-btn" id="pickr-itemtype"></div>
         </div>
-
         <div class="field-row">
           <label>Description:</label>
-          <textarea id="edit-description" rows="2" class="input-short"></textarea>
+          <textarea id="edit-description" rows="2" class="uniform-input"></textarea>
           <div class="color-btn" id="pickr-desc-item"></div>
         </div>
-
         <hr style="border:1px solid #555; margin:10px 0;" />
+        <!-- Dividing Line Above Extra Info -->
+        <hr style="border:1px solid #555; margin:10px 0 0 0;" />
         <div class="field-row" style="margin-bottom:0;">
           <label>Extra Info:</label>
-          <!-- 1px less tall for + button -->
           <button type="button" id="add-extra-line" style="height:24px; margin-left:10px;">+</button>
         </div>
         <div id="extra-lines"></div>
+        <!-- Dividing Line Between Extra Info and Images -->
         <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
-      <!-- Non-Item Description -->
+      
+      <!-- Non-item Field -->
       <div id="non-item-description" style="display:none;">
         <div class="field-row">
           <label>Description:</label>
-          <textarea id="edit-description-non-item" rows="3" class="input-short"></textarea>
+          <textarea id="edit-description-non-item" rows="3" class="uniform-input"></textarea>
           <div class="color-btn" id="pickr-desc-nonitem"></div>
         </div>
         <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
-      <!-- Image & Video Fields, sized same as Name -->
+      
+      <!-- Image and Video Fields -->
       <div class="field-row">
         <label>Image S:</label>
-        <input type="text" id="edit-image-small" class="input-short" />
+        <input type="text" id="edit-image-small" class="uniform-input" />
       </div>
       <div class="field-row">
         <label>Image L:</label>
-        <input type="text" id="edit-image-big" class="input-short" />
+        <input type="text" id="edit-image-big" class="uniform-input" />
       </div>
       <div class="field-row">
         <label>Video:</label>
-        <input type="text" id="edit-video-url" class="input-short" />
+        <input type="text" id="edit-video-url" class="uniform-input" />
       </div>
-
-      <!-- Save/Cancel -->
+      
+      <!-- Save/Cancel Buttons -->
       <div class="field-row" style="justify-content:center; margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>
       </div>
     </form>
   </div>
-
+  
   <!-- Video Popup -->
   <div id="video-popup">
     <button id="video-close">X</button>
