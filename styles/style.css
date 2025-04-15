@@ -40,7 +40,7 @@ body, html {
   transform: translateX(-100%);
 }
 
-/* Popup & Markers */
+/* Popup & Marker Styles */
 .leaflet-popup-content-wrapper {
   background: transparent !important;
   border: none !important;
@@ -75,7 +75,7 @@ body, html {
   height: 100%;
   border: 3px solid #777;
   border-radius: 50%;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
 }
 .marker-icon {
   position: absolute;
@@ -123,7 +123,7 @@ body, html {
 #edit-modal {
   display: none;
   position: absolute;
-  width: 550px; /* slightly wider than 450px to accommodate side-by-side type+rarity */
+  width: 550px;
   background: #222;
   color: #eee;
   padding: 20px;
@@ -151,10 +151,14 @@ body, html {
   margin-bottom: 10px;
 }
 .field-row label {
-  width: 120px; /* more label space */
+  width: 120px;
   text-align: left;
   margin-right: 5px;
   flex-shrink: 0;
+}
+.full-width {
+  flex: 1;
+  box-sizing: border-box;
 }
 .field-row input[type="text"],
 .field-row textarea,
@@ -164,22 +168,21 @@ body, html {
   border: 1px solid #999;
   padding: 4px 6px;
   font-size: 14px;
-  /* fill available space */
   flex: 1;
   box-sizing: border-box;
 }
 .field-row textarea {
-  resize: vertical; /* allow it to expand vertically */
+  resize: vertical;
 }
 
-/* If Type = 'Item', place Type + Rarity side-by-side on the same row */
-#type-row {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+/* For the Type row when not Item, keep full width; when Item, later JS will adjust */
+#type-row select {
+  /* Default full width */
+  flex: 1;
+  box-sizing: border-box;
 }
 
-/* Rarity dropdown narrower */
+/* Rarity dropdown (narrower) */
 .rarity-dropdown {
   width: 110px;
   background: #E5E6E8;
@@ -188,6 +191,7 @@ body, html {
   padding: 4px 6px;
   font-size: 14px;
   flex-shrink: 0;
+  box-sizing: border-box;
 }
 
 /* Item Type row */
@@ -196,36 +200,36 @@ body, html {
   align-items: center;
   gap: 6px;
 }
-
-/* Full width if needed */
-.full-width {
+#itemtype-row select {
   flex: 1;
+  box-sizing: border-box;
 }
 
-/* Color Button (Pickr placeholder) */
+/* Color Button for Pickr */
 .color-btn {
-  width: 30px; 
+  width: 30px;
   height: 30px;
   background: #666;
   border: 1px solid #333;
   border-radius: 2px;
   cursor: pointer;
-  margin-left: 9px; /* shift it right by 9px */
+  margin-left: 9px;
   flex-shrink: 0;
 }
 
-/* Dividers around Extra Info */
+/* Dividers */
 .divider {
   border: 1px solid #555;
   margin: 10px 0;
 }
 
-/* Extra Info lines */
+/* Extra Info Section - extra rows align with other fields */
 #extra-lines .field-row {
-  margin-left: 120px; /* align with other fields after the label */
+  margin-left: 120px;
+  flex: 1;
 }
 
-/* The plus button for Extra Info */
+/* + Button for Extra Info */
 #add-extra-line {
   height: 24px;
   line-height: 18px;

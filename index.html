@@ -13,7 +13,7 @@
   <link rel="stylesheet" href="styles/style.css" />
   <!-- Font Awesome for icons (optional) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Pickr CSS (for custom color picker) -->
+  <!-- Pickr CSS (custom color picker) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
 </head>
 <body>
@@ -23,17 +23,16 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
     <div class="sidebar-section">
       <h2><i class="fas fa-layer-group"></i> Layers</h2>
       <div class="toggle-group">
+        <!-- Alphabetical: Door, Extraction Portal, Item, Teleport -->
         <label><input type="checkbox" checked data-layer="Door" /> Door</label>
         <label><input type="checkbox" checked data-layer="Extraction Portal" /> Extraction Portal</label>
         <label><input type="checkbox" checked data-layer="Item" /> Item</label>
         <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
       </div>
     </div>
-
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -41,7 +40,6 @@
         Disable Marker Grouping
       </label>
     </div>
-
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
@@ -51,58 +49,66 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Leaflet JS -->
+  <!-- Load Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <!-- MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  <!-- Firebase App & Firestore -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <!-- Pickr (custom color picker) -->
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-  
-  <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
   <!-- Edit Modal -->
   <div id="edit-modal">
     <div id="edit-modal-handle"><strong>Edit Marker</strong></div>
     <form id="edit-form">
-      
-      <!-- Row 1: Name + Name Color -->
+      <!-- Row 1: Name + Color -->
       <div class="field-row">
         <label>Name:</label>
         <input type="text" id="edit-name" class="full-width" required />
         <div class="color-btn" id="pickr-name"></div>
       </div>
       
-      <!-- Row 2: If Type != 'Item', only show the Type dropdown (full-width)
-           If Type == 'Item', show a narrower Type dropdown + Rarity dropdown on the same line -->
+      <!-- Row 2: Type (full-width if not Item) or split row if Item -->
       <div class="field-row" id="type-row">
         <label>Type:</label>
-        <select id="edit-type" class="full-width"></select>
-        <div class="color-btn" id="pickr-type" style="display:none;"></div>
-        
-        <!-- Rarity only shown if Type == 'Item' -->
-        <select id="edit-rarity" class="rarity-dropdown" style="display:none;"></select>
+        <select id="edit-type" class="full-width">
+          <option value="Door">Door</option>
+          <option value="Extraction Portal">Extraction Portal</option>
+          <option value="Item">Item</option>
+          <option value="Teleport">Teleport</option>
+        </select>
+        <!-- Rarity dropdown and its color picker, hidden by default -->
+        <select id="edit-rarity" class="rarity-dropdown" style="display:none;">
+          <option value="">Select Rarity</option>
+          <option value="common">Common</option>
+          <option value="uncommon">Uncommon</option>
+          <option value="rare">Rare</option>
+          <option value="epic">Epic</option>
+          <option value="legendary">Legendary</option>
+        </select>
         <div class="color-btn" id="pickr-rarity" style="display:none;"></div>
       </div>
       
-      <!-- If Type == 'Item', show "Item Type" dropdown on a new row -->
+      <!-- Row 3: Item Type (only if Item is selected) -->
       <div class="field-row" id="itemtype-row" style="display:none;">
         <label>Item Type:</label>
-        <select id="edit-item-subtype" class="full-width"></select>
+        <select id="edit-item-type" class="full-width">
+          <option value="Crafting Material">Crafting Material</option>
+          <option value="Special">Special</option>
+          <option value="Consumable">Consumable</option>
+          <option value="Quest">Quest</option>
+        </select>
         <div class="color-btn" id="pickr-itemtype"></div>
       </div>
       
-      <!-- Description (always full width, can expand vertically) -->
+      <!-- Row 4: Description -->
       <div class="field-row" style="align-items:flex-start;">
         <label>Description:</label>
         <textarea id="edit-description" rows="3" class="full-width"></textarea>
         <div class="color-btn" id="pickr-desc"></div>
       </div>
       
-      <!-- Extra Info (dividing line above and below) -->
+      <!-- Extra Info Section -->
       <hr class="divider" />
       <div class="field-row" id="extra-info-label">
         <label>Extra Info:</label>
@@ -111,28 +117,27 @@
       <div id="extra-lines"></div>
       <hr class="divider" />
       
-      <!-- Image S -->
+      <!-- Row 5: Image S -->
       <div class="field-row">
         <label>Image S:</label>
         <input type="text" id="edit-image-s" class="full-width" />
       </div>
-      <!-- Image L -->
+      <!-- Row 6: Image L -->
       <div class="field-row">
         <label>Image L:</label>
         <input type="text" id="edit-image-l" class="full-width" />
       </div>
-      <!-- Video -->
+      <!-- Row 7: Video -->
       <div class="field-row">
         <label>Video:</label>
         <input type="text" id="edit-video" class="full-width" />
       </div>
       
-      <!-- Save + Cancel -->
+      <!-- Save/Cancel -->
       <div class="field-row" style="justify-content:center; margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>
       </div>
-      
     </form>
   </div>
   

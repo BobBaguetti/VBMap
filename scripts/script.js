@@ -25,7 +25,6 @@ document.addEventListener("DOMContentLoaded", () => {
     zoomControl: false
   });
   L.control.zoom({ position: "topright" }).addTo(map);
-
   const bounds = [[0, 0], [3000, 3000]];
   L.imageOverlay("./media/images/tempmap.png", bounds).addTo(map);
   map.fitBounds(bounds);
@@ -43,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let allMarkers = [];
 
   // ===========================
-  // Context Menu (right-click)
+  // Context Menu
   // ===========================
   const contextMenu = document.createElement("div");
   contextMenu.id = "context-menu";
@@ -59,7 +58,6 @@ document.addEventListener("DOMContentLoaded", () => {
     boxShadow: "0px 2px 6px rgba(0,0,0,0.5)"
   });
   document.addEventListener("click", () => { contextMenu.style.display = "none"; });
-
   function showContextMenu(x, y, options) {
     contextMenu.innerHTML = "";
     options.forEach(opt => {
@@ -97,9 +95,7 @@ document.addEventListener("DOMContentLoaded", () => {
       editModal.style.top = (e.clientY - offsetY) + "px";
     }
   });
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
+  document.addEventListener("mouseup", () => { isDragging = false; });
 
   // ===========================
   // Video Popup
@@ -120,75 +116,30 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // ===========================
-  // Edit Form + Fields
+  // Edit Modal Fields and Pickr Instances
   // ===========================
   const editForm = document.getElementById("edit-form");
   const editName = document.getElementById("edit-name");
   const pickrName = createPickr("#pickr-name");
 
-  // Type logic
   const editType = document.getElementById("edit-type");
-  const pickrType = createPickr("#pickr-type");  // Only shown if not 'Item'? Or if we want color for Type?
-  pickrType.hide(); // Hide by default
-
-  // Rarity logic
+  // Rarity elements (hidden unless type Item)
   const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = createPickr("#pickr-rarity");
   editRarity.style.display = "none";
-  pickrRarity.hide();
+  document.getElementById("pickr-rarity").style.display = "none";
 
-  // If type is "Item," show Rarity + pickr
-  // We'll populate Type with [Door, Extraction Portal, Item, Teleport]
-  ["Door", "Extraction Portal", "Item", "Teleport"].forEach(t => {
-    let opt = document.createElement("option");
-    opt.value = t;
-    opt.innerText = t;
-    editType.appendChild(opt);
-  });
-
-  // Populate Rarity
-  ["", "common", "uncommon", "rare", "epic", "legendary"].forEach(r => {
-    let opt = document.createElement("option");
-    opt.value = r;
-    opt.innerText = r === "" ? "Select Rarity" : r.charAt(0).toUpperCase() + r.slice(1);
-    editRarity.appendChild(opt);
-  });
-
-  // Item Type logic
-  const editItemSubtype = document.getElementById("edit-item-subtype");
-  const pickrItemType = createPickr("#pickr-itemtype");
-  ["Crafting Material", "Special", "Consumable", "Quest"].forEach(sub => {
-    let opt = document.createElement("option");
-    opt.value = sub;
-    opt.innerText = sub;
-    editItemSubtype.appendChild(opt);
-  });
-
-  // We'll hide itemtype-row by default
+  // Item Type row: appears if type is Item
   const itemtypeRow = document.getElementById("itemtype-row");
+  const editItemSubtype = document.getElementById("edit-item-type");
+  const pickrItemType = createPickr("#pickr-itemtype");
   itemtypeRow.style.display = "none";
 
-  editType.addEventListener("change", e => {
-    if (editType.value === "Item") {
-      // Shrink Type dropdown, show Rarity dropdown next to it
-      editRarity.style.display = "";
-      pickrRarity.show();
-      // Show the item type row
-      itemtypeRow.style.display = "";
-    } else {
-      // Expand Type dropdown to full width, hide Rarity
-      editRarity.value = "";
-      editRarity.style.display = "none";
-      pickrRarity.hide();
-      itemtypeRow.style.display = "none";
-    }
-  });
-
-  // Description logic
+  // Description and its color picker
   const editDescription = document.getElementById("edit-description");
   const pickrDesc = createPickr("#pickr-desc");
 
-  // Extra Info
+  // Extra Info dynamic fields
   let extraLines = [];
   const extraLinesContainer = document.getElementById("extra-lines");
   const addExtraLineBtn = document.getElementById("add-extra-line");
@@ -201,9 +152,9 @@ document.addEventListener("DOMContentLoaded", () => {
     extraLines.forEach((line, idx) => {
       const row = document.createElement("div");
       row.className = "field-row";
-      row.style.marginLeft = "90px";
+      row.style.marginLeft = "120px"; // aligns with input fields after label
       row.style.marginBottom = "5px";
-      
+
       const textInput = document.createElement("input");
       textInput.type = "text";
       textInput.value = line.text;
@@ -239,34 +190,30 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Non-Item Description
-  const nonItemDescription = document.getElementById("edit-description-non-item");
-  const pickrDescNonItem = createPickr("#pickr-desc-nonitem");
+  // Non-Item Description (if needed; you may choose to always use the same description)
+  // For this version we use the same description field for all, so we omit a separate non-item description.
 
-  // Image S, L, Video
+  // Image and Video Fields
   const editImageS = document.getElementById("edit-image-s");
   const editImageL = document.getElementById("edit-image-l");
   const editVideo = document.getElementById("edit-video");
 
-  // Current Edit
   let currentEditMarker = null;
 
-  // Cancel
+  // Cancel Button
   document.getElementById("edit-cancel").addEventListener("click", () => {
     editModal.style.display = "none";
     currentEditMarker = null;
     extraLines = [];
   });
 
-  // Submit
+  // Form Submit Handler
   editForm.addEventListener("submit", e => {
     e.preventDefault();
     if (!currentEditMarker) return;
     const data = currentEditMarker.data;
-
     data.name = editName.value;
     data.nameColor = pickrName.getColor().toHEXA().toString();
-    
     data.type = editType.value;
     if (data.type === "Item") {
       data.rarity = editRarity.value;
@@ -277,28 +224,25 @@ document.addEventListener("DOMContentLoaded", () => {
       data.descriptionColor = pickrDesc.getColor().toHEXA().toString();
       data.extraLines = JSON.parse(JSON.stringify(extraLines));
     } else {
-      data.description = nonItemDescription.value;
-      data.descriptionColor = pickrDescNonItem.getColor().toHEXA().toString();
+      data.description = editDescription.value;
+      data.descriptionColor = pickrDesc.getColor().toHEXA().toString();
       delete data.rarity;
       delete data.rarityColor;
       delete data.itemType;
       delete data.itemTypeColor;
       delete data.extraLines;
     }
-
     data.imageSmall = editImageS.value;
     data.imageBig = editImageL.value;
     data.videoURL = editVideo.value;
-
     currentEditMarker.markerObj.setPopupContent(createPopupContent(data));
     updateMarkerInFirestore(data);
-
     editModal.style.display = "none";
     extraLines = [];
     currentEditMarker = null;
   });
 
-  // Helper to create a new color pickr instance
+  // Helper: Create Pickr instance
   function createPickr(el) {
     return Pickr.create({
       el: el,
@@ -308,18 +252,13 @@ document.addEventListener("DOMContentLoaded", () => {
         preview: true,
         opacity: true,
         hue: true,
-        interaction: {
-          hex: true,
-          rgba: true,
-          input: true,
-          save: true
-        }
+        interaction: { hex: true, rgba: true, input: true, save: true }
       }
     });
   }
 
   // ===========================
-  // Marker Icon / Popup
+  // Marker Icon & Popup Creation
   // ===========================
   function createCustomIcon(m) {
     return L.divIcon({
@@ -339,7 +278,6 @@ document.addEventListener("DOMContentLoaded", () => {
     let itemTypeLine = "";
     let descLine = "";
     let extraInfo = "";
-    
     if (m.type === "Item") {
       if (m.rarity) {
         rarityLine = `<span style="color:${m.rarityColor||"#fff"};">${m.rarity}</span>`;
@@ -350,38 +288,34 @@ document.addEventListener("DOMContentLoaded", () => {
       descLine = m.description
         ? `<p style="color:${m.descriptionColor||"#fff"}; margin:5px 0;">${m.description}</p>`
         : "";
-      if (m.extraLines && Array.isArray(m.extraLines)) {
+      if (m.extraLines && m.extraLines.length) {
         m.extraLines.forEach(line => {
           extraInfo += `<p style="margin:0; color:${line.color||"#fff"};">${line.text}</p>`;
         });
       }
-      typeLine = `<span>${m.type}</span> ${rarityLine ? "| " + rarityLine : ""}`;
+      typeLine = `<span>${m.type}</span>${rarityLine ? " | " + rarityLine : ""}`;
     } else {
       descLine = m.description
         ? `<p style="color:${m.descriptionColor||"#fff"}; margin:5px 0;">${m.description}</p>`
         : "";
       typeLine = `<span>${m.type}</span>`;
     }
-    // Name
     const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor||"#fff"};">${m.name}</h3>`;
-    // Possibly show an image
     let scaledImg = "";
     if (m.imageBig) {
       scaledImg = `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`;
     }
-    // Possibly show a video button
     let videoBtn = "";
     if (m.videoURL) {
       videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
     }
-
     return `
       <div class="custom-popup">
-        <div class="popup-header" style="display:flex;gap:15px;">
+        <div class="popup-header" style="display:flex; gap:15px;">
           ${scaledImg}
           <div>
             ${nameHTML}
-            <div style="font-size:14px;color:#fff; margin-top:2px;">${typeLine}</div>
+            <div style="font-size:14px; color:#fff; margin-top:2px;">${typeLine}</div>
             ${itemTypeLine}
           </div>
         </div>
@@ -395,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Firestore: Save + Delete
+  // Firestore Persistence Functions
   // ===========================
   function updateMarkerInFirestore(m) {
     if (m.id) {
@@ -416,7 +350,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ===========================
-  // Add Marker
+  // Add Marker Function
   // ===========================
   function addMarker(m) {
     const markerObj = L.marker([m.coords[0], m.coords[1]], {
@@ -437,40 +371,32 @@ document.addEventListener("DOMContentLoaded", () => {
           text: "Edit Marker",
           action: () => {
             currentEditMarker = { markerObj, data: m };
-            
-            // Populate fields
             editName.value = m.name || "";
             pickrName.setColor(m.nameColor || "#ffffff");
             editType.value = m.type || "Door";
             editImageS.value = m.imageSmall || "";
             editImageL.value = m.imageBig || "";
             editVideo.value = m.videoURL || "";
-
             if (m.type === "Item") {
               editRarity.value = m.rarity || "";
               pickrRarity.setColor(m.rarityColor || "#ffffff");
-              itemExtraFields.style.display = "";
-              // Show row for item subtype
-              document.getElementById("itemtype-row").style.display = "";
+              document.getElementById("edit-rarity").style.display = "";
+              document.getElementById("pickr-rarity").style.display = "";
+              itemtypeRow.style.display = "";
               editItemSubtype.value = m.itemType || "Crafting Material";
               pickrItemType.setColor(m.itemTypeColor || "#ffffff");
               editDescription.value = m.description || "";
               pickrDesc.setColor(m.descriptionColor || "#ffffff");
               extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
               renderExtraLines();
-              // Hide non-item desc
-              nonItemDescription.value = "";
-              document.getElementById("non-item-description").style.display = "none";
             } else {
-              // Non item
               editRarity.value = "";
-              pickrRarity.setColor("#ffffff");
-              itemExtraFields.style.display = "none";
-              document.getElementById("itemtype-row").style.display = "none";
-              nonItemDescription.value = m.description || "";
-              pickrDescNonItem.setColor(m.descriptionColor || "#ffffff");
+              document.getElementById("edit-rarity").style.display = "none";
+              document.getElementById("pickr-rarity").style.display = "none";
+              itemtypeRow.style.display = "none";
+              editDescription.value = m.description || "";
+              pickrDesc.setColor(m.descriptionColor || "#ffffff");
             }
-
             editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
             editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
             editModal.style.display = "block";
@@ -532,7 +458,9 @@ document.addEventListener("DOMContentLoaded", () => {
     return markerObj;
   }
 
-  // Load Markers from Firestore or JSON
+  // ===========================
+  // Load Markers (Firestore or fallback JSON)
+  // ===========================
   function loadMarkers() {
     db.collection("markers").get()
       .then(querySnapshot => {
@@ -543,13 +471,12 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(`Invalid marker type: ${mData.type}`);
             return;
           }
-          if (!mData.coords) mData.coords = [1500,1500];
+          if (!mData.coords) mData.coords = [1500, 1500];
           addMarker(mData);
         });
       })
       .catch(err => {
         console.error("Error loading markers from Firestore:", err);
-        // fallback to local JSON
         fetch("./data/markerData.json")
           .then(resp => {
             if (!resp.ok) throw new Error("Network response was not ok");
@@ -564,14 +491,14 @@ document.addEventListener("DOMContentLoaded", () => {
               addMarker(m);
             });
           })
-          .catch(err2 => {
-            console.error("Error loading local JSON markers:", err2);
-          });
+          .catch(err2 => console.error("Error loading local JSON:", err2));
       });
   }
   loadMarkers();
 
-  // Right-click on map => Create new marker
+  // ===========================
+  // Right-click on Map => Create Marker
+  // ===========================
   map.on("contextmenu", evt => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -590,19 +517,13 @@ document.addEventListener("DOMContentLoaded", () => {
           pickrItemType.setColor("#ffffff");
           editDescription.value = "";
           pickrDesc.setColor("#ffffff");
-          nonItemDescription.value = "";
-          pickrDescNonItem.setColor("#ffffff");
           extraLines = [];
           renderExtraLines();
-          // By default, if type isn't Item, hide item fields
           document.getElementById("item-extra-fields").style.display = "none";
           document.getElementById("itemtype-row").style.display = "none";
-          document.getElementById("non-item-description").style.display = "";
-          // Position modal
           editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
           editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
           editModal.style.display = "block";
-          // On submit => Create new marker
           editForm.onsubmit = e2 => {
             e2.preventDefault();
             const newMarker = {
@@ -623,8 +544,8 @@ document.addEventListener("DOMContentLoaded", () => {
               newMarker.descriptionColor = pickrDesc.getColor().toHEXA().toString();
               newMarker.extraLines = JSON.parse(JSON.stringify(extraLines));
             } else {
-              newMarker.description = nonItemDescription.value;
-              newMarker.descriptionColor = pickrDescNonItem.getColor().toHEXA().toString();
+              newMarker.description = editDescription.value;
+              newMarker.descriptionColor = pickrDesc.getColor().toHEXA().toString();
             }
             addMarker(newMarker);
             updateMarkerInFirestore(newMarker);
@@ -637,7 +558,9 @@ document.addEventListener("DOMContentLoaded", () => {
     ]);
   });
 
+  // ===========================
   // Sidebar Toggle
+  // ===========================
   document.getElementById("sidebar-toggle").addEventListener("click", () => {
     const sidebar = document.getElementById("sidebar");
     const mapDiv = document.getElementById("map");
@@ -646,7 +569,9 @@ document.addEventListener("DOMContentLoaded", () => {
     map.invalidateSize();
   });
 
+  // ===========================
   // Basic Search
+  // ===========================
   document.getElementById("search-bar").addEventListener("input", function() {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
@@ -661,7 +586,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
 
-  // Toggle Marker Grouping
+  // ===========================
+  // Toggle Marker Grouping for Item markers
+  // ===========================
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
     if (this.checked) {
