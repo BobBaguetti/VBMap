@@ -51,18 +51,20 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Include scripts at the end -->
+  <!-- Include required scripts at the end of the body -->
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- MarkerCluster JS -->
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  
   <!-- Firebase App (compat) and Firestore -->
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  
   <!-- Main JS -->
   <script src="scripts/script.js"></script>
   
-  <!-- Edit Modal -->
+  <!-- Custom Edit Modal for Marker Editing -->
   <div id="edit-modal">
     <div id="edit-modal-handle">
       <strong>Edit Marker</strong>
@@ -71,9 +73,8 @@
       <div class="row">
         <label>Name:</label>
         <input type="text" id="edit-name" required style="background:#E5E6E8;color:#000;" />
-        <input type="color" id="edit-name-color" value="#ffffff" title="Name text color" />
+        <input type="color" id="edit-name-color" value="#ffffff" title="Name text color" style="width:24px; height:24px; border:none; margin-left:5px;" />
       </div>
-
       <div class="row">
         <label>Type:</label>
         <select id="edit-type" style="background:#E5E6E8;color:#000;">
@@ -83,23 +84,20 @@
           <option value="Door">Door</option>
         </select>
       </div>
-
       <div class="row">
-        <label>Image Small (Icon URL):</label>
+        <label>Image Small:</label>
         <input type="text" id="edit-image-small" style="background:#E5E6E8;color:#000;" />
       </div>
-
       <div class="row">
-        <label>Image Big (Popup URL):</label>
+        <label>Image Big:</label>
         <input type="text" id="edit-image-big" style="background:#E5E6E8;color:#000;" />
       </div>
-
-      <!-- Additional fields for Item markers -->
+      <!-- Extra fields for Item markers -->
       <div id="item-extra-fields" style="display:none;">
         <div class="row">
           <label>Item Type:</label>
-          <input type="text" id="edit-item-type" style="background:#E5E6E8;color:#000;" />
-          <input type="color" id="edit-item-type-color" value="#ffffff" title="Item type color" />
+          <input type="text" id="edit-item-type" style="background:#E5E6E8;color:#000;flex:1;" />
+          <input type="color" id="edit-item-type-color" value="#ffffff" title="Item type color" style="width:24px;height:24px;border:none; margin-left:5px;" />
         </div>
         <div class="row">
           <label>Rarity:</label>
@@ -111,36 +109,34 @@
             <option value="epic">Epic</option>
             <option value="legendary">Legendary</option>
           </select>
-          <input type="color" id="edit-rarity-color" value="#ffffff" title="Rarity text color" />
+          <input type="color" id="edit-rarity-color" value="#ffffff" title="Rarity text color" style="width:24px;height:24px;border:none; margin-left:5px;" />
         </div>
         <div class="row">
           <label>Description:</label>
-          <textarea id="edit-description" rows="2" style="background:#E5E6E8;color:#000;"></textarea>
+          <textarea id="edit-description" rows="2" style="background:#E5E6E8;color:#000;flex:1;"></textarea>
+          <input type="color" id="edit-description-color" value="#ffffff" title="Description text color" style="width:24px;height:24px;border:none; margin-left:5px;" />
         </div>
-
         <div class="extra-info-section">
-          <div class="row">
-            <label>Extra Info</label>
+          <div class="row" style="justify-content:space-between; align-items:center;">
+            <label>Extra Info:</label>
             <button type="button" id="add-extra-line">+</button>
           </div>
           <div id="extra-lines"></div>
         </div>
       </div>
-
-      <!-- If the marker is not an Item, show a simpler Description field -->
+      <!-- For non-Item markers, a simpler Description field -->
       <div id="non-item-description" style="display:none;">
         <div class="row">
           <label>Description:</label>
-          <textarea id="edit-description-non-item" rows="3" style="background:#E5E6E8;color:#000;"></textarea>
+          <textarea id="edit-description-non-item" rows="3" style="background:#E5E6E8;color:#000;flex:1;"></textarea>
+          <input type="color" id="edit-description-non-item-color" value="#ffffff" title="Description text color" style="width:24px;height:24px;border:none; margin-left:5px;" />
         </div>
       </div>
-
       <div class="row">
         <label>Video URL:</label>
         <input type="text" id="edit-video-url" style="background:#E5E6E8;color:#000;" />
       </div>
-
-      <div class="row" style="justify-content:center;margin-top:10px;">
+      <div class="row" style="justify-content:center; margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>
       </div>

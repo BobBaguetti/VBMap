@@ -23,12 +23,13 @@ document.addEventListener("DOMContentLoaded", () => {
     zoomControl: false
   });
   L.control.zoom({ position: "topright" }).addTo(map);
-
-  const bounds = [[0, 0],[3000, 3000]];
+  const bounds = [[0, 0], [3000, 3000]];
   const imageUrl = "./media/images/tempmap.png";
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
 
+  // ------------------------------
+  // Layer Groups & Global Variables
   let itemLayer = L.markerClusterGroup();
   const layers = {
     "Teleport": L.layerGroup(),
@@ -37,12 +38,13 @@ document.addEventListener("DOMContentLoaded", () => {
     "Door": L.layerGroup()
   };
   Object.values(layers).forEach(layer => layer.addTo(map));
-
   let allMarkers = [];
 
   // ------------------------------
-  // Dark Context Menu
+  // Context Menu (Dark Mode)
   const contextMenu = document.createElement("div");
+  contextMenu.id = "context-menu";
+  document.body.appendChild(contextMenu);
   Object.assign(contextMenu.style, {
     position: "absolute",
     background: "#333",
@@ -53,42 +55,30 @@ document.addEventListener("DOMContentLoaded", () => {
     zIndex: "2000",
     boxShadow: "0px 2px 6px rgba(0,0,0,0.5)"
   });
-  document.body.appendChild(contextMenu);
-
   function showContextMenu(x, y, options) {
     contextMenu.innerHTML = "";
     options.forEach(opt => {
-      const menuItem = document.createElement("div");
-      menuItem.innerText = opt.text;
-      menuItem.style.padding = "5px 10px";
-      menuItem.style.cursor = "pointer";
-      menuItem.style.whiteSpace = "nowrap";
-      menuItem.addEventListener("click", () => {
+      const item = document.createElement("div");
+      item.innerText = opt.text;
+      item.style.padding = "5px 10px";
+      item.style.cursor = "pointer";
+      item.style.whiteSpace = "nowrap";
+      item.addEventListener("click", () => {
         opt.action();
         contextMenu.style.display = "none";
       });
-      contextMenu.appendChild(menuItem);
+      contextMenu.appendChild(item);
     });
     contextMenu.style.left = x + "px";
     contextMenu.style.top = y + "px";
     contextMenu.style.display = "block";
   }
-  document.addEventListener("click", () => {
-    contextMenu.style.display = "none";
-  });
+  document.addEventListener("click", () => { contextMenu.style.display = "none"; });
 
   // ------------------------------
-  // Draggable Edit Modal
+  // Draggable Edit Modal via Handle Only
   const editModal = document.getElementById("edit-modal");
   const editModalHandle = document.getElementById("edit-modal-handle");
-  editModal.style.position = "absolute";
-  editModal.style.background = "#222";
-  editModal.style.color = "#eee";
-  editModal.style.padding = "20px";
-  editModal.style.border = "1px solid #555";
-  editModal.style.zIndex = "2100";
-  editModal.style.cursor = "default";
-  editModal.style.display = "none";
   let isDragging = false, offsetX = 0, offsetY = 0;
   editModalHandle.addEventListener("mousedown", (e) => {
     isDragging = true;
@@ -103,9 +93,7 @@ document.addEventListener("DOMContentLoaded", () => {
       editModal.style.top = (e.clientY - offsetY) + "px";
     }
   });
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
+  document.addEventListener("mouseup", () => { isDragging = false; });
 
   // ------------------------------
   // Video Popup
@@ -126,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.openVideoPopup = openVideoPopup;
 
   // ------------------------------
-  // Edit Modal Fields
+  // Edit Modal Fields & Dynamic Extra Info Lines
   const editForm = document.getElementById("edit-form");
   const editName = document.getElementById("edit-name");
   const editNameColor = document.getElementById("edit-name-color");
@@ -138,57 +126,39 @@ document.addEventListener("DOMContentLoaded", () => {
   const editRarity = document.getElementById("edit-rarity");
   const editRarityColor = document.getElementById("edit-rarity-color");
   const editDescription = document.getElementById("edit-description");
-  const nonItemDescription = document.getElementById("non-item-description");
-  const editDescriptionNonItem = document.getElementById("edit-description-non-item");
+  const editDescriptionColor = document.getElementById("edit-description-color");
+  const nonItemDescription = document.getElementById("edit-description-non-item");
   const editVideoURL = document.getElementById("edit-video-url");
   const itemExtraFields = document.getElementById("item-extra-fields");
-  const addExtraLineBtn = document.getElementById("add-extra-line");
   const extraLinesContainer = document.getElementById("extra-lines");
-
+  const addExtraLineBtn = document.getElementById("add-extra-line");
   let currentEditMarker = null;
-  let extraLines = []; // array of { text, color }
-
-  // ------------------------------
-  // Rarity Defaults
-  const defaultRarityColors = {
-    "common": "#CCCCCC",
-    "uncommon": "#56DE56",
-    "rare": "#3498db",
-    "epic": "#9b59b6",
-    "legendary": "#f39c12"
-  };
-
-  editRarity.addEventListener("change", function() {
-    if (defaultRarityColors[this.value]) {
-      editRarityColor.value = defaultRarityColors[this.value];
-    }
-  });
-
-  // ------------------------------
-  // Dynamic Extra Info Lines
+  let extraLines = [];
   function renderExtraLinesUI() {
     extraLinesContainer.innerHTML = "";
-    extraLines.forEach((lineObj, idx) => {
+    extraLines.forEach((line, idx) => {
       const row = document.createElement("div");
-      row.style.display = "flex";
+      row.className = "row";
+      row.style.alignItems = "center";
       row.style.marginBottom = "5px";
       const textInput = document.createElement("input");
       textInput.type = "text";
-      textInput.value = lineObj.text;
+      textInput.value = line.text;
       textInput.style.background = "#E5E6E8";
       textInput.style.color = "#000";
       textInput.addEventListener("input", () => {
         extraLines[idx].text = textInput.value;
       });
-
       const colorInput = document.createElement("input");
       colorInput.type = "color";
-      colorInput.value = lineObj.color || "#ffffff";
+      colorInput.value = line.color || "#ffffff";
+      colorInput.style.width = "24px";
+      colorInput.style.height = "24px";
+      colorInput.style.border = "none";
       colorInput.style.marginLeft = "5px";
       colorInput.addEventListener("change", () => {
         extraLines[idx].color = colorInput.value;
       });
-
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
       removeBtn.textContent = "x";
@@ -197,7 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
         extraLines.splice(idx, 1);
         renderExtraLinesUI();
       });
-
       row.appendChild(textInput);
       row.appendChild(colorInput);
       row.appendChild(removeBtn);
@@ -208,8 +177,7 @@ document.addEventListener("DOMContentLoaded", () => {
     extraLines.push({ text: "", color: "#ffffff" });
     renderExtraLinesUI();
   });
-
-  // Show/hide item fields vs non-item fields
+  // Show/hide extra fields based on type selection.
   editType.addEventListener("change", function() {
     if (this.value === "Item") {
       itemExtraFields.style.display = "block";
@@ -220,14 +188,12 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Cancel Button
   document.getElementById("edit-cancel").addEventListener("click", () => {
     editModal.style.display = "none";
     currentEditMarker = null;
     extraLines = [];
   });
 
-  // On Save (Submit)
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -238,22 +204,22 @@ document.addEventListener("DOMContentLoaded", () => {
     data.imageSmall = editImageSmall.value;
     data.imageBig = editImageBig.value;
     data.videoURL = editVideoURL.value || "";
-    
     if (data.type === "Item") {
       data.itemType = editItemType.value;
       data.itemTypeColor = editItemTypeColor.value;
       data.rarity = editRarity.value;
       data.rarityColor = editRarityColor.value;
       data.description = editDescription.value;
-      data.extraLines = JSON.parse(JSON.stringify(extraLines)); 
+      data.descriptionColor = editDescriptionColor.value;
+      data.extraLines = JSON.parse(JSON.stringify(extraLines));
     } else {
-      data.description = editDescriptionNonItem.value;
-      // Clear item fields
+      data.description = nonItemDescription.value;
       delete data.itemType;
       delete data.itemTypeColor;
       delete data.rarity;
       delete data.rarityColor;
       delete data.extraLines;
+      delete data.descriptionColor;
     }
     currentEditMarker.markerObj.setPopupContent(createPopupContent(data));
     updateMarkerInFirestore(data);
@@ -263,7 +229,22 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Marker Creation Functions
+  // Rarity default colors
+  const defaultRarityColors = {
+    "common": "#CCCCCC",
+    "uncommon": "#56DE56",
+    "rare": "#3498db",
+    "epic": "#9b59b6",
+    "legendary": "#f39c12"
+  };
+  editRarity.addEventListener("change", function() {
+    if (defaultRarityColors[this.value]) {
+      editRarityColor.value = defaultRarityColors[this.value];
+    }
+  });
+
+  // ------------------------------
+  // Popup Creation Functions
   function createCustomIcon(m) {
     return L.divIcon({
       html: `
@@ -276,56 +257,41 @@ document.addEventListener("DOMContentLoaded", () => {
       iconSize: [32, 32]
     });
   }
-
   function createPopupContent(m) {
-    // For item markers, layout is:
-    // 1) name (in m.nameColor, bigger font)
-    // 2) item type (in m.itemTypeColor, same size as rarity)
-    // 3) rarity (in m.rarityColor) - same font size
-    // scale up image a bit
-    const scaledImageStyle = 'width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;';
-
-    let linesHTML = "";
+    let extraContent = "";
     if (m.type === "Item" && m.extraLines && m.extraLines.length > 0) {
-      m.extraLines.forEach(lineObj => {
-        const col = lineObj.color || "#fff";
-        linesHTML += `<p style="color:${col}">${lineObj.text}</p>`;
+      m.extraLines.forEach(line => {
+        extraContent += `<p style="color:${line.color}">${line.text}</p>`;
       });
     }
-
-    let nameLine = `<h3 style="font-size:20px;margin:0;padding:0;color:${m.nameColor||'#fff'};">${m.name}</h3>`;
-    let typeLine = "";
-    let rarityLine = "";
+    let topSection = "";
     if (m.type === "Item") {
-      if (m.itemType) {
-        typeLine = `<div style="font-size:16px;color:${m.itemTypeColor||'#fff'};">${m.itemType}</div>`;
-      }
-      if (m.rarity) {
-        rarityLine = `<div style="font-size:16px;color:${m.rarityColor||'#fff'};">${m.rarity}</div>`;
-      }
+      topSection = `
+        <h3 style="margin:0; font-size:20px; color:${m.nameColor || "#fff"};">${m.name}</h3>
+        <div style="font-size:16px; color:${m.itemTypeColor || "#fff"};">${m.itemType || ""}</div>
+        <div style="font-size:16px; color:${m.rarityColor || "#fff"};">${m.rarity || ""}</div>
+      `;
+    } else {
+      topSection = `<h3 style="margin:0; font-size:20px; color:${m.nameColor || "#fff"};">${m.name}</h3>`;
     }
-
-    let videoButton = "";
+    const desc = m.description ? `<p style="color:${m.descriptionColor||"#fff"};">${m.description}</p>` : "";
+    let videoBtn = "";
     if (m.videoURL) {
-      videoButton = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
+      videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
     }
-
-    const mainDesc = m.description ? `<p>${m.description}</p>` : "";
-
+    const scaledImage = m.imageBig ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />` : "";
     return `
       <div class="custom-popup">
         <div class="popup-header">
-          ${m.imageBig ? `<img src="${m.imageBig}" style="${scaledImageStyle}" />` : ""}
+          ${scaledImage}
           <div style="margin-left:15px;">
-            ${nameLine}
-            ${typeLine}
-            ${rarityLine}
+            ${topSection}
           </div>
         </div>
         <div class="popup-body">
-          ${mainDesc}
-          ${linesHTML}
-          ${videoButton}
+          ${desc}
+          ${extraContent}
+          ${videoBtn}
         </div>
       </div>
     `;
@@ -347,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------
-  // Add Marker
+  // Add Marker Function
   function addMarker(m) {
     const markerObj = L.marker(
       [m.coords[0], m.coords[1]],
@@ -359,7 +325,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     layers[m.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: m });
-
+    
     markerObj.on("contextmenu", (e) => {
       e.originalEvent.preventDefault();
       showContextMenu(e.originalEvent.pageX, e.originalEvent.pageY, [
@@ -367,15 +333,12 @@ document.addEventListener("DOMContentLoaded", () => {
           text: "Edit Marker",
           action: () => {
             currentEditMarker = { markerObj, data: m };
-            // Populate the fields
             editName.value = m.name || "";
             editNameColor.value = m.nameColor || "#ffffff";
             editType.value = m.type || "Item";
             editImageSmall.value = m.imageSmall || "";
             editImageBig.value = m.imageBig || "";
             editVideoURL.value = m.videoURL || "";
-            
-            // If item, show item fields
             if (m.type === "Item") {
               itemExtraFields.style.display = "block";
               nonItemDescription.style.display = "none";
@@ -384,14 +347,14 @@ document.addEventListener("DOMContentLoaded", () => {
               editRarity.value = m.rarity || "";
               editRarityColor.value = m.rarityColor || "#ffffff";
               editDescription.value = m.description || "";
+              editDescriptionColor.value = m.descriptionColor || "#ffffff";
               extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
               renderExtraLinesUI();
             } else {
               itemExtraFields.style.display = "none";
               nonItemDescription.style.display = "block";
-              editDescriptionNonItem.value = m.description || "";
+              nonItemDescription.value = m.description || "";
             }
-
             editModal.style.left = (e.originalEvent.pageX + 10) + "px";
             editModal.style.top = (e.originalEvent.pageY + 10) + "px";
             editModal.style.display = "block";
@@ -402,8 +365,8 @@ document.addEventListener("DOMContentLoaded", () => {
           action: () => {
             const dup = JSON.parse(JSON.stringify(m));
             dup.name = `${m.name} (copy)`;
+            dup.coords = [...m.coords];
             const newMarkerObj = addMarker(dup);
-            // Sticky duplicate: follow mouse until user clicks
             newMarkerObj.dragging.enable();
             const moveHandler = (evt) => {
               const latlng = map.layerPointToLatLng(L.point(evt.clientX, evt.clientY));
@@ -443,48 +406,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // ------------------------------
-  // Render Extra Lines
-  function renderExtraLinesUI() {
-    extraLinesContainer.innerHTML = "";
-    extraLines.forEach((lineObj, idx) => {
-      const row = document.createElement("div");
-      row.style.display = "flex";
-      row.style.marginBottom = "5px";
-
-      const txt = document.createElement("input");
-      txt.type = "text";
-      txt.value = lineObj.text;
-      txt.style.background = "#E5E6E8";
-      txt.style.color = "#000";
-      txt.addEventListener("input", () => {
-        extraLines[idx].text = txt.value;
-      });
-
-      const col = document.createElement("input");
-      col.type = "color";
-      col.value = lineObj.color || "#ffffff";
-      col.style.marginLeft = "5px";
-      col.addEventListener("change", () => {
-        extraLines[idx].color = col.value;
-      });
-
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.textContent = "x";
-      removeBtn.style.marginLeft = "5px";
-      removeBtn.addEventListener("click", () => {
-        extraLines.splice(idx, 1);
-        renderExtraLinesUI();
-      });
-
-      row.appendChild(txt);
-      row.appendChild(col);
-      row.appendChild(removeBtn);
-      extraLinesContainer.appendChild(row);
-    });
-  }
-
-  // ------------------------------
   // Load Markers
   function loadMarkers() {
     db.collection("markers").get().then(querySnapshot => {
@@ -495,13 +416,11 @@ document.addEventListener("DOMContentLoaded", () => {
           console.error(`Invalid marker type: ${mData.type}`);
           return;
         }
-        if (!mData.coords) { 
-          mData.coords = [1500,1500];
-        }
+        if (!mData.coords) mData.coords = [1500,1500];
         addMarker(mData);
       });
     }).catch(err => {
-      console.error("Error loading Firestore markers:", err);
+      console.error("Error loading markers from Firestore:", err);
       fetch("./data/markerData.json").then(resp => {
         if (!resp.ok) throw new Error("Network response was not ok");
         return resp.json();
@@ -513,15 +432,15 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           addMarker(m);
         });
-      }).catch(err2 => console.error("Error loading local JSON markers:", err2));
+      }).catch(err2 => console.error("Error loading markers from JSON:", err2));
     });
   }
   loadMarkers();
 
   // ------------------------------
   // Right-Click on Map => Create Marker
-  map.on("contextmenu", (evt) => {
-    showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
+  map.on("contextmenu", (e) => {
+    showContextMenu(e.originalEvent.pageX, e.originalEvent.pageY, [
       {
         text: "Create New Marker",
         action: () => {
@@ -531,28 +450,26 @@ document.addEventListener("DOMContentLoaded", () => {
           editType.value = "Item";
           editImageSmall.value = "";
           editImageBig.value = "";
-          editDescription.value = "";
           editVideoURL.value = "";
+          editDescription.value = "";
+          editDescriptionColor.value = "#ffffff";
           itemExtraFields.style.display = "block";
           nonItemDescription.style.display = "none";
-
-          extraLines = []; 
+          extraLines = [];
           renderExtraLinesUI();
-
-          editModal.style.left = (evt.originalEvent.pageX + 10) + "px";
-          editModal.style.top = (evt.originalEvent.pageY + 10) + "px";
+          editModal.style.left = (e.originalEvent.pageX + 10) + "px";
+          editModal.style.top = (e.originalEvent.pageY + 10) + "px";
           editModal.style.display = "block";
-
-          editForm.onsubmit = function(e2) {
-            e2.preventDefault();
+          editForm.onsubmit = function(ev) {
+            ev.preventDefault();
             const newMarker = {
               type: editType.value,
               name: editName.value || "New Marker",
               nameColor: editNameColor.value || "#ffffff",
-              coords: [evt.latlng.lat, evt.latlng.lng],
+              coords: [e.latlng.lat, e.latlng.lng],
               imageSmall: editImageSmall.value,
               imageBig: editImageBig.value,
-              videoURL: editVideoURL.value || ""
+              videoURL: editVideoURL.value || "",
             };
             if (newMarker.type === "Item") {
               newMarker.itemType = editItemType.value;
@@ -560,9 +477,10 @@ document.addEventListener("DOMContentLoaded", () => {
               newMarker.rarity = editRarity.value;
               newMarker.rarityColor = editRarityColor.value;
               newMarker.description = editDescription.value;
+              newMarker.descriptionColor = editDescriptionColor.value;
               newMarker.extraLines = JSON.parse(JSON.stringify(extraLines));
             } else {
-              newMarker.description = editDescriptionNonItem.value;
+              newMarker.description = nonItemDescription.value;
             }
             addMarker(newMarker);
             updateMarkerInFirestore(newMarker);
@@ -602,7 +520,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // ------------------------------
-  // Disable Marker Grouping
+  // Toggle Marker Grouping (for Items)
   document.getElementById("disable-grouping").addEventListener("change", function() {
     map.removeLayer(layers["Item"]);
     if (this.checked) {

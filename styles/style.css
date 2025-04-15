@@ -124,7 +124,7 @@ body, html {
   margin-top: 10px;
 }
 
-/* Context Menu (Dark) */
+/* Context Menu (Dark Mode) */
 #context-menu {
   font-family: Arial, sans-serif;
   font-size: 14px;
@@ -147,7 +147,7 @@ body, html {
   border: 1px solid #555;
   z-index: 2100;
   cursor: default;
-  width: 400px; /* a bit wider */
+  width: 400px;
 }
 #edit-modal-handle {
   cursor: move;
@@ -155,33 +155,40 @@ body, html {
   border-bottom: 1px solid #555;
   margin-bottom: 10px;
 }
+
+/* Form Layout */
 #edit-form {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   color: #E5E6E8;
-}
-#edit-form label {
-  margin-bottom: 2px;
 }
 .row {
   display: flex;
-  flex-wrap: wrap;
   align-items: center;
-  gap: 5px;
+  gap: 8px;
+  margin-bottom: 8px;
 }
-.row label {
-  margin-bottom: 0;
-  width: 100px; 
+.extra-info-section {
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid #555;
 }
 #extra-lines > div {
   display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 5px;
 }
-/* For the dynamic extra line rows */
-.extra-info-section {
-  margin-top: 5px;
-  border-top: 1px solid #555;
-  padding-top: 5px;
+
+/* Input Color Picker Styling */
+input[type="color"] {
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  margin-left: 5px;
+  cursor: pointer;
 }
 
 /* Video Popup */
