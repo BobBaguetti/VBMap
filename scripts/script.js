@@ -167,7 +167,6 @@ document.addEventListener("DOMContentLoaded", () => {
       pickr.hide();
     });
   }
-
   const pickrName = createPicker('#pickr-name');
 
   // Item-specific fields:
@@ -210,7 +209,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Populate edit modal fields with marker data.
+  // Populate the edit modal with marker data.
   function populateEditForm(m) {
     editName.value = m.name || "";
     pickrName.setColor(m.nameColor || "#E5E6E8");
@@ -257,9 +256,7 @@ document.addEventListener("DOMContentLoaded", () => {
       textInput.value = lineObj.text;
       textInput.style.background = "#E5E6E8";
       textInput.style.color = "#000";
-      textInput.addEventListener("input", () => {
-        extraLines[idx].text = textInput.value;
-      });
+      textInput.addEventListener("input", () => { extraLines[idx].text = textInput.value; });
       const colorDiv = document.createElement("div");
       colorDiv.className = "color-btn";
       colorDiv.style.marginLeft = "5px";
@@ -438,8 +435,9 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text: "Copy Marker",
           action: () => {
-            // Store marker data and activate paste mode.
+            // Store marker data, remove id so new copies are created, activate paste mode.
             copiedMarkerData = JSON.parse(JSON.stringify(m));
+            delete copiedMarkerData.id;
             pasteMode = true;
             pasteTooltip.style.display = "block";
             pasteTooltip.innerText = "Paste Mode Active";
@@ -514,13 +512,13 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(`Invalid marker type: ${data.type}`);
             return;
           }
-          if (!data.coords) data.coords = [1500, 1500];
+          if (!data.coords) data.coords = [1500,1500];
           addMarker(data);
         });
       })
       .catch(err => {
         console.error("Error loading markers from Firestore:", err);
-        // Fallback to local JSON if necessary
+        // Optionally, fallback to a local JSON file.
         fetch("./data/markerData.json")
           .then(resp => { if (!resp.ok) throw new Error("Network response was not ok"); return resp.json(); })
           .then(jsonData => {
@@ -545,7 +543,6 @@ document.addEventListener("DOMContentLoaded", () => {
       {
         text: "Create New Marker",
         action: () => {
-          // Open edit modal in new marker mode.
           currentEditMarker = null;
           editName.value = "";
           pickrName.setColor("#E5E6E8");
@@ -618,6 +615,8 @@ document.addEventListener("DOMContentLoaded", () => {
   map.on("click", (evt) => {
     if (copiedMarkerData) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
+      // Remove any existing id so that Firestore creates a new record.
+      delete newMarkerData.id;
       newMarkerData.coords = [evt.latlng.lat, evt.latlng.lng];
       newMarkerData.name = newMarkerData.name + " (copy)";
       addMarker(newMarkerData);
