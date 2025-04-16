@@ -1,39 +1,40 @@
 // webpack.config.js
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
   // Entry point: your main module
-  entry: './scripts/main.js', 
-  
-  // Output: the final bundle file and where to put it
+  entry: './scripts/main.js',
+
+  // Output: the final bundled file and location
   output: {
     filename: 'bundle.js',
     path: path.resolve(__dirname, 'dist'),
     publicPath: '/'
   },
 
-  // Development mode (for unminified, debug-friendly output)
+  // Development mode: for unminified, debug-friendly output
   mode: 'development',
 
-  // Generate source maps so you can debug original files in your browser
+  // Generate source maps to debug original files in the browser
   devtool: 'source-map',
 
-  // Rules: how Webpack handles certain file types
+  // Rules: handling JavaScript and CSS files
   module: {
     rules: [
       {
-        test: /\.js$/,          // All .js files
-        exclude: /node_modules/,// Except node_modules
+        test: /\.js$/,          // Process all .js files
+        exclude: /node_modules/,// Except those in node_modules
         use: {
           loader: 'babel-loader',
           options: {
-            presets: ['@babel/preset-env'] // Use our Babel preset
+            presets: ['@babel/preset-env'] // Use the Babel preset-env
           }
         }
       },
       {
-        test: /\.css$/,        // All .css files
+        test: /\.css$/,         // Process all .css files
         use: ['style-loader', 'css-loader']
       }
     ]
@@ -41,14 +42,19 @@ module.exports = {
 
   // Plugins
   plugins: [
-    // HtmlWebpackPlugin will generate an index.html in dist, 
-    // automatically injecting your <script src="bundle.js"></script>
+    // Generates an index.html in dist and injects the bundle.js script automatically.
     new HtmlWebpackPlugin({
-      template: './index.html' // Use your existing index.html as a template
+      template: './index.html' // Uses your existing index.html as a template.
+    }),
+    // Copies your media folder (from root) into the dist folder.
+    new CopyWebpackPlugin({
+      patterns: [
+        { from: 'media', to: 'media' }
+      ]
     })
   ],
 
-  // Development server: run locally on port 9000
+  // Development server configuration: serves the content from dist on port 9000.
   devServer: {
     static: {
       directory: path.join(__dirname, 'dist'),
