@@ -1,3 +1,7 @@
+// scripts/script.js
+
+import { initializeMap } from "./modules/map.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Script loaded!");
 
@@ -38,19 +42,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const db = firebase.firestore();
 
   // --------------------------------------
-  // Map Setup
+  // Map Initialization (from map.js module)
   // --------------------------------------
-  const map = L.map("map", {
-    crs: L.CRS.Simple,
-    minZoom: -2,
-    maxZoom: 4,
-    zoomControl: false
-  });
-  L.control.zoom({ position: "topright" }).addTo(map);
-  const bounds = [[0, 0], [3000, 3000]];
-  const imageUrl = "./media/images/tempmap.png";
-  L.imageOverlay(imageUrl, bounds).addTo(map);
-  map.fitBounds(bounds);
+  const { map, bounds } = initializeMap();
 
   // --------------------------------------
   // Layers Setup
@@ -181,11 +175,11 @@ document.addEventListener("DOMContentLoaded", () => {
       el: selector,
       theme: 'nano',
       default: '#E5E6E8',
-      components: {
-        preview: true,
-        opacity: true,
-        hue: true,
-        interaction: { hex: true, rgba: true, input: true, save: true }
+      components: { 
+        preview: true, 
+        opacity: true, 
+        hue: true, 
+        interaction: { hex: true, rgba: true, input: true, save: true } 
       }
     }).on('save', (color, pickr) => {
       pickr.hide();
@@ -207,7 +201,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "legendary": "#f39c12"
   };
 
-  editRarity.addEventListener("change", function () {
+  editRarity.addEventListener("change", function() {
     if (defaultRarityColors[this.value]) {
       pickrRarity.setColor(defaultRarityColors[this.value]);
     }
@@ -308,12 +302,12 @@ document.addEventListener("DOMContentLoaded", () => {
           interaction: { hex: true, rgba: true, input: true, save: true }
         }
       })
-        .on('change', (color) => {
-          extraLines[idx].color = color.toHEXA().toString();
-        })
-        .on('save', (color, pickr) => {
-          pickr.hide();
-        });
+      .on('change', (color) => {
+        extraLines[idx].color = color.toHEXA().toString();
+      })
+      .on('save', (color, pickr) => {
+        pickr.hide();
+      });
       linePickr.setColor(lineObj.color || "#E5E6E8");
     });
   }
@@ -649,7 +643,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --------------------------------------
   // Copy-Paste (Marker Duplication) Logic
   // --------------------------------------
-  // When in paste mode, allow repeated pasting.
   map.on("click", (evt) => {
     if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
@@ -666,7 +659,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // --------------------------------------
   // Search Functionality
   // --------------------------------------
-  searchBar.addEventListener("input", function () {
+  searchBar.addEventListener("input", function() {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
       const markerName = item.data.name.toLowerCase();
