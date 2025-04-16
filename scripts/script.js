@@ -189,19 +189,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     const selectedId = predefinedItemDropdown.value;
     if (selectedId && predefinedItemDefs[selectedId]) {
       const def = predefinedItemDefs[selectedId];
-      // Auto-fill item-related fields from the definition
+      // Auto-fill item-related fields from the definition, including colors
       editName.value = def.name || "";
+      if(def.nameColor) { 
+        pickrName.setColor(def.nameColor); 
+      } else { 
+        pickrName.setColor("#E5E6E8"); 
+      }
       editRarity.value = def.rarity || "";
-      if (def.rarityColor) { pickrRarity.setColor(def.rarityColor); }
+      if(def.rarityColor) { 
+        pickrRarity.setColor(def.rarityColor); 
+      } else { 
+        pickrRarity.setColor("#E5E6E8"); 
+      }
       editItemType.value = def.itemType || def.type || "";
-      if (def.itemTypeColor) { pickrItemType.setColor(def.itemTypeColor); }
+      if(def.itemTypeColor) { 
+        pickrItemType.setColor(def.itemTypeColor); 
+      } else { 
+        pickrItemType.setColor("#E5E6E8"); 
+      }
       editDescription.value = def.description || "";
-      if (def.descriptionColor) { pickrDescItem.setColor(def.descriptionColor); }
+      if(def.descriptionColor) { 
+        pickrDescItem.setColor(def.descriptionColor); 
+      } else { 
+        pickrDescItem.setColor("#E5E6E8"); 
+      }
       extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
       renderExtraLines();
       editImageSmall.value = def.imageSmall || "";
       editImageBig.value = def.imageBig || "";
-      // Video field remains manual since definitions don't include video
     }
   });
 
@@ -213,7 +229,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     editImageSmall.value = m.imageSmall || "";
     editImageBig.value = m.imageBig || "";
     editVideoURL.value = m.videoURL || "";
-    // Update visibility based on marker type (Item vs non-Item)
     updateItemFieldsVisibility();
     if (m.type === "Item") {
       if (m.predefinedItemId) {
@@ -289,7 +304,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       linePickr.setColor(lineObj.color || "#E5E6E8");
     });
   }
-
   document.getElementById("edit-cancel").addEventListener("click", () => {
     editModal.style.display = "none";
     currentEditMarker = null;
@@ -568,7 +582,7 @@ document.addEventListener("DOMContentLoaded", async () => {
           // Set default values for the creation form
           editName.value = "";
           pickrName.setColor("#E5E6E8");
-          // Default to "Item" (can be changed by the user)
+          // Default to "Item" for demonstration; user can change if needed.
           editType.value = "Item";
           editImageSmall.value = "";
           editImageBig.value = "";
@@ -581,7 +595,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           pickrDescItem.setColor("#E5E6E8");
           extraLines = [];
           renderExtraLines();
-          // Initialize visibility based on the default editType value.
           updateItemFieldsVisibility();
           positionModal(editModal, evt.originalEvent);
           editModal.style.display = "block";
