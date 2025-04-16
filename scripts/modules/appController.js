@@ -8,7 +8,7 @@ import {
   updateMarker as firebaseUpdateMarker, 
   deleteMarker as firebaseDeleteMarker 
 } from "./firebaseService.js";
-import { createMarker } from "./markerManager.js";
+import { createMarker, createPopupContent } from "./markerManager.js";
 import { 
   makeDraggable, 
   showContextMenu, 
@@ -98,8 +98,7 @@ export async function bootstrapApp() {
   }
   window.openVideoPopup = openVideoPopup;
 
-  // --- Edit Modal & Extra Lines Setup ---
-  // (For brevity, this sample uses a simple extra lines rendering function.)
+  // --- Extra Lines Setup ---
   let extraLines = [];
   function renderExtraLines() {
     extraLinesContainer.innerHTML = "";
@@ -168,19 +167,53 @@ export async function bootstrapApp() {
 
   // --- Marker Creation Wrapper ---
   function createMarkerWrapper(m, callbacks) {
-    const markerObj = createMarker(
-      m,
-      map,
-      layers,
-      showContextMenu,
-      callbacks
-    );
+    const markerObj = createMarker(m, map, layers, showContextMenu, callbacks);
     allMarkers.push({ markerObj, data: m });
     return markerObj;
   }
   function addMarkerWrapper(m, callbacks = {}) {
     return createMarkerWrapper(m, callbacks);
   }
+
+  // --- Unified Submit Handler for the Edit Modal ---
+  editForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    // Gather form data into a marker object
+    const updatedData = {
+      name: editName.value,
+      nameColor: "#E5E6E8", // You can integrate color picker data if available
+      type: editType.value,
+      imageSmall: editImageSmall.value,
+      imageBig: editImageBig.value,
+      videoURL: editVideoURL.value || ""
+    };
+    if (editType.value === "Item") {
+      updatedData.rarity = formatRarity(editRarity.value);
+      updatedData.itemType = editItemType.value;
+      updatedData.description = editDescription.value;
+      updatedData.extraLines = JSON.parse(JSON.stringify(extraLines));
+    } else {
+      updatedData.description = nonItemDescription.value;
+    }
+
+    if (currentEditMarker) {
+      // Editing an existing marker
+      currentEditMarker.markerObj.setPopupContent(createPopupContent(updatedData));
+      // Update data in Firebase and in the in-memory collection
+      firebaseUpdateMarker(db, { ...currentEditMarker.data, ...updatedData });
+      currentEditMarker.data = { ...currentEditMarker.data, ...updatedData };
+    } else {
+      // Creating a new marker
+      addMarkerWrapper(updatedData, {
+        onEdit: handleEdit,
+        onCopy: handleCopy,
+        onDragEnd: handleDragEnd,
+        onDelete: handleDelete
+      });
+      firebaseAddMarker(db, updatedData);
+    }
+    editModal.style.display = "none";
+  });
 
   // --- Load Markers from Firebase ---
   async function loadAndDisplayMarkers() {
@@ -205,7 +238,7 @@ export async function bootstrapApp() {
   }
   loadAndDisplayMarkers();
 
-  // --- Right-Click (Context Menu) for New Marker ---
+  // --- Right-Click Context Menu for New Marker ---
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -226,35 +259,6 @@ export async function bootstrapApp() {
           nonItemDescription.style.display = "none";
           positionModal(editModal, evt.originalEvent);
           editModal.style.display = "block";
-          editForm.onsubmit = (e) => {
-            e.preventDefault();
-            const newMarker = {
-              type: editType.value,
-              name: editName.value || "New Marker",
-              nameColor: "#E5E6E8", // You can add color pickers if needed
-              coords: [evt.latlng.lat, evt.latlng.lng],
-              imageSmall: editImageSmall.value,
-              imageBig: editImageBig.value,
-              videoURL: editVideoURL.value || ""
-            };
-            if (newMarker.type === "Item") {
-              newMarker.rarity = formatRarity(editRarity.value);
-              newMarker.itemType = editItemType.value;
-              newMarker.description = editDescription.value;
-              newMarker.extraLines = JSON.parse(JSON.stringify(extraLines));
-            } else {
-              newMarker.description = nonItemDescription.value;
-            }
-            addMarkerWrapper(newMarker, {
-              onEdit: handleEdit,
-              onCopy: handleCopy,
-              onDragEnd: handleDragEnd,
-              onDelete: handleDelete
-            });
-            firebaseAddMarker(db, newMarker);
-            editModal.style.display = "none";
-            editForm.onsubmit = null;
-          };
         }
       }
     ]);
