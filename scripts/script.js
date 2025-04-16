@@ -74,18 +74,17 @@ document.addEventListener("DOMContentLoaded", () => {
   let copiedMarkerData = null;
   let pasteMode = false;
 
-  // Set initial style for the paste tooltip.
-  // We remove background and borders, and add a text shadow.
+  // Set up paste tooltip styling (no background; text with shadow)
   pasteTooltip.style.background = "transparent";
   pasteTooltip.style.border = "none";
   pasteTooltip.style.padding = "0";
   pasteTooltip.style.fontSize = "14px";
   pasteTooltip.style.color = "#fff";
-  pasteTooltip.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.7)";
+  pasteTooltip.style.textShadow = "1px 1px 2px rgba(0,0,0,0.7)";
   pasteTooltip.style.pointerEvents = "none";
   pasteTooltip.style.position = "absolute";
 
-  // Cancel paste mode manually.
+  // Function to cancel paste mode manually.
   function cancelPasteMode() {
     pasteMode = false;
     copiedMarkerData = null;
@@ -132,12 +131,12 @@ document.addEventListener("DOMContentLoaded", () => {
     contextMenu.style.display = "block";
   }
 
-  // Listen for clicks on document to hide the context menu only
+  // Hide context menu on document click.
   document.addEventListener("click", () => {
     contextMenu.style.display = "none";
   });
 
-  // Also, right-click anywhere (outside of map click) cancels paste mode.
+  // Also, right-click anywhere cancels paste mode.
   document.addEventListener("contextmenu", () => {
     if (copiedMarkerData) {
       cancelPasteMode();
@@ -162,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
       editModal.style.left = (e.clientX - modalOffsetX) + "px";
       editModal.style.top = (e.clientY - modalOffsetY) + "px";
     }
-    // Update paste tooltip position if paste mode is active.
+    // If paste mode is active, update tooltip position to follow the cursor.
     if (pasteMode) {
       pasteTooltip.style.left = (e.pageX + 15) + "px";
       pasteTooltip.style.top = (e.pageY + 15) + "px";
@@ -489,7 +488,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text: "Copy Marker",
           action: () => {
-            // Store marker data, remove id so new copies are created, and activate paste mode.
+            // Store marker data, remove id so that new copies are created, and activate paste mode.
             copiedMarkerData = JSON.parse(JSON.stringify(m));
             delete copiedMarkerData.id;
             pasteMode = true;
@@ -669,7 +668,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --------------------------------------
   // Copy-Paste (Marker Duplication) Logic
   // --------------------------------------
-  // When in paste mode, allow repeated pasting.
   map.on("click", (evt) => {
     if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
@@ -679,7 +677,7 @@ document.addEventListener("DOMContentLoaded", () => {
       newMarkerData.name = newMarkerData.name + " (copy)";
       addMarker(newMarkerData);
       updateMarkerInFirestore(newMarkerData);
-      // (Do not cancel paste mode here so that you can paste repeatedly.)
+      // (Paste mode remains active until explicitly canceled by a right-click.)
     }
   });
   
