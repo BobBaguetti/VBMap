@@ -14,7 +14,8 @@ import {
   updateMarker as firebaseUpdateMarker, 
   deleteMarker as firebaseDeleteMarker 
 } from "./modules/firebaseService.js";
-import { createMarker, formatRarity } from "./modules/markerManager.js";
+import { createMarker } from "./modules/markerManager.js";
+import { formatRarity } from "./modules/utils.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Script loaded!");
@@ -121,7 +122,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       components: { 
         preview: true, 
         opacity: true, 
-        hue: true,
+        hue: true, 
         interaction: { hex: true, rgba: true, input: true, save: true }
       }
     }).on('save', (color, pickr) => {
@@ -275,7 +276,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     currentEditMarker = null;
   });
 
-  // Wrapper to create and store marker in in-memory collection.
+  // Wrapper to create and store marker in memory.
   function createMarkerWrapper(m, callbacks) {
     const markerObj = createMarker(m, map, layers, showContextMenu, callbacks);
     allMarkers.push({ markerObj, data: m });
@@ -309,7 +310,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Load markers from Firebase and create them with the callbacks.
+  // Load markers from Firebase and create them with callbacks.
   async function loadAndDisplayMarkers() {
     try {
       const markers = await loadMarkers(db);
@@ -332,7 +333,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   loadAndDisplayMarkers();
 
-  // Right-click on the map to show the "Create New Marker" context menu.
+  // Right-click on map shows "Create New Marker" context menu.
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -402,7 +403,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
     editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
   }
-  // Handle paste mode: allow repeated pasting while active.
+  // Paste mode: allow repeated pasting while active.
   map.on("click", (evt) => {
     if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
