@@ -1,5 +1,5 @@
 // firebase.js
-import firebase from 'firebase/compat/app';
+import * as firebase from 'firebase/compat/app';
 import 'firebase/compat/firestore';
 
 // Replace these values with your Firebase configuration.
