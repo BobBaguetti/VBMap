@@ -4,6 +4,8 @@
 import { getMap } from "./mapSetup.js";
 import { logError } from "./errorLogger.js";
 
+const map = getMap();
+
 // ---------------------------
 // Context Menu Setup
 const contextMenu = document.createElement("div");
@@ -22,7 +24,7 @@ Object.assign(contextMenu.style, {
 
 /**
  * Shows the context menu at (x, y) with the provided options.
- * Each option should have a text property and an action function.
+ * Each option should have a text and an action function.
  */
 export function showContextMenu(x, y, options) {
   try {
@@ -61,35 +63,39 @@ document.addEventListener("click", () => {
 const editModal = document.getElementById("edit-modal");
 const editModalHandle = document.getElementById("edit-modal-handle");
 
+/**
+ * Positions the edit modal so that its right edge is 10px to the right of the cursor,
+ * and the modal is vertically centered on the cursor.
+ * @param {MouseEvent} ev - The triggering event.
+ */
 export function setEditModalPosition(ev) {
   try {
-    if (!editModal) return;
+    // Temporarily display the modal to measure its dimensions.
     editModal.style.display = "block";
     const modalWidth = editModal.offsetWidth;
     const modalHeight = editModal.offsetHeight;
-    // Position so that the right edge is 10px to the right of the cursor and vertically centered.
+    // Set left such that modal's right edge is at ev.pageX + 10.
     editModal.style.left = `${ev.pageX - modalWidth + 10}px`;
+    // Vertical center: modal's top = ev.pageY - (modalHeight / 2).
     editModal.style.top = `${ev.pageY - (modalHeight / 2)}px`;
   } catch (err) {
     logError("Error positioning edit modal:", err);
   }
 }
 
+// Draggable Edit Modal Logic
 let isDragging = false, modalOffsetX = 0, modalOffsetY = 0;
-if (editModalHandle) {
-  editModalHandle.addEventListener("mousedown", e => {
-    try {
-      isDragging = true;
-      const style = window.getComputedStyle(editModal);
-      modalOffsetX = e.clientX - parseInt(style.left, 10);
-      modalOffsetY = e.clientY - parseInt(style.top, 10);
-      e.preventDefault();
-    } catch (err) {
-      logError("Error in edit modal mousedown:", err);
-    }
-  });
-}
-
+editModalHandle.addEventListener("mousedown", e => {
+  try {
+    isDragging = true;
+    const style = window.getComputedStyle(editModal);
+    modalOffsetX = e.clientX - parseInt(style.left, 10);
+    modalOffsetY = e.clientY - parseInt(style.top, 10);
+    e.preventDefault();
+  } catch (err) {
+    logError("Error in edit modal mousedown:", err);
+  }
+});
 document.addEventListener("mousemove", e => {
   if (isDragging) {
     try {
@@ -109,54 +115,61 @@ document.addEventListener("mouseup", () => {
 let copiedMarkerData = null;
 const pasteTooltip = document.getElementById("paste-tooltip");
 
+/**
+ * Enters copy (paste) mode by storing a deep copy of the marker data.
+ * @param {Object} markerData - The data of the marker to copy.
+ */
 export function enterCopyMode(markerData) {
   try {
     copiedMarkerData = JSON.parse(JSON.stringify(markerData));
-    if (pasteTooltip) {
-      pasteTooltip.style.display = "block";
-    }
+    pasteTooltip.style.display = "block";
   } catch (err) {
     logError("Error entering copy mode:", err);
   }
 }
 
+/**
+ * Cancels copy mode.
+ */
 export function cancelCopyMode() {
   copiedMarkerData = null;
-  if (pasteTooltip) {
-    pasteTooltip.style.display = "none";
-  }
+  pasteTooltip.style.display = "none";
 }
 
-// UI Initialization
-export function initUI() {
+// Listen for left clicks on the map during copy mode to create a new marker.
+map.on("click", ev => {
   try {
-    const map = getMap();
-    if (!map) throw new Error("Map is not initialized.");
-
-    map.on("click", ev => {
-      try {
-        if (copiedMarkerData) {
-          const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
-          newMarkerData.coords = [ev.latlng.lat, ev.latlng.lng];
-          newMarkerData.name = newMarkerData.name + " (copy)";
-          const event = new CustomEvent("pasteMarker", { detail: newMarkerData });
-          document.dispatchEvent(event);
-          if (pasteTooltip) {
-            pasteTooltip.style.left = `${ev.containerPoint.x + 15}px`;
-            pasteTooltip.style.top = `${ev.containerPoint.y + 15}px`;
-          }
-        }
-      } catch (err) {
-        logError("Error pasting marker:", err);
-      }
-    });
-    return true;
+    if (copiedMarkerData) {
+      const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
+      newMarkerData.coords = [ev.latlng.lat, ev.latlng.lng];
+      newMarkerData.name = newMarkerData.name + " (copy)";
+      // Dispatch a custom event so the main module can handle marker creation.
+      const event = new CustomEvent("pasteMarker", { detail: newMarkerData });
+      document.dispatchEvent(event);
+      pasteTooltip.style.left = `${ev.containerPoint.x + 15}px`;
+      pasteTooltip.style.top = `${ev.containerPoint.y + 15}px`;
+    }
   } catch (err) {
-    logError("Error initializing UI:", err);
-    return false;
+    logError("Error pasting marker:", err);
   }
+});
+document.addEventListener("contextmenu", ev => {
+  if (copiedMarkerData) {
+    cancelCopyMode();
+  }
+});
+
+// ---------------------------
+// Basic UI Initialization (extend if necessary)
+export function initUI() {
+  // Initialize additional UI elements or listeners here if needed.
+  return true;
 }
 
+/**
+ * Returns the current copied marker data.
+ * @returns {Object|null}
+ */
 export function getCopiedMarkerData() {
   return copiedMarkerData;
 }

@@ -1,12 +1,25 @@
 // markerUtils.js
 // This module contains utility functions for markers, such as creating custom icons,
-// building popup content, and formatting marker data.
+// building popup content, and formatting marker data (e.g., rarity formatting).
 
+/**
+ * Formats a rarity string so that the first letter is uppercase
+ * and the rest are lowercase.
+ *
+ * @param {string} val - The rarity value (e.g., "epic").
+ * @returns {string} - The formatted rarity (e.g., "Epic").
+ */
 export function formatRarity(val) {
   if (!val) return "";
   return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
 }
 
+/**
+ * Creates a custom Leaflet icon for the marker using a small image.
+ *
+ * @param {Object} m - Marker data, expected to have at least an "imageSmall" property.
+ * @returns {L.DivIcon} - A Leaflet divIcon for the marker.
+ */
 export function createCustomIcon(m) {
   return L.divIcon({
     html: `
@@ -20,12 +33,18 @@ export function createCustomIcon(m) {
   });
 }
 
+/**
+ * Builds the popup content HTML string for a marker.
+ *
+ * @param {Object} m - Marker data containing properties such as name, type, description, etc.
+ * @returns {string} - The HTML string for the marker popup.
+ */
 export function createPopupContent(m) {
   let itemTypeHTML = "";
   let rarityHTML = "";
   let descHTML = "";
   let extraHTML = "";
-  
+
   if (m.type === "Item") {
     if (m.itemType) {
       itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor || "#E5E6E8"}; margin:2px 0;">${m.itemType}</div>`;
@@ -46,9 +65,9 @@ export function createPopupContent(m) {
       descHTML = `<p style="margin:5px 0; color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`;
     }
   }
-  
+
   const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">${m.name}</h3>`;
-  const scaledImg = m.imageBig
+  const scaledImg = m.imageBig 
     ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`
     : "";
   let videoBtn = "";
