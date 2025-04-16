@@ -266,6 +266,8 @@ body, html {
   align-items: center;
   padding-bottom: 10px;
 }
+
+/* Modal header left section */
 .modal-header-left {
   display: flex;
   align-items: center;
@@ -274,10 +276,13 @@ body, html {
   margin: 0;
   margin-right: 10px;
 }
+/* Filter buttons container */
 .filter-buttons {
-  display: flex;
+  display: inline-flex;
   gap: 5px;
 }
+
+/* Filter buttons styling */
 .filter-btn {
   width: 30px;
   height: 30px;
@@ -293,6 +298,8 @@ body, html {
 .filter-btn.toggled {
   background: #888;
 }
+
+/* Modal header right section */
 .modal-header-right {
   display: flex;
   align-items: center;
