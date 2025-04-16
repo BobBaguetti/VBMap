@@ -7,11 +7,11 @@ import { db } from './firebase.js';
 import { logError } from './errorLogger.js';
 import { createPopupContent } from "./markerUtils.js"; // Import popup builder from markerUtils.js
 
-// Global variables within this module
+// Global variables
 let map;
-export const allMarkers = []; // Array to hold markers data and instances
+export const allMarkers = []; // Array to hold markers' instances and data
 
-// Define layer groups for each marker type
+// Define layer groups for each marker type (ensure these keys match your marker data, e.g., "Item" vs. "items").
 export const layers = {
   "Door": L.layerGroup(),
   "Extraction Portal": L.layerGroup(),
@@ -29,19 +29,19 @@ export function initMap() {
   });
   L.control.zoom({ position: "topright" }).addTo(map);
 
-  // Define map bounds and add your map overlay image:
+  // Map bounds and overlay image
   const bounds = [[0, 0], [3000, 3000]];
-  const imageUrl = "./media/images/tempmap.png"; // Update if necessary
+  const imageUrl = "./media/images/tempmap.png"; // Ensure this path is correct relative to dist/
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
 
-  // Add each layer group to the map:
-  Object.values(layers).forEach((layer) => layer.addTo(map));
+  // Add each layer group to the map
+  Object.values(layers).forEach(layer => layer.addTo(map));
 
   return map;
 }
 
-// Function: Create a custom marker based on the marker data.
+// Function: Create a custom marker based on markerData.
 export function createCustomMarker(markerData) {
   const marker = L.marker(markerData.coords, {
     icon: L.divIcon({
@@ -57,23 +57,23 @@ export function createCustomMarker(markerData) {
     draggable: false,
   });
 
-  // Use the popup builder from markerUtils.js
+  // Bind popup using the utility from markerUtils.js.
   marker.bindPopup(createPopupContent(markerData), {
     className: "custom-popup-wrapper",
     maxWidth: 350,
   });
 
-  // Store marker along with its data
+  // Store marker along with its data.
   allMarkers.push({ markerObj: marker, data: markerData });
   return marker;
 }
 
-// Function: Load markers from Firestore; fallback to local JSON on error.
+// Function: Load markers from Firestore; fallback to local JSON if needed.
 export function loadMarkers() {
   db.collection("markers")
     .get()
-    .then((querySnapshot) => {
-      querySnapshot.forEach((doc) => {
+    .then(querySnapshot => {
+      querySnapshot.forEach(doc => {
         let data = doc.data();
         data.id = doc.id;
         if (!data.type || !layers[data.type]) {
@@ -85,31 +85,31 @@ export function loadMarkers() {
         layers[data.type].addLayer(marker);
       });
     })
-    .catch((err) => {
+    .catch(err => {
       logError("Error loading markers from Firestore:", err);
-      // Fallback to local JSON file:
-      fetch("./data/markerData.json")
-        .then((resp) => {
-          if (!resp.ok) throw new Error("Network response was not ok");
-          return resp.json();
-        })
-        .then((jsonData) => {
-          jsonData.forEach((m) => {
-            if (!m.type || !layers[m.type]) {
-              logError("Invalid marker type in fallback JSON:", new Error(`Type: ${m.type}`));
-              return;
-            }
-            const marker = createCustomMarker(m);
-            layers[m.type].addLayer(marker);
-          });
-        })
-        .catch((err2) => {
-          logError("Error loading markers from local JSON:", err2);
-        });
+      // Fallback to a local JSON file (if desired). Since you’re using Firestore, you may remove this:
+      // fetch("./data/markerData.json")
+      //   .then(resp => {
+      //     if (!resp.ok) throw new Error("Network response was not ok");
+      //     return resp.json();
+      //   })
+      //   .then(jsonData => {
+      //     jsonData.forEach(m => {
+      //       if (!m.type || !layers[m.type]) {
+      //         logError("Invalid marker type in fallback JSON:", new Error(`Type: ${m.type}`));
+      //         return;
+      //       }
+      //       const marker = createCustomMarker(m);
+      //       layers[m.type].addLayer(marker);
+      //     });
+      //   })
+      //   .catch(err2 => {
+      //     logError("Error loading markers from local JSON:", err2);
+      //   });
     });
 }
 
-// Export a helper to get the map instance if needed
+// Export a helper to get the map instance if needed elsewhere.
 export function getMap() {
   return map;
 }

@@ -72,9 +72,9 @@ export function setEditModalPosition(ev) {
     editModal.style.display = "block";
     const modalWidth = editModal.offsetWidth;
     const modalHeight = editModal.offsetHeight;
-    // Set left such that modal's right edge is at ev.pageX + 10.
+    // Set left: modal.right = ev.pageX + 10 --> modal.left = ev.pageX - modalWidth + 10.
     editModal.style.left = `${ev.pageX - modalWidth + 10}px`;
-    // Vertical center: modal's top = ev.pageY - (modalHeight / 2).
+    // Set top: vertically center relative to ev.pageY.
     editModal.style.top = `${ev.pageY - (modalHeight / 2)}px`;
   } catch (err) {
     logError("Error positioning edit modal:", err);
@@ -138,20 +138,20 @@ export function cancelCopyMode() {
 // UI Initialization
 export function initUI() {
   try {
-    // Now safely retrieve the map instance (after it has been initialized).
+    // Retrieve the map instance once initMap() has run.
     const map = getMap();
     if (!map) {
       throw new Error("Map is not initialized.");
     }
 
-    // Attach event listener for copy/paste mode.
+    // Attach copy/paste event listener to the map.
     map.on("click", ev => {
       try {
         if (copiedMarkerData) {
           const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
           newMarkerData.coords = [ev.latlng.lat, ev.latlng.lng];
           newMarkerData.name = newMarkerData.name + " (copy)";
-          // Dispatch a custom event so the main module can handle marker creation.
+          // Dispatch a custom event so that the main module handles marker creation.
           const event = new CustomEvent("pasteMarker", { detail: newMarkerData });
           document.dispatchEvent(event);
           pasteTooltip.style.left = `${ev.containerPoint.x + 15}px`;
@@ -161,6 +161,7 @@ export function initUI() {
         logError("Error pasting marker:", err);
       }
     });
+
     return true;
   } catch (err) {
     logError("Error initializing UI:", err);
