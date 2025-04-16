@@ -1,8 +1,22 @@
 // scripts/script.js
 import { initializeMap } from "./modules/map.js";
-import { makeDraggable, showContextMenu, hideContextMenu, positionModal, attachContextMenuHider, attachRightClickCancel } from "./modules/uiManager.js";
+import { 
+  makeDraggable, 
+  showContextMenu, 
+  hideContextMenu, 
+  positionModal, 
+  attachContextMenuHider, 
+  attachRightClickCancel 
+} from "./modules/uiManager.js";
+import { 
+  initializeFirebase, 
+  loadMarkers, 
+  addMarker, 
+  updateMarker, 
+  deleteMarker 
+} from "./modules/firebaseService.js";
 
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
   console.log("Script loaded!");
 
   // --------------------------------------
@@ -27,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const extraLinesContainer = document.getElementById("extra-lines");
 
   // --------------------------------------
-  // Firebase Firestore Initialization
+  // Firebase Initialization (via module)
   // --------------------------------------
   const firebaseConfig = {
     apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
@@ -38,8 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
     appId: "1:244112699360:web:95f50adb6e10b438238585",
     measurementId: "G-7FDNWLRM95"
   };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
+  const db = initializeFirebase(firebaseConfig);
 
   // --------------------------------------
   // Map Initialization (using module)
@@ -66,13 +79,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // --------------------------------------
   let copiedMarkerData = null;
   let pasteMode = false;
-
   function cancelPasteMode() {
     pasteMode = false;
     copiedMarkerData = null;
   }
-
-  // Attach global UI listeners for context menu hiding and right-click cancellation
   attachContextMenuHider();
   attachRightClickCancel(cancelPasteMode);
 
@@ -87,12 +97,10 @@ document.addEventListener("DOMContentLoaded", () => {
   const videoPopup = document.getElementById("video-popup");
   const videoPlayer = document.getElementById("video-player");
   const videoSource = document.getElementById("video-source");
-
   document.getElementById("video-close").addEventListener("click", () => {
     videoPopup.style.display = "none";
     videoPlayer.pause();
   });
-
   function openVideoPopup(x, y, url) {
     videoSource.src = url;
     videoPlayer.load();
@@ -120,7 +128,6 @@ document.addEventListener("DOMContentLoaded", () => {
       pickr.hide();
     });
   }
-
   const pickrName = createPicker('#pickr-name');
   const pickrRarity = createPicker('#pickr-rarity');
   const pickrItemType = createPicker('#pickr-itemtype');
@@ -134,13 +141,11 @@ document.addEventListener("DOMContentLoaded", () => {
     "epic": "#9b59b6",
     "legendary": "#f39c12"
   };
-
   editRarity.addEventListener("change", function() {
     if (defaultRarityColors[this.value]) {
       pickrRarity.setColor(defaultRarityColors[this.value]);
     }
   });
-
   editType.addEventListener("change", () => {
     if (editType.value === "Item") {
       itemExtraFields.style.display = "block";
@@ -152,7 +157,6 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   let currentEditMarker = null;
-
   function populateEditForm(m) {
     editName.value = m.name || "";
     pickrName.setColor(m.nameColor || "#E5E6E8");
@@ -160,7 +164,6 @@ document.addEventListener("DOMContentLoaded", () => {
     editImageSmall.value = m.imageSmall || "";
     editImageBig.value = m.imageBig || "";
     editVideoURL.value = m.videoURL || "";
-
     if (m.type === "Item") {
       itemExtraFields.style.display = "block";
       nonItemDescription.style.display = "none";
@@ -179,20 +182,17 @@ document.addEventListener("DOMContentLoaded", () => {
       pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
     }
   }
-
   let extraLines = [];
   document.getElementById("add-extra-line").addEventListener("click", () => {
     extraLines.push({ text: "", color: "#E5E6E8" });
     renderExtraLines();
   });
-
   function renderExtraLines() {
     extraLinesContainer.innerHTML = "";
     extraLines.forEach((lineObj, idx) => {
       const row = document.createElement("div");
       row.className = "field-row";
       row.style.marginBottom = "5px";
-
       const textInput = document.createElement("input");
       textInput.type = "text";
       textInput.value = lineObj.text;
@@ -201,11 +201,9 @@ document.addEventListener("DOMContentLoaded", () => {
       textInput.addEventListener("input", () => {
         extraLines[idx].text = textInput.value;
       });
-
       const colorDiv = document.createElement("div");
       colorDiv.className = "color-btn";
       colorDiv.style.marginLeft = "5px";
-
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
       removeBtn.textContent = "x";
@@ -214,12 +212,10 @@ document.addEventListener("DOMContentLoaded", () => {
         extraLines.splice(idx, 1);
         renderExtraLines();
       });
-
       row.appendChild(textInput);
       row.appendChild(colorDiv);
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
-
       const linePickr = Pickr.create({
         el: colorDiv,
         theme: 'nano',
@@ -231,22 +227,20 @@ document.addEventListener("DOMContentLoaded", () => {
           interaction: { hex: true, rgba: true, input: true, save: true }
         }
       })
-      .on('change', (color) => {
-        extraLines[idx].color = color.toHEXA().toString();
-      })
-      .on('save', (color, pickr) => {
-        pickr.hide();
-      });
+        .on('change', (color) => {
+          extraLines[idx].color = color.toHEXA().toString();
+        })
+        .on('save', (color, pickr) => {
+          pickr.hide();
+        });
       linePickr.setColor(lineObj.color || "#E5E6E8");
     });
   }
-
   document.getElementById("edit-cancel").addEventListener("click", () => {
     editModal.style.display = "none";
     currentEditMarker = null;
     extraLines = [];
   });
-
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -257,7 +251,6 @@ document.addEventListener("DOMContentLoaded", () => {
     data.imageSmall = editImageSmall.value;
     data.imageBig = editImageBig.value;
     data.videoURL = editVideoURL.value || "";
-
     if (data.type === "Item") {
       data.rarity = formatRarity(editRarity.value);
       data.rarityColor = pickrRarity.getColor()?.toHEXA()?.toString() || "#E5E6E8";
@@ -275,22 +268,16 @@ document.addEventListener("DOMContentLoaded", () => {
       delete data.itemTypeColor;
       delete data.extraLines;
     }
-
     currentEditMarker.markerObj.setPopupContent(createPopupContent(data));
-    updateMarkerInFirestore(data);
+    updateMarker(db, data);
     editModal.style.display = "none";
     extraLines = [];
     currentEditMarker = null;
   });
-
   function formatRarity(val) {
     if (!val) return "";
     return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
   }
-
-  // --------------------------------------
-  // Marker Creation & Popups
-  // --------------------------------------
   function createCustomIcon(m) {
     return L.divIcon({
       html: `
@@ -303,13 +290,11 @@ document.addEventListener("DOMContentLoaded", () => {
       iconSize: [32, 32]
     });
   }
-
   function createPopupContent(m) {
     let itemTypeHTML = "";
     let rarityHTML = "";
     let descHTML = "";
     let extraHTML = "";
-
     if (m.type === "Item") {
       if (m.itemType) {
         itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor || "#E5E6E8"}; margin:2px 0;">${m.itemType}</div>`;
@@ -330,7 +315,6 @@ document.addEventListener("DOMContentLoaded", () => {
         descHTML = `<p style="margin:5px 0; color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`;
       }
     }
-
     const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">${m.name}</h3>`;
     const scaledImg = m.imageBig 
       ? `<img src="${m.imageBig}" style="width:64px; height:64px; object-fit:contain; border:2px solid #777; border-radius:4px;" />`
@@ -339,7 +323,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (m.videoURL) {
       videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
     }
-
     return `
       <div class="custom-popup">
         <div class="popup-header" style="display:flex; gap:5px;">
@@ -358,21 +341,17 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
   }
-
   function addMarker(m) {
     const markerObj = L.marker([m.coords[0], m.coords[1]], {
       icon: createCustomIcon(m),
       draggable: false
     });
-
     markerObj.bindPopup(createPopupContent(m), {
       className: "custom-popup-wrapper",
       maxWidth: 350
     });
     layers[m.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: m });
-
-    // Right-click on marker: show context menu.
     markerObj.on("contextmenu", (evt) => {
       evt.originalEvent.preventDefault();
       const options = [
@@ -403,7 +382,7 @@ document.addEventListener("DOMContentLoaded", () => {
               markerObj.on("dragend", () => {
                 const latlng = markerObj.getLatLng();
                 m.coords = [latlng.lat, latlng.lng];
-                updateMarkerInFirestore(m);
+                updateMarker(db, m);
               });
             }
           }
@@ -415,74 +394,32 @@ document.addEventListener("DOMContentLoaded", () => {
             const idx = allMarkers.findIndex(o => o.data.id === m.id);
             if (idx !== -1) allMarkers.splice(idx, 1);
             if (m.id) {
-              deleteMarkerInFirestore(m.id);
+              deleteMarker(db, m.id);
             }
           }
         }
       ];
       showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
     });
-
     return markerObj;
   }
-
-  function updateMarkerInFirestore(m) {
-    if (m.id) {
-      db.collection("markers").doc(m.id).set(m)
-        .then(() => { console.log("Updated marker:", m.id); })
-        .catch(console.error);
-    } else {
-      db.collection("markers").add(m)
-        .then(docRef => {
-          m.id = docRef.id;
-          console.log("Added marker with ID:", docRef.id);
-        })
-        .catch(console.error);
+  async function loadAndDisplayMarkers() {
+    try {
+      const markers = await loadMarkers(db);
+      markers.forEach(m => {
+        if (!m.type || !layers[m.type]) {
+          console.error(`Invalid marker type: ${m.type}`);
+          return;
+        }
+        if (!m.coords) m.coords = [1500, 1500];
+        addMarker(m);
+      });
+    } catch (err) {
+      console.error("Error loading markers:", err);
+      // Optionally, fallback to local JSON if needed.
     }
   }
-
-  function deleteMarkerInFirestore(id) {
-    db.collection("markers").doc(id).delete()
-      .then(() => { console.log("Deleted marker:", id); })
-      .catch(console.error);
-  }
-
-  function loadMarkers() {
-    db.collection("markers").get()
-      .then(querySnapshot => {
-        querySnapshot.forEach(doc => {
-          let data = doc.data();
-          data.id = doc.id;
-          if (!data.type || !layers[data.type]) {
-            console.error(`Invalid marker type: ${data.type}`);
-            return;
-          }
-          if (!data.coords) data.coords = [1500, 1500];
-          addMarker(data);
-        });
-      })
-      .catch(err => {
-        console.error("Error loading markers from Firestore:", err);
-        fetch("./data/markerData.json")
-          .then(resp => {
-            if (!resp.ok) throw new Error("Network response was not ok");
-            return resp.json();
-          })
-          .then(jsonData => {
-            jsonData.forEach(m => {
-              if (!m.type || !layers[m.type]) {
-                console.error(`Invalid marker type: ${m.type}`);
-                return;
-              }
-              addMarker(m);
-            });
-          })
-          .catch(err2 => console.error("Error loading local JSON:", err2));
-      });
-  }
-  loadMarkers();
-
-  // Right-click on the map to show the "Create New Marker" context menu.
+  loadAndDisplayMarkers();
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -507,7 +444,6 @@ document.addEventListener("DOMContentLoaded", () => {
           nonItemDescription.style.display = "none";
           positionModal(editModal, evt.originalEvent);
           editModal.style.display = "block";
-
           editForm.onsubmit = (e2) => {
             e2.preventDefault();
             const newMarker = {
@@ -532,7 +468,7 @@ document.addEventListener("DOMContentLoaded", () => {
               newMarker.descriptionColor = pickrDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
             }
             addMarker(newMarker);
-            updateMarkerInFirestore(newMarker);
+            updateMarker(db, newMarker);
             editModal.style.display = "none";
             extraLines = [];
             editForm.onsubmit = null;
@@ -541,7 +477,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     ]);
   });
-
   function setEditModalPosition(ev) {
     editModal.style.display = "block";
     const modalWidth = editModal.offsetWidth;
@@ -549,8 +484,6 @@ document.addEventListener("DOMContentLoaded", () => {
     editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
     editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
   }
-
-  // Copy-paste logic: allow repeated pasting while paste mode is active.
   map.on("click", (evt) => {
     if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
@@ -558,10 +491,9 @@ document.addEventListener("DOMContentLoaded", () => {
       newMarkerData.coords = [evt.latlng.lat, evt.latlng.lng];
       newMarkerData.name = newMarkerData.name + " (copy)";
       addMarker(newMarkerData);
-      updateMarkerInFirestore(newMarkerData);
+      updateMarker(db, newMarkerData);
     }
   });
-
   searchBar.addEventListener("input", function() {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
@@ -575,7 +507,6 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-
   sidebarToggle.addEventListener("click", () => {
     sidebar.classList.toggle("hidden");
     document.getElementById("map").style.marginLeft = sidebar.classList.contains("hidden") ? "0" : "300px";
