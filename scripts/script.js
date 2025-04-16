@@ -1,5 +1,5 @@
 // Import the Firestore database instance from our Firebase module.
-import { db } from "./scripts/modules/firebase.js";
+import { db } from "./modules/firebase.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Script loaded!");
