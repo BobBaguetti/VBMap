@@ -1,20 +1,14 @@
 // scripts/script.js
 import { initializeMap } from "./modules/map.js";
-import { 
-  makeDraggable, 
-  showContextMenu, 
-  hideContextMenu, 
-  positionModal, 
-  attachContextMenuHider, 
-  attachRightClickCancel 
-} from "./modules/uiManager.js";
+import { makeDraggable, showContextMenu, positionModal, attachContextMenuHider, attachRightClickCancel } from "./modules/uiManager.js";
 import { 
   initializeFirebase, 
   loadMarkers, 
-  addMarker, 
-  updateMarker, 
-  deleteMarker 
+  addMarker as firebaseAddMarker, 
+  updateMarker as firebaseUpdateMarker, 
+  deleteMarker as firebaseDeleteMarker 
 } from "./modules/firebaseService.js";
+import { createCustomIcon, createPopupContent, formatRarity, createMarker } from "./modules/markerManager.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Script loaded!");
@@ -41,7 +35,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const extraLinesContainer = document.getElementById("extra-lines");
 
   // --------------------------------------
-  // Firebase Initialization (via module)
+  // Firebase Initialization
   // --------------------------------------
   const firebaseConfig = {
     apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
@@ -55,7 +49,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const db = initializeFirebase(firebaseConfig);
 
   // --------------------------------------
-  // Map Initialization (using module)
+  // Map Initialization
   // --------------------------------------
   const { map, bounds } = initializeMap();
 
@@ -71,7 +65,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
   Object.values(layers).forEach(layer => layer.addTo(map));
 
-  // Global container for markers
+  // In-memory collection of markers
   let allMarkers = [];
 
   // --------------------------------------
@@ -121,7 +115,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       components: { 
         preview: true, 
         opacity: true, 
-        hue: true, 
+        hue: true,
         interaction: { hex: true, rgba: true, input: true, save: true }
       }
     }).on('save', (color, pickr) => {
@@ -133,7 +127,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pickrItemType = createPicker('#pickr-itemtype');
   const pickrDescItem = createPicker('#pickr-desc-item');
   const pickrDescNonItem = createPicker('#pickr-desc-nonitem');
-
   const defaultRarityColors = {
     "common": "#CCCCCC",
     "uncommon": "#56DE56",
@@ -227,12 +220,12 @@ document.addEventListener("DOMContentLoaded", async () => {
           interaction: { hex: true, rgba: true, input: true, save: true }
         }
       })
-        .on('change', (color) => {
-          extraLines[idx].color = color.toHEXA().toString();
-        })
-        .on('save', (color, pickr) => {
-          pickr.hide();
-        });
+      .on('change', (color) => {
+        extraLines[idx].color = color.toHEXA().toString();
+      })
+      .on('save', (color, pickr) => {
+        pickr.hide();
+      });
       linePickr.setColor(lineObj.color || "#E5E6E8");
     });
   }
@@ -269,139 +262,19 @@ document.addEventListener("DOMContentLoaded", async () => {
       delete data.extraLines;
     }
     currentEditMarker.markerObj.setPopupContent(createPopupContent(data));
-    updateMarker(db, data);
+    firebaseUpdateMarker(db, data);
     editModal.style.display = "none";
     extraLines = [];
     currentEditMarker = null;
   });
-  function formatRarity(val) {
-    if (!val) return "";
-    return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
-  }
-  function createCustomIcon(m) {
-    return L.divIcon({
-      html: `
-        <div class="custom-marker">
-          <div class="marker-border"></div>
-          ${m.imageSmall ? `<img src="${m.imageSmall}" class="marker-icon"/>` : ""}
-        </div>
-      `,
-      className: "custom-marker-container",
-      iconSize: [32, 32]
-    });
-  }
-  function createPopupContent(m) {
-    let itemTypeHTML = "";
-    let rarityHTML = "";
-    let descHTML = "";
-    let extraHTML = "";
-    if (m.type === "Item") {
-      if (m.itemType) {
-        itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor || "#E5E6E8"}; margin:2px 0;">${m.itemType}</div>`;
-      }
-      if (m.rarity) {
-        rarityHTML = `<div style="font-size:16px; color:${m.rarityColor || "#E5E6E8"}; margin:2px 0;">${formatRarity(m.rarity)}</div>`;
-      }
-      if (m.description) {
-        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`;
-      }
-      if (m.extraLines && m.extraLines.length) {
-        m.extraLines.forEach(line => {
-          extraHTML += `<p style="margin-top:5px; margin-bottom:0; color:${line.color || "#E5E6E8"};">${line.text}</p>`;
-        });
-      }
-    } else {
-      if (m.description) {
-        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`;
-      }
-    }
-    const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">${m.name}</h3>`;
-    const scaledImg = m.imageBig 
-      ? `<img src="${m.imageBig}" style="width:64px; height:64px; object-fit:contain; border:2px solid #777; border-radius:4px;" />`
-      : "";
-    let videoBtn = "";
-    if (m.videoURL) {
-      videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
-    }
-    return `
-      <div class="custom-popup">
-        <div class="popup-header" style="display:flex; gap:5px;">
-          ${scaledImg}
-          <div style="margin-left:5px;">
-            ${nameHTML}
-            ${itemTypeHTML}
-            ${rarityHTML}
-          </div>
-        </div>
-        <div class="popup-body">
-          ${descHTML}
-          ${extraHTML}
-          ${videoBtn}
-        </div>
-      </div>
-    `;
+  function createMarkerWrapper(m) {
+    // Wrap marker creation so that we can push marker to in-memory collection.
+    const markerObj = createMarker(m, map, layers, showContextMenu);
+    allMarkers.push({ markerObj, data: m });
+    return markerObj;
   }
   function addMarker(m) {
-    const markerObj = L.marker([m.coords[0], m.coords[1]], {
-      icon: createCustomIcon(m),
-      draggable: false
-    });
-    markerObj.bindPopup(createPopupContent(m), {
-      className: "custom-popup-wrapper",
-      maxWidth: 350
-    });
-    layers[m.type].addLayer(markerObj);
-    allMarkers.push({ markerObj, data: m });
-    markerObj.on("contextmenu", (evt) => {
-      evt.originalEvent.preventDefault();
-      const options = [
-        {
-          text: "Edit Marker",
-          action: () => {
-            currentEditMarker = { markerObj, data: m };
-            populateEditForm(m);
-            positionModal(editModal, evt.originalEvent);
-            editModal.style.display = "block";
-          }
-        },
-        {
-          text: "Copy Marker",
-          action: () => {
-            copiedMarkerData = JSON.parse(JSON.stringify(m));
-            delete copiedMarkerData.id;
-            pasteMode = true;
-          }
-        },
-        {
-          text: markerObj.dragging.enabled() ? "Disable Drag" : "Enable Drag",
-          action: () => {
-            if (markerObj.dragging.enabled()) {
-              markerObj.dragging.disable();
-            } else {
-              markerObj.dragging.enable();
-              markerObj.on("dragend", () => {
-                const latlng = markerObj.getLatLng();
-                m.coords = [latlng.lat, latlng.lng];
-                updateMarker(db, m);
-              });
-            }
-          }
-        },
-        {
-          text: "Delete Marker",
-          action: () => {
-            layers[m.type].removeLayer(markerObj);
-            const idx = allMarkers.findIndex(o => o.data.id === m.id);
-            if (idx !== -1) allMarkers.splice(idx, 1);
-            if (m.id) {
-              deleteMarker(db, m.id);
-            }
-          }
-        }
-      ];
-      showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
-    });
-    return markerObj;
+    return createMarkerWrapper(m);
   }
   async function loadAndDisplayMarkers() {
     try {
@@ -416,7 +289,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     } catch (err) {
       console.error("Error loading markers:", err);
-      // Optionally, fallback to local JSON if needed.
     }
   }
   loadAndDisplayMarkers();
@@ -468,7 +340,7 @@ document.addEventListener("DOMContentLoaded", async () => {
               newMarker.descriptionColor = pickrDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
             }
             addMarker(newMarker);
-            updateMarker(db, newMarker);
+            firebaseAddMarker(db, newMarker);
             editModal.style.display = "none";
             extraLines = [];
             editForm.onsubmit = null;
@@ -491,7 +363,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       newMarkerData.coords = [evt.latlng.lat, evt.latlng.lng];
       newMarkerData.name = newMarkerData.name + " (copy)";
       addMarker(newMarkerData);
-      updateMarker(db, newMarkerData);
+      firebaseAddMarker(db, newMarkerData);
     }
   });
   searchBar.addEventListener("input", function() {
