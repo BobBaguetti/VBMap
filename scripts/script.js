@@ -74,6 +74,18 @@ document.addEventListener("DOMContentLoaded", () => {
   let copiedMarkerData = null;
   let pasteMode = false;
 
+  // Set initial style for the paste tooltip.
+  // We remove background and borders, and add a text shadow.
+  pasteTooltip.style.background = "transparent";
+  pasteTooltip.style.border = "none";
+  pasteTooltip.style.padding = "0";
+  pasteTooltip.style.fontSize = "14px";
+  pasteTooltip.style.color = "#fff";
+  pasteTooltip.style.textShadow = "1px 1px 2px rgba(0, 0, 0, 0.7)";
+  pasteTooltip.style.pointerEvents = "none";
+  pasteTooltip.style.position = "absolute";
+
+  // Cancel paste mode manually.
   function cancelPasteMode() {
     pasteMode = false;
     copiedMarkerData = null;
@@ -149,6 +161,11 @@ document.addEventListener("DOMContentLoaded", () => {
     if (isDragging) {
       editModal.style.left = (e.clientX - modalOffsetX) + "px";
       editModal.style.top = (e.clientY - modalOffsetY) + "px";
+    }
+    // Update paste tooltip position if paste mode is active.
+    if (pasteMode) {
+      pasteTooltip.style.left = (e.pageX + 15) + "px";
+      pasteTooltip.style.top = (e.pageY + 15) + "px";
     }
   });
   document.addEventListener("mouseup", () => { isDragging = false; });
@@ -652,8 +669,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // --------------------------------------
   // Copy-Paste (Marker Duplication) Logic
   // --------------------------------------
+  // When in paste mode, allow repeated pasting.
   map.on("click", (evt) => {
-    if (copiedMarkerData) {
+    if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
       // Remove any existing id so that Firestore creates a new record.
       delete newMarkerData.id;
@@ -661,13 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
       newMarkerData.name = newMarkerData.name + " (copy)";
       addMarker(newMarkerData);
       updateMarkerInFirestore(newMarkerData);
-
-      // Update tooltip position
-      pasteTooltip.style.left = `${evt.containerPoint.x + 15}px`;
-      pasteTooltip.style.top = `${evt.containerPoint.y + 15}px`;
-
-      // Cancel paste mode after successful paste.
-      cancelPasteMode();
+      // (Do not cancel paste mode here so that you can paste repeatedly.)
     }
   });
   
