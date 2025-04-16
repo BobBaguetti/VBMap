@@ -1,13 +1,8 @@
 // markerUtils.js
-// This module contains utility functions for markers, such as creating custom icons,
-// building popup content, and formatting marker data (e.g., rarity formatting).
-
 /**
- * Formats a rarity string so that the first letter is uppercase
- * and the rest are lowercase.
- *
- * @param {string} val - The rarity value (e.g., "epic").
- * @returns {string} - The formatted rarity (e.g., "Epic").
+ * Formats a rarity string so that the first letter is uppercase and the rest lowercase.
+ * @param {string} val - The rarity value.
+ * @returns {string} - Formatted rarity (e.g., "Epic").
  */
 export function formatRarity(val) {
     if (!val) return "";
@@ -16,9 +11,8 @@ export function formatRarity(val) {
   
   /**
    * Creates a custom Leaflet icon for the marker using a small image.
-   *
-   * @param {Object} m - Marker data, expected to have at least an "imageSmall" property.
-   * @returns {L.DivIcon} - A Leaflet divIcon for the marker.
+   * @param {Object} m - Marker data.
+   * @returns {L.DivIcon} - A Leaflet divIcon.
    */
   export function createCustomIcon(m) {
     return L.divIcon({
@@ -35,9 +29,8 @@ export function formatRarity(val) {
   
   /**
    * Builds the popup content HTML string for a marker.
-   *
-   * @param {Object} m - Marker data containing properties such as name, type, description, etc.
-   * @returns {string} - The HTML string for the marker popup.
+   * @param {Object} m - Marker data with properties such as name, type, description, etc.
+   * @returns {string} - HTML string for the marker popup.
    */
   export function createPopupContent(m) {
     let itemTypeHTML = "";

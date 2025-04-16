@@ -1,10 +1,7 @@
 // ui.js
-// This module handles UI interactions: context menu display, edit modal positioning/dragging, and copy/paste mode.
-
 import { getMap } from "./mapSetup.js";
 import { logError } from "./errorLogger.js";
 
-// Create context menu element
 const contextMenu = document.createElement("div");
 contextMenu.id = "context-menu";
 document.body.appendChild(contextMenu);
@@ -19,10 +16,6 @@ Object.assign(contextMenu.style, {
   boxShadow: "0px 2px 6px rgba(0,0,0,0.5)"
 });
 
-/**
- * Displays the context menu at the specified (x, y) with the provided options.
- * Each option should include a text property and an action callback.
- */
 export function showContextMenu(x, y, options) {
   try {
     contextMenu.innerHTML = "";
@@ -54,20 +47,17 @@ document.addEventListener("click", () => {
   cancelCopyMode();
 });
 
-// Edit Modal and Drag Logic
 const editModal = document.getElementById("edit-modal");
 const editModalHandle = document.getElementById("edit-modal-handle");
+const pasteTooltip = document.getElementById("paste-tooltip");
 
 export function setEditModalPosition(ev) {
   try {
     if (!editModal) return;
-    // Temporarily display the modal to get its dimensions.
     editModal.style.display = "block";
     const modalWidth = editModal.offsetWidth;
     const modalHeight = editModal.offsetHeight;
-    // Position such that the modal's right edge is 10px to the right of the cursor.
     editModal.style.left = `${ev.pageX - modalWidth + 10}px`;
-    // Vertically center the modal relative to the cursor.
     editModal.style.top = `${ev.pageY - (modalHeight / 2)}px`;
   } catch (err) {
     logError("Error positioning edit modal:", err);
@@ -88,7 +78,6 @@ if (editModalHandle) {
     }
   });
 }
-
 document.addEventListener("mousemove", e => {
   if (isDragging) {
     try {
@@ -103,10 +92,7 @@ document.addEventListener("mouseup", () => {
   isDragging = false;
 });
 
-// Copy Marker (Paste Mode) Logic
 let copiedMarkerData = null;
-const pasteTooltip = document.getElementById("paste-tooltip");
-
 export function enterCopyMode(markerData) {
   try {
     copiedMarkerData = JSON.parse(JSON.stringify(markerData));

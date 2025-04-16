@@ -1,17 +1,22 @@
 // firebaseUtils.js
 import { db } from "./firebase.js";
 import { logError } from "./errorLogger.js";
+import {
+  collection,
+  doc,
+  setDoc,
+  addDoc,
+  deleteDoc
+} from "firebase/firestore";
 
 /**
  * Updates an existing marker if it has an ID, or adds a new marker otherwise.
- * @param {Object} markerData - The marker data to update or add.
- * @returns {Promise} - A promise that resolves when the operation is complete.
  */
 export function updateMarkerInFirestore(markerData) {
+  const markersCol = collection(db, "markers");
   if (markerData.id) {
-    return db.collection("markers")
-      .doc(markerData.id)
-      .set(markerData)
+    const docRef = doc(markersCol, markerData.id);
+    return setDoc(docRef, markerData)
       .then(() => {
         console.log("Updated marker:", markerData.id);
       })
@@ -19,8 +24,7 @@ export function updateMarkerInFirestore(markerData) {
         logError("Error updating marker:", error);
       });
   } else {
-    return db.collection("markers")
-      .add(markerData)
+    return addDoc(markersCol, markerData)
       .then((docRef) => {
         markerData.id = docRef.id;
         console.log("Added marker with ID:", docRef.id);
@@ -33,11 +37,11 @@ export function updateMarkerInFirestore(markerData) {
 
 /**
  * Deletes a marker from Firestore using its ID.
- * @param {string} id - The ID of the marker to delete.
- * @returns {Promise} - A promise that resolves when the deletion is complete.
  */
 export function deleteMarkerInFirestore(id) {
-  return db.collection("markers").doc(id).delete()
+  const markersCol = collection(db, "markers");
+  const docRef = doc(markersCol, id);
+  return deleteDoc(docRef)
     .then(() => {
       console.log("Deleted marker:", id);
     })

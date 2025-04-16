@@ -1,17 +1,16 @@
 // mapSetup.js
-// This module handles initializing the Leaflet map, setting up layer groups, and loading markers.
-
 import L from "leaflet";
 import "leaflet.markercluster";
 import { db } from "./firebase.js";
 import { logError } from "./errorLogger.js";
-import { createPopupContent } from "./markerUtils.js"; // Popup builder from markerUtils.js
+import { createPopupContent } from "./markerUtils.js";
+import { collection, getDocs } from "firebase/firestore";
 
-// Global variable to hold the map instance
+// Global variable for the map instance.
 let map;
-export const allMarkers = []; // Array to hold markers' instances and their data
+export const allMarkers = [];
 
-// Define layer groups for each marker type (keys must match your Firestore marker data, e.g., "Item" not "items")
+// Define layer groups (keys must match your marker data exactly).
 export const layers = {
   "Door": L.layerGroup(),
   "Extraction Portal": L.layerGroup(),
@@ -19,7 +18,6 @@ export const layers = {
   "Teleport": L.layerGroup()
 };
 
-// Function: Initialize the map and add layers
 export function initMap() {
   map = L.map("map", {
     crs: L.CRS.Simple,
@@ -29,20 +27,18 @@ export function initMap() {
   });
   L.control.zoom({ position: "topright" }).addTo(map);
 
-  // Set bounds and add overlay image
   const bounds = [[0, 0], [3000, 3000]];
-  const imageUrl = "./media/images/tempmap.png";  // Ensure this path is valid relative to index.html
+  const imageUrl = "./media/images/tempmap.png";
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
 
-  // Add each layer to the map
+  // Add each layer to the map.
   Object.values(layers).forEach(layer => layer.addTo(map));
 
   return map;
 }
 
-// Function: Create a custom marker for given markerData.
-export function createCustomMarker(markerData) {
+function createCustomMarker(markerData) {
   const marker = L.marker(markerData.coords, {
     icon: L.divIcon({
       html: `
@@ -52,46 +48,41 @@ export function createCustomMarker(markerData) {
         </div>
       `,
       className: "custom-marker-container",
-      iconSize: [32, 32],
+      iconSize: [32, 32]
     }),
     draggable: false
   });
 
-  // Bind popup content via the imported utility function.
   marker.bindPopup(createPopupContent(markerData), {
     className: "custom-popup-wrapper",
     maxWidth: 350
   });
 
-  // Save marker instance along with its data.
   allMarkers.push({ markerObj: marker, data: markerData });
   return marker;
 }
 
-// Function: Load markers from Firestore.
 export function loadMarkers() {
-  db.collection("markers")
-    .get()
+  const markersCol = collection(db, "markers");
+  getDocs(markersCol)
     .then(querySnapshot => {
-      querySnapshot.forEach(doc => {
-        let data = doc.data();
-        data.id = doc.id;
+      querySnapshot.forEach(docSnap => {
+        let data = docSnap.data();
+        data.id = docSnap.id;
         if (!data.type || !layers[data.type]) {
           logError("Invalid marker type while loading marker:", new Error(`Type: ${data.type}`));
           return;
         }
         if (!data.coords) data.coords = [1500, 1500];
-        const marker = createCustomMarker(data);
-        layers[data.type].addLayer(marker);
+        const markerObj = createCustomMarker(data);
+        layers[data.type].addLayer(markerObj);
       });
     })
-    .catch(err => {
-      logError("Error loading markers from Firestore:", err);
-      // Since Firestore is our primary source, fallback code is omitted.
+    .catch(error => {
+      logError("Error loading markers from Firestore:", error);
     });
 }
 
-// Export a helper to retrieve the map instance.
 export function getMap() {
   return map;
 }
