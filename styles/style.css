@@ -168,7 +168,6 @@ body, html {
   font-size: 14px;
   width: 100%;
 }
-/* Allow vertical resizing for textareas */
 .field-row textarea {
   resize: vertical;
 }
@@ -267,8 +266,32 @@ body, html {
   align-items: center;
   padding-bottom: 10px;
 }
+.modal-header-left {
+  display: flex;
+  align-items: center;
+}
 .modal-header-left h2 {
   margin: 0;
+  margin-right: 10px;
+}
+.filter-buttons {
+  display: flex;
+  gap: 5px;
+}
+.filter-btn {
+  width: 30px;
+  height: 30px;
+  border: 1px solid #555;
+  background: #444;
+  color: #e0e0e0;
+  cursor: pointer;
+  text-align: center;
+  line-height: 30px;
+  border-radius: 3px;
+  font-size: 14px;
+}
+.filter-btn.toggled {
+  background: #888;
 }
 .modal-header-right {
   display: flex;
@@ -288,7 +311,7 @@ body, html {
 
 /* Definitions List Styling */
 .def-list {
-  max-height: 300px; /* Cap vertical height */
+  max-height: 300px;
   overflow-y: auto;
   padding: 5px;
 }

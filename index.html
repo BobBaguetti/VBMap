@@ -193,13 +193,17 @@
       <div class="modal-header">
         <div class="modal-header-left">
           <h2>Item Definitions</h2>
+          <div class="filter-buttons">
+            <button class="filter-btn toggled" id="filter-name">N</button>
+            <button class="filter-btn toggled" id="filter-type">T</button>
+            <button class="filter-btn toggled" id="filter-rarity">R</button>
+          </div>
         </div>
         <div class="modal-header-right">
           <input type="text" id="def-search" placeholder="Search..." />
           <span class="close" id="close-item-definitions">&times;</span>
         </div>
       </div>
-      <!-- List container with capped height -->
       <div id="item-definitions-list" class="def-list">
         <!-- Definitions will be populated here -->
       </div>
@@ -243,7 +247,6 @@
           <button type="button" id="add-def-extra-line" style="width:auto; margin-left:10px;">+</button>
         </div>
         <div id="def-extra-lines"></div>
-        <!-- Image Fields (Not displayed in the list) -->
         <div class="field-row">
           <label>Image S:</label>
           <input type="text" id="def-image-small" />
