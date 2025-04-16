@@ -4,7 +4,8 @@
 import L from 'leaflet';
 import 'leaflet.markercluster';
 import { db } from './firebase.js';
-import { logError } from './errorLogger.js'; // Make sure you have created errorLogger.js
+import { logError } from './errorLogger.js';
+import { createPopupContent } from "./markerUtils.js"; // Import popup builder from markerUtils.js
 
 // Global variables within this module
 let map;
@@ -56,6 +57,7 @@ export function createCustomMarker(markerData) {
     draggable: false,
   });
 
+  // Use the popup builder from markerUtils.js
   marker.bindPopup(createPopupContent(markerData), {
     className: "custom-popup-wrapper",
     maxWidth: 350,
@@ -64,62 +66,6 @@ export function createCustomMarker(markerData) {
   // Store marker along with its data
   allMarkers.push({ markerObj: marker, data: markerData });
   return marker;
-}
-
-// Helper: Create popup content for a marker.
-function createPopupContent(m) {
-  let itemTypeHTML = "";
-  let rarityHTML = "";
-  let descHTML = "";
-  let extraHTML = "";
-
-  if (m.type === "Item") {
-    if (m.itemType) {
-      itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor || "#E5E6E8"}; margin:2px 0;">${m.itemType}</div>`;
-    }
-    if (m.rarity) {
-      rarityHTML = `<div style="font-size:16px; color:${m.rarityColor || "#E5E6E8"}; margin:2px 0;">${m.rarity}</div>`;
-    }
-    if (m.description) {
-      descHTML = `<p style="margin:5px 0; color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`;
-    }
-    if (m.extraLines && m.extraLines.length) {
-      m.extraLines.forEach((line) => {
-        extraHTML += `<p style="margin-top:5px; margin-bottom:0; color:${line.color || "#E5E6E8"};">${line.text}</p>`;
-      });
-    }
-  } else {
-    if (m.description) {
-      descHTML = `<p style="margin:5px 0; color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`;
-    }
-  }
-  
-  const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">${m.name}</h3>`;
-  const scaledImg = m.imageBig 
-    ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`
-    : "";
-  let videoBtn = "";
-  if (m.videoURL) {
-    videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
-  }
-  
-  return `
-    <div class="custom-popup">
-      <div class="popup-header" style="display:flex; gap:5px;">
-        ${scaledImg}
-        <div style="margin-left:5px;">
-          ${nameHTML}
-          ${itemTypeHTML}
-          ${rarityHTML}
-        </div>
-      </div>
-      <div class="popup-body">
-        ${descHTML}
-        ${extraHTML}
-        ${videoBtn}
-      </div>
-    </div>
-  `;
 }
 
 // Function: Load markers from Firestore; fallback to local JSON on error.
@@ -141,7 +87,7 @@ export function loadMarkers() {
     })
     .catch((err) => {
       logError("Error loading markers from Firestore:", err);
-      // Fallback to a local JSON file:
+      // Fallback to local JSON file:
       fetch("./data/markerData.json")
         .then((resp) => {
           if (!resp.ok) throw new Error("Network response was not ok");
@@ -163,7 +109,7 @@ export function loadMarkers() {
     });
 }
 
-// Export the map instance if needed elsewhere.
+// Export a helper to get the map instance if needed
 export function getMap() {
   return map;
 }

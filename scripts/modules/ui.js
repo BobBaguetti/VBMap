@@ -4,8 +4,6 @@
 import { getMap } from "./mapSetup.js";
 import { logError } from "./errorLogger.js";
 
-const map = getMap();
-
 // ---------------------------
 // Context Menu Setup
 const contextMenu = document.createElement("div");
@@ -24,7 +22,7 @@ Object.assign(contextMenu.style, {
 
 /**
  * Shows the context menu at (x, y) with the provided options.
- * Each option should have a text and an action function.
+ * Each option should have a text property and an action function.
  */
 export function showContextMenu(x, y, options) {
   try {
@@ -136,34 +134,38 @@ export function cancelCopyMode() {
   pasteTooltip.style.display = "none";
 }
 
-// Listen for left clicks on the map during copy mode to create a new marker.
-map.on("click", ev => {
-  try {
-    if (copiedMarkerData) {
-      const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
-      newMarkerData.coords = [ev.latlng.lat, ev.latlng.lng];
-      newMarkerData.name = newMarkerData.name + " (copy)";
-      // Dispatch a custom event so the main module can handle marker creation.
-      const event = new CustomEvent("pasteMarker", { detail: newMarkerData });
-      document.dispatchEvent(event);
-      pasteTooltip.style.left = `${ev.containerPoint.x + 15}px`;
-      pasteTooltip.style.top = `${ev.containerPoint.y + 15}px`;
-    }
-  } catch (err) {
-    logError("Error pasting marker:", err);
-  }
-});
-document.addEventListener("contextmenu", ev => {
-  if (copiedMarkerData) {
-    cancelCopyMode();
-  }
-});
-
 // ---------------------------
-// Basic UI Initialization (extend if necessary)
+// UI Initialization
 export function initUI() {
-  // Initialize additional UI elements or listeners here if needed.
-  return true;
+  try {
+    // Now safely retrieve the map instance (after it has been initialized).
+    const map = getMap();
+    if (!map) {
+      throw new Error("Map is not initialized.");
+    }
+
+    // Attach event listener for copy/paste mode.
+    map.on("click", ev => {
+      try {
+        if (copiedMarkerData) {
+          const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
+          newMarkerData.coords = [ev.latlng.lat, ev.latlng.lng];
+          newMarkerData.name = newMarkerData.name + " (copy)";
+          // Dispatch a custom event so the main module can handle marker creation.
+          const event = new CustomEvent("pasteMarker", { detail: newMarkerData });
+          document.dispatchEvent(event);
+          pasteTooltip.style.left = `${ev.containerPoint.x + 15}px`;
+          pasteTooltip.style.top = `${ev.containerPoint.y + 15}px`;
+        }
+      } catch (err) {
+        logError("Error pasting marker:", err);
+      }
+    });
+    return true;
+  } catch (err) {
+    logError("Error initializing UI:", err);
+    return false;
+  }
 }
 
 /**
