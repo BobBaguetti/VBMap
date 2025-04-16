@@ -57,10 +57,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   const itemDefinitionForm = document.getElementById("item-definition-form");
   const defName = document.getElementById("def-name");
   const defType = document.getElementById("def-type");
-  const defDescription = document.getElementById("def-description");
-  const defIcon = document.getElementById("def-icon");
-  const defColor = document.getElementById("def-color");
   const defRarity = document.getElementById("def-rarity");
+  const defDescription = document.getElementById("def-description");
+  const defImageSmall = document.getElementById("def-image-small");
+  const defImageBig = document.getElementById("def-image-big");
+  const defExtraLinesContainer = document.getElementById("def-extra-lines");
+  const addDefExtraLineBtn = document.getElementById("add-def-extra-line");
 
   // ------------------------------
   // Firebase Initialization
@@ -133,7 +135,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   window.openVideoPopup = openVideoPopup;
 
   // ------------------------------
-  // Edit Modal Fields & Color Picker Setup
+  // Color Picker Setup for Marker Edit Modal
   // ------------------------------
   function createPicker(selector) {
     return Pickr.create({
@@ -180,11 +182,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       predefinedItemContainer.style.display = "none";
     }
   });
-
-  // When a predefined item is selected, autofill marker name from the dropdown option's text.
+  // Autofill marker name when a predefined item is selected
   predefinedItemDropdown.addEventListener("change", () => {
     if (predefinedItemDropdown.value) {
-      // Set the marker name field to the selected option's text
       editName.value = predefinedItemDropdown.options[predefinedItemDropdown.selectedIndex].text;
     }
   });
@@ -197,7 +197,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     editImageSmall.value = m.imageSmall || "";
     editImageBig.value = m.imageBig || "";
     editVideoURL.value = m.videoURL || "";
-    // If marker came from a predefined item, set dropdown value
     if (m.predefinedItemId) {
       predefinedItemDropdown.value = m.predefinedItemId;
     } else {
@@ -290,7 +289,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     data.imageSmall = editImageSmall.value;
     data.imageBig = editImageBig.value;
     data.videoURL = editVideoURL.value || "";
-    // Store selected predefined item (if any)
     data.predefinedItemId = predefinedItemDropdown.value || null;
     if (data.type === "Item") {
       data.rarity = formatRarity(editRarity.value);
@@ -322,7 +320,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function populatePredefinedItemsDropdown() {
     try {
       const definitions = await loadItemDefinitions(db);
-      // Clear existing options (except default)
       predefinedItemDropdown.innerHTML = '<option value="">-- Select an item --</option>';
       definitions.forEach(def => {
         const option = document.createElement("option");
@@ -338,21 +335,80 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ------------------------------
   // Manage Item Definitions Modal Functionality
   // ------------------------------
-  // Open modal
   manageItemDefinitionsBtn.addEventListener("click", async () => {
     itemDefinitionsModal.style.display = "block";
     await loadAndRenderItemDefinitions();
+    // Initialize color pickers for definition form if not already set up
+    if (!window.pickrDefName) {
+      window.pickrDefName = createPicker('#pickr-def-name');
+      window.pickrDefType = createPicker('#pickr-def-type');
+      window.pickrDefRarity = createPicker('#pickr-def-rarity');
+      window.pickrDefDescription = createPicker('#pickr-def-description');
+    }
   });
-  // Close modal
   closeItemDefinitionsBtn.addEventListener("click", () => {
     itemDefinitionsModal.style.display = "none";
   });
-  // When clicking outside modal content, close modal
   window.addEventListener("click", (event) => {
     if (event.target === itemDefinitionsModal) {
       itemDefinitionsModal.style.display = "none";
     }
   });
+
+  let extraDefLines = [];
+  addDefExtraLineBtn.addEventListener("click", () => {
+    extraDefLines.push({ text: "", color: "#E5E6E8" });
+    renderDefExtraLines();
+  });
+  function renderDefExtraLines() {
+    defExtraLinesContainer.innerHTML = "";
+    extraDefLines.forEach((lineObj, idx) => {
+      const row = document.createElement("div");
+      row.className = "field-row";
+      row.style.marginBottom = "5px";
+      const textInput = document.createElement("input");
+      textInput.type = "text";
+      textInput.value = lineObj.text;
+      textInput.style.background = "#E5E6E8";
+      textInput.style.color = "#000";
+      textInput.addEventListener("input", () => {
+        extraDefLines[idx].text = textInput.value;
+      });
+      const colorDiv = document.createElement("div");
+      colorDiv.className = "color-btn";
+      colorDiv.style.marginLeft = "5px";
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.textContent = "x";
+      removeBtn.style.marginLeft = "5px";
+      removeBtn.addEventListener("click", () => {
+        extraDefLines.splice(idx, 1);
+        renderDefExtraLines();
+      });
+      row.appendChild(textInput);
+      row.appendChild(colorDiv);
+      row.appendChild(removeBtn);
+      defExtraLinesContainer.appendChild(row);
+      const linePickr = Pickr.create({
+        el: colorDiv,
+        theme: 'nano',
+        default: lineObj.color || "#E5E6E8",
+        components: {
+          preview: true,
+          opacity: true,
+          hue: true,
+          interaction: { hex: true, rgba: true, input: true, save: true }
+        }
+      })
+      .on('change', (color) => {
+        extraDefLines[idx].color = color.toHEXA().toString();
+      })
+      .on('save', (color, pickr) => {
+        pickr.hide();
+      });
+      linePickr.setColor(lineObj.color || "#E5E6E8");
+    });
+  }
 
   async function loadAndRenderItemDefinitions() {
     try {
@@ -366,29 +422,29 @@ document.addEventListener("DOMContentLoaded", async () => {
         defDiv.innerHTML = `
           <strong>${def.name}</strong> (${def.type}) - ${def.rarity || ""}
           <br/><em>${def.description || ""}</em>
-          <br/><small>Icon: ${def.icon || "N/A"}</small>
+          <br/><small>Image S: ${def.imageSmall || "N/A"}, Image L: ${def.imageBig || "N/A"}</small>
+          <br/><small>Extra Info: ${def.extraLines ? def.extraLines.map(li => li.text).join(", ") : "None"}</small>
           <br/>
           <button data-edit="${def.id}">Edit</button>
           <button data-delete="${def.id}">Delete</button>
         `;
         itemDefinitionsList.appendChild(defDiv);
 
-        // Edit and Delete button listeners
         defDiv.querySelector("[data-edit]").addEventListener("click", () => {
-          // Pre-fill the form with definition data for editing
           defName.value = def.name;
           defType.value = def.type;
-          defDescription.value = def.description;
-          defIcon.value = def.icon || "";
-          defColor.value = def.color || "#E5E6E8";
           defRarity.value = def.rarity || "";
-          defName.dataset.editId = def.id; // Mark the form as editing this definition
+          defDescription.value = def.description || "";
+          defImageSmall.value = def.imageSmall || "";
+          defImageBig.value = def.imageBig || "";
+          extraDefLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+          renderDefExtraLines();
+          defName.dataset.editId = def.id;
         });
         defDiv.querySelector("[data-delete]").addEventListener("click", async () => {
           if (confirm("Are you sure you want to delete this item definition?")) {
             await deleteItemDefinition(db, def.id);
             loadAndRenderItemDefinitions();
-            // Refresh dropdown if open
             if (editType.value === "Item") {
               populatePredefinedItemsDropdown();
             }
@@ -400,29 +456,27 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Handle item definition form submit
   itemDefinitionForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const defData = {
       name: defName.value,
       type: defType.value,
+      rarity: defRarity.value,
       description: defDescription.value,
-      icon: defIcon.value,
-      color: defColor.value,
-      rarity: defRarity.value
+      imageSmall: defImageSmall.value,
+      imageBig: defImageBig.value,
+      extraLines: JSON.parse(JSON.stringify(extraDefLines))
     };
     if (defName.dataset.editId) {
-      // Update existing definition
       defData.id = defName.dataset.editId;
       await updateItemDefinition(db, defData);
       delete defName.dataset.editId;
     } else {
-      // Add new definition
       await addItemDefinition(db, defData);
     }
     itemDefinitionForm.reset();
+    extraDefLines = [];
     loadAndRenderItemDefinitions();
-    // Refresh predefined items dropdown
     if (editType.value === "Item") {
       populatePredefinedItemsDropdown();
     }
@@ -431,7 +485,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ------------------------------
   // Marker Creation and Management
   // ------------------------------
-  // Wrapper to create and store marker in memory.
   function createMarkerWrapper(m, callbacks) {
     const markerObj = createMarker(m, map, layers, showContextMenu, callbacks);
     allMarkers.push({ markerObj, data: m });
@@ -440,8 +493,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   function addMarker(m, callbacks = {}) {
     return createMarkerWrapper(m, callbacks);
   }
-
-  // Define callback functions for marker operations.
   function handleEdit(markerObj, m, evt) {
     currentEditMarker = { markerObj, data: m };
     populateEditForm(m);
@@ -464,8 +515,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       firebaseDeleteMarker(db, m.id);
     }
   }
-
-  // Load markers from Firebase and create them with callbacks.
   async function loadAndDisplayMarkers() {
     try {
       const markers = await loadMarkers(db);
@@ -488,7 +537,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   loadAndDisplayMarkers();
 
-  // Right-click on map shows "Create New Marker" context menu.
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -560,7 +608,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
     editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
   }
-  // Paste mode: allow repeated pasting while active.
   map.on("click", (evt) => {
     if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));

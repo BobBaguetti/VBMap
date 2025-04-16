@@ -201,31 +201,24 @@
         <hr />
         <form id="item-definition-form">
           <h3>Add / Edit Item</h3>
+          <!-- Name Field -->
           <div class="field-row">
             <label>Name:</label>
             <input type="text" id="def-name" required />
+            <div class="color-btn" id="pickr-def-name"></div>
           </div>
+          <!-- Item Type Field -->
           <div class="field-row">
-            <label>Type:</label>
+            <label>Item Type:</label>
             <select id="def-type">
               <option value="Crafting Material">Crafting Material</option>
               <option value="Special">Special</option>
               <option value="Consumable">Consumable</option>
               <option value="Quest">Quest</option>
             </select>
+            <div class="color-btn" id="pickr-def-type"></div>
           </div>
-          <div class="field-row">
-            <label>Description:</label>
-            <textarea id="def-description" rows="2"></textarea>
-          </div>
-          <div class="field-row">
-            <label>Icon URL:</label>
-            <input type="text" id="def-icon" />
-          </div>
-          <div class="field-row">
-            <label>Color:</label>
-            <input type="text" id="def-color" value="#E5E6E8" />
-          </div>
+          <!-- Rarity Field (Under Item Type) -->
           <div class="field-row">
             <label>Rarity:</label>
             <select id="def-rarity">
@@ -236,6 +229,28 @@
               <option value="epic">Epic</option>
               <option value="legendary">Legendary</option>
             </select>
+            <div class="color-btn" id="pickr-def-rarity"></div>
+          </div>
+          <!-- Description Field -->
+          <div class="field-row">
+            <label>Description:</label>
+            <textarea id="def-description" rows="2"></textarea>
+            <div class="color-btn" id="pickr-def-description"></div>
+          </div>
+          <!-- Extra Info Section -->
+          <div class="field-row">
+            <label>Extra Info:</label>
+            <button type="button" id="add-def-extra-line" style="width:auto; margin-left:10px;">+</button>
+          </div>
+          <div id="def-extra-lines"></div>
+          <!-- Image Fields -->
+          <div class="field-row">
+            <label>Image S:</label>
+            <input type="text" id="def-image-small" />
+          </div>
+          <div class="field-row">
+            <label>Image L:</label>
+            <input type="text" id="def-image-big" />
           </div>
           <div class="field-row">
             <button type="submit">Save</button>
