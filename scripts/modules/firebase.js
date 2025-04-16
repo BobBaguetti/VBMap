@@ -1,7 +1,6 @@
 // firebase.js
-// Import Firebase compat version and Firestore.
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/firestore';
+import firebase from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js";
+import "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js";
 
 // Your Firebase configuration
 const firebaseConfig = {
@@ -14,8 +13,6 @@ const firebaseConfig = {
   measurementId: "G-7FDNWLRM95"
 };
 
-// Initialize Firebase
 firebase.initializeApp(firebaseConfig);
 
-// Export the Firestore database instance
 export const db = firebase.firestore();
