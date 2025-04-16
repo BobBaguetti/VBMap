@@ -14,7 +14,7 @@ import {
   updateMarker as firebaseUpdateMarker, 
   deleteMarker as firebaseDeleteMarker 
 } from "./modules/firebaseService.js";
-import { createMarker, formatRarity } from "./modules/markerManager.js";
+import { createMarker, createPopupContent, formatRarity } from "./modules/markerManager.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Script loaded!");
