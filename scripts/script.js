@@ -146,9 +146,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       theme: 'nano',
       default: '#E5E6E8',
       components: { 
-        preview: true, 
-        opacity: true, 
-        hue: true, 
+        preview: true,
+        opacity: true,
+        hue: true,
         interaction: { hex: true, rgba: true, input: true, save: true }
       }
     }).on('save', (color, pickr) => {
@@ -162,9 +162,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pickrDescNonItem = createPicker('#pickr-desc-nonitem');
 
   // ------------------------------
+  // updateItemFieldsVisibility Function
+  // ------------------------------
+  function updateItemFieldsVisibility() {
+    if (editType.value === "Item") {
+      itemExtraFields.style.display = "block";
+      nonItemDescription.style.display = "none";
+      predefinedItemContainer.style.display = "block";
+      populatePredefinedItemsDropdown();
+    } else {
+      itemExtraFields.style.display = "none";
+      nonItemDescription.style.display = "block";
+      predefinedItemContainer.style.display = "none";
+    }
+  }
+  
+  // Attach change listener on editType
+  editType.addEventListener("change", () => {
+    updateItemFieldsVisibility();
+  });
+
+  // ------------------------------
   // Predefined Item Dropdown Change Listener
   // ------------------------------
-  // When a predefined item is selected in the marker create/edit screen, autocompletes the form fields
   predefinedItemDropdown.addEventListener("change", () => {
     const selectedId = predefinedItemDropdown.value;
     if (selectedId && predefinedItemDefs[selectedId]) {
@@ -172,11 +192,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       // Auto-fill item-related fields from the definition
       editName.value = def.name || "";
       editRarity.value = def.rarity || "";
-      if(def.rarityColor) { pickrRarity.setColor(def.rarityColor); }
+      if (def.rarityColor) { pickrRarity.setColor(def.rarityColor); }
       editItemType.value = def.itemType || def.type || "";
-      if(def.itemTypeColor) { pickrItemType.setColor(def.itemTypeColor); }
+      if (def.itemTypeColor) { pickrItemType.setColor(def.itemTypeColor); }
       editDescription.value = def.description || "";
-      if(def.descriptionColor) { pickrDescItem.setColor(def.descriptionColor); }
+      if (def.descriptionColor) { pickrDescItem.setColor(def.descriptionColor); }
       extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
       renderExtraLines();
       editImageSmall.value = def.imageSmall || "";
@@ -193,11 +213,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     editImageSmall.value = m.imageSmall || "";
     editImageBig.value = m.imageBig || "";
     editVideoURL.value = m.videoURL || "";
+    // Update visibility based on marker type (Item vs non-Item)
+    updateItemFieldsVisibility();
     if (m.type === "Item") {
-      itemExtraFields.style.display = "block";
-      nonItemDescription.style.display = "none";
-      predefinedItemContainer.style.display = "block";
-      populatePredefinedItemsDropdown();
       if (m.predefinedItemId) {
         predefinedItemDropdown.value = m.predefinedItemId;
       } else {
@@ -212,13 +230,11 @@ document.addEventListener("DOMContentLoaded", async () => {
       extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
       renderExtraLines();
     } else {
-      itemExtraFields.style.display = "none";
-      nonItemDescription.style.display = "block";
-      predefinedItemContainer.style.display = "none";
       nonItemDescription.value = m.description || "";
       pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
     }
   }
+
   let extraLines = [];
   document.getElementById("add-extra-line").addEventListener("click", () => {
     extraLines.push({ text: "", color: "#E5E6E8" });
@@ -273,6 +289,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       linePickr.setColor(lineObj.color || "#E5E6E8");
     });
   }
+
   document.getElementById("edit-cancel").addEventListener("click", () => {
     editModal.style.display = "none";
     currentEditMarker = null;
@@ -319,7 +336,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function populatePredefinedItemsDropdown() {
     try {
       const definitions = await loadItemDefinitions(db);
-      // Reset global dictionary for lookup
       predefinedItemDefs = {};
       predefinedItemDropdown.innerHTML = '<option value="">-- Select an item --</option>';
       definitions.forEach(def => {
@@ -340,7 +356,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   manageItemDefinitionsBtn.addEventListener("click", async () => {
     itemDefinitionsModal.style.display = "block";
     await loadAndRenderItemDefinitions();
-    // Initialize Pickr controls for definition form if not already done
     if (!window.pickrDefName) {
       window.pickrDefName = createPicker('#pickr-def-name');
       window.pickrDefType = createPicker('#pickr-def-type');
@@ -553,8 +568,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           // Set default values for the creation form
           editName.value = "";
           pickrName.setColor("#E5E6E8");
-          // For creation, if you want to start with Item type, you could set it here; otherwise, default to Door.
-          editType.value = "Item"; // If you prefer default to Item, change it here.
+          // Default to "Item" (can be changed by the user)
+          editType.value = "Item";
           editImageSmall.value = "";
           editImageBig.value = "";
           editVideoURL.value = "";
@@ -566,19 +581,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           pickrDescItem.setColor("#E5E6E8");
           extraLines = [];
           renderExtraLines();
-          // Show item fields if type is Item (based on the new default or user selection)
-          if (editType.value === "Item") {
-            itemExtraFields.style.display = "block";
-            nonItemDescription.style.display = "none";
-            predefinedItemContainer.style.display = "block";
-            populatePredefinedItemsDropdown();
-          } else {
-            itemExtraFields.style.display = "none";
-            nonItemDescription.style.display = "block";
-            predefinedItemContainer.style.display = "none";
-          }
-          // Dispatch change event for editType so that the UI updates appropriately
-          editType.dispatchEvent(new Event('change'));
+          // Initialize visibility based on the default editType value.
+          updateItemFieldsVisibility();
           positionModal(editModal, evt.originalEvent);
           editModal.style.display = "block";
           editForm.onsubmit = (e2) => {
