@@ -12,7 +12,7 @@
 <body>
   <!-- Sidebar Toggle Button -->
   <button id="sidebar-toggle" style="position:absolute; top:10px; left:10px; z-index:1100;">☰</button>
-  
+
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
@@ -26,7 +26,6 @@
         <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
       </div>
     </div>
-
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -34,20 +33,37 @@
         Disable Marker Grouping
       </label>
     </div>
-
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
     </div>
   </div>
-  
+
   <!-- Map Container -->
   <div id="map"></div>
-  
+
   <!-- Paste Mode Tooltip -->
   <div id="paste-tooltip" style="position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none; display:none;"></div>
-  
-  <!-- The bundled JS (via Webpack) will be inserted here -->
+
+  <!-- Edit Modal (for marker editing) -->
+  <div id="edit-modal" style="display:none;">
+    <div id="edit-modal-handle">
+      <strong>Edit Marker</strong>
+    </div>
+    <form id="edit-form">
+      <!-- Your form fields go here. For example: -->
+      <!--
+      <div class="field-row">
+        <label>Name:</label>
+        <input type="text" id="edit-name" required />
+        <div class="color-btn" id="pickr-name"></div>
+      </div>
+      ... (other fields as defined in your ui.js and related modules)
+      -->
+    </form>
+  </div>
+
+  <!-- The bundled JS (via Webpack) will be injected here -->
   <script type="module" src="scripts/main.js"></script>
 </body>
 </html>
