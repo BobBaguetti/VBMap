@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       el: selector,
       theme: 'nano',
       default: '#E5E6E8',
-      components: {
+      components: { 
         preview: true,
         opacity: true,
         hue: true,
@@ -187,13 +187,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (selectedId && predefinedItemDefs[selectedId]) {
       const def = predefinedItemDefs[selectedId];
       editName.value = def.name || "";
-      if(def.nameColor) { pickrName.setColor(def.nameColor); } else { pickrName.setColor("#E5E6E8"); }
+      pickrName.setColor(def.nameColor || "#E5E6E8");
       editRarity.value = def.rarity || "";
-      if(def.rarityColor) { pickrRarity.setColor(def.rarityColor); } else { pickrRarity.setColor("#E5E6E8"); }
+      pickrRarity.setColor(def.rarityColor || "#E5E6E8");
       editItemType.value = def.itemType || def.type || "";
-      if(def.itemTypeColor) { pickrItemType.setColor(def.itemTypeColor); } else { pickrItemType.setColor("#E5E6E8"); }
+      pickrItemType.setColor(def.itemTypeColor || "#E5E6E8");
       editDescription.value = def.description || "";
-      if(def.descriptionColor) { pickrDescItem.setColor(def.descriptionColor); } else { pickrDescItem.setColor("#E5E6E8"); }
+      pickrDescItem.setColor(def.descriptionColor || "#E5E6E8");
       extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
       renderExtraLines();
       editImageSmall.value = def.imageSmall || "";
@@ -211,11 +211,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     editVideoURL.value = m.videoURL || "";
     updateItemFieldsVisibility();
     if (m.type === "Item") {
-      if (m.predefinedItemId) {
-        predefinedItemDropdown.value = m.predefinedItemId;
-      } else {
-        predefinedItemDropdown.value = "";
-      }
+      predefinedItemDropdown.value = m.predefinedItemId ? m.predefinedItemId : "";
       editRarity.value = m.rarity ? m.rarity.toLowerCase() : "";
       pickrRarity.setColor(m.rarityColor || "#E5E6E8");
       editItemType.value = m.itemType || "Crafting Material";
@@ -477,7 +473,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Updated item definition form: include color values from Pickr controls.
+  // Updated item definition form: include color values from Pickr controls and reset the form on success.
   itemDefinitionForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const defData = {
@@ -502,6 +498,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     itemDefinitionForm.reset();
     extraDefLines = [];
+    // Reset Pickr controls for definitions to default color
+    if(window.pickrDefName) { window.pickrDefName.setColor("#E5E6E8"); }
+    if(window.pickrDefType) { window.pickrDefType.setColor("#E5E6E8"); }
+    if(window.pickrDefRarity) { window.pickrDefRarity.setColor("#E5E6E8"); }
+    if(window.pickrDefDescription) { window.pickrDefDescription.setColor("#E5E6E8"); }
     loadAndRenderItemDefinitions();
     if (editType.value === "Item") {
       populatePredefinedItemsDropdown();
@@ -569,7 +570,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         text: "Create New Marker",
         action: () => {
           currentEditMarker = null;
-          // Set default values for the creation form.
+          // Set default values for creation form.
           editName.value = "";
           pickrName.setColor("#E5E6E8");
           editType.value = "Item"; // Default to Item; user can change.
@@ -674,6 +675,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     defSearch.addEventListener("input", () => {
       const query = defSearch.value.toLowerCase();
       Array.from(itemDefinitionsList.children).forEach(entry => {
+        // Check if the entry's text contains the query
         entry.style.display = entry.textContent.toLowerCase().includes(query) ? "" : "none";
       });
     });
