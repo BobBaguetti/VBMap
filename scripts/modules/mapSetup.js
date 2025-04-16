@@ -10,7 +10,7 @@ import { collection, getDocs } from "firebase/firestore";
 let map;
 export const allMarkers = [];
 
-// Define layer groups (keys must match your marker data exactly).
+// Define layer groups for each marker type.
 export const layers = {
   "Door": L.layerGroup(),
   "Extraction Portal": L.layerGroup(),
@@ -34,7 +34,6 @@ export function initMap() {
 
   // Add each layer to the map.
   Object.values(layers).forEach(layer => layer.addTo(map));
-
   return map;
 }
 

@@ -10,7 +10,7 @@ export function formatRarity(val) {
   }
   
   /**
-   * Creates a custom Leaflet icon for the marker using a small image.
+   * Creates a custom Leaflet icon using the marker's small image.
    * @param {Object} m - Marker data.
    * @returns {L.DivIcon} - A Leaflet divIcon.
    */
@@ -28,9 +28,9 @@ export function formatRarity(val) {
   }
   
   /**
-   * Builds the popup content HTML string for a marker.
-   * @param {Object} m - Marker data with properties such as name, type, description, etc.
-   * @returns {string} - HTML string for the marker popup.
+   * Constructs the HTML content for a marker popup.
+   * @param {Object} m - Marker data with properties like name, type, description, etc.
+   * @returns {string} - HTML string for the popup.
    */
   export function createPopupContent(m) {
     let itemTypeHTML = "";

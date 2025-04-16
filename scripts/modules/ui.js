@@ -2,6 +2,7 @@
 import { getMap } from "./mapSetup.js";
 import { logError } from "./errorLogger.js";
 
+const map = getMap();
 const contextMenu = document.createElement("div");
 contextMenu.id = "context-menu";
 document.body.appendChild(contextMenu);
@@ -54,9 +55,11 @@ const pasteTooltip = document.getElementById("paste-tooltip");
 export function setEditModalPosition(ev) {
   try {
     if (!editModal) return;
+    // Temporarily display modal to measure dimensions
     editModal.style.display = "block";
     const modalWidth = editModal.offsetWidth;
     const modalHeight = editModal.offsetHeight;
+    // Position modal such that the cursor appears in the middle-right with 10px distance.
     editModal.style.left = `${ev.pageX - modalWidth + 10}px`;
     editModal.style.top = `${ev.pageY - (modalHeight / 2)}px`;
   } catch (err) {
@@ -122,9 +125,9 @@ export function initUI() {
         if (copiedMarkerData) {
           const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
           newMarkerData.coords = [ev.latlng.lat, ev.latlng.lng];
-          newMarkerData.name += " (copy)";
-          const event = new CustomEvent("pasteMarker", { detail: newMarkerData });
-          document.dispatchEvent(event);
+          newMarkerData.name = newMarkerData.name + " (copy)";
+          const pasteEvent = new CustomEvent("pasteMarker", { detail: newMarkerData });
+          document.dispatchEvent(pasteEvent);
           if (pasteTooltip) {
             pasteTooltip.style.left = `${ev.containerPoint.x + 15}px`;
             pasteTooltip.style.top = `${ev.containerPoint.y + 15}px`;

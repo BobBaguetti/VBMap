@@ -168,7 +168,6 @@ body, html {
   font-size: 14px;
   width: 100%;
 }
-/* Allow vertical resizing for textareas */
 .field-row textarea {
   resize: vertical;
 }
