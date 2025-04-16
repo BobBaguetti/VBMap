@@ -67,11 +67,18 @@ document.addEventListener("DOMContentLoaded", async () => {
   const defExtraLinesContainer = document.getElementById("def-extra-lines");
   const addDefExtraLineBtn = document.getElementById("add-def-extra-line");
   const defSearch = document.getElementById("def-search");
-  
+
   // Filter buttons in Definitions modal
   const filterNameBtn = document.getElementById("filter-name");
   const filterTypeBtn = document.getElementById("filter-type");
   const filterRarityBtn = document.getElementById("filter-rarity");
+
+  // Elements for updating the definitions form heading
+  const defFormHeading = document.getElementById("def-form-heading");
+  const defFormSubheading = document.getElementById("def-form-subheading");
+
+  // Cancel button in definitions form
+  const defCancelBtn = document.getElementById("def-cancel");
 
   // ------------------------------
   // Firebase Initialization
@@ -351,6 +358,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   manageItemDefinitionsBtn.addEventListener("click", async () => {
     itemDefinitionsModal.style.display = "block";
     await loadAndRenderItemDefinitions();
+    // Set form heading to "Add Item" initially
+    defFormHeading.innerText = "Add Item";
+    defFormSubheading.innerText = "Add Item";
     if (!window.pickrDefName) {
       window.pickrDefName = createPicker('#pickr-def-name');
       window.pickrDefType = createPicker('#pickr-def-type');
@@ -464,6 +474,9 @@ document.addEventListener("DOMContentLoaded", async () => {
           if (window.pickrDefDescription) {
             window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
           }
+          // Update the form heading to reflect Edit mode.
+          defFormHeading.innerText = "Edit Item";
+          defFormSubheading.innerText = "Edit Item";
         });
         defDiv.querySelector("[data-delete]").addEventListener("click", async () => {
           if (confirm("Are you sure you want to delete this item definition?")) {
@@ -514,7 +527,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (editType.value === "Item") {
       populatePredefinedItemsDropdown();
     }
+    // Update the form heading back to "Add Item" after saving.
+    defFormHeading.innerText = "Add Item";
+    defFormSubheading.innerText = "Add Item";
   });
+
+  // Setup cancel button for definitions form.
+  if (defCancelBtn) {
+    defCancelBtn.addEventListener("click", () => {
+      itemDefinitionForm.reset();
+      extraDefLines = [];
+      defExtraLinesContainer.innerHTML = "";
+      if (window.pickrDefName) { window.pickrDefName.setColor("#E5E6E8"); }
+      if (window.pickrDefType) { window.pickrDefType.setColor("#E5E6E8"); }
+      if (window.pickrDefRarity) { window.pickrDefRarity.setColor("#E5E6E8"); }
+      if (window.pickrDefDescription) { window.pickrDefDescription.setColor("#E5E6E8"); }
+      defFormHeading.innerText = "Add Item";
+      defFormSubheading.innerText = "Add Item";
+    });
+  }
 
   // ------------------------------
   // Marker Creation and Management
@@ -684,6 +715,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     type: false,
     rarity: false
   };
+
   function updateFilterButtonAppearance(button, active) {
     if (active) {
       button.classList.add("toggled");
@@ -691,7 +723,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       button.classList.remove("toggled");
     }
   }
-  // Initialize filter buttons appearance
+  // Initialize filter buttons appearance (all off)
   updateFilterButtonAppearance(filterNameBtn, filterSettings.name);
   updateFilterButtonAppearance(filterTypeBtn, filterSettings.type);
   updateFilterButtonAppearance(filterRarityBtn, filterSettings.rarity);
@@ -715,12 +747,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   function filterDefinitions() {
     const query = defSearch.value.toLowerCase();
     Array.from(itemDefinitionsList.children).forEach(entry => {
-      // Get text from each field by their span classes.
       const nameText = entry.querySelector('.def-name') ? entry.querySelector('.def-name').innerText.toLowerCase() : "";
       const typeText = entry.querySelector('.def-type') ? entry.querySelector('.def-type').innerText.toLowerCase() : "";
       const rarityText = entry.querySelector('.def-rarity') ? entry.querySelector('.def-rarity').innerText.toLowerCase() : "";
       let match = false;
-      // If no filter is enabled, show all definitions.
       if (!filterSettings.name && !filterSettings.type && !filterSettings.rarity) {
         match = true;
       } else {
@@ -733,5 +763,22 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   if (defSearch) {
     defSearch.addEventListener("input", filterDefinitions);
+  }
+
+  // ------------------------------
+  // Definitions Form Cancel Functionality
+  // ------------------------------
+  if (defCancelBtn) {
+    defCancelBtn.addEventListener("click", () => {
+      itemDefinitionForm.reset();
+      extraDefLines = [];
+      defExtraLinesContainer.innerHTML = "";
+      if (window.pickrDefName) { window.pickrDefName.setColor("#E5E6E8"); }
+      if (window.pickrDefType) { window.pickrDefType.setColor("#E5E6E8"); }
+      if (window.pickrDefRarity) { window.pickrDefRarity.setColor("#E5E6E8"); }
+      if (window.pickrDefDescription) { window.pickrDefDescription.setColor("#E5E6E8"); }
+      defFormHeading.innerText = "Add Item";
+      defFormSubheading.innerText = "Add Item";
+    });
   }
 });

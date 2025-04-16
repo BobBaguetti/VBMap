@@ -192,7 +192,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-header-left">
-          <h2>Item Definitions</h2>
+          <h2 id="def-form-heading">Add Item</h2>
           <div class="filter-buttons">
             <button class="filter-btn" id="filter-name">N</button>
             <button class="filter-btn" id="filter-type">T</button>
@@ -209,7 +209,7 @@
       </div>
       <hr />
       <form id="item-definition-form">
-        <h3>Add / Edit Item</h3>
+        <h3 id="def-form-subheading">Add Item</h3>
         <div class="field-row">
           <label>Name:</label>
           <input type="text" id="def-name" required />
@@ -255,8 +255,9 @@
           <label>Image L:</label>
           <input type="text" id="def-image-big" />
         </div>
-        <div class="field-row">
-          <button type="submit">Save</button>
+        <div class="field-row" style="justify-content:center; margin-top:10px;">
+          <button type="submit" style="margin-right:10px;">Save</button>
+          <button type="button" id="def-cancel">Cancel</button>
         </div>
       </form>
     </div>
