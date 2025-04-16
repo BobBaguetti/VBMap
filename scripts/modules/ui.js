@@ -1,24 +1,11 @@
 // ui.js
-// Handles UI interactions: context menu, edit modal positioning, and copy/paste mode.
+// This module handles UI interactions such as context menu display, edit modal positioning, and copy/paste mode.
 
 import { getMap } from "./mapSetup.js";
 import { logError } from "./errorLogger.js";
 
-// Retrieve key DOM elements with checks.
-const editModal = document.getElementById("edit-modal");
-if (!editModal) {
-  logError("Missing DOM element: edit-modal", new Error("Element with id 'edit-modal' not found."));
-}
-const editModalHandle = document.getElementById("edit-modal-handle");
-if (!editModalHandle) {
-  logError("Missing DOM element: edit-modal-handle", new Error("Element with id 'edit-modal-handle' not found."));
-}
-const pasteTooltip = document.getElementById("paste-tooltip");
-if (!pasteTooltip) {
-  logError("Missing DOM element: paste-tooltip", new Error("Element with id 'paste-tooltip' not found."));
-}
-
-// Create the context menu element.
+// ---------------------------
+// Context Menu Setup
 const contextMenu = document.createElement("div");
 contextMenu.id = "context-menu";
 document.body.appendChild(contextMenu);
@@ -35,7 +22,7 @@ Object.assign(contextMenu.style, {
 
 /**
  * Shows the context menu at (x, y) with the provided options.
- * Each option must have a text property and an action function.
+ * Each option should have a text property and an action function.
  */
 export function showContextMenu(x, y, options) {
   try {
@@ -65,10 +52,29 @@ export function showContextMenu(x, y, options) {
 }
 document.addEventListener("click", () => {
   contextMenu.style.display = "none";
+  // Cancel copy mode if active.
   cancelCopyMode();
 });
 
-// Edit Modal Positioning and Draggable Logic
+// ---------------------------
+// Edit Modal Positioning and Behavior
+const editModal = document.getElementById("edit-modal");
+const editModalHandle = document.getElementById("edit-modal-handle");
+
+export function setEditModalPosition(ev) {
+  try {
+    if (!editModal) return;
+    editModal.style.display = "block";
+    const modalWidth = editModal.offsetWidth;
+    const modalHeight = editModal.offsetHeight;
+    // Position so that the right edge is 10px to the right of the cursor and vertically centered.
+    editModal.style.left = `${ev.pageX - modalWidth + 10}px`;
+    editModal.style.top = `${ev.pageY - (modalHeight / 2)}px`;
+  } catch (err) {
+    logError("Error positioning edit modal:", err);
+  }
+}
+
 let isDragging = false, modalOffsetX = 0, modalOffsetY = 0;
 if (editModalHandle) {
   editModalHandle.addEventListener("mousedown", e => {
@@ -83,6 +89,7 @@ if (editModalHandle) {
     }
   });
 }
+
 document.addEventListener("mousemove", e => {
   if (isDragging) {
     try {
@@ -97,31 +104,11 @@ document.addEventListener("mouseup", () => {
   isDragging = false;
 });
 
-/**
- * Positions the edit modal so its right edge is 10px to the right of the cursor,
- * and vertically centers it around the cursor.
- * @param {MouseEvent} ev - The triggering event.
- */
-export function setEditModalPosition(ev) {
-  try {
-    if (!editModal) return;
-    editModal.style.display = "block";
-    const modalWidth = editModal.offsetWidth;
-    const modalHeight = editModal.offsetHeight;
-    editModal.style.left = `${ev.pageX - modalWidth + 10}px`;
-    editModal.style.top = `${ev.pageY - (modalHeight / 2)}px`;
-  } catch (err) {
-    logError("Error positioning edit modal:", err);
-  }
-}
-
+// ---------------------------
 // Copy Marker (Paste Mode) Logic
 let copiedMarkerData = null;
+const pasteTooltip = document.getElementById("paste-tooltip");
 
-/**
- * Enters copy (paste) mode by deep copying marker data.
- * @param {Object} markerData - Marker data to copy.
- */
 export function enterCopyMode(markerData) {
   try {
     copiedMarkerData = JSON.parse(JSON.stringify(markerData));
@@ -133,9 +120,6 @@ export function enterCopyMode(markerData) {
   }
 }
 
-/**
- * Cancels copy mode.
- */
 export function cancelCopyMode() {
   copiedMarkerData = null;
   if (pasteTooltip) {
@@ -147,10 +131,8 @@ export function cancelCopyMode() {
 export function initUI() {
   try {
     const map = getMap();
-    if (!map) {
-      throw new Error("Map is not initialized.");
-    }
-    // Attach event listener for paste mode on the map.
+    if (!map) throw new Error("Map is not initialized.");
+
     map.on("click", ev => {
       try {
         if (copiedMarkerData) {
@@ -175,10 +157,6 @@ export function initUI() {
   }
 }
 
-/**
- * Returns the current copied marker data.
- * @returns {Object|null}
- */
 export function getCopiedMarkerData() {
   return copiedMarkerData;
 }

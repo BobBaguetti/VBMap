@@ -18,7 +18,6 @@ export function updateMarkerInFirestore(markerData) {
   const markersRef = collection(db, "markers");
   
   if (markerData.id) {
-    // If there's an ID, we update that doc
     const docRef = doc(markersRef, markerData.id);
     return setDoc(docRef, markerData)
       .then(() => {
@@ -28,7 +27,6 @@ export function updateMarkerInFirestore(markerData) {
         logError("Error updating marker:", error);
       });
   } else {
-    // No ID => create a new doc
     return addDoc(markersRef, markerData)
       .then((docRef) => {
         markerData.id = docRef.id;

@@ -1,5 +1,5 @@
 // main.js
-// Main entry point: Initializes the map, loads markers, and sets up the UI with error handling.
+// Main entry point: Initializes the map, loads markers, and sets up UI interactions with error handling.
 
 import { initMap, loadMarkers } from "./modules/mapSetup.js";
 import { initUI } from "./modules/ui.js";

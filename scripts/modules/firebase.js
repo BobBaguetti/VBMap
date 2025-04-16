@@ -1,8 +1,8 @@
 // firebase.js
-import { initializeApp } from 'firebase/app';
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
-// Replace with your Firebase config
+// Replace with your Firebase configuration.
 const firebaseConfig = {
   apiKey: "AIzaSyDwEdPK3UdPN5MB8YAuM_jb0K1iXfQ-tGQ",
   authDomain: "vbmap-cc834.firebaseapp.com",
@@ -13,6 +13,5 @@ const firebaseConfig = {
   measurementId: "G-7FDNWLRM95"
 };
 
-// Initialize Firebase app and Firestore
 const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app);
