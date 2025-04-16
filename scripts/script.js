@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       el: selector,
       theme: 'nano',
       default: '#E5E6E8',
-      components: { 
+      components: {
         preview: true,
         opacity: true,
         hue: true,
@@ -177,7 +177,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       predefinedItemContainer.style.display = "none";
     }
   }
-  
   editType.addEventListener("change", updateItemFieldsVisibility);
 
   // ------------------------------
@@ -427,7 +426,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const definitions = await loadItemDefinitions(db);
       itemDefinitionsList.innerHTML = "";
       definitions.forEach(def => {
-        // Show only Name, Item Type (or type), Rarity, and Description in the list
         const defDiv = document.createElement("div");
         defDiv.className = "item-def-entry";
         defDiv.style.borderBottom = "1px solid #555";
@@ -451,7 +449,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           extraDefLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
           renderDefExtraLines();
           defName.dataset.editId = def.id;
-          // Explicitly update Pickr controls with saved colors
           if(window.pickrDefName) {
             window.pickrDefName.setColor(def.nameColor || "#E5E6E8");
           }
@@ -572,7 +569,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         text: "Create New Marker",
         action: () => {
           currentEditMarker = null;
-          // Set default values for creation form.
+          // Set default values for the creation form.
           editName.value = "";
           pickrName.setColor("#E5E6E8");
           editType.value = "Item"; // Default to Item; user can change.
@@ -656,7 +653,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     allMarkers.forEach(item => {
       const markerName = item.data.name.toLowerCase();
       if (markerName.includes(query)) {
-        if (!map.hasLayer(item.markerObj)) {
+        if (!map.hasLayer(item.data.type)) {
           layers[item.data.type].addLayer(item.markerObj);
         }
       } else {
@@ -673,11 +670,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ------------------------------
   // Definitions List Search Functionality
   // ------------------------------
-  defSearch.addEventListener("input", () => {
-    const query = defSearch.value.toLowerCase();
-    // Filter each item definition in the list
-    Array.from(itemDefinitionsList.children).forEach(entry => {
-      entry.style.display = entry.textContent.toLowerCase().includes(query) ? "" : "none";
+  if (defSearch) {
+    defSearch.addEventListener("input", () => {
+      const query = defSearch.value.toLowerCase();
+      Array.from(itemDefinitionsList.children).forEach(entry => {
+        entry.style.display = entry.textContent.toLowerCase().includes(query) ? "" : "none";
+      });
     });
-  });
+  }
 });
