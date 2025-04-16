@@ -16,12 +16,7 @@ import {
 } from "./modules/firebaseService.js";
 import { createMarker, createPopupContent } from "./modules/markerManager.js";
 import { formatRarity } from "./modules/utils.js";
-import { 
-  loadItemDefinitions, 
-  addItemDefinition, 
-  updateItemDefinition, 
-  deleteItemDefinition 
-} from "./modules/itemDefinitionsService.js";
+import { initItemDefinitionsUI } from "./modules/itemDefinitionsUI.js";
 
 // Global storage for predefined item definitions keyed by ID.
 let predefinedItemDefs = {};
@@ -51,34 +46,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   const extraLinesContainer = document.getElementById("extra-lines");
   const predefinedItemContainer = document.getElementById("predefined-item-container");
   const predefinedItemDropdown = document.getElementById("predefined-item-dropdown");
-
-  // Item Definitions Modal Elements
-  const manageItemDefinitionsBtn = document.getElementById("manage-item-definitions");
-  const itemDefinitionsModal = document.getElementById("item-definitions-modal");
-  const closeItemDefinitionsBtn = document.getElementById("close-item-definitions");
-  const itemDefinitionsList = document.getElementById("item-definitions-list");
-  const itemDefinitionForm = document.getElementById("item-definition-form");
-  const defName = document.getElementById("def-name");
-  const defType = document.getElementById("def-type");
-  const defRarity = document.getElementById("def-rarity");
-  const defDescription = document.getElementById("def-description");
-  const defImageSmall = document.getElementById("def-image-small");
-  const defImageBig = document.getElementById("def-image-big");
-  const defExtraLinesContainer = document.getElementById("def-extra-lines");
-  const addDefExtraLineBtn = document.getElementById("add-def-extra-line");
-  const defSearch = document.getElementById("def-search");
-
-  // Filter buttons in Definitions modal
-  const filterNameBtn = document.getElementById("filter-name");
-  const filterTypeBtn = document.getElementById("filter-type");
-  const filterRarityBtn = document.getElementById("filter-rarity");
-
-  // Elements for updating the definitions form heading
-  const defFormHeading = document.getElementById("def-form-heading");
-  const defFormSubheading = document.getElementById("def-form-subheading");
-
-  // Cancel button in definitions form
-  const defCancelBtn = document.getElementById("def-cancel");
 
   // ------------------------------
   // Firebase Initialization
@@ -168,10 +135,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       pickr.hide();
     });
   }
-  const pickrName = createPicker('#pickr-name');
-  const pickrRarity = createPicker('#pickr-rarity');
-  const pickrItemType = createPicker('#pickr-itemtype');
-  const pickrDescItem = createPicker('#pickr-desc-item');
+  const pickrName        = createPicker('#pickr-name');
+  const pickrRarity      = createPicker('#pickr-rarity');
+  const pickrItemType    = createPicker('#pickr-itemtype');
+  const pickrDescItem    = createPicker('#pickr-desc-item');
   const pickrDescNonItem = createPicker('#pickr-desc-nonitem');
 
   // ------------------------------
@@ -198,142 +165,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     const selectedId = predefinedItemDropdown.value;
     if (selectedId && predefinedItemDefs[selectedId]) {
       const def = predefinedItemDefs[selectedId];
-      editName.value = def.name || "";
+      editName.value        = def.name || "";
       pickrName.setColor(def.nameColor || "#E5E6E8");
-      editRarity.value = def.rarity || "";
+      editRarity.value      = def.rarity || "";
       pickrRarity.setColor(def.rarityColor || "#E5E6E8");
-      editItemType.value = def.itemType || def.type || "";
+      editItemType.value    = def.itemType || def.type || "";
       pickrItemType.setColor(def.itemTypeColor || "#E5E6E8");
       editDescription.value = def.description || "";
       pickrDescItem.setColor(def.descriptionColor || "#E5E6E8");
       extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
       renderExtraLines();
-      editImageSmall.value = def.imageSmall || "";
-      editImageBig.value = def.imageBig || "";
+      editImageSmall.value  = def.imageSmall || "";
+      editImageBig.value    = def.imageBig || "";
     }
-  });
-
-  let currentEditMarker = null;
-  function populateEditForm(m) {
-    editName.value = m.name || "";
-    pickrName.setColor(m.nameColor || "#E5E6E8");
-    editType.value = m.type || "Door";
-    editImageSmall.value = m.imageSmall || "";
-    editImageBig.value = m.imageBig || "";
-    editVideoURL.value = m.videoURL || "";
-    updateItemFieldsVisibility();
-    if (m.type === "Item") {
-      predefinedItemDropdown.value = m.predefinedItemId ? m.predefinedItemId : "";
-      editRarity.value = m.rarity ? m.rarity.toLowerCase() : "";
-      pickrRarity.setColor(m.rarityColor || "#E5E6E8");
-      editItemType.value = m.itemType || "Crafting Material";
-      pickrItemType.setColor(m.itemTypeColor || "#E5E6E8");
-      editDescription.value = m.description || "";
-      pickrDescItem.setColor(m.descriptionColor || "#E5E6E8");
-      extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
-      renderExtraLines();
-    } else {
-      nonItemDescription.value = m.description || "";
-      pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
-    }
-  }
-
-  let extraLines = [];
-  document.getElementById("add-extra-line").addEventListener("click", () => {
-    extraLines.push({ text: "", color: "#E5E6E8" });
-    renderExtraLines();
-  });
-  function renderExtraLines() {
-    extraLinesContainer.innerHTML = "";
-    extraLines.forEach((lineObj, idx) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
-      const textInput = document.createElement("input");
-      textInput.type = "text";
-      textInput.value = lineObj.text;
-      textInput.style.background = "#E5E6E8";
-      textInput.style.color = "#000";
-      textInput.addEventListener("input", () => {
-        extraLines[idx].text = textInput.value;
-      });
-      const colorDiv = document.createElement("div");
-      colorDiv.className = "color-btn";
-      colorDiv.style.marginLeft = "5px";
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.textContent = "x";
-      removeBtn.style.marginLeft = "5px";
-      removeBtn.addEventListener("click", () => {
-        extraLines.splice(idx, 1);
-        renderExtraLines();
-      });
-      row.appendChild(textInput);
-      row.appendChild(colorDiv);
-      row.appendChild(removeBtn);
-      extraLinesContainer.appendChild(row);
-      const linePickr = Pickr.create({
-        el: colorDiv,
-        theme: 'nano',
-        default: lineObj.color || "#E5E6E8",
-        components: {
-          preview: true,
-          opacity: true,
-          hue: true,
-          interaction: { hex: true, rgba: true, input: true, save: true }
-        }
-      })
-      .on('change', (color) => {
-        extraLines[idx].color = color.toHEXA().toString();
-      })
-      .on('save', (color, pickr) => {
-        pickr.hide();
-      });
-      linePickr.setColor(lineObj.color || "#E5E6E8");
-    });
-  }
-  document.getElementById("edit-cancel").addEventListener("click", () => {
-    editModal.style.display = "none";
-    currentEditMarker = null;
-    extraLines = [];
-  });
-  editForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (!currentEditMarker) return;
-    const data = currentEditMarker.data;
-    data.name = editName.value;
-    data.nameColor = pickrName.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-    data.type = editType.value;
-    data.imageSmall = editImageSmall.value;
-    data.imageBig = editImageBig.value;
-    data.videoURL = editVideoURL.value || "";
-    data.predefinedItemId = predefinedItemDropdown.value || null;
-    if (data.type === "Item") {
-      data.rarity = formatRarity(editRarity.value);
-      data.rarityColor = pickrRarity.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      data.itemType = editItemType.value;
-      data.itemTypeColor = pickrItemType.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      data.description = editDescription.value;
-      data.descriptionColor = pickrDescItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      data.extraLines = JSON.parse(JSON.stringify(extraLines));
-    } else {
-      data.description = nonItemDescription.value;
-      data.descriptionColor = pickrDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      delete data.rarity;
-      delete data.rarityColor;
-      delete data.itemType;
-      delete data.itemTypeColor;
-      delete data.extraLines;
-    }
-    currentEditMarker.markerObj.setPopupContent(createPopupContent(data));
-    firebaseUpdateMarker(db, data);
-    editModal.style.display = "none";
-    extraLines = [];
-    currentEditMarker = null;
   });
 
   // ------------------------------
-  // Predefined Item Dropdown Population
+  // Function to populate predefined items dropdown (for marker creation)
   // ------------------------------
   async function populatePredefinedItemsDropdown() {
     try {
@@ -353,199 +201,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ------------------------------
-  // Manage Item Definitions Modal Functionality
+  // Initialize the Item Definitions modal UI
   // ------------------------------
-  manageItemDefinitionsBtn.addEventListener("click", async () => {
-    itemDefinitionsModal.style.display = "block";
-    await loadAndRenderItemDefinitions();
-    // Set form heading to "Add Item" initially
-    defFormHeading.innerText = "Add Item";
-    defFormSubheading.innerText = "Add Item";
-    if (!window.pickrDefName) {
-      window.pickrDefName = createPicker('#pickr-def-name');
-      window.pickrDefType = createPicker('#pickr-def-type');
-      window.pickrDefRarity = createPicker('#pickr-def-rarity');
-      window.pickrDefDescription = createPicker('#pickr-def-description');
-    }
-  });
-  closeItemDefinitionsBtn.addEventListener("click", () => {
-    itemDefinitionsModal.style.display = "none";
-  });
-  window.addEventListener("click", (event) => {
-    if (event.target === itemDefinitionsModal) {
-      itemDefinitionsModal.style.display = "none";
-    }
-  });
-
-  let extraDefLines = [];
-  addDefExtraLineBtn.addEventListener("click", () => {
-    extraDefLines.push({ text: "", color: "#E5E6E8" });
-    renderDefExtraLines();
-  });
-  function renderDefExtraLines() {
-    defExtraLinesContainer.innerHTML = "";
-    extraDefLines.forEach((lineObj, idx) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
-      const textInput = document.createElement("input");
-      textInput.type = "text";
-      textInput.value = lineObj.text;
-      textInput.style.background = "#E5E6E8";
-      textInput.style.color = "#000";
-      textInput.addEventListener("input", () => {
-        extraDefLines[idx].text = textInput.value;
-      });
-      const colorDiv = document.createElement("div");
-      colorDiv.className = "color-btn";
-      colorDiv.style.marginLeft = "5px";
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.textContent = "x";
-      removeBtn.style.marginLeft = "5px";
-      removeBtn.addEventListener("click", () => {
-        extraDefLines.splice(idx, 1);
-        renderDefExtraLines();
-      });
-      row.appendChild(textInput);
-      row.appendChild(colorDiv);
-      row.appendChild(removeBtn);
-      defExtraLinesContainer.appendChild(row);
-      const linePickr = Pickr.create({
-        el: colorDiv,
-        theme: 'nano',
-        default: lineObj.color || "#E5E6E8",
-        components: {
-          preview: true,
-          opacity: true,
-          hue: true,
-          interaction: { hex: true, rgba: true, input: true, save: true }
-        }
-      })
-      .on('change', (color) => {
-        extraDefLines[idx].color = color.toHEXA().toString();
-      })
-      .on('save', (color, pickr) => {
-        pickr.hide();
-      });
-      linePickr.setColor(lineObj.color || "#E5E6E8");
-    });
-  }
-
-  async function loadAndRenderItemDefinitions() {
-    try {
-      const definitions = await loadItemDefinitions(db);
-      itemDefinitionsList.innerHTML = "";
-      definitions.forEach(def => {
-        const defDiv = document.createElement("div");
-        defDiv.className = "item-def-entry";
-        defDiv.style.borderBottom = "1px solid #555";
-        defDiv.style.padding = "5px 0";
-        defDiv.innerHTML = `
-          <span class="def-name"><strong>${def.name}</strong></span> 
-          (<span class="def-type">${def.itemType || def.type}</span>) - 
-          <span class="def-rarity">${def.rarity || ""}</span>
-          <br/><em class="def-description">${def.description || ""}</em>
-          <br/>
-          <button data-edit="${def.id}">Edit</button>
-          <button data-delete="${def.id}">Delete</button>
-        `;
-        itemDefinitionsList.appendChild(defDiv);
-
-        defDiv.querySelector("[data-edit]").addEventListener("click", () => {
-          defName.value = def.name;
-          defType.value = def.type;
-          defRarity.value = def.rarity || "";
-          defDescription.value = def.description || "";
-          defImageSmall.value = def.imageSmall || "";
-          defImageBig.value = def.imageBig || "";
-          extraDefLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
-          renderDefExtraLines();
-          defName.dataset.editId = def.id;
-          if (window.pickrDefName) {
-            window.pickrDefName.setColor(def.nameColor || "#E5E6E8");
-          }
-          if (window.pickrDefType) {
-            window.pickrDefType.setColor(def.itemTypeColor || "#E5E6E8");
-          }
-          if (window.pickrDefRarity) {
-            window.pickrDefRarity.setColor(def.rarityColor || "#E5E6E8");
-          }
-          if (window.pickrDefDescription) {
-            window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
-          }
-          // Update the form heading to reflect Edit mode.
-          defFormHeading.innerText = "Edit Item";
-          defFormSubheading.innerText = "Edit Item";
-        });
-        defDiv.querySelector("[data-delete]").addEventListener("click", async () => {
-          if (confirm("Are you sure you want to delete this item definition?")) {
-            await deleteItemDefinition(db, def.id);
-            loadAndRenderItemDefinitions();
-            if (editType.value === "Item") {
-              populatePredefinedItemsDropdown();
-            }
-          }
-        });
-      });
-    } catch (err) {
-      console.error("Error rendering item definitions:", err);
-    }
-  }
-
-  // Updated item definition form submission: reset form, extra info, and Pickr controls.
-  itemDefinitionForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const defData = {
-      name: defName.value,
-      type: defType.value,
-      rarity: defRarity.value,
-      description: defDescription.value,
-      imageSmall: defImageSmall.value,
-      imageBig: defImageBig.value,
-      extraLines: JSON.parse(JSON.stringify(extraDefLines)),
-      nameColor: window.pickrDefName ? window.pickrDefName.getColor()?.toHEXA()?.toString() : "#E5E6E8",
-      itemTypeColor: window.pickrDefType ? window.pickrDefType.getColor()?.toHEXA()?.toString() : "#E5E6E8",
-      rarityColor: window.pickrDefRarity ? window.pickrDefRarity.getColor()?.toHEXA()?.toString() : "#E5E6E8",
-      descriptionColor: window.pickrDefDescription ? window.pickrDefDescription.getColor()?.toHEXA()?.toString() : "#E5E6E8"
-    };
-    if (defName.dataset.editId) {
-      defData.id = defName.dataset.editId;
-      await updateItemDefinition(db, defData);
-      delete defName.dataset.editId;
-    } else {
-      await addItemDefinition(db, defData);
-    }
-    itemDefinitionForm.reset();
-    extraDefLines = [];
-    defExtraLinesContainer.innerHTML = "";
-    if (window.pickrDefName) { window.pickrDefName.setColor("#E5E6E8"); }
-    if (window.pickrDefType) { window.pickrDefType.setColor("#E5E6E8"); }
-    if (window.pickrDefRarity) { window.pickrDefRarity.setColor("#E5E6E8"); }
-    if (window.pickrDefDescription) { window.pickrDefDescription.setColor("#E5E6E8"); }
-    loadAndRenderItemDefinitions();
-    if (editType.value === "Item") {
-      populatePredefinedItemsDropdown();
-    }
-    // Update the form heading back to "Add Item" after saving.
-    defFormHeading.innerText = "Add Item";
-    defFormSubheading.innerText = "Add Item";
-  });
-
-  // Setup cancel button for definitions form.
-  if (defCancelBtn) {
-    defCancelBtn.addEventListener("click", () => {
-      itemDefinitionForm.reset();
-      extraDefLines = [];
-      defExtraLinesContainer.innerHTML = "";
-      if (window.pickrDefName) { window.pickrDefName.setColor("#E5E6E8"); }
-      if (window.pickrDefType) { window.pickrDefType.setColor("#E5E6E8"); }
-      if (window.pickrDefRarity) { window.pickrDefRarity.setColor("#E5E6E8"); }
-      if (window.pickrDefDescription) { window.pickrDefDescription.setColor("#E5E6E8"); }
-      defFormHeading.innerText = "Add Item";
-      defFormSubheading.innerText = "Add Item";
-    });
-  }
+  initItemDefinitionsUI(db);
 
   // ------------------------------
   // Marker Creation and Management
@@ -608,10 +266,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         text: "Create New Marker",
         action: () => {
           currentEditMarker = null;
-          // Set default values for creation form.
           editName.value = "";
           pickrName.setColor("#E5E6E8");
-          editType.value = "Item"; // Default to Item; user can change.
+          editType.value = "Item";
           editImageSmall.value = "";
           editImageBig.value = "";
           editVideoURL.value = "";
@@ -623,7 +280,8 @@ document.addEventListener("DOMContentLoaded", async () => {
           pickrDescItem.setColor("#E5E6E8");
           extraLines = [];
           renderExtraLines();
-          updateItemFieldsVisibility();
+          updateItemFieldsVisibility
+();
           positionModal(editModal, evt.originalEvent);
           editModal.style.display = "block";
           editForm.onsubmit = (e2) => {
@@ -665,13 +323,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     ]);
   });
-  function setEditModalPosition(ev) {
-    editModal.style.display = "block";
-    const modalWidth = editModal.offsetWidth;
-    const modalHeight = editModal.offsetHeight;
-    editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
-    editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
-  }
+
   map.on("click", (evt) => {
     if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
@@ -687,6 +339,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       firebaseAddMarker(db, newMarkerData);
     }
   });
+
   searchBar.addEventListener("input", function() {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
@@ -700,85 +353,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   });
+
   sidebarToggle.addEventListener("click", () => {
     sidebar.classList.toggle("hidden");
     document.getElementById("map").style.marginLeft = sidebar.classList.contains("hidden") ? "0" : "300px";
     map.invalidateSize();
   });
-
-  // ------------------------------
-  // Definitions List Search Functionality & Filter Buttons
-  // ------------------------------
-  // Default filter settings: all off by default
-  const filterSettings = {
-    name: false,
-    type: false,
-    rarity: false
-  };
-
-  function updateFilterButtonAppearance(button, active) {
-    if (active) {
-      button.classList.add("toggled");
-    } else {
-      button.classList.remove("toggled");
-    }
-  }
-  // Initialize filter buttons appearance (all off)
-  updateFilterButtonAppearance(filterNameBtn, filterSettings.name);
-  updateFilterButtonAppearance(filterTypeBtn, filterSettings.type);
-  updateFilterButtonAppearance(filterRarityBtn, filterSettings.rarity);
-
-  filterNameBtn.addEventListener("click", () => {
-    filterSettings.name = !filterSettings.name;
-    updateFilterButtonAppearance(filterNameBtn, filterSettings.name);
-    filterDefinitions();
-  });
-  filterTypeBtn.addEventListener("click", () => {
-    filterSettings.type = !filterSettings.type;
-    updateFilterButtonAppearance(filterTypeBtn, filterSettings.type);
-    filterDefinitions();
-  });
-  filterRarityBtn.addEventListener("click", () => {
-    filterSettings.rarity = !filterSettings.rarity;
-    updateFilterButtonAppearance(filterRarityBtn, filterSettings.rarity);
-    filterDefinitions();
-  });
-
-  function filterDefinitions() {
-    const query = defSearch.value.toLowerCase();
-    Array.from(itemDefinitionsList.children).forEach(entry => {
-      const nameText = entry.querySelector('.def-name') ? entry.querySelector('.def-name').innerText.toLowerCase() : "";
-      const typeText = entry.querySelector('.def-type') ? entry.querySelector('.def-type').innerText.toLowerCase() : "";
-      const rarityText = entry.querySelector('.def-rarity') ? entry.querySelector('.def-rarity').innerText.toLowerCase() : "";
-      let match = false;
-      if (!filterSettings.name && !filterSettings.type && !filterSettings.rarity) {
-        match = true;
-      } else {
-        if (filterSettings.name && nameText.includes(query)) match = true;
-        if (filterSettings.type && typeText.includes(query)) match = true;
-        if (filterSettings.rarity && rarityText.includes(query)) match = true;
-      }
-      entry.style.display = match ? "" : "none";
-    });
-  }
-  if (defSearch) {
-    defSearch.addEventListener("input", filterDefinitions);
-  }
-
-  // ------------------------------
-  // Definitions Form Cancel Functionality
-  // ------------------------------
-  if (defCancelBtn) {
-    defCancelBtn.addEventListener("click", () => {
-      itemDefinitionForm.reset();
-      extraDefLines = [];
-      defExtraLinesContainer.innerHTML = "";
-      if (window.pickrDefName) { window.pickrDefName.setColor("#E5E6E8"); }
-      if (window.pickrDefType) { window.pickrDefType.setColor("#E5E6E8"); }
-      if (window.pickrDefRarity) { window.pickrDefRarity.setColor("#E5E6E8"); }
-      if (window.pickrDefDescription) { window.pickrDefDescription.setColor("#E5E6E8"); }
-      defFormHeading.innerText = "Add Item";
-      defFormSubheading.innerText = "Add Item";
-    });
-  }
 });
