@@ -3,20 +3,20 @@
 
 import L from 'leaflet';
 import 'leaflet.markercluster';
-import { db } from './firebase.js';
-import { logError } from './errorLogger.js';
-import { createPopupContent } from "./markerUtils.js"; // Import popup builder from markerUtils.js
+import { db } from "./firebase.js";
+import { logError } from "./errorLogger.js";
+import { createPopupContent } from "./markerUtils.js"; // Import popup builder
 
 // Global variables
 let map;
-export const allMarkers = []; // Array to hold markers' instances and data
+export const allMarkers = []; // Array for markers' instances and data
 
-// Define layer groups for each marker type (ensure these keys match your marker data, e.g., "Item" vs. "items").
+// Define layer groups (keys should match marker data, e.g., "Item" not "items")
 export const layers = {
   "Door": L.layerGroup(),
   "Extraction Portal": L.layerGroup(),
   "Item": L.markerClusterGroup(),
-  "Teleport": L.layerGroup(),
+  "Teleport": L.layerGroup()
 };
 
 // Function: Initialize the map and add layers
@@ -25,13 +25,13 @@ export function initMap() {
     crs: L.CRS.Simple,
     minZoom: -2,
     maxZoom: 4,
-    zoomControl: false,
+    zoomControl: false
   });
   L.control.zoom({ position: "topright" }).addTo(map);
 
   // Map bounds and overlay image
   const bounds = [[0, 0], [3000, 3000]];
-  const imageUrl = "./media/images/tempmap.png"; // Ensure this path is correct relative to dist/
+  const imageUrl = "./media/images/tempmap.png"; // Ensure this path is correct relative to index.html
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
 
@@ -54,13 +54,13 @@ export function createCustomMarker(markerData) {
       className: "custom-marker-container",
       iconSize: [32, 32],
     }),
-    draggable: false,
+    draggable: false
   });
 
   // Bind popup using the utility from markerUtils.js.
   marker.bindPopup(createPopupContent(markerData), {
     className: "custom-popup-wrapper",
-    maxWidth: 350,
+    maxWidth: 350
   });
 
   // Store marker along with its data.
@@ -68,7 +68,7 @@ export function createCustomMarker(markerData) {
   return marker;
 }
 
-// Function: Load markers from Firestore; fallback to local JSON if needed.
+// Function: Load markers from Firestore; fallback omitted since you use Firestore.
 export function loadMarkers() {
   db.collection("markers")
     .get()
@@ -87,29 +87,10 @@ export function loadMarkers() {
     })
     .catch(err => {
       logError("Error loading markers from Firestore:", err);
-      // Fallback to a local JSON file (if desired). Since you’re using Firestore, you may remove this:
-      // fetch("./data/markerData.json")
-      //   .then(resp => {
-      //     if (!resp.ok) throw new Error("Network response was not ok");
-      //     return resp.json();
-      //   })
-      //   .then(jsonData => {
-      //     jsonData.forEach(m => {
-      //       if (!m.type || !layers[m.type]) {
-      //         logError("Invalid marker type in fallback JSON:", new Error(`Type: ${m.type}`));
-      //         return;
-      //       }
-      //       const marker = createCustomMarker(m);
-      //       layers[m.type].addLayer(marker);
-      //     });
-      //   })
-      //   .catch(err2 => {
-      //     logError("Error loading markers from local JSON:", err2);
-      //   });
     });
 }
 
-// Export a helper to get the map instance if needed elsewhere.
+// Export helper to retrieve the map instance.
 export function getMap() {
   return map;
 }

@@ -1,26 +1,24 @@
 // ui.js
-// This module handles UI interactions such as context menu display, edit modal positioning, and copy/paste mode.
+// Handles UI interactions: context menu, edit modal positioning, and copy/paste mode.
 
 import { getMap } from "./mapSetup.js";
 import { logError } from "./errorLogger.js";
 
-// Retrieve DOM elements—if any are missing, log an error.
+// Retrieve key DOM elements with checks.
 const editModal = document.getElementById("edit-modal");
 if (!editModal) {
-  logError("Missing DOM element: edit-modal", new Error("The element with id 'edit-modal' was not found."));
+  logError("Missing DOM element: edit-modal", new Error("Element with id 'edit-modal' not found."));
 }
-
 const editModalHandle = document.getElementById("edit-modal-handle");
 if (!editModalHandle) {
-  logError("Missing DOM element: edit-modal-handle", new Error("The element with id 'edit-modal-handle' was not found."));
+  logError("Missing DOM element: edit-modal-handle", new Error("Element with id 'edit-modal-handle' not found."));
 }
-
 const pasteTooltip = document.getElementById("paste-tooltip");
 if (!pasteTooltip) {
-  logError("Missing DOM element: paste-tooltip", new Error("The element with id 'paste-tooltip' was not found."));
+  logError("Missing DOM element: paste-tooltip", new Error("Element with id 'paste-tooltip' not found."));
 }
 
-// Create the context menu element dynamically.
+// Create the context menu element.
 const contextMenu = document.createElement("div");
 contextMenu.id = "context-menu";
 document.body.appendChild(contextMenu);
@@ -37,7 +35,7 @@ Object.assign(contextMenu.style, {
 
 /**
  * Shows the context menu at (x, y) with the provided options.
- * Each option should have a text property and an action function.
+ * Each option must have a text property and an action function.
  */
 export function showContextMenu(x, y, options) {
   try {
@@ -65,37 +63,12 @@ export function showContextMenu(x, y, options) {
     logError("Error showing context menu:", err);
   }
 }
-
 document.addEventListener("click", () => {
   contextMenu.style.display = "none";
-  // Cancel copy mode if active.
   cancelCopyMode();
 });
 
-// ---------------------------
-// Edit Modal Positioning and Behavior
-/**
- * Positions the edit modal so that its right edge is 10px to the right of the cursor,
- * and the modal is vertically centered on the cursor.
- * @param {MouseEvent} ev - The triggering event.
- */
-export function setEditModalPosition(ev) {
-  try {
-    if (!editModal) return; // Guard if missing.
-    // Temporarily display the modal to measure its dimensions.
-    editModal.style.display = "block";
-    const modalWidth = editModal.offsetWidth;
-    const modalHeight = editModal.offsetHeight;
-    // Set left so that modal.right = ev.pageX + 10 (thus modal.left = ev.pageX - modalWidth + 10).
-    editModal.style.left = `${ev.pageX - modalWidth + 10}px`;
-    // Set top so that the modal is vertically centered relative to ev.pageY.
-    editModal.style.top = `${ev.pageY - (modalHeight / 2)}px`;
-  } catch (err) {
-    logError("Error positioning edit modal:", err);
-  }
-}
-
-// Draggable Edit Modal Logic
+// Edit Modal Positioning and Draggable Logic
 let isDragging = false, modalOffsetX = 0, modalOffsetY = 0;
 if (editModalHandle) {
   editModalHandle.addEventListener("mousedown", e => {
@@ -110,7 +83,6 @@ if (editModalHandle) {
     }
   });
 }
-
 document.addEventListener("mousemove", e => {
   if (isDragging) {
     try {
@@ -121,18 +93,34 @@ document.addEventListener("mousemove", e => {
     }
   }
 });
-
 document.addEventListener("mouseup", () => {
   isDragging = false;
 });
 
-// ---------------------------
+/**
+ * Positions the edit modal so its right edge is 10px to the right of the cursor,
+ * and vertically centers it around the cursor.
+ * @param {MouseEvent} ev - The triggering event.
+ */
+export function setEditModalPosition(ev) {
+  try {
+    if (!editModal) return;
+    editModal.style.display = "block";
+    const modalWidth = editModal.offsetWidth;
+    const modalHeight = editModal.offsetHeight;
+    editModal.style.left = `${ev.pageX - modalWidth + 10}px`;
+    editModal.style.top = `${ev.pageY - (modalHeight / 2)}px`;
+  } catch (err) {
+    logError("Error positioning edit modal:", err);
+  }
+}
+
 // Copy Marker (Paste Mode) Logic
 let copiedMarkerData = null;
 
 /**
- * Enters copy (paste) mode by storing a deep copy of the marker data.
- * @param {Object} markerData - The data of the marker to copy.
+ * Enters copy (paste) mode by deep copying marker data.
+ * @param {Object} markerData - Marker data to copy.
  */
 export function enterCopyMode(markerData) {
   try {
@@ -155,24 +143,20 @@ export function cancelCopyMode() {
   }
 }
 
-// ---------------------------
 // UI Initialization
 export function initUI() {
   try {
-    // Retrieve the map instance now, after initMap() has been called.
     const map = getMap();
     if (!map) {
       throw new Error("Map is not initialized.");
     }
-
-    // Attach event listener for copy/paste mode on the map.
+    // Attach event listener for paste mode on the map.
     map.on("click", ev => {
       try {
         if (copiedMarkerData) {
           const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
           newMarkerData.coords = [ev.latlng.lat, ev.latlng.lng];
           newMarkerData.name = newMarkerData.name + " (copy)";
-          // Dispatch a custom event so that the main module or marker handling can create the new marker.
           const event = new CustomEvent("pasteMarker", { detail: newMarkerData });
           document.dispatchEvent(event);
           if (pasteTooltip) {

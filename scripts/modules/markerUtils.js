@@ -1,13 +1,10 @@
 // markerUtils.js
-// This module contains utility functions for markers, such as creating custom icons,
-// building popup content, and formatting marker data (e.g., rarity formatting).
+// Utility functions for markers: formatting rarity, creating icons, building popup content.
 
 /**
- * Formats a rarity string so that the first letter is uppercase
- * and the rest are lowercase.
- *
- * @param {string} val - The rarity value (e.g., "epic").
- * @returns {string} - The formatted rarity (e.g., "Epic").
+ * Formats a rarity string so that its first letter is uppercase.
+ * @param {string} val - E.g., "epic"
+ * @returns {string} - E.g., "Epic"
  */
 export function formatRarity(val) {
   if (!val) return "";
@@ -15,10 +12,9 @@ export function formatRarity(val) {
 }
 
 /**
- * Creates a custom Leaflet icon for the marker using a small image.
- *
- * @param {Object} m - Marker data, expected to have at least an "imageSmall" property.
- * @returns {L.DivIcon} - A Leaflet divIcon for the marker.
+ * Creates a custom Leaflet icon using a small image.
+ * @param {Object} m - Marker data (expects an "imageSmall" property)
+ * @returns {L.DivIcon} - The Leaflet divIcon for the marker.
  */
 export function createCustomIcon(m) {
   return L.divIcon({
@@ -35,16 +31,15 @@ export function createCustomIcon(m) {
 
 /**
  * Builds the popup content HTML string for a marker.
- *
- * @param {Object} m - Marker data containing properties such as name, type, description, etc.
- * @returns {string} - The HTML string for the marker popup.
+ * @param {Object} m - Marker data (name, type, description, etc.)
+ * @returns {string} - The HTML for the marker popup.
  */
 export function createPopupContent(m) {
   let itemTypeHTML = "";
   let rarityHTML = "";
   let descHTML = "";
   let extraHTML = "";
-  
+
   if (m.type === "Item") {
     if (m.itemType) {
       itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor || "#E5E6E8"}; margin:2px 0;">${m.itemType}</div>`;
@@ -65,7 +60,7 @@ export function createPopupContent(m) {
       descHTML = `<p style="margin:5px 0; color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`;
     }
   }
-  
+
   const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">${m.name}</h3>`;
   const scaledImg = m.imageBig 
     ? `<img src="${m.imageBig}" style="width:64px;height:64px;object-fit:contain;border:2px solid #777;border-radius:4px;" />`
@@ -74,7 +69,7 @@ export function createPopupContent(m) {
   if (m.videoURL) {
     videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
   }
-  
+
   return `
     <div class="custom-popup">
       <div class="popup-header" style="display:flex; gap:5px;">
