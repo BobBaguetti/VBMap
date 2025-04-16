@@ -7,7 +7,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const searchBar = document.getElementById("search-bar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebar = document.getElementById("sidebar");
-  const pasteTooltip = document.getElementById("paste-tooltip");
   const editModal = document.getElementById("edit-modal");
   const editModalHandle = document.getElementById("edit-modal-handle");
   const editForm = document.getElementById("edit-form");
@@ -74,21 +73,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let copiedMarkerData = null;
   let pasteMode = false;
 
-  // Set up paste tooltip styling (no background; text with shadow)
-  pasteTooltip.style.background = "transparent";
-  pasteTooltip.style.border = "none";
-  pasteTooltip.style.padding = "0";
-  pasteTooltip.style.fontSize = "14px";
-  pasteTooltip.style.color = "#fff";
-  pasteTooltip.style.textShadow = "1px 1px 2px rgba(0,0,0,0.7)";
-  pasteTooltip.style.pointerEvents = "none";
-  pasteTooltip.style.position = "absolute";
-
   // Function to cancel paste mode manually.
   function cancelPasteMode() {
     pasteMode = false;
     copiedMarkerData = null;
-    pasteTooltip.style.display = "none";
   }
 
   // --------------------------------------
@@ -161,11 +149,6 @@ document.addEventListener("DOMContentLoaded", () => {
       editModal.style.left = (e.clientX - modalOffsetX) + "px";
       editModal.style.top = (e.clientY - modalOffsetY) + "px";
     }
-    // If paste mode is active, update tooltip position to follow the cursor.
-    if (pasteMode) {
-      pasteTooltip.style.left = (e.pageX + 15) + "px";
-      pasteTooltip.style.top = (e.pageY + 15) + "px";
-    }
   });
   document.addEventListener("mouseup", () => { isDragging = false; });
 
@@ -198,11 +181,11 @@ document.addEventListener("DOMContentLoaded", () => {
       el: selector,
       theme: 'nano',
       default: '#E5E6E8',
-      components: { 
-        preview: true, 
-        opacity: true, 
-        hue: true, 
-        interaction: { hex: true, rgba: true, input: true, save: true } 
+      components: {
+        preview: true,
+        opacity: true,
+        hue: true,
+        interaction: { hex: true, rgba: true, input: true, save: true }
       }
     }).on('save', (color, pickr) => {
       pickr.hide();
@@ -224,7 +207,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "legendary": "#f39c12"
   };
 
-  editRarity.addEventListener("change", function() {
+  editRarity.addEventListener("change", function () {
     if (defaultRarityColors[this.value]) {
       pickrRarity.setColor(defaultRarityColors[this.value]);
     }
@@ -325,12 +308,12 @@ document.addEventListener("DOMContentLoaded", () => {
           interaction: { hex: true, rgba: true, input: true, save: true }
         }
       })
-      .on('change', (color) => {
-        extraLines[idx].color = color.toHEXA().toString();
-      })
-      .on('save', (color, pickr) => {
-        pickr.hide();
-      });
+        .on('change', (color) => {
+          extraLines[idx].color = color.toHEXA().toString();
+        })
+        .on('save', (color, pickr) => {
+          pickr.hide();
+        });
       linePickr.setColor(lineObj.color || "#E5E6E8");
     });
   }
@@ -385,7 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!val) return "";
     return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
   }
-  
+
   // --------------------------------------
   // Marker Creation & Popups
   // --------------------------------------
@@ -430,7 +413,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">${m.name}</h3>`;
-    const scaledImg = m.imageBig 
+    const scaledImg = m.imageBig
       ? `<img src="${m.imageBig}" style="width:64px; height:64px; object-fit:contain; border:2px solid #777; border-radius:4px;" />`
       : "";
     let videoBtn = "";
@@ -457,7 +440,7 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>
     `;
   }
-  
+
   function addMarker(m) {
     const markerObj = L.marker([m.coords[0], m.coords[1]], {
       icon: createCustomIcon(m),
@@ -471,7 +454,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     layers[m.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: m });
-  
+
     // Right-click on marker: show context menu.
     markerObj.on("contextmenu", (evt) => {
       evt.originalEvent.preventDefault();
@@ -488,12 +471,10 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text: "Copy Marker",
           action: () => {
-            // Store marker data, remove id so that new copies are created, and activate paste mode.
+            // Store marker data, remove id so new copies are created, and activate paste mode.
             copiedMarkerData = JSON.parse(JSON.stringify(m));
             delete copiedMarkerData.id;
             pasteMode = true;
-            pasteTooltip.style.display = "block";
-            pasteTooltip.innerText = "Paste Mode Active";
           }
         },
         {
@@ -528,7 +509,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return markerObj;
   }
-  
+
   // --------------------------------------
   // Firestore: Save and Delete Functions
   // --------------------------------------
@@ -546,13 +527,13 @@ document.addEventListener("DOMContentLoaded", () => {
         .catch(console.error);
     }
   }
-  
+
   function deleteMarkerInFirestore(id) {
     db.collection("markers").doc(id).delete()
       .then(() => { console.log("Deleted marker:", id); })
       .catch(console.error);
   }
-  
+
   // --------------------------------------
   // Load Markers from Firestore
   // --------------------------------------
@@ -591,7 +572,7 @@ document.addEventListener("DOMContentLoaded", () => {
       });
   }
   loadMarkers();
-  
+
   // --------------------------------------
   // Map Right-click (Context Menu for New Marker)
   // --------------------------------------
@@ -619,7 +600,7 @@ document.addEventListener("DOMContentLoaded", () => {
           nonItemDescription.style.display = "none";
           setEditModalPosition(evt.originalEvent);
           editModal.style.display = "block";
-  
+
           editForm.onsubmit = (e2) => {
             e2.preventDefault();
             const newMarker = {
@@ -664,10 +645,11 @@ document.addEventListener("DOMContentLoaded", () => {
     editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
     editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
   }
-  
+
   // --------------------------------------
   // Copy-Paste (Marker Duplication) Logic
   // --------------------------------------
+  // When in paste mode, allow repeated pasting.
   map.on("click", (evt) => {
     if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
@@ -677,14 +659,14 @@ document.addEventListener("DOMContentLoaded", () => {
       newMarkerData.name = newMarkerData.name + " (copy)";
       addMarker(newMarkerData);
       updateMarkerInFirestore(newMarkerData);
-      // (Paste mode remains active until explicitly canceled by a right-click.)
+      // Paste mode remains active until explicitly canceled.
     }
   });
-  
+
   // --------------------------------------
   // Search Functionality
   // --------------------------------------
-  searchBar.addEventListener("input", function() {
+  searchBar.addEventListener("input", function () {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
       const markerName = item.data.name.toLowerCase();
@@ -697,7 +679,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     });
   });
-  
+
   // --------------------------------------
   // Sidebar Toggle Functionality
   // --------------------------------------
