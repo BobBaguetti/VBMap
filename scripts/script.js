@@ -1,20 +1,8 @@
+// Import Firebase Firestore instance from the modules folder.
+import { db } from "./modules/firebase.js";
+
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Script loaded!");
-
-  // ------------------------------
-  // Firebase Firestore Initialization
-  // ------------------------------
-  const firebaseConfig = {
-    apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
-    authDomain: "vbmap-cc834.firebaseapp.com",
-    projectId: "vbmap-cc834",
-    storageBucket: "vbmap-cc834.firebasestorage.app",
-    messagingSenderId: "244112699360",
-    appId: "1:244112699360:web:95f50adb6e10b438238585",
-    measurementId: "G-7FDNWLRM95"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
 
   // ------------------------------
   // Map Setup
@@ -339,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!val) return "";
     return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
   }
-  
+
   // ------------------------------
   // Marker Creation & Popups
   // ------------------------------
@@ -435,7 +423,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text: "Copy Marker",
           action: () => {
-            // Store marker data, remove id so new copies are created, activate paste mode.
+            // Store marker data, remove id so new markers are created, activate paste mode.
             copiedMarkerData = JSON.parse(JSON.stringify(m));
             delete copiedMarkerData.id;
             pasteMode = true;
@@ -518,7 +506,7 @@ document.addEventListener("DOMContentLoaded", () => {
       })
       .catch(err => {
         console.error("Error loading markers from Firestore:", err);
-        // Optionally, fallback to a local JSON file.
+        // Optionally, fallback to local JSON if necessary.
         fetch("./data/markerData.json")
           .then(resp => { if (!resp.ok) throw new Error("Network response was not ok"); return resp.json(); })
           .then(jsonData => {
