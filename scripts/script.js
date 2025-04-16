@@ -1,9 +1,31 @@
 document.addEventListener("DOMContentLoaded", () => {
   console.log("Script loaded!");
 
-  // ------------------------------
+  // --------------------------------------
+  // DOM Elements That Must Be Queried Early
+  // --------------------------------------
+  const searchBar = document.getElementById("search-bar");
+  const sidebarToggle = document.getElementById("sidebar-toggle");
+  const sidebar = document.getElementById("sidebar");
+  const pasteTooltip = document.getElementById("paste-tooltip");
+  const editModal = document.getElementById("edit-modal");
+  const editModalHandle = document.getElementById("edit-modal-handle");
+  const editForm = document.getElementById("edit-form");
+  const editName = document.getElementById("edit-name");
+  const editType = document.getElementById("edit-type");
+  const editImageSmall = document.getElementById("edit-image-small");
+  const editImageBig = document.getElementById("edit-image-big");
+  const editVideoURL = document.getElementById("edit-video-url");
+  const itemExtraFields = document.getElementById("item-extra-fields");
+  const editRarity = document.getElementById("edit-rarity");
+  const editItemType = document.getElementById("edit-item-type");
+  const editDescription = document.getElementById("edit-description");
+  const nonItemDescription = document.getElementById("edit-description-non-item");
+  const extraLinesContainer = document.getElementById("extra-lines");
+
+  // --------------------------------------
   // Firebase Firestore Initialization
-  // ------------------------------
+  // --------------------------------------
   const firebaseConfig = {
     apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
     authDomain: "vbmap-cc834.firebaseapp.com",
@@ -16,9 +38,9 @@ document.addEventListener("DOMContentLoaded", () => {
   firebase.initializeApp(firebaseConfig);
   const db = firebase.firestore();
 
-  // ------------------------------
+  // --------------------------------------
   // Map Setup
-  // ------------------------------
+  // --------------------------------------
   const map = L.map("map", {
     crs: L.CRS.Simple,
     minZoom: -2,
@@ -31,9 +53,9 @@ document.addEventListener("DOMContentLoaded", () => {
   L.imageOverlay(imageUrl, bounds).addTo(map);
   map.fitBounds(bounds);
 
-  // ------------------------------
+  // --------------------------------------
   // Layers Setup
-  // ------------------------------
+  // --------------------------------------
   let itemLayer = L.markerClusterGroup();
   const layers = {
     "Door": L.layerGroup(),
@@ -46,23 +68,21 @@ document.addEventListener("DOMContentLoaded", () => {
   // Global container for markers
   let allMarkers = [];
 
-  // ------------------------------
+  // --------------------------------------
   // Copy-Paste Mode Variables
-  // ------------------------------
+  // --------------------------------------
   let copiedMarkerData = null;
   let pasteMode = false;
-  const pasteTooltip = document.getElementById("paste-tooltip");
 
-  // Function to cancel paste mode
   function cancelPasteMode() {
     pasteMode = false;
     copiedMarkerData = null;
     pasteTooltip.style.display = "none";
   }
 
-  // ------------------------------
+  // --------------------------------------
   // Context Menu Setup
-  // ------------------------------
+  // --------------------------------------
   const contextMenu = document.createElement("div");
   contextMenu.id = "context-menu";
   document.body.appendChild(contextMenu);
@@ -76,6 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     zIndex: 2000,
     boxShadow: "0px 2px 6px rgba(0,0,0,0.5)"
   });
+
   function showContextMenu(x, y, options) {
     contextMenu.innerHTML = "";
     options.forEach(opt => {
@@ -98,19 +119,19 @@ document.addEventListener("DOMContentLoaded", () => {
     contextMenu.style.top = y + "px";
     contextMenu.style.display = "block";
   }
+
+  // Hide context menu on any left-click
   document.addEventListener("click", () => {
     contextMenu.style.display = "none";
-    // Right-click cancels paste mode if active.
+    // Right-click also triggers here, so if paste mode is active, we exit it.
     if (pasteMode) {
       cancelPasteMode();
     }
   });
 
-  // ------------------------------
+  // --------------------------------------
   // Draggable Edit Modal Setup
-  // ------------------------------
-  const editModal = document.getElementById("edit-modal");
-  const editModalHandle = document.getElementById("edit-modal-handle");
+  // --------------------------------------
   let isDragging = false, modalOffsetX = 0, modalOffsetY = 0;
   if (editModalHandle) {
     editModalHandle.addEventListener("mousedown", (e) => {
@@ -129,16 +150,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
   document.addEventListener("mouseup", () => { isDragging = false; });
 
-  // ------------------------------
+  // --------------------------------------
   // Video Popup Setup
-  // ------------------------------
+  // --------------------------------------
   const videoPopup = document.getElementById("video-popup");
   const videoPlayer = document.getElementById("video-player");
   const videoSource = document.getElementById("video-source");
+
   document.getElementById("video-close").addEventListener("click", () => {
     videoPopup.style.display = "none";
     videoPlayer.pause();
   });
+
   function openVideoPopup(x, y, url) {
     videoSource.src = url;
     videoPlayer.load();
@@ -148,16 +171,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   window.openVideoPopup = openVideoPopup;
 
-  // ------------------------------
+  // --------------------------------------
   // Edit Modal Fields & Color Picker Setup
-  // ------------------------------
-  const editForm = document.getElementById("edit-form");
-  const editName = document.getElementById("edit-name");
-  const editType = document.getElementById("edit-type");
-  const editImageSmall = document.getElementById("edit-image-small");
-  const editImageBig = document.getElementById("edit-image-big");
-  const editVideoURL = document.getElementById("edit-video-url");
-
+  // --------------------------------------
   // Helper to create a Pickr instance.
   function createPicker(selector) {
     return Pickr.create({
@@ -174,22 +190,12 @@ document.addEventListener("DOMContentLoaded", () => {
       pickr.hide();
     });
   }
+
   const pickrName = createPicker('#pickr-name');
-
-  // Item-specific fields:
-  const itemExtraFields = document.getElementById("item-extra-fields");
-  const editRarity = document.getElementById("edit-rarity");
   const pickrRarity = createPicker('#pickr-rarity');
-  const editItemType = document.getElementById("edit-item-type");
   const pickrItemType = createPicker('#pickr-itemtype');
-  const editDescription = document.getElementById("edit-description");
   const pickrDescItem = createPicker('#pickr-desc-item');
-
-  // Non-item description:
-  const nonItemDescription = document.getElementById("edit-description-non-item");
   const pickrDescNonItem = createPicker('#pickr-desc-nonitem');
-
-  let currentEditMarker = null;
 
   // Set default rarity colors.
   const defaultRarityColors = {
@@ -199,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "epic": "#9b59b6",
     "legendary": "#f39c12"
   };
+
   editRarity.addEventListener("change", function() {
     if (defaultRarityColors[this.value]) {
       pickrRarity.setColor(defaultRarityColors[this.value]);
@@ -216,6 +223,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
+  let currentEditMarker = null;
+
   // Populate the edit modal with marker data.
   function populateEditForm(m) {
     editName.value = m.name || "";
@@ -224,6 +233,7 @@ document.addEventListener("DOMContentLoaded", () => {
     editImageSmall.value = m.imageSmall || "";
     editImageBig.value = m.imageBig || "";
     editVideoURL.value = m.videoURL || "";
+
     if (m.type === "Item") {
       itemExtraFields.style.display = "block";
       nonItemDescription.style.display = "none";
@@ -243,30 +253,36 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // ------------------------------
+  // --------------------------------------
   // Extra Info Fields Logic
-  // ------------------------------
+  // --------------------------------------
   let extraLines = [];
-  const extraLinesContainer = document.getElementById("extra-lines");
+
   document.getElementById("add-extra-line").addEventListener("click", () => {
     extraLines.push({ text: "", color: "#E5E6E8" });
     renderExtraLines();
   });
+
   function renderExtraLines() {
     extraLinesContainer.innerHTML = "";
     extraLines.forEach((lineObj, idx) => {
       const row = document.createElement("div");
       row.className = "field-row";
       row.style.marginBottom = "5px";
+
       const textInput = document.createElement("input");
       textInput.type = "text";
       textInput.value = lineObj.text;
       textInput.style.background = "#E5E6E8";
       textInput.style.color = "#000";
-      textInput.addEventListener("input", () => { extraLines[idx].text = textInput.value; });
+      textInput.addEventListener("input", () => {
+        extraLines[idx].text = textInput.value;
+      });
+
       const colorDiv = document.createElement("div");
       colorDiv.className = "color-btn";
       colorDiv.style.marginLeft = "5px";
+
       const removeBtn = document.createElement("button");
       removeBtn.type = "button";
       removeBtn.textContent = "x";
@@ -275,10 +291,12 @@ document.addEventListener("DOMContentLoaded", () => {
         extraLines.splice(idx, 1);
         renderExtraLines();
       });
+
       row.appendChild(textInput);
       row.appendChild(colorDiv);
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
+
       // Create Pickr instance for this extra info field.
       const linePickr = Pickr.create({
         el: colorDiv,
@@ -297,18 +315,20 @@ document.addEventListener("DOMContentLoaded", () => {
       .on('save', (color, pickr) => {
         pickr.hide();
       });
+
       linePickr.setColor(lineObj.color || "#E5E6E8");
     });
   }
 
-  // ------------------------------
+  // --------------------------------------
   // Cancel and Save Edit Modal
-  // ------------------------------
+  // --------------------------------------
   document.getElementById("edit-cancel").addEventListener("click", () => {
     editModal.style.display = "none";
     currentEditMarker = null;
     extraLines = [];
   });
+
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
     if (!currentEditMarker) return;
@@ -319,6 +339,7 @@ document.addEventListener("DOMContentLoaded", () => {
     data.imageSmall = editImageSmall.value;
     data.imageBig = editImageBig.value;
     data.videoURL = editVideoURL.value || "";
+
     if (data.type === "Item") {
       data.rarity = formatRarity(editRarity.value);
       data.rarityColor = pickrRarity.getColor()?.toHEXA()?.toString() || "#E5E6E8";
@@ -336,20 +357,23 @@ document.addEventListener("DOMContentLoaded", () => {
       delete data.itemTypeColor;
       delete data.extraLines;
     }
+
     currentEditMarker.markerObj.setPopupContent(createPopupContent(data));
     updateMarkerInFirestore(data);
+
     editModal.style.display = "none";
     extraLines = [];
     currentEditMarker = null;
   });
+
   function formatRarity(val) {
     if (!val) return "";
     return val.charAt(0).toUpperCase() + val.slice(1).toLowerCase();
   }
   
-  // ------------------------------
+  // --------------------------------------
   // Marker Creation & Popups
-  // ------------------------------
+  // --------------------------------------
   function createCustomIcon(m) {
     return L.divIcon({
       html: `
@@ -362,11 +386,13 @@ document.addEventListener("DOMContentLoaded", () => {
       iconSize: [32, 32]
     });
   }
+
   function createPopupContent(m) {
     let itemTypeHTML = "";
     let rarityHTML = "";
     let descHTML = "";
     let extraHTML = "";
+
     if (m.type === "Item") {
       if (m.itemType) {
         itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor||"#E5E6E8"}; margin:2px 0;">${m.itemType}</div>`;
@@ -387,14 +413,17 @@ document.addEventListener("DOMContentLoaded", () => {
         descHTML = `<p style="margin:5px 0; color:${m.descriptionColor||"#E5E6E8"};">${m.description}</p>`;
       }
     }
+
     const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor||"#E5E6E8"};">${m.name}</h3>`;
     const scaledImg = m.imageBig 
       ? `<img src="${m.imageBig}" style="width:64px; height:64px; object-fit:contain; border:2px solid #777; border-radius:4px;" />`
       : "";
     let videoBtn = "";
+
     if (m.videoURL) {
       videoBtn = `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">Play Video</button>`;
     }
+
     return `
       <div class="custom-popup">
         <div class="popup-header" style="display:flex; gap:5px;">
@@ -419,10 +448,12 @@ document.addEventListener("DOMContentLoaded", () => {
       icon: createCustomIcon(m),
       draggable: false
     });
+
     markerObj.bindPopup(createPopupContent(m), {
       className: "custom-popup-wrapper",
       maxWidth: 350
     });
+
     layers[m.type].addLayer(markerObj);
     allMarkers.push({ markerObj, data: m });
   
@@ -442,7 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text: "Copy Marker",
           action: () => {
-            // Store marker data, remove id so new copies are created, activate paste mode.
+            // Store marker data, remove ID so new copies are created, activate paste mode.
             copiedMarkerData = JSON.parse(JSON.stringify(m));
             delete copiedMarkerData.id;
             pasteMode = true;
@@ -464,27 +495,28 @@ document.addEventListener("DOMContentLoaded", () => {
               });
             }
           }
-        }
-      ];
-      options.push({
-        text: "Delete Marker",
-        action: () => {
-          layers[m.type].removeLayer(markerObj);
-          const idx = allMarkers.findIndex(o => o.data.id === m.id);
-          if (idx !== -1) allMarkers.splice(idx, 1);
-          if (m.id) {
-            deleteMarkerInFirestore(m.id);
+        },
+        {
+          text: "Delete Marker",
+          action: () => {
+            layers[m.type].removeLayer(markerObj);
+            const idx = allMarkers.findIndex(o => o.data.id === m.id);
+            if (idx !== -1) allMarkers.splice(idx, 1);
+            if (m.id) {
+              deleteMarkerInFirestore(m.id);
+            }
           }
         }
-      });
+      ];
       showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
     });
+
     return markerObj;
   }
   
-  // ------------------------------
+  // --------------------------------------
   // Firestore: Save and Delete Functions
-  // ------------------------------
+  // --------------------------------------
   function updateMarkerInFirestore(m) {
     if (m.id) {
       db.collection("markers").doc(m.id).set(m)
@@ -506,9 +538,9 @@ document.addEventListener("DOMContentLoaded", () => {
       .catch(console.error);
   }
   
-  // ------------------------------
-  // Load Markers from Firestore (or fallback to local JSON)
-  // ------------------------------
+  // --------------------------------------
+  // Load Markers from Firestore
+  // --------------------------------------
   function loadMarkers() {
     db.collection("markers").get()
       .then(querySnapshot => {
@@ -519,15 +551,18 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error(`Invalid marker type: ${data.type}`);
             return;
           }
-          if (!data.coords) data.coords = [1500,1500];
+          if (!data.coords) data.coords = [1500, 1500];
           addMarker(data);
         });
       })
       .catch(err => {
         console.error("Error loading markers from Firestore:", err);
-        // Optionally, fallback to a local JSON file.
+        // Optionally, fallback to local JSON if Firestore fails.
         fetch("./data/markerData.json")
-          .then(resp => { if (!resp.ok) throw new Error("Network response was not ok"); return resp.json(); })
+          .then(resp => {
+            if (!resp.ok) throw new Error("Network response was not ok");
+            return resp.json();
+          })
           .then(jsonData => {
             jsonData.forEach(m => {
               if (!m.type || !layers[m.type]) {
@@ -542,9 +577,9 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   loadMarkers();
   
-  // ------------------------------
+  // --------------------------------------
   // Map Right-click (Context Menu for New Marker)
-  // ------------------------------
+  // --------------------------------------
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -603,10 +638,10 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     ]);
   });
-  
-  // ------------------------------
+
+  // --------------------------------------
   // Position Edit Modal Helper
-  // ------------------------------
+  // --------------------------------------
   function setEditModalPosition(ev) {
     editModal.style.display = "block";
     const modalWidth = editModal.offsetWidth;
@@ -615,10 +650,9 @@ document.addEventListener("DOMContentLoaded", () => {
     editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
   }
   
-  // ------------------------------
+  // --------------------------------------
   // Copy-Paste (Marker Duplication) Logic
-  // ------------------------------
-  // Listen for left-click on the map to paste markers if paste mode is active.
+  // --------------------------------------
   map.on("click", (evt) => {
     if (copiedMarkerData) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
@@ -628,21 +662,25 @@ document.addEventListener("DOMContentLoaded", () => {
       newMarkerData.name = newMarkerData.name + " (copy)";
       addMarker(newMarkerData);
       updateMarkerInFirestore(newMarkerData);
-      // Update tooltip position.
+
+      // Update the tooltip position each time user pastes a marker
       pasteTooltip.style.left = `${evt.containerPoint.x + 15}px`;
       pasteTooltip.style.top = `${evt.containerPoint.y + 15}px`;
     }
   });
-  // Right-click anywhere cancels paste mode.
-  document.addEventListener("contextmenu", (ev) => {
+
+  // --------------------------------------
+  // Right-click anywhere cancels paste mode
+  // --------------------------------------
+  document.addEventListener("contextmenu", () => {
     if (copiedMarkerData) {
       cancelPasteMode();
     }
   });
   
-  // ------------------------------
+  // --------------------------------------
   // Search Functionality
-  // ------------------------------
+  // --------------------------------------
   searchBar.addEventListener("input", function() {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
@@ -657,9 +695,9 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   });
   
-  // ------------------------------
+  // --------------------------------------
   // Sidebar Toggle Functionality
-  // ------------------------------
+  // --------------------------------------
   sidebarToggle.addEventListener("click", () => {
     sidebar.classList.toggle("hidden");
     document.getElementById("map").style.marginLeft = sidebar.classList.contains("hidden") ? "0" : "300px";
