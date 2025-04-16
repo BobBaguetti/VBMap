@@ -23,7 +23,6 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
     <div class="sidebar-section">
       <h2><i class="fas fa-layer-group"></i> Layers</h2>
       <div class="toggle-group">
@@ -34,7 +33,6 @@
         <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
       </div>
     </div>
-
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -42,7 +40,6 @@
         Disable Marker Grouping
       </label>
     </div>
-
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
@@ -67,8 +64,7 @@
         <input type="text" id="edit-name" required />
         <div class="color-btn" id="pickr-name"></div>
       </div>
-
-      <!-- Type Field (Alphabetical Order) -->
+      <!-- Type Field -->
       <div class="field-row">
         <label>Type:</label>
         <select id="edit-type">
@@ -78,7 +74,6 @@
           <option value="Teleport">Teleport</option>
         </select>
       </div>
-      
       <!-- Item-specific Fields -->
       <div id="item-extra-fields" style="display:none;">
         <div class="field-row">
@@ -93,7 +88,6 @@
           </select>
           <div class="color-btn" id="pickr-rarity"></div>
         </div>
-
         <div class="field-row">
           <label>Item Type:</label>
           <select id="edit-item-type">
@@ -104,14 +98,11 @@
           </select>
           <div class="color-btn" id="pickr-itemtype"></div>
         </div>
-
         <div class="field-row">
           <label>Description:</label>
           <textarea id="edit-description" rows="2"></textarea>
           <div class="color-btn" id="pickr-desc-item"></div>
         </div>
-
-        <!-- Extra Info -->
         <hr style="border:1px solid #555; margin:10px 0;" />
         <div class="field-row" style="margin-bottom:0;">
           <label>Extra Info:</label>
@@ -120,7 +111,6 @@
         <div id="extra-lines"></div>
         <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
       <!-- Non-Item Description Field -->
       <div id="non-item-description" style="display:none;">
         <div class="field-row">
@@ -130,7 +120,6 @@
         </div>
         <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
       <!-- Image and Video Fields -->
       <div class="field-row">
         <label>Image S:</label>
@@ -144,7 +133,6 @@
         <label>Video:</label>
         <input type="text" id="edit-video-url" />
       </div>
-      
       <!-- Save / Cancel Buttons -->
       <div class="field-row" style="justify-content:center; margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
@@ -152,7 +140,7 @@
       </div>
     </form>
   </div>
-
+  
   <!-- Video Popup -->
   <div id="video-popup">
     <button id="video-close">X</button>
@@ -161,14 +149,15 @@
       Your browser does not support the video tag.
     </video>
   </div>
-
+  
   <!-- Load JS Libraries -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-  <!-- Load our main script (classic script; no "type=module") -->
-  <script src="scripts/script.js"></script>
+  
+  <!-- Load our main script as a module -->
+  <script type="module" src="scripts/script.js"></script>
 </body>
 </html>
