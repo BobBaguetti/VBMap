@@ -1,6 +1,12 @@
 // scripts/script.js
 import { initializeMap } from "./modules/map.js";
-import { makeDraggable, showContextMenu, positionModal, attachContextMenuHider, attachRightClickCancel } from "./modules/uiManager.js";
+import { 
+  makeDraggable, 
+  showContextMenu, 
+  positionModal, 
+  attachContextMenuHider, 
+  attachRightClickCancel 
+} from "./modules/uiManager.js";
 import { 
   initializeFirebase, 
   loadMarkers, 
@@ -8,14 +14,14 @@ import {
   updateMarker as firebaseUpdateMarker, 
   deleteMarker as firebaseDeleteMarker 
 } from "./modules/firebaseService.js";
-import { createCustomIcon, createPopupContent, formatRarity, createMarker } from "./modules/markerManager.js";
+import { createMarker, formatRarity } from "./modules/markerManager.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Script loaded!");
 
-  // --------------------------------------
+  // ------------------------------
   // DOM Elements
-  // --------------------------------------
+  // ------------------------------
   const searchBar = document.getElementById("search-bar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebar = document.getElementById("sidebar");
@@ -34,9 +40,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const nonItemDescription = document.getElementById("edit-description-non-item");
   const extraLinesContainer = document.getElementById("extra-lines");
 
-  // --------------------------------------
+  // ------------------------------
   // Firebase Initialization
-  // --------------------------------------
+  // ------------------------------
   const firebaseConfig = {
     apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
     authDomain: "vbmap-cc834.firebaseapp.com",
@@ -48,14 +54,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
   const db = initializeFirebase(firebaseConfig);
 
-  // --------------------------------------
+  // ------------------------------
   // Map Initialization
-  // --------------------------------------
+  // ------------------------------
   const { map, bounds } = initializeMap();
 
-  // --------------------------------------
+  // ------------------------------
   // Layers Setup
-  // --------------------------------------
+  // ------------------------------
   let itemLayer = L.markerClusterGroup();
   const layers = {
     "Door": L.layerGroup(),
@@ -65,12 +71,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
   Object.values(layers).forEach(layer => layer.addTo(map));
 
-  // In-memory collection of markers
+  // In-memory markers collection
   let allMarkers = [];
 
-  // --------------------------------------
+  // ------------------------------
   // Copy-Paste Mode Variables
-  // --------------------------------------
+  // ------------------------------
   let copiedMarkerData = null;
   let pasteMode = false;
   function cancelPasteMode() {
@@ -80,14 +86,14 @@ document.addEventListener("DOMContentLoaded", async () => {
   attachContextMenuHider();
   attachRightClickCancel(cancelPasteMode);
 
-  // --------------------------------------
+  // ------------------------------
   // Draggable Edit Modal
-  // --------------------------------------
+  // ------------------------------
   makeDraggable(editModal, editModalHandle);
 
-  // --------------------------------------
+  // ------------------------------
   // Video Popup Setup
-  // --------------------------------------
+  // ------------------------------
   const videoPopup = document.getElementById("video-popup");
   const videoPlayer = document.getElementById("video-player");
   const videoSource = document.getElementById("video-source");
@@ -104,17 +110,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   window.openVideoPopup = openVideoPopup;
 
-  // --------------------------------------
+  // ------------------------------
   // Edit Modal Fields & Color Picker Setup
-  // --------------------------------------
+  // ------------------------------
   function createPicker(selector) {
     return Pickr.create({
       el: selector,
       theme: 'nano',
       default: '#E5E6E8',
-      components: { 
-        preview: true, 
-        opacity: true, 
+      components: {
+        preview: true,
+        opacity: true,
         hue: true,
         interaction: { hex: true, rgba: true, input: true, save: true }
       }
@@ -127,6 +133,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pickrItemType = createPicker('#pickr-itemtype');
   const pickrDescItem = createPicker('#pickr-desc-item');
   const pickrDescNonItem = createPicker('#pickr-desc-nonitem');
+
   const defaultRarityColors = {
     "common": "#CCCCCC",
     "uncommon": "#56DE56",
@@ -150,6 +157,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   let currentEditMarker = null;
+
   function populateEditForm(m) {
     editName.value = m.name || "";
     pickrName.setColor(m.nameColor || "#E5E6E8");
@@ -175,6 +183,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
     }
   }
+
   let extraLines = [];
   document.getElementById("add-extra-line").addEventListener("click", () => {
     extraLines.push({ text: "", color: "#E5E6E8" });
@@ -267,15 +276,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     extraLines = [];
     currentEditMarker = null;
   });
-  function createMarkerWrapper(m) {
-    // Wrap marker creation so that we can push marker to in-memory collection.
-    const markerObj = createMarker(m, map, layers, showContextMenu);
+  // Wrapper to create and store marker in in-memory collection.
+  function createMarkerWrapper(m, callbacks) {
+    const markerObj = createMarker(m, map, layers, showContextMenu, callbacks);
     allMarkers.push({ markerObj, data: m });
     return markerObj;
   }
-  function addMarker(m) {
-    return createMarkerWrapper(m);
+  function addMarker(m, callbacks = {}) {
+    return createMarkerWrapper(m, callbacks);
   }
+  // Define callback functions for marker operations.
+  function handleEdit(markerObj, m, evt) {
+    currentEditMarker = { markerObj, data: m };
+    populateEditForm(m);
+    positionModal(editModal, evt);
+    editModal.style.display = "block";
+  }
+  function handleCopy(markerObj, m, evt) {
+    copiedMarkerData = JSON.parse(JSON.stringify(m));
+    delete copiedMarkerData.id;
+    pasteMode = true;
+  }
+  function handleDragEnd(markerObj, m) {
+    firebaseUpdateMarker(db, m);
+  }
+  function handleDelete(markerObj, m) {
+    layers[m.type].removeLayer(markerObj);
+    const idx = allMarkers.findIndex(o => o.data.id === m.id);
+    if (idx !== -1) allMarkers.splice(idx, 1);
+    if (m.id) {
+      firebaseDeleteMarker(db, m.id);
+    }
+  }
+  // Load markers from Firebase and create them with the callbacks.
   async function loadAndDisplayMarkers() {
     try {
       const markers = await loadMarkers(db);
@@ -285,13 +318,20 @@ document.addEventListener("DOMContentLoaded", async () => {
           return;
         }
         if (!m.coords) m.coords = [1500, 1500];
-        addMarker(m);
+        // Create the marker and pass our callbacks.
+        addMarker(m, {
+          onEdit: handleEdit,
+          onCopy: handleCopy,
+          onDragEnd: handleDragEnd,
+          onDelete: handleDelete
+        });
       });
     } catch (err) {
       console.error("Error loading markers:", err);
     }
   }
   loadAndDisplayMarkers();
+  // Right-click on map to show "Create New Marker" context menu.
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -339,7 +379,12 @@ document.addEventListener("DOMContentLoaded", async () => {
               newMarker.description = nonItemDescription.value;
               newMarker.descriptionColor = pickrDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
             }
-            addMarker(newMarker);
+            addMarker(newMarker, {
+              onEdit: handleEdit,
+              onCopy: handleCopy,
+              onDragEnd: handleDragEnd,
+              onDelete: handleDelete
+            });
             firebaseAddMarker(db, newMarker);
             editModal.style.display = "none";
             extraLines = [];
@@ -356,16 +401,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
     editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
   }
+  // Handle paste mode: allow repeated pasting while active.
   map.on("click", (evt) => {
     if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
       delete newMarkerData.id;
       newMarkerData.coords = [evt.latlng.lat, evt.latlng.lng];
       newMarkerData.name = newMarkerData.name + " (copy)";
-      addMarker(newMarkerData);
+      addMarker(newMarkerData, {
+        onEdit: handleEdit,
+        onCopy: handleCopy,
+        onDragEnd: handleDragEnd,
+        onDelete: handleDelete
+      });
       firebaseAddMarker(db, newMarkerData);
     }
   });
+  // Search functionality
   searchBar.addEventListener("input", function() {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
@@ -379,6 +431,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   });
+  // Sidebar toggle functionality
   sidebarToggle.addEventListener("click", () => {
     sidebar.classList.toggle("hidden");
     document.getElementById("map").style.marginLeft = sidebar.classList.contains("hidden") ? "0" : "300px";

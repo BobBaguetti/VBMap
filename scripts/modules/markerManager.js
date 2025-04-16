@@ -89,14 +89,15 @@ export function createCustomIcon(m) {
   }
   
   /**
-   * Creates a new marker on the map and binds related events.
+   * Creates a new marker on the map with bound UI events.
    * @param {Object} m Marker data.
    * @param {L.Map} map Leaflet map instance.
-   * @param {Object} layers An object mapping marker types to their respective layers.
-   * @param {Function} showContextMenu Function to display context menu.
+   * @param {Object} layers Object mapping marker types to their corresponding layer.
+   * @param {Function} contextMenuCallback Function to display a context menu (should accept x, y, and options).
+   * @param {Object} callbacks Callback functions: { onEdit, onCopy, onDragEnd, onDelete }
    * @returns {L.Marker} The created marker.
    */
-  export function createMarker(m, map, layers, showContextMenuCallback) {
+  export function createMarker(m, map, layers, contextMenuCallback, callbacks = {}) {
     const markerObj = L.marker([m.coords[0], m.coords[1]], {
       icon: createCustomIcon(m),
       draggable: false
@@ -107,23 +108,27 @@ export function createCustomIcon(m) {
       maxWidth: 350
     });
   
+    // Add the marker to its appropriate layer.
     layers[m.type].addLayer(markerObj);
   
-    // Bind context menu event
+    // Bind a contextmenu event to display UI options.
     markerObj.on("contextmenu", (evt) => {
       evt.originalEvent.preventDefault();
-      // Build context menu options (the caller can extend or override these)
       const options = [
         {
           text: "Edit Marker",
           action: () => {
-            if (typeof m.onEdit === "function") m.onEdit(markerObj, m);
+            if (typeof callbacks.onEdit === "function") {
+              callbacks.onEdit(markerObj, m, evt.originalEvent);
+            }
           }
         },
         {
           text: "Copy Marker",
           action: () => {
-            if (typeof m.onCopy === "function") m.onCopy(markerObj, m);
+            if (typeof callbacks.onCopy === "function") {
+              callbacks.onCopy(markerObj, m, evt.originalEvent);
+            }
           }
         },
         {
@@ -135,7 +140,9 @@ export function createCustomIcon(m) {
               markerObj.dragging.enable();
               markerObj.on("dragend", () => {
                 m.coords = [markerObj.getLatLng().lat, markerObj.getLatLng().lng];
-                if (typeof m.onDragEnd === "function") m.onDragEnd(markerObj, m);
+                if (typeof callbacks.onDragEnd === "function") {
+                  callbacks.onDragEnd(markerObj, m);
+                }
               });
             }
           }
@@ -143,11 +150,13 @@ export function createCustomIcon(m) {
         {
           text: "Delete Marker",
           action: () => {
-            if (typeof m.onDelete === "function") m.onDelete(markerObj, m);
+            if (typeof callbacks.onDelete === "function") {
+              callbacks.onDelete(markerObj, m);
+            }
           }
         }
       ];
-      showContextMenuCallback(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
+      contextMenuCallback(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
     });
   
     return markerObj;
