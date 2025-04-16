@@ -41,22 +41,13 @@
         <input type="checkbox" id="disable-grouping" />
         Disable Marker Grouping
       </label>
+      <!-- New Button to Open Item Definitions Modal -->
+      <button id="manage-item-definitions" style="margin-top:10px;">Manage Item Definitions</button>
     </div>
 
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
-    </div>
-
-    <!-- Admin Tools Section for Predefined Item Definitions -->
-    <div class="sidebar-section">
-      <h2><i class="fas fa-wrench"></i> Admin Tools</h2>
-      <label for="item-definition-select">Predefined Items:</label>
-      <select id="item-definition-select">
-        <option value="">-- Select Item Definition --</option>
-      </select>
-      <!-- Optionally, add a button to add new definitions -->
-      <button type="button" id="add-item-definition">Add New Item Definition</button>
     </div>
   </div>
   
@@ -71,7 +62,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
   <script type="module" src="scripts/script.js"></script>
 
-  <!-- Edit Modal -->
+  <!-- Edit Modal for Marker Editing -->
   <div id="edit-modal">
     <div id="edit-modal-handle">
       <strong>Edit Marker</strong>
@@ -95,14 +86,14 @@
         </select>
       </div>
       
-      <!-- Predefined Item Selector for Edit Modal (visible when Type = "Item") -->
-      <div class="field-row" id="predefined-item-selector" style="display:none;">
-        <label>Item Definition:</label>
-        <select id="item-definition-select-edit">
-          <option value="">-- Select Item Definition --</option>
+      <!-- Predefined Item Dropdown for Items -->
+      <div id="predefined-item-container" style="display:none; margin-bottom:10px;">
+        <label>Predefined Item:</label>
+        <select id="predefined-item-dropdown">
+          <option value="">-- Select an item --</option>
         </select>
       </div>
-      
+
       <!-- Item-specific Fields -->
       <div id="item-extra-fields" style="display:none;">
         <div class="field-row">
@@ -188,5 +179,63 @@
   
   <!-- Paste Mode Tooltip -->
   <div id="paste-tooltip" style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">Paste Mode ON</div>
+  
+  <!-- Item Definitions Modal -->
+  <div id="item-definitions-modal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Item Definitions</h2>
+        <span class="close" id="close-item-definitions">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div id="item-definitions-list">
+          <!-- List of item definitions will be populated here -->
+        </div>
+        <hr />
+        <form id="item-definition-form">
+          <h3>Add / Edit Item</h3>
+          <div class="field-row">
+            <label>Name:</label>
+            <input type="text" id="def-name" required />
+          </div>
+          <div class="field-row">
+            <label>Type:</label>
+            <select id="def-type">
+              <option value="Crafting Material">Crafting Material</option>
+              <option value="Special">Special</option>
+              <option value="Consumable">Consumable</option>
+              <option value="Quest">Quest</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <label>Description:</label>
+            <textarea id="def-description" rows="2"></textarea>
+          </div>
+          <div class="field-row">
+            <label>Icon URL:</label>
+            <input type="text" id="def-icon" />
+          </div>
+          <div class="field-row">
+            <label>Color:</label>
+            <input type="text" id="def-color" value="#E5E6E8" />
+          </div>
+          <div class="field-row">
+            <label>Rarity:</label>
+            <select id="def-rarity">
+              <option value="">Select Rarity</option>
+              <option value="common">Common</option>
+              <option value="uncommon">Uncommon</option>
+              <option value="rare">Rare</option>
+              <option value="epic">Epic</option>
+              <option value="legendary">Legendary</option>
+            </select>
+          </div>
+          <div class="field-row">
+            <button type="submit">Save</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
