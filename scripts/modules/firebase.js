@@ -7,7 +7,7 @@ import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
+  apiKey: "AIzaSyDwEdPK3UdPN5MB8YAuM_jb0K1iXfQ-tGQ",
   authDomain: "vbmap-cc834.firebaseapp.com",
   projectId: "vbmap-cc834",
   storageBucket: "vbmap-cc834.firebasestorage.app",
