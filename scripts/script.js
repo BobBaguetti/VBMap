@@ -14,7 +14,7 @@ import {
   updateMarker as firebaseUpdateMarker, 
   deleteMarker as firebaseDeleteMarker 
 } from "./modules/firebaseService.js";
-import { createMarker, createPopupContent, formatRarity } from "./modules/markerManager.js";
+import { createMarker, formatRarity } from "./modules/markerManager.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Script loaded!");
@@ -118,9 +118,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       el: selector,
       theme: 'nano',
       default: '#E5E6E8',
-      components: {
-        preview: true,
-        opacity: true,
+      components: { 
+        preview: true, 
+        opacity: true, 
         hue: true,
         interaction: { hex: true, rgba: true, input: true, save: true }
       }
@@ -157,7 +157,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   let currentEditMarker = null;
-
   function populateEditForm(m) {
     editName.value = m.name || "";
     pickrName.setColor(m.nameColor || "#E5E6E8");
@@ -183,7 +182,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
     }
   }
-
   let extraLines = [];
   document.getElementById("add-extra-line").addEventListener("click", () => {
     extraLines.push({ text: "", color: "#E5E6E8" });
@@ -276,6 +274,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     extraLines = [];
     currentEditMarker = null;
   });
+
   // Wrapper to create and store marker in in-memory collection.
   function createMarkerWrapper(m, callbacks) {
     const markerObj = createMarker(m, map, layers, showContextMenu, callbacks);
@@ -285,6 +284,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   function addMarker(m, callbacks = {}) {
     return createMarkerWrapper(m, callbacks);
   }
+
   // Define callback functions for marker operations.
   function handleEdit(markerObj, m, evt) {
     currentEditMarker = { markerObj, data: m };
@@ -308,6 +308,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       firebaseDeleteMarker(db, m.id);
     }
   }
+
   // Load markers from Firebase and create them with the callbacks.
   async function loadAndDisplayMarkers() {
     try {
@@ -318,7 +319,6 @@ document.addEventListener("DOMContentLoaded", async () => {
           return;
         }
         if (!m.coords) m.coords = [1500, 1500];
-        // Create the marker and pass our callbacks.
         addMarker(m, {
           onEdit: handleEdit,
           onCopy: handleCopy,
@@ -331,7 +331,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
   loadAndDisplayMarkers();
-  // Right-click on map to show "Create New Marker" context menu.
+
+  // Right-click on the map to show the "Create New Marker" context menu.
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -417,7 +418,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       firebaseAddMarker(db, newMarkerData);
     }
   });
-  // Search functionality
   searchBar.addEventListener("input", function() {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
@@ -431,7 +431,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   });
-  // Sidebar toggle functionality
   sidebarToggle.addEventListener("click", () => {
     sidebar.classList.toggle("hidden");
     document.getElementById("map").style.marginLeft = sidebar.classList.contains("hidden") ? "0" : "300px";
