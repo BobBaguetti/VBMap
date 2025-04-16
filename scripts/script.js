@@ -53,6 +53,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let pasteMode = false;
   const pasteTooltip = document.getElementById("paste-tooltip");
 
+  // Function to cancel paste mode
+  function cancelPasteMode() {
+    pasteMode = false;
+    copiedMarkerData = null;
+    pasteTooltip.style.display = "none";
+  }
+
   // ------------------------------
   // Context Menu Setup
   // ------------------------------
@@ -629,8 +636,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Right-click anywhere cancels paste mode.
   document.addEventListener("contextmenu", (ev) => {
     if (copiedMarkerData) {
-      copiedMarkerData = null;
-      pasteTooltip.style.display = "none";
+      cancelPasteMode();
     }
   });
   
