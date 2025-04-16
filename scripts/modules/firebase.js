@@ -1,8 +1,11 @@
 // firebase.js
-import firebase from "https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js";
-import "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js";
+// Import the functions you need from the Firebase SDK v11.6.0.
+import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js";
+// Import analytics if needed:
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.6.0/firebase-analytics.js";
 
-// Your Firebase configuration
+// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
   authDomain: "vbmap-cc834.firebaseapp.com",
@@ -13,6 +16,10 @@ const firebaseConfig = {
   measurementId: "G-7FDNWLRM95"
 };
 
-firebase.initializeApp(firebaseConfig);
+// Initialize Firebase
+const app = initializeApp(firebaseConfig);
+// Optionally initialize analytics:
+const analytics = getAnalytics(app);
 
-export const db = firebase.firestore();
+// Export the Firestore database instance
+export const db = getFirestore(app);
