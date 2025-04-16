@@ -23,6 +23,9 @@ import {
   deleteItemDefinition 
 } from "./modules/itemDefinitionsService.js";
 
+// Global storage for predefined item definitions keyed by ID.
+let predefinedItemDefs = {};
+
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Script loaded!");
 
@@ -158,34 +161,28 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pickrDescItem = createPicker('#pickr-desc-item');
   const pickrDescNonItem = createPicker('#pickr-desc-nonitem');
 
-  const defaultRarityColors = {
-    "common": "#CCCCCC",
-    "uncommon": "#56DE56",
-    "rare": "#3498db",
-    "epic": "#9b59b6",
-    "legendary": "#f39c12"
-  };
-  editRarity.addEventListener("change", function() {
-    if (defaultRarityColors[this.value]) {
-      pickrRarity.setColor(defaultRarityColors[this.value]);
-    }
-  });
-  editType.addEventListener("change", () => {
-    if (editType.value === "Item") {
-      itemExtraFields.style.display = "block";
-      nonItemDescription.style.display = "none";
-      predefinedItemContainer.style.display = "block";
-      populatePredefinedItemsDropdown();
-    } else {
-      itemExtraFields.style.display = "none";
-      nonItemDescription.style.display = "block";
-      predefinedItemContainer.style.display = "none";
-    }
-  });
-  // Autofill marker name when a predefined item is selected
+  // ------------------------------
+  // Predefined Item Dropdown Change Listener
+  // ------------------------------
+  // When a predefined item is selected in the marker create/edit screen, autocompletes the form fields
   predefinedItemDropdown.addEventListener("change", () => {
-    if (predefinedItemDropdown.value) {
-      editName.value = predefinedItemDropdown.options[predefinedItemDropdown.selectedIndex].text;
+    const selectedId = predefinedItemDropdown.value;
+    if (selectedId && predefinedItemDefs[selectedId]) {
+      const def = predefinedItemDefs[selectedId];
+      // Auto-fill all the item-related fields
+      editName.value = def.name || "";
+      editRarity.value = def.rarity || "";
+      if(def.rarityColor) { pickrRarity.setColor(def.rarityColor); }
+      editItemType.value = def.itemType || def.type || "";
+      if(def.itemTypeColor) { pickrItemType.setColor(def.itemTypeColor); }
+      editDescription.value = def.description || "";
+      if(def.descriptionColor) { pickrDescItem.setColor(def.descriptionColor); }
+      // Assume extraLines, image fields also exist in definition
+      extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+      renderExtraLines();
+      editImageSmall.value = def.imageSmall || "";
+      editImageBig.value = def.imageBig || "";
+      // Video field remains manual since definitions don't include video
     }
   });
 
@@ -320,8 +317,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function populatePredefinedItemsDropdown() {
     try {
       const definitions = await loadItemDefinitions(db);
+      // Reset global dictionary for lookup
+      predefinedItemDefs = {};
       predefinedItemDropdown.innerHTML = '<option value="">-- Select an item --</option>';
       definitions.forEach(def => {
+        predefinedItemDefs[def.id] = def;
         const option = document.createElement("option");
         option.value = def.id;
         option.textContent = def.name;
@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   manageItemDefinitionsBtn.addEventListener("click", async () => {
     itemDefinitionsModal.style.display = "block";
     await loadAndRenderItemDefinitions();
-    // Initialize color pickers for definition form if not already set up
+    // Initialize Pickr controls for definition form if not already done
     if (!window.pickrDefName) {
       window.pickrDefName = createPicker('#pickr-def-name');
       window.pickrDefType = createPicker('#pickr-def-type');
@@ -420,7 +420,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         defDiv.style.borderBottom = "1px solid #555";
         defDiv.style.padding = "5px 0";
         defDiv.innerHTML = `
-          <strong>${def.name}</strong> (${def.type}) - ${def.rarity || ""}
+          <strong>${def.name}</strong> (${def.itemType || def.type}) - ${def.rarity || ""}
           <br/><em>${def.description || ""}</em>
           <br/><small>Image S: ${def.imageSmall || "N/A"}, Image L: ${def.imageBig || "N/A"}</small>
           <br/><small>Extra Info: ${def.extraLines ? def.extraLines.map(li => li.text).join(", ") : "None"}</small>
@@ -456,6 +456,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
+  // Updated item definition form: now include color values from Pickr controls
   itemDefinitionForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const defData = {
@@ -465,7 +466,12 @@ document.addEventListener("DOMContentLoaded", async () => {
       description: defDescription.value,
       imageSmall: defImageSmall.value,
       imageBig: defImageBig.value,
-      extraLines: JSON.parse(JSON.stringify(extraDefLines))
+      extraLines: JSON.parse(JSON.stringify(extraDefLines)),
+      // Retrieve color values from the Pickr instances (assuming they are stored on window)
+      nameColor: window.pickrDefName ? window.pickrDefName.getColor()?.toHEXA()?.toString() : "#E5E6E8",
+      itemTypeColor: window.pickrDefType ? window.pickrDefType.getColor()?.toHEXA()?.toString() : "#E5E6E8",
+      rarityColor: window.pickrDefRarity ? window.pickrDefRarity.getColor()?.toHEXA()?.toString() : "#E5E6E8",
+      descriptionColor: window.pickrDefDescription ? window.pickrDefDescription.getColor()?.toHEXA()?.toString() : "#E5E6E8"
     };
     if (defName.dataset.editId) {
       defData.id = defName.dataset.editId;
