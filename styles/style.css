@@ -274,6 +274,7 @@ body, html {
 .modal-header-left h2 {
   margin: 0;
   margin-right: 10px;
+  font-size: 18px;  /* Smaller font so the title fits in one line */
 }
 .filter-buttons {
   display: inline-flex;

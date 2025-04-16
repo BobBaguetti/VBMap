@@ -427,7 +427,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       const definitions = await loadItemDefinitions(db);
       itemDefinitionsList.innerHTML = "";
       definitions.forEach(def => {
-        // Display only Name, Item Type, Rarity, and Description.
         const defDiv = document.createElement("div");
         defDiv.className = "item-def-entry";
         defDiv.style.borderBottom = "1px solid #555";
@@ -453,16 +452,16 @@ document.addEventListener("DOMContentLoaded", async () => {
           extraDefLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
           renderDefExtraLines();
           defName.dataset.editId = def.id;
-          if(window.pickrDefName) {
+          if (window.pickrDefName) {
             window.pickrDefName.setColor(def.nameColor || "#E5E6E8");
           }
-          if(window.pickrDefType) {
+          if (window.pickrDefType) {
             window.pickrDefType.setColor(def.itemTypeColor || "#E5E6E8");
           }
-          if(window.pickrDefRarity) {
+          if (window.pickrDefRarity) {
             window.pickrDefRarity.setColor(def.rarityColor || "#E5E6E8");
           }
-          if(window.pickrDefDescription) {
+          if (window.pickrDefDescription) {
             window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
           }
         });
@@ -507,10 +506,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     itemDefinitionForm.reset();
     extraDefLines = [];
     defExtraLinesContainer.innerHTML = "";
-    if(window.pickrDefName) { window.pickrDefName.setColor("#E5E6E8"); }
-    if(window.pickrDefType) { window.pickrDefType.setColor("#E5E6E8"); }
-    if(window.pickrDefRarity) { window.pickrDefRarity.setColor("#E5E6E8"); }
-    if(window.pickrDefDescription) { window.pickrDefDescription.setColor("#E5E6E8"); }
+    if (window.pickrDefName) { window.pickrDefName.setColor("#E5E6E8"); }
+    if (window.pickrDefType) { window.pickrDefType.setColor("#E5E6E8"); }
+    if (window.pickrDefRarity) { window.pickrDefRarity.setColor("#E5E6E8"); }
+    if (window.pickrDefDescription) { window.pickrDefDescription.setColor("#E5E6E8"); }
     loadAndRenderItemDefinitions();
     if (editType.value === "Item") {
       populatePredefinedItemsDropdown();
@@ -679,13 +678,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ------------------------------
   // Definitions List Search Functionality & Filter Buttons
   // ------------------------------
-  // Default filter settings: all enabled
+  // Default filter settings: all off by default
   const filterSettings = {
-    name: true,
-    type: true,
-    rarity: true
+    name: false,
+    type: false,
+    rarity: false
   };
-
   function updateFilterButtonAppearance(button, active) {
     if (active) {
       button.classList.add("toggled");
@@ -693,6 +691,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       button.classList.remove("toggled");
     }
   }
+  // Initialize filter buttons appearance
+  updateFilterButtonAppearance(filterNameBtn, filterSettings.name);
+  updateFilterButtonAppearance(filterTypeBtn, filterSettings.type);
+  updateFilterButtonAppearance(filterRarityBtn, filterSettings.rarity);
 
   filterNameBtn.addEventListener("click", () => {
     filterSettings.name = !filterSettings.name;
@@ -713,11 +715,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   function filterDefinitions() {
     const query = defSearch.value.toLowerCase();
     Array.from(itemDefinitionsList.children).forEach(entry => {
+      // Get text from each field by their span classes.
       const nameText = entry.querySelector('.def-name') ? entry.querySelector('.def-name').innerText.toLowerCase() : "";
       const typeText = entry.querySelector('.def-type') ? entry.querySelector('.def-type').innerText.toLowerCase() : "";
       const rarityText = entry.querySelector('.def-rarity') ? entry.querySelector('.def-rarity').innerText.toLowerCase() : "";
       let match = false;
-      // If no filter is enabled, show all definitions
+      // If no filter is enabled, show all definitions.
       if (!filterSettings.name && !filterSettings.type && !filterSettings.rarity) {
         match = true;
       } else {
@@ -728,9 +731,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       entry.style.display = match ? "" : "none";
     });
   }
-
   if (defSearch) {
     defSearch.addEventListener("input", filterDefinitions);
   }
-
 });
