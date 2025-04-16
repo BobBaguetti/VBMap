@@ -169,7 +169,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const selectedId = predefinedItemDropdown.value;
     if (selectedId && predefinedItemDefs[selectedId]) {
       const def = predefinedItemDefs[selectedId];
-      // Auto-fill all the item-related fields
+      // Auto-fill item-related fields from the definition
       editName.value = def.name || "";
       editRarity.value = def.rarity || "";
       if(def.rarityColor) { pickrRarity.setColor(def.rarityColor); }
@@ -177,7 +177,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       if(def.itemTypeColor) { pickrItemType.setColor(def.itemTypeColor); }
       editDescription.value = def.description || "";
       if(def.descriptionColor) { pickrDescItem.setColor(def.descriptionColor); }
-      // Assume extraLines, image fields also exist in definition
       extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
       renderExtraLines();
       editImageSmall.value = def.imageSmall || "";
@@ -194,14 +193,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     editImageSmall.value = m.imageSmall || "";
     editImageBig.value = m.imageBig || "";
     editVideoURL.value = m.videoURL || "";
-    if (m.predefinedItemId) {
-      predefinedItemDropdown.value = m.predefinedItemId;
-    } else {
-      predefinedItemDropdown.value = "";
-    }
     if (m.type === "Item") {
       itemExtraFields.style.display = "block";
       nonItemDescription.style.display = "none";
+      predefinedItemContainer.style.display = "block";
+      populatePredefinedItemsDropdown();
+      if (m.predefinedItemId) {
+        predefinedItemDropdown.value = m.predefinedItemId;
+      } else {
+        predefinedItemDropdown.value = "";
+      }
       editRarity.value = m.rarity ? m.rarity.toLowerCase() : "";
       pickrRarity.setColor(m.rarityColor || "#E5E6E8");
       editItemType.value = m.itemType || "Crafting Material";
@@ -213,6 +214,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     } else {
       itemExtraFields.style.display = "none";
       nonItemDescription.style.display = "block";
+      predefinedItemContainer.style.display = "none";
       nonItemDescription.value = m.description || "";
       pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
     }
@@ -467,7 +469,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       imageSmall: defImageSmall.value,
       imageBig: defImageBig.value,
       extraLines: JSON.parse(JSON.stringify(extraDefLines)),
-      // Retrieve color values from the Pickr instances (assuming they are stored on window)
       nameColor: window.pickrDefName ? window.pickrDefName.getColor()?.toHEXA()?.toString() : "#E5E6E8",
       itemTypeColor: window.pickrDefType ? window.pickrDefType.getColor()?.toHEXA()?.toString() : "#E5E6E8",
       rarityColor: window.pickrDefRarity ? window.pickrDefRarity.getColor()?.toHEXA()?.toString() : "#E5E6E8",
