@@ -550,9 +550,11 @@ document.addEventListener("DOMContentLoaded", async () => {
         text: "Create New Marker",
         action: () => {
           currentEditMarker = null;
+          // Set default values for the creation form
           editName.value = "";
           pickrName.setColor("#E5E6E8");
-          editType.value = "Door";
+          // For creation, if you want to start with Item type, you could set it here; otherwise, default to Door.
+          editType.value = "Item"; // If you prefer default to Item, change it here.
           editImageSmall.value = "";
           editImageBig.value = "";
           editVideoURL.value = "";
@@ -564,9 +566,19 @@ document.addEventListener("DOMContentLoaded", async () => {
           pickrDescItem.setColor("#E5E6E8");
           extraLines = [];
           renderExtraLines();
-          itemExtraFields.style.display = "none";
-          nonItemDescription.style.display = "none";
-          predefinedItemContainer.style.display = "none";
+          // Show item fields if type is Item (based on the new default or user selection)
+          if (editType.value === "Item") {
+            itemExtraFields.style.display = "block";
+            nonItemDescription.style.display = "none";
+            predefinedItemContainer.style.display = "block";
+            populatePredefinedItemsDropdown();
+          } else {
+            itemExtraFields.style.display = "none";
+            nonItemDescription.style.display = "block";
+            predefinedItemContainer.style.display = "none";
+          }
+          // Dispatch change event for editType so that the UI updates appropriately
+          editType.dispatchEvent(new Event('change'));
           positionModal(editModal, evt.originalEvent);
           editModal.style.display = "block";
           editForm.onsubmit = (e2) => {
