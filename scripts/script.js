@@ -473,7 +473,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Updated item definition form: include color values from Pickr controls and reset the form on success.
+  // Updated item definition form submission: Reset all fields including extra info and Pickr controls.
   itemDefinitionForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const defData = {
@@ -498,7 +498,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
     itemDefinitionForm.reset();
     extraDefLines = [];
-    // Reset Pickr controls for definitions to default color
+    defExtraLinesContainer.innerHTML = "";
+    // Reset Pickr controls for definitions to default color.
     if(window.pickrDefName) { window.pickrDefName.setColor("#E5E6E8"); }
     if(window.pickrDefType) { window.pickrDefType.setColor("#E5E6E8"); }
     if(window.pickrDefRarity) { window.pickrDefRarity.setColor("#E5E6E8"); }
@@ -570,7 +571,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         text: "Create New Marker",
         action: () => {
           currentEditMarker = null;
-          // Set default values for creation form.
           editName.value = "";
           pickrName.setColor("#E5E6E8");
           editType.value = "Item"; // Default to Item; user can change.
@@ -675,7 +675,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     defSearch.addEventListener("input", () => {
       const query = defSearch.value.toLowerCase();
       Array.from(itemDefinitionsList.children).forEach(entry => {
-        // Check if the entry's text contains the query
         entry.style.display = entry.textContent.toLowerCase().includes(query) ? "" : "none";
       });
     });
