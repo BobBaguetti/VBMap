@@ -66,6 +66,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const defImageBig = document.getElementById("def-image-big");
   const defExtraLinesContainer = document.getElementById("def-extra-lines");
   const addDefExtraLineBtn = document.getElementById("add-def-extra-line");
+  const defSearch = document.getElementById("def-search");
 
   // ------------------------------
   // Firebase Initialization
@@ -177,10 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
   
-  // Attach change listener on editType
-  editType.addEventListener("change", () => {
-    updateItemFieldsVisibility();
-  });
+  editType.addEventListener("change", updateItemFieldsVisibility);
 
   // ------------------------------
   // Predefined Item Dropdown Change Listener
@@ -189,31 +187,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     const selectedId = predefinedItemDropdown.value;
     if (selectedId && predefinedItemDefs[selectedId]) {
       const def = predefinedItemDefs[selectedId];
-      // Auto-fill item-related fields from the definition, including colors
       editName.value = def.name || "";
-      if(def.nameColor) { 
-        pickrName.setColor(def.nameColor); 
-      } else { 
-        pickrName.setColor("#E5E6E8"); 
-      }
+      if(def.nameColor) { pickrName.setColor(def.nameColor); } else { pickrName.setColor("#E5E6E8"); }
       editRarity.value = def.rarity || "";
-      if(def.rarityColor) { 
-        pickrRarity.setColor(def.rarityColor); 
-      } else { 
-        pickrRarity.setColor("#E5E6E8"); 
-      }
+      if(def.rarityColor) { pickrRarity.setColor(def.rarityColor); } else { pickrRarity.setColor("#E5E6E8"); }
       editItemType.value = def.itemType || def.type || "";
-      if(def.itemTypeColor) { 
-        pickrItemType.setColor(def.itemTypeColor); 
-      } else { 
-        pickrItemType.setColor("#E5E6E8"); 
-      }
+      if(def.itemTypeColor) { pickrItemType.setColor(def.itemTypeColor); } else { pickrItemType.setColor("#E5E6E8"); }
       editDescription.value = def.description || "";
-      if(def.descriptionColor) { 
-        pickrDescItem.setColor(def.descriptionColor); 
-      } else { 
-        pickrDescItem.setColor("#E5E6E8"); 
-      }
+      if(def.descriptionColor) { pickrDescItem.setColor(def.descriptionColor); } else { pickrDescItem.setColor("#E5E6E8"); }
       extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
       renderExtraLines();
       editImageSmall.value = def.imageSmall || "";
@@ -446,6 +427,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       const definitions = await loadItemDefinitions(db);
       itemDefinitionsList.innerHTML = "";
       definitions.forEach(def => {
+        // Show only Name, Item Type (or type), Rarity, and Description in the list
         const defDiv = document.createElement("div");
         defDiv.className = "item-def-entry";
         defDiv.style.borderBottom = "1px solid #555";
@@ -453,8 +435,6 @@ document.addEventListener("DOMContentLoaded", async () => {
         defDiv.innerHTML = `
           <strong>${def.name}</strong> (${def.itemType || def.type}) - ${def.rarity || ""}
           <br/><em>${def.description || ""}</em>
-          <br/><small>Image S: ${def.imageSmall || "N/A"}, Image L: ${def.imageBig || "N/A"}</small>
-          <br/><small>Extra Info: ${def.extraLines ? def.extraLines.map(li => li.text).join(", ") : "None"}</small>
           <br/>
           <button data-edit="${def.id}">Edit</button>
           <button data-delete="${def.id}">Delete</button>
@@ -471,6 +451,19 @@ document.addEventListener("DOMContentLoaded", async () => {
           extraDefLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
           renderDefExtraLines();
           defName.dataset.editId = def.id;
+          // Explicitly update Pickr controls with saved colors
+          if(window.pickrDefName) {
+            window.pickrDefName.setColor(def.nameColor || "#E5E6E8");
+          }
+          if(window.pickrDefType) {
+            window.pickrDefType.setColor(def.itemTypeColor || "#E5E6E8");
+          }
+          if(window.pickrDefRarity) {
+            window.pickrDefRarity.setColor(def.rarityColor || "#E5E6E8");
+          }
+          if(window.pickrDefDescription) {
+            window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
+          }
         });
         defDiv.querySelector("[data-delete]").addEventListener("click", async () => {
           if (confirm("Are you sure you want to delete this item definition?")) {
@@ -487,7 +480,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Updated item definition form: now include color values from Pickr controls
+  // Updated item definition form: include color values from Pickr controls.
   itemDefinitionForm.addEventListener("submit", async (e) => {
     e.preventDefault();
     const defData = {
@@ -579,11 +572,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         text: "Create New Marker",
         action: () => {
           currentEditMarker = null;
-          // Set default values for the creation form
+          // Set default values for creation form.
           editName.value = "";
           pickrName.setColor("#E5E6E8");
-          // Default to "Item" for demonstration; user can change if needed.
-          editType.value = "Item";
+          editType.value = "Item"; // Default to Item; user can change.
           editImageSmall.value = "";
           editImageBig.value = "";
           editVideoURL.value = "";
@@ -676,5 +668,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     sidebar.classList.toggle("hidden");
     document.getElementById("map").style.marginLeft = sidebar.classList.contains("hidden") ? "0" : "300px";
     map.invalidateSize();
+  });
+
+  // ------------------------------
+  // Definitions List Search Functionality
+  // ------------------------------
+  defSearch.addEventListener("input", () => {
+    const query = defSearch.value.toLowerCase();
+    // Filter each item definition in the list
+    Array.from(itemDefinitionsList.children).forEach(entry => {
+      entry.style.display = entry.textContent.toLowerCase().includes(query) ? "" : "none";
+    });
   });
 });
