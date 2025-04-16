@@ -47,6 +47,17 @@
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
     </div>
+
+    <!-- Admin Tools Section for Predefined Item Definitions -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-wrench"></i> Admin Tools</h2>
+      <label for="item-definition-select">Predefined Items:</label>
+      <select id="item-definition-select">
+        <option value="">-- Select Item Definition --</option>
+      </select>
+      <!-- Optionally, add a button to add new definitions -->
+      <button type="button" id="add-item-definition">Add New Item Definition</button>
+    </div>
   </div>
   
   <!-- Map Container -->
@@ -81,6 +92,14 @@
           <option value="Extraction Portal">Extraction Portal</option>
           <option value="Item">Item</option>
           <option value="Teleport">Teleport</option>
+        </select>
+      </div>
+      
+      <!-- Predefined Item Selector for Edit Modal (visible when Type = "Item") -->
+      <div class="field-row" id="predefined-item-selector" style="display:none;">
+        <label>Item Definition:</label>
+        <select id="item-definition-select-edit">
+          <option value="">-- Select Item Definition --</option>
         </select>
       </div>
       

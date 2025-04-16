@@ -1,4 +1,5 @@
 // scripts/script.js
+
 import { initializeMap } from "./modules/map.js";
 import { 
   makeDraggable, 
@@ -16,13 +17,12 @@ import {
 } from "./modules/firebaseService.js";
 import { createMarker, createPopupContent } from "./modules/markerManager.js";
 import { formatRarity } from "./modules/utils.js";
+import { loadItemDefinitions } from "./modules/itemDefinitions.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Script loaded!");
 
-  // ------------------------------
-  // DOM Elements
-  // ------------------------------
+  // --- DOM Elements ---
   const searchBar = document.getElementById("search-bar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebar = document.getElementById("sidebar");
@@ -41,9 +41,19 @@ document.addEventListener("DOMContentLoaded", async () => {
   const nonItemDescription = document.getElementById("edit-description-non-item");
   const extraLinesContainer = document.getElementById("extra-lines");
 
-  // ------------------------------
-  // Firebase Initialization
-  // ------------------------------
+  // Admin Tools Elements (Sidebar)
+  const itemDefinitionSelect = document.getElementById("item-definition-select");
+  // Predefined items selector in the edit modal
+  const itemDefinitionSelectEdit = document.getElementById("item-definition-select-edit");
+  // Button for adding new definitions (future use)
+  const addItemDefinitionButton = document.getElementById("add-item-definition");
+
+  // --- Video Popup Elements ---
+  const videoPopup = document.getElementById("video-popup");
+  const videoPlayer = document.getElementById("video-player");
+  const videoSource = document.getElementById("video-source");
+
+  // --- Firebase Initialization ---
   const firebaseConfig = {
     apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
     authDomain: "vbmap-cc834.firebaseapp.com",
@@ -55,14 +65,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
   const db = initializeFirebase(firebaseConfig);
 
-  // ------------------------------
-  // Map Initialization
-  // ------------------------------
-  const { map, bounds } = initializeMap();
+  // --- Map Initialization ---
+  const { map } = initializeMap();
 
-  // ------------------------------
-  // Layers Setup
-  // ------------------------------
+  // --- Layers Setup ---
   let itemLayer = L.markerClusterGroup();
   const layers = {
     "Door": L.layerGroup(),
@@ -71,13 +77,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     "Teleport": L.layerGroup()
   };
   Object.values(layers).forEach(layer => layer.addTo(map));
-
-  // In-memory markers collection
   let allMarkers = [];
 
-  // ------------------------------
-  // Copy-Paste Mode Variables
-  // ------------------------------
+  // --- Copy-Paste Mode Variables ---
   let copiedMarkerData = null;
   let pasteMode = false;
   function cancelPasteMode() {
@@ -86,18 +88,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   attachContextMenuHider();
   attachRightClickCancel(cancelPasteMode);
-
-  // ------------------------------
-  // Draggable Edit Modal
-  // ------------------------------
   makeDraggable(editModal, editModalHandle);
 
-  // ------------------------------
-  // Video Popup Setup
-  // ------------------------------
-  const videoPopup = document.getElementById("video-popup");
-  const videoPlayer = document.getElementById("video-player");
-  const videoSource = document.getElementById("video-source");
+  // --- Video Popup Setup ---
   document.getElementById("video-close").addEventListener("click", () => {
     videoPopup.style.display = "none";
     videoPlayer.pause();
@@ -111,56 +104,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   window.openVideoPopup = openVideoPopup;
 
-  // ------------------------------
-  // Edit Modal Fields & Color Picker Setup
-  // ------------------------------
-  function createPicker(selector) {
-    return Pickr.create({
-      el: selector,
-      theme: 'nano',
-      default: '#E5E6E8',
-      components: { 
-        preview: true, 
-        opacity: true, 
-        hue: true, 
-        interaction: { hex: true, rgba: true, input: true, save: true }
-      }
-    }).on('save', (color, pickr) => {
-      pickr.hide();
+  // --- Extra Lines Setup ---
+  let extraLines = [];
+  function renderExtraLines() {
+    extraLinesContainer.innerHTML = "";
+    extraLines.forEach((lineObj, idx) => {
+      const row = document.createElement("div");
+      row.className = "field-row";
+      row.style.marginBottom = "5px";
+      const textInput = document.createElement("input");
+      textInput.type = "text";
+      textInput.value = lineObj.text;
+      textInput.addEventListener("input", () => { extraLines[idx].text = textInput.value; });
+      row.appendChild(textInput);
+      extraLinesContainer.appendChild(row);
     });
   }
-  const pickrName = createPicker('#pickr-name');
-  const pickrRarity = createPicker('#pickr-rarity');
-  const pickrItemType = createPicker('#pickr-itemtype');
-  const pickrDescItem = createPicker('#pickr-desc-item');
-  const pickrDescNonItem = createPicker('#pickr-desc-nonitem');
-
-  const defaultRarityColors = {
-    "common": "#CCCCCC",
-    "uncommon": "#56DE56",
-    "rare": "#3498db",
-    "epic": "#9b59b6",
-    "legendary": "#f39c12"
-  };
-  editRarity.addEventListener("change", function() {
-    if (defaultRarityColors[this.value]) {
-      pickrRarity.setColor(defaultRarityColors[this.value]);
-    }
-  });
-  editType.addEventListener("change", () => {
-    if (editType.value === "Item") {
-      itemExtraFields.style.display = "block";
-      nonItemDescription.style.display = "none";
-    } else {
-      itemExtraFields.style.display = "none";
-      nonItemDescription.style.display = "block";
-    }
+  document.getElementById("add-extra-line").addEventListener("click", () => {
+    extraLines.push({ text: "", color: "#E5E6E8" });
+    renderExtraLines();
   });
 
-  let currentEditMarker = null;
   function populateEditForm(m) {
     editName.value = m.name || "";
-    pickrName.setColor(m.nameColor || "#E5E6E8");
     editType.value = m.type || "Door";
     editImageSmall.value = m.imageSmall || "";
     editImageBig.value = m.imageBig || "";
@@ -176,6 +142,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       pickrDescItem.setColor(m.descriptionColor || "#E5E6E8");
       extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
       renderExtraLines();
+      if (m.definitionId && itemDefinitionSelectEdit) {
+        itemDefinitionSelectEdit.value = m.definitionId;
+      }
     } else {
       itemExtraFields.style.display = "none";
       nonItemDescription.style.display = "block";
@@ -183,110 +152,56 @@ document.addEventListener("DOMContentLoaded", async () => {
       pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
     }
   }
-  let extraLines = [];
-  document.getElementById("add-extra-line").addEventListener("click", () => {
-    extraLines.push({ text: "", color: "#E5E6E8" });
-    renderExtraLines();
-  });
-  function renderExtraLines() {
-    extraLinesContainer.innerHTML = "";
-    extraLines.forEach((lineObj, idx) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
-      const textInput = document.createElement("input");
-      textInput.type = "text";
-      textInput.value = lineObj.text;
-      textInput.style.background = "#E5E6E8";
-      textInput.style.color = "#000";
-      textInput.addEventListener("input", () => {
-        extraLines[idx].text = textInput.value;
+
+  // --- Admin Tools: Load and Populate Item Definitions ---
+  async function loadAndPopulateItemDefinitions() {
+    try {
+      const defs = await loadItemDefinitions(db);
+      // Populate sidebar dropdown.
+      itemDefinitionSelect.innerHTML = `<option value="">-- Select Item Definition --</option>`;
+      defs.forEach(def => {
+        const opt = document.createElement("option");
+        opt.value = def.id;
+        opt.textContent = def.name;
+        itemDefinitionSelect.appendChild(opt);
       });
-      const colorDiv = document.createElement("div");
-      colorDiv.className = "color-btn";
-      colorDiv.style.marginLeft = "5px";
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.textContent = "x";
-      removeBtn.style.marginLeft = "5px";
-      removeBtn.addEventListener("click", () => {
-        extraLines.splice(idx, 1);
-        renderExtraLines();
-      });
-      row.appendChild(textInput);
-      row.appendChild(colorDiv);
-      row.appendChild(removeBtn);
-      extraLinesContainer.appendChild(row);
-      const linePickr = Pickr.create({
-        el: colorDiv,
-        theme: 'nano',
-        default: lineObj.color || "#E5E6E8",
-        components: {
-          preview: true,
-          opacity: true,
-          hue: true,
-          interaction: { hex: true, rgba: true, input: true, save: true }
-        }
-      })
-      .on('change', (color) => {
-        extraLines[idx].color = color.toHEXA().toString();
-      })
-      .on('save', (color, pickr) => {
-        pickr.hide();
-      });
-      linePickr.setColor(lineObj.color || "#E5E6E8");
+      // Populate edit modal dropdown.
+      if (itemDefinitionSelectEdit) {
+        itemDefinitionSelectEdit.innerHTML = `<option value="">-- Select Item Definition --</option>`;
+        defs.forEach(def => {
+          const opt = document.createElement("option");
+          opt.value = def.id;
+          opt.textContent = def.name;
+          itemDefinitionSelectEdit.appendChild(opt);
+        });
+      }
+    } catch (err) {
+      console.error("Error loading item definitions:", err);
+    }
+  }
+  loadAndPopulateItemDefinitions();
+
+  // Auto-fill fields in edit modal when a predefined item is selected.
+  if (itemDefinitionSelectEdit) {
+    itemDefinitionSelectEdit.addEventListener("change", (e) => {
+      const selectedId = e.target.value;
+      if (selectedId) {
+        loadItemDefinitions(db).then(defs => {
+          const def = defs.find(d => d.id === selectedId);
+          if (def) {
+            editName.value = def.name;
+            editItemType.value = def.itemType;
+            editDescription.value = def.description;
+            editRarity.value = def.rarity;
+            // Optionally update color pickers here.
+          }
+        }).catch(err => console.error(err));
+      }
     });
   }
-  document.getElementById("edit-cancel").addEventListener("click", () => {
-    editModal.style.display = "none";
-    currentEditMarker = null;
-    extraLines = [];
-  });
-  editForm.addEventListener("submit", (e) => {
-    e.preventDefault();
-    if (!currentEditMarker) return;
-    const data = currentEditMarker.data;
-    data.name = editName.value;
-    data.nameColor = pickrName.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-    data.type = editType.value;
-    data.imageSmall = editImageSmall.value;
-    data.imageBig = editImageBig.value;
-    data.videoURL = editVideoURL.value || "";
-    if (data.type === "Item") {
-      data.rarity = formatRarity(editRarity.value);
-      data.rarityColor = pickrRarity.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      data.itemType = editItemType.value;
-      data.itemTypeColor = pickrItemType.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      data.description = editDescription.value;
-      data.descriptionColor = pickrDescItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      data.extraLines = JSON.parse(JSON.stringify(extraLines));
-    } else {
-      data.description = nonItemDescription.value;
-      data.descriptionColor = pickrDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      delete data.rarity;
-      delete data.rarityColor;
-      delete data.itemType;
-      delete data.itemTypeColor;
-      delete data.extraLines;
-    }
-    currentEditMarker.markerObj.setPopupContent(createPopupContent(data));
-    firebaseUpdateMarker(db, data);
-    editModal.style.display = "none";
-    extraLines = [];
-    currentEditMarker = null;
-  });
 
-  // Wrapper to create and store marker in memory.
-  function createMarkerWrapper(m, callbacks) {
-    const markerObj = createMarker(m, map, layers, showContextMenu, callbacks);
-    allMarkers.push({ markerObj, data: m });
-    return markerObj;
-  }
-  function addMarker(m, callbacks = {}) {
-    return createMarkerWrapper(m, callbacks);
-  }
-
-  // Define callback functions for marker operations.
+  // --- Marker Action Callbacks ---
+  let currentEditMarker = null;
   function handleEdit(markerObj, m, evt) {
     currentEditMarker = { markerObj, data: m };
     populateEditForm(m);
@@ -310,17 +225,75 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  // Load markers from Firebase and create them with callbacks.
+  function createMarkerWrapper(m, callbacks) {
+    const markerObj = createMarker(m, map, layers, showContextMenu, callbacks);
+    allMarkers.push({ markerObj, data: m });
+    return markerObj;
+  }
+  function addMarkerWrapper(m, callbacks = {}) {
+    return createMarkerWrapper(m, callbacks);
+  }
+
+  editForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const updatedData = {
+      name: editName.value,
+      nameColor: "#E5E6E8",
+      type: editType.value,
+      imageSmall: editImageSmall.value,
+      imageBig: editImageBig.value,
+      videoURL: editVideoURL.value || ""
+    };
+    if (editType.value === "Item") {
+      updatedData.rarity = formatRarity(editRarity.value);
+      updatedData.rarityColor = pickrRarity.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+      updatedData.itemType = editItemType.value;
+      updatedData.itemTypeColor = pickrItemType.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+      updatedData.description = editDescription.value;
+      updatedData.descriptionColor = pickrDescItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+      updatedData.extraLines = JSON.parse(JSON.stringify(extraLines));
+      updatedData.definitionId = itemDefinitionSelectEdit ? itemDefinitionSelectEdit.value : "";
+    } else {
+      updatedData.description = nonItemDescription.value;
+      updatedData.descriptionColor = pickrDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+      delete updatedData.rarity;
+      delete updatedData.rarityColor;
+      delete updatedData.itemType;
+      delete updatedData.itemTypeColor;
+      delete updatedData.extraLines;
+    }
+    if (currentEditMarker) {
+      currentEditMarker.markerObj.setPopupContent(createPopupContent(updatedData));
+      firebaseUpdateMarker(db, { ...currentEditMarker.data, ...updatedData });
+      currentEditMarker.data = { ...currentEditMarker.data, ...updatedData };
+    } else {
+      updatedData.coords = [1500, 1500];
+      addMarkerWrapper(updatedData, {
+        onEdit: handleEdit,
+        onCopy: handleCopy,
+        onDragEnd: handleDragEnd,
+        onDelete: handleDelete
+      });
+      firebaseAddMarker(db, updatedData);
+    }
+    editModal.style.display = "none";
+    currentEditMarker = null;
+    extraLines = [];
+  });
+
+  document.getElementById("edit-cancel").addEventListener("click", () => {
+    editModal.style.display = "none";
+    currentEditMarker = null;
+    extraLines = [];
+  });
+
   async function loadAndDisplayMarkers() {
     try {
       const markers = await loadMarkers(db);
       markers.forEach(m => {
-        if (!m.type || !layers[m.type]) {
-          console.error(`Invalid marker type: ${m.type}`);
-          return;
-        }
+        if (!m.type || !layers[m.type]) return;
         if (!m.coords) m.coords = [1500, 1500];
-        addMarker(m, {
+        addMarkerWrapper(m, {
           onEdit: handleEdit,
           onCopy: handleCopy,
           onDragEnd: handleDragEnd,
@@ -333,7 +306,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   loadAndDisplayMarkers();
 
-  // Right-click on map shows "Create New Marker" context menu.
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
@@ -358,59 +330,20 @@ document.addEventListener("DOMContentLoaded", async () => {
           nonItemDescription.style.display = "none";
           positionModal(editModal, evt.originalEvent);
           editModal.style.display = "block";
-          editForm.onsubmit = (e2) => {
-            e2.preventDefault();
-            const newMarker = {
-              type: editType.value,
-              name: editName.value || "New Marker",
-              nameColor: pickrName.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-              coords: [evt.latlng.lat, evt.latlng.lng],
-              imageSmall: editImageSmall.value,
-              imageBig: editImageBig.value,
-              videoURL: editVideoURL.value || ""
-            };
-            if (newMarker.type === "Item") {
-              newMarker.rarity = formatRarity(editRarity.value);
-              newMarker.rarityColor = pickrRarity.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-              newMarker.itemType = editItemType.value;
-              newMarker.itemTypeColor = pickrItemType.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-              newMarker.description = editDescription.value;
-              newMarker.descriptionColor = pickrDescItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-              newMarker.extraLines = JSON.parse(JSON.stringify(extraLines));
-            } else {
-              newMarker.description = nonItemDescription.value;
-              newMarker.descriptionColor = pickrDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-            }
-            addMarker(newMarker, {
-              onEdit: handleEdit,
-              onCopy: handleCopy,
-              onDragEnd: handleDragEnd,
-              onDelete: handleDelete
-            });
-            firebaseAddMarker(db, newMarker);
-            editModal.style.display = "none";
-            extraLines = [];
-            editForm.onsubmit = null;
-          };
+          // Optional: Clear predefined item selector value for new marker.
+          if (itemDefinitionSelectEdit) itemDefinitionSelectEdit.value = "";
         }
       }
     ]);
   });
-  function setEditModalPosition(ev) {
-    editModal.style.display = "block";
-    const modalWidth = editModal.offsetWidth;
-    const modalHeight = editModal.offsetHeight;
-    editModal.style.left = (ev.pageX - modalWidth + 10) + "px";
-    editModal.style.top = (ev.pageY - (modalHeight / 2)) + "px";
-  }
-  // Paste mode: allow repeated pasting while active.
+
   map.on("click", (evt) => {
     if (copiedMarkerData && pasteMode) {
       const newMarkerData = JSON.parse(JSON.stringify(copiedMarkerData));
       delete newMarkerData.id;
       newMarkerData.coords = [evt.latlng.lat, evt.latlng.lng];
       newMarkerData.name = newMarkerData.name + " (copy)";
-      addMarker(newMarkerData, {
+      addMarkerWrapper(newMarkerData, {
         onEdit: handleEdit,
         onCopy: handleCopy,
         onDragEnd: handleDragEnd,
@@ -419,7 +352,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       firebaseAddMarker(db, newMarkerData);
     }
   });
-  searchBar.addEventListener("input", function() {
+
+  searchBar.addEventListener("input", function () {
     const query = this.value.toLowerCase();
     allMarkers.forEach(item => {
       const markerName = item.data.name.toLowerCase();
@@ -432,6 +366,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     });
   });
+
   sidebarToggle.addEventListener("click", () => {
     sidebar.classList.toggle("hidden");
     document.getElementById("map").style.marginLeft = sidebar.classList.contains("hidden") ? "0" : "300px";
