@@ -181,6 +181,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  // When a predefined item is selected, autofill marker name from the dropdown option's text.
+  predefinedItemDropdown.addEventListener("change", () => {
+    if (predefinedItemDropdown.value) {
+      // Set the marker name field to the selected option's text
+      editName.value = predefinedItemDropdown.options[predefinedItemDropdown.selectedIndex].text;
+    }
+  });
+
   let currentEditMarker = null;
   function populateEditForm(m) {
     editName.value = m.name || "";
