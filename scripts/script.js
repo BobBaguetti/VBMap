@@ -223,6 +223,53 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pickrDescNonItem = createPicker('#pickr-desc-nonitem');
 
   // ------------------------------
+  // Edit‐Modal Cancel & Save (for existing markers)
+  // ------------------------------
+  document.getElementById("edit-cancel").addEventListener("click", () => {
+    editModal.style.display = "none";
+    currentEditMarker = null;
+    extraLines = [];
+  });
+  editForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    if (!currentEditMarker) return;
+
+    const data = currentEditMarker.data;
+    data.name        = editName.value;
+    data.nameColor   = pickrName.getColor().toHEXA().toString();
+    data.type        = editType.value;
+    data.imageSmall  = editImageSmall.value;
+    data.imageBig    = editImageBig.value;
+    data.videoURL    = editVideoURL.value || "";
+    data.predefinedItemId = predefinedItemDropdown.value || null;
+
+    if (data.type === "Item") {
+      data.rarity        = formatRarity(editRarity.value);
+      data.rarityColor   = pickrRarity.getColor().toHEXA().toString();
+      data.itemType      = editItemType.value;
+      data.itemTypeColor = pickrItemType.getColor().toHEXA().toString();
+      data.description   = editDescription.value;
+      data.descriptionColor = pickrDescItem.getColor().toHEXA().toString();
+      data.extraLines    = JSON.parse(JSON.stringify(extraLines));
+    } else {
+      data.description      = nonItemDescription.value;
+      data.descriptionColor = pickrDescNonItem.getColor().toHEXA().toString();
+      delete data.rarity;
+      delete data.rarityColor;
+      delete data.itemType;
+      delete data.itemTypeColor;
+      delete data.extraLines;
+    }
+
+    currentEditMarker.markerObj.setPopupContent(createPopupContent(data));
+    firebaseUpdateMarker(db, data);
+
+    editModal.style.display = "none";
+    currentEditMarker = null;
+    extraLines = [];
+  });
+
+  // ------------------------------
   // updateItemFieldsVisibility Function
   // ------------------------------
   function updateItemFieldsVisibility() {
@@ -240,24 +287,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   editType.addEventListener("change", updateItemFieldsVisibility);
 
   // ------------------------------
-  // Predefined Item Dropdown Change Listener
+  // Predefined Item Dropdown for Edit Modal
   // ------------------------------
   predefinedItemDropdown.addEventListener("change", () => {
     const sel = predefinedItemDropdown.value;
     if (sel && predefinedItemDefs[sel]) {
       const def = predefinedItemDefs[sel];
-      editName.value        = def.name;
+      editName.value       = def.name;
       pickrName.setColor(def.nameColor);
-      editRarity.value      = def.rarity?.toLowerCase() || "";
+      editRarity.value     = def.rarity || "";
       pickrRarity.setColor(def.rarityColor);
-      editItemType.value    = def.itemType;
+      editItemType.value   = def.itemType;
       pickrItemType.setColor(def.itemTypeColor);
-      editDescription.value = def.description;
+      editDescription.value= def.description;
       pickrDescItem.setColor(def.descriptionColor);
-      extraLines            = def.extraLines || [];
+      extraLines           = def.extraLines || [];
       renderExtraLines();
-      editImageSmall.value  = def.imageSmall;
-      editImageBig.value    = def.imageBig;
+      editImageSmall.value = def.imageSmall;
+      editImageBig.value   = def.imageBig;
     }
   });
 
@@ -317,7 +364,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     markers.forEach(m => {
       if (!layers[m.type]) return;
       if (!m.coords) m.coords = [1500,1500];
-      addMarker(m, { onEdit: handleEdit, onCopy: handleCopy, onDragEnd: handleDragEnd, onDelete: handleDelete });
+      addMarker(m, {
+        onEdit: handleEdit,
+        onCopy: handleCopy,
+        onDragEnd: handleDragEnd,
+        onDelete: handleDelete
+      });
     });
   }
   loadAndDisplayMarkers();
@@ -336,6 +388,8 @@ document.addEventListener("DOMContentLoaded", async () => {
         extraLines = []; renderExtraLines();
         positionModal(editModal, evt.originalEvent);
         editModal.style.display = "block";
+
+        // Setup new‐marker submit
         editForm.onsubmit = e2 => {
           e2.preventDefault();
           const nm = {
@@ -348,7 +402,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             videoURL: editVideoURL.value || "",
             predefinedItemId: predefinedItemDropdown.value || null
           };
-          if (nm.type==="Item") {
+          if (nm.type === "Item") {
             nm.rarity = formatRarity(editRarity.value);
             nm.rarityColor = pickrRarity.getColor().toHEXA().toString();
             nm.itemType = editItemType.value;
@@ -360,10 +414,11 @@ document.addEventListener("DOMContentLoaded", async () => {
             nm.description = nonItemDescription.value;
             nm.descriptionColor = pickrDescNonItem.getColor().toHEXA().toString();
           }
-          addMarker(nm, { onEdit:handleEdit,onCopy:handleCopy,onDragEnd:handleDragEnd,onDelete:handleDelete });
-          firebaseAddMarker(db,nm);
-          editModal.style.display="none";
-          extraLines=[]; editForm.onsubmit=null;
+          addMarker(nm, { onEdit:handleEdit, onCopy:handleCopy, onDragEnd:handleDragEnd, onDelete:handleDelete });
+          firebaseAddMarker(db, nm);
+          editModal.style.display = "none";
+          extraLines = [];
+          editForm.onsubmit = null;
         };
       }
     }]);
@@ -373,10 +428,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (copiedMarkerData && pasteMode) {
       const copy = JSON.parse(JSON.stringify(copiedMarkerData));
       delete copy.id;
-      copy.coords = [evt.latlng.lat,evt.latlng.lng];
+      copy.coords = [evt.latlng.lat, evt.latlng.lng];
       copy.name += " (copy)";
-      addMarker(copy, { onEdit:handleEdit,onCopy:handleCopy,onDragEnd:handleDragEnd,onDelete:handleDelete });
-      firebaseAddMarker(db,copy);
+      addMarker(copy, {
+        onEdit: handleEdit, 
+        onCopy: handleCopy, 
+        onDragEnd: handleDragEnd, 
+        onDelete: handleDelete
+      });
+      firebaseAddMarker(db, copy);
     }
   });
 
