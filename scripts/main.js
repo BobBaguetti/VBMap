@@ -10,10 +10,10 @@ document.addEventListener("DOMContentLoaded", () => {
     // Initialize the Leaflet map.
     const map = initMap();
 
-    // Load markers from Firestore (or fallback if desired).
+    // Load markers from Firestore.
     loadMarkers();
 
-    // Set up UI interactions (context menu, edit modal, copy/paste, etc.)
+    // Set up UI interactions.
     initUI();
 
     console.log("Application initialized successfully.");
