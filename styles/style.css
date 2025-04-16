@@ -263,16 +263,27 @@ body, html {
 }
 .modal-header {
   display: flex;
+  justify-content: space-between;
   align-items: center;
   padding-bottom: 10px;
 }
-.modal-header h2 {
+.modal-header-left h2 {
   margin: 0;
 }
-.modal-header .close {
+.modal-header-right {
+  display: flex;
+  align-items: center;
+}
+.modal-header-right input {
+  padding: 4px;
+  font-size: 14px;
+  border: 1px solid #555;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+.modal-header-right .close {
   font-size: 28px;
   cursor: pointer;
-  margin-left: 10px;
 }
 
 /* Definitions List Styling */
@@ -284,12 +295,4 @@ body, html {
 .item-def-entry {
   font-size: 14px;
   margin-bottom: 5px;
-}
-/* Definitions Modal Header Search Bar */
-#def-search {
-  margin-left: auto;
-  padding: 4px;
-  font-size: 14px;
-  border: 1px solid #555;
-  border-radius: 4px;
 }
