@@ -120,11 +120,14 @@ document.addEventListener("DOMContentLoaded", () => {
     contextMenu.style.display = "block";
   }
 
-  // Hide context menu on any left-click
+  // Listen for clicks on document to hide the context menu only
   document.addEventListener("click", () => {
     contextMenu.style.display = "none";
-    // Right-click also triggers here, so if paste mode is active, we exit it.
-    if (pasteMode) {
+  });
+
+  // Also, right-click anywhere (outside of map click) cancels paste mode.
+  document.addEventListener("contextmenu", () => {
+    if (copiedMarkerData) {
       cancelPasteMode();
     }
   });
@@ -174,7 +177,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // --------------------------------------
   // Edit Modal Fields & Color Picker Setup
   // --------------------------------------
-  // Helper to create a Pickr instance.
   function createPicker(selector) {
     return Pickr.create({
       el: selector,
@@ -225,7 +227,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let currentEditMarker = null;
 
-  // Populate the edit modal with marker data.
   function populateEditForm(m) {
     editName.value = m.name || "";
     pickrName.setColor(m.nameColor || "#E5E6E8");
@@ -297,7 +298,6 @@ document.addEventListener("DOMContentLoaded", () => {
       row.appendChild(removeBtn);
       extraLinesContainer.appendChild(row);
 
-      // Create Pickr instance for this extra info field.
       const linePickr = Pickr.create({
         el: colorDiv,
         theme: 'nano',
@@ -315,7 +315,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .on('save', (color, pickr) => {
         pickr.hide();
       });
-
       linePickr.setColor(lineObj.color || "#E5E6E8");
     });
   }
@@ -395,26 +394,26 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (m.type === "Item") {
       if (m.itemType) {
-        itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor||"#E5E6E8"}; margin:2px 0;">${m.itemType}</div>`;
+        itemTypeHTML = `<div style="font-size:16px; color:${m.itemTypeColor || "#E5E6E8"}; margin:2px 0;">${m.itemType}</div>`;
       }
       if (m.rarity) {
-        rarityHTML = `<div style="font-size:16px; color:${m.rarityColor||"#E5E6E8"}; margin:2px 0;">${formatRarity(m.rarity)}</div>`;
+        rarityHTML = `<div style="font-size:16px; color:${m.rarityColor || "#E5E6E8"}; margin:2px 0;">${formatRarity(m.rarity)}</div>`;
       }
       if (m.description) {
-        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor||"#E5E6E8"};">${m.description}</p>`;
+        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`;
       }
       if (m.extraLines && m.extraLines.length) {
         m.extraLines.forEach(line => {
-          extraHTML += `<p style="margin-top:5px; margin-bottom:0; color:${line.color||"#E5E6E8"};">${line.text}</p>`;
+          extraHTML += `<p style="margin-top:5px; margin-bottom:0; color:${line.color || "#E5E6E8"};">${line.text}</p>`;
         });
       }
     } else {
       if (m.description) {
-        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor||"#E5E6E8"};">${m.description}</p>`;
+        descHTML = `<p style="margin:5px 0; color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`;
       }
     }
 
-    const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor||"#E5E6E8"};">${m.name}</h3>`;
+    const nameHTML = `<h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">${m.name}</h3>`;
     const scaledImg = m.imageBig 
       ? `<img src="${m.imageBig}" style="width:64px; height:64px; object-fit:contain; border:2px solid #777; border-radius:4px;" />`
       : "";
@@ -473,7 +472,7 @@ document.addEventListener("DOMContentLoaded", () => {
         {
           text: "Copy Marker",
           action: () => {
-            // Store marker data, remove ID so new copies are created, activate paste mode.
+            // Store marker data, remove id so new copies are created, and activate paste mode.
             copiedMarkerData = JSON.parse(JSON.stringify(m));
             delete copiedMarkerData.id;
             pasteMode = true;
@@ -663,17 +662,11 @@ document.addEventListener("DOMContentLoaded", () => {
       addMarker(newMarkerData);
       updateMarkerInFirestore(newMarkerData);
 
-      // Update the tooltip position each time user pastes a marker
+      // Update tooltip position
       pasteTooltip.style.left = `${evt.containerPoint.x + 15}px`;
       pasteTooltip.style.top = `${evt.containerPoint.y + 15}px`;
-    }
-  });
 
-  // --------------------------------------
-  // Right-click anywhere cancels paste mode
-  // --------------------------------------
-  document.addEventListener("contextmenu", () => {
-    if (copiedMarkerData) {
+      // Cancel paste mode after successful paste.
       cancelPasteMode();
     }
   });
