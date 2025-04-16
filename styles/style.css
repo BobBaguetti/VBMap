@@ -6,7 +6,7 @@ body, html {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background-color: #1a1a1a !important;
   color: #e0e0e0;
-  overflow: hidden;
+  overflow: hidden; /* Disable overall scrolling */
 }
 
 /* Map Container */
@@ -248,17 +248,21 @@ body, html {
   top: 0;
   width: 100%;
   height: 100%;
-  overflow: auto; 
+  overflow: hidden; /* Disable scroll on overall modal background */
   background-color: rgba(0,0,0,0.8);
 }
 .modal-content {
   background-color: #222;
-  margin: 10% auto;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%); /* Center the modal */
   padding: 20px;
   border: 1px solid #555;
   width: 500px;
+  max-height: 90vh; /* Ensure it never goes off-screen vertically */
   color: #e0e0e0;
-  position: relative;
+  overflow: auto; /* Only modal content scrolls if necessary */
 }
 .modal-header {
   display: flex;
@@ -266,6 +270,7 @@ body, html {
   align-items: center;
   padding-bottom: 10px;
 }
+
 /* Modal header left section */
 .modal-header-left {
   display: flex;
@@ -320,7 +325,7 @@ body, html {
 
 /* Definitions List Styling */
 .def-list {
-  max-height: 300px;
+  max-height: 200px;  /* Approximately for 3 entries */
   overflow-y: auto;
   padding: 5px;
 }
