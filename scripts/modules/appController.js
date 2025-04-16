@@ -175,13 +175,12 @@ export async function bootstrapApp() {
     return createMarkerWrapper(m, callbacks);
   }
 
-  // --- Unified Submit Handler for the Edit Modal ---
+  // --- Unified Submit Handler for Edit Modal ---
   editForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    // Gather form data into a marker object
     const updatedData = {
       name: editName.value,
-      nameColor: "#E5E6E8", // You can integrate color picker data if available
+      nameColor: "#E5E6E8", // update here with actual color data if available
       type: editType.value,
       imageSmall: editImageSmall.value,
       imageBig: editImageBig.value,
@@ -197,13 +196,12 @@ export async function bootstrapApp() {
     }
 
     if (currentEditMarker) {
-      // Editing an existing marker
+      // Editing existing marker
       currentEditMarker.markerObj.setPopupContent(createPopupContent(updatedData));
-      // Update data in Firebase and in the in-memory collection
       firebaseUpdateMarker(db, { ...currentEditMarker.data, ...updatedData });
       currentEditMarker.data = { ...currentEditMarker.data, ...updatedData };
     } else {
-      // Creating a new marker
+      // Creating a new marker (should not happen here since new marker submission is handled in context menu)
       addMarkerWrapper(updatedData, {
         onEdit: handleEdit,
         onCopy: handleCopy,
@@ -213,6 +211,14 @@ export async function bootstrapApp() {
       firebaseAddMarker(db, updatedData);
     }
     editModal.style.display = "none";
+  });
+
+  // --- Cancel Button Handler ---
+  document.getElementById("edit-cancel").addEventListener("click", () => {
+    console.log("Cancel button clicked");
+    editModal.style.display = "none";
+    currentEditMarker = null;
+    extraLines = [];
   });
 
   // --- Load Markers from Firebase ---
@@ -238,7 +244,7 @@ export async function bootstrapApp() {
   }
   loadAndDisplayMarkers();
 
-  // --- Right-Click Context Menu for New Marker ---
+  // --- Right-Click (Context Menu) for New Marker ---
   map.on("contextmenu", (evt) => {
     showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [
       {
