@@ -1,22 +1,23 @@
 // scripts/modules/copyPasteManager.js
-// Clipboard copy‑/paste manager with a ghost preview marker that
-// remains active until the user cancels with right‑click.
+// Clipboard copy‑/paste manager with a ghost preview marker that stays active
+// until the user right‑clicks to cancel. Only free‑form markers (those not
+// linked to a predefined item) have "(copy)" appended to their names.
 
 import { createCustomIcon } from "./markerManager.js";
 
 /**
- * Sets up copy‑paste behaviour on the given Leaflet map.
- * @param {L.Map}      map               Leaflet map instance
- * @param {Function}   addMarkerCallback Function(newMarkerData) – must add the
- *                                       marker to the map *and* persist it.
+ * Initialise copy‑paste behaviour.
+ * @param {L.Map} map                               Leaflet map instance.
+ * @param {(data:Object)=>void} addMarkerCallback   Function that adds *and*
+ *                                                persists the new marker.
  * @returns {{ startCopy:Function, cancel:Function }}
  */
 export function initCopyPasteManager(map, addMarkerCallback) {
   let pasteMode   = false;
-  let copiedData  = null;      // JSON‑safe marker *without* id
-  let ghostMarker = null;      // L.Marker following the cursor
+  let copiedData  = null;   // deep‑cloned marker data (no id)
+  let ghostMarker = null;   // semi‑transparent preview marker
 
-  /** Remove ghost + reset state */
+  /** End paste mode and clean up */
   function cancel() {
     if (ghostMarker) {
       map.removeLayer(ghostMarker);
@@ -27,14 +28,14 @@ export function initCopyPasteManager(map, addMarkerCallback) {
     map.getContainer().style.cursor = "";
   }
 
-  /** Begin copy workflow */
+  /** Begin paste mode for the supplied marker */
   function startCopy(markerData) {
     copiedData = JSON.parse(JSON.stringify(markerData));
-    delete copiedData.id;                       // new marker will get its own id
+    delete copiedData.id;                      // new marker gets its own id
     pasteMode  = true;
-    map.getContainer().style.cursor = "copy";   // visual hint
+    map.getContainer().style.cursor = "copy";
 
-    // Create ghost marker (semi‑transparent)
+    // Create the ghost preview (50% opacity)
     if (ghostMarker) map.removeLayer(ghostMarker);
     ghostMarker = L.marker(map.getCenter(), {
       icon: createCustomIcon(copiedData),
@@ -43,26 +44,29 @@ export function initCopyPasteManager(map, addMarkerCallback) {
     }).addTo(map);
   }
 
-  /* ----------  Event bindings  ---------- */
-  map.on("mousemove", (e) => {
+  /* -------------------------------------------------- *
+   *  Map events
+   * -------------------------------------------------- */
+  map.on("mousemove", e => {
     if (pasteMode && ghostMarker) ghostMarker.setLatLng(e.latlng);
   });
 
-  map.on("click", (e) => {
+  map.on("click", e => {
     if (!pasteMode || !copiedData) return;
+
     const newData = JSON.parse(JSON.stringify(copiedData));
     delete newData.id;
     newData.coords = [e.latlng.lat, e.latlng.lng];
 
-    // Append \"(copy)\" only for markers that are NOT linked to a predefined item
-    if (!newData.predefinedItemId) newData.name += \" (copy)\";
+    // Only add “(copy)” when the marker is *not* tied to a predefined item.
+    if (!newData.predefinedItemId) newData.name = `${newData.name} (copy)`;
 
-    addMarkerCallback(newData);                 // caller handles Firestore save
-    // Keep paste mode active – ghost remains, user can click again
+    addMarkerCallback(newData);   // caller saves + renders the marker
+    // Stay in paste mode; ghost remains until user right‑clicks
   });
 
-  // Right‑click anywhere on the document cancels paste mode
-  document.addEventListener(\"contextmenu\", cancel);
+  // Any right‑click cancels paste mode
+  document.addEventListener("contextmenu", cancel);
 
   return { startCopy, cancel };
 }
