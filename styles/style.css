@@ -1,6 +1,6 @@
 /* @fullfile: Send the entire file, no omissions or abridgments. */
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
-/* @version: 2   The current file version is 2. Increase by 1 every time you update anything. */
+/* @version: 3   The current file version is 3. Increase by 1 every time you update anything. */
 /* @file:    /styles/style.css */
 
 /* Base Styles */
@@ -341,19 +341,20 @@ body, html {
   border-radius: 3px;
   cursor: pointer;
   transition: background 0.2s;
+  vertical-align: middle;
 }
 .modal-header-right .close:hover {
   background: #444;
 }
 
-/* Center glyphs in filter buttons and close button */
-.filter-btn,
-.modal-header-right .close {
-  display: flex;
+/* Glyph centering adjustments */
+.filter-btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   padding: 0;
   line-height: 1;
+  vertical-align: middle;
 }
 
 /* Flat NTR tri‑toggle buttons + gold outline when active */
@@ -461,4 +462,4 @@ body, html {
   background: #444;
 }
 
-/* @version: 2 */
+/* @version: 3 */
