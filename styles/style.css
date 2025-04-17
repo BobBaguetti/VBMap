@@ -1,6 +1,6 @@
 /* @fullfile: Send the entire file, no omissions or abridgments. */
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
-/* @version: 8   The current file version is 8. Increase by 1 every time you update anything. */
+/* @version: 9   The current file version is 9. Increase by 1 every time you update anything. */
 /* @file:    /styles/style.css */
 
 /* Base Styles */
@@ -335,7 +335,7 @@ body, html {
   width: 28px;
   height: 28px;
   padding: 0;
-  margin: 0;
+  margin: 2px 0 0 0;
   font-size: 20px;
   line-height: 1;
   font-family: 'Segoe UI', sans-serif;
@@ -346,8 +346,7 @@ body, html {
   box-sizing: border-box;
   vertical-align: middle;
   cursor: pointer;
-  position: relative;
-  top: -2px;
+  transform: translateY(-1px);
 }
 .modal-header-right .close:hover {
   background: #444;
@@ -463,4 +462,4 @@ body, html {
   background: #444;
 }
 
-/* @version: 8 */
+/* @version: 9 */
