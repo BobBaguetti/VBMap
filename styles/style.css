@@ -186,7 +186,9 @@ body, html {
 .popup-header {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  padding: 0 0 4px 0; /* moved down another 2px */
+  margin-bottom: 12px;
+  border-bottom: 2px solid #444;
 }
 .popup-body {
   margin-top: 10px;
@@ -306,7 +308,7 @@ body, html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0 2px 0;             /* added 2px bottom padding */
+  padding: 0 0 4px 0; /* moved down another 2px */
   margin-bottom: 12px;
   border-bottom: 2px solid #444;
 }
@@ -410,7 +412,7 @@ body, html {
 /* Separator between item container and Add Item form */
 .modal-content hr {
   border: none;                 /* remove default bevel */
-  border-top: 2px solid #444;   /* match header divider */  
+  border-top: 0px solid #444;   /* removed line */
   margin: 12px 0;
 }
 
