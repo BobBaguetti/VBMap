@@ -9,7 +9,9 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "./modules/firebaseService.js";
 import { createMarker, createPopupContent } from "./modules/markerManager.js";
-import { initItemDefinitionsModal } from "./modules/itemDefinitionsModal.js";
+import {
+  initItemDefinitionsModal
+} from "./modules/itemDefinitionsModal.js";
 import { initMarkerForm } from "./modules/markerForm.js";
 import { initCopyPasteManager } from "./modules/copyPasteManager.js";
 import { setupSidebar } from "./modules/sidebarManager.js";
@@ -52,9 +54,42 @@ setupSidebar(map, layers, allMarkers);
 const markerForm = initMarkerForm(db);
 
 /* ------------------------------------------------------------------ *
+ *  Helper: sync all markers that reference a given definition
+ * ------------------------------------------------------------------ */
+async function refreshMarkersFromDefinitions() {
+  const list = await (await import("./modules/itemDefinitionsService.js"))
+                  .loadItemDefinitions(db);
+  const defMap = Object.fromEntries(list.map(d => [d.id, d]));
+
+  allMarkers.forEach(({ markerObj, data }) => {
+    if (!data.predefinedItemId) return;
+    const def = defMap[data.predefinedItemId];
+    if (!def) return;
+    // Update marker data from definition
+    data.name            = def.name;
+    data.nameColor       = def.nameColor       || "#E5E6E8";
+    data.rarity          = def.rarity;
+    data.rarityColor     = def.rarityColor     || "#E5E6E8";
+    data.itemType        = def.itemType || def.type;
+    data.itemTypeColor   = def.itemTypeColor   || "#E5E6E8";
+    data.description     = def.description;
+    data.descriptionColor= def.descriptionColor|| "#E5E6E8";
+    data.extraLines      = JSON.parse(JSON.stringify(def.extraLines || []));
+    data.imageSmall      = def.imageSmall;
+    data.imageBig        = def.imageBig;
+
+    markerObj.setPopupContent(createPopupContent(data));
+    firebaseUpdateMarker(db, data);            // persist changes
+  });
+}
+
+/* ------------------------------------------------------------------ *
  *  Item‑definitions modal
  * ------------------------------------------------------------------ */
-initItemDefinitionsModal(db, markerForm.refreshPredefinedItems);
+initItemDefinitionsModal(db, async () => {
+  await markerForm.refreshPredefinedItems();
+  await refreshMarkersFromDefinitions();
+});
 
 /* ------------------------------------------------------------------ *
  *  Helper: add marker and save to Firestore
@@ -65,7 +100,7 @@ function addAndPersist(data) {
 }
 
 /* ------------------------------------------------------------------ *
- *  Copy‑paste manager  (ghost preview + click‑to‑paste)
+ *  Copy‑paste manager
  * ------------------------------------------------------------------ */
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 

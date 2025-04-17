@@ -1,5 +1,7 @@
 // scripts/modules/markerForm.js
 // Full implementation of the Edit / Create‑marker modal.
+// For Item markers, all item‑specific fields are read‑only; you can only pick
+// the predefined item from the dropdown.
 
 import { makeDraggable, positionModal } from "./uiManager.js";
 import { formatRarity } from "./utils.js";
@@ -65,135 +67,154 @@ export function initMarkerForm(db) {
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
     predefinedDefs = {};
-    predefinedDD.innerHTML = `<option value="">-- Select an item --</option>`;
+    predefinedDD.innerHTML = `<option value=\"\">-- Select an item --</option>`;
     list.forEach(def => {
       predefinedDefs[def.id] = def;
-      const opt = document.createElement("option");
+      const opt = document.createElement(\"option\");
       opt.value = def.id; opt.textContent = def.name;
       predefinedDD.appendChild(opt);
     });
   }
-  // initial populate (no await needed for render)
   refreshPredefinedItems();
-
-  /* -------------------------------------------------- *
-   *  Toggle Item / Non‑Item fields
-   * -------------------------------------------------- */
-  function applyTypeVisibility() {
-    const isItem = fldType.value === "Item";
-    itemFieldsBlock.style.display  = isItem ? "block" : "none";
-    nonItemDescBlock.style.display = isItem ? "none"  : "block";
-    predefinedBlock.style.display  = isItem ? "block" : "none";
-    if (isItem) predefinedDD.value = "";
-  }
-  fldType.addEventListener("change", applyTypeVisibility);
 
   /* -------------------------------------------------- *
    *  Extra‑info lines (for Items)
    * -------------------------------------------------- */
   let extraLines = [];
+  /* (renderExtraLines unchanged – omitted for brevity, identical to previous) */
   function renderExtraLines() {
     extraLinesWrap.innerHTML = "";
     extraLines.forEach((lineObj, idx) => {
-      const row = document.createElement("div");
-      row.className="field-row"; row.style.marginBottom="5px";
+      const row = document.createElement(\"div\");
+      row.className=\"field-row\"; row.style.marginBottom=\"5px\";
 
-      const txt = document.createElement("input");
-      txt.type="text"; txt.value=lineObj.text;
-      txt.style.background="#E5E6E8"; txt.style.color="#000";
-      txt.addEventListener("input",()=>{ extraLines[idx].text = txt.value; });
+      const txt = document.createElement(\"input\");
+      txt.type=\"text\"; txt.value=lineObj.text;
+      txt.style.background=\"#E5E6E8\"; txt.style.color=\"#000\";
+      txt.readOnly = true;                         // read‑only for Items
+      txt.addEventListener(\"input\",()=>{ extraLines[idx].text = txt.value; });
 
-      const colorBox = document.createElement("div");
-      colorBox.className="color-btn"; colorBox.style.marginLeft="5px";
+      const colorBox = document.createElement(\"div\");
+      colorBox.className=\"color-btn\"; colorBox.style.marginLeft=\"5px\";
 
-      const rm = document.createElement("button");
-      rm.type="button"; rm.textContent="x"; rm.style.marginLeft="5px";
-      rm.addEventListener("click",()=>{ extraLines.splice(idx,1); renderExtraLines(); });
+      const rm = document.createElement(\"button\");
+      rm.type=\"button\"; rm.textContent=\"x\"; rm.style.marginLeft=\"5px\";
+      rm.addEventListener(\"click\",()=>{ extraLines.splice(idx,1); renderExtraLines(); });
 
       row.appendChild(txt); row.appendChild(colorBox); row.appendChild(rm);
       extraLinesWrap.appendChild(row);
 
       Pickr.create({
-        el: colorBox, theme:"nano", default: lineObj.color||"#E5E6E8",
+        el: colorBox, theme:\"nano\", default: lineObj.color||\"#E5E6E8\",
         components:{ preview:true,opacity:true,hue:true,
           interaction:{hex:true,rgba:true,input:true,save:true} }
       })
-      .on("change", c => { extraLines[idx].color = c.toHEXA().toString(); })
-      .on("save", (_,p)=>p.hide())
-      .setColor(lineObj.color||"#E5E6E8");
+      .on(\"change\", c => { extraLines[idx].color = c.toHEXA().toString(); })
+      .on(\"save\", (_,p)=>p.hide())
+      .setColor(lineObj.color||\"#E5E6E8\");
     });
   }
-  addExtraLineBtn.addEventListener("click", () => {
-    extraLines.push({ text:"", color:"#E5E6E8" }); renderExtraLines();
-  });
+
+  /* -------------------------------------------------- *
+   *  Apply Item / Non‑Item UI rules
+   * -------------------------------------------------- */
+  function lockItemFields(isItem) {
+    [fldName, fldRarity, fldItemType, fldDescItem].forEach(inp=>{
+      inp.readOnly = isItem;
+      inp.disabled = isItem;
+    });
+    // Also disable colour pickers for Item mode
+    [pikName, pikRarity, pikItemType, pikDescItem].forEach(pik=>{
+      pik.getRoot().style.pointerEvents = isItem ? \"none\" : \"auto\";
+      pik.getRoot().style.opacity       = isItem ? 0.4   : 1;
+    });
+  }
+
+  function applyTypeVisibility() {
+    const isItem = fldType.value === \"Item\";
+    itemFieldsBlock.style.display  = isItem ? \"block\" : \"none\";
+    nonItemDescBlock.style.display = isItem ? \"none\"  : \"block\";
+    predefinedBlock.style.display  = isItem ? \"block\" : \"none\";
+    lockItemFields(isItem);
+    if (isItem) predefinedDD.value = \"\";
+  }
+  fldType.addEventListener(\"change\", applyTypeVisibility);
 
   /* -------------------------------------------------- *
    *  Predefined‑item dropdown autofill
    * -------------------------------------------------- */
-  predefinedDD.addEventListener("change", () => {
+  predefinedDD.addEventListener(\"change\", () => {
     const id = predefinedDD.value;
     if (!id || !predefinedDefs[id]) return;
     const d = predefinedDefs[id];
-    fldName.value = d.name || "";        pikName.setColor(d.nameColor || "#E5E6E8");
-    fldRarity.value = d.rarity || "";    pikRarity.setColor(d.rarityColor || "#E5E6E8");
-    fldItemType.value = d.itemType || d.type || "";
-    pikItemType.setColor(d.itemTypeColor || "#E5E6E8");
-    fldDescItem.value = d.description || "";
-    pikDescItem.setColor(d.descriptionColor || "#E5E6E8");
-    extraLines = d.extraLines ? JSON.parse(JSON.stringify(d.extraLines)) : [];
-    renderExtraLines();
-    fldImageS.value = d.imageSmall || "";
-    fldImageL.value = d.imageBig   || "";
+    populateFromDefinition(d);
   });
+
+  function populateFromDefinition(def) {
+    fldName.value = def.name || \"\";        pikName.setColor(def.nameColor || \"#E5E6E8\");
+    fldRarity.value = def.rarity || \"\";    pikRarity.setColor(def.rarityColor || \"#E5E6E8\");
+    fldItemType.value = def.itemType || def.type || \"\";
+    pikItemType.setColor(def.itemTypeColor || \"#E5E6E8\");
+    fldDescItem.value = def.description || \"\";
+    pikDescItem.setColor(def.descriptionColor || \"#E5E6E8\");
+    extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+    renderExtraLines();
+    fldImageS.value = def.imageSmall || \"\";
+    fldImageL.value = def.imageBig   || \"\";
+  }
 
   /* -------------------------------------------------- *
    *  Internal helpers: populateForm / harvestForm
    * -------------------------------------------------- */
   function populateForm(m) {
-    fldName.value = m.name || "";        pikName.setColor(m.nameColor || "#E5E6E8");
-    fldType.value = m.type || "Door";
-    fldImageS.value = m.imageSmall || "";
-    fldImageL.value = m.imageBig   || "";
-    fldVideo.value  = m.videoURL  || "";
+    fldType.value = m.type || \"Door\";
     applyTypeVisibility();
-    if (m.type === "Item") {
-      predefinedDD.value = m.predefinedItemId || "";
-      fldRarity.value = m.rarity ? m.rarity.toLowerCase() : "";
-      pikRarity.setColor(m.rarityColor || "#E5E6E8");
-      fldItemType.value = m.itemType || "Crafting Material";
-      pikItemType.setColor(m.itemTypeColor || "#E5E6E8");
-      fldDescItem.value = m.description || "";
-      pikDescItem.setColor(m.descriptionColor || "#E5E6E8");
-      extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
-      renderExtraLines();
+
+    if (m.type === \"Item\") {
+      predefinedDD.value = m.predefinedItemId || \"\";
+      const def = predefinedDefs[m.predefinedItemId];
+      if (def) populateFromDefinition(def);
+      else { fldName.value = m.name || \"\"; }   // fallback
     } else {
-      fldDescNonItem.value = m.description || "";
-      pikDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
+      fldName.value = m.name || \"\";  pikName.setColor(m.nameColor || \"#E5E6E8\");
+      fldImageS.value = m.imageSmall || \"\";
+      fldImageL.value = m.imageBig   || \"\";
+      fldVideo.value  = m.videoURL  || \"\";
+      fldDescNonItem.value = m.description || \"\";
+      pikDescNonItem.setColor(m.descriptionColor || \"#E5E6E8\");
     }
   }
 
   function harvestForm(coords) {
     const out = {
       type: fldType.value,
-      name: fldName.value || "New Marker",
-      nameColor: pikName.getColor()?.toHEXA()?.toString() || "#E5E6E8",
       coords,
-      imageSmall: fldImageS.value,
-      imageBig:   fldImageL.value,
-      videoURL:   fldVideo.value || "",
       predefinedItemId: predefinedDD.value || null
     };
-    if (out.type === "Item") {
-      out.rarity         = formatRarity(fldRarity.value);
-      out.rarityColor    = pikRarity.getColor()?.toHEXA()?.toString()     || "#E5E6E8";
-      out.itemType       = fldItemType.value;
-      out.itemTypeColor  = pikItemType.getColor()?.toHEXA()?.toString()   || "#E5E6E8";
-      out.description    = fldDescItem.value;
-      out.descriptionColor = pikDescItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      out.extraLines     = JSON.parse(JSON.stringify(extraLines));
+
+    if (out.type === \"Item\") {
+      const def = predefinedDefs[out.predefinedItemId];
+      if (def) {
+        out.name            = def.name;
+        out.nameColor       = def.nameColor       || \"#E5E6E8\";
+        out.rarity          = def.rarity;
+        out.rarityColor     = def.rarityColor     || \"#E5E6E8\";
+        out.itemType        = def.itemType || def.type;
+        out.itemTypeColor   = def.itemTypeColor   || \"#E5E6E8\";
+        out.description     = def.description;
+        out.descriptionColor= def.descriptionColor|| \"#E5E6E8\";
+        out.extraLines      = JSON.parse(JSON.stringify(def.extraLines || []));
+        out.imageSmall      = def.imageSmall;
+        out.imageBig        = def.imageBig;
+      }
     } else {
+      out.name            = fldName.value || \"New Marker\";
+      out.nameColor       = pikName.getColor()?.toHEXA()?.toString() || \"#E5E6E8\";
+      out.imageSmall      = fldImageS.value;
+      out.imageBig        = fldImageL.value;
+      out.videoURL        = fldVideo.value || \"\";
       out.description     = fldDescNonItem.value;
-      out.descriptionColor= pikDescNonItem.getColor()?.toHEXA()?.toString()|| "#E5E6E8";
+      out.descriptionColor= pikDescNonItem.getColor()?.toHEXA()?.toString() || \"#E5E6E8\";
     }
     return out;
   }
@@ -205,45 +226,39 @@ export function initMarkerForm(db) {
 
   function openEdit(markerObj, data, pageEvent, onSave) {
     populateForm(data);
-    positionModal(modal, pageEvent); modal.style.display = "block";
+    positionModal(modal, pageEvent); modal.style.display = \"block\";
 
     /* -- attach form submit -- */
-    if (formSubmitHandler) form.removeEventListener("submit", formSubmitHandler);
+    if (formSubmitHandler) form.removeEventListener(\"submit\", formSubmitHandler);
     formSubmitHandler = (e) => {
       e.preventDefault();
       const updated = harvestForm(data.coords);
-      // Merge back into original object
       Object.assign(data, updated);
-      if (typeof onSave === "function") onSave(data);
-      modal.style.display = "none";
+      if (typeof onSave === \"function\") onSave(data);
+      modal.style.display = \"none\";
     };
-    form.addEventListener("submit", formSubmitHandler);
+    form.addEventListener(\"submit\", formSubmitHandler);
   }
 
   function openCreate(coords, defaultType, pageEvent, onCreate) {
-    // Default blank fields
-    populateForm({
-      name:"", type:defaultType || "Item", imageSmall:"", imageBig:"",
-      videoURL:"", rarity:"", itemType:"Crafting Material", description:"",
-      extraLines:[]
-    });
-    positionModal(modal, pageEvent); modal.style.display = "block";
+    populateForm({ type: defaultType || \"Item\" });
+    positionModal(modal, pageEvent); modal.style.display = \"block\";
 
-    if (formSubmitHandler) form.removeEventListener("submit", formSubmitHandler);
+    if (formSubmitHandler) form.removeEventListener(\"submit\", formSubmitHandler);
     formSubmitHandler = (e) => {
       e.preventDefault();
       const newData = harvestForm(coords);
-      if (typeof onCreate === "function") onCreate(newData);
-      modal.style.display = "none";
+      if (typeof onCreate === \"function\") onCreate(newData);
+      modal.style.display = \"none\";
     };
-    form.addEventListener("submit", formSubmitHandler);
+    form.addEventListener(\"submit\", formSubmitHandler);
   }
 
   /* -------------------------------------------------- *
    *  Cancel button hides modal
    * -------------------------------------------------- */
-  btnCancel.addEventListener("click", () => {
-    modal.style.display = "none";
+  btnCancel.addEventListener(\"click\", () => {
+    modal.style.display = \"none\";
   });
 
   /* -------------------------------------------------- *

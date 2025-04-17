@@ -53,13 +53,16 @@ export function initCopyPasteManager(map, addMarkerCallback) {
     const newData = JSON.parse(JSON.stringify(copiedData));
     delete newData.id;
     newData.coords = [e.latlng.lat, e.latlng.lng];
-    newData.name  += " (copy)";
+
+    // Append \"(copy)\" only for markers that are NOT linked to a predefined item
+    if (!newData.predefinedItemId) newData.name += \" (copy)\";
+
     addMarkerCallback(newData);                 // caller handles Firestore save
     // Keep paste mode active – ghost remains, user can click again
   });
 
   // Right‑click anywhere on the document cancels paste mode
-  document.addEventListener("contextmenu", cancel);
+  document.addEventListener(\"contextmenu\", cancel);
 
   return { startCopy, cancel };
 }
