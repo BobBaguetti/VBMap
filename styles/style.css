@@ -255,9 +255,9 @@ body, html {
 .field-row input[type="text"],
 .field-row select,
 .field-row textarea {
-  background: #E5E6E8;
-  color: #000;
-  border: 1px solid #999;
+  background: #303030;
+  color: #e0e0e0;
+  border: 1px solid #555;
   padding: 4px 6px;
   font-size: 14px;
   width: 100%;
@@ -273,7 +273,7 @@ body, html {
   border-radius: 2px;
   cursor: pointer;
   flex-shrink: 0;
-  margin-left: 6px;
+  margin-left: 86px; /* Extra Info + aligned 4px more left */
 }
 
 /* Item Definitions Modal */
@@ -307,8 +307,8 @@ body, html {
   justify-content: space-between;
   align-items: center;
   padding: 0;
-  margin-bottom: 9px; /* moved 5px lower total */
-  border-bottom: 2px solid #444;
+  margin-bottom: 10px;         /* moved 5px lower */
+  border-bottom: 2px solid #444; /* thicker, darker line */
 }
 .modal-header-left {
   display: flex;
@@ -409,8 +409,8 @@ body, html {
 
 /* Separator between item container and Add Item form */
 .modal-content hr {
-  border-top: 2px solid #444;
-  margin: 9px 0;
+  border-top: 2px solid #444; /* match header divider */
+  margin: 10px 0;
 }
 
 /* Dark Save/Cancel buttons */
@@ -426,22 +426,4 @@ body, html {
 #item-definition-form button[type="submit"]:hover,
 #item-definition-form button[type="button"]:hover {
   background: #444;
-}
-
-/* Add Item input fields + dropdowns color */
-#item-definition-form input[type="text"],
-#item-definition-form select,
-#item-definition-form textarea {
-  background: #343541; /* ChatGPT dark mode chat box color */
-  color: #e0e0e8;     /* nearly white-gray */
-  border: 1px solid #555;
-}
-#item-definition-form select option {
-  background: #343541;
-  color: #e0e0e8;
-}
-
-/* Align Extra Info + button */
-#add-def-extra-line {
-  margin-left: 90px;
 }
