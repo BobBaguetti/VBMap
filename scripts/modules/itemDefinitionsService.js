@@ -1,4 +1,7 @@
-// scripts/modules/itemDefinitionsService.js
+// @fullfile: Send the entire file, no omissions or abridgments.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
+// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @file:    /scripts/modules/itemDefinitionsService.js
 
 /**
  * Initializes and returns the itemDefinitions collection reference.
@@ -82,3 +85,5 @@ export async function deleteItemDefinition(db, id) {
     throw err;
   }
 }
+
+// @version: 1

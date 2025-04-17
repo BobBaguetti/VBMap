@@ -1,4 +1,7 @@
-// scripts/modules/utils.js
+// @fullfile: Send the entire file, no omissions or abridgments.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
+// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @file:    /scripts/modules/utils.js
 
 /**
  * Capitalizes the first letter of the given string.
@@ -49,3 +52,4 @@ export function capitalize(str) {
     return JSON.parse(JSON.stringify(obj));
   }
   
+  // @version: 1
