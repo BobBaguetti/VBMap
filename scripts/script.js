@@ -37,7 +37,8 @@ const layers = {
   Door:               L.layerGroup(),
   "Extraction Portal":L.layerGroup(),
   Item:               itemLayer,
-  Teleport:           L.layerGroup()
+  Teleport:           L.layerGroup(),
+  "Spawn Point":      L.layerGroup()
 };
 Object.values(layers).forEach(layerGroup => layerGroup.addTo(map));
 
@@ -45,7 +46,8 @@ Object.values(layers).forEach(layerGroup => layerGroup.addTo(map));
  *  Sidebar Setup (includes Main & Item filters)
  * ------------------------------------------------------------------ */
 const allMarkers = [];
-setupSidebar(map, layers, allMarkers, db);
+// Destructure to get loader for item filters
+const { filterMarkers, loadItemFilters } = setupSidebar(map, layers, allMarkers, db);
 
 /* ------------------------------------------------------------------ *
  *  Marker Form Module Initialization
@@ -66,17 +68,19 @@ async function refreshMarkersFromDefinitions() {
     if (!def) return;
 
     // Update marker data from definition
-    data.name             = def.name;
-    data.nameColor        = def.nameColor       || "#E5E6E8";
-    data.rarity           = def.rarity;
-    data.rarityColor      = def.rarityColor     || "#E5E6E8";
-    data.itemType         = def.itemType || def.type;
-    data.itemTypeColor    = def.itemTypeColor   || "#E5E6E8";
-    data.description      = def.description;
-    data.descriptionColor = def.descriptionColor|| "#E5E6E8";
-    data.extraLines       = JSON.parse(JSON.stringify(def.extraLines || []));
-    data.imageSmall       = def.imageSmall;
-    data.imageBig         = def.imageBig;
+    Object.assign(data, {
+      name:             def.name,
+      nameColor:        def.nameColor       || "#E5E6E8",
+      rarity:           def.rarity,
+      rarityColor:      def.rarityColor     || "#E5E6E8",
+      itemType:         def.itemType || def.type,
+      itemTypeColor:    def.itemTypeColor   || "#E5E6E8",
+      description:      def.description,
+      descriptionColor: def.descriptionColor|| "#E5E6E8",
+      extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
+      imageSmall:       def.imageSmall,
+      imageBig:         def.imageBig
+    });
 
     markerObj.setPopupContent(createPopupContent(data));
     firebaseUpdateMarker(db, data);
@@ -85,10 +89,13 @@ async function refreshMarkersFromDefinitions() {
 
 /* ------------------------------------------------------------------ *
  *  Item Definitions Modal Initialization
+ *  -> also reload sidebar item filters after any change
  * ------------------------------------------------------------------ */
 initItemDefinitionsModal(db, async () => {
   await markerForm.refreshPredefinedItems();
   await refreshMarkersFromDefinitions();
+  await loadItemFilters();     // <-- reload the sidebar’s item list
+  filterMarkers();             // <-- reapply filters so new items appear
 });
 
 /* ------------------------------------------------------------------ *
@@ -141,6 +148,8 @@ const callbacks = {
     if (!m.coords) m.coords = [1500, 1500];
     addMarker(m, callbacks);
   });
+  // initial filter pass
+  filterMarkers();
 })();
 
 /* ------------------------------------------------------------------ *
