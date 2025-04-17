@@ -1,4 +1,4 @@
-// scripts/modules/itemDefinitionsModal.js
+// File: scripts/modules/itemDefinitionsModal.js
 
 import {
   loadItemDefinitions,
@@ -8,10 +8,9 @@ import {
 } from "./itemDefinitionsService.js";
 
 /**
- * Initialise the modal.
- * @param {firebase.firestore.Firestore} db   Firestore instance
- * @param {Function} onDefinitionsChanged     Callback after add/edit/delete
- * @returns {{ openModal: Function, closeModal: Function, refresh: Function }}
+ * Initialise the Manage Items modal.
+ * @param {firebase.firestore.Firestore} db
+ * @param {Function} onDefinitionsChanged
  */
 export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   // DOM handles
@@ -32,36 +31,21 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   const filterNameBtn   = document.getElementById("filter-name");
   const filterTypeBtn   = document.getElementById("filter-type");
   const filterRarityBtn = document.getElementById("filter-rarity");
-  const heading2        = document.getElementById("def-form-heading");
   const heading3        = document.getElementById("def-form-subheading");
   const defCancelBtn    = document.getElementById("def-cancel");
 
-  // Safe Pickr factory
+  // Utility: create or reuse a Pickr instance
   function createPicker(selector) {
-    const container = document.querySelector(selector);
-    if (!container) {
-      console.warn(`itemDefinitionsModal: missing Pickr container ${selector}`);
-      const stub = {
-        on:        () => stub,
-        setColor:  () => {},
-        getColor:  () => ({ toHEXA: () => ["#E5E6E8"], toString: () => "#E5E6E8" })
-      };
-      return stub;
-    }
+    const el = document.querySelector(selector);
+    if (!el) return { on: ()=>{}, setColor: ()=>{}, getColor: ()=>({ toHEXA: ()=>["#E5E6E8"], toString: ()=>"#E5E6E8" }) };
     return Pickr.create({
-      el: selector,
-      theme: "nano",
-      default: "#E5E6E8",
+      el: selector, theme: "nano", default: "#E5E6E8",
       components: {
-        preview: true,
-        opacity: true,
-        hue: true,
+        preview: true, opacity: true, hue: true,
         interaction: { hex: true, rgba: true, input: true, save: true }
       }
-    }).on("save", (_, p) => p.hide());
+    }).on("save", (_i, picker) => picker.hide());
   }
-
-  // Initialize or reuse Pickrs
   if (!window.pickrDefName) {
     window.pickrDefName        = createPicker("#pickr-def-name");
     window.pickrDefType        = createPicker("#pickr-def-type");
@@ -69,222 +53,149 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     window.pickrDefDescription = createPicker("#pickr-def-description");
   }
 
-  // Extra‑info lines state
+  // Manage extra-info lines
   let extraLines = [];
   function renderExtraLines() {
     defExtraLinesContainer.innerHTML = "";
-    extraLines.forEach((lineObj, idx) => {
+    extraLines.forEach((line, i) => {
       const row = document.createElement("div");
       row.className = "field-row";
       row.style.marginBottom = "5px";
 
       const txt = document.createElement("input");
       txt.type = "text";
-      txt.value = lineObj.text;
-      txt.style.background = "#E5E6E8";
-      txt.style.color = "#000";
-      txt.addEventListener("input", () => {
-        extraLines[idx].text = txt.value;
-      });
+      txt.value = line.text;
+      txt.style.cssText = "width:100%; background:#303030; color:#e0e0e0; padding:4px 6px; border:1px solid #555;";
+      txt.addEventListener("input", () => { extraLines[i].text = txt.value; });
 
-      const colorBox = document.createElement("div");
-      colorBox.className = "color-btn";
-      colorBox.style.marginLeft = "5px";
-
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.textContent = "×";
-      removeBtn.style.marginLeft = "5px";
-      removeBtn.addEventListener("click", () => {
-        extraLines.splice(idx, 1);
-        renderExtraLines();
-      });
-
-      row.append(txt, colorBox, removeBtn);
-      defExtraLinesContainer.appendChild(row);
-
-      // Per‑line Pickr
+      const clr = document.createElement("div");
+      clr.className = "color-btn";
+      clr.style.marginLeft = "5px";
       try {
         Pickr.create({
-          el: colorBox,
-          theme: "nano",
-          default: lineObj.color || "#E5E6E8",
+          el: clr, theme: "nano", default: line.color || "#E5E6E8",
           components: {
-            preview: true,
-            opacity: true,
-            hue: true,
+            preview: true, opacity: true, hue: true,
             interaction: { hex: true, rgba: true, input: true, save: true }
           }
         })
-          .on("change", c => {
-            extraLines[idx].color = c.toHEXA().toString();
-          })
-          .on("save", (_, p) => p.hide())
-          .setColor(lineObj.color || "#E5E6E8");
-      } catch (e) {
-        console.warn("itemDefinitionsModal: failed to init line Pickr", e);
-      }
+        .on("change", c => { extraLines[i].color = c.toHEXA().toString(); })
+        .on("save", (_i, p) => p.hide())
+        .setColor(line.color || "#E5E6E8");
+      } catch {}
+
+      const rm = document.createElement("button");
+      rm.type = "button";
+      rm.textContent = "×";
+      rm.style.marginLeft = "5px";
+      rm.addEventListener("click", () => {
+        extraLines.splice(i, 1);
+        renderExtraLines();
+      });
+
+      row.append(txt, clr, rm);
+      defExtraLinesContainer.appendChild(row);
     });
   }
-
   addExtraLineBtn.addEventListener("click", () => {
     extraLines.push({ text: "", color: "#E5E6E8" });
     renderExtraLines();
   });
 
-  // Load & render definitions list
+  // Render the list of definitions
   async function loadAndRender() {
     listWrap.innerHTML = "";
     const defs = await loadItemDefinitions(db);
     defs.forEach(def => {
       const row = document.createElement("div");
       row.className = "item-def-entry";
-      row.style.position = "relative";
-      row.style.paddingTop = "30px";
 
-      // Top-right Add Filter toggle
-      const showDiv = document.createElement("div");
-      showDiv.innerHTML = `
-        <label class="add-filter-toggle" style="position:absolute; top:8px; right:8px;">
-          <input type="checkbox" data-show-filter="${def.id}"
-            ${def.showInFilters ? "checked" : ""}/>
-          Add Filter
-        </label>`;
-      row.appendChild(showDiv);
-
-      // Entry content
+      // Name, type, rarity (capitalized), description
+      const rare = def.rarity ? def.rarity.charAt(0).toUpperCase() + def.rarity.slice(1) : "";
       const content = document.createElement("div");
       content.innerHTML = `
         <span class="def-name"><strong>${def.name}</strong></span>
-        (<span class="def-type">${def.itemType || def.type}</span>) –
-        <span class="def-rarity">${def.rarity || ""}</span>
-        <br/><em class="def-description">${def.description || ""}</em>
+        (<span class="def-type">${def.itemType||def.type}</span>)
+        – <span class="def-rarity">${rare}</span>
+        <br/><em>${def.description||""}</em>
       `;
       row.appendChild(content);
 
-      // Action buttons bottom‑right
-      const actionDiv = document.createElement("div");
-      actionDiv.className = "item-action-buttons";
-      actionDiv.style.position = "absolute";
-      actionDiv.style.bottom = "8px";
-      actionDiv.style.right = "8px";
-      actionDiv.style.display = "flex";
-      actionDiv.style.gap = "4px";
-      actionDiv.innerHTML = `
-        <button data-edit="${def.id}">Edit</button>
-        <button data-copy="${def.id}">Copy</button>
-        <button data-delete="${def.id}">Delete</button>
-      `;
-      row.appendChild(actionDiv);
-
-      listWrap.appendChild(row);
-
       // Add Filter toggle
-      showDiv.querySelector("input").addEventListener("change", async e => {
+      const tf = document.createElement("div");
+      tf.className = "add-filter-toggle";
+      tf.innerHTML = `
+        <label><input type="checkbox" data-show-filter="${def.id}"
+          ${def.showInFilters?"checked":""}/> Add Filter</label>
+      `;
+      tf.querySelector("input").addEventListener("change", async e => {
         def.showInFilters = e.target.checked;
         await updateItemDefinition(db, { id: def.id, showInFilters: def.showInFilters });
         onDefinitionsChanged();
       });
+      row.appendChild(tf);
 
-      // Edit button
-      row.querySelector("[data-edit]").addEventListener("click", () => {
-        defName.value         = def.name;
-        defType.value         = def.type;
-        defRarity.value       = def.rarity || "";
-        defDescription.value  = def.description || "";
-        defImageSmall.value   = def.imageSmall || "";
-        defImageBig.value     = def.imageBig   || "";
-        extraLines            = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
-        renderExtraLines();
-        defName.dataset.editId = def.id;
-        window.pickrDefName       .setColor(def.nameColor        || "#E5E6E8");
-        window.pickrDefType       .setColor(def.itemTypeColor    || "#E5E6E8");
-        window.pickrDefRarity     .setColor(def.rarityColor      || "#E5E6E8");
-        window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
-        heading3.innerText        = "Edit Item";
-      });
+      // Edit/Delete/Copy buttons
+      const btns = document.createElement("div");
+      btns.className = "item-action-buttons";
+      btns.innerHTML = `
+        <button data-edit="${def.id}">Edit</button>
+        <button data-delete="${def.id}">Delete</button>
+        <button data-copy="${def.id}">Copy</button>
+      `;
+      btns.querySelector("[data-edit]").addEventListener("click", () => openEdit(def));
+      btns.querySelector("[data-delete]").addEventListener("click", () => deleteDef(def.id));
+      btns.querySelector("[data-copy]").addEventListener("click", () => copyDef(def));
+      row.appendChild(btns);
 
-      // Copy button
-      row.querySelector("[data-copy]").addEventListener("click", () => {
-        defName.dataset.copyId = def.id;
-        defName.value = def.name + " (copy)";
-        heading3.innerText = "Add Item (Copy)";
-      });
-
-      // Delete button
-      row.querySelector("[data-delete]").addEventListener("click", async () => {
-        if (!confirm("Delete this item definition?")) return;
-        await deleteItemDefinition(db, def.id);
-        await loadAndRender();
-        onDefinitionsChanged();
-      });
+      listWrap.appendChild(row);
     });
   }
 
-  // Search & tri‑toggle filters
-  const filterFlags = { name: false, type: false, rarity: false };
-  [filterNameBtn, filterTypeBtn, filterRarityBtn].forEach(btn => btn.classList.remove("toggled"));
-  function toggleBtn(btn, flag) {
-    btn.classList.toggle("toggled", flag);
-  }
-
+  // Search + tri-toggle logic
+  const flags = { name:false, type:false, rarity:false };
   function applyFilters() {
-    const q = (defSearch.value || "").toLowerCase();
-    Array.from(listWrap.children).forEach(entry => {
-      const nameVal   = entry.querySelector(".def-name")   ?.innerText.toLowerCase() || "";
-      const typeVal   = entry.querySelector(".def-type")   ?.innerText.toLowerCase() || "";
-      const rarityVal = entry.querySelector(".def-rarity") ?.innerText.toLowerCase() || "";
-
-      let match = false;
+    const q = (defSearch.value||"").toLowerCase();
+    listWrap.childNodes.forEach(entry => {
+      const name   = entry.querySelector(".def-name").innerText.toLowerCase();
+      const type   = entry.querySelector(".def-type").innerText.toLowerCase();
+      const rarity = entry.querySelector(".def-rarity").innerText.toLowerCase();
+      // Always filter by search text first
+      let show = q 
+        ? (name.includes(q) || type.includes(q) || rarity.includes(q))
+        : true;
+      // If no search text, then apply tri-toggle flags:
       if (!q) {
-        match = true;
-      } else if (!filterFlags.name && !filterFlags.type && !filterFlags.rarity) {
-        if ([nameVal, typeVal, rarityVal].some(v => v.includes(q))) match = true;
-      } else {
-        if (filterFlags.name   && nameVal.includes(q))   match = true;
-        if (filterFlags.type   && typeVal.includes(q))   match = true;
-        if (filterFlags.rarity && rarityVal.includes(q)) match = true;
+        if (flags.name   && !name.includes(q))   show = false;
+        if (flags.type   && !type.includes(q))   show = false;
+        if (flags.rarity && !rarity.includes(q)) show = false;
       }
-
-      entry.style.display = match ? "" : "none";
+      entry.style.display = show ? "" : "none";
     });
   }
-
-  filterNameBtn.addEventListener("click", () => {
-    filterFlags.name = !filterFlags.name;
-    toggleBtn(filterNameBtn, filterFlags.name);
-    applyFilters();
-  });
-  filterTypeBtn.addEventListener("click", () => {
-    filterFlags.type = !filterFlags.type;
-    toggleBtn(filterTypeBtn, filterFlags.type);
-    applyFilters();
-  });
-  filterRarityBtn.addEventListener("click", () => {
-    filterFlags.rarity = !filterFlags.rarity;
-    toggleBtn(filterRarityBtn, filterFlags.rarity);
-    applyFilters();
-  });
+  // Wire up buttons
+  filterNameBtn.addEventListener("click", () => { flags.name=!flags.name; filterNameBtn.classList.toggle("toggled"); applyFilters(); });
+  filterTypeBtn.addEventListener("click", () => { flags.type=!flags.type; filterTypeBtn.classList.toggle("toggled"); applyFilters(); });
+  filterRarityBtn.addEventListener("click", () => { flags.rarity=!flags.rarity; filterRarityBtn.classList.toggle("toggled"); applyFilters(); });
   defSearch.addEventListener("input", applyFilters);
 
-  // Form submit (add or edit)
+  // Form handlers
   form.addEventListener("submit", async e => {
     e.preventDefault();
     const payload = {
-      name:             defName.value,
-      type:             defType.value,
-      rarity:           defRarity.value,
-      description:      defDescription.value,
-      imageSmall:       defImageSmall.value,
-      imageBig:         defImageBig.value,
-      extraLines:       JSON.parse(JSON.stringify(extraLines)),
-      nameColor:        window.pickrDefName.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-      itemTypeColor:    window.pickrDefType.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-      rarityColor:      window.pickrDefRarity.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-      descriptionColor: window.pickrDefDescription.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-      showInFilters:    false
+      name: defName.value.trim()||"Unnamed",
+      type: defType.value,
+      rarity: defRarity.value,
+      description: defDescription.value,
+      imageSmall: defImageSmall.value,
+      imageBig: defImageBig.value,
+      extraLines: JSON.parse(JSON.stringify(extraLines)),
+      nameColor: window.pickrDefName.getColor()?.toHEXA()?.toString()||"#E5E6E8",
+      itemTypeColor: window.pickrDefType.getColor()?.toHEXA()?.toString()||"#E5E6E8",
+      rarityColor: window.pickrDefRarity.getColor()?.toHEXA()?.toString()||"#E5E6E8",
+      descriptionColor: window.pickrDefDescription.getColor()?.toHEXA()?.toString()||"#E5E6E8",
+      showInFilters: false
     };
-
     if (defName.dataset.editId) {
       payload.id = defName.dataset.editId;
       delete defName.dataset.editId;
@@ -297,38 +208,68 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     resetForm();
   });
 
-  // Reset form helper
+  // Helpers for edit/delete/copy
+  function openEdit(def) {
+    defName.dataset.editId = def.id;
+    defName.value = def.name;
+    defType.value = def.type;
+    defRarity.value = def.rarity;
+    defDescription.value = def.description||"";
+    defImageSmall.value = def.imageSmall||"";
+    defImageBig.value = def.imageBig||"";
+    extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+    renderExtraLines();
+    [window.pickrDefName, window.pickrDefType, window.pickrDefRarity, window.pickrDefDescription]
+      .forEach(p=>p.setColor(def[p._root._config.el.replace('#pickr-def-','')+'Color']||"#E5E6E8"));
+    heading3.innerText = "Edit Item";
+    openModal();
+  }
+  async function deleteDef(id) {
+    if (!confirm("Delete this item definition?")) return;
+    await deleteItemDefinition(db, id);
+    await loadAndRender();
+    onDefinitionsChanged();
+  }
+  function copyDef(def) {
+    resetForm();
+    heading3.innerText = "Add Item";
+    defName.value = def.name;
+    defType.value = def.type;
+    defRarity.value = def.rarity;
+    defDescription.value = def.description||"";
+    defImageSmall.value = def.imageSmall||"";
+    defImageBig.value = def.imageBig||"";
+    extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+    renderExtraLines();
+    openModal();
+  }
+
   function resetForm() {
     form.reset();
     extraLines = [];
-    defExtraLinesContainer.innerHTML = "";
-    window.pickrDefName       .setColor("#E5E6E8");
-    window.pickrDefType       .setColor("#E5E6E8");
-    window.pickrDefRarity     .setColor("#E5E6E8");
-    window.pickrDefDescription.setColor("#E5E6E8");
-    heading3.innerText        = "Add Item";
+    renderExtraLines();
+    [window.pickrDefName, window.pickrDefType, window.pickrDefRarity, window.pickrDefDescription]
+      .forEach(p=>p.setColor("#E5E6E8"));
+    heading3.innerText = "Add Item";
   }
-  defCancelBtn.addEventListener("click", resetForm);
 
-  // Open/close modal
+  // Modal open/close
+  function onKeyDown(e) {
+    if (e.key === "Escape") closeModal();
+  }
   function openModal() {
     modal.style.display = "block";
     loadAndRender();
-    resetForm();
+    document.addEventListener("keydown", onKeyDown);
   }
   function closeModal() {
     modal.style.display = "none";
+    document.removeEventListener("keydown", onKeyDown);
   }
   manageBtn.addEventListener("click", openModal);
   closeBtn.addEventListener("click", closeModal);
-  window.addEventListener("click", e => {
-    if (e.target === modal) closeModal();
-  });
+  window.addEventListener("click", e => { if (e.target === modal) closeModal(); });
 
-  // API
-  return {
-    openModal,
-    closeModal,
-    refresh: loadAndRender
-  };
+  // Initial load
+  return { openModal, closeModal, refresh: loadAndRender };
 }
