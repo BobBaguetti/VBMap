@@ -1,5 +1,6 @@
 // scripts/modules/copyPasteManager.js
-// Clipboard copy‑/paste manager with a ghost preview marker.
+// Clipboard copy‑/paste manager with a ghost preview marker that
+// remains active until the user cancels with right‑click.
 
 import { createCustomIcon } from "./markerManager.js";
 
@@ -50,10 +51,11 @@ export function initCopyPasteManager(map, addMarkerCallback) {
   map.on("click", (e) => {
     if (!pasteMode || !copiedData) return;
     const newData = JSON.parse(JSON.stringify(copiedData));
+    delete newData.id;
     newData.coords = [e.latlng.lat, e.latlng.lng];
     newData.name  += " (copy)";
     addMarkerCallback(newData);                 // caller handles Firestore save
-    cancel();
+    // Keep paste mode active – ghost remains, user can click again
   });
 
   // Right‑click anywhere on the document cancels paste mode
