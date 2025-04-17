@@ -307,8 +307,8 @@ body, html {
   justify-content: space-between;
   align-items: center;
   padding: 0;
-  margin-bottom: 10px;         /* moved 5px lower */
-  border-bottom: 2px solid #444; /* thicker, darker line */
+  margin-bottom: 12px;         /* 2px lower than before */
+  border-bottom: 2px solid #444;
 }
 .modal-header-left {
   display: flex;
@@ -349,7 +349,7 @@ body, html {
   padding: 4px 8px;
 }
 
-/* Show 3.5 items before scroll */
+/* Show ~3.5 items before scroll */
 .def-list {
   max-height: 240px;
   overflow-y: auto;
@@ -410,7 +410,7 @@ body, html {
 /* Separator between item container and Add Item form */
 .modal-content hr {
   border-top: 2px solid #444; /* match header divider */
-  margin: 10px 0;
+  margin: 12px 0;
 }
 
 /* Dark Save/Cancel buttons */
