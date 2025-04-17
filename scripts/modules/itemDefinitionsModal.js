@@ -144,11 +144,8 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
 
       // Top-right Add Filter toggle
       const showDiv = document.createElement("div");
-      showDiv.style.position = "absolute";
-      showDiv.style.top = "8px";
-      showDiv.style.right = "8px";
       showDiv.innerHTML = `
-        <label class="add-filter-toggle">
+        <label class="add-filter-toggle" style="position:absolute; top:8px; right:8px;">
           <input type="checkbox" data-show-filter="${def.id}"
             ${def.showInFilters ? "checked" : ""}/>
           Add Filter
@@ -165,9 +162,14 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       `;
       row.appendChild(content);
 
-      // Action buttons
+      // Action buttons bottom‑right
       const actionDiv = document.createElement("div");
       actionDiv.className = "item-action-buttons";
+      actionDiv.style.position = "absolute";
+      actionDiv.style.bottom = "8px";
+      actionDiv.style.right = "8px";
+      actionDiv.style.display = "flex";
+      actionDiv.style.gap = "4px";
       actionDiv.innerHTML = `
         <button data-edit="${def.id}">Edit</button>
         <button data-copy="${def.id}">Copy</button>
@@ -222,7 +224,6 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   // Search & tri‑toggle filters
   const filterFlags = { name: false, type: false, rarity: false };
   [filterNameBtn, filterTypeBtn, filterRarityBtn].forEach(btn => btn.classList.remove("toggled"));
-
   function toggleBtn(btn, flag) {
     btn.classList.toggle("toggled", flag);
   }
@@ -235,10 +236,10 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       const rarityVal = entry.querySelector(".def-rarity") ?.innerText.toLowerCase() || "";
 
       let match = false;
-
-      // Default: filter by name if no flags active
-      if (!filterFlags.name && !filterFlags.type && !filterFlags.rarity) {
-        if (nameVal.includes(q)) match = true;
+      if (!q) {
+        match = true;
+      } else if (!filterFlags.name && !filterFlags.type && !filterFlags.rarity) {
+        if ([nameVal, typeVal, rarityVal].some(v => v.includes(q))) match = true;
       } else {
         if (filterFlags.name   && nameVal.includes(q))   match = true;
         if (filterFlags.type   && typeVal.includes(q))   match = true;
