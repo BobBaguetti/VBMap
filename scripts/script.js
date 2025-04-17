@@ -1,4 +1,5 @@
 // scripts/script.js
+
 import { initializeMap } from "./modules/map.js";
 import { showContextMenu } from "./modules/uiManager.js";
 import {
@@ -9,15 +10,13 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "./modules/firebaseService.js";
 import { createMarker, createPopupContent } from "./modules/markerManager.js";
-import {
-  initItemDefinitionsModal
-} from "./modules/itemDefinitionsModal.js";
+import { initItemDefinitionsModal } from "./modules/itemDefinitionsModal.js";
 import { initMarkerForm } from "./modules/markerForm.js";
 import { initCopyPasteManager } from "./modules/copyPasteManager.js";
 import { setupSidebar } from "./modules/sidebarManager.js";
 
 /* ------------------------------------------------------------------ *
- *  Firebase
+ *  Firebase Initialization
  * ------------------------------------------------------------------ */
 const db = initializeFirebase({
   apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
@@ -30,7 +29,7 @@ const db = initializeFirebase({
 });
 
 /* ------------------------------------------------------------------ *
- *  Map & layers
+ *  Map & Layers Setup
  * ------------------------------------------------------------------ */
 const { map } = initializeMap();
 const itemLayer = L.markerClusterGroup();
@@ -40,51 +39,52 @@ const layers = {
   Item:               itemLayer,
   Teleport:           L.layerGroup()
 };
-Object.values(layers).forEach(l => l.addTo(map));
+Object.values(layers).forEach(layerGroup => layerGroup.addTo(map));
 
 /* ------------------------------------------------------------------ *
- *  Sidebar
+ *  Sidebar Setup (includes Main & Item filters)
  * ------------------------------------------------------------------ */
 const allMarkers = [];
-setupSidebar(map, layers, allMarkers);
+setupSidebar(map, layers, allMarkers, db);
 
 /* ------------------------------------------------------------------ *
- *  Marker‑form module
+ *  Marker Form Module Initialization
  * ------------------------------------------------------------------ */
 const markerForm = initMarkerForm(db);
 
 /* ------------------------------------------------------------------ *
- *  Helper: sync all markers that reference a given definition
+ *  Helper: Refresh Markers When Definitions Change
  * ------------------------------------------------------------------ */
 async function refreshMarkersFromDefinitions() {
-  const list = await (await import("./modules/itemDefinitionsService.js"))
-                  .loadItemDefinitions(db);
-  const defMap = Object.fromEntries(list.map(d => [d.id, d]));
+  const { loadItemDefinitions } = await import("./modules/itemDefinitionsService.js");
+  const defsList = await loadItemDefinitions(db);
+  const defMap = Object.fromEntries(defsList.map(d => [d.id, d]));
 
   allMarkers.forEach(({ markerObj, data }) => {
     if (!data.predefinedItemId) return;
     const def = defMap[data.predefinedItemId];
     if (!def) return;
+
     // Update marker data from definition
-    data.name            = def.name;
-    data.nameColor       = def.nameColor       || "#E5E6E8";
-    data.rarity          = def.rarity;
-    data.rarityColor     = def.rarityColor     || "#E5E6E8";
-    data.itemType        = def.itemType || def.type;
-    data.itemTypeColor   = def.itemTypeColor   || "#E5E6E8";
-    data.description     = def.description;
-    data.descriptionColor= def.descriptionColor|| "#E5E6E8";
-    data.extraLines      = JSON.parse(JSON.stringify(def.extraLines || []));
-    data.imageSmall      = def.imageSmall;
-    data.imageBig        = def.imageBig;
+    data.name             = def.name;
+    data.nameColor        = def.nameColor       || "#E5E6E8";
+    data.rarity           = def.rarity;
+    data.rarityColor      = def.rarityColor     || "#E5E6E8";
+    data.itemType         = def.itemType || def.type;
+    data.itemTypeColor    = def.itemTypeColor   || "#E5E6E8";
+    data.description      = def.description;
+    data.descriptionColor = def.descriptionColor|| "#E5E6E8";
+    data.extraLines       = JSON.parse(JSON.stringify(def.extraLines || []));
+    data.imageSmall       = def.imageSmall;
+    data.imageBig         = def.imageBig;
 
     markerObj.setPopupContent(createPopupContent(data));
-    firebaseUpdateMarker(db, data);            // persist changes
+    firebaseUpdateMarker(db, data);
   });
 }
 
 /* ------------------------------------------------------------------ *
- *  Item‑definitions modal
+ *  Item Definitions Modal Initialization
  * ------------------------------------------------------------------ */
 initItemDefinitionsModal(db, async () => {
   await markerForm.refreshPredefinedItems();
@@ -92,24 +92,24 @@ initItemDefinitionsModal(db, async () => {
 });
 
 /* ------------------------------------------------------------------ *
- *  Helper: add marker and save to Firestore
+ *  Add & Persist Helper
  * ------------------------------------------------------------------ */
 function addAndPersist(data) {
-  addMarker(data, callbacks);
+  const markerObj = addMarker(data, callbacks);
   firebaseAddMarker(db, data);
+  return markerObj;
 }
 
 /* ------------------------------------------------------------------ *
- *  Copy‑paste manager
+ *  Copy‑Paste Manager Initialization
  * ------------------------------------------------------------------ */
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 /* ------------------------------------------------------------------ *
- *  Marker creation helpers
+ *  Marker Creation & Callbacks
  * ------------------------------------------------------------------ */
 function addMarker(data, cbs = {}) {
-  const markerObj =
-    createMarker(data, map, layers, showContextMenu, cbs);
+  const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
   allMarkers.push({ markerObj, data });
   return markerObj;
 }
@@ -132,7 +132,7 @@ const callbacks = {
 };
 
 /* ------------------------------------------------------------------ *
- *  Initial marker load
+ *  Initial Marker Load from Firestore
  * ------------------------------------------------------------------ */
 (async () => {
   const markers = await loadMarkers(db);
@@ -144,7 +144,7 @@ const callbacks = {
 })();
 
 /* ------------------------------------------------------------------ *
- *  Map context‑menu: Create marker
+ *  Map Context‑Menu for Creating New Markers
  * ------------------------------------------------------------------ */
 map.on("contextmenu", evt => {
   showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
