@@ -316,6 +316,13 @@ body, html {
   display: flex;
   align-items: center;
   gap: 10px;
+  
+  /* ensure the N/T/R buttons sit in a row */
+  /* and are centered in their boxes */
+  .filter-buttons {
+    display: flex;
+    gap: 5px;
+  }
 }
 .modal-header-left h2 {
   margin: 0;
@@ -327,9 +334,9 @@ body, html {
 }
 /* Darkmode close‑button for Manage Items modal */
 .modal-header-right .close {
-  display: flex;               /* was inline-flex */
-  align-items: center;         /* vertical center */
-  justify-content: center;     /* horizontal center */
+  display: flex;               /* center the “×” */
+  align-items: center;         
+  justify-content: center;     
   width: 28px;
   height: 28px;
   background: #333;
@@ -354,10 +361,10 @@ body, html {
   border-radius: 3px;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
-  display: flex;               /* added */
-  align-items: center;         /* added */
-  justify-content: center;     /* added */
-  line-height: 1;              /* added */
+  display: flex;               
+  align-items: center;         
+  justify-content: center;     
+  line-height: 1;              
 }
 .filter-btn.toggled {
   border: 2px solid gold;
@@ -433,8 +440,8 @@ body, html {
 
 /* Separator between item container and Add Item form */
 .modal-content hr {
-  border: none;                 /* remove default bevel */
-  border-top: 2px solid #444;   /* removed line */
+  border: none;                
+  border-top: 2px solid #444;
   margin: 12px 0;
 }
 
