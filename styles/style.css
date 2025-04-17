@@ -307,8 +307,8 @@ body, html {
   justify-content: space-between;
   align-items: center;
   padding: 0;
-  margin-bottom: 6px; /* moved line 2px lower (from 4px) */
-  border-bottom: 2px solid #444; /* thicker line */
+  margin-bottom: 9px; /* moved 5px lower total */
+  border-bottom: 2px solid #444;
 }
 .modal-header-left {
   display: flex;
@@ -409,8 +409,8 @@ body, html {
 
 /* Separator between item container and Add Item form */
 .modal-content hr {
-  border-top: 2px solid #444; /* thicker line */
-  margin: 6px 0; /* same offset as header separator */
+  border-top: 2px solid #444;
+  margin: 9px 0;
 }
 
 /* Dark Save/Cancel buttons */
@@ -432,11 +432,16 @@ body, html {
 #item-definition-form input[type="text"],
 #item-definition-form select,
 #item-definition-form textarea {
-  background: #f5f5f5; /* ChatGPT field color */
+  background: #343541; /* ChatGPT dark mode chat box color */
   color: #e0e0e8;     /* nearly white-gray */
-  border: 1px solid #ccc;
+  border: 1px solid #555;
 }
 #item-definition-form select option {
-  background: #fff;
+  background: #343541;
   color: #e0e0e8;
+}
+
+/* Align Extra Info + button */
+#add-def-extra-line {
+  margin-left: 90px;
 }
