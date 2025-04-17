@@ -1,6 +1,6 @@
 /* @fullfile: Send the entire file, no omissions or abridgments. */
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
-/* @version: 6   The current file version is 6. Increase by 1 every time you update anything. */
+/* @version: 8   The current file version is 8. Increase by 1 every time you update anything. */
 /* @file:    /styles/style.css */
 
 /* Base Styles */
@@ -346,6 +346,8 @@ body, html {
   box-sizing: border-box;
   vertical-align: middle;
   cursor: pointer;
+  position: relative;
+  top: -2px;
 }
 .modal-header-right .close:hover {
   background: #444;
@@ -461,4 +463,4 @@ body, html {
   background: #444;
 }
 
-/* @version: 6 */
+/* @version: 8 */
