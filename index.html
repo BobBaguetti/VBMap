@@ -11,9 +11,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles/style.css" />
-  <!-- Font Awesome -->
+  <!-- Font Awesome for icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Pickr CSS -->
+  <!-- Pickr CSS (for custom color picker) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
 </head>
 <body>
@@ -27,6 +27,8 @@
     <!-- Filters Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
+      
+      <!-- Main Filters -->
       <div class="filter-group" id="main-filters">
         <h3>Main</h3>
         <div class="toggle-group">
@@ -37,6 +39,8 @@
           <label><input type="checkbox" checked data-layer="Spawn Point" /> Spawn points</label>
         </div>
       </div>
+      
+      <!-- Item Filters -->
       <div class="filter-group" id="item-filters">
         <h3>Items</h3>
         <div class="toggle-group" id="item-filter-list">
@@ -69,7 +73,7 @@
   
   <!-- Map Container -->
   <div id="map"></div>
-
+  
   <!-- Load JS Libraries -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
@@ -94,6 +98,7 @@
           <option value="Extraction Portal">Extraction Portal</option>
           <option value="Item">Item</option>
           <option value="Teleport">Teleport</option>
+          <option value="Spawn Point">Spawn points</option>
         </select>
       </div>
       <div id="predefined-item-container" style="display:none; margin-bottom:10px;">
@@ -173,18 +178,18 @@
       Your browser does not support the video tag.
     </video>
   </div>
-
+  
   <!-- Paste Mode Tooltip -->
-  <div id="paste-tooltip" style="display:none;position:absolute;background:rgba(0,0,0,0.7);color:#fff;padding:2px 5px;border-radius:3px;font-size:12px;pointer-events:none;">
+  <div id="paste-tooltip" style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
     Paste Mode ON
   </div>
-
+  
   <!-- Item Definitions Modal -->
   <div id="item-definitions-modal" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-header-left">
-          <h2 id="def-form-heading">Add Item</h2>
+          <h2 id="def-form-heading">Manage Items</h2>
           <div class="filter-buttons">
             <button class="filter-btn" id="filter-name">N</button>
             <button class="filter-btn" id="filter-type">T</button>
@@ -196,7 +201,9 @@
           <span class="close" id="close-item-definitions">&times;</span>
         </div>
       </div>
-      <div id="item-definitions-list" class="def-list"></div>
+      <div id="item-definitions-list" class="def-list">
+        <!-- Definitions will be populated here -->
+      </div>
       <hr />
       <form id="item-definition-form">
         <h3 id="def-form-subheading">Add Item</h3>
@@ -245,7 +252,7 @@
           <label>Image L:</label>
           <input type="text" id="def-image-big" />
         </div>
-        <div class="field-row" style="justify-content:center;margin-top:10px;">
+        <div class="field-row" style="justify-content:center; margin-top:10px;">
           <button type="submit" style="margin-right:10px;">Save</button>
           <button type="button" id="def-cancel">Cancel</button>
         </div>
