@@ -1,27 +1,27 @@
 // scripts/modules/markerForm.js
-// Edit / Create Marker modal.  When a marker is linked to a predefined
-// item, all item‑specific fields are read‑only and populated directly
-// from the item library.
+// Edit / Create Marker modal.
+//
+// • Markers linked to a predefined Item are read‑only; all their
+//   item‑specific data is inherited from the Items library.
+// • Free‑form markers (Door, Extraction Portal, Teleport, or custom Item)
+//   remain fully editable.
 
 import { makeDraggable, positionModal } from "./uiManager.js";
-import { formatRarity } from "./utils.js";
 import { loadItemDefinitions } from "./itemDefinitionsService.js";
 
 /**
  * Initialise the marker‑form module.
- * @param {firebase.firestore.Firestore} db Firestore instance
+ * @param {firebase.firestore.Firestore} db firestore instance
  * @returns {{ openEdit:Function, openCreate:Function, refreshPredefinedItems:Function }}
  */
 export function initMarkerForm(db) {
   /* -------------------------------------------------- *
-   *  DOM references
+   * DOM handles
    * -------------------------------------------------- */
   const modal            = document.getElementById("edit-modal");
   const modalHandle      = document.getElementById("edit-modal-handle");
   const form             = document.getElementById("edit-form");
   const btnCancel        = document.getElementById("edit-cancel");
-  const addExtraLineBtn  = document.getElementById("add-extra-line");
-  const extraLinesWrap   = document.getElementById("extra-lines");
 
   const fldName          = document.getElementById("edit-name");
   const fldType          = document.getElementById("edit-type");
@@ -33,165 +33,150 @@ export function initMarkerForm(db) {
   const fldDescItem      = document.getElementById("edit-description");
   const fldDescNonItem   = document.getElementById("edit-description-non-item");
 
-  const itemFieldsBlock  = document.getElementById("item-extra-fields");
-  const nonItemDescBlock = document.getElementById("non-item-description");
+  const itemBlock        = document.getElementById("item-extra-fields");
+  const nonItemBlock     = document.getElementById("non-item-description");
   const predefinedBlock  = document.getElementById("predefined-item-container");
   const predefinedDD     = document.getElementById("predefined-item-dropdown");
 
-  /* -------------------------------------------------- *
-   *  Draggable modal
-   * -------------------------------------------------- */
+  const addLineBtn       = document.getElementById("add-extra-line");
+  const linesWrap        = document.getElementById("extra-lines");
+
   makeDraggable(modal, modalHandle);
 
   /* -------------------------------------------------- *
-   *  Colour pickers
+   * Colour pickers
    * -------------------------------------------------- */
-  function mkPicker(sel) {
+  function makePicker(sel) {
     return Pickr.create({
-      el: sel,
-      theme: "nano",
-      default: "#E5E6E8",
+      el: sel, theme: "nano", default: "#E5E6E8",
       components: {
-        preview: true,
-        opacity: true,
-        hue: true,
-        interaction: { hex: true, rgba: true, input: true, save: true }
+        preview: true, opacity: true, hue: true,
+        interaction: { hex:true, rgba:true, input:true, save:true }
       }
     }).on("save", (_, p) => p.hide());
   }
-  const pkName        = mkPicker("#pickr-name");
-  const pkRarity      = mkPicker("#pickr-rarity");
-  const pkItemType    = mkPicker("#pickr-itemtype");
-  const pkDescItem    = mkPicker("#pickr-desc-item");
-  const pkDescNonItem = mkPicker("#pickr-desc-nonitem");
+  const pkName     = makePicker("#pickr-name");
+  const pkRarity   = makePicker("#pickr-rarity");
+  const pkType     = makePicker("#pickr-itemtype");
+  const pkDescItem = makePicker("#pickr-desc-item");
+  const pkDescNI   = makePicker("#pickr-desc-nonitem");
+
+  const pickrs = [pkName, pkRarity, pkType, pkDescItem];
 
   /* -------------------------------------------------- *
-   *  Predefined‑item library
+   * Item Definitions
    * -------------------------------------------------- */
-  let predefinedDefs = {};
+  let itemDefs = {};
   async function refreshPredefinedItems() {
-    const list = await loadItemDefinitions(db);
-    predefinedDefs = {};
+    const defs = await loadItemDefinitions(db);
+    itemDefs = Object.fromEntries(defs.map(d => [d.id, d]));
     predefinedDD.innerHTML = '<option value="">-- Select an item --</option>';
-    list.forEach(def => {
-      predefinedDefs[def.id] = def;
+    defs.forEach(d => {
       const opt = document.createElement("option");
-      opt.value = def.id;
-      opt.textContent = def.name;
+      opt.value = d.id;
+      opt.textContent = d.name;
       predefinedDD.appendChild(opt);
     });
   }
   refreshPredefinedItems();
 
   /* -------------------------------------------------- *
-   *  Extra info lines
+   * Extra‑info lines renderer
    * -------------------------------------------------- */
-  let extraLines = [];
-  function renderExtraLines(readOnly = false) {
-    extraLinesWrap.innerHTML = "";
-    extraLines.forEach((line, idx) => {
+  let lines = [];
+  function renderLines(readOnly = false) {
+    linesWrap.innerHTML = "";
+    lines.forEach((ln, i) => {
       const row = document.createElement("div");
       row.className = "field-row";
       row.style.marginBottom = "5px";
 
       const txt = document.createElement("input");
-      txt.type = "text";
-      txt.value = line.text;
+      txt.value = ln.text;
+      txt.readOnly = readOnly;
       txt.style.background = "#E5E6E8";
       txt.style.color = "#000";
-      txt.readOnly = readOnly;
-      txt.addEventListener("input", () => {
-        extraLines[idx].text = txt.value;
-      });
+      txt.addEventListener("input", () => (lines[i].text = txt.value));
 
-      const colorBox = document.createElement("div");
-      colorBox.className = "color-btn";
-      colorBox.style.marginLeft = "5px";
-      colorBox.style.pointerEvents = readOnly ? "none" : "auto";
-      colorBox.style.opacity = readOnly ? 0.4 : 1;
+      const clr = document.createElement("div");
+      clr.className = "color-btn";
+      clr.style.marginLeft = "5px";
+      clr.style.pointerEvents = readOnly ? "none" : "auto";
+      clr.style.opacity = readOnly ? 0.4 : 1;
 
       const rm = document.createElement("button");
-      rm.type = "button";
       rm.textContent = "x";
-      rm.style.marginLeft = "5px";
+      rm.type = "button";
       rm.disabled = readOnly;
+      rm.style.marginLeft = "5px";
       rm.addEventListener("click", () => {
-        extraLines.splice(idx, 1);
-        renderExtraLines(readOnly);
+        lines.splice(i, 1);
+        renderLines(readOnly);
       });
 
-      row.appendChild(txt);
-      row.appendChild(colorBox);
-      row.appendChild(rm);
-      extraLinesWrap.appendChild(row);
+      row.append(txt, clr, rm);
+      linesWrap.appendChild(row);
 
       Pickr.create({
-        el: colorBox,
-        theme: "nano",
-        default: line.color || "#E5E6E8",
+        el: clr, theme: "nano", default: ln.color || "#E5E6E8",
         components: {
-          preview: true,
-          opacity: true,
-          hue: true,
-          interaction: { hex: true, rgba: true, input: true, save: true }
+          preview:true, opacity:true, hue:true,
+          interaction:{ hex:true, rgba:true, input:true, save:true }
         }
       })
-        .on("change", c => {
-          extraLines[idx].color = c.toHEXA().toString();
-        })
+        .on("change", c => (lines[i].color = c.toHEXA().toString()))
         .on("save", (_, p) => p.hide())
-        .setColor(line.color || "#E5E6E8");
+        .setColor(ln.color || "#E5E6E8");
     });
   }
 
+  addLineBtn.addEventListener("click", () => {
+    lines.push({ text: "", color: "#E5E6E8" });
+    renderLines(false);
+  });
+
   /* -------------------------------------------------- *
-   *  UI mode toggles helpers
+   * Helpers: lock / unlock item fields
    * -------------------------------------------------- */
-  const pickrs = [pkName, pkRarity, pkItemType, pkDescItem];
-
-  function lockItemFields(isItem) {
-    const lock = (ele, yes) => {
-      ele.readOnly = yes;
-      ele.disabled = yes;
-      if (ele.tagName === "SELECT") ele.style.pointerEvents = yes ? "none" : "auto";
+  function lockItemFields(yes) {
+    const toggle = (el, on) => {
+      el.disabled = on; el.readOnly = on;
+      if (el.tagName === "SELECT") {
+        el.style.pointerEvents = on ? "none" : "auto";
+      }
     };
-    [fldName, fldRarity, fldItemType, fldDescItem].forEach(inp => lock(inp, isItem));
+    [fldName, fldRarity, fldItemType, fldDescItem].forEach(el => toggle(el, yes));
 
-    // Safely iterate – skip any Pickr that isn't ready yet.
-    pickrs.filter(Boolean).forEach(p => {
-      const root = p.getRoot ? p.getRoot() : null;
+    // Guard against Pickr not yet fully initialised
+    pickrs.forEach(p => {
+      const root = p?.getRoot?.();
       if (root) {
-        root.style.pointerEvents = isItem ? "none" : "auto";
-        root.style.opacity = isItem ? 0.4 : 1;
+        root.style.pointerEvents = yes ? "none" : "auto";
+        root.style.opacity = yes ? 0.4 : 1;
       }
     });
 
-    addExtraLineBtn.disabled = isItem;
+    addLineBtn.disabled = yes;
   }
 
-  function showSections(isItem) {
-    itemFieldsBlock.style.display  = isItem ? "block" : "none";
-    nonItemDescBlock.style.display = isItem ? "none"  : "block";
-    predefinedBlock.style.display  = isItem ? "block" : "none";
+  function switchSections(isItem) {
+    itemBlock.style.display       = isItem ? "block" : "none";
+    nonItemBlock.style.display    = isItem ? "none"  : "block";
+    predefinedBlock.style.display = isItem ? "block" : "none";
   }
 
-  function applyTypeRules() {
+  function applyTypeUI() {
     const isItem = fldType.value === "Item";
-    showSections(isItem);
+    switchSections(isItem);
     lockItemFields(isItem);
     if (isItem) predefinedDD.value = "";
   }
-  fldType.addEventListener("change", applyTypeRules);
+  fldType.addEventListener("change", applyTypeUI);
 
   /* -------------------------------------------------- *
-   *  Predefined dropdown autofill
+   * Fill from definition
    * -------------------------------------------------- */
-  predefinedDD.addEventListener("change", () => {
-    const def = predefinedDefs[predefinedDD.value];
-    if (def) populateFromDefinition(def);
-  });
-
-  function populateFromDefinition(def) {
+  function fillFromDef(def) {
     fldName.value = def.name;
     pkName.setColor(def.nameColor || "#E5E6E8");
 
@@ -199,7 +184,7 @@ export function initMarkerForm(db) {
     pkRarity.setColor(def.rarityColor || "#E5E6E8");
 
     fldItemType.value = def.itemType || def.type || "";
-    pkItemType.setColor(def.itemTypeColor || "#E5E6E8");
+    pkType.setColor(def.itemTypeColor || "#E5E6E8");
 
     fldDescItem.value = def.description || "";
     pkDescItem.setColor(def.descriptionColor || "#E5E6E8");
@@ -207,24 +192,28 @@ export function initMarkerForm(db) {
     fldImageS.value = def.imageSmall || "";
     fldImageL.value = def.imageBig   || "";
 
-    extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
-    renderExtraLines(true); // read‑only
+    lines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+    renderLines(true);
   }
 
+  predefinedDD.addEventListener("change", () => {
+    const d = itemDefs[predefinedDD.value];
+    if (d) fillFromDef(d);
+  });
+
   /* -------------------------------------------------- *
-   *  Form populate / harvest
+   * populate / harvest
    * -------------------------------------------------- */
-  function populateForm(marker) {
+  function populateForm(marker = { type: "Item" }) {
     fldType.value = marker.type || "Item";
-    applyTypeRules();
+    applyTypeUI();
 
     if (marker.type === "Item") {
       predefinedDD.value = marker.predefinedItemId || "";
-      const def = predefinedDefs[marker.predefinedItemId];
-      if (def) populateFromDefinition(def);
+      const def = itemDefs[marker.predefinedItemId];
+      if (def) fillFromDef(def);
     } else {
-      // Freeform marker
-      fldName.value  = marker.name || "";
+      fldName.value = marker.name || "";
       pkName.setColor(marker.nameColor || "#E5E6E8");
 
       fldImageS.value = marker.imageSmall || "";
@@ -232,60 +221,61 @@ export function initMarkerForm(db) {
       fldVideo.value  = marker.videoURL   || "";
 
       fldDescNonItem.value = marker.description || "";
-      pkDescNonItem.setColor(marker.descriptionColor || "#E5E6E8");
+      pkDescNI.setColor(marker.descriptionColor || "#E5E6E8");
     }
   }
 
   function harvestForm(coords) {
-    const out = { type: fldType.value, coords };
+    const m = { type: fldType.value, coords };
 
-    if (out.type === "Item") {
-      const def = predefinedDefs[predefinedDD.value];
+    if (m.type === "Item") {
+      const def = itemDefs[predefinedDD.value];
       if (def) {
-        out.predefinedItemId = def.id;
-        out.name             = def.name;
-        out.nameColor        = def.nameColor        || "#E5E6E8";
-        out.rarity           = def.rarity;
-        out.rarityColor      = def.rarityColor      || "#E5E6E8";
-        out.itemType         = def.itemType || def.type;
-        out.itemTypeColor    = def.itemTypeColor    || "#E5E6E8";
-        out.description      = def.description;
-        out.descriptionColor = def.descriptionColor || "#E5E6E8";
-        out.extraLines       = JSON.parse(JSON.stringify(def.extraLines || []));
-        out.imageSmall       = def.imageSmall;
-        out.imageBig         = def.imageBig;
+        Object.assign(m, {
+          predefinedItemId: def.id,
+          name:             def.name,
+          nameColor:        def.nameColor || "#E5E6E8",
+          rarity:           def.rarity,
+          rarityColor:      def.rarityColor || "#E5E6E8",
+          itemType:         def.itemType || def.type,
+          itemTypeColor:    def.itemTypeColor || "#E5E6E8",
+          description:      def.description,
+          descriptionColor: def.descriptionColor || "#E5E6E8",
+          extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
+          imageSmall:       def.imageSmall,
+          imageBig:         def.imageBig
+        });
       }
     } else {
-      // Freeform marker
-      out.name             = fldName.value || "New Marker";
-      out.nameColor        = pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      out.imageSmall       = fldImageS.value;
-      out.imageBig         = fldImageL.value;
-      out.videoURL         = fldVideo.value || "";
-      out.description      = fldDescNonItem.value;
-      out.descriptionColor = pkDescNonItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+      m.name             = fldName.value || "New Marker";
+      m.nameColor        = pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+      m.imageSmall       = fldImageS.value;
+      m.imageBig         = fldImageL.value;
+      m.videoURL         = fldVideo.value || "";
+      m.description      = fldDescNonItem.value;
+      m.descriptionColor = pkDescNI.getColor()?.toHEXA()?.toString() || "#E5E6E8";
     }
-    return out;
+    return m;
   }
 
   /* -------------------------------------------------- *
-   *  Modal openers
+   * openEdit / openCreate
    * -------------------------------------------------- */
-  let submitHandler = null;
+  let submitCB = null;
 
   function openEdit(markerObj, data, clickEvt, onSave) {
     populateForm(data);
     positionModal(modal, clickEvt);
     modal.style.display = "block";
 
-    if (submitHandler) form.removeEventListener("submit", submitHandler);
-    submitHandler = (e) => {
+    if (submitCB) form.removeEventListener("submit", submitCB);
+    submitCB = e => {
       e.preventDefault();
       Object.assign(data, harvestForm(data.coords));
       onSave(data);
       modal.style.display = "none";
     };
-    form.addEventListener("submit", submitHandler);
+    form.addEventListener("submit", submitCB);
   }
 
   function openCreate(coords, defaultType, clickEvt, onCreate) {
@@ -293,5 +283,18 @@ export function initMarkerForm(db) {
     positionModal(modal, clickEvt);
     modal.style.display = "block";
 
-    if (submitHandler) form.removeEventListener("submit", submitHandler);
-    submitHandler
+    if (submitCB) form.removeEventListener("submit", submitCB);
+    submitCB = e => {
+      e.preventDefault();
+      onCreate(harvestForm(coords));
+      modal.style.display = "none";
+    };
+    form.addEventListener("submit", submitCB);
+  }
+
+  /* -------------------------------------------------- */
+  btnCancel.addEventListener("click", () => (modal.style.display = "none"));
+
+  /* -------------------------------------------------- */
+  return { openEdit, openCreate, refreshPredefinedItems };
+}
