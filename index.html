@@ -11,57 +11,62 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles/style.css" />
-  <!-- Font Awesome for icons (optional) -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Pickr CSS (for custom color picker) -->
+  <!-- Pickr CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
 </head>
 <body>
-  <!-- Sidebar Toggle Button -->
-  <button id="sidebar-toggle" style="position:absolute; top:10px; left:10px; z-index:1100;">☰</button>
-  
+  <!-- Sidebar Toggle -->
+  <button id="sidebar-toggle" class="sidebar-toggle">☰</button>
+
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
-    <!-- Layers Section -->
-    <div class="sidebar-section">
-      <h2><i class="fas fa-layer-group"></i> Layers</h2>
-      <div class="toggle-group">
-        <!-- Alphabetical order: Door, Extraction Portal, Item, Teleport -->
-        <label><input type="checkbox" checked data-layer="Door" /> Door</label>
-        <label><input type="checkbox" checked data-layer="Extraction Portal" /> Extraction Portal</label>
-        <label><input type="checkbox" checked data-layer="Item" /> Item</label>
-        <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
+    <!-- Accordion: Main Filters -->
+    <div class="accordion">
+      <button class="accordion-header active">Filters <i class="fas fa-chevron-down"></i></button>
+      <div class="accordion-panel" style="display:block;">
+        <div class="toggle-group">
+          <label><input type="checkbox" checked data-layer="Door" /> Door</label>
+          <label><input type="checkbox" checked data-layer="Extraction Portal" /> Extraction Portal</label>
+          <label><input type="checkbox" checked data-layer="Item" /> Item</label>
+          <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
+        </div>
       </div>
     </div>
 
-    <!-- Settings Section -->
-    <div class="sidebar-section">
-      <h2><i class="fas fa-cog"></i> Settings</h2>
-      <label>
-        <input type="checkbox" id="disable-grouping" />
-        Disable Marker Grouping
-      </label>
+    <!-- Accordion: Item Filters -->
+    <div class="accordion">
+      <button class="accordion-header">Items <i class="fas fa-chevron-right"></i></button>
+      <div class="accordion-panel">
+        <!-- Populated dynamically with checkboxes per defined item -->
+      </div>
     </div>
 
-    <!-- Search Section -->
+    <!-- Settings -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-cog"></i> Settings</h2>
+      <label><input type="checkbox" id="disable-grouping" /> Disable Marker Grouping</label>
+    </div>
+
+    <!-- Search -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
-      <input type="text" id="search-bar" placeholder="Search items/locations..." />
+      <input type="text" id="search-bar" placeholder="Search markers..." />
     </div>
-    
-    <!-- New Admin Tools Section -->
+
+    <!-- Admin Tools -->
     <div class="sidebar-section">
       <h2><i class="fas fa-tools"></i> Admin Tools</h2>
-      <button id="manage-item-definitions" style="margin-top:10px;">Manage Items</button>
+      <button id="manage-item-definitions">Manage Items</button>
     </div>
   </div>
-  
-  <!-- Map Container -->
+
+  <!-- Map -->
   <div id="map"></div>
-  
-  <!-- Load JS Libraries -->
+
+  <!-- JS Libraries -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -69,20 +74,11 @@
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
   <script type="module" src="scripts/script.js"></script>
 
-  <!-- Edit Modal for Marker Editing -->
+  <!-- Edit/Create Modal -->
   <div id="edit-modal">
-    <div id="edit-modal-handle">
-      <strong>Edit Marker</strong>
-    </div>
+    <div id="edit-modal-handle"><strong>Edit Marker</strong></div>
     <form id="edit-form">
-      <!-- Name Field -->
-      <div class="field-row">
-        <label>Name:</label>
-        <input type="text" id="edit-name" required />
-        <div class="color-btn" id="pickr-name"></div>
-      </div>
-
-      <!-- Type Field (Alphabetical Order) -->
+      <!-- Type & Predefined -->
       <div class="field-row">
         <label>Type:</label>
         <select id="edit-type">
@@ -92,68 +88,37 @@
           <option value="Teleport">Teleport</option>
         </select>
       </div>
-      
-      <!-- Predefined Item Dropdown for Items -->
-      <div id="predefined-item-container" style="display:none; margin-bottom:10px;">
-        <label>Predefined Item:</label>
-        <select id="predefined-item-dropdown">
-          <option value="">-- Select an item --</option>
-        </select>
+      <div id="predefined-item-container" class="field-row" style="display:none;">
+        <label>Item:</label>
+        <select id="predefined-item-dropdown"></select>
       </div>
-
-      <!-- Item-specific Fields -->
+      <!-- Item Fields -->
       <div id="item-extra-fields" style="display:none;">
         <div class="field-row">
           <label>Rarity:</label>
-          <select id="edit-rarity">
-            <option value="">Select Rarity</option>
-            <option value="common">Common</option>
-            <option value="uncommon">Uncommon</option>
-            <option value="rare">Rare</option>
-            <option value="epic">Epic</option>
-            <option value="legendary">Legendary</option>
-          </select>
-          <div class="color-btn" id="pickr-rarity"></div>
+          <select id="edit-rarity"></select>
         </div>
-
         <div class="field-row">
           <label>Item Type:</label>
-          <select id="edit-item-type">
-            <option value="Crafting Material">Crafting Material</option>
-            <option value="Special">Special</option>
-            <option value="Consumable">Consumable</option>
-            <option value="Quest">Quest</option>
-          </select>
-          <div class="color-btn" id="pickr-itemtype"></div>
+          <select id="edit-item-type"></select>
         </div>
-
         <div class="field-row">
           <label>Description:</label>
           <textarea id="edit-description" rows="2"></textarea>
-          <div class="color-btn" id="pickr-desc-item"></div>
         </div>
-
-        <!-- Extra Info -->
-        <hr style="border:1px solid #555; margin:10px 0;" />
-        <div class="field-row" style="margin-bottom:0;">
+        <div class="field-row extra-info-header">
           <label>Extra Info:</label>
-          <button type="button" id="add-extra-line" style="width:auto; margin-left:10px;">+</button>
         </div>
         <div id="extra-lines"></div>
-        <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
-      <!-- Non-Item Description Field -->
+      <!-- Non‑Item Fields -->
       <div id="non-item-description" style="display:none;">
         <div class="field-row">
           <label>Description:</label>
-          <textarea id="edit-description-non-item" rows="3" style="resize:vertical;"></textarea>
-          <div class="color-btn" id="pickr-desc-nonitem"></div>
+          <textarea id="edit-description-non-item" rows="3"></textarea>
         </div>
-        <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
-      <!-- Image and Video Fields -->
+      <!-- Images & Video -->
       <div class="field-row">
         <label>Image S:</label>
         <input type="text" id="edit-image-small" />
@@ -166,10 +131,9 @@
         <label>Video:</label>
         <input type="text" id="edit-video-url" />
       </div>
-      
-      <!-- Save / Cancel Buttons -->
-      <div class="field-row" style="justify-content:center; margin-top:10px;">
-        <button type="submit" style="margin-right:10px;">Save</button>
+      <!-- Save/Cancel -->
+      <div class="field-row actions">
+        <button type="submit">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>
       </div>
     </form>
@@ -177,90 +141,11 @@
 
   <!-- Video Popup -->
   <div id="video-popup">
-    <button id="video-close">X</button>
-    <video id="video-player" width="320" controls style="display:block;">
-      <source id="video-source" src="" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
+    <button id="video-close">×</button>
+    <video id="video-player" controls></video>
   </div>
-  
-  <!-- Paste Mode Tooltip -->
-  <div id="paste-tooltip" style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">Paste Mode ON</div>
-  
-  <!-- Item Definitions Modal -->
-  <div id="item-definitions-modal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-header-left">
-          <h2 id="def-form-heading">Add Item</h2>
-          <div class="filter-buttons">
-            <button class="filter-btn" id="filter-name">N</button>
-            <button class="filter-btn" id="filter-type">T</button>
-            <button class="filter-btn" id="filter-rarity">R</button>
-          </div>
-        </div>
-        <div class="modal-header-right">
-          <input type="text" id="def-search" placeholder="Search..." />
-          <span class="close" id="close-item-definitions">&times;</span>
-        </div>
-      </div>
-      <div id="item-definitions-list" class="def-list">
-        <!-- Definitions will be populated here -->
-      </div>
-      <hr />
-      <form id="item-definition-form">
-        <h3 id="def-form-subheading">Add Item</h3>
-        <div class="field-row">
-          <label>Name:</label>
-          <input type="text" id="def-name" required />
-          <div class="color-btn" id="pickr-def-name"></div>
-        </div>
-        <div class="field-row">
-          <label>Item Type:</label>
-          <select id="def-type">
-            <option value="Crafting Material">Crafting Material</option>
-            <option value="Special">Special</option>
-            <option value="Consumable">Consumable</option>
-            <option value="Quest">Quest</option>
-          </select>
-          <div class="color-btn" id="pickr-def-type"></div>
-        </div>
-        <div class="field-row">
-          <label>Rarity:</label>
-          <select id="def-rarity">
-            <option value="">Select Rarity</option>
-            <option value="common">Common</option>
-            <option value="uncommon">Uncommon</option>
-            <option value="rare">Rare</option>
-            <option value="epic">Epic</option>
-            <option value="legendary">Legendary</option>
-          </select>
-          <div class="color-btn" id="pickr-def-rarity"></div>
-        </div>
-        <div class="field-row">
-          <label>Description:</label>
-          <textarea id="def-description" rows="2"></textarea>
-          <div class="color-btn" id="pickr-def-description"></div>
-        </div>
-        <div class="field-row">
-          <label>Extra Info:</label>
-          <button type="button" id="add-def-extra-line" style="width:auto; margin-left:10px;">+</button>
-        </div>
-        <div id="def-extra-lines"></div>
-        <div class="field-row">
-          <label>Image S:</label>
-          <input type="text" id="def-image-small" />
-        </div>
-        <div class="field-row">
-          <label>Image L:</label>
-          <input type="text" id="def-image-big" />
-        </div>
-        <div class="field-row" style="justify-content:center; margin-top:10px;">
-          <button type="submit" style="margin-right:10px;">Save</button>
-          <button type="button" id="def-cancel">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
+
+  <!-- Paste Tooltip -->
+  <div id="paste-tooltip">Paste Mode ON</div>
 </body>
 </html>
