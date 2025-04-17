@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/markerForm.js
 
 import { makeDraggable, positionModal } from "./uiManager.js";
@@ -133,8 +133,10 @@ export function initMarkerForm(db) {
       if (!readOnly) row.append(rm);
       wrapLines.appendChild(row);
 
-      // Only create a Pickr if container exists
-      mkPicker(`#${clr.id || ''}`)?.setColor(ln.color || "#E5E6E8");
+      // Only create a Pickr if this element has a real ID
+      if (clr.id) {
+        mkPicker(`#${clr.id}`).setColor(ln.color || "#E5E6E8");
+      }
     });
   }
   btnAddLine.onclick = () => {
@@ -354,4 +356,4 @@ export function initMarkerForm(db) {
   };
 }
 
-// @version: 1
+// @version: 3

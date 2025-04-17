@@ -36,6 +36,8 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   const filterRarityBtn = document.getElementById("filter-rarity");
   const heading3        = document.getElementById("def-form-subheading");
   const defCancelBtn    = document.getElementById("def-cancel");
+  // Close the modal when the Cancel button is clicked:
+defCancelBtn.addEventListener("click", closeModal);
 
   // Utility: create or reuse a Pickr instance
   function createPicker(selector) {
@@ -225,8 +227,11 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
     renderExtraLines();
     [window.pickrDefName, window.pickrDefType, window.pickrDefRarity, window.pickrDefDescription]
-      .forEach(p=>p.setColor(def[p._root._config.el.replace('#pickr-def-','')+'Color']||"#E5E6E8"));
-    heading3.innerText = "Edit Item";
+    window.pickrDefName.setColor(def.nameColor         || "#E5E6E8");
+    window.pickrDefType.setColor(def.itemTypeColor    || "#E5E6E8");
+    window.pickrDefRarity.setColor(def.rarityColor    || "#E5E6E8");
+    window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
+        heading3.innerText = "Edit Item";
     openModal();
   }
   async function deleteDef(id) {
