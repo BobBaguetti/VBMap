@@ -1,6 +1,6 @@
 /* @fullfile: Send the entire file, no omissions or abridgments. */
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
-/* @version: 3   The current file version is 3. Increase by 1 every time you update anything. */
+/* @version: 4   The current file version is 4. Increase by 1 every time you update anything. */
 /* @file:    /styles/style.css */
 
 /* Base Styles */
@@ -330,10 +330,12 @@ body, html {
 }
 .modal-header-right .close {
   display: inline-flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
   width: 28px;
   height: 28px;
+  padding: 0;
+  box-sizing: border-box;
   background: #333;
   color: #E5E6E8;
   font-size: 28px;
@@ -342,31 +344,29 @@ body, html {
   cursor: pointer;
   transition: background 0.2s;
   vertical-align: middle;
+  transform: translateY(-2px); /* nudge glyph up*/
 }
 .modal-header-right .close:hover {
   background: #444;
-}
-
-/* Glyph centering adjustments */
-.filter-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0;
-  line-height: 1;
-  vertical-align: middle;
 }
 
 /* Flat NTR tri‑toggle buttons + gold outline when active */
 .filter-btn {
   width: 30px;
   height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  box-sizing: border-box;
+  vertical-align: middle;
   background: transparent;
   color: #ccc;
   border: 1px solid #555;
   border-radius: 3px;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
+  transform: translateY(1px); /* nudge glyph down */
 }
 .filter-btn.toggled {
   border: 2px solid gold;
@@ -388,6 +388,7 @@ body, html {
   overflow-y: auto;
   padding: 5px;
 }
+
 /* Dark scrollbar */
 .def-list::-webkit-scrollbar {
   width: 8px;
@@ -462,4 +463,4 @@ body, html {
   background: #444;
 }
 
-/* @version: 3 */
+/* @version: 4 */
