@@ -43,11 +43,10 @@ const layers = {
 Object.values(layers).forEach(layerGroup => layerGroup.addTo(map));
 
 /* ------------------------------------------------------------------ *
- *  Sidebar Setup (includes Main & Item filters)
+ *  Sidebar Setup (await the promise to get API)
  * ------------------------------------------------------------------ */
 const allMarkers = [];
-// Destructure to get loader for item filters
-const { filterMarkers, loadItemFilters } = setupSidebar(map, layers, allMarkers, db);
+const { filterMarkers, loadItemFilters } = await setupSidebar(map, layers, allMarkers, db);
 
 /* ------------------------------------------------------------------ *
  *  Marker Form Module Initialization
@@ -67,7 +66,6 @@ async function refreshMarkersFromDefinitions() {
     const def = defMap[data.predefinedItemId];
     if (!def) return;
 
-    // Update marker data from definition
     Object.assign(data, {
       name:             def.name,
       nameColor:        def.nameColor       || "#E5E6E8",
@@ -89,13 +87,13 @@ async function refreshMarkersFromDefinitions() {
 
 /* ------------------------------------------------------------------ *
  *  Item Definitions Modal Initialization
- *  -> also reload sidebar item filters after any change
+ *  -> reload sidebar item filters after any change
  * ------------------------------------------------------------------ */
 initItemDefinitionsModal(db, async () => {
   await markerForm.refreshPredefinedItems();
   await refreshMarkersFromDefinitions();
-  await loadItemFilters();     // <-- reload the sidebar’s item list
-  filterMarkers();             // <-- reapply filters so new items appear
+  await loadItemFilters();   // now defined
+  filterMarkers();           // now defined
 });
 
 /* ------------------------------------------------------------------ *
@@ -148,7 +146,6 @@ const callbacks = {
     if (!m.coords) m.coords = [1500, 1500];
     addMarker(m, callbacks);
   });
-  // initial filter pass
   filterMarkers();
 })();
 
