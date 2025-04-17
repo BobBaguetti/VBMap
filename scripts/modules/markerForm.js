@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
+// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/markerForm.js
 
 import { makeDraggable, positionModal } from "./uiManager.js";
@@ -43,21 +43,14 @@ export function initMarkerForm(db) {
     const container = document.querySelector(sel);
     if (!container) {
       console.warn(`markerForm.mkPicker: element ${sel} not found`);
-      // return a stub that won't break calls to .on or .setColor or .getRoot
-      return {
-        on:    () => {},
-        setColor: () => {},
-        getRoot: () => null
-      };
+      return { on: () => {}, setColor: () => {}, getRoot: () => null };
     }
     const p = Pickr.create({
       el: container,
       theme: "nano",
       default: "#E5E6E8",
       components: {
-        preview: true,
-        opacity: true,
-        hue: true,
+        preview: true, opacity: true, hue: true,
         interaction: { hex: true, rgba: true, input: true, save: true }
       }
     }).on("save", (_, instance) => instance.hide());
@@ -115,6 +108,10 @@ export function initMarkerForm(db) {
       clr.style.pointerEvents = readOnly ? "none" : "auto";
       clr.style.opacity = readOnly ? 0.5 : 1;
 
+      // give each color‑button a unique ID AND show its current color
+      clr.id = `extra-line-color-${i}`;
+      clr.style.background = ln.color || "#E5E6E8";
+
       const rm = document.createElement("button");
       rm.textContent = "×";
       rm.type = "button";
@@ -133,10 +130,9 @@ export function initMarkerForm(db) {
       if (!readOnly) row.append(rm);
       wrapLines.appendChild(row);
 
-      // Only create a Pickr if this element has a real ID
-      if (clr.id) {
-        mkPicker(`#${clr.id}`).setColor(ln.color || "#E5E6E8");
-      }
+      // initialize the picker on this button
+      const picker = mkPicker(`#${clr.id}`);
+      picker.setColor(ln.color || "#E5E6E8");
     });
   }
   btnAddLine.onclick = () => {
@@ -148,13 +144,7 @@ export function initMarkerForm(db) {
   /* ---------- UI helpers ---------- */
   const DIS_BG = "#3b3b3b";
   const ALL_FIELDS = [
-    fldName,
-    fldRare,
-    fldIType,
-    fldDescIt,
-    fldImgS,
-    fldImgL,
-    fldVid
+    fldName, fldRare, fldIType, fldDescIt, fldImgS, fldImgL, fldVid
   ];
   function setRO(el, on) {
     el.disabled = on;
@@ -235,6 +225,10 @@ export function initMarkerForm(db) {
   }
 
   /* ---------- Populate / Harvest ---------- */
+  /**
+   * Fill the form fields from an existing marker object.
+   * @param {Object} m Marker data (with fields like name, coords, colors…)
+   */
   function populateForm(m = { type: "Item" }) {
     fldType.value = m.type;
     customMode = !m.predefinedItemId;
@@ -261,11 +255,17 @@ export function initMarkerForm(db) {
     }
   }
 
+  /**
+   * Read the form fields and build a marker data object.
+   * @param {[number,number]} coords The [lat, lng] coordinates for a new marker.
+   * @returns {Object} New or updated marker data.
+   */
   function harvestForm(coords) {
     const out = { type: fldType.value, coords };
 
     if (out.type === "Item") {
       if (!customMode) {
+        // Using a predefined item definition
         const d = defs[ddPre.value];
         Object.assign(out, {
           predefinedItemId: d.id,
@@ -282,6 +282,7 @@ export function initMarkerForm(db) {
           imageBig:         d.imageBig
         });
       } else {
+        // Custom item—save as a new definition
         const defPayload = {
           name:             fldName.value.trim() || "Unnamed",
           nameColor:        pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8",
@@ -305,6 +306,7 @@ export function initMarkerForm(db) {
         Object.assign(out, defPayload);
       }
     } else {
+      // Non-item marker
       out.name             = fldName.value || "New Marker";
       out.nameColor        = pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8";
       out.imageSmall       = fldImgS.value;
@@ -314,16 +316,22 @@ export function initMarkerForm(db) {
       out.descriptionColor = pkDni.getColor()?.toHEXA()?.toString() || "#E5E6E8";
     }
 
+    // Remove any undefined fields
     Object.keys(out).forEach(k => out[k] === undefined && delete out[k]);
     return out;
   }
 
   /* ---------- Modal openers ---------- */
   let submitCB = null;
+
+  /**
+   * Open the form pre‑filled for editing an existing marker.
+   */
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
     positionModal(modal, evt);
     modal.style.display = "block";
+
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
       e.preventDefault();
@@ -334,10 +342,14 @@ export function initMarkerForm(db) {
     form.addEventListener("submit", submitCB);
   }
 
+  /**
+   * Open a blank form for creating a new marker at the given coords.
+   */
   function openCreate(coords, defaultType, evt, onCreate) {
     populateForm({ type: defaultType || "Item" });
     positionModal(modal, evt);
     modal.style.display = "block";
+
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
       e.preventDefault();
@@ -347,6 +359,7 @@ export function initMarkerForm(db) {
     form.addEventListener("submit", submitCB);
   }
 
+  // Wire up the Cancel button
   btnCancel.onclick = () => (modal.style.display = "none");
 
   return {
@@ -355,5 +368,3 @@ export function initMarkerForm(db) {
     refreshPredefinedItems: refreshItems
   };
 }
-
-// @version: 3

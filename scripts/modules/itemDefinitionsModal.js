@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted.
+// @version: 3   Increase by 1 every time you update anything.
 // @file:    /scripts/modules/itemDefinitionsModal.js
 
 import {
@@ -17,40 +17,48 @@ import {
  */
 export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   // DOM handles
-  const manageBtn    = document.getElementById("manage-item-definitions");
-  const modal        = document.getElementById("item-definitions-modal");
-  const closeBtn     = document.getElementById("close-item-definitions");
-  const listWrap     = document.getElementById("item-definitions-list");
-  const form         = document.getElementById("item-definition-form");
-  const defName      = document.getElementById("def-name");
-  const defType      = document.getElementById("def-type");
-  const defRarity    = document.getElementById("def-rarity");
-  const defDescription = document.getElementById("def-description");
-  const defImageSmall  = document.getElementById("def-image-small");
-  const defImageBig    = document.getElementById("def-image-big");
-  const defExtraLinesContainer = document.getElementById("def-extra-lines");
-  const addExtraLineBtn = document.getElementById("add-def-extra-line");
-  const defSearch       = document.getElementById("def-search");
-  const filterNameBtn   = document.getElementById("filter-name");
-  const filterTypeBtn   = document.getElementById("filter-type");
-  const filterRarityBtn = document.getElementById("filter-rarity");
-  const heading3        = document.getElementById("def-form-subheading");
-  const defCancelBtn    = document.getElementById("def-cancel");
-  // Close the modal when the Cancel button is clicked:
-defCancelBtn.addEventListener("click", closeModal);
+  const manageBtn               = document.getElementById("manage-item-definitions");
+  const modal                   = document.getElementById("item-definitions-modal");
+  const closeBtn                = document.getElementById("close-item-definitions");
+  const listWrap                = document.getElementById("item-definitions-list");
+  const form                    = document.getElementById("item-definition-form");
+  const defName                 = document.getElementById("def-name");
+  const defType                 = document.getElementById("def-type");
+  const defRarity               = document.getElementById("def-rarity");
+  const defDescription          = document.getElementById("def-description");
+  const defImageSmall           = document.getElementById("def-image-small");
+  const defImageBig             = document.getElementById("def-image-big");
+  const defExtraLinesContainer  = document.getElementById("def-extra-lines");
+  const addExtraLineBtn         = document.getElementById("add-def-extra-line");
+  const defSearch               = document.getElementById("def-search");
+  const filterNameBtn           = document.getElementById("filter-name");
+  const filterTypeBtn           = document.getElementById("filter-type");
+  const filterRarityBtn         = document.getElementById("filter-rarity");
+  const heading3                = document.getElementById("def-form-subheading");
+  const defCancelBtn            = document.getElementById("def-cancel");
+
+  // Wire up the Cancel button
+  defCancelBtn.addEventListener("click", closeModal);
 
   // Utility: create or reuse a Pickr instance
   function createPicker(selector) {
     const el = document.querySelector(selector);
-    if (!el) return { on: ()=>{}, setColor: ()=>{}, getColor: ()=>({ toHEXA: ()=>["#E5E6E8"], toString: ()=>"#E5E6E8" }) };
+    if (!el) {
+      // stub
+      return { on: ()=>{}, setColor: ()=>{}, getColor: ()=>({ toHEXA: ()=>["#E5E6E8"], toString: ()=>"#E5E6E8" }) };
+    }
     return Pickr.create({
-      el: selector, theme: "nano", default: "#E5E6E8",
+      el: selector,
+      theme: "nano",
+      default: "#E5E6E8",
       components: {
         preview: true, opacity: true, hue: true,
         interaction: { hex: true, rgba: true, input: true, save: true }
       }
     }).on("save", (_i, picker) => picker.hide());
   }
+
+  // Global pickr instances for the form
   if (!window.pickrDefName) {
     window.pickrDefName        = createPicker("#pickr-def-name");
     window.pickrDefType        = createPicker("#pickr-def-type");
@@ -58,7 +66,7 @@ defCancelBtn.addEventListener("click", closeModal);
     window.pickrDefDescription = createPicker("#pickr-def-description");
   }
 
-  // Manage extra-info lines
+  // Manage extra‑info lines
   let extraLines = [];
   function renderExtraLines() {
     defExtraLinesContainer.innerHTML = "";
@@ -67,28 +75,40 @@ defCancelBtn.addEventListener("click", closeModal);
       row.className = "field-row";
       row.style.marginBottom = "5px";
 
+      // Text input
       const txt = document.createElement("input");
       txt.type = "text";
       txt.value = line.text;
       txt.style.cssText = "width:100%; background:#303030; color:#e0e0e0; padding:4px 6px; border:1px solid #555;";
       txt.addEventListener("input", () => { extraLines[i].text = txt.value; });
 
+      // Color button
       const clr = document.createElement("div");
       clr.className = "color-btn";
       clr.style.marginLeft = "5px";
+      clr.style.background = line.color || "#E5E6E8";
+      clr.id = `def-extra-color-${i}`;
+
+      // Initialize Pickr on this button
       try {
         Pickr.create({
-          el: clr, theme: "nano", default: line.color || "#E5E6E8",
+          el: clr,
+          theme: "nano",
+          default: line.color || "#E5E6E8",
           components: {
             preview: true, opacity: true, hue: true,
             interaction: { hex: true, rgba: true, input: true, save: true }
           }
         })
-        .on("change", c => { extraLines[i].color = c.toHEXA().toString(); })
+        .on("change", c => {
+          extraLines[i].color = c.toHEXA().toString();
+          clr.style.background = extraLines[i].color;
+        })
         .on("save", (_i, p) => p.hide())
         .setColor(line.color || "#E5E6E8");
       } catch {}
 
+      // Remove button
       const rm = document.createElement("button");
       rm.type = "button";
       rm.textContent = "×";
@@ -115,7 +135,7 @@ defCancelBtn.addEventListener("click", closeModal);
       const row = document.createElement("div");
       row.className = "item-def-entry";
 
-      // Name, type, rarity (capitalized), description
+      // Content
       const rare = def.rarity ? def.rarity.charAt(0).toUpperCase() + def.rarity.slice(1) : "";
       const content = document.createElement("div");
       content.innerHTML = `
@@ -126,7 +146,7 @@ defCancelBtn.addEventListener("click", closeModal);
       `;
       row.appendChild(content);
 
-      // Add Filter toggle
+      // Add‑filter toggle
       const tf = document.createElement("div");
       tf.className = "add-filter-toggle";
       tf.innerHTML = `
@@ -140,7 +160,7 @@ defCancelBtn.addEventListener("click", closeModal);
       });
       row.appendChild(tf);
 
-      // Edit/Delete/Copy buttons
+      // Action buttons
       const btns = document.createElement("div");
       btns.className = "item-action-buttons";
       btns.innerHTML = `
@@ -155,10 +175,10 @@ defCancelBtn.addEventListener("click", closeModal);
 
       listWrap.appendChild(row);
     });
-    applyFilters(); // apply current filters
+    applyFilters();
   }
 
-  // Search + tri-toggle logic
+  // Search + tri‑toggle logic
   const flags = { name:false, type:false, rarity:false };
   function applyFilters() {
     const q = (defSearch.value||"").toLowerCase();
@@ -180,7 +200,6 @@ defCancelBtn.addEventListener("click", closeModal);
       entry.style.display = show ? "" : "none";
     });
   }
-  // Wire up buttons
   filterNameBtn.addEventListener("click", () => { flags.name=!flags.name; filterNameBtn.classList.toggle("toggled"); applyFilters(); });
   filterTypeBtn.addEventListener("click", () => { flags.type=!flags.type; filterTypeBtn.classList.toggle("toggled"); applyFilters(); });
   filterRarityBtn.addEventListener("click", () => { flags.rarity=!flags.rarity; filterRarityBtn.classList.toggle("toggled"); applyFilters(); });
@@ -226,12 +245,12 @@ defCancelBtn.addEventListener("click", closeModal);
     defImageBig.value = def.imageBig||"";
     extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
     renderExtraLines();
-    [window.pickrDefName, window.pickrDefType, window.pickrDefRarity, window.pickrDefDescription]
+    // Explicitly set each picker
     window.pickrDefName.setColor(def.nameColor         || "#E5E6E8");
     window.pickrDefType.setColor(def.itemTypeColor    || "#E5E6E8");
     window.pickrDefRarity.setColor(def.rarityColor    || "#E5E6E8");
     window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
-        heading3.innerText = "Edit Item";
+    heading3.innerText = "Edit Item";
     openModal();
   }
   async function deleteDef(id) {
@@ -259,7 +278,7 @@ defCancelBtn.addEventListener("click", closeModal);
     extraLines = [];
     renderExtraLines();
     [window.pickrDefName, window.pickrDefType, window.pickrDefRarity, window.pickrDefDescription]
-      .forEach(p=>p.setColor("#E5E6E8"));
+      .forEach(p => p.setColor("#E5E6E8"));
     heading3.innerText = "Add Item";
   }
 
@@ -283,5 +302,3 @@ defCancelBtn.addEventListener("click", closeModal);
   // Initial load
   return { openModal, closeModal, refresh: loadAndRender };
 }
-
-// @version: 2

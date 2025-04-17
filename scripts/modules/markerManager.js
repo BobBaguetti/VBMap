@@ -5,6 +5,10 @@
 // Creates map markers & popups with safe images, a custom close‑button,
 // uniform spacing, and synchronized font‑sizes for Item markers.
 
+// @fullfile: Send the entire file, no omissions or abridgments.
+// @version: 3   Increase by 1 every time you update anything.
+// @file:    /scripts/modules/markerManager.js
+
 import { formatRarity } from "./utils.js";
 
 // Basic URL check for images
@@ -80,7 +84,8 @@ export function createPopupContent(m) {
 
   return `
     <div class="custom-popup">
-      <button class="popup-close-btn" onclick="this.closest('.leaflet-popup')._close()">
+      <button class="popup-close-btn"
+              onclick="this.closest('.leaflet-popup').remove()">
         ×
       </button>
       <div class="popup-header" style="display:flex; gap:5px;">
@@ -149,4 +154,5 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   return markerObj;
 }
 
-// @version: 1
+
+// @version: 3
