@@ -307,8 +307,8 @@ body, html {
   justify-content: space-between;
   align-items: center;
   padding: 0;
-  margin-bottom: 4px;
-  border-bottom: 1px solid #444;
+  margin-bottom: 6px; /* moved line 2px lower (from 4px) */
+  border-bottom: 2px solid #444; /* thicker line */
 }
 .modal-header-left {
   display: flex;
@@ -409,7 +409,8 @@ body, html {
 
 /* Separator between item container and Add Item form */
 .modal-content hr {
-  border-color: #444;
+  border-top: 2px solid #444; /* thicker line */
+  margin: 6px 0; /* same offset as header separator */
 }
 
 /* Dark Save/Cancel buttons */
@@ -425,4 +426,17 @@ body, html {
 #item-definition-form button[type="submit"]:hover,
 #item-definition-form button[type="button"]:hover {
   background: #444;
+}
+
+/* Add Item input fields + dropdowns color */
+#item-definition-form input[type="text"],
+#item-definition-form select,
+#item-definition-form textarea {
+  background: #f5f5f5; /* ChatGPT field color */
+  color: #e0e0e8;     /* nearly white-gray */
+  border: 1px solid #ccc;
+}
+#item-definition-form select option {
+  background: #fff;
+  color: #e0e0e8;
 }
