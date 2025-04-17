@@ -105,6 +105,16 @@ body, html {
   background: #444;
 }
 
+/* Hide video popup by default (prevents empty box under sidebar) */
+#video-popup {
+  display: none !important;
+}
+
+/* Hide paste tooltip by default */
+#paste-tooltip {
+  display: none !important;
+}
+
 /* Leaflet Overrides */
 .leaflet-container {
   background-color: #1a1a1a !important;
