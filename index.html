@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles/style.css" />
-  <!-- Font Awesome for icons -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <!-- Pickr CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
@@ -23,12 +23,10 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
+
     <!-- Filters Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
-      
-      <!-- Main Filters -->
       <div class="filter-group" id="main-filters">
         <h3>Main</h3>
         <div class="toggle-group">
@@ -38,8 +36,6 @@
           <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
         </div>
       </div>
-      
-      <!-- Item Filters -->
       <div class="filter-group" id="item-filters">
         <h3>Items</h3>
         <div class="toggle-group" id="item-filter-list">
@@ -62,18 +58,18 @@
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
     </div>
-    
+
     <!-- Admin Tools Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-tools"></i> Admin Tools</h2>
       <button id="manage-item-definitions" style="margin-top:10px;">Manage Items</button>
     </div>
   </div>
-  
+
   <!-- Map Container -->
   <div id="map"></div>
-  
-  <!-- Load JS Libraries -->
+
+  <!-- JS Libraries -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -83,18 +79,13 @@
 
   <!-- Edit Marker Modal -->
   <div id="edit-modal">
-    <div id="edit-modal-handle">
-      <strong>Edit Marker</strong>
-    </div>
+    <div id="edit-modal-handle"><strong>Edit Marker</strong></div>
     <form id="edit-form">
-      <!-- Name -->
       <div class="field-row">
         <label>Name:</label>
         <input type="text" id="edit-name" required />
         <div class="color-btn" id="pickr-name"></div>
       </div>
-
-      <!-- Type -->
       <div class="field-row">
         <label>Type:</label>
         <select id="edit-type">
@@ -104,16 +95,12 @@
           <option value="Teleport">Teleport</option>
         </select>
       </div>
-      
-      <!-- Predefined Item Selector -->
       <div id="predefined-item-container" style="display:none; margin-bottom:10px;">
         <label>Item:</label>
         <select id="predefined-item-dropdown">
           <option value="">-- Select an item --</option>
         </select>
       </div>
-
-      <!-- Item‑specific Fields -->
       <div id="item-extra-fields" style="display:none;">
         <div class="field-row">
           <label>Rarity:</label>
@@ -127,7 +114,6 @@
           </select>
           <div class="color-btn" id="pickr-rarity"></div>
         </div>
-
         <div class="field-row">
           <label>Item Type:</label>
           <select id="edit-item-type">
@@ -138,23 +124,19 @@
           </select>
           <div class="color-btn" id="pickr-itemtype"></div>
         </div>
-
         <div class="field-row">
           <label>Description:</label>
           <textarea id="edit-description" rows="2"></textarea>
           <div class="color-btn" id="pickr-desc-item"></div>
         </div>
-
         <hr style="border:1px solid #555; margin:10px 0;" />
         <div class="field-row" style="margin-bottom:0;">
           <label>Extra Info:</label>
-          <button type="button" id="add-extra-line" style="width:auto; margin-left:10px;">+</button>
+          <button type="button" id="add-extra-line" style="margin-left:10px;">+</button>
         </div>
         <div id="extra-lines"></div>
         <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
-      <!-- Non‑Item Description -->
       <div id="non-item-description" style="display:none;">
         <div class="field-row">
           <label>Description:</label>
@@ -163,8 +145,6 @@
         </div>
         <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-
-      <!-- Images & Video -->
       <div class="field-row">
         <label>Image S:</label>
         <input type="text" id="edit-image-small" />
@@ -177,8 +157,6 @@
         <label>Video:</label>
         <input type="text" id="edit-video-url" />
       </div>
-      
-      <!-- Save & Cancel -->
       <div class="field-row" style="justify-content:center; margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>
@@ -194,12 +172,12 @@
       Your browser does not support the video tag.
     </video>
   </div>
-  
+
   <!-- Paste Mode Tooltip -->
-  <div id="paste-tooltip" style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
+  <div id="paste-tooltip" style="display:none;position:absolute;background:rgba(0,0,0,0.7);color:#fff;padding:2px 5px;border-radius:3px;font-size:12px;pointer-events:none;">
     Paste Mode ON
   </div>
-  
+
   <!-- Item Definitions Modal -->
   <div id="item-definitions-modal" class="modal">
     <div class="modal-content">
@@ -217,13 +195,59 @@
           <span class="close" id="close-item-definitions">&times;</span>
         </div>
       </div>
-      <div id="item-definitions-list" class="def-list">
-        <!-- Definitions will be populated here -->
-      </div>
+      <div id="item-definitions-list" class="def-list"></div>
       <hr />
       <form id="item-definition-form">
         <h3 id="def-form-subheading">Add Item</h3>
-        <!-- (fields unchanged) -->
+        <div class="field-row">
+          <label>Name:</label>
+          <input type="text" id="def-name" required />
+          <div class="color-btn" id="pickr-def-name"></div>
+        </div>
+        <div class="field-row">
+          <label>Item Type:</label>
+          <select id="def-type">
+            <option value="Crafting Material">Crafting Material</option>
+            <option value="Special">Special</option>
+            <option value="Consumable">Consumable</option>
+            <option value="Quest">Quest</option>
+          </select>
+          <div class="color-btn" id="pickr-def-type"></div>
+        </div>
+        <div class="field-row">
+          <label>Rarity:</label>
+          <select id="def-rarity">
+            <option value="">Select Rarity</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="epic">Epic</option>
+            <option value="legendary">Legendary</option>
+          </select>
+          <div class="color-btn" id="pickr-def-rarity"></div>
+        </div>
+        <div class="field-row">
+          <label>Description:</label>
+          <textarea id="def-description" rows="2"></textarea>
+          <div class="color-btn" id="pickr-def-description"></div>
+        </div>
+        <div class="field-row">
+          <label>Extra Info:</label>
+          <button type="button" id="add-def-extra-line" style="margin-left:10px;">+</button>
+        </div>
+        <div id="def-extra-lines"></div>
+        <div class="field-row">
+          <label>Image S:</label>
+          <input type="text" id="def-image-small" />
+        </div>
+        <div class="field-row">
+          <label>Image L:</label>
+          <input type="text" id="def-image-big" />
+        </div>
+        <div class="field-row" style="justify-content:center;margin-top:10px;">
+          <button type="submit" style="margin-right:10px;">Save</button>
+          <button type="button" id="def-cancel">Cancel</button>
+        </div>
       </form>
     </div>
   </div>
