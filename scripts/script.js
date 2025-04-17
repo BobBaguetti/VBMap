@@ -24,14 +24,14 @@ import {
 } from "./modules/itemDefinitionsService.js";
 import { setupSidebar } from "./modules/sidebarManager.js";   // ← NEW
 
-// Global store for predefined item definitions keyed by Firestore ID
+// Global store for predefined item definitions (keyed by Firestore ID)
 let predefinedItemDefs = {};
 
 document.addEventListener("DOMContentLoaded", async () => {
   console.log("Script loaded!");
 
   /* ------------------------------------------------------------------
-   *  DOM ELEMENTS (sidebar elements handled by sidebarManager)
+   *  DOM ELEMENTS  (sidebar elements handled by sidebarManager)
    * ------------------------------------------------------------------ */
   const editModal               = document.getElementById("edit-modal");
   const editModalHandle         = document.getElementById("edit-modal-handle");
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const defCancelBtn             = document.getElementById("def-cancel");
 
   /* ------------------------------------------------------------------
-   *  FIREBASE INIT (using compat SDK already included in index.html)
+   *  FIREBASE INIT
    * ------------------------------------------------------------------ */
   const firebaseConfig = {
     apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
@@ -98,7 +98,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const { map } = initializeMap();
 
   /* ------------------------------------------------------------------
-   *  LAYERS (cluster layer for items)
+   *  LAYERS
    * ------------------------------------------------------------------ */
   const itemLayer = L.markerClusterGroup();
   const layers = {
@@ -178,7 +178,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const pickrDescNonItem = createPicker("#pickr-desc-nonitem");
 
   /* ------------------------------------------------------------------
-   *  HELPER – SHOW/HIDE ITEM‑SPECIFIC FIELDS
+   *  HELPER – SHOW / HIDE ITEM‑SPECIFIC FIELDS
    * ------------------------------------------------------------------ */
   function updateItemFieldsVisibility() {
     if (editType.value === "Item") {
@@ -222,9 +222,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   /* ------------------------------------------------------------------
-   *  EDIT‑FORM HELPERS (extra lines etc.)
+   *  EDIT‑FORM HELPERS
    * ------------------------------------------------------------------ */
-  let extraLines = [];
+  let extraLines = [];           //  <<<<<<  declared here so populateEditForm can use it
+
   function renderExtraLines() {
     extraLinesContainer.innerHTML = "";
     extraLines.forEach((lineObj, idx) => {
@@ -274,6 +275,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       linePickr.setColor(lineObj.color || "#E5E6E8");
     });
   }
+
+  // ADD MISSING FUNCTION: populateEditForm  ---------------------------
+  function populateEditForm(m) {
+    editName.value = m.name || "";
+    pickrName.setColor(m.nameColor || "#E5E6E8");
+    editType.value = m.type || "Door";
+    editImageSmall.value = m.imageSmall || "";
+    editImageBig.value   = m.imageBig   || "";
+    editVideoURL.value   = m.videoURL  || "";
+    updateItemFieldsVisibility();
+
+    if (m.type === "Item") {
+      predefinedItemDropdown.value = m.predefinedItemId ? m.predefinedItemId : "";
+      editRarity.value = m.rarity ? m.rarity.toLowerCase() : "";
+      pickrRarity.setColor(m.rarityColor || "#E5E6E8");
+      editItemType.value = m.itemType || "Crafting Material";
+      pickrItemType.setColor(m.itemTypeColor || "#E5E6E8");
+      editDescription.value = m.description || "";
+      pickrDescItem.setColor(m.descriptionColor || "#E5E6E8");
+      extraLines = m.extraLines ? JSON.parse(JSON.stringify(m.extraLines)) : [];
+      renderExtraLines();
+    } else {
+      nonItemDescription.value = m.description || "";
+      pickrDescNonItem.setColor(m.descriptionColor || "#E5E6E8");
+    }
+  }
+  // -------------------------------------------------------------------
+
   document.getElementById("add-extra-line")
           .addEventListener("click", () => {
             extraLines.push({ text: "", color: "#E5E6E8" });
