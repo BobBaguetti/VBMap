@@ -1,10 +1,6 @@
 // scripts/script.js
 import { initializeMap } from "./modules/map.js";
-import {
-  showContextMenu,
-  attachContextMenuHider,
-  attachRightClickCancel
-} from "./modules/uiManager.js";
+import { showContextMenu } from "./modules/uiManager.js";
 import {
   initializeFirebase,
   loadMarkers,
@@ -15,6 +11,7 @@ import {
 import { createMarker, createPopupContent } from "./modules/markerManager.js";
 import { initItemDefinitionsModal } from "./modules/itemDefinitionsModal.js";
 import { initMarkerForm } from "./modules/markerForm.js";
+import { initCopyPasteManager } from "./modules/copyPasteManager.js";
 import { setupSidebar } from "./modules/sidebarManager.js";
 
 /* ------------------------------------------------------------------ *
@@ -36,10 +33,10 @@ const db = initializeFirebase({
 const { map } = initializeMap();
 const itemLayer = L.markerClusterGroup();
 const layers = {
-  "Door":              L.layerGroup(),
-  "Extraction Portal": L.layerGroup(),
-  "Item":              itemLayer,
-  "Teleport":          L.layerGroup()
+  Door:               L.layerGroup(),
+  "Extraction Portal":L.layerGroup(),
+  Item:               itemLayer,
+  Teleport:           L.layerGroup()
 };
 Object.values(layers).forEach(l => l.addTo(map));
 
@@ -55,47 +52,49 @@ setupSidebar(map, layers, allMarkers);
 const markerForm = initMarkerForm(db);
 
 /* ------------------------------------------------------------------ *
- *  Item‑definitions modal (refreshes dropdown inside markerForm)
+ *  Item‑definitions modal
  * ------------------------------------------------------------------ */
 initItemDefinitionsModal(db, markerForm.refreshPredefinedItems);
 
 /* ------------------------------------------------------------------ *
- *  Copy / paste clipboard
+ *  Helper: add marker and save to Firestore
  * ------------------------------------------------------------------ */
-let copiedMarkerData = null;
-let pasteMode        = false;
-attachContextMenuHider();
-attachRightClickCancel(() => { pasteMode = false; copiedMarkerData = null; });
+function addAndPersist(data) {
+  addMarker(data, callbacks);
+  firebaseAddMarker(db, data);
+}
 
 /* ------------------------------------------------------------------ *
- *  Helpers: addMarker & callbacks
+ *  Copy‑paste manager  (ghost preview + click‑to‑paste)
  * ------------------------------------------------------------------ */
-function createMarkerWrapper(data, cbs) {
-  const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
+const copyMgr = initCopyPasteManager(map, addAndPersist);
+
+/* ------------------------------------------------------------------ *
+ *  Marker creation helpers
+ * ------------------------------------------------------------------ */
+function addMarker(data, cbs = {}) {
+  const markerObj =
+    createMarker(data, map, layers, showContextMenu, cbs);
   allMarkers.push({ markerObj, data });
   return markerObj;
 }
-function addMarker(data, cbs = {}) {
-  return createMarkerWrapper(data, cbs);
-}
 
-/* ----- Callbacks passed to markerManager ----- */
-function handleEdit(markerObj, data, evt) {           // <-- FIX HERE
-  markerForm.openEdit(markerObj, data, evt, (updated)=>{
-    markerObj.setPopupContent(createPopupContent(updated));
-    firebaseUpdateMarker(db, updated);
-  });
-}
-function handleCopy(_, data) {
-  copiedMarkerData = { ...data }; delete copiedMarkerData.id; pasteMode = true;
-}
-function handleDragEnd(_, data) { firebaseUpdateMarker(db, data); }
-function handleDelete(markerObj, data) {
-  layers[data.type].removeLayer(markerObj);
-  const idx = allMarkers.findIndex(o => o.data.id === data.id);
-  if (idx !== -1) allMarkers.splice(idx, 1);
-  if (data.id) firebaseDeleteMarker(db, data.id);
-}
+const callbacks = {
+  onEdit:   (markerObj, data, ev) => {
+    markerForm.openEdit(markerObj, data, ev, updated => {
+      markerObj.setPopupContent(createPopupContent(updated));
+      firebaseUpdateMarker(db, updated);
+    });
+  },
+  onCopy:   (_, data) => copyMgr.startCopy(data),
+  onDragEnd: (_, data) => firebaseUpdateMarker(db, data),
+  onDelete: (markerObj, data) => {
+    layers[data.type].removeLayer(markerObj);
+    const idx = allMarkers.findIndex(o => o.data.id === data.id);
+    if (idx !== -1) allMarkers.splice(idx, 1);
+    if (data.id) firebaseDeleteMarker(db, data.id);
+  }
+};
 
 /* ------------------------------------------------------------------ *
  *  Initial marker load
@@ -105,15 +104,14 @@ function handleDelete(markerObj, data) {
   markers.forEach(m => {
     if (!m.type || !layers[m.type]) return;
     if (!m.coords) m.coords = [1500, 1500];
-    addMarker(m, { onEdit: handleEdit, onCopy: handleCopy,
-                   onDragEnd: handleDragEnd, onDelete: handleDelete });
+    addMarker(m, callbacks);
   });
 })();
 
 /* ------------------------------------------------------------------ *
  *  Map context‑menu: Create marker
  * ------------------------------------------------------------------ */
-map.on("contextmenu", (evt) => {
+map.on("contextmenu", evt => {
   showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
     text: "Create New Marker",
     action: () => {
@@ -121,26 +119,8 @@ map.on("contextmenu", (evt) => {
         [evt.latlng.lat, evt.latlng.lng],
         "Item",
         evt.originalEvent,
-        (newData) => {
-          addMarker(newData, { onEdit: handleEdit, onCopy: handleCopy,
-                               onDragEnd: handleDragEnd, onDelete: handleDelete });
-          firebaseAddMarker(db, newData);
-        }
+        newData => addAndPersist(newData)
       );
     }
   }]);
-});
-
-/* ------------------------------------------------------------------ *
- *  Map click: paste duplicate
- * ------------------------------------------------------------------ */
-map.on("click", (evt)=>{
-  if (!copiedMarkerData || !pasteMode) return;
-  const d = JSON.parse(JSON.stringify(copiedMarkerData));
-  delete d.id;
-  d.coords = [evt.latlng.lat, evt.latlng.lng];
-  d.name  += " (copy)";
-  addMarker(d, { onEdit: handleEdit, onCopy: handleCopy,
-                 onDragEnd: handleDragEnd, onDelete: handleDelete });
-  firebaseAddMarker(db, d);
 });
