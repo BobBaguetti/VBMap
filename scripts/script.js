@@ -80,8 +80,8 @@ function addMarker(data, cbs = {}) {
 }
 
 /* ----- Callbacks passed to markerManager ----- */
-function handleEdit(markerObj, data, evt) {
-  markerForm.openEdit(markerObj, data, evt.originalEvent, (updated)=>{
+function handleEdit(markerObj, data, evt) {           // <-- FIX HERE
+  markerForm.openEdit(markerObj, data, evt, (updated)=>{
     markerObj.setPopupContent(createPopupContent(updated));
     firebaseUpdateMarker(db, updated);
   });
