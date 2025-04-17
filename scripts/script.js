@@ -1,101 +1,161 @@
 // scripts/script.js
 import { initializeMap } from "./modules/map.js";
+import { showContextMenu } from "./modules/uiManager.js";
+import {
+  initializeFirebase,
+  loadMarkers,
+  addMarker as firebaseAddMarker,
+  updateMarker as firebaseUpdateMarker,
+  deleteMarker as firebaseDeleteMarker
+} from "./modules/firebaseService.js";
 import { createMarker, createPopupContent } from "./modules/markerManager.js";
-import { initializeFirebase, loadMarkers,
-         addMarker as firebaseAddMarker,
-         updateMarker as firebaseUpdateMarker,
-         deleteMarker as firebaseDeleteMarker } from "./modules/firebaseService.js";
-import { loadItemDefinitions } from "./modules/itemDefinitionsService.js";
+import {
+  initItemDefinitionsModal
+} from "./modules/itemDefinitionsModal.js";
 import { initMarkerForm } from "./modules/markerForm.js";
-import { attachContextMenuHider, attachRightClickCancel } from "./modules/uiManager.js";
+import { initCopyPasteManager } from "./modules/copyPasteManager.js";
+import { setupSidebar } from "./modules/sidebarManager.js";
 
-document.addEventListener("DOMContentLoaded", async () => {
-  // Init Firebase & Map
-  const firebaseConfig = { /* your config */ };
-  const db = initializeFirebase(firebaseConfig);
-  const { map } = initializeMap();
+/* ------------------------------------------------------------------ *
+ *  Firebase
+ * ------------------------------------------------------------------ */
+const db = initializeFirebase({
+  apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
+  authDomain: "vbmap-cc834.firebaseapp.com",
+  projectId: "vbmap-cc834",
+  storageBucket: "vbmap-cc834.firebasestorage.app",
+  messagingSenderId: "244112699360",
+  appId: "1:244112699360:web:95f50adb6e10b438238585",
+  measurementId: "G-7FDNWLRM95"
+});
 
-  // Layers
-  const layers = {
-    "Door": L.layerGroup().addTo(map),
-    "Extraction Portal": L.layerGroup().addTo(map),
-    "Item": L.markerClusterGroup().addTo(map),
-    "Teleport": L.layerGroup().addTo(map)
-  };
-  const allMarkers = [];
+/* ------------------------------------------------------------------ *
+ *  Map & layers
+ * ------------------------------------------------------------------ */
+const { map } = initializeMap();
+const itemLayer = L.markerClusterGroup();
+const layers = {
+  Door:               L.layerGroup(),
+  "Extraction Portal":L.layerGroup(),
+  Item:               itemLayer,
+  Teleport:           L.layerGroup()
+};
+Object.values(layers).forEach(l => l.addTo(map));
 
-  // Copy‑Paste
-  let copiedMarker = null, pasteMode = false;
-  function cancelPaste() { pasteMode = false; copiedMarker = null; }
-  attachContextMenuHider();
-  attachRightClickCancel(cancelPaste);
+/* ------------------------------------------------------------------ *
+ *  Sidebar
+ * ------------------------------------------------------------------ */
+const allMarkers = [];
+setupSidebar(map, layers, allMarkers);
 
-  // Marker Form
-  const { openEdit, openCreate, refreshPredefinedItems } = initMarkerForm(db);
+/* ------------------------------------------------------------------ *
+ *  Marker‑form module
+ * ------------------------------------------------------------------ */
+const markerForm = initMarkerForm(db);
 
-  // Load & display
+/* ------------------------------------------------------------------ *
+ *  Helper: sync all markers that reference a given definition
+ * ------------------------------------------------------------------ */
+async function refreshMarkersFromDefinitions() {
+  const list = await (await import("./modules/itemDefinitionsService.js"))
+                  .loadItemDefinitions(db);
+  const defMap = Object.fromEntries(list.map(d => [d.id, d]));
+
+  allMarkers.forEach(({ markerObj, data }) => {
+    if (!data.predefinedItemId) return;
+    const def = defMap[data.predefinedItemId];
+    if (!def) return;
+    // Update marker data from definition
+    data.name            = def.name;
+    data.nameColor       = def.nameColor       || "#E5E6E8";
+    data.rarity          = def.rarity;
+    data.rarityColor     = def.rarityColor     || "#E5E6E8";
+    data.itemType        = def.itemType || def.type;
+    data.itemTypeColor   = def.itemTypeColor   || "#E5E6E8";
+    data.description     = def.description;
+    data.descriptionColor= def.descriptionColor|| "#E5E6E8";
+    data.extraLines      = JSON.parse(JSON.stringify(def.extraLines || []));
+    data.imageSmall      = def.imageSmall;
+    data.imageBig        = def.imageBig;
+
+    markerObj.setPopupContent(createPopupContent(data));
+    firebaseUpdateMarker(db, data);            // persist changes
+  });
+}
+
+/* ------------------------------------------------------------------ *
+ *  Item‑definitions modal
+ * ------------------------------------------------------------------ */
+initItemDefinitionsModal(db, async () => {
+  await markerForm.refreshPredefinedItems();
+  await refreshMarkersFromDefinitions();
+});
+
+/* ------------------------------------------------------------------ *
+ *  Helper: add marker and save to Firestore
+ * ------------------------------------------------------------------ */
+function addAndPersist(data) {
+  addMarker(data, callbacks);
+  firebaseAddMarker(db, data);
+}
+
+/* ------------------------------------------------------------------ *
+ *  Copy‑paste manager
+ * ------------------------------------------------------------------ */
+const copyMgr = initCopyPasteManager(map, addAndPersist);
+
+/* ------------------------------------------------------------------ *
+ *  Marker creation helpers
+ * ------------------------------------------------------------------ */
+function addMarker(data, cbs = {}) {
+  const markerObj =
+    createMarker(data, map, layers, showContextMenu, cbs);
+  allMarkers.push({ markerObj, data });
+  return markerObj;
+}
+
+const callbacks = {
+  onEdit:   (markerObj, data, ev) => {
+    markerForm.openEdit(markerObj, data, ev, updated => {
+      markerObj.setPopupContent(createPopupContent(updated));
+      firebaseUpdateMarker(db, updated);
+    });
+  },
+  onCopy:   (_, data) => copyMgr.startCopy(data),
+  onDragEnd: (_, data) => firebaseUpdateMarker(db, data),
+  onDelete: (markerObj, data) => {
+    layers[data.type].removeLayer(markerObj);
+    const idx = allMarkers.findIndex(o => o.data.id === data.id);
+    if (idx !== -1) allMarkers.splice(idx, 1);
+    if (data.id) firebaseDeleteMarker(db, data.id);
+  }
+};
+
+/* ------------------------------------------------------------------ *
+ *  Initial marker load
+ * ------------------------------------------------------------------ */
+(async () => {
   const markers = await loadMarkers(db);
   markers.forEach(m => {
-    const mk = createMarker(m, map, layers, showContextMenu, {
-      onEdit: (mo, data, evt) => openEdit(mo, data, evt, updated => {
-        mo.setPopupContent(createPopupContent(updated));
-        firebaseUpdateMarker(db, updated);
-      }),
-      onCopy: (mo, data) => { copiedMarker = { ...data }; pasteMode = true; },
-      onDelete: (mo, data) => {
-        layers[data.type].removeLayer(mo);
-        firebaseDeleteMarker(db, data.id);
-      }
-    });
-    allMarkers.push({ mk, data: m });
+    if (!m.type || !layers[m.type]) return;
+    if (!m.coords) m.coords = [1500, 1500];
+    addMarker(m, callbacks);
   });
+})();
 
-  // Context menu for creation
-  map.on("contextmenu", evt => {
-    showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
-      text: "Create New Marker",
-      action: () => openCreate([evt.latlng.lat, evt.latlng.lng], "Item", evt.originalEvent, newData => {
-        const mk = createMarker(newData, map, layers, showContextMenu, {
-          onEdit: /* same as above */,
-          onCopy: /* ... */,
-          onDelete: /* ... */
-        });
-        firebaseAddMarker(db, newData);
-      })
-    }]);
-  });
-
-  // Paste mode placement
-  map.on("click", evt => {
-    if (pasteMode && copiedMarker) {
-      const clone = { ...copiedMarker, coords: [evt.latlng.lat, evt.latlng.lng] };
-      createMarker(clone, map, layers, showContextMenu, {/* callbacks */});
-      firebaseAddMarker(db, clone);
+/* ------------------------------------------------------------------ *
+ *  Map context‑menu: Create marker
+ * ------------------------------------------------------------------ */
+map.on("contextmenu", evt => {
+  showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
+    text: "Create New Marker",
+    action: () => {
+      markerForm.openCreate(
+        [evt.latlng.lat, evt.latlng.lng],
+        "Item",
+        evt.originalEvent,
+        newData => addAndPersist(newData)
+      );
     }
-  });
-
-  // Search
-  document.getElementById("search-bar").addEventListener("input", e => {
-    const q = e.target.value.toLowerCase();
-    allMarkers.forEach(({ mk, data }) => {
-      const show = data.name.toLowerCase().includes(q);
-      layers[data.type][show ? 'addLayer' : 'removeLayer'](mk);
-    });
-  });
-
-  // Sidebar accordion behavior
-  document.querySelectorAll(".accordion-header").forEach(btn => {
-    btn.addEventListener("click", () => {
-      const panel = btn.nextElementSibling;
-      const isOpen = panel.style.display === "block";
-      panel.style.display = isOpen ? "none" : "block";
-      btn.querySelector("i").classList.toggle("fa-chevron-down", !isOpen);
-      btn.querySelector("i").classList.toggle("fa-chevron-right", isOpen);
-    });
-  });
-
-  // Refresh definitions list whenever Manage Items is opened
-  document.getElementById("manage-item-definitions").addEventListener("click", () => {
-    refreshPredefinedItems();
-  });
+  }]);
 });
