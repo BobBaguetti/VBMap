@@ -16,8 +16,9 @@ import {
 } from "./modules/firebaseService.js";
 import { createMarker, createPopupContent } from "./modules/markerManager.js";
 import { formatRarity } from "./modules/utils.js";
-import { initItemDefinitionsModal } from "./modules/itemDefinitionsModal.js";   // ← NEW
-import { setupSidebar } from "./modules/sidebarManager.js";                     // ← existing
+import { loadItemDefinitions } from "./modules/itemDefinitionsService.js";   // ← RESTORED
+import { initItemDefinitionsModal } from "./modules/itemDefinitionsModal.js";
+import { setupSidebar } from "./modules/sidebarManager.js";
 
 // Global store for predefined item definitions
 let predefinedItemDefs = {};
@@ -69,12 +70,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const allMarkers = [];
   setupSidebar(map, layers, allMarkers);
 
-  /* ----------  Item‑definitions modal (EXTRACTED)  ---------- */
+  /* ----------  Item‑definitions modal  ---------- */
   const { openModal: openItemModal } = initItemDefinitionsModal(db, () => {
-    // Refresh dropdown inside Edit‑Marker form after any CRUD
     if (editType.value === "Item") populatePredefinedItemsDropdown();
   });
-  // (Button click listener is attached inside the module.)
 
   /* ----------  Copy‑paste state  ---------- */
   let copiedMarkerData = null;
@@ -173,7 +172,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("edit-cancel")
           .addEventListener("click", ()=>{ editModal.style.display="none"; currentEdit=null; extraLines=[]; });
 
-  /* ----------  populateEditForm (used on Edit) ---------- */
+  /* ----------  populateEditForm ---------- */
   function populateEditForm(m) {
     editName.value = m.name || ""; pickrName.setColor(m.nameColor||"#E5E6E8");
     editType.value = m.type || "Door";
@@ -228,7 +227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     editModal.style.display="none"; extraLines=[]; currentEdit=null;
   });
 
-  /* ----------  Dropdown population (called on open & CRUD) ---------- */
+  /* ----------  Dropdown population ---------- */
   async function populatePredefinedItemsDropdown() {
     const defs = await loadItemDefinitions(db);
     predefinedItemDefs = {}; predefinedItemDropdown.innerHTML='<option value="">-- Select an item --</option>';
