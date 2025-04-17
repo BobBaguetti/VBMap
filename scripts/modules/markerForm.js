@@ -1,8 +1,9 @@
 // scripts/modules/markerForm.js
 // Edit / Create Marker modal.
 //
-// • Item‑linked markers are read‑only.
-// • Free‑form markers remain editable.
+// • Markers linked to a predefined Item are read‑only (no Add/X buttons,
+//   media fields read‑only, colour pickers disabled).
+// • Free‑form markers remain fully editable.
 
 import { makeDraggable, positionModal } from "./uiManager.js";
 import { loadItemDefinitions } from "./itemDefinitionsService.js";
@@ -30,12 +31,16 @@ export function initMarkerForm(db) {
   const itemBlock        = document.getElementById("item-extra-fields");
   const nonItemBlock     = document.getElementById("non-item-description");
   const predefinedBlock  = document.getElementById("predefined-item-container");
+  const predefinedLabel  = predefinedBlock.querySelector("label");
   const predefinedDD     = document.getElementById("predefined-item-dropdown");
 
   const addLineBtn       = document.getElementById("add-extra-line");
   const linesWrap        = document.getElementById("extra-lines");
 
   makeDraggable(modal, modalHandle);
+
+  /* Tweak label text (“Predefined Item:”  ➜  “Item:”) */
+  if (predefinedLabel) predefinedLabel.textContent = "Item:";
 
   /* Pickrs ---------------------------------------------------------- */
   function mk(sel) {
@@ -74,24 +79,30 @@ export function initMarkerForm(db) {
 
   /* Extra lines ----------------------------------------------------- */
   let lines=[];
-  function renderLines(ro=false){
+  function renderLines(readOnly=false){
     linesWrap.innerHTML="";
     lines.forEach((ln,i)=>{
       const row=document.createElement("div");
       row.className="field-row"; row.style.marginBottom="5px";
       const t=document.createElement("input");
-      t.value=ln.text; t.readOnly=ro;
+      t.value=ln.text; t.readOnly=readOnly;
       t.style.background="#E5E6E8"; t.style.color="#000";
       t.oninput=()=>lines[i].text=t.value;
       const c=document.createElement("div");
       c.className="color-btn"; c.style.marginLeft="5px";
-      c.style.pointerEvents=ro?"none":"auto";
-      c.style.opacity=ro?0.4:1;
+      c.style.pointerEvents=readOnly?"none":"auto";
+      c.style.opacity=readOnly?0.4:1;
       const x=document.createElement("button");
-      x.textContent="x"; x.type="button"; x.disabled=ro;
+      x.textContent="x"; x.type="button";
       x.style.marginLeft="5px";
-      x.onclick=()=>{lines.splice(i,1);renderLines(ro);};
-      row.append(t,c,x); linesWrap.appendChild(row);
+      if (readOnly) {
+        x.style.display = "none";          // hide X in Item mode
+      } else {
+        x.onclick=()=>{lines.splice(i,1);renderLines(false);};
+      }
+      row.append(t,c);
+      if (!readOnly) row.append(x);
+      linesWrap.appendChild(row);
       Pickr.create({
         el:c,theme:"nano",default:ln.color||"#E5E6E8",
         components:{preview:true,opacity:true,hue:true,
@@ -106,11 +117,11 @@ export function initMarkerForm(db) {
 
   /* UI helpers ------------------------------------------------------ */
   function lockItem(yes){
-    const togg=(el)=>{el.disabled=yes;el.readOnly=yes;
+    const rd=(el)=>{el.disabled=yes;el.readOnly=yes;
       if(el.tagName==="SELECT")el.style.pointerEvents=yes?"none":"auto";};
-    [fldName,fldRarity,fldItemType,fldDescItem].forEach(togg);
+    [fldName,fldRarity,fldItemType,fldDescItem,
+     fldImageS,fldImageL,fldVideo].forEach(rd);
 
-    // Robust guard: ensure root and root.style exist
     pickrs.forEach(p=>{
       const root = p?.getRoot?.();
       if(root && root.style){
@@ -119,7 +130,7 @@ export function initMarkerForm(db) {
       }
     });
 
-    addLineBtn.disabled=yes;
+    addLineBtn.style.display = yes ? "none" : "inline-block";
   }
   function showBlocks(itemMode){
     itemBlock.style.display       = itemMode?"block":"none";
@@ -141,7 +152,7 @@ export function initMarkerForm(db) {
     pkTyp.setColor(def.itemTypeColor||"#E5E6E8");
     fldDescItem.value=def.description||"";
     pkDI.setColor(def.descriptionColor||"#E5E6E8");
-    fldImageS.value=def.imageSmall||""; fldImageL.value=def.imageBig||"";
+    fldImageS.value=fldImageL.value=def.imageSmall||def.imageBig||"";
     lines=def.extraLines?JSON.parse(JSON.stringify(def.extraLines)):[];
     renderLines(true);
   }
