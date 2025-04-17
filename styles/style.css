@@ -79,7 +79,7 @@ body, html {
   display: none;
 }
 
-/* Dark search bar */
+/* Dark search bar in sidebar */
 #search-bar {
   width: 100%;
   padding: 5px 8px;
@@ -293,7 +293,7 @@ body, html {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 10px 20px 5px;
+  padding: 5px 20px 5px;
   border: 1px solid #555;
   width: 500px;
   max-height: 90vh;
@@ -307,7 +307,8 @@ body, html {
   justify-content: space-between;
   align-items: center;
   padding: 0;
-  margin-bottom: 8px;
+  margin-bottom: 4px;
+  border-bottom: 1px solid #444;
 }
 .modal-header-left {
   display: flex;
@@ -332,7 +333,7 @@ body, html {
   border: 1px solid #555;
   border-radius: 3px;
   cursor: pointer;
-  transition: border-color 0.2s ease, color 0.2s ease;
+  transition: border-color 0.2s, color 0.2s;
 }
 .filter-btn.toggled {
   border: 2px solid gold;
@@ -348,7 +349,7 @@ body, html {
   padding: 4px 8px;
 }
 
-/* Scrollable list: show ~3.5 items */
+/* Show 3.5 items before scroll */
 .def-list {
   max-height: 240px;
   overflow-y: auto;
@@ -382,15 +383,14 @@ body, html {
   background-color: #1f1f1f;
 }
 
-/* “Add Filter” toggle top‑right */
+/* Add Filter toggle top-right */
 .add-filter-toggle {
   position: absolute;
   top: 8px;
   right: 8px;
-  margin: 0;
 }
 
-/* Action buttons bottom‑right */
+/* Action buttons bottom-right */
 .item-action-buttons {
   position: absolute;
   bottom: 8px;
@@ -405,4 +405,24 @@ body, html {
   border-radius: 3px;
   padding: 2px 6px;
   font-size: 13px;
+}
+
+/* Separator between item container and Add Item form */
+.modal-content hr {
+  border-color: #444;
+}
+
+/* Dark Save/Cancel buttons */
+#item-definition-form button[type="submit"],
+#item-definition-form button[type="button"] {
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  border-radius: 3px;
+  padding: 6px 12px;
+  cursor: pointer;
+}
+#item-definition-form button[type="submit"]:hover,
+#item-definition-form button[type="button"]:hover {
+  background: #444;
 }
