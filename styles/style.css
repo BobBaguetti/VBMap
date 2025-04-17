@@ -306,8 +306,8 @@ body, html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0;
-  margin-bottom: 12px;         /* 2px lower than before */
+  padding: 0 0 2px 0;             /* added 2px bottom padding */
+  margin-bottom: 12px;
   border-bottom: 2px solid #444;
 }
 .modal-header-left {
@@ -409,7 +409,8 @@ body, html {
 
 /* Separator between item container and Add Item form */
 .modal-content hr {
-  border-top: 2px solid #444; /* match header divider */
+  border: none;                 /* remove default bevel */
+  border-top: 2px solid #444;   /* match header divider */  
   margin: 12px 0;
 }
 
