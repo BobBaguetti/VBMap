@@ -1,3 +1,5 @@
+/* style.css */
+
 /* Base Styles */
 body, html {
   margin: 0;
@@ -350,21 +352,40 @@ body, html {
   color: #e0e0e0;
   overflow: auto;
 }
+/* Sticky header of the modal */
 .modal-header {
+  position: sticky;
+  top: 0;
+  background: #222;
+  z-index: 10;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding-bottom: 10px;
 }
-.modal-header-left {
+
+/* Row separators and zebra striping */
+.item-def-entry {
+  padding: 10px 8px;
+  border-bottom: 1px solid #444;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  gap: 8px;
 }
-.modal-header-left h2 {
-  margin: 0;
-  margin-right: 10px;
-  font-size: 18px;
+#item-definitions-list .item-def-entry:nth-child(odd) {
+  background-color: #1f1f1f;
 }
+
+/* “Add Filter” toggle styling */
+.add-filter-toggle {
+  flex-shrink: 0;
+  margin-top: 4px;
+}
+.item-def-entry-content {
+  flex: 1;
+}
+
+/* Tri-toggle filter buttons */
 .filter-buttons {
   display: inline-flex;
   gap: 5px;
@@ -381,35 +402,10 @@ body, html {
   line-height: 30px;
   font-size: 14px;
   transition: background 0.3s ease, border 0.3s ease, transform 0.3s ease;
-  transform-origin: center center;
 }
 .filter-btn.toggled {
   background: #555;
   border: 2px solid gold;
   color: #fff;
   transform: scale(1.1);
-}
-.modal-header-right {
-  display: flex;
-  align-items: center;
-}
-.modal-header-right input {
-  padding: 4px;
-  font-size: 14px;
-  border: 1px solid #555;
-  border-radius: 4px;
-  margin-right: 10px;
-}
-.modal-header-right .close {
-  font-size: 28px;
-  cursor: pointer;
-}
-.def-list {
-  max-height: 200px;
-  overflow-y: auto;
-  padding: 5px;
-}
-.item-def-entry {
-  font-size: 14px;
-  margin-bottom: 5px;
 }

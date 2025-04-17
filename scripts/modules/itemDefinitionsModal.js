@@ -1,4 +1,5 @@
-// scripts/modules/itemDefinitionsModal.js
+// itemDefinitionsModal.js
+// (replace the entire file in scripts/modules/itemDefinitionsModal.js)
 
 import {
   loadItemDefinitions,
@@ -9,32 +10,32 @@ import {
 
 /**
  * Initialise the modal.
- * @param {firebase.firestore.Firestore} db   Firestore instance
- * @param {Function} onDefinitionsChanged     Callback after add/edit/delete
+ * @param {firebase.firestore.Firestore} db
+ * @param {Function} onDefinitionsChanged
  * @returns {{ openModal: Function, closeModal: Function, refresh: Function }}
  */
 export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   // DOM handles
-  const manageBtn    = document.getElementById("manage-item-definitions");
-  const modal        = document.getElementById("item-definitions-modal");
-  const closeBtn     = document.getElementById("close-item-definitions");
-  const listWrap     = document.getElementById("item-definitions-list");
-  const form         = document.getElementById("item-definition-form");
-  const defName      = document.getElementById("def-name");
-  const defType      = document.getElementById("def-type");
-  const defRarity    = document.getElementById("def-rarity");
-  const defDescription = document.getElementById("def-description");
-  const defImageSmall  = document.getElementById("def-image-small");
-  const defImageBig    = document.getElementById("def-image-big");
+  const manageBtn        = document.getElementById("manage-item-definitions");
+  const modal            = document.getElementById("item-definitions-modal");
+  const closeBtn         = document.getElementById("close-item-definitions");
+  const listWrap         = document.getElementById("item-definitions-list");
+  const form             = document.getElementById("item-definition-form");
+  const defName          = document.getElementById("def-name");
+  const defType          = document.getElementById("def-type");
+  const defRarity        = document.getElementById("def-rarity");
+  const defDescription   = document.getElementById("def-description");
+  const defImageSmall    = document.getElementById("def-image-small");
+  const defImageBig      = document.getElementById("def-image-big");
   const defExtraLinesContainer = document.getElementById("def-extra-lines");
-  const addExtraLineBtn = document.getElementById("add-def-extra-line");
-  const defSearch       = document.getElementById("def-search");
-  const filterNameBtn   = document.getElementById("filter-name");
-  const filterTypeBtn   = document.getElementById("filter-type");
-  const filterRarityBtn = document.getElementById("filter-rarity");
-  const heading2        = document.getElementById("def-form-heading");
-  const heading3        = document.getElementById("def-form-subheading");
-  const defCancelBtn    = document.getElementById("def-cancel");
+  const addExtraLineBtn  = document.getElementById("add-def-extra-line");
+  const defSearch        = document.getElementById("def-search");
+  const filterNameBtn    = document.getElementById("filter-name");
+  const filterTypeBtn    = document.getElementById("filter-type");
+  const filterRarityBtn  = document.getElementById("filter-rarity");
+  const heading2         = document.getElementById("def-form-heading");
+  const heading3         = document.getElementById("def-form-subheading");
+  const defCancelBtn     = document.getElementById("def-cancel");
 
   // Safe Pickr factory
   function createPicker(selector) {
@@ -116,11 +117,11 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
             interaction: { hex: true, rgba: true, input: true, save: true }
           }
         })
-          .on("change", c => {
-            extraLines[idx].color = c.toHEXA().toString();
-          })
-          .on("save", (_, p) => p.hide())
-          .setColor(lineObj.color || "#E5E6E8");
+        .on("change", c => {
+          extraLines[idx].color = c.toHEXA().toString();
+        })
+        .on("save", (_, p) => p.hide())
+        .setColor(lineObj.color || "#E5E6E8");
       } catch (e) {
         console.warn("itemDefinitionsModal: failed to init line Pickr", e);
       }
@@ -139,24 +140,21 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     defs.forEach(def => {
       const row = document.createElement("div");
       row.className = "item-def-entry";
-      row.style.position = "relative";
-      row.style.paddingTop = "30px";
 
-      // Top-right Show in sidebar
+      // Add Filter toggle
       const showDiv = document.createElement("div");
-      showDiv.style.position = "absolute";
-      showDiv.style.top = "5px";
-      showDiv.style.right = "5px";
+      showDiv.className = "add-filter-toggle";
       showDiv.innerHTML = `
         <label>
           <input type="checkbox" data-show-filter="${def.id}"
             ${def.showInFilters ? "checked" : ""}/>
-          Show
+          Add Filter
         </label>`;
       row.appendChild(showDiv);
 
       // Entry content
       const content = document.createElement("div");
+      content.className = "item-def-entry-content";
       content.innerHTML = `
         <span class="def-name"><strong>${def.name}</strong></span>
         (<span class="def-type">${def.itemType || def.type}</span>) –
@@ -170,7 +168,7 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
 
       listWrap.appendChild(row);
 
-      // Show-in-sidebar toggle
+      // Add Filter toggle handler
       showDiv.querySelector("input").addEventListener("change", async e => {
         def.showInFilters = e.target.checked;
         await updateItemDefinition(db, { id: def.id, showInFilters: def.showInFilters });
@@ -178,7 +176,7 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       });
 
       // Edit button
-      row.querySelector("[data-edit]").addEventListener("click", () => {
+      content.querySelector("[data-edit]").addEventListener("click", () => {
         defName.value         = def.name;
         defType.value         = def.type;
         defRarity.value       = def.rarity || "";
@@ -196,7 +194,7 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       });
 
       // Delete button
-      row.querySelector("[data-delete]").addEventListener("click", async () => {
+      content.querySelector("[data-delete]").addEventListener("click", async () => {
         if (!confirm("Delete this item definition?")) return;
         await deleteItemDefinition(db, def.id);
         await loadAndRender();
