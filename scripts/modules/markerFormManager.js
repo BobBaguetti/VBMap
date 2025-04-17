@@ -1,31 +1,34 @@
 // scripts/modules/markerFormManager.js
 //
 // Manages the Edit / Create Marker modal.
-//
 
-import { formatRarity }              from "./utils.js";
-import { loadItemDefinitions }       from "./itemDefinitionsService.js";
-import { makeDraggable, hideContextMenu } from "./uiManager.js";
+import { formatRarity }                    from "./utils.js";
+import { loadItemDefinitions }             from "./itemDefinitionsService.js";
+import { makeDraggable, hideContextMenu }  from "./uiManager.js";
 
-// ---------------------------------------------------------------------------
-// State & caches
-// ---------------------------------------------------------------------------
-let dbInstance        = null;
-let itemDefsCache     = [];
-let itemDefsByIdCache = {};
+// ────────────────────────────────────────────────────────────────────────────
+// Config
+// ────────────────────────────────────────────────────────────────────────────
+const CURSOR_GAP = 10;   // constant gap between cursor and modal’s right edge
 
-const el = {};       // DOM elements
-const pickr = {};    // Pickr instances
+// ────────────────────────────────────────────────────────────────────────────
+// State
+// ────────────────────────────────────────────────────────────────────────────
+let dbInstance = null;
+let itemDefs   = {};     // id → definition (populated once)
 
-let extraLines   = [];
-let saveCb       = null;
-let mode         = null;  // "edit" | "create"
-let currentData  = null;
-let currentLatLng= null;
+const el    = {};        // DOM refs
+const pickr = {};        // Pickr refs
 
-// ---------------------------------------------------------------------------
+let extraLines     = [];
+let saveCallback   = null;
+let mode           = null; // "edit" | "create"
+let currentData    = null;
+let currentLatLng  = null;
+
+// ────────────────────────────────────────────────────────────────────────────
 // Helpers
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────────────
 function createPickr(selector) {
   return Pickr.create({
     el: selector,
@@ -38,189 +41,203 @@ function createPickr(selector) {
   }).on("save", (_, p) => p.hide());
 }
 
-/** Position modal so it opens just left of the cursor. */
+/** Position modal so its right edge is CURSOR_GAP px left of the cursor. */
 function positionModal(pos) {
-  el.modal.style.display = "block";               // make it visible first
-  const w = el.modal.offsetWidth  || 400;         // fallback sizes if 0
-  const h = el.modal.offsetHeight || 300;
-  el.modal.style.left = (pos.x - w + 10) + "px";
-  el.modal.style.top  = (pos.y - h / 2) + "px";
+  el.modal.style.display  = "block";
+  el.modal.style.left     = (pos.x + CURSOR_GAP) + "px";
+  el.modal.style.top      = pos.y + "px";
+  el.modal.style.transform= "translate(-100%,-50%)";   // anchor right & centre
   hideContextMenu();
 }
 
-// ---------------------------------------------------------------------------
+/** Load and cache item definitions the first time the form needs them. */
+async function ensureItemDefs() {
+  if (!dbInstance || Object.keys(itemDefs).length) return;
+  const defs = await loadItemDefinitions(dbInstance);
+  defs.forEach(d => (itemDefs[d.id] = d));
+}
+
+/** (Re)fill predefined dropdown */
+async function populatePredefDropdown() {
+  await ensureItemDefs();
+  el.predefSel.innerHTML = '<option value="">-- Select an item --</option>';
+  Object.values(itemDefs).forEach(def => {
+    const opt = document.createElement("option");
+    opt.value = def.id; opt.textContent = def.name;
+    el.predefSel.appendChild(opt);
+  });
+}
+
+export async function refreshPredefinedItems() {
+  itemDefs = {};   // clear cache so next call fetches fresh list
+  await populatePredefDropdown();
+}
+
+// ────────────────────────────────────────────────────────────────────────────
 // Initialiser
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────────────
 export function initMarkerFormManager(db) {
-  if (dbInstance) return;
+  if (dbInstance) return;      // already initialised
   dbInstance = db;
 
-  // DOM cache
+  // --- DOM refs
   [
     ["modal","edit-modal"],["handle","edit-modal-handle"],["form","edit-form"],
     ["name","edit-name"],["type","edit-type"],
-    ["predefWrap","predefined-item-container"],["predefSel","predefined-item-dropdown"],
+    ["preWrap","predefined-item-container"],["preSel","predefined-item-dropdown"],
     ["itemFields","item-extra-fields"],["nonItem","non-item-description"],
     ["rarity","edit-rarity"],["itemType","edit-item-type"],
     ["descItem","edit-description"],["descNon","edit-description-non-item"],
-    ["extraWrap","extra-lines"],["addExtra","add-extra-line"],
-    ["imgSmall","edit-image-small"],["imgBig","edit-image-big"],
-    ["videoURL","edit-video-url"],["cancelBtn","edit-cancel"]
-  ].forEach(([k,id])=> el[k]=document.getElementById(id));
+    ["extraWrap","extra-lines"],["addLine","add-extra-line"],
+    ["imgS","edit-image-small"],["imgL","edit-image-big"],
+    ["video","edit-video-url"],["cancel","edit-cancel"]
+  ].forEach(([k,id]) => (el[k] = document.getElementById(id)));
 
-  // draggable
+  // --- draggable
   makeDraggable(el.modal, el.handle);
 
-  // Pickrs
+  // --- Pickrs
   pickr.name     = createPickr("#pickr-name");
   pickr.rarity   = createPickr("#pickr-rarity");
   pickr.itemType = createPickr("#pickr-itemtype");
   pickr.descItem = createPickr("#pickr-desc-item");
   pickr.descNon  = createPickr("#pickr-desc-nonitem");
 
-  // events
+  // --- events
   el.type.addEventListener("change", updateVisibility);
-  el.predefSel.addEventListener("change", applyPredefinedSelection);
-  el.addExtra.addEventListener("click", () => {
-    extraLines.push({ text:"", color:"#E5E6E8" }); renderExtraLines();
+  el.preSel.addEventListener("change", applyDefinitionToForm);
+  el.addLine.addEventListener("click", () => {
+    extraLines.push({ text:"", color:"#E5E6E8" }); renderExtra();
   });
-  el.cancelBtn.addEventListener("click", hideForm);
-  el.form.addEventListener("submit", onSubmit);
+  el.cancel.addEventListener("click", hideForm);
+  el.form.addEventListener("submit", handleSubmit);
 }
 
-// ---------------------------------------------------------------------------
-// Predefined items
-// ---------------------------------------------------------------------------
-async function populatePredefs() {
-  if (!dbInstance) return;
-  itemDefsCache = await loadItemDefinitions(dbInstance);
-  itemDefsByIdCache = {};
-  el.predefSel.innerHTML = '<option value="">-- Select an item --</option>';
-  itemDefsCache.forEach(d=>{
-    itemDefsByIdCache[d.id]=d;
-    const opt=document.createElement("option");
-    opt.value=d.id; opt.textContent=d.name; el.predefSel.appendChild(opt);
-  });
-}
-export async function refreshPredefinedItems() { await populatePredefs(); }
+// ────────────────────────────────────────────────────────────────────────────
+// UI Functions
+// ────────────────────────────────────────────────────────────────────────────
+function renderExtra() {
+  el.extraWrap.innerHTML = "";
+  extraLines.forEach((ln, i) => {
+    const row = document.createElement("div"); row.className = "field-row";
+    const t   = document.createElement("input"); t.type="text"; t.value=ln.text;
+    t.addEventListener("input", e => extraLines[i].text = e.target.value);
+    const box = document.createElement("div"); box.className="color-btn";
+    const rm  = document.createElement("button"); rm.textContent="x";
+    rm.addEventListener("click", ()=>{extraLines.splice(i,1); renderExtra();});
+    row.append(t, box, rm); el.extraWrap.appendChild(row);
 
-function applyPredefinedSelection() {
-  const d=itemDefsByIdCache[ el.predefSel.value ];
-  if (!d) return;
-  el.name.value=d.name||"";          pickr.name.setColor(d.nameColor||"#E5E6E8");
-  el.rarity.value=d.rarity||"";      pickr.rarity.setColor(d.rarityColor||"#E5E6E8");
-  el.itemType.value=d.itemType||d.type||""; pickr.itemType.setColor(d.itemTypeColor||"#E5E6E8");
-  el.descItem.value=d.description||""; pickr.descItem.setColor(d.descriptionColor||"#E5E6E8");
-  extraLines=d.extraLines?JSON.parse(JSON.stringify(d.extraLines)):[];
-  renderExtraLines();
-  el.imgSmall.value=d.imageSmall||""; el.imgBig.value=d.imageBig||"";
-}
-
-// ---------------------------------------------------------------------------
-// UI helpers
-// ---------------------------------------------------------------------------
-function updateVisibility() {
-  if (el.type.value==="Item") {
-    el.itemFields.style.display="block";
-    el.nonItem.style.display="none";
-    el.predefWrap.style.display="block";
-    populatePredefs();
-  } else {
-    el.itemFields.style.display="none";
-    el.nonItem.style.display="block";
-    el.predefWrap.style.display="none";
-    extraLines=[]; renderExtraLines();
-  }
-}
-
-function renderExtraLines() {
-  el.extraWrap.innerHTML="";
-  extraLines.forEach((ln,idx)=>{
-    const row=document.createElement("div"); row.className="field-row";
-    const inp=document.createElement("input"); inp.type="text"; inp.value=ln.text;
-    inp.addEventListener("input",e=>extraLines[idx].text=e.target.value);
-    const clr=document.createElement("div"); clr.className="color-btn";
-    const rm=document.createElement("button"); rm.textContent="x";
-    rm.addEventListener("click",()=>{extraLines.splice(idx,1); renderExtraLines();});
-    row.append(inp,clr,rm); el.extraWrap.appendChild(row);
-    const p=Pickr.create({
-      el:clr, theme:"nano", default:ln.color||"#E5E6E8",
+    const p = Pickr.create({
+      el: box, theme:"nano", default:ln.color,
       components:{preview:true,opacity:true,hue:true,interaction:{hex:true,rgba:true,input:true,save:true}}
     })
-      .on("change",c=>extraLines[idx].color=c.toHEXA().toString())
-      .on("save",(_,p)=>p.hide());
+      .on("change", c => extraLines[i].color = c.toHEXA().toString())
+      .on("save",   (_,p)=> p.hide());
     p.setColor(ln.color);
   });
 }
 
-// ---------------------------------------------------------------------------
-// Public: open modal for editing
-// ---------------------------------------------------------------------------
-export function showEditForm(markerData, pos, onSave) {
-  mode="edit"; currentData=markerData; currentLatLng=null; saveCb=onSave;
+function updateVisibility() {
+  const isItem = el.type.value === "Item";
+  el.itemFields.style.display = isItem ? "block" : "none";
+  el.nonItem.style.display    = isItem ? "none"  : "block";
+  el.preWrap.style.display    = isItem ? "block" : "none";
+  if (isItem) { populatePredefDropdown(); }
+  else { extraLines = []; renderExtra(); }
+}
 
-  extraLines=markerData.extraLines?JSON.parse(JSON.stringify(markerData.extraLines)):[];
-  el.name.value=markerData.name||"";   pickr.name.setColor(markerData.nameColor||"#E5E6E8");
-  el.type.value=markerData.type;
-  el.imgSmall.value=markerData.imageSmall||""; el.imgBig.value=markerData.imageBig||"";
-  el.videoURL.value=markerData.videoURL||""; el.predefSel.value=markerData.predefinedItemId||"";
+function applyDefinitionToForm() {
+  const def = itemDefs[ el.preSel.value ];
+  if (!def) return;
+  el.name.value = def.name || "";         pickr.name.setColor(def.nameColor||"#E5E6E8");
+  el.rarity.value = def.rarity || "";     pickr.rarity.setColor(def.rarityColor||"#E5E6E8");
+  el.itemType.value = def.itemType || def.type || "";
+  pickr.itemType.setColor(def.itemTypeColor||"#E5E6E8");
+  el.descItem.value = def.description || "";
+  pickr.descItem.setColor(def.descriptionColor||"#E5E6E8");
+  extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+  renderExtra();
+  el.imgS.value = def.imageSmall || ""; el.imgL.value = def.imageBig || "";
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+// Public: open modal for editing
+// ────────────────────────────────────────────────────────────────────────────
+export function showEditForm(data, pos, onSave) {
+  mode = "edit"; currentData = data; saveCallback = onSave;
+
+  // fill form
+  extraLines = data.extraLines ? JSON.parse(JSON.stringify(data.extraLines)) : [];
+  el.name.value = data.name || "";     pickr.name.setColor(data.nameColor||"#E5E6E8");
+  el.type.value = data.type;
+  el.imgS.value = data.imageSmall||""; el.imgL.value = data.imageBig||"";
+  el.video.value= data.videoURL || ""; el.preSel.value = data.predefinedItemId || "";
   updateVisibility();
 
-  if (markerData.type==="Item") {
-    el.rarity.value=markerData.rarity||""; pickr.rarity.setColor(markerData.rarityColor||"#E5E6E8");
-    el.itemType.value=markerData.itemType||"Crafting Material"; pickr.itemType.setColor(markerData.itemTypeColor||"#E5E6E8");
-    el.descItem.value=markerData.description||""; pickr.descItem.setColor(markerData.descriptionColor||"#E5E6E8");
+  if (data.type === "Item") {
+    el.rarity.value = data.rarity || ""; pickr.rarity.setColor(data.rarityColor||"#E5E6E8");
+    el.itemType.value = data.itemType || "Crafting Material";
+    pickr.itemType.setColor(data.itemTypeColor||"#E5E6E8");
+    el.descItem.value = data.description || "";
+    pickr.descItem.setColor(data.descriptionColor||"#E5E6E8");
   } else {
-    el.descNon.value=markerData.description||""; pickr.descNon.setColor(markerData.descriptionColor||"#E5E6E8");
+    el.descNon.value = data.description || "";
+    pickr.descNon.setColor(data.descriptionColor||"#E5E6E8");
   }
-  renderExtraLines();
+  renderExtra();
   positionModal(pos);
 }
 
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────────────
 // Public: open modal for creating
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────────────
 export function showCreateForm(latlng, defaults, pos, onSave) {
-  mode="create"; currentData={...defaults}; currentLatLng=latlng; saveCb=onSave;
+  mode = "create"; currentLatLng = latlng; currentData = { ...defaults }; saveCallback = onSave;
 
-  extraLines=[]; el.name.value=defaults.name||""; pickr.name.setColor("#E5E6E8");
-  el.type.value=defaults.type||"Item"; el.imgSmall.value=""; el.imgBig.value=""; el.videoURL.value="";
-  el.predefSel.value=""; updateVisibility();
+  extraLines = [];        el.name.value = defaults.name || "";     pickr.name.setColor("#E5E6E8");
+  el.type.value = defaults.type || "Item";
+  el.imgS.value = "";      el.imgL.value = "";      el.video.value = ""; el.preSel.value = "";
+  updateVisibility();
 
   el.rarity.value=""; pickr.rarity.setColor("#E5E6E8");
   el.itemType.value="Crafting Material"; pickr.itemType.setColor("#E5E6E8");
   el.descItem.value=""; pickr.descItem.setColor("#E5E6E8");
-  el.descNon.value=""; pickr.descNon.setColor("#E5E6E8");
-  renderExtraLines();
+  el.descNon.value ="";
+  pickr.descNon.setColor("#E5E6E8");
+  renderExtra();
   positionModal(pos);
 }
 
-// ---------------------------------------------------------------------------
+// ────────────────────────────────────────────────────────────────────────────
 // Submit & close
-// ---------------------------------------------------------------------------
-function onSubmit(e) {
-  e.preventDefault(); if (!saveCb) return;
-  const d= mode==="edit" ? {...currentData} : {};
-  d.name=el.name.value.trim()||"New Marker";
-  d.nameColor=pickr.name.getColor()?.toHEXA()?.toString()||"#E5E6E8";
-  d.type=el.type.value;
-  d.imageSmall=el.imgSmall.value.trim(); d.imageBig=el.imgBig.value.trim();
-  d.videoURL=el.videoURL.value.trim(); d.predefinedItemId=el.predefSel.value||null;
-  if (mode==="create") d.coords=[currentLatLng.lat,currentLatLng.lng];
+// ────────────────────────────────────────────────────────────────────────────
+function handleSubmit(e) {
+  e.preventDefault(); if (!saveCallback) return;
+  const d = mode === "edit" ? { ...currentData } : {};
+  d.name      = el.name.value.trim() || "New Marker";
+  d.nameColor = pickr.name.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+  d.type      = el.type.value;
+  d.imageSmall= el.imgS.value.trim(); d.imageBig   = el.imgL.value.trim();
+  d.videoURL  = el.video.value.trim(); d.predefinedItemId = el.preSel.value || null;
+  if (mode === "create") d.coords = [currentLatLng.lat, currentLatLng.lng];
 
-  if (d.type==="Item") {
-    d.rarity=formatRarity(el.rarity.value); d.rarityColor=pickr.rarity.getColor()?.toHEXA()?.toString()||"#E5E6E8";
-    d.itemType=el.itemType.value; d.itemTypeColor=pickr.itemType.getColor()?.toHEXA()?.toString()||"#E5E6E8";
-    d.description=el.descItem.value; d.descriptionColor=pickr.descItem.getColor()?.toHEXA()?.toString()||"#E5E6E8";
-    d.extraLines=JSON.parse(JSON.stringify(extraLines));
+  if (d.type === "Item") {
+    d.rarity       = formatRarity(el.rarity.value);
+    d.rarityColor  = pickr.rarity.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+    d.itemType     = el.itemType.value;
+    d.itemTypeColor= pickr.itemType.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+    d.description  = el.descItem.value;
+    d.descriptionColor = pickr.descItem.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+    d.extraLines   = JSON.parse(JSON.stringify(extraLines));
   } else {
-    d.description=el.descNon.value; d.descriptionColor=pickr.descNon.getColor()?.toHEXA()?.toString()||"#E5E6E8";
+    d.description      = el.descNon.value;
+    d.descriptionColor = pickr.descNon.getColor()?.toHEXA()?.toString() || "#E5E6E8";
     delete d.rarity; delete d.rarityColor; delete d.itemType; delete d.itemTypeColor; delete d.extraLines;
   }
-  hideForm(); saveCb(d);
+  hideForm(); saveCallback(d);
 }
 
 function hideForm() {
-  el.modal.style.display="none";
-  saveCb=null; currentData=null; extraLines=[];
+  el.modal.style.display = "none";
+  saveCallback = null; currentData = null; extraLines = [];
 }
