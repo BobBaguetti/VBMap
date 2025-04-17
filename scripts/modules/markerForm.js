@@ -73,7 +73,8 @@ export function initMarkerForm(db) {
       predefinedDD.appendChild(opt);
     });
   }
-  await refreshPredefinedItems();
+  // initial populate (no await needed for render)
+  refreshPredefinedItems();
 
   /* -------------------------------------------------- *
    *  Toggle Item / Non‑Item fields
