@@ -1,23 +1,17 @@
 // scripts/modules/markerForm.js
 // Edit / Create Marker modal.
 //
-// • Markers linked to a predefined Item are read‑only; all their
-//   item‑specific data is inherited from the Items library.
-// • Free‑form markers (Door, Extraction Portal, Teleport, or custom Item)
-//   remain fully editable.
+// • Item‑linked markers are read‑only.
+// • Free‑form markers remain editable.
 
 import { makeDraggable, positionModal } from "./uiManager.js";
 import { loadItemDefinitions } from "./itemDefinitionsService.js";
 
-/**
- * Initialise the marker‑form module.
- * @param {firebase.firestore.Firestore} db firestore instance
- * @returns {{ openEdit:Function, openCreate:Function, refreshPredefinedItems:Function }}
- */
+/* -------------------------------------------------- *
+ * module init
+ * -------------------------------------------------- */
 export function initMarkerForm(db) {
-  /* -------------------------------------------------- *
-   * DOM handles
-   * -------------------------------------------------- */
+  /* DOM refs -------------------------------------------------------- */
   const modal            = document.getElementById("edit-modal");
   const modalHandle      = document.getElementById("edit-modal-handle");
   const form             = document.getElementById("edit-form");
@@ -31,7 +25,7 @@ export function initMarkerForm(db) {
   const fldRarity        = document.getElementById("edit-rarity");
   const fldItemType      = document.getElementById("edit-item-type");
   const fldDescItem      = document.getElementById("edit-description");
-  const fldDescNonItem   = document.getElementById("edit-description-non-item");
+  const fldDescNI        = document.getElementById("edit-description-non-item");
 
   const itemBlock        = document.getElementById("item-extra-fields");
   const nonItemBlock     = document.getElementById("non-item-description");
@@ -43,258 +37,171 @@ export function initMarkerForm(db) {
 
   makeDraggable(modal, modalHandle);
 
-  /* -------------------------------------------------- *
-   * Colour pickers
-   * -------------------------------------------------- */
-  function makePicker(sel) {
+  /* Pickrs ---------------------------------------------------------- */
+  function mk(sel) {
     return Pickr.create({
-      el: sel, theme: "nano", default: "#E5E6E8",
+      el: sel,
+      theme: "nano",
+      default: "#E5E6E8",
       components: {
-        preview: true, opacity: true, hue: true,
-        interaction: { hex:true, rgba:true, input:true, save:true }
+        preview:true, opacity:true, hue:true,
+        interaction:{ hex:true,rgba:true,input:true,save:true }
       }
-    }).on("save", (_, p) => p.hide());
+    }).on("save",(_,p)=>p.hide());
   }
-  const pkName     = makePicker("#pickr-name");
-  const pkRarity   = makePicker("#pickr-rarity");
-  const pkType     = makePicker("#pickr-itemtype");
-  const pkDescItem = makePicker("#pickr-desc-item");
-  const pkDescNI   = makePicker("#pickr-desc-nonitem");
+  const pkName = mk("#pickr-name");
+  const pkRat  = mk("#pickr-rarity");
+  const pkTyp  = mk("#pickr-itemtype");
+  const pkDI   = mk("#pickr-desc-item");
+  const pkDN   = mk("#pickr-desc-nonitem");
 
-  const pickrs = [pkName, pkRarity, pkType, pkDescItem];
+  const pickrs = [pkName, pkRat, pkTyp, pkDI];
 
-  /* -------------------------------------------------- *
-   * Item Definitions
-   * -------------------------------------------------- */
-  let itemDefs = {};
+  /* Definitions ----------------------------------------------------- */
+  let defs = {};
   async function refreshPredefinedItems() {
-    const defs = await loadItemDefinitions(db);
-    itemDefs = Object.fromEntries(defs.map(d => [d.id, d]));
-    predefinedDD.innerHTML = '<option value="">-- Select an item --</option>';
-    defs.forEach(d => {
-      const opt = document.createElement("option");
-      opt.value = d.id;
-      opt.textContent = d.name;
-      predefinedDD.appendChild(opt);
+    const list = await loadItemDefinitions(db);
+    defs = Object.fromEntries(list.map(d=>[d.id,d]));
+    predefinedDD.innerHTML =
+      '<option value="">-- Select an item --</option>';
+    list.forEach(d=>{
+      const o=document.createElement("option");
+      o.value=d.id; o.textContent=d.name;
+      predefinedDD.appendChild(o);
     });
   }
   refreshPredefinedItems();
 
-  /* -------------------------------------------------- *
-   * Extra‑info lines renderer
-   * -------------------------------------------------- */
-  let lines = [];
-  function renderLines(readOnly = false) {
-    linesWrap.innerHTML = "";
-    lines.forEach((ln, i) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
-
-      const txt = document.createElement("input");
-      txt.value = ln.text;
-      txt.readOnly = readOnly;
-      txt.style.background = "#E5E6E8";
-      txt.style.color = "#000";
-      txt.addEventListener("input", () => (lines[i].text = txt.value));
-
-      const clr = document.createElement("div");
-      clr.className = "color-btn";
-      clr.style.marginLeft = "5px";
-      clr.style.pointerEvents = readOnly ? "none" : "auto";
-      clr.style.opacity = readOnly ? 0.4 : 1;
-
-      const rm = document.createElement("button");
-      rm.textContent = "x";
-      rm.type = "button";
-      rm.disabled = readOnly;
-      rm.style.marginLeft = "5px";
-      rm.addEventListener("click", () => {
-        lines.splice(i, 1);
-        renderLines(readOnly);
-      });
-
-      row.append(txt, clr, rm);
-      linesWrap.appendChild(row);
-
+  /* Extra lines ----------------------------------------------------- */
+  let lines=[];
+  function renderLines(ro=false){
+    linesWrap.innerHTML="";
+    lines.forEach((ln,i)=>{
+      const row=document.createElement("div");
+      row.className="field-row"; row.style.marginBottom="5px";
+      const t=document.createElement("input");
+      t.value=ln.text; t.readOnly=ro;
+      t.style.background="#E5E6E8"; t.style.color="#000";
+      t.oninput=()=>lines[i].text=t.value;
+      const c=document.createElement("div");
+      c.className="color-btn"; c.style.marginLeft="5px";
+      c.style.pointerEvents=ro?"none":"auto";
+      c.style.opacity=ro?0.4:1;
+      const x=document.createElement("button");
+      x.textContent="x"; x.type="button"; x.disabled=ro;
+      x.style.marginLeft="5px";
+      x.onclick=()=>{lines.splice(i,1);renderLines(ro);};
+      row.append(t,c,x); linesWrap.appendChild(row);
       Pickr.create({
-        el: clr, theme: "nano", default: ln.color || "#E5E6E8",
-        components: {
-          preview:true, opacity:true, hue:true,
-          interaction:{ hex:true, rgba:true, input:true, save:true }
-        }
+        el:c,theme:"nano",default:ln.color||"#E5E6E8",
+        components:{preview:true,opacity:true,hue:true,
+          interaction:{hex:true,rgba:true,input:true,save:true}}
       })
-        .on("change", c => (lines[i].color = c.toHEXA().toString()))
-        .on("save", (_, p) => p.hide())
-        .setColor(ln.color || "#E5E6E8");
+        .on("change",clr=>{lines[i].color=clr.toHEXA().toString();})
+        .on("save",(_,p)=>p.hide())
+        .setColor(ln.color||"#E5E6E8");
     });
   }
+  addLineBtn.onclick=()=>{lines.push({text:"",color:"#E5E6E8"});renderLines(false);};
 
-  addLineBtn.addEventListener("click", () => {
-    lines.push({ text: "", color: "#E5E6E8" });
-    renderLines(false);
-  });
+  /* UI helpers ------------------------------------------------------ */
+  function lockItem(yes){
+    const togg=(el)=>{el.disabled=yes;el.readOnly=yes;
+      if(el.tagName==="SELECT")el.style.pointerEvents=yes?"none":"auto";};
+    [fldName,fldRarity,fldItemType,fldDescItem].forEach(togg);
 
-  /* -------------------------------------------------- *
-   * Helpers: lock / unlock item fields
-   * -------------------------------------------------- */
-  function lockItemFields(yes) {
-    const toggle = (el, on) => {
-      el.disabled = on; el.readOnly = on;
-      if (el.tagName === "SELECT") {
-        el.style.pointerEvents = on ? "none" : "auto";
-      }
-    };
-    [fldName, fldRarity, fldItemType, fldDescItem].forEach(el => toggle(el, yes));
-
-    // Guard against Pickr not yet fully initialised
-    pickrs.forEach(p => {
+    // Robust guard: ensure root and root.style exist
+    pickrs.forEach(p=>{
       const root = p?.getRoot?.();
-      if (root) {
+      if(root && root.style){
         root.style.pointerEvents = yes ? "none" : "auto";
-        root.style.opacity = yes ? 0.4 : 1;
+        root.style.opacity       = yes ? 0.4   : 1;
       }
     });
 
-    addLineBtn.disabled = yes;
+    addLineBtn.disabled=yes;
   }
-
-  function switchSections(isItem) {
-    itemBlock.style.display       = isItem ? "block" : "none";
-    nonItemBlock.style.display    = isItem ? "none"  : "block";
-    predefinedBlock.style.display = isItem ? "block" : "none";
+  function showBlocks(itemMode){
+    itemBlock.style.display       = itemMode?"block":"none";
+    nonItemBlock.style.display    = itemMode?"none":"block";
+    predefinedBlock.style.display = itemMode?"block":"none";
   }
-
-  function applyTypeUI() {
-    const isItem = fldType.value === "Item";
-    switchSections(isItem);
-    lockItemFields(isItem);
-    if (isItem) predefinedDD.value = "";
+  function applyUI(){
+    const isItem=fldType.value==="Item";
+    showBlocks(isItem); lockItem(isItem);
+    if(isItem) predefinedDD.value="";
   }
-  fldType.addEventListener("change", applyTypeUI);
+  fldType.onchange=applyUI;
 
-  /* -------------------------------------------------- *
-   * Fill from definition
-   * -------------------------------------------------- */
-  function fillFromDef(def) {
-    fldName.value = def.name;
-    pkName.setColor(def.nameColor || "#E5E6E8");
-
-    fldRarity.value = def.rarity || "";
-    pkRarity.setColor(def.rarityColor || "#E5E6E8");
-
-    fldItemType.value = def.itemType || def.type || "";
-    pkType.setColor(def.itemTypeColor || "#E5E6E8");
-
-    fldDescItem.value = def.description || "";
-    pkDescItem.setColor(def.descriptionColor || "#E5E6E8");
-
-    fldImageS.value = def.imageSmall || "";
-    fldImageL.value = def.imageBig   || "";
-
-    lines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+  /* Autofill -------------------------------------------------------- */
+  function fill(def){
+    fldName.value=def.name; pkName.setColor(def.nameColor||"#E5E6E8");
+    fldRarity.value=def.rarity||""; pkRat.setColor(def.rarityColor||"#E5E6E8");
+    fldItemType.value=def.itemType||def.type||"";
+    pkTyp.setColor(def.itemTypeColor||"#E5E6E8");
+    fldDescItem.value=def.description||"";
+    pkDI.setColor(def.descriptionColor||"#E5E6E8");
+    fldImageS.value=def.imageSmall||""; fldImageL.value=def.imageBig||"";
+    lines=def.extraLines?JSON.parse(JSON.stringify(def.extraLines)):[];
     renderLines(true);
   }
+  predefinedDD.onchange=()=>{const d=defs[predefinedDD.value];if(d)fill(d);};
 
-  predefinedDD.addEventListener("change", () => {
-    const d = itemDefs[predefinedDD.value];
-    if (d) fillFromDef(d);
-  });
-
-  /* -------------------------------------------------- *
-   * populate / harvest
-   * -------------------------------------------------- */
-  function populateForm(marker = { type: "Item" }) {
-    fldType.value = marker.type || "Item";
-    applyTypeUI();
-
-    if (marker.type === "Item") {
-      predefinedDD.value = marker.predefinedItemId || "";
-      const def = itemDefs[marker.predefinedItemId];
-      if (def) fillFromDef(def);
-    } else {
-      fldName.value = marker.name || "";
-      pkName.setColor(marker.nameColor || "#E5E6E8");
-
-      fldImageS.value = marker.imageSmall || "";
-      fldImageL.value = marker.imageBig   || "";
-      fldVideo.value  = marker.videoURL   || "";
-
-      fldDescNonItem.value = marker.description || "";
-      pkDescNI.setColor(marker.descriptionColor || "#E5E6E8");
+  /* populate / harvest --------------------------------------------- */
+  function populate(m={type:"Item"}){
+    fldType.value=m.type; applyUI();
+    if(m.type==="Item"){
+      predefinedDD.value=m.predefinedItemId||"";
+      const d=defs[m.predefinedItemId]; if(d)fill(d);
+    }else{
+      fldName.value=m.name||""; pkName.setColor(m.nameColor||"#E5E6E8");
+      fldImageS.value=m.imageSmall||""; fldImageL.value=m.imageBig||"";
+      fldVideo.value=m.videoURL||"";
+      fldDescNI.value=m.description||"";
+      pkDN.setColor(m.descriptionColor||"#E5E6E8");
     }
   }
-
-  function harvestForm(coords) {
-    const m = { type: fldType.value, coords };
-
-    if (m.type === "Item") {
-      const def = itemDefs[predefinedDD.value];
-      if (def) {
-        Object.assign(m, {
-          predefinedItemId: def.id,
-          name:             def.name,
-          nameColor:        def.nameColor || "#E5E6E8",
-          rarity:           def.rarity,
-          rarityColor:      def.rarityColor || "#E5E6E8",
-          itemType:         def.itemType || def.type,
-          itemTypeColor:    def.itemTypeColor || "#E5E6E8",
-          description:      def.description,
-          descriptionColor: def.descriptionColor || "#E5E6E8",
-          extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
-          imageSmall:       def.imageSmall,
-          imageBig:         def.imageBig
-        });
-      }
-    } else {
-      m.name             = fldName.value || "New Marker";
-      m.nameColor        = pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      m.imageSmall       = fldImageS.value;
-      m.imageBig         = fldImageL.value;
-      m.videoURL         = fldVideo.value || "";
-      m.description      = fldDescNonItem.value;
-      m.descriptionColor = pkDescNI.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+  function harvest(coords){
+    const m={type:fldType.value,coords};
+    if(m.type==="Item"){
+      const d=defs[predefinedDD.value];
+      if(d){Object.assign(m,{
+        predefinedItemId:d.id,name:d.name,nameColor:d.nameColor||"#E5E6E8",
+        rarity:d.rarity,rarityColor:d.rarityColor||"#E5E6E8",
+        itemType:d.itemType||d.type,itemTypeColor:d.itemTypeColor||"#E5E6E8",
+        description:d.description,descriptionColor:d.descriptionColor||"#E5E6E8",
+        extraLines:JSON.parse(JSON.stringify(d.extraLines||[])),
+        imageSmall:d.imageSmall,imageBig:d.imageBig
+      });}
+    }else{
+      m.name=fldName.value||"New Marker";
+      m.nameColor=pkName.getColor()?.toHEXA()?.toString()||"#E5E6E8";
+      m.imageSmall=fldImageS.value; m.imageBig=fldImageL.value;
+      m.videoURL=fldVideo.value||"";
+      m.description=fldDescNI.value;
+      m.descriptionColor=pkDN.getColor()?.toHEXA()?.toString()||"#E5E6E8";
     }
     return m;
   }
 
-  /* -------------------------------------------------- *
-   * openEdit / openCreate
-   * -------------------------------------------------- */
-  let submitCB = null;
-
-  function openEdit(markerObj, data, clickEvt, onSave) {
-    populateForm(data);
-    positionModal(modal, clickEvt);
-    modal.style.display = "block";
-
-    if (submitCB) form.removeEventListener("submit", submitCB);
-    submitCB = e => {
-      e.preventDefault();
-      Object.assign(data, harvestForm(data.coords));
-      onSave(data);
-      modal.style.display = "none";
-    };
-    form.addEventListener("submit", submitCB);
+  /* openers --------------------------------------------------------- */
+  let subCB=null;
+  function openEdit(markerObj,data,evt,save){
+    populate(data); positionModal(modal,evt); modal.style.display="block";
+    if(subCB)form.removeEventListener("submit",subCB);
+    subCB=e=>{e.preventDefault();Object.assign(data,harvest(data.coords));
+      save(data); modal.style.display="none";};
+    form.addEventListener("submit",subCB);
+  }
+  function openCreate(coords,defType,evt,add){
+    populate({type:defType||"Item"}); positionModal(modal,evt);
+    modal.style.display="block";
+    if(subCB)form.removeEventListener("submit",subCB);
+    subCB=e=>{e.preventDefault();add(harvest(coords));modal.style.display="none";};
+    form.addEventListener("submit",subCB);
   }
 
-  function openCreate(coords, defaultType, clickEvt, onCreate) {
-    populateForm({ type: defaultType || "Item" });
-    positionModal(modal, clickEvt);
-    modal.style.display = "block";
+  btnCancel.onclick=()=>modal.style.display="none";
 
-    if (submitCB) form.removeEventListener("submit", submitCB);
-    submitCB = e => {
-      e.preventDefault();
-      onCreate(harvestForm(coords));
-      modal.style.display = "none";
-    };
-    form.addEventListener("submit", submitCB);
-  }
-
-  /* -------------------------------------------------- */
-  btnCancel.addEventListener("click", () => (modal.style.display = "none"));
-
-  /* -------------------------------------------------- */
   return { openEdit, openCreate, refreshPredefinedItems };
 }
