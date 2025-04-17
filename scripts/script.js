@@ -1,39 +1,40 @@
 // scripts/script.js
 //
-// Orchestrates map, Firebase, layers, marker‑form manager, item‑definition
-// modal, copy/paste, sidebar search & layer toggles.
+// Coordinates map, Firebase, marker‑form manager, copy/paste,
+// sidebar search, and the Item‑Definitions modal.
 //
-import { initializeMap }               from "./modules/map.js";
+
+import { initializeMap }            from "./modules/map.js";
 import {
   showContextMenu,
   attachContextMenuHider,
   attachRightClickCancel
-}                                      from "./modules/uiManager.js";
+}                                   from "./modules/uiManager.js";
 import {
   initializeFirebase,
   loadMarkers,
   addMarker    as firebaseAdd,
   updateMarker as firebaseUpdate,
   deleteMarker as firebaseDelete
-}                                      from "./modules/firebaseService.js";
+}                                   from "./modules/firebaseService.js";
 import {
   createMarker,
   createPopupContent
-}                                      from "./modules/markerManager.js";
+}                                   from "./modules/markerManager.js";
 
 import {
   initMarkerFormManager,
   showEditForm,
   showCreateForm,
   refreshPredefinedItems
-}                                      from "./modules/markerFormManager.js";
+}                                   from "./modules/markerFormManager.js";
 
 import {
   loadItemDefinitions,
   addItemDefinition,
   updateItemDefinition,
   deleteItemDefinition
-}                                      from "./modules/itemDefinitionsService.js";
+}                                   from "./modules/itemDefinitionsService.js";
 
 document.addEventListener("DOMContentLoaded", async () => {
   // ─────────────────────────── Firebase
@@ -74,21 +75,24 @@ document.addEventListener("DOMContentLoaded", async () => {
       onEdit: (mo, data, ev) =>
         showEditForm(
           data,
+          { x: ev.pageX, y: ev.pageY },               // << position object
           updated => {
             mo.setPopupContent(createPopupContent(updated));
             firebaseUpdate(db, updated);
-          },
-          ev
+          }
         ),
+
       onCopy: (_mo, data) => {
         copiedData = JSON.parse(JSON.stringify(data));
         delete copiedData.id;
         pasteMode = true;
       },
+
       onDragEnd: (mo, data) => {
         data.coords = [mo.getLatLng().lat, mo.getLatLng().lng];
         firebaseUpdate(db, data);
       },
+
       onDelete: (mo, data) => {
         layers[data.type].removeLayer(mo);
         allMarkers = allMarkers.filter(x => x.data.id !== data.id);
@@ -111,11 +115,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           showCreateForm(
             evt.latlng,
             defaults,
+            { x: evt.originalEvent.pageX, y: evt.originalEvent.pageY }, // << position
             (newMarker) => {
               addMarkerToMap(newMarker);
               firebaseAdd(db, newMarker);
-            },
-            evt.originalEvent
+            }
           );
         }
       }
@@ -155,8 +159,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   // ════════════════════════════════════════════════════════════════════════
-  //  Manage Item‑Definitions modal (unchanged from your original script,
-  //  except calls now use refreshPredefinedItems()).
+  //  Manage Item‑Definitions modal (unchanged, only calls refreshPredefinedItems)
   // ════════════════════════════════════════════════════════════════════════
 
   // ---------- DOM refs ----------
@@ -181,7 +184,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const defFormSubheading = document.getElementById("def-form-subheading");
   const defCancelBtn   = document.getElementById("def-cancel");
 
-  // ---------- Pickr helper for the modal ----------
+  // ---------- Pickr helper ----------
   function createPicker(selector) {
     return Pickr.create({
       el: selector,
@@ -194,7 +197,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }).on('save', (_, p) => p.hide());
   }
 
-  // ---------- Extra‑info lines in the modal ----------
+  // ---------- Extra‑info lines ----------
   let extraDefLines = [];
   addDefExtraLineBtn.addEventListener("click", () => {
     extraDefLines.push({ text: "", color: "#E5E6E8" });
@@ -225,9 +228,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       rm.style.marginLeft = "5px";
       rm.addEventListener("click", () => { extraDefLines.splice(idx,1); renderDefExtraLines(); });
 
-      row.appendChild(text);
-      row.appendChild(colourDiv);
-      row.appendChild(rm);
+      row.append(text, colourDiv, rm);
       defExtraLinesContainer.appendChild(row);
 
       const p = Pickr.create({
@@ -241,6 +242,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       })
         .on('change', (c)=> extraDefLines[idx].color = c.toHEXA().toString())
         .on('save',  (_,p)=> p.hide());
+      p.setColor(line.color);
     });
   }
 
@@ -276,10 +278,10 @@ document.addEventListener("DOMContentLoaded", async () => {
           extraDefLines        = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
           renderDefExtraLines();
           defName.dataset.editId = def.id;
-          if (window.pickrDefName)     window.pickrDefName.setColor(def.nameColor || "#E5E6E8");
-          if (window.pickrDefType)     window.pickrDefType.setColor(def.itemTypeColor || "#E5E6E8");
-          if (window.pickrDefRarity)   window.pickrDefRarity.setColor(def.rarityColor || "#E5E6E8");
-          if (window.pickrDefDescription) window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
+          if (window.pickrDefName)       window.pickrDefName.setColor(def.nameColor || "#E5E6E8");
+          if (window.pickrDefType)       window.pickrDefType.setColor(def.itemTypeColor || "#E5E6E8");
+          if (window.pickrDefRarity)     window.pickrDefRarity.setColor(def.rarityColor || "#E5E6E8");
+          if (window.pickrDefDescription)window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
           defFormHeading.innerText   = "Edit Item";
           defFormSubheading.innerText= "Edit Item";
         });
@@ -365,9 +367,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   // ---------- List filter / search ----------
   const filterSettings = { name:false, type:false, rarity:false };
-  function updateFilterBtn(btn, active) {
-    btn.classList.toggle("toggled", active);
-  }
+  function updateFilterBtn(btn, active) { btn.classList.toggle("toggled", active); }
   updateFilterBtn(filterNameBtn,false);
   updateFilterBtn(filterTypeBtn,false);
   updateFilterBtn(filterRarityBtn,false);
