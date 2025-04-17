@@ -38,6 +38,25 @@ body, html {
   transform: translateX(-100%);
 }
 
+/* Sidebar toggle button */
+#sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  left: 300px;
+  z-index: 1100;
+  width: 30px;
+  height: 30px;
+  background: #333;
+  border: none;
+  color: #e0e0e0;
+  font-size: 18px;
+  cursor: pointer;
+  transition: left 0.3s ease, background 0.2s ease;
+}
+#sidebar-toggle:hover {
+  background: #444;
+}
+
 /* Accordion for filter groups */
 .filter-group h3 {
   margin: 0;
@@ -56,6 +75,32 @@ body, html {
 }
 .filter-group.collapsed .toggle-group {
   display: none;
+}
+
+/* Dark search bar */
+#search-bar {
+  width: 100%;
+  padding: 5px 8px;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  border-radius: 3px;
+  box-sizing: border-box;
+}
+
+/* Dark Manage Items button */
+#manage-item-definitions {
+  width: 100%;
+  padding: 8px;
+  background: #333;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  border-radius: 3px;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+#manage-item-definitions:hover {
+  background: #444;
 }
 
 /* Leaflet Overrides */

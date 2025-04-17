@@ -18,12 +18,12 @@
 </head>
 <body>
   <!-- Sidebar Toggle Button -->
-  <button id="sidebar-toggle" style="position:absolute; top:10px; left:300px; z-index:1100;">◀︎</button>
+  <button id="sidebar-toggle">◀︎</button>
 
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-
+    
     <!-- Filters Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
@@ -34,6 +34,7 @@
           <label><input type="checkbox" checked data-layer="Extraction Portal" /> Extraction Portal</label>
           <label><input type="checkbox" checked data-layer="Item" /> Item</label>
           <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
+          <label><input type="checkbox" checked data-layer="Spawn Point" /> Spawn points</label>
         </div>
       </div>
       <div class="filter-group" id="item-filters">
@@ -48,8 +49,8 @@
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
-        <input type="checkbox" id="disable-grouping" />
-        Disable Marker Grouping
+        <input type="checkbox" id="enable-grouping" />
+        Enable Marker Grouping
       </label>
     </div>
 
@@ -58,18 +59,18 @@
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
     </div>
-
+    
     <!-- Admin Tools Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-tools"></i> Admin Tools</h2>
-      <button id="manage-item-definitions" style="margin-top:10px;">Manage Items</button>
+      <button id="manage-item-definitions">Manage Items</button>
     </div>
   </div>
-
+  
   <!-- Map Container -->
   <div id="map"></div>
 
-  <!-- JS Libraries -->
+  <!-- Load JS Libraries -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
