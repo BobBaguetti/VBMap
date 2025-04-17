@@ -1,6 +1,6 @@
 /* @fullfile: Send the entire file, no omissions or abridgments. */
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
-/* @version: 5   The current file version is 5. Increase by 1 every time you update anything. */
+/* @version: 6   The current file version is 6. Increase by 1 every time you update anything. */
 /* @file:    /styles/style.css */
 
 /* Base Styles */
@@ -189,7 +189,7 @@ body, html {
 .popup-header {
   display: flex;
   align-items: center;
-  padding: 0 0 4px 0; /* moved down another 2px */
+  padding: 0 0 4px 0;
   margin-bottom: 12px;
   border-bottom: 2px solid #444;
 }
@@ -278,7 +278,7 @@ body, html {
   border-radius: 2px;
   cursor: pointer;
   flex-shrink: 0;
-  margin-left: 86px; /* Extra Info + aligned 4px more left */
+  margin-left: 86px;
 }
 
 /* Item Definitions Modal */
@@ -311,7 +311,7 @@ body, html {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 0 4px 0; /* moved down another 2px */
+  padding: 0 0 4px 0;
   margin-bottom: 12px;
   border-bottom: 2px solid #444;
 }
@@ -335,16 +335,17 @@ body, html {
   width: 28px;
   height: 28px;
   padding: 0;
-  box-sizing: border-box;
+  margin: 0;
+  font-size: 20px;
+  line-height: 1;
+  font-family: 'Segoe UI', sans-serif;
   background: #333;
   color: #E5E6E8;
-  font-size: 28px;
-  line-height: 1;
+  border: none;
   border-radius: 3px;
-  cursor: pointer;
-  transition: background 0.2s;
+  box-sizing: border-box;
   vertical-align: middle;
-  transform: translateY(1px); /* nudge glyph down */
+  cursor: pointer;
 }
 .modal-header-right .close:hover {
   background: #444;
@@ -366,7 +367,6 @@ body, html {
   border-radius: 3px;
   cursor: pointer;
   transition: border-color 0.2s, color 0.2s;
-  transform: translateY(-1px); /* nudge glyph up */
 }
 .filter-btn.toggled {
   border: 2px solid gold;
@@ -461,4 +461,4 @@ body, html {
   background: #444;
 }
 
-/* @version: 5 */
+/* @version: 6 */
