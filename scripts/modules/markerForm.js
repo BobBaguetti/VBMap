@@ -147,6 +147,8 @@ export function initMarkerForm(db) {
   /* -------------------------------------------------- *
    *  UI mode toggles helpers
    * -------------------------------------------------- */
+  const pickrs = [pkName, pkRarity, pkItemType, pkDescItem];
+
   function lockItemFields(isItem) {
     const lock = (ele, yes) => {
       ele.readOnly = yes;
@@ -154,10 +156,16 @@ export function initMarkerForm(db) {
       if (ele.tagName === "SELECT") ele.style.pointerEvents = yes ? "none" : "auto";
     };
     [fldName, fldRarity, fldItemType, fldDescItem].forEach(inp => lock(inp, isItem));
-    [pkName, pkRarity, pkItemType, pkDescItem].forEach(p => {
-      p.getRoot().style.pointerEvents = isItem ? "none" : "auto";
-      p.getRoot().style.opacity = isItem ? 0.4 : 1;
+
+    // Safely iterate – skip any Pickr that isn't ready yet.
+    pickrs.filter(Boolean).forEach(p => {
+      const root = p.getRoot ? p.getRoot() : null;
+      if (root) {
+        root.style.pointerEvents = isItem ? "none" : "auto";
+        root.style.opacity = isItem ? 0.4 : 1;
+      }
     });
+
     addExtraLineBtn.disabled = isItem;
   }
 
@@ -286,17 +294,4 @@ export function initMarkerForm(db) {
     modal.style.display = "block";
 
     if (submitHandler) form.removeEventListener("submit", submitHandler);
-    submitHandler = (e) => {
-      e.preventDefault();
-      onCreate(harvestForm(coords));
-      modal.style.display = "none";
-    };
-    form.addEventListener("submit", submitHandler);
-  }
-
-  /* -------------------------------------------------- */
-  btnCancel.addEventListener("click", () => (modal.style.display = "none"));
-
-  /* -------------------------------------------------- */
-  return { openEdit, openCreate, refreshPredefinedItems };
-}
+    submitHandler
