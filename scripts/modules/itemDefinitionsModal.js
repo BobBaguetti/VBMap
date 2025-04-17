@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/itemDefinitionsModal.js
 
 import {
@@ -153,25 +153,27 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
 
       listWrap.appendChild(row);
     });
+    applyFilters(); // apply current filters
   }
 
   // Search + tri-toggle logic
   const flags = { name:false, type:false, rarity:false };
   function applyFilters() {
     const q = (defSearch.value||"").toLowerCase();
+    const anyFlag = flags.name || flags.type || flags.rarity;
     listWrap.childNodes.forEach(entry => {
-      const name   = entry.querySelector(".def-name").innerText.toLowerCase();
-      const type   = entry.querySelector(".def-type").innerText.toLowerCase();
-      const rarity = entry.querySelector(".def-rarity").innerText.toLowerCase();
-      // Always filter by search text first
-      let show = q 
-        ? (name.includes(q) || type.includes(q) || rarity.includes(q))
-        : true;
-      // If no search text, then apply tri-toggle flags:
+      const nameTxt   = entry.querySelector(".def-name").innerText.toLowerCase();
+      const typeTxt   = entry.querySelector(".def-type").innerText.toLowerCase();
+      const rarityTxt = entry.querySelector(".def-rarity").innerText.toLowerCase();
+      let show = false;
       if (!q) {
-        if (flags.name   && !name.includes(q))   show = false;
-        if (flags.type   && !type.includes(q))   show = false;
-        if (flags.rarity && !rarity.includes(q)) show = false;
+        show = true;
+      } else if (!anyFlag) {
+        show = nameTxt.includes(q) || typeTxt.includes(q) || rarityTxt.includes(q);
+      } else {
+        if (flags.name && nameTxt.includes(q)) show = true;
+        if (flags.type && typeTxt.includes(q)) show = true;
+        if (flags.rarity && rarityTxt.includes(q)) show = true;
       }
       entry.style.display = show ? "" : "none";
     });
@@ -277,4 +279,4 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   return { openModal, closeModal, refresh: loadAndRender };
 }
 
-// @version: 1
+// @version: 2

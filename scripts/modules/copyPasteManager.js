@@ -3,8 +3,7 @@
 // @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/copyPasteManager.js
 // Clipboard copy‑/paste manager with a ghost preview marker that stays active
-// until the user right‑clicks to cancel. Only free‑form markers (those not
-// linked to a predefined item) have "(copy)" appended to their names.
+// until the user right‑clicks to cancel. Only free‑form markers (those not linked to a predefined item) have "(copy)" appended to their names.
 
 import { createCustomIcon } from "./markerManager.js";
 
