@@ -1,266 +1,167 @@
-// scripts/modules/itemDefinitionsModal.js
+// scripts/script.js
 
+import { initializeMap } from "./modules/map.js";
+import { showContextMenu } from "./modules/uiManager.js";
 import {
-  loadItemDefinitions,
-  addItemDefinition,
-  updateItemDefinition,
-  deleteItemDefinition
-} from "./itemDefinitionsService.js";
+  initializeFirebase,
+  loadMarkers,
+  addMarker as firebaseAddMarker,
+  updateMarker as firebaseUpdateMarker,
+  deleteMarker as firebaseDeleteMarker
+} from "./modules/firebaseService.js";
+import { createMarker, createPopupContent } from "./modules/markerManager.js";
+import { initItemDefinitionsModal } from "./modules/itemDefinitionsModal.js";
+import { initMarkerForm } from "./modules/markerForm.js";
+import { initCopyPasteManager } from "./modules/copyPasteManager.js";
+import { setupSidebar } from "./modules/sidebarManager.js";
 
-/**
- * Initialise the Manage Items modal.
- * @param {firebase.firestore.Firestore} db
- * @param {Function} onDefinitionsChanged
- */
-export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
-  const manageBtn    = document.getElementById("manage-item-definitions");
-  const modal        = document.getElementById("item-definitions-modal");
-  const closeBtn     = document.getElementById("close-item-definitions");
-  const listWrap     = document.getElementById("item-definitions-list");
-  const form         = document.getElementById("item-definition-form");
-  const defName      = document.getElementById("def-name");
-  const defType      = document.getElementById("def-type");
-  const defRarity    = document.getElementById("def-rarity");
-  const defDescription = document.getElementById("def-description");
-  const defImageSmall  = document.getElementById("def-image-small");
-  const defImageBig    = document.getElementById("def-image-big");
-  const defExtraLinesContainer = document.getElementById("def-extra-lines");
-  const addExtraLineBtn = document.getElementById("add-def-extra-line");
-  const defSearch       = document.getElementById("def-search");
-  const filterNameBtn   = document.getElementById("filter-name");
-  const filterTypeBtn   = document.getElementById("filter-type");
-  const filterRarityBtn = document.getElementById("filter-rarity");
-  const heading2        = document.getElementById("def-form-heading");    // "Manage Items"
-  const heading3        = document.getElementById("def-form-subheading"); // "Add Item"/"Edit Item"
-  const defCancelBtn    = document.getElementById("def-cancel");
+/* ------------------------------------------------------------------ *
+ *  Firebase Initialization
+ * ------------------------------------------------------------------ */
+const db = initializeFirebase({
+  apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
+  authDomain: "vbmap-cc834.firebaseapp.com",
+  projectId: "vbmap-cc834",
+  storageBucket: "vbmap-cc834.firebasestorage.app",
+  messagingSenderId: "244112699360",
+  appId: "1:244112699360:web:95f50adb6e10b438238585",
+  measurementId: "G-7FDNWLRM95"
+});
 
-  // Pickr factory
-  function createPicker(selector) {
-    const container = document.querySelector(selector);
-    if (!container) {
-      console.warn(`Missing Pickr container: ${selector}`);
-      return { on: () => {}, setColor: () => {}, getColor: () => ({ toHEXA: () => ["#E5E6E8"], toString: () => "#E5E6E8" }) };
-    }
-    return Pickr.create({
-      el: selector,
-      theme: "nano",
-      default: "#E5E6E8",
-      components: { preview:true, opacity:true, hue:true,
-        interaction:{ hex:true, rgba:true, input:true, save:true }
-      }
-    }).on("save", (_, p) => p.hide());
-  }
+/* ------------------------------------------------------------------ *
+ *  Map & Layers Setup
+ * ------------------------------------------------------------------ */
+const { map } = initializeMap();
+const itemLayer = L.markerClusterGroup();
+const layers = {
+  Door:               L.layerGroup(),
+  "Extraction Portal":L.layerGroup(),
+  Item:               itemLayer,
+  Teleport:           L.layerGroup(),
+  "Spawn Point":      L.layerGroup()
+};
+Object.values(layers).forEach(layerGroup => layerGroup.addTo(map));
 
-  if (!window.pickrDefName) {
-    window.pickrDefName        = createPicker("#pickr-def-name");
-    window.pickrDefType        = createPicker("#pickr-def-type");
-    window.pickrDefRarity      = createPicker("#pickr-def-rarity");
-    window.pickrDefDescription = createPicker("#pickr-def-description");
-  }
+/* ------------------------------------------------------------------ *
+ *  Sidebar Setup (await the promise to get API)
+ * ------------------------------------------------------------------ */
+const allMarkers = [];
+const { filterMarkers, loadItemFilters } = await setupSidebar(map, layers, allMarkers, db);
 
-  // Extra‑info lines
-  let extraLines = [];
-  function renderExtraLines() {
-    defExtraLinesContainer.innerHTML = "";
-    extraLines.forEach((lineObj, idx) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
+/* ------------------------------------------------------------------ *
+ *  Marker Form Module Initialization
+ * ------------------------------------------------------------------ */
+const markerForm = initMarkerForm(db);
 
-      const txt = document.createElement("input");
-      txt.type = "text";
-      txt.value = lineObj.text;
-      txt.style.background = "#E5E6E8";
-      txt.style.color = "#000";
-      txt.addEventListener("input", () => { extraLines[idx].text = txt.value; });
+/* ------------------------------------------------------------------ *
+ *  Helper: Refresh Markers When Definitions Change
+ * ------------------------------------------------------------------ */
+async function refreshMarkersFromDefinitions() {
+  const { loadItemDefinitions } = await import("./modules/itemDefinitionsService.js");
+  const defsList = await loadItemDefinitions(db);
+  const defMap = Object.fromEntries(defsList.map(d => [d.id, d]));
 
-      const colorBox = document.createElement("div");
-      colorBox.className = "color-btn";
-      colorBox.style.marginLeft = "5px";
+  allMarkers.forEach(({ markerObj, data }) => {
+    if (!data.predefinedItemId) return;
+    const def = defMap[data.predefinedItemId];
+    if (!def) return;
 
-      const removeBtn = document.createElement("button");
-      removeBtn.type = "button";
-      removeBtn.textContent = "×";
-      removeBtn.style.marginLeft = "5px";
-      removeBtn.addEventListener("click", () => {
-        extraLines.splice(idx, 1);
-        renderExtraLines();
-      });
-
-      row.append(txt, colorBox, removeBtn);
-      defExtraLinesContainer.appendChild(row);
-
-      try {
-        Pickr.create({
-          el: colorBox, theme: "nano", default: lineObj.color || "#E5E6E8",
-          components: { preview:true, opacity:true, hue:true,
-            interaction:{ hex:true, rgba:true, input:true, save:true }
-          }
-        })
-          .on("change", c => { extraLines[idx].color = c.toHEXA().toString(); })
-          .on("save", (_, p) => p.hide())
-          .setColor(lineObj.color || "#E5E6E8");
-      } catch {}
+    Object.assign(data, {
+      name:             def.name,
+      nameColor:        def.nameColor       || "#E5E6E8",
+      rarity:           def.rarity,
+      rarityColor:      def.rarityColor     || "#E5E6E8",
+      itemType:         def.itemType || def.type,
+      itemTypeColor:    def.itemTypeColor   || "#E5E6E8",
+      description:      def.description,
+      descriptionColor: def.descriptionColor|| "#E5E6E8",
+      extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
+      imageSmall:       def.imageSmall,
+      imageBig:         def.imageBig
     });
-  }
-  addExtraLineBtn.addEventListener("click", () => {
-    extraLines.push({ text:"", color:"#E5E6E8" });
-    renderExtraLines();
+
+    markerObj.setPopupContent(createPopupContent(data));
+    firebaseUpdateMarker(db, data);
   });
-
-  // Render list
-  async function loadAndRender() {
-    listWrap.innerHTML = "";
-    const defs = await loadItemDefinitions(db);
-    defs.forEach(def => {
-      const row = document.createElement("div");
-      row.className = "item-def-entry";
-
-      // Add Filter checkbox inline
-      const showDiv = document.createElement("div");
-      showDiv.style.position = "absolute";
-      showDiv.style.top = "10px";
-      showDiv.style.right = "10px";
-      showDiv.innerHTML = `
-        <label>
-          <input type="checkbox" data-show-filter="${def.id}"
-            ${def.showInFilters ? "checked" : ""}/>
-          Add Filter
-        </label>`;
-      row.appendChild(showDiv);
-
-      // Content
-      const content = document.createElement("div");
-      content.innerHTML = `
-        <span class="def-name"><strong>${def.name}</strong></span>
-        (<span class="def-type">${def.itemType || def.type}</span>) –
-        <span class="def-rarity">${def.rarity || ""}</span>
-        <br/><em class="def-description">${def.description || ""}</em>
-        <br/>
-        <button data-edit="${def.id}">Edit</button>
-        <button data-delete="${def.id}">Delete</button>
-      `;
-      row.appendChild(content);
-      listWrap.appendChild(row);
-
-      // Add Filter toggle
-      showDiv.querySelector("input").addEventListener("change", async e => {
-        def.showInFilters = e.target.checked;
-        await updateItemDefinition(db, { id:def.id, showInFilters:def.showInFilters });
-        onDefinitionsChanged();
-      });
-
-      // Edit
-      row.querySelector("[data-edit]").addEventListener("click", () => {
-        defName.value        = def.name;
-        defType.value        = def.type;
-        defRarity.value      = def.rarity || "";
-        defDescription.value = def.description || "";
-        defImageSmall.value  = def.imageSmall || "";
-        defImageBig.value    = def.imageBig   || "";
-        extraLines           = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
-        renderExtraLines();
-        defName.dataset.editId = def.id;
-        window.pickrDefName       .setColor(def.nameColor        || "#E5E6E8");
-        window.pickrDefType       .setColor(def.itemTypeColor    || "#E5E6E8");
-        window.pickrDefRarity     .setColor(def.rarityColor      || "#E5E6E8");
-        window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");
-        heading3.innerText = "Edit Item";
-      });
-
-      // Delete
-      row.querySelector("[data-delete]").addEventListener("click", async () => {
-        if (!confirm("Delete this item definition?")) return;
-        await deleteItemDefinition(db, def.id);
-        await loadAndRender();
-        onDefinitionsChanged();
-      });
-    });
-  }
-
-  // Search & filters
-  const filterFlags = { name:false, type:false, rarity:false };
-  [filterNameBtn,filterTypeBtn,filterRarityBtn].forEach(b=>b.classList.remove("toggled"));
-  function toggleBtn(b,f){b.classList.toggle("toggled",f);}
-  function applyFilters() {
-    const q = (defSearch.value||"").toLowerCase();
-    listWrap.childNodes.forEach(entry => {
-      const nameVal = entry.querySelector(".def-name")?.innerText.toLowerCase()||"";
-      const typeVal = entry.querySelector(".def-type")?.innerText.toLowerCase()||"";
-      const rarityVal = entry.querySelector(".def-rarity")?.innerText.toLowerCase()||"";
-      let match = !filterFlags.name && !filterFlags.type && !filterFlags.rarity;
-      if (filterFlags.name && nameVal.includes(q)) match = true;
-      if (filterFlags.type && typeVal.includes(q)) match = true;
-      if (filterFlags.rarity && rarityVal.includes(q)) match = true;
-      entry.style.display = match ? "" : "none";
-    });
-  }
-  filterNameBtn.addEventListener("click", ()=>{
-    filterFlags.name = !filterFlags.name; toggleBtn(filterNameBtn,filterFlags.name); applyFilters();
-  });
-  filterTypeBtn.addEventListener("click", ()=>{
-    filterFlags.type = !filterFlags.type; toggleBtn(filterTypeBtn,filterFlags.type); applyFilters();
-  });
-  filterRarityBtn.addEventListener("click", ()=>{
-    filterFlags.rarity = !filterFlags.rarity; toggleBtn(filterRarityBtn,filterFlags.rarity); applyFilters();
-  });
-  defSearch.addEventListener("input", applyFilters);
-
-  // Form submit
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    const payload = {
-      name: defName.value,
-      type: defType.value,
-      rarity: defRarity.value,
-      description: defDescription.value,
-      imageSmall: defImageSmall.value,
-      imageBig: defImageBig.value,
-      extraLines: JSON.parse(JSON.stringify(extraLines)),
-      nameColor: window.pickrDefName.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      itemTypeColor: window.pickrDefType.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      rarityColor: window.pickrDefRarity.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      descriptionColor: window.pickrDefDescription.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      showInFilters: false
-    };
-    if (defName.dataset.editId) {
-      payload.id = defName.dataset.editId;
-      delete defName.dataset.editId;
-      await updateItemDefinition(db, payload);
-    } else {
-      await addItemDefinition(db, payload);
-    }
-    await loadAndRender();
-    onDefinitionsChanged();
-    resetForm();
-  });
-
-  // Reset helper
-  function resetForm() {
-    form.reset();
-    extraLines = [];
-    defExtraLinesContainer.innerHTML = "";
-    window.pickrDefName       .setColor("#E5E6E8");
-    window.pickrDefType       .setColor("#E5E6E8");
-    window.pickrDefRarity     .setColor("#E5E6E8");
-    window.pickrDefDescription.setColor("#E5E6E8");
-    heading3.innerText = "Add Item";
-  }
-  defCancelBtn.addEventListener("click", resetForm);
-
-  // Open/close modal
-  function openModal() {
-    modal.style.display = "block";
-    loadAndRender();
-    resetForm();
-  }
-  function closeModal() {
-    modal.style.display = "none";
-  }
-  manageBtn.addEventListener("click", openModal);
-  closeBtn.addEventListener("click", closeModal);
-  window.addEventListener("click", e => { if(e.target===modal) closeModal(); });
-
-  // API
-  return { openModal, closeModal, refresh: loadAndRender };
 }
+
+/* ------------------------------------------------------------------ *
+ *  Item Definitions Modal Initialization
+ *  -> reload sidebar item filters after any change
+ * ------------------------------------------------------------------ */
+initItemDefinitionsModal(db, async () => {
+  await markerForm.refreshPredefinedItems();
+  await refreshMarkersFromDefinitions();
+  await loadItemFilters();   // now defined
+  filterMarkers();           // now defined
+});
+
+/* ------------------------------------------------------------------ *
+ *  Add & Persist Helper
+ * ------------------------------------------------------------------ */
+function addAndPersist(data) {
+  const markerObj = addMarker(data, callbacks);
+  firebaseAddMarker(db, data);
+  return markerObj;
+}
+
+/* ------------------------------------------------------------------ *
+ *  Copy‑Paste Manager Initialization
+ * ------------------------------------------------------------------ */
+const copyMgr = initCopyPasteManager(map, addAndPersist);
+
+/* ------------------------------------------------------------------ *
+ *  Marker Creation & Callbacks
+ * ------------------------------------------------------------------ */
+function addMarker(data, cbs = {}) {
+  const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
+  allMarkers.push({ markerObj, data });
+  return markerObj;
+}
+
+const callbacks = {
+  onEdit:   (markerObj, data, ev) => {
+    markerForm.openEdit(markerObj, data, ev, updated => {
+      markerObj.setPopupContent(createPopupContent(updated));
+      firebaseUpdateMarker(db, updated);
+    });
+  },
+  onCopy:   (_, data) => copyMgr.startCopy(data),
+  onDragEnd: (_, data) => firebaseUpdateMarker(db, data),
+  onDelete: (markerObj, data) => {
+    layers[data.type].removeLayer(markerObj);
+    const idx = allMarkers.findIndex(o => o.data.id === data.id);
+    if (idx !== -1) allMarkers.splice(idx, 1);
+    if (data.id) firebaseDeleteMarker(db, data.id);
+  }
+};
+
+/* ------------------------------------------------------------------ *
+ *  Initial Marker Load from Firestore
+ * ------------------------------------------------------------------ */
+(async () => {
+  const markers = await loadMarkers(db);
+  markers.forEach(m => {
+    if (!m.type || !layers[m.type]) return;
+    if (!m.coords) m.coords = [1500, 1500];
+    addMarker(m, callbacks);
+  });
+  filterMarkers();
+})();
+
+/* ------------------------------------------------------------------ *
+ *  Map Context‑Menu for Creating New Markers
+ * ------------------------------------------------------------------ */
+map.on("contextmenu", evt => {
+  showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
+    text: "Create New Marker",
+    action: () => {
+      markerForm.openCreate(
+        [evt.latlng.lat, evt.latlng.lng],
+        "Item",
+        evt.originalEvent,
+        newData => addAndPersist(newData)
+      );
+    }
+  }]);
+});
