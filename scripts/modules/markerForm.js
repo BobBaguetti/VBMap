@@ -1,4 +1,5 @@
 // scripts/modules/markerForm.js
+
 import { makeDraggable, positionModal } from "./uiManager.js";
 import {
   loadItemDefinitions,
@@ -19,7 +20,7 @@ export function initMarkerForm(db) {
   const fldVid    = document.getElementById("edit-video-url");
   const fldRare   = document.getElementById("edit-rarity");
   const fldIType  = document.getElementById("edit-item-type");
-  const fldDescIt = document.getElementById("edit-description");         // unified
+  const fldDescIt = document.getElementById("edit-description");
   const fldDescNI = document.getElementById("edit-description-non-item");
 
   const blockItem = document.getElementById("item-extra-fields");
@@ -36,8 +37,18 @@ export function initMarkerForm(db) {
   /* ---------- Color pickers ---------- */
   const pickrs = [];
   function mkPicker(sel) {
+    const container = document.querySelector(sel);
+    if (!container) {
+      console.warn(`markerForm.mkPicker: element ${sel} not found`);
+      // return a stub that won't break calls to .on or .setColor or .getRoot
+      return {
+        on:    () => {},
+        setColor: () => {},
+        getRoot: () => null
+      };
+    }
     const p = Pickr.create({
-      el: sel,
+      el: container,
       theme: "nano",
       default: "#E5E6E8",
       components: {
@@ -46,10 +57,11 @@ export function initMarkerForm(db) {
         hue: true,
         interaction: { hex: true, rgba: true, input: true, save: true }
       }
-    }).on("save", (_, pickr) => pickr.hide());
+    }).on("save", (_, instance) => instance.hide());
     pickrs.push(p);
     return p;
   }
+
   const pkName = mkPicker("#pickr-name");
   const pkRare = mkPicker("#pickr-rarity");
   const pkItyp = mkPicker("#pickr-itemtype");
@@ -71,7 +83,7 @@ export function initMarkerForm(db) {
   }
   refreshItems();
 
-  /* ---------- Extra‐info lines ---------- */
+  /* ---------- Extra‑info lines ---------- */
   let lines = [];
   function renderLines(readOnly = false) {
     wrapLines.innerHTML = "";
@@ -118,23 +130,8 @@ export function initMarkerForm(db) {
       if (!readOnly) row.append(rm);
       wrapLines.appendChild(row);
 
-      Pickr.create({
-        el: clr,
-        theme: "nano",
-        default: ln.color || "#E5E6E8",
-        components: {
-          preview: true,
-          opacity: true,
-          hue: true,
-          interaction: { hex: true, rgba: true, input: true, save: true }
-        }
-      })
-        .on("change", c => {
-          lines[i].color = c.toHEXA().toString();
-          customMode = true;
-        })
-        .on("save", (_, p) => p.hide())
-        .setColor(ln.color || "#E5E6E8");
+      // Only create a Pickr if container exists
+      mkPicker(`#${clr.id || ''}`)?.setColor(ln.color || "#E5E6E8");
     });
   }
   btnAddLine.onclick = () => {
@@ -149,7 +146,7 @@ export function initMarkerForm(db) {
     fldName,
     fldRare,
     fldIType,
-    fldDescIt,  // now correct
+    fldDescIt,
     fldImgS,
     fldImgL,
     fldVid
@@ -164,10 +161,10 @@ export function initMarkerForm(db) {
   function lockItemFields(on) {
     ALL_FIELDS.forEach(e => setRO(e, on));
     pickrs.forEach(p => {
-      const r = p?.getRoot?.();
-      if (r && r.style) {
-        r.style.pointerEvents = on ? "none" : "auto";
-        r.style.opacity = on ? 0.5 : 1;
+      const root = p.getRoot?.();
+      if (root && root.style) {
+        root.style.pointerEvents = on ? "none" : "auto";
+        root.style.opacity = on ? 0.5 : 1;
       }
     });
     btnAddLine.style.display = on ? "none" : "inline-block";
@@ -188,7 +185,7 @@ export function initMarkerForm(db) {
   }
   fldType.onchange = applyUI;
 
-  /* ---------- Dropdown ---------- */
+  /* ---------- Predefined dropdown ---------- */
   ddPre.style.width = "100%";
   ddPre.onchange = () => {
     const id = ddPre.value;
@@ -218,7 +215,6 @@ export function initMarkerForm(db) {
     fldRare.value = d.rarity || "";
     pkRare.setColor(d.rarityColor || "#E5E6E8");
 
-    // ensure itemType fallback to d.type works
     fldIType.value = d.itemType || d.type;
     pkItyp.setColor(d.itemTypeColor || "#E5E6E8");
 
@@ -226,10 +222,10 @@ export function initMarkerForm(db) {
     pkDitm.setColor(d.descriptionColor || "#E5E6E8");
 
     fldImgS.value = d.imageSmall || "";
-    fldImgL.value = d.imageBig || "";
-    fldVid.value = "";
+    fldImgL.value = d.imageBig   || "";
+    fldVid.value  = "";
 
-    lines = d.extraLines ? JSON.parse(JSON.stringify(d.extraLines)) : [];
+    lines = JSON.parse(JSON.stringify(d.extraLines || []));
     renderLines(true);
   }
 
@@ -266,24 +262,22 @@ export function initMarkerForm(db) {
     if (out.type === "Item") {
       if (!customMode) {
         const d = defs[ddPre.value];
-        if (d) {
-          out.predefinedItemId = d.id;
-          Object.assign(out, {
-            name:             d.name,
-            nameColor:        d.nameColor,
-            rarity:           d.rarity,
-            rarityColor:      d.rarityColor,
-            itemType:         d.itemType || d.type,
-            itemTypeColor:    d.itemTypeColor,
-            description:      d.description,
-            descriptionColor: d.descriptionColor,
-            extraLines:       JSON.parse(JSON.stringify(d.extraLines || [])),
-            imageSmall:       d.imageSmall,
-            imageBig:         d.imageBig
-          });
-        }
+        Object.assign(out, {
+          predefinedItemId: d.id,
+          name:             d.name,
+          nameColor:        d.nameColor,
+          rarity:           d.rarity,
+          rarityColor:      d.rarityColor,
+          itemType:         d.itemType || d.type,
+          itemTypeColor:    d.itemTypeColor,
+          description:      d.description,
+          descriptionColor: d.descriptionColor,
+          extraLines:       JSON.parse(JSON.stringify(d.extraLines)),
+          imageSmall:       d.imageSmall,
+          imageBig:         d.imageBig
+        });
       } else {
-        const def = {
+        const defPayload = {
           name:             fldName.value.trim() || "Unnamed",
           nameColor:        pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8",
           rarity:           fldRare.value,
@@ -296,14 +290,14 @@ export function initMarkerForm(db) {
           imageSmall:       fldImgS.value,
           imageBig:         fldImgL.value
         };
-        addItemDefinition(db, def).then(newDef => {
+        addItemDefinition(db, defPayload).then(newDef => {
           defs[newDef.id] = newDef;
           ddPre.value     = newDef.id;
           customMode      = false;
           fillFormFromDef(newDef);
           lockItemFields(true);
         });
-        Object.assign(out, def);
+        Object.assign(out, defPayload);
       }
     } else {
       out.name             = fldName.value || "New Marker";
@@ -325,7 +319,6 @@ export function initMarkerForm(db) {
     populateForm(data);
     positionModal(modal, evt);
     modal.style.display = "block";
-
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
       e.preventDefault();
@@ -340,7 +333,6 @@ export function initMarkerForm(db) {
     populateForm({ type: defaultType || "Item" });
     positionModal(modal, evt);
     modal.style.display = "block";
-
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
       e.preventDefault();
