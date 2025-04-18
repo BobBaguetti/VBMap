@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 4   The current file version is 4. Increase by 1 every time you update anything.
+// @version: 6   The current file version is 6. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -16,7 +16,6 @@ import {
  * @param {Function} onDefinitionsChanged
  */
 export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
-  // DOM handles
   const manageBtn    = document.getElementById("manage-item-definitions");
   const modal        = document.getElementById("item-definitions-modal");
   const closeBtn     = document.getElementById("close-item-definitions");
@@ -37,84 +36,85 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   const heading3        = document.getElementById("def-form-subheading");
   const defCancelBtn    = document.getElementById("def-cancel");
 
-  // Utility: create or reuse a Pickr instance
-  function createPicker(selector) {
-    const el = document.querySelector(selector);
-    if (!el) return { on: ()=>{}, setColor: ()=>{}, getColor: ()=>({ toHEXA: ()=>["#E5E6E8"], toString: ()=>"#E5E6E8" }) };
-    return Pickr.create({
-      el: selector, theme: "nano", default: "#E5E6E8",
-      components: {
-        preview: true, opacity: true, hue: true,
-        interaction: { hex: true, rgba: true, input: true, save: true }
-      }
-    }).on("save", (_i, picker) => picker.hide());
-  }
-  if (!window.pickrDefName) {
-    window.pickrDefName        = createPicker("#pickr-def-name");
-    window.pickrDefType        = createPicker("#pickr-def-type");
-    window.pickrDefRarity      = createPicker("#pickr-def-rarity");
-    window.pickrDefDescription = createPicker("#pickr-def-description");
-  }
+  let allDefinitions = [];
 
-  // Manage extra-info lines
-  let extraLines = [];
-  function renderExtraLines() {
-    defExtraLinesContainer.innerHTML = "";
-    extraLines.forEach((line, i) => {
+  function renderDefinitions(defs) {
+    defs.sort((a, b) => {
+      const aTime = a.updatedAt?.toMillis?.() || a.updatedAt || a.createdAt?.toMillis?.() || 0;
+      const bTime = b.updatedAt?.toMillis?.() || b.updatedAt || b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
+    listWrap.innerHTML = "";
+    defs.forEach(def => {
       const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
+      row.className = "item-def-entry";
 
-      const txt = document.createElement("input");
-      txt.type = "text";
-      txt.value = line.text;
-      txt.style.cssText = "width:100%; background:#303030; color:#e0e0e0; padding:4px 6px; border:1px solid #555;";
-      txt.addEventListener("input", () => { extraLines[i].text = txt.value; });
+      const rare = def.rarity ? def.rarity.charAt(0).toUpperCase() + def.rarity.slice(1) : "";
+      const content = document.createElement("div");
+      content.innerHTML = `
+        <span class="def-name"><strong>${def.name}</strong></span>
+        (<span class="def-type">${def.itemType||def.type}</span>)
+        – <span class="def-rarity">${rare}</span>
+        <br/><em>${def.description||""}</em>
+      `;
+      row.appendChild(content);
 
-      const clr = document.createElement("div");
-      clr.className = "color-btn";
-      clr.style.marginLeft = "5px";
-      clr.id = `extra-line-color-${i}`;
-
-      const rm = document.createElement("button");
-      rm.type = "button";
-      rm.textContent = "×";
-      rm.style.marginLeft = "5px";
-      rm.addEventListener("click", () => {
-        extraLines.splice(i, 1);
-        renderExtraLines();
+      const tf = document.createElement("div");
+      tf.className = "add-filter-toggle";
+      tf.innerHTML = `
+        <label><input type="checkbox" data-show-filter="${def.id}"
+          ${def.showInFilters?"checked":""}/> Add Filter</label>
+      `;
+      tf.querySelector("input").addEventListener("change", async e => {
+        def.showInFilters = e.target.checked;
+        await updateItemDefinition(db, { id: def.id, showInFilters: def.showInFilters });
+        onDefinitionsChanged();
       });
+      row.appendChild(tf);
 
-      row.append(txt, clr, rm);
-      defExtraLinesContainer.appendChild(row);
+      const btns = document.createElement("div");
+      btns.className = "item-action-buttons";
+      btns.innerHTML = `
+        <button data-edit="${def.id}">Edit</button>
+        <button data-delete="${def.id}">Delete</button>
+        <button data-copy="${def.id}">Copy</button>
+      `;
+      btns.querySelector("[data-edit]").addEventListener("click", () => openEdit(def));
+      btns.querySelector("[data-delete]").addEventListener("click", () => deleteDef(def.id));
+      btns.querySelector("[data-copy]").addEventListener("click", () => copyDef(def));
+      row.appendChild(btns);
 
-      try {
-        const picker = Pickr.create({
-          el: `#${clr.id}`,
-          theme: "nano",
-          default: line.color || "#E5E6E8",
-          components: {
-            preview: true,
-            opacity: true,
-            hue: true,
-            interaction: { hex: true, rgba: true, input: true, save: true }
-          }
-        });
-        picker
-        .on("init", (instance) => {
-          instance.setColor(line.color || "#E5E6E8");
-        })
-        .on("change", (c) => {
-          extraLines[i].color = c.toHEXA().toString();
-        })
-          .on("save", (_i, p) => p.hide());
-      } catch {}
+      listWrap.appendChild(row);
     });
   }
-  addExtraLineBtn.addEventListener("click", () => {
-    extraLines.push({ text: "", color: "#E5E6E8" });
-    renderExtraLines();
-  });
+
+  function applyFilters() {
+    const q = (defSearch.value||"").toLowerCase();
+    const filtered = allDefinitions.filter(def => {
+      const name   = def.name?.toLowerCase() || "";
+      const type   = (def.itemType || def.type || "").toLowerCase();
+      const rarity = (def.rarity || "").toLowerCase();
+      let show = q ? (name.includes(q) || type.includes(q) || rarity.includes(q)) : true;
+      if (!q) {
+        if (flags.name && !name.includes(q)) show = false;
+        if (flags.type && !type.includes(q)) show = false;
+        if (flags.rarity && !rarity.includes(q)) show = false;
+      }
+      return show;
+    });
+    renderDefinitions(filtered);
+  }
+
+  const flags = { name:false, type:false, rarity:false };
+  filterNameBtn.addEventListener("click", () => { flags.name=!flags.name; filterNameBtn.classList.toggle("toggled"); applyFilters(); });
+  filterTypeBtn.addEventListener("click", () => { flags.type=!flags.type; filterTypeBtn.classList.toggle("toggled"); applyFilters(); });
+  filterRarityBtn.addEventListener("click", () => { flags.rarity=!flags.rarity; filterRarityBtn.classList.toggle("toggled"); applyFilters(); });
+  defSearch.addEventListener("input", applyFilters);
+
+  async function loadAndRender() {
+    allDefinitions = await loadItemDefinitions(db);
+    renderDefinitions(allDefinitions);
+  }
 
   // Render the list of definitions
   async function loadAndRender() {
