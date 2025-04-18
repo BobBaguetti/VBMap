@@ -99,8 +99,7 @@ export function initMarkerForm(db) {
       const txt = document.createElement("input");
       txt.value = ln.text;
       txt.readOnly = readOnly;
-      txt.style.cssText =
-        "width:100%;background:#E5E6E8;color:#000;padding:4px 6px;border:1px solid #999;";
+      txt.className = "ui-input";
       if (readOnly) {
         txt.style.background = "#3b3b3b";
         txt.style.cursor = "not-allowed";
