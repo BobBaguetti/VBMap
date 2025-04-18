@@ -3,7 +3,7 @@
 // @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/markerManager.js
 
-import { formatRarity } from ".../utils.js";
+import { formatRarity } from "./utils.js";
 
 // Basic URL check for images
 function isImgUrl(str) {
