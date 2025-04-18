@@ -3,20 +3,20 @@
 // @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 // @file:    /scripts/script.js
 
-import { initializeMap } from "./modules/map.js";
-import { showContextMenu } from "./modules/uiManager.js";
+import { initializeMap } from "./modules/map/map.js";
+import { showContextMenu } from "./modules/ui/uiManager.js";
 import {
   initializeFirebase,
   loadMarkers,
   addMarker as firebaseAddMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
-} from "./modules/firebaseService.js";
-import { createMarker, createPopupContent } from "./modules/markerManager.js";
-import { initItemDefinitionsModal } from "./modules/itemDefinitionsModal.js";
-import { initMarkerForm } from "./modules/markerForm.js";
-import { initCopyPasteManager } from "./modules/copyPasteManager.js";
-import { setupSidebar } from "./modules/sidebarManager.js";
+} from "./modules/services/firebaseService.js";
+import { createMarker, createPopupContent } from "./modules/map/markerManager.js";
+import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initMarkerForm } from "./modules/ui/modals/markerForm.js";
+import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
+import { setupSidebar } from "./modules/sidebar/sidebarManager.js";
 
 /* ------------------------------------------------------------------ *
  *  Firebase Initialization
