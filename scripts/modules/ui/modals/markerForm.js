@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
+// @version: 4   The current file version is 4. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/markerForm.js
 
 import { makeDraggable, positionModal } from "../uiManager.js";
@@ -193,11 +193,13 @@ export function initMarkerForm(db) {
     });
     btnAddLine.style.display = on ? "none" : "inline-block";
   }
+
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
     blockNI.style.display = isItem ? "none" : "block";
     blockPre.style.display = isItem ? "block" : "none";
   }
+
   function applyUI() {
     const isItem = fldType.value === "Item";
     toggleSections(isItem);
@@ -207,6 +209,7 @@ export function initMarkerForm(db) {
       customMode = false;
     }
   }
+
   fldType.onchange = applyUI;
 
   /* ---------- Predefined dropdown ---------- */
@@ -375,4 +378,4 @@ export function initMarkerForm(db) {
   };
 }
 
-// @version: 3
+// @version: 4
