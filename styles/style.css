@@ -202,24 +202,30 @@ body, html {
   border: none !important;
 }
 
-/* Fix popup close button appearance */
-.leaflet-popup-close-btn {
+/* Fix the marker window close button appearance to match the item definition window X */
+#edit-modal .modal-header .close-btn {
   position: absolute;
   top: 5px;
   right: 5px;
   background: transparent;
   border: none;
   color: #e5e6e8;  /* Light color for visibility */
-  font-size: 18px;
+  font-size: 20px;  /* Same font size as item definition window */
   cursor: pointer;
   z-index: 999;  /* Ensure it appears above the popup content */
 }
 
-.leaflet-popup-close-btn:before {
+/* Add the X symbol to the marker window close button */
+#edit-modal .modal-header .close-btn:before {
   content: "×";  /* The 'X' character */
   font-size: 20px;
   color: #e5e6e8;
   display: block;
+}
+
+/* Ensure the item definition modal's close button remains unchanged */
+#edit-modal .modal-header .close-btn {
+  /* If needed, you can add other styles here, but we are focusing on the marker modal */
 }
 
 /* Marker Style */
