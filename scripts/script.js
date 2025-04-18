@@ -55,6 +55,12 @@ import { setupSidebar } from "./modules/sidebarManager.js";
     markerManager.addMarker(newData);
   });
 
+  //  Right‑click on map to “Create New Marker”
+   map.on('contextmenu', e => {
+     e.originalEvent.preventDefault();    // disable browser menu
+    openEmptyMarkerForm();               // open the blank marker form
+   });
+
   // Map Context‑Menu for Creating New Markers
   map.on("contextmenu", evt => {
     const { pageX: x, pageY: y } = evt.originalEvent;
