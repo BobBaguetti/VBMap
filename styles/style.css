@@ -1,6 +1,6 @@
 /* @fullfile: Send the entire file, no omissions or abridgments. */
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
-/* @version: 4   The current file version is 4. Increase by 1 every time you update anything. */
+/* @version: 5   The current file version is 5. Increase by 1 every time you update anything. */
 /* @file:    /styles/style.css */
 
 /* ============================
@@ -34,6 +34,19 @@
   background: #444 !important;
 }
 
+/* Ensure dropdowns use the correct background color */
+.ui-input, select, .field-row select {
+  background: #303030 !important; /* Dropdown background color */
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
+}
+
+select {
+  background: #303030 !important; /* Ensures both dropdowns are styled */
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
+}
+
 /* Shared scrollbar styling for lists, textareas, etc. */
 .ui-scrollbar::-webkit-scrollbar {
   width: 8px;
@@ -57,6 +70,16 @@
   padding: 20px;
 }
 
+/* Modal header layout */
+.ui-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 4px 0;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #444;
+}
+
 /* ============================
    Existing Element Styling
    ============================ */
@@ -70,16 +93,6 @@ body, html {
   background-color: #1a1a1a !important;
   color: #e0e0e0;
   overflow: hidden;
-}
-
-/* Map Container */
-#map {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: #1a1a1a !important;
 }
 
 /* Sidebar */
@@ -145,7 +158,7 @@ body, html {
   display: none;
 }
 
-/* Input fields in sidebar */
+/* Ensure consistent dark mode for search bar and button */
 #search-bar,
 #manage-item-definitions {
   width: 100%;
@@ -495,4 +508,4 @@ body, html {
   padding: 6px 12px !important;
 }
 
-/* @version: 4 */
+/* @version: 5 */
