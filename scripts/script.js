@@ -9,7 +9,7 @@ import {
   addMarker as firebaseAddMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
-} from "./modules/firebaseService.js";
+} from "./modules/services/firebaseService.js";
 import { initializeMap } from "./modules/map/map.js";
 import { initializeMarkerManager } from "./modules/map/markerManager.js";
 import { initCopyPasteManager } from "./modules/copyPasteManager.js";
