@@ -274,7 +274,9 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   manageBtn.addEventListener("click", openModal);
   closeBtn.addEventListener("click", closeModal);
   window.addEventListener("click", e => { if (e.target === modal) closeModal(); });
-
+  defCancelBtn.addEventListener("click", () => {
+    resetForm();
+  });
   // Initial load
   return { openModal, closeModal, refresh: loadAndRender };
 }
