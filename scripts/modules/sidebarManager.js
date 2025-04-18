@@ -1,69 +1,79 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 2
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
+// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/sidebarManager.js
 
+import { loadItemDefinitions } from "./itemDefinitionsService.js";
+
 export async function setupSidebar(map, layers, allMarkers, db) {
-  const searchBar        = document.getElementById("search-bar");
-  const sidebarToggle    = document.getElementById("sidebar-toggle");
-  const sidebar          = document.getElementById("sidebar");
+  const searchBar     = document.getElementById("search-bar");
+  const sidebarToggle = document.getElementById("sidebar-toggle");
+  const sidebar       = document.getElementById("sidebar");
+  const mapContainer  = document.getElementById("map");
   const enableGroupingCb = document.getElementById("enable-grouping");
 
-  // Sidebar toggle
+  if (!searchBar || !sidebarToggle || !sidebar || !mapContainer) {
+    console.warn("[sidebarManager] Missing elements");
+    return { filterMarkers() {} };
+  }
+
+  // Initialize toggle button
   sidebarToggle.textContent = "◀︎";
   sidebarToggle.addEventListener("click", () => {
     const hidden = sidebar.classList.toggle("hidden");
-    sidebarToggle.textContent = hidden ? "▶︎" : "◀︎";
+    // Move button to follow sidebar edge
     sidebarToggle.style.left = hidden ? "0px" : "300px";
+    sidebarToggle.textContent = hidden ? "▶︎" : "◀︎";
     map.invalidateSize();
   });
 
-  // Grouping off by default
-  enableGroupingCb.checked = false;
+  // Accordion behavior
+  document.querySelectorAll(".filter-group").forEach(group => {
+    const header = group.querySelector("h3");
+    header.addEventListener("click", () => {
+      group.classList.toggle("collapsed");
+    });
+  });
+
+  // Marker grouping toggle (placeholder logic)
+  enableGroupingCb.checked = false; // default disabled
   enableGroupingCb.addEventListener("change", () => {
-    if (enableGroupingCb.checked) layers.Item.addTo(map);
-    else {
-      layers.Item.remove();
-      allMarkers.forEach(({ markerObj, data }) => {
-        if (data.type === "Item") map.addLayer(markerObj);
-      });
-    }
+    // implement grouping on/off logic here
+    console.log("Enable grouping:", enableGroupingCb.checked);
   });
 
-  // Close context menu on left‑click
-  document.addEventListener("click", () => {
-    const cm = document.getElementById("context-menu");
-    if (cm) cm.remove();
-  });
-
-  // Accordion filters
-  document.querySelectorAll(".filter-group").forEach(g => {
-    const h = g.querySelector("h3");
-    h.addEventListener("click", () => g.classList.toggle("collapsed"));
-  });
-
-  // Filter logic
+  // Core filter logic (as before)
   function filterMarkers() {
-    const q = (searchBar.value||"").toLowerCase();
+    const nameQuery = (searchBar.value || "").toLowerCase();
     allMarkers.forEach(({ markerObj, data }) => {
-      const matchesName = data.name?.toLowerCase().includes(q);
+      const matchesName = data.name?.toLowerCase().includes(nameQuery);
       let mainVisible = true;
       document.querySelectorAll("#main-filters .toggle-group input").forEach(cb => {
-        if (data.type === cb.dataset.layer && !cb.checked) mainVisible = false;
+        if (data.type === cb.dataset.layer && !cb.checked) {
+          mainVisible = false;
+        }
       });
       let itemVisible = true;
       if (data.predefinedItemId) {
-        const cb = document.querySelector(`#item-filter-list input[data-item-id="${data.predefinedItemId}"]`);
-        if (cb && !cb.checked) itemVisible = false;
+        const itemCb = document.querySelector(
+          `#item-filter-list input[data-item-id="${data.predefinedItemId}"]`
+        );
+        if (itemCb && !itemCb.checked) itemVisible = false;
       }
-      const show = matchesName && mainVisible && itemVisible;
+      const shouldShow = matchesName && mainVisible && itemVisible;
       const layerGroup = layers[data.type];
       if (!layerGroup) return;
-      show ? layerGroup.addLayer(markerObj) : layerGroup.removeLayer(markerObj);
+      if (shouldShow) {
+        layerGroup.addLayer(markerObj);
+      } else {
+        layerGroup.removeLayer(markerObj);
+      }
     });
   }
 
   searchBar.addEventListener("input", filterMarkers);
-  document.querySelectorAll("#main-filters .toggle-group input")
+  document
+    .querySelectorAll("#main-filters .toggle-group input")
     .forEach(cb => cb.addEventListener("change", filterMarkers));
 
   // Populate item filters
@@ -86,3 +96,5 @@ export async function setupSidebar(map, layers, allMarkers, db) {
 
   return { filterMarkers, loadItemFilters };
 }
+
+// @version: 1
