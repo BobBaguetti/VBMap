@@ -1,45 +1,43 @@
-// @fullfile: Send the entire file, no omissions or abridgments — version is 2. Increase by 1 every time you update anything.
+// @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 2
+// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/copyPasteManager.js
+// Clipboard copy‑/paste manager with a ghost preview marker that stays active
+// until the user right‑clicks to cancel. Only free‑form markers (those not linked to a predefined item) have "(copy)" appended to their names.
 
-import { ContextMenu } from './ui/uiKit.js';
-import * as L from 'leaflet';
-import { createCustomIcon } from './map/markerManager.js';
+import { createCustomIcon } from "./markerManager.js";
 
 /**
  * Initialise copy‑paste behaviour.
  * @param {L.Map} map                               Leaflet map instance.
- * @param {(data:Object)=>void} addMarkerCallback   Function that adds *and* persists the new marker.
- * @returns {{ startCopy:Function, cancelCopy:Function }}
+ * @param {(data:Object)=>void} addMarkerCallback   Function that adds *and*
+ *                                                persists the new marker.
+ * @returns {{ startCopy:Function, cancel:Function }}
  */
 export function initCopyPasteManager(map, addMarkerCallback) {
   let pasteMode   = false;
-  let copiedData  = null;
-  let ghostMarker = null;
+  let copiedData  = null;   // deep‑cloned marker data (no id)
+  let ghostMarker = null;   // semi‑transparent preview marker
 
-  /**
-   * Cancel paste mode and clean up ghost marker
-   */
-  function cancelCopy() {
+  /** End paste mode and clean up */
+  function cancel() {
     if (ghostMarker) {
       map.removeLayer(ghostMarker);
       ghostMarker = null;
     }
     pasteMode  = false;
     copiedData = null;
-    map.getContainer().style.cursor = '';
+    map.getContainer().style.cursor = "";
   }
 
-  /**
-   * Begin paste mode for the supplied marker data
-   */
+  /** Begin paste mode for the supplied marker */
   function startCopy(markerData) {
     copiedData = JSON.parse(JSON.stringify(markerData));
-    delete copiedData.id;  // new marker will get its own id
-    pasteMode = true;
-    map.getContainer().style.cursor = 'copy';
+    delete copiedData.id;                      // new marker gets its own id
+    pasteMode  = true;
+    map.getContainer().style.cursor = "copy";
 
+    // Create the ghost preview (50% opacity)
     if (ghostMarker) map.removeLayer(ghostMarker);
     ghostMarker = L.marker(map.getCenter(), {
       icon: createCustomIcon(copiedData),
@@ -48,45 +46,31 @@ export function initCopyPasteManager(map, addMarkerCallback) {
     }).addTo(map);
   }
 
-  // Listen for global copy events dispatched by context menus
-  document.addEventListener('copy-marker', e => {
-    startCopy(e.detail);
-  });
-
-  // Update ghost marker position on mouse move
-  map.on('mousemove', e => {
+  /* -------------------------------------------------- *
+   *  Map events
+   * -------------------------------------------------- */
+  map.on("mousemove", e => {
     if (pasteMode && ghostMarker) ghostMarker.setLatLng(e.latlng);
   });
 
-  // Place a new marker on click when in paste mode
-  map.on('click', e => {
+  map.on("click", e => {
     if (!pasteMode || !copiedData) return;
 
     const newData = JSON.parse(JSON.stringify(copiedData));
     delete newData.id;
-    newData.lat = e.latlng.lat;
-    newData.lng = e.latlng.lng;
+    newData.coords = [e.latlng.lat, e.latlng.lng];
 
-    if (!newData.predefinedItemId) {
-      newData.name = `${newData.name} (copy)`;
-    }
+    // Only add “(copy)” when the marker is *not* tied to a predefined item.
+    if (!newData.predefinedItemId) newData.name = `${newData.name} (copy)`;
 
-    addMarkerCallback(newData);
-    // remain in paste mode until user cancels
+    addMarkerCallback(newData);   // caller saves + renders the marker
+    // Stay in paste mode; ghost remains until user right‑clicks
   });
 
-  // Show a ContextMenu to cancel copy on right-click
-  map.on('contextmenu', e => {
-    if (pasteMode) {
-      e.originalEvent.preventDefault();
-      const { clientX: x, clientY: y } = e.originalEvent;
-      new ContextMenu([
-        { label: 'Cancel Copy', action: cancelCopy }
-      ]).showAt({ x, y });
-    }
-  });
+  // Any right‑click cancels paste mode
+  document.addEventListener("contextmenu", cancel);
 
-  return { startCopy, cancelCopy };
+  return { startCopy, cancel };
 }
 
-// @version: 2
+// @version: 1
