@@ -87,22 +87,17 @@
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
   <script type="module" src="scripts/script.js"></script>
 
+  <!-- Edit Marker Modal -->
   <div id="edit-modal">
     <div id="edit-modal-handle"><strong>Edit Marker</strong></div>
-    <div class="modal-header">
-      <!-- Add close-btn class here -->
-      <button class="close-btn"></button>
-    </div>
     <form id="edit-form">
-      <!-- Name Field -->
       <div class="field-row">
-        <label for="edit-name">Name:</label>
+        <label>Name:</label>
         <input type="text" id="edit-name" required />
+        <div class="color-btn" id="pickr-name"></div>
       </div>
-  
-      <!-- Type Field -->
       <div class="field-row">
-        <label for="edit-type">Type:</label>
+        <label>Type:</label>
         <select id="edit-type">
           <option value="Door">Door</option>
           <option value="Extraction Portal">Extraction Portal</option>
@@ -111,21 +106,15 @@
           <option value="Spawn Point">Spawn points</option>
         </select>
       </div>
-  
-      <!-- Predefined Item Field (conditionally displayed) -->
-      <div id="predefined-item-container" style="display:none;">
-        <label for="predefined-item-dropdown">Item:</label>
+      <div id="predefined-item-container" style="display:none; margin-bottom:10px;">
+        <label>Item:</label>
         <select id="predefined-item-dropdown">
           <option value="">-- Select an item --</option>
-          <!-- Populate dynamically with item definitions -->
         </select>
       </div>
-  
-      <!-- Item-specific fields (conditionally displayed) -->
       <div id="item-extra-fields" style="display:none;">
-        <!-- Rarity -->
         <div class="field-row">
-          <label for="edit-rarity">Rarity:</label>
+          <label>Rarity:</label>
           <select id="edit-rarity">
             <option value="">Select Rarity</option>
             <option value="common">Common</option>
@@ -134,56 +123,51 @@
             <option value="epic">Epic</option>
             <option value="legendary">Legendary</option>
           </select>
+          <div class="color-btn" id="pickr-rarity"></div>
         </div>
-  
-        <!-- Item Type -->
         <div class="field-row">
-          <label for="edit-item-type">Item Type:</label>
+          <label>Item Type:</label>
           <select id="edit-item-type">
             <option value="Crafting Material">Crafting Material</option>
             <option value="Special">Special</option>
             <option value="Consumable">Consumable</option>
             <option value="Quest">Quest</option>
           </select>
+          <div class="color-btn" id="pickr-itemtype"></div>
         </div>
-  
-        <!-- Description -->
         <div class="field-row">
-          <label for="edit-description">Description:</label>
+          <label>Description:</label>
           <textarea id="edit-description" rows="2"></textarea>
+          <div class="color-btn" id="pickr-desc-item"></div>
         </div>
-  
-        <!-- Extra Info -->
-        <div class="field-row">
+        <hr style="border:1px solid #555; margin:10px 0;" />
+        <div class="field-row" style="margin-bottom:0;">
           <label>Extra Info:</label>
           <button type="button" id="add-extra-line" style="margin-left:10px;">+</button>
         </div>
         <div id="extra-lines"></div>
+        <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-  
-      <!-- Non-item Description -->
       <div id="non-item-description" style="display:none;">
         <div class="field-row">
-          <label for="edit-description-non-item">Description:</label>
-          <textarea id="edit-description-non-item" rows="3"></textarea>
+          <label>Description:</label>
+          <textarea id="edit-description-non-item" rows="3" style="resize:vertical;"></textarea>
+          <div class="color-btn" id="pickr-desc-nonitem"></div>
         </div>
+        <hr style="border:1px solid #555; margin:10px 0;" />
       </div>
-  
-      <!-- Image and Video Fields -->
       <div class="field-row">
-        <label for="edit-image-small">Image S:</label>
+        <label>Image S:</label>
         <input type="text" id="edit-image-small" />
       </div>
       <div class="field-row">
-        <label for="edit-image-big">Image L:</label>
+        <label>Image L:</label>
         <input type="text" id="edit-image-big" />
       </div>
       <div class="field-row">
-        <label for="edit-video-url">Video:</label>
+        <label>Video:</label>
         <input type="text" id="edit-video-url" />
       </div>
-  
-      <!-- Save/Cancel Buttons -->
       <div class="field-row" style="justify-content:center; margin-top:10px;">
         <button type="submit" style="margin-right:10px;">Save</button>
         <button type="button" id="edit-cancel">Cancel</button>
