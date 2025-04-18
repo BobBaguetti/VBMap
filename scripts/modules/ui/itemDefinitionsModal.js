@@ -57,11 +57,10 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   let extraLines = [];
   let activeDef  = null;
 
-  // Color pickers via UI Kit
-  const pickrName        = createColorPicker('.pickr-def-name', { defaultColor: '#E5E6E8', theme: 'nano' });
-  const pickrType        = createColorPicker('.pickr-def-type', { defaultColor: '#E5E6E8', theme: 'nano' });
-  const pickrRarity      = createColorPicker('.pickr-def-rarity', { defaultColor: '#E5E6E8', theme: 'nano' });
-  const pickrDescription = createColorPicker('.pickr-def-description', { defaultColor: '#E5E6E8', theme: 'nano' });
+  const pickrName        = createColorPicker('#pickr-def-name',        { defaultColor: '#E5E6E8', theme: 'nano' });
+  const pickrType        = createColorPicker('#pickr-def-type',        { defaultColor: '#E5E6E8', theme: 'nano' });
+  const pickrRarity      = createColorPicker('#pickr-def-rarity',      { defaultColor: '#E5E6E8', theme: 'nano' });
+  const pickrDescription = createColorPicker('#pickr-def-description', { defaultColor: '#E5E6E8', theme: 'nano' });
 
   /**
    * Load definitions from Firestore and render list

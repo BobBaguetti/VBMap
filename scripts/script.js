@@ -34,7 +34,7 @@ import { setupSidebar } from "./modules/sidebarManager.js";
   const map = initializeMap();
 
   // Sidebar Setup
-  const sidebar = setupSidebar(map);
+  const sidebar = await setupSidebar(map, {}, [], db);
 
   // Item Definitions Modal
   initItemDefinitionsModal(db, () => {
