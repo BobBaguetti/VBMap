@@ -1,6 +1,6 @@
-// @fullfile: Send the entire file, no omissions or abridgment — version is 2. Increase by 1 every time you update anything.
+// @fullfile: Send the entire file, no omissions or abridgment — version is 3. Increase by 1 every time you update anything.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 2
+// @version: 3
 // @file:    /scripts/modules/map/markerManager.js
 
 import * as L from 'leaflet';
@@ -8,6 +8,19 @@ import { openEmptyMarkerForm, openMarkerFormWithData } from '../ui/markerForm.js
 import { formatRarity } from '../utils/utils.js';
 
 let markersLayerGroup;
+
+/**
+ * Creates a custom DivIcon for a marker based on data colors.
+ * @param {Object} data - Marker data containing color and borderColor.
+ * @returns {L.DivIcon}
+ */
+export function createCustomIcon(data) {
+  return L.divIcon({
+    html: `<div class="marker-icon" style="background-color:${data.color};border:2px solid ${data.borderColor}"></div>`,
+    className: 'custom-marker-icon',
+    iconSize: [20, 20]
+  });
+}
 
 /**
  * Initializes marker management on the map.
@@ -28,11 +41,7 @@ export function initializeMarkerManager(map, markersData) {
  * @returns {L.Marker}
  */
 function createMarker(data) {
-  const icon = L.divIcon({
-    html: `<div class="marker-icon" style="background-color:${data.color};border:2px solid ${data.borderColor}"></div>`,
-    className: 'custom-marker-icon',
-    iconSize: [20, 20]
-  });
+  const icon = createCustomIcon(data);
 
   const marker = L.marker([data.lat, data.lng], { icon, draggable: false });
   marker.options.data = data;
@@ -99,4 +108,4 @@ function confirmAndDelete(marker, id) {
   }
 }
 
-// @version: 2
+// @version: 3
