@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 7   The current file version is 7. Increase by 1 every time you update anything.
+// @version: 8   The current file version is 8. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/markerForm.js
 
 import { makeDraggable, positionModal } from "../uiManager.js";
@@ -35,7 +35,7 @@ export function initMarkerForm(db) {
   const btnAddLine = document.getElementById("add-extra-line");
   const wrapLines = document.getElementById("extra-lines");
 
-  // Apply global styling classes
+  // ✅ Apply global styling classes after modal is defined
   applyGlobalStyling([modal, grip, btnCancel, btnAddLine, ...Object.values(fields)]);
 
   makeDraggable(modal, grip);
@@ -68,7 +68,7 @@ export function initMarkerForm(db) {
   /* ---------- UI helpers ---------- */
   const DIS_BG = "#3b3b3b";
   const ALL_FIELDS = [fields.name, fields.rarity, fields.itemType, fields.descriptionItem, fields.imgSmall, fields.imgLarge, fields.video];
-  
+
   function setRO(el, on) {
     el.disabled = on;
     el.readOnly = on;
