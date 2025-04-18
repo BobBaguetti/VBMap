@@ -1,6 +1,6 @@
-// @fullfile: Send the entire file, no omissions or abridgments — version is 0.3.0. Increase by 0.1.0 on significant API additions.
+// @fullfile: Send the entire file, no omissions or abridgments — version is 0.4.0. Increase by 0.1.0 on significant API additions.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 0.3.0
+// @version: 0.4.0
 // @file:    /scripts/modules/ui/markerForm.js
 
 import { Modal, createColorPicker } from './uiKit.js';
@@ -19,9 +19,9 @@ export function setMarkerFormDb(db) {
 }
 
 // Selectors
-const MODAL_SELECTOR       = '#marker-form-modal';
-const CLOSE_BTN_SELECTOR   = '.marker-form__close-btn';
-const FORM_SELECTOR        = '#marker-form';
+const MODAL_SELECTOR     = '#marker-form-modal';
+const CLOSE_BTN_SELECTOR = '.marker-form__close-btn';
+const FORM_SELECTOR      = '#marker-form';
 
 let colorPicker, borderPicker;
 let activeMarkerData = null;
@@ -37,27 +37,29 @@ const markerFormModal = new Modal({
 const formEl = document.querySelector(FORM_SELECTOR);
 
 /**
- * Populate form fields and dropdown each time modal opens
+ * Populate form fields each time the modal opens.
  */
 async function populateForm() {
-  // Reset form and initialize pickers
+  // Reset form and initialize color pickers
   formEl.reset();
   initPickers();
 
-  // If editing an existing marker, pre-fill fields
-  if (activeMarkerData) {
-    fillFormFields(activeMarkerData);
+  // Load item definitions for dropdown
+  const itemDefs = await getItemDefinitions(firestoreDb);
+  const dropdown = formEl.querySelector('#predefined-item-dropdown');
+  if (dropdown) {
+    dropdown.innerHTML = '<option value="">-- Select item --</option>' +
+      itemDefs.map(def => `<option value="${def.id}">${def.name}</option>`).join('');
   }
-}
-  initPickers();
 
+  // If editing, pre-fill fields
   if (activeMarkerData) {
     fillFormFields(activeMarkerData);
   }
 }
 
 /**
- * Cleanup form state and destroy pickers on close
+ * Cleanup form state and destroy pickers on close.
  */
 function cleanupForm() {
   formEl.reset();
@@ -67,7 +69,7 @@ function cleanupForm() {
 }
 
 /**
- * Initialize color and border pickers
+ * Initialize color and border pickers.
  */
 function initPickers() {
   colorPicker = createColorPicker('.marker-form__color-picker', { defaultColor: '#ffffff' });
@@ -75,19 +77,19 @@ function initPickers() {
 }
 
 /**
- * Pre-fill form when editing an existing marker
+ * Pre-fill form when editing an existing marker.
  */
 function fillFormFields(data) {
   activeMarkerData = deepClone(data);
-  formEl.querySelector('[name="name"]').value = data.name;
-  formEl.querySelector('[name="type"]').value = data.type;
-  formEl.querySelector('[name="rarity"]').value = data.rarity;
+  formEl.querySelector('[name="name"]').value       = data.name;
+  formEl.querySelector('[name="type"]').value       = data.type;
+  formEl.querySelector('[name="rarity"]').value     = data.rarity;
   colorPicker.setColor(data.color);
   borderPicker.setColor(data.borderColor);
 }
 
 /**
- * Collect form data into a payload for Firestore
+ * Collect form data into a payload for Firestore.
  */
 function collectFormData() {
   const formData = new FormData(formEl);
@@ -125,7 +127,7 @@ formEl.addEventListener('submit', async e => {
 });
 
 /**
- * Open the marker form pre-filled with existing data
+ * Open the marker form pre-filled with existing data.
  */
 export function openMarkerFormWithData(markerData) {
   activeMarkerData = markerData;
@@ -133,11 +135,11 @@ export function openMarkerFormWithData(markerData) {
 }
 
 /**
- * Open a blank marker form for creating a new marker
+ * Open a blank marker form for creating a new marker.
  */
 export function openEmptyMarkerForm() {
   activeMarkerData = null;
   markerFormModal.open();
 }
 
-// @version: 0.3.0
+// @version: 0.4.0
