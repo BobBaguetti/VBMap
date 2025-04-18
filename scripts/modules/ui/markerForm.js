@@ -2,9 +2,10 @@
 // @version: 0.1.0
 
 import { Modal, createColorPicker } from './uiKit.js';
-import { addMarker, updateMarker } from './services/firebaseService.js';
-import { getItemDefinitions } from './services/itemDefinitionsService.js';
-import { deepClone } from './utils/utils.js';
+import { addMarker, updateMarker }  from '../services/firebaseService.js';
+import { getItemDefinitions }       from '../services/itemDefinitionsService.js';
+import { deepClone }                from '../utils/utils.js';
+
 
 // Selectors
 const MODAL_SELECTOR = '#marker-form-modal';
