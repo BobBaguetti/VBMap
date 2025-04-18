@@ -60,7 +60,7 @@ const markerForm = initMarkerForm(db);
  *  Helper: Refresh Markers When Definitions Change
  * ------------------------------------------------------------------ */
 async function refreshMarkersFromDefinitions() {
-  const { loadItemDefinitions } = await import("./modules/itemDefinitionsService.js");
+  const { loadItemDefinitions } = await import("./modules/services/itemDefinitionsService.js");
   const defsList = await loadItemDefinitions(db);
   const defMap = Object.fromEntries(defsList.map(d => [d.id, d]));
 

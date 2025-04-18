@@ -3,7 +3,7 @@
 // @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/sidebarManager.js
 
-import { loadItemDefinitions } from "./itemDefinitionsService.js";
+import { loadItemDefinitions } from "../services/itemDefinitionsService.js";
 
 export async function setupSidebar(map, layers, allMarkers, db) {
   const searchBar     = document.getElementById("search-bar");
