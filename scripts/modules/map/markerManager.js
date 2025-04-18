@@ -78,7 +78,7 @@ export function createPopupContent(m) {
 
   return `
     <div class="custom-popup">
-      <button class="popup-close-btn" onclick="this.closest('.leaflet-popup')._close()">
+      <button class="popup-close-btn" onclick="document.querySelector('.leaflet-popup-close-button')?.click()">
         ×
       </button>
       <div class="popup-header" style="display:flex; gap:5px;">
