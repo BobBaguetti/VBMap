@@ -1,6 +1,6 @@
-// @fullfile: Send the entire file, no omissions or abridgment — version is 2. Increase by 1 every time you update anything.
+// @fullfile: Send the entire file, no omissions or abridgment — version is 3. Increase by 1 every time you update anything.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 2
+// @version: 3
 // @file:    /scripts/script.js
 
 import {
@@ -10,11 +10,14 @@ import {
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
 } from "./modules/firebaseService.js";
-import { initializeMap } from "./modules/map.js";
+import { initializeMap } from "./modules/map/map.js";
 import { initializeMarkerManager } from "./modules/map/markerManager.js";
 import { initCopyPasteManager } from "./modules/copyPasteManager.js";
 import { showContextMenu } from "./modules/uiManager.js";
-import { openEmptyMarkerForm, openMarkerFormWithData } from "./modules/ui/markerForm.js";
+import {
+  openEmptyMarkerForm,
+  openMarkerFormWithData
+} from "./modules/ui/markerForm.js";
 import { initItemDefinitionsModal } from "./modules/ui/itemDefinitionsModal.js";
 import { setupSidebar } from "./modules/sidebarManager.js";
 
@@ -63,4 +66,4 @@ import { setupSidebar } from "./modules/sidebarManager.js";
   });
 })();
 
-// @version: 2
+// @version: 3
