@@ -37,7 +37,7 @@ export function initMarkerForm(db) {
   const wrapLines  = document.getElementById("extra-lines");
 
   // ✅ Apply global styling classes after modal is defined
-  modal.classList.add("ui-modal");
+  modal.classList.add("ui-modal");  // Move this line here
   grip.classList.add("ui-modal-header");
   btnCancel.classList.add("ui-button");
   btnAddLine.classList.add("ui-button");
@@ -375,4 +375,4 @@ export function initMarkerForm(db) {
   };
 }
 
-// @version: 2
+// @version: 3
