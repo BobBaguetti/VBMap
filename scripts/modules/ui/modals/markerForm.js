@@ -201,12 +201,19 @@ export function initMarkerForm(db) {
   function applyUI() {
     const isItem = fldType.value === "Item";
     toggleSections(isItem);
-    lockItemFields(isItem && !customMode);
+    
+    // Check if a predefined item is selected
+    const isPredefined = ddPre.value !== ""; // If ddPre has a value, it means an item is selected
+
+    lockItemFields(isItem && isPredefined); // Lock fields only if Item type is selected and a predefined item is chosen
+    
+    // Reset custom mode if we switch from Item to a non-Item type
     if (!isItem) {
-      ddPre.value = "";
-      customMode = false;
+        ddPre.value = "";
+        customMode = false;
+        wrapLines.innerHTML = ""; // Clear extra lines for non-Item marker types
     }
-  }
+}
   fldType.onchange = applyUI;
 
   /* ---------- Predefined dropdown ---------- */
