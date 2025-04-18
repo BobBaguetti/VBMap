@@ -223,11 +223,6 @@ body, html {
   display: block;
 }
 
-/* Ensure the item definition modal's close button remains unchanged */
-#edit-modal .modal-header .close-btn {
-  /* If needed, you can add other styles here, but we are focusing on the marker modal */
-}
-
 /* Marker Style */
 .custom-marker-container {
   background: transparent !important;
