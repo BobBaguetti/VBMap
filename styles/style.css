@@ -515,5 +515,9 @@ body, html {
   cursor: pointer !important;
   padding: 6px 12px !important;
 }
+#edit-form button[type="submit"],
+#edit-form button[type="button"] {
+  padding: 6px 12px !important;
+}
 
 /* @version: 4 */
