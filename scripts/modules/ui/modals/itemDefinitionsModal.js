@@ -8,7 +8,7 @@ import {
   addItemDefinition,
   updateItemDefinition,
   deleteItemDefinition
-} from "./itemDefinitionsService.js";
+} from ".../itemDefinitionsService.js";
 
 /**
  * Initialise the Manage Items modal.
