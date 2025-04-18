@@ -17,13 +17,13 @@ let colorPicker, borderPicker;
 let activeMarkerData = null;
 
 // Initialize Modal from UI Kit
-const markerFormModal = new Modal({
-  modalSelector: MODAL_SELECTOR,
-  openBtnSelector: OPEN_TRIGGER,
-  closeBtnSelector: CLOSE_BTN_SELECTOR,
-  onOpen: populateForm,
-  onClose: cleanupForm
-});
+ const markerFormModal = new Modal({
+    modalSelector: MODAL_SELECTOR,
+    // openBtnSelector removed so we only open programmatically
+    closeBtnSelector: CLOSE_BTN_SELECTOR,
+    onOpen: populateForm,
+    onClose: cleanupForm
+  });
 
 const formEl = document.querySelector(FORM_SELECTOR);
 
