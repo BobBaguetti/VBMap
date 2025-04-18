@@ -31,7 +31,8 @@ import { setupSidebar } from "./modules/sidebarManager.js";
   });
 
   // Map Initialization
-  const map = initializeMap();
+  // initializeMap now returns { map, bounds }
+  const { map, bounds } = initializeMap();
 
   // Sidebar Setup
   const sidebar = await setupSidebar(map, {}, [], db);
