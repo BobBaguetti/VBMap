@@ -3,9 +3,9 @@
 // @version: 2
 // @file:    /scripts/modules/copyPasteManager.js
 
-import { ContextMenu } from '../ui/uiKit.js';
+import { ContextMenu } from './ui/uiKit.js';
 import L from 'leaflet';
-import { createCustomIcon } from './markerManager.js';
+import { createCustomIcon } from './map/markerManager.js';
 
 /**
  * Initialise copy‑paste behaviour.
