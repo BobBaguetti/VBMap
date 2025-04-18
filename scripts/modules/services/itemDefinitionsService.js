@@ -8,10 +8,13 @@
  * @param {firebase.firestore.Firestore} db - The Firestore instance.
  * @returns {firebase.firestore.CollectionReference}
  */
+export function getItemDefinitionsCollection(db) {
+  return db.collection("itemDefinitions");
+}
 export async function getItemDefinitions(db) {
   const snap = await getItemDefinitionsCollection(db).get();
   return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-
+}
 /**
  * Loads all item definitions from Firestore.
  * @param {firebase.firestore.Firestore} db - The Firestore instance.
