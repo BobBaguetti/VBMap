@@ -74,9 +74,10 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       const clr = document.createElement("div");
       clr.className = "color-btn";
       clr.style.marginLeft = "5px";
+      clr.id = `extra-line-color-${i}`; // ✅ Unique ID per line
       try {
         Pickr.create({
-          el: clr, theme: "nano", default: line.color || "#E5E6E8",
+          el: `#${clr.id}`, theme: "nano", default: line.color || "#E5E6E8",
           components: {
             preview: true, opacity: true, hue: true,
             interaction: { hex: true, rgba: true, input: true, save: true }
