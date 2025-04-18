@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/markerForm.js
 
 import { makeDraggable, positionModal } from "../uiManager.js";
@@ -11,6 +11,7 @@ import {
 import { deepClone } from "../../utils/utils.js"
 
 export function initMarkerForm(db) {
+  modal.classList.add("ui-modal");
   /* ---------- DOM elements --------- */
   const modal     = document.getElementById("edit-modal");
   const grip      = document.getElementById("edit-modal-handle");
@@ -35,6 +36,24 @@ export function initMarkerForm(db) {
 
   const btnAddLine = document.getElementById("add-extra-line");
   const wrapLines  = document.getElementById("extra-lines");
+
+  // ✅ Apply global styling classes
+  modal.classList.add("ui-modal");
+  grip.classList.add("ui-modal-header");
+  btnCancel.classList.add("ui-button");
+  btnAddLine.classList.add("ui-button");
+  [
+    fldName,
+    fldType,
+    fldImgS,
+    fldImgL,
+    fldVid,
+    fldRare,
+    fldIType,
+    fldDescIt,
+    fldDescNI,
+    ddPre
+  ].forEach(el => el?.classList.add("ui-input"));
 
   makeDraggable(modal, grip);
 
@@ -119,6 +138,7 @@ export function initMarkerForm(db) {
       const rm = document.createElement("button");
       rm.textContent = "×";
       rm.type = "button";
+      rm.className = "ui-button";
       rm.style.marginLeft = "5px";
       if (readOnly) {
         rm.style.display = "none";
@@ -138,6 +158,7 @@ export function initMarkerForm(db) {
       mkPicker(`#${clr.id}`)?.setColor(ln.color || "#E5E6E8");
     });
   }
+
   btnAddLine.onclick = () => {
     lines.push({ text: "", color: "#E5E6E8" });
     renderLines(false);
@@ -355,4 +376,4 @@ export function initMarkerForm(db) {
   };
 }
 
-// @version: 1
+// @version: 2
