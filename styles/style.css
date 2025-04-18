@@ -14,7 +14,7 @@
 
 /* Consistent input styling for dark forms */
 .ui-input {
-  background: #303030; /* This will now be the consistent background */
+  background: #303030; /* Consistent background for inputs */
   color: #e5e6e8;
   border: 1px solid #555;
   padding: 4px 6px;
@@ -171,7 +171,6 @@ body, html {
   padding: 8px;
 }
 
-/* Ensure these elements use .ui-input for background and border */
 #search-bar,
 #manage-item-definitions {
   background: #303030;
@@ -429,6 +428,7 @@ body, html {
   padding: 10px;
   border-bottom: 1px solid #444;
 }
+
 .modal-header-left {
   display: flex;
   align-items: center;
