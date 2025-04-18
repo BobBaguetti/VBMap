@@ -40,16 +40,15 @@ const formEl = document.querySelector(FORM_SELECTOR);
  * Populate form fields and dropdown each time modal opens
  */
 async function populateForm() {
-  // Fetch item definitions using stored Firestore instance
-  const itemDefs = await getItemDefinitions(firestoreDb);
-  // Only populate if the dropdown exists in the current form
-  const dropdown = formEl.querySelector('#predefined-item-dropdown');
-  if (dropdown) {
-    dropdown.innerHTML = '<option value="">-- Select item --</option>' +
-      itemDefs.map(def => `<option value="${def.id}">${def.name}</option>`).join('');
-  }
-
+  // Reset form and initialize pickers
   formEl.reset();
+  initPickers();
+
+  // If editing an existing marker, pre-fill fields
+  if (activeMarkerData) {
+    fillFormFields(activeMarkerData);
+  }
+}
   initPickers();
 
   if (activeMarkerData) {
