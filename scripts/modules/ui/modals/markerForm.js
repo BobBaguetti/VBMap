@@ -66,12 +66,6 @@ export function initMarkerForm(db) {
     return p;
   }
 
-  const pkName = mkPicker("#pickr-name");
-  const pkRare = mkPicker("#pickr-rarity");
-  const pkItyp = mkPicker("#pickr-itemtype");
-  const pkDitm = mkPicker("#pickr-desc-item");
-  const pkDni  = mkPicker("#pickr-desc-nonitem");
-
   /* ---------- Item definitions ---------- */
   let defs = {}, customMode = false;
   async function refreshItems() {
@@ -207,7 +201,6 @@ export function initMarkerForm(db) {
 
   function clearFormForCustom() {
     fldName.value = fldRare.value = fldIType.value = fldDescIt.value = "";
-    [pkName, pkRare, pkItyp, pkDitm].forEach(p => p.setColor("#E5E6E8"));
     fldImgS.value = fldImgL.value = fldVid.value = "";
     lines = [];
     renderLines(false);
@@ -215,16 +208,12 @@ export function initMarkerForm(db) {
 
   function fillFormFromDef(d) {
     fldName.value = d.name;
-    pkName.setColor(d.nameColor || "#E5E6E8");
 
     fldRare.value = d.rarity || "";
-    pkRare.setColor(d.rarityColor || "#E5E6E8");
 
     fldIType.value = d.itemType || d.type;
-    pkItyp.setColor(d.itemTypeColor || "#E5E6E8");
 
     fldDescIt.value = d.description || "";
-    pkDitm.setColor(d.descriptionColor || "#E5E6E8");
 
     fldImgS.value = d.imageSmall || "";
     fldImgL.value = d.imageBig   || "";
@@ -250,14 +239,12 @@ export function initMarkerForm(db) {
       }
     } else {
       fldName.value = m.name || "";
-      pkName.setColor(m.nameColor || "#E5E6E8");
 
       fldImgS.value = m.imageSmall || "";
       fldImgL.value = m.imageBig   || "";
       fldVid.value  = m.videoURL   || "";
 
       fldDescNI.value = m.description || "";
-      pkDni.setColor(m.descriptionColor || "#E5E6E8");
     }
   }
 
@@ -284,13 +271,13 @@ export function initMarkerForm(db) {
       } else {
         const defPayload = {
           name:             fldName.value.trim() || "Unnamed",
-          nameColor:        pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+          
           rarity:           fldRare.value,
-          rarityColor:      pkRare.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+          
           itemType:         fldIType.value,
-          itemTypeColor:    pkItyp.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+          
           description:      fldDescIt.value,
-          descriptionColor: pkDitm.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+          
           extraLines:       JSON.parse(JSON.stringify(lines)),
           imageSmall:       fldImgS.value,
           imageBig:         fldImgL.value
