@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 6   The current file version is 6. Increase by 1 every time you update anything.
+// @version: 7   The current file version is 7. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/markerForm.js
 
 import { makeDraggable, positionModal } from "../uiManager.js";
@@ -125,7 +125,7 @@ export function initMarkerForm(db) {
 
   function clearFormForCustom() {
     fields.name.value = fields.rarity.value = fields.itemType.value = fields.descriptionItem.value = "";
-    [pkName, pkRare, pkItyp, pkDitm].forEach(p => p.setColor("#E5E6E8"));
+    pickrs.forEach(p => p.setColor("#E5E6E8")); // Set all pickers to default color
     fields.imgSmall.value = fields.imgLarge.value = fields.video.value = "";
     lines = [];
     renderLines(false);
@@ -133,16 +133,16 @@ export function initMarkerForm(db) {
 
   function fillFormFromDef(d) {
     fields.name.value = d.name;
-    pkName.setColor(d.nameColor || "#E5E6E8");
+    pickrs[0].setColor(d.nameColor || "#E5E6E8");
 
     fields.rarity.value = d.rarity || "";
-    pkRare.setColor(d.rarityColor || "#E5E6E8");
+    pickrs[1].setColor(d.rarityColor || "#E5E6E8");
 
     fields.itemType.value = d.itemType || d.type;
-    pkItyp.setColor(d.itemTypeColor || "#E5E6E8");
+    pickrs[2].setColor(d.itemTypeColor || "#E5E6E8");
 
     fields.descriptionItem.value = d.description || "";
-    pkDitm.setColor(d.descriptionColor || "#E5E6E8");
+    pickrs[3].setColor(d.descriptionColor || "#E5E6E8");
 
     fields.imgSmall.value = d.imageSmall || "";
     fields.imgLarge.value = d.imageBig || "";
@@ -168,14 +168,14 @@ export function initMarkerForm(db) {
       }
     } else {
       fields.name.value = m.name || "";
-      pkName.setColor(m.nameColor || "#E5E6E8");
+      pickrs[0].setColor(m.nameColor || "#E5E6E8");
 
       fields.imgSmall.value = m.imageSmall || "";
       fields.imgLarge.value = m.imageBig || "";
       fields.video.value = m.videoURL || "";
 
       fields.descriptionNonItem.value = m.description || "";
-      pkDni.setColor(m.descriptionColor || "#E5E6E8");
+      pickrs[4].setColor(m.descriptionColor || "#E5E6E8");
     }
   }
 
@@ -202,13 +202,13 @@ export function initMarkerForm(db) {
       } else {
         const defPayload = {
           name: fields.name.value.trim() || "Unnamed",
-          nameColor: pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+          nameColor: pickrs[0].getColor()?.toHEXA()?.toString() || "#E5E6E8",
           rarity: fields.rarity.value,
-          rarityColor: pkRare.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+          rarityColor: pickrs[1].getColor()?.toHEXA()?.toString() || "#E5E6E8",
           itemType: fields.itemType.value,
-          itemTypeColor: pkItyp.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+          itemTypeColor: pickrs[2].getColor()?.toHEXA()?.toString() || "#E5E6E8",
           description: fields.descriptionItem.value,
-          descriptionColor: pkDitm.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+          descriptionColor: pickrs[3].getColor()?.toHEXA()?.toString() || "#E5E6E8",
           extraLines: JSON.parse(JSON.stringify(lines)),
           imageSmall: fields.imgSmall.value,
           imageBig: fields.imgLarge.value
@@ -224,12 +224,12 @@ export function initMarkerForm(db) {
       }
     } else {
       out.name = fields.name.value || "New Marker";
-      out.nameColor = pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+      out.nameColor = pickrs[0].getColor()?.toHEXA()?.toString() || "#E5E6E8";
       out.imageSmall = fields.imgSmall.value;
       out.imageBig = fields.imgLarge.value;
       out.videoURL = fields.video.value || "";
       out.description = fields.descriptionNonItem.value;
-      out.descriptionColor = pkDni.getColor()?.toHEXA()?.toString() || "#E5E6E8";
+      out.descriptionColor = pickrs[4].getColor()?.toHEXA()?.toString() || "#E5E6E8";
     }
 
     Object.keys(out).forEach(k => out[k] === undefined && delete out[k]);
