@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted.
-// @version: 3
+// @version: 4
 // @file:    /scripts/modules/itemDefinitionsModal.js
 
 import {
@@ -56,8 +56,9 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       const txt = document.createElement("input");
       txt.type = "text";
       txt.value = line.text;
-      txt.style.cssText = "width:100%; background:#303030; color:#e0e0e0; padding:4px 6px; border:1px solid #555;";
-      txt.addEventListener("input", () => extraLines[i].text = txt.value);
+      txt.style.cssText =
+        "width:100%; background:#303030; color:#e0e0e0; padding:4px 6px; border:1px solid #555;";
+      txt.addEventListener("input", () => (extraLines[i].text = txt.value));
 
       const clr = document.createElement("div");
       clr.className = "color-btn";
@@ -65,8 +66,10 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
 
       const picker = pickerManager.create(clr);
       if (picker) {
-        picker.setColor(line.color || "#E5E6E8")
-          .on("change", c => extraLines[i].color = c.toHEXA().toString());
+        picker.setColor(line.color || "#E5E6E8");
+        picker.on("change", c => {
+          extraLines[i].color = c.toHEXA().toString();
+        });
       }
 
       const rm = document.createElement("button");
@@ -88,39 +91,63 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   });
 
   /* ---------- List rendering & filters ---------- */
-  const flags = { name:false, type:false, rarity:false };
+  const flags = { name: false, type: false, rarity: false };
   async function loadAndRender() {
     listWrap.innerHTML = "";
     const defs = await loadItemDefinitions(db);
     defs.forEach(def => {
       const row = document.createElement("div");
       row.className = "item-def-entry";
-      const rare = def.rarity ? def.rarity[0].toUpperCase() + def.rarity.slice(1) : "";
+      const rare = def.rarity
+        ? def.rarity[0].toUpperCase() + def.rarity.slice(1)
+        : "";
       const content = document.createElement("div");
       content.innerHTML = `
         <span class="def-name"><strong>${def.name}</strong></span>
-        (<span class="def-type">${def.itemType||def.type}</span>)
+        (<span class="def-type">${def.itemType || def.type}</span>)
         – <span class="def-rarity">${rare}</span>
-        <br/><em>${def.description||""}</em>
+        <br/><em>${def.description || ""}</em>
       `;
       row.appendChild(content);
 
       const tf = document.createElement("div");
       tf.className = "add-filter-toggle";
-      tf.innerHTML = `<label><input type="checkbox" data-show-filter="${def.id}" ${def.showInFilters?"checked":""}/> Add Filter</label>`;
-      tf.querySelector("input").addEventListener("change", async e => {
-        def.showInFilters = e.target.checked;
-        await updateItemDefinition(db, { id: def.id, showInFilters: def.showInFilters });
-        onDefinitionsChanged();
-      });
+      tf.innerHTML = `
+        <label>
+          <input 
+            type="checkbox" 
+            data-show-filter="${def.id}" 
+            ${def.showInFilters ? "checked" : ""}/>
+          Add Filter
+        </label>`;
+      tf
+        .querySelector("input")
+        .addEventListener("change", async e => {
+          def.showInFilters = e.target.checked;
+          await updateItemDefinition(db, {
+            id: def.id,
+            showInFilters: def.showInFilters
+          });
+          onDefinitionsChanged();
+        });
       row.appendChild(tf);
 
       const btns = document.createElement("div");
       btns.className = "item-action-buttons";
-      btns.innerHTML = `<button data-edit="${def.id}">Edit</button><button data-delete="${def.id}">Delete</button><button data-copy="${def.id}">Copy</button>`;
-      btns.querySelector("[data-edit]").addEventListener("click", () => openEdit(def));
-      btns.querySelector("[data-delete]").addEventListener("click", () => deleteDef(def.id));
-      btns.querySelector("[data-copy]").addEventListener("click", () => copyDef(def));
+      btns.innerHTML = `
+        <button data-edit="${def.id}">Edit</button>
+        <button data-delete="${def.id}">Delete</button>
+        <button data-copy="${def.id}">Copy</button>
+      `;
+      btns
+        .querySelector("[data-edit]")
+        .addEventListener("click", () => openEdit(def));
+      btns
+        .querySelector("[data-delete]")
+        .addEventListener("click", () => deleteDef(def.id));
+      btns
+        .querySelector("[data-copy]")
+        .addEventListener("click", () => copyDef(def));
       row.appendChild(btns);
 
       listWrap.appendChild(row);
@@ -129,23 +156,41 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   function applyFilters() {
     const q = defSearch.value.toLowerCase();
     listWrap.childNodes.forEach(entry => {
-      const name   = entry.querySelector(".def-name").innerText.toLowerCase();
-      const type   = entry.querySelector(".def-type").innerText.toLowerCase();
-      const rarity = entry.querySelector(".def-rarity").innerText.toLowerCase();
+      const name = entry
+        .querySelector(".def-name")
+        .innerText.toLowerCase();
+      const type = entry
+        .querySelector(".def-type")
+        .innerText.toLowerCase();
+      const rarity = entry
+        .querySelector(".def-rarity")
+        .innerText.toLowerCase();
       let show = q
-        ? (name.includes(q) || type.includes(q) || rarity.includes(q))
+        ? name.includes(q) || type.includes(q) || rarity.includes(q)
         : true;
       if (!q) {
-        if (flags.name   && !name.includes(q))   show = false;
-        if (flags.type   && !type.includes(q))   show = false;
+        if (flags.name && !name.includes(q)) show = false;
+        if (flags.type && !type.includes(q)) show = false;
         if (flags.rarity && !rarity.includes(q)) show = false;
       }
       entry.style.display = show ? "" : "none";
     });
   }
-  filterName.addEventListener("click", () => { flags.name = !flags.name; filterName.classList.toggle("toggled"); applyFilters(); });
-  filterType.addEventListener("click", () => { flags.type = !flags.type; filterType.classList.toggle("toggled"); applyFilters(); });
-  filterRarity.addEventListener("click", () => { flags.rarity = !flags.rarity; filterRarity.classList.toggle("toggled"); applyFilters(); });
+  filterName.addEventListener("click", () => {
+    flags.name = !flags.name;
+    filterName.classList.toggle("toggled");
+    applyFilters();
+  });
+  filterType.addEventListener("click", () => {
+    flags.type = !flags.type;
+    filterType.classList.toggle("toggled");
+    applyFilters();
+  });
+  filterRarity.addEventListener("click", () => {
+    flags.rarity = !flags.rarity;
+    filterRarity.classList.toggle("toggled");
+    applyFilters();
+  });
   defSearch.addEventListener("input", applyFilters);
 
   /* ---------- Form submit ---------- */
@@ -177,7 +222,7 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     resetForm();
   });
 
-  /* ---------- Helpers ---------- */
+  /* ---------- Helpers & Modal wiring ---------- */
   function openEdit(def) {
     defName.dataset.editId = def.id;
     defName.value = def.name;
@@ -188,10 +233,8 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     defImgL.value = def.imageBig || "";
     extraLines = JSON.parse(JSON.stringify(def.extraLines || []));
     renderExtraLines();
-    [pkName, pkType, pkRare, pkDesc].forEach(p =>
-      p.setColor(def[p._root._config.el.replace('#pickr-def-','')+'Color'] || "#E5E6E8")
-    );
     heading3.innerText = "Edit Item";
+    modal.open();
   }
   async function deleteDef(id) {
     if (!confirm("Delete this item definition?")) return;
@@ -210,9 +253,9 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     defImgL.value = def.imageBig || "";
     extraLines = JSON.parse(JSON.stringify(def.extraLines || []));
     renderExtraLines();
+    modal.open();
   }
 
-  /* ---------- Modal wiring ---------- */
   manageBtn.addEventListener("click", () => {
     console.log("🖱️ Manage Items clicked");
     modal.open();

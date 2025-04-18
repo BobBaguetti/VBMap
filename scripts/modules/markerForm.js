@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted.
-// @version: 3
+// @version: 4
 // @file:    /scripts/modules/markerForm.js
 
 import { makeDraggable, positionModal } from "./uiManager.js";
@@ -47,8 +47,8 @@ export function initMarkerForm(db) {
   /* ---------- Extra‑info lines ---------- */
   let lines = [];
   function renderLines(readOnly = false) {
-    const wrapLines = document.getElementById("extra-lines");
-    wrapLines.innerHTML = "";
+    const wrap = document.getElementById("extra-lines");
+    wrap.innerHTML = "";
     lines.forEach((ln, i) => {
       const row = document.createElement("div");
       row.className = "field-row";
@@ -86,13 +86,15 @@ export function initMarkerForm(db) {
         row.append(rm);
       }
 
-      wrapLines.appendChild(row);
+      wrap.appendChild(row);
 
-      // attach a picker to this new color-btn
+      // create picker and attach change listener
       const p = pickerManager.create(clr);
       if (p) {
-        p.setColor(ln.color || "#E5E6E8")
-         .on("change", color => { lines[i].color = color.toHEXA().toString(); });
+        p.setColor(ln.color || "#E5E6E8");
+        p.on("change", c => {
+          lines[i].color = c.toHEXA().toString();
+        });
       }
     });
   }
@@ -103,7 +105,7 @@ export function initMarkerForm(db) {
     customMode = true;
   };
 
-  /* ---------- UI helpers ---------- */
+  /* ---------- UI helpers (unchanged) ---------- */
   const fldName   = document.getElementById("edit-name");
   const fldType   = document.getElementById("edit-type");
   const fldImgS   = document.getElementById("edit-image-small");
@@ -126,10 +128,8 @@ export function initMarkerForm(db) {
     if (el.tagName === "SELECT") el.style.pointerEvents = on ? "none" : "auto";
   }
   function lockItemFields(on) {
-    [
-      fldName, fldRare, fldIType,
-      fldDescIt, fldImgS, fldImgL, fldVid
-    ].forEach(e => setRO(e, on));
+    [fldName, fldRare, fldIType, fldDescIt, fldImgS, fldImgL, fldVid]
+      .forEach(e => setRO(e, on));
   }
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
@@ -247,7 +247,7 @@ export function initMarkerForm(db) {
     }
   }
 
-  /* ---------- Modal openers ---------- */
+  /* ---------- Modal openers (with positioning) ---------- */
   let submitCB;
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
