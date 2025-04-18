@@ -1,7 +1,76 @@
 /* @fullfile: Send the entire file, no omissions or abridgments. */
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
-/* @version: 1   The current file version is 1. Increase by 1 every time you update anything. */
+/* @version: 2   The current file version is 2. Increase by 1 every time you update anything. */
 /* @file:    /styles/style.css */
+
+/* ============================
+   Base Dark Mode UI Utilities
+   ============================ */
+
+/* Default text color for light-on-dark mode */
+.ui-text-default {
+  color: #e5e6e8 !important;
+}
+
+/* Consistent input styling for dark forms */
+.ui-input {
+  background: #303030;
+  color: #e5e6e8;
+  border: 1px solid #555;
+  padding: 4px 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+/* Consistent button appearance for modals & actions */
+.ui-button {
+  background: #333;
+  color: #e5e6e8;
+  border: 1px solid #555;
+  border-radius: 3px;
+  cursor: pointer;
+}
+.ui-button:hover {
+  background: #444;
+}
+
+/* Shared scrollbar styling for lists, textareas, etc. */
+.ui-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.ui-scrollbar::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+.ui-scrollbar::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+.ui-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* Modal container layout */
+.ui-modal {
+  background-color: #222;
+  color: #e0e0e0;
+  border: 1px solid #555;
+  padding: 20px;
+}
+
+/* Modal header layout */
+.ui-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 0 4px 0;
+  margin-bottom: 12px;
+  border-bottom: 2px solid #444;
+}
+
+
+/* ============================
+   Existing Element Styling
+   ============================ */
 
 /* Base Styles */
 body, html {
@@ -62,7 +131,7 @@ body, html {
   background: #444;
 }
 
-/* Accordion for filter groups */
+/* Filter group accordion */
 .filter-group h3 {
   margin: 0;
   padding: 8px 0;
@@ -82,51 +151,36 @@ body, html {
   display: none;
 }
 
-/* Dark search bar in sidebar */
-#search-bar {
-  width: 100%;
-  padding: 5px 8px;
-  background: #333;
-  color: #e0e0e0;
-  border: 1px solid #555;
-  border-radius: 3px;
-  box-sizing: border-box;
-}
-
-/* Dark Manage Items button */
+/* Search bar and button in sidebar */
+#search-bar,
 #manage-item-definitions {
   width: 100%;
-  padding: 8px;
-  background: #333;
-  color: #e0e0e0;
-  border: 1px solid #555;
-  border-radius: 3px;
-  cursor: pointer;
   box-sizing: border-box;
 }
-#manage-item-definitions:hover {
-  background: #444;
+#search-bar {
+  padding: 5px 8px;
+}
+#manage-item-definitions {
+  padding: 8px;
+}
+#search-bar,
+#manage-item-definitions {
+  @apply .ui-input;
 }
 
-/* Hide stray video/paste elements */
+/* Hide stray elements */
 #video-popup,
 #paste-tooltip {
   display: none !important;
 }
 
-/* Leaflet Overrides */
+/* Leaflet Map Overrides */
 .leaflet-container {
   background-color: #1a1a1a !important;
 }
 
 /* Popup Styling */
-.leaflet-popup {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-}
+.leaflet-popup,
 .leaflet-popup-content-wrapper {
   background: transparent !important;
   border: none !important;
@@ -167,13 +221,11 @@ body, html {
   font-size: 18px;
   cursor: pointer;
 }
-
-/* Hide Leaflet's default close-button */
 .leaflet-popup-close-button {
   display: none !important;
 }
 
-/* Marker Styling */
+/* Marker Style */
 .custom-marker-container {
   background: transparent !important;
   border: none !important;
@@ -200,11 +252,11 @@ body, html {
   object-fit: contain;
 }
 
-/* Popup Content */
+/* Popup Content Elements */
 .popup-header {
   display: flex;
   align-items: center;
-  padding: 0 0 4px 0; /* moved down another 2px */
+  padding: 0 0 4px 0;
   margin-bottom: 12px;
   border-bottom: 2px solid #444;
 }
@@ -212,12 +264,31 @@ body, html {
   margin-top: 10px;
   font-size: 16px;
 }
+.popup-name,
+.popup-item-type,
+.popup-rarity,
+.popup-description,
+.popup-extra-line {
+  color: #e5e6e8;
+}
+.popup-name {
+  margin: 0;
+  font-size: 20px;
+}
+.popup-item-type,
+.popup-rarity {
+  margin: 2px 0;
+  font-size: 18px;
+}
+.popup-description,
+.popup-extra-line {
+  margin: 2px 0;
+}
+
+/* Video button */
 .more-info-btn {
-  background-color: #444;
-  color: #fff;
+  @apply .ui-button;
   padding: 5px 10px;
-  border: none;
-  cursor: pointer;
   border-radius: 4px;
   margin-top: 10px;
 }
@@ -240,22 +311,19 @@ body, html {
   display: none;
   position: absolute;
   width: 450px;
-  background: #222;
-  color: #eee;
-  padding: 20px;
-  border: 1px solid #555;
   z-index: 2100;
   cursor: default;
+  @apply .ui-modal;
 }
 #edit-modal-handle {
   cursor: move;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #555;
   margin-bottom: 10px;
   font-size: 16px;
+  border-bottom: 1px solid #555;
+  padding-bottom: 5px;
 }
 
-/* Form Layout */
+/* Form Field Layout */
 #edit-form {
   display: flex;
   flex-direction: column;
@@ -275,11 +343,7 @@ body, html {
 .field-row input[type="text"],
 .field-row select,
 .field-row textarea {
-  background: #303030;
-  color: #e0e0e0;
-  border: 1px solid #555;
-  padding: 4px 6px;
-  font-size: 14px;
+  @apply .ui-input;
   width: 100%;
 }
 .field-row textarea {
@@ -293,10 +357,10 @@ body, html {
   border-radius: 2px;
   cursor: pointer;
   flex-shrink: 0;
-  margin-left: 86px; /* Extra Info + aligned 4px more left */
+  margin-left: 86px;
 }
 
-/* Item Definitions Modal */
+/* Modal Defaults */
 .modal {
   display: none;
   position: fixed;
@@ -308,27 +372,20 @@ body, html {
   background-color: rgba(0,0,0,0.8);
 }
 .modal-content {
-  background-color: #222;
+  @apply .ui-modal;
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  padding: 5px 20px 5px;
-  border: 1px solid #555;
+  padding: 5px 20px;
   width: 500px;
   max-height: 90vh;
-  color: #e0e0e0;
   overflow: hidden;
 }
 
-/* Header layout */
+/* Modal Header */
 .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 0 4px 0; /* moved down another 2px */
-  margin-bottom: 12px;
-  border-bottom: 2px solid #444;
+  @apply .ui-modal-header;
 }
 .modal-header-left {
   display: flex;
@@ -344,7 +401,7 @@ body, html {
   gap: 10px;
 }
 
-/* Flat NTR tri‑toggle buttons + gold outline when active */
+/* Tri-toggle Buttons */
 .filter-btn {
   width: 30px;
   height: 30px;
@@ -360,37 +417,21 @@ body, html {
   color: #fff;
 }
 
-/* Search input in modal header */
+/* Search inside modal */
 #def-search {
-  background: #333;
-  color: #e0e0e0;
-  border: 1px solid #555;
-  border-radius: 3px;
+  @apply .ui-input;
   padding: 4px 8px;
 }
 
-/* Show ~3.5 items before scroll */
+/* Item Definition List */
 .def-list {
   max-height: 240px;
   overflow-y: auto;
   padding: 5px;
-}
-/* Dark scrollbar */
-.def-list::-webkit-scrollbar {
-  width: 8px;
-}
-.def-list::-webkit-scrollbar-track {
-  background: #2a2a2a;
-}
-.def-list::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 4px;
-}
-.def-list::-webkit-scrollbar-thumb:hover {
-  background: #777;
+  @apply .ui-scrollbar;
 }
 
-/* Item row */
+/* Item Entry Row */
 .item-def-entry {
   position: relative;
   padding: 10px 8px 40px;
@@ -403,14 +444,14 @@ body, html {
   background-color: #1f1f1f;
 }
 
-/* Add Filter toggle top-right */
+/* Add Filter Toggle */
 .add-filter-toggle {
   position: absolute;
   top: 8px;
   right: 8px;
 }
 
-/* Action buttons bottom-right */
+/* Bottom Action Buttons */
 .item-action-buttons {
   position: absolute;
   bottom: 8px;
@@ -419,34 +460,23 @@ body, html {
   gap: 4px;
 }
 .item-action-buttons button {
-  background: #333;
-  color: #e0e0e0;
-  border: 1px solid #555;
-  border-radius: 3px;
+  @apply .ui-button;
   padding: 2px 6px;
   font-size: 13px;
 }
 
-/* Separator between item container and Add Item form */
+/* Modal Separator */
 .modal-content hr {
-  border: none;                 /* remove default bevel */
-  border-top: 0px solid #444;   /* removed line */
+  border: none;
+  border-top: 0px solid #444;
   margin: 12px 0;
 }
 
-/* Dark Save/Cancel buttons */
+/* Save / Cancel Buttons */
 #item-definition-form button[type="submit"],
 #item-definition-form button[type="button"] {
-  background: #333;
-  color: #e0e0e0;
-  border: 1px solid #555;
-  border-radius: 3px;
+  @apply .ui-button;
   padding: 6px 12px;
-  cursor: pointer;
-}
-#item-definition-form button[type="submit"]:hover,
-#item-definition-form button[type="button"]:hover {
-  background: #444;
 }
 
-/* @version: 1 */
+/* @version: 2 */
