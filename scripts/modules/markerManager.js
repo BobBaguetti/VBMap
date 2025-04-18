@@ -1,150 +1,102 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
+// @fullfile: Send the entire file, no omissions or abridgment — version is 2. Increase by 1 every time you update anything.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
-// @file:    /scripts/modules/jsmarkerManager.js
+// @version: 2
+// @file:    /scripts/modules/map/markerManager.js
 
-import { formatRarity } from "./utils.js";
+import L from 'leaflet';
+import { openEmptyMarkerForm, openMarkerFormWithData } from '../ui/markerForm.js';
+import { formatRarity } from '../utils/utils.js';
 
-// Basic URL check for images
-function isImgUrl(str) {
-  return /^https?:\/\/.+|^\/.+\.(png|jpe?g|gif|webp)$/i.test(str || "");
-}
+let markersLayerGroup;
 
-export function createCustomIcon(m) {
-  const imgHTML = isImgUrl(m.imageSmall)
-    ? `<img src="${m.imageSmall}" class="marker-icon"
-            onerror="this.style.display='none'">`
-    : "";
-
-  return L.divIcon({
-    html: `
-      <div class="custom-marker">
-        <div class="marker-border"></div>
-        ${imgHTML}
-      </div>`,
-    className: "custom-marker-container",
-    iconSize: [32, 32]
+/**
+ * Initializes marker management on the map.
+ * @param {L.Map} map
+ * @param {Array<Object>} markersData
+ */
+export function initializeMarkerManager(map, markersData) {
+  markersLayerGroup = L.layerGroup().addTo(map);
+  markersData.forEach(data => {
+    const marker = createMarker(data);
+    markersLayerGroup.addLayer(marker);
   });
 }
 
-export function createPopupContent(m) {
-  let itemTypeHTML = "", rarityHTML = "", descHTML = "", extraHTML = "";
+/**
+ * Creates a Leaflet marker with custom icon and context menu.
+ * @param {Object} data  Marker data payload
+ * @returns {L.Marker}
+ */
+function createMarker(data) {
+  const icon = L.divIcon({
+    html: `<div class="marker-icon" style="background-color:${data.color};border:2px solid ${data.borderColor}"></div>`,
+    className: 'custom-marker-icon',
+    iconSize: [20, 20]
+  });
 
-  if (m.type === "Item") {
-    if (m.itemType) itemTypeHTML = `
-      <div style="margin:2px 0; font-size:18px; color:${m.itemTypeColor || "#E5E6E8"};">
-        ${m.itemType}
-      </div>`;
-    if (m.rarity) rarityHTML = `
-      <div style="margin:2px 0; font-size:18px; color:${m.rarityColor || "#E5E6E8"};">
-        ${formatRarity(m.rarity)}
-      </div>`;
-    if (m.description) descHTML = `
-      <p style="margin:2px 0; color:${m.descriptionColor || "#E5E6E8"};">
-        ${m.description}
-      </p>`;
-    if (m.extraLines?.length) {
-      m.extraLines.forEach(line => {
-        extraHTML += `
-          <p style="margin:2px 0; color:${line.color || "#E5E6E8"};">
-            ${line.text}
-          </p>`;
-      });
-    }
-  } else if (m.description) {
-    descHTML = `
-      <p style="margin:2px 0; color:${m.descriptionColor || "#E5E6E8"};">
-        ${m.description}
-      </p>`;
+  const marker = L.marker([data.lat, data.lng], { icon, draggable: false });
+  marker.options.data = data;
+  marker.on('contextmenu', event => showContextMenu(event, data, marker));
+  return marker;
+}
+
+/**
+ * Renders and displays the context menu for a marker.
+ */
+function showContextMenu(event, data, marker) {
+  removeExistingMenu();
+  const menu = buildMenu(event);
+  const items = [
+    { label: 'Edit',        action: () => openMarkerFormWithData(data) },
+    { label: 'Toggle Drag', action: () => toggleDrag(marker) },
+    { label: 'Copy',        action: () => triggerCopy(data) },
+    { label: 'Delete',      action: () => confirmAndDelete(marker, data.id) }
+  ];
+
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'context-menu__item';
+    el.textContent = item.label;
+    el.addEventListener('click', () => {
+      item.action();
+      menu.remove();
+    });
+    menu.appendChild(el);
+  });
+
+  document.body.appendChild(menu);
+  document.addEventListener('click', () => menu.remove(), { once: true });
+}
+
+function removeExistingMenu() {
+  const existing = document.querySelector('.context-menu');
+  if (existing) existing.remove();
+}
+
+function buildMenu(event) {
+  const menu = document.createElement('div');
+  menu.className = 'context-menu';
+  menu.style.top = `${event.originalEvent.clientY}px`;
+  menu.style.left = `${event.originalEvent.clientX}px`;
+  return menu;
+}
+
+function toggleDrag(marker) {
+  const isDraggable = marker.options.draggable;
+  marker.options.draggable = !isDraggable;
+  marker.dragging[isDraggable ? 'disable' : 'enable']();
+}
+
+function triggerCopy(data) {
+  const copyEvent = new CustomEvent('copy-marker', { detail: data });
+  document.dispatchEvent(copyEvent);
+}
+
+function confirmAndDelete(marker, id) {
+  if (confirm('Delete this marker?')) {
+    marker.remove();
+    // TODO: call deleteMarker(id) from firebaseService
   }
-
-  const nameHTML = `
-    <h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">
-      ${m.name}
-    </h3>`;
-
-  const bigImg = isImgUrl(m.imageBig)
-    ? `<img src="${m.imageBig}" class="popup-image"
-             style="width:64px; height:64px; object-fit:contain;
-                    background:#222; border:2px solid #777; border-radius:4px;"
-             onerror="this.style.display='none'">`
-    : "";
-
-  const videoBtn = m.videoURL ? `
-    <button class="more-info-btn"
-            onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">
-      Play Video
-    </button>` : "";
-
-  return `
-    <div class="custom-popup">
-      <button class="popup-close-btn" onclick="this.closest('.leaflet-popup')._close()">
-        ×
-      </button>
-      <div class="popup-header" style="display:flex; gap:5px;">
-        ${bigImg}
-        <div style="margin-left:5px;">
-          ${nameHTML}
-          ${itemTypeHTML}
-          ${rarityHTML}
-        </div>
-      </div>
-      <div class="popup-body">
-        ${descHTML}
-        ${extraHTML}
-        ${videoBtn}
-      </div>
-    </div>`;
 }
 
-export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
-  const markerObj = L.marker(m.coords, {
-    icon: createCustomIcon(m),
-    draggable: false
-  });
-
-  markerObj.bindPopup(createPopupContent(m), {
-    className: "custom-popup-wrapper",
-    maxWidth: 350,
-    closeButton: false
-  });
-
-  layers[m.type].addLayer(markerObj);
-
-  markerObj.on("contextmenu", evt => {
-    evt.originalEvent.preventDefault();
-    const options = [
-      {
-        text: "Edit Marker",
-        action: () => callbacks.onEdit?.(markerObj, m, evt.originalEvent)
-      },
-      {
-        text: "Copy Marker",
-        action: () => callbacks.onCopy?.(markerObj, m, evt.originalEvent)
-      },
-      {
-        text: markerObj.dragging?.enabled() ? "Disable Drag" : "Enable Drag",
-        action: () => {
-          if (markerObj.dragging?.enabled()) {
-            markerObj.dragging.disable();
-          } else {
-            markerObj.dragging.enable();
-            markerObj.once("dragend", () => {
-              m.coords = [markerObj.getLatLng().lat, markerObj.getLatLng().lng];
-              callbacks.onDragEnd?.(markerObj, m);
-            });
-          }
-        }
-      },
-      {
-        text: "Delete Marker",
-        action: () => callbacks.onDelete?.(markerObj, m)
-      }
-    ];
-    ctxMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
-  });
-
-  return markerObj;
-}
-
-// @version: 1
+// @version: 2

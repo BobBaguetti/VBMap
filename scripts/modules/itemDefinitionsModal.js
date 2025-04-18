@@ -1,245 +1,238 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted.
+// @fullfile: Send the entire file, no omissions or abridgment — version is 2. Increase by 1 every time you update anything.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
 // @version: 2
-// @file:    /scripts/modules/itemDefinitionsModal.js
+// @file:    /scripts/modules/ui/itemDefinitionsModal.js
 
+import { Modal, createColorPicker } from '../ui/uiKit.js';
 import {
   loadItemDefinitions,
   addItemDefinition,
   updateItemDefinition,
   deleteItemDefinition
-} from "./itemDefinitionsService.js";
+} from '../services/itemDefinitionsService.js';
 
+/**
+ * Initialise the Manage Items modal.
+ * @param {firebase.firestore.Firestore} db
+ * @param {Function} onDefinitionsChanged callback invoked after CRUD ops
+ */
 export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
-  const manageBtn     = document.getElementById("manage-item-definitions");
-  const modal         = document.getElementById("item-definitions-modal");
-  const closeBtn      = document.getElementById("close-item-definitions");
-  const listWrap      = document.getElementById("item-definitions-list");
-  const form          = document.getElementById("item-definition-form");
-  const defName       = document.getElementById("def-name");
-  const defType       = document.getElementById("def-type");
-  const defRarity     = document.getElementById("def-rarity");
-  const defDescription= document.getElementById("def-description");
-  const defImgS       = document.getElementById("def-image-small");
-  const defImgL       = document.getElementById("def-image-big");
-  const defExtraLines = document.getElementById("def-extra-lines");
-  const addExtraBtn   = document.getElementById("add-def-extra-line");
-  const defSearch     = document.getElementById("def-search");
-  const filterNameBtn = document.getElementById("filter-name");
-  const filterTypeBtn = document.getElementById("filter-type");
-  const filterRarityBtn = document.getElementById("filter-rarity");
-  const heading3      = document.getElementById("def-form-subheading");
-  const defCancelBtn  = document.getElementById("def-cancel");
+  // Selectors
+  const modalSelector = '#item-definitions-modal';
+  const openBtnSelector = '#manage-item-definitions';
+  const closeBtnSelector = '#close-item-definitions, #def-cancel';
 
-  // Factory for top‐level Pickrs
-  function createPicker(selector) {
-    const el = document.querySelector(selector);
-    if (!el) return { on:()=>{}, setColor:()=>{}, getColor:()=>({ toHEXA:()=>["#E5E6E8"] }) };
-    const p = Pickr.create({
-      el: selector,
-      theme: "nano",
-      default: "#E5E6E8",
-      components: {
-        preview:true, opacity:true, hue:true,
-        interaction:{ hex:true, rgba:true, input:true, save:true }
-      }
-    });
-    p.setColor("#E5E6E8");
-    p.on("save", (_i, pickr) => pickr.hide());
-    return p;
-  }
-  const pkName = createPicker("#pickr-def-name");
-  const pkType = createPicker("#pickr-def-type");
-  const pkRare = createPicker("#pickr-def-rarity");
-  const pkDesc = createPicker("#pickr-def-description");
-
-  // Extra‐info lines
-  let extraLines = [];
-  function renderExtraLines() {
-    defExtraLines.innerHTML = "";
-    extraLines.forEach((line,i) => {
-      const row = document.createElement("div");
-      row.className = "field-row"; row.style.marginBottom="5px";
-
-      const txt = document.createElement("input");
-      txt.type="text"; txt.value=line.text;
-      txt.style.cssText="width:100%;background:#303030;color:#e0e0e0;padding:4px 6px;border:1px solid #555;";
-      txt.addEventListener("input", ()=> extraLines[i].text = txt.value);
-
-      const clr = document.createElement("div");
-      clr.className="color-btn"; clr.style.marginLeft="5px";
-
-      // dynamic picker on this line
-      const p = Pickr.create({
-        el: clr, theme:"nano", default:line.color||"#E5E6E8",
-        components: {
-          preview:true, opacity:true, hue:true,
-          interaction:{ hex:true, rgba:true, input:true, save:true }
-        }
-      });
-      p.setColor(line.color||"#E5E6E8");
-      p.on("change", c=> extraLines[i].color = c.toHEXA().toString())
-       .on("save", (_i, pr)=> pr.hide());
-
-      const rm = document.createElement("button");
-      rm.type="button"; rm.textContent="×"; rm.style.marginLeft="5px";
-      rm.addEventListener("click", () => {
-        extraLines.splice(i,1);
-        renderExtraLines();
-      });
-
-      row.append(txt, clr, rm);
-      defExtraLines.appendChild(row);
-    });
-  }
-  addExtraBtn.addEventListener("click", () => {
-    extraLines.push({ text:"", color:"#E5E6E8" });
-    renderExtraLines();
-  });
-
-  // Filter & list logic
-  const flags = { name:false, type:false, rarity:false };
-  async function loadAndRender() {
-    listWrap.innerHTML = "";
-    const defs = await loadItemDefinitions(db);
-    defs.forEach(def => {
-      const row = document.createElement("div");
-      row.className = "item-def-entry";
-      const rare = def.rarity ? def.rarity[0].toUpperCase()+def.rarity.slice(1) : "";
-      row.innerHTML = `
-        <div>
-          <strong>${def.name}</strong>
-          (<em>${def.itemType||def.type}</em>)
-          – <span>${rare}</span><br/>
-          <em>${def.description||""}</em>
-        </div>
-        <div class="add-filter-toggle">
-          <label>
-            <input type="checkbox" data-show-filter="${def.id}" ${def.showInFilters?"checked":""}/> Add Filter
-          </label>
-        </div>
-        <div class="item-action-buttons">
-          <button data-edit="${def.id}">Edit</button>
-          <button data-delete="${def.id}">Delete</button>
-          <button data-copy="${def.id}">Copy</button>
-        </div>`;
-      // wire up filter toggle
-      row.querySelector("[data-show-filter]").addEventListener("change", async e=>{
-        def.showInFilters = e.target.checked;
-        await updateItemDefinition(db,{ id:def.id, showInFilters:def.showInFilters });
-        onDefinitionsChanged();
-      });
-      // wire action buttons
-      row.querySelector("[data-edit]").addEventListener("click",()=>openEdit(def));
-      row.querySelector("[data-delete]").addEventListener("click",()=>deleteDef(def.id));
-      row.querySelector("[data-copy]").addEventListener("click",()=>copyDef(def));
-      listWrap.appendChild(row);
-    });
-  }
-  function applyFilters() {
-    const q = defSearch.value.toLowerCase();
-    listWrap.childNodes.forEach(entry => {
-      const name   = entry.querySelector("strong").innerText.toLowerCase();
-      const type   = entry.querySelector("em").innerText.toLowerCase();
-      const rarity = entry.querySelector("span").innerText.toLowerCase();
-      let show = q ? (name.includes(q)||type.includes(q)||rarity.includes(q)) : true;
-      if(!q){
-        if(flags.name   && !name.includes(q))   show=false;
-        if(flags.type   && !type.includes(q))   show=false;
-        if(flags.rarity && !rarity.includes(q)) show=false;
-      }
-      entry.style.display = show?"":"none";
-    });
-  }
-  filterNameBtn.addEventListener("click", () => { flags.name=!flags.name; filterNameBtn.classList.toggle("toggled"); applyFilters(); });
-  filterTypeBtn.addEventListener("click", () => { flags.type=!flags.type; filterTypeBtn.classList.toggle("toggled"); applyFilters(); });
-  filterRarityBtn.addEventListener("click", () => { flags.rarity=!flags.rarity; filterRarityBtn.classList.toggle("toggled"); applyFilters(); });
-  defSearch.addEventListener("input", applyFilters);
-
-  // Form submit handler
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    const payload = {
-      name: defName.value.trim()||"Unnamed",
-      type: defType.value,
-      rarity: defRarity.value,
-      description: defDescription.value,
-      imageSmall: defImgS.value,
-      imageBig: defImgL.value,
-      extraLines: [...extraLines],
-      nameColor: pkName.getColor().toHEXA().toString(),
-      itemTypeColor: pkType.getColor().toHEXA().toString(),
-      rarityColor: pkRare.getColor().toHEXA().toString(),
-      descriptionColor: pkDesc.getColor().toHEXA().toString(),
-      showInFilters: false
-    };
-    if(defName.dataset.editId){
-      payload.id = defName.dataset.editId;
-      delete defName.dataset.editId;
-      await updateItemDefinition(db,payload);
-    } else {
-      await addItemDefinition(db,payload);
+  // Modal lifecycle via UI Kit
+  const modal = new Modal({
+    modalSelector,
+    openBtnSelector,
+    closeBtnSelector,
+    onOpen: () => {
+      resetForm();
+      loadAndRender();
+    },
+    onClose: () => {
+      cleanupForm();
     }
-    await loadAndRender();
-    onDefinitionsChanged();
-    resetForm();
   });
 
-  // Helpers
-  function openEdit(def) {
-    defName.dataset.editId = def.id;
-    defName.value = def.name;
-    defType.value = def.type;
-    defRarity.value = def.rarity;
-    defDescription.value = def.description||"";
-    defImgS.value = def.imageSmall||"";
-    defImgL.value = def.imageBig||"";
-    extraLines = JSON.parse(JSON.stringify(def.extraLines||[]));
-    renderExtraLines();
-    heading3.innerText = "Edit Item";
-    modal.style.display = "block";
+  // Element references
+  const listWrap     = document.getElementById('item-definitions-list');
+  const form         = document.getElementById('item-definition-form');
+  const defName      = document.getElementById('def-name');
+  const defType      = document.getElementById('def-type');
+  const defRarity    = document.getElementById('def-rarity');
+  const defDescription = document.getElementById('def-description');
+  const defImageSmall  = document.getElementById('def-image-small');
+  const defImageBig    = document.getElementById('def-image-big');
+  const defExtraLinesContainer = document.getElementById('def-extra-lines');
+  const addExtraLineBtn = document.getElementById('add-def-extra-line');
+  const defSearch       = document.getElementById('def-search');
+  const filterNameBtn   = document.getElementById('filter-name');
+  const filterTypeBtn   = document.getElementById('filter-type');
+  const filterRarityBtn = document.getElementById('filter-rarity');
+  const heading3        = document.getElementById('def-form-subheading');
+
+  // State
+  let extraLines = [];
+  let activeDef  = null;
+
+  // Color pickers via UI Kit
+  const pickrName        = createColorPicker('.pickr-def-name', { defaultColor: '#E5E6E8', theme: 'nano' });
+  const pickrType        = createColorPicker('.pickr-def-type', { defaultColor: '#E5E6E8', theme: 'nano' });
+  const pickrRarity      = createColorPicker('.pickr-def-rarity', { defaultColor: '#E5E6E8', theme: 'nano' });
+  const pickrDescription = createColorPicker('.pickr-def-description', { defaultColor: '#E5E6E8', theme: 'nano' });
+
+  /**
+   * Load definitions from Firestore and render list
+   */
+  async function loadAndRender() {
+    listWrap.innerHTML = '';
+    const defs = await loadItemDefinitions(db);
+    defs.forEach(def => renderDefinitionEntry(def));
   }
-  async function deleteDef(id){
-    if(!confirm("Delete this item definition?")) return;
-    await deleteItemDefinition(db,id);
-    await loadAndRender();
-    onDefinitionsChanged();
+
+  /**
+   * Create a list entry for an item definition
+   */
+  function renderDefinitionEntry(def) {
+    const row = document.createElement('div');
+    row.className = 'item-def-entry';
+    // Zebra striping
+    if (listWrap.children.length % 2 !== 0) row.style.background = '#1f1f1f';
+
+    // Content
+    const rareCap = def.rarity?.charAt(0).toUpperCase() + def.rarity?.slice(1);
+    const content = document.createElement('div');
+    content.innerHTML = `
+      <span class="def-name"><strong>${def.name}</strong></span>
+      (<span class="def-type">${def.itemType||def.type}</span>) –
+      <span class="def-rarity">${rareCap||''}</span><br/>
+      <em>${def.description||''}</em>
+    `;
+    row.appendChild(content);
+
+    // Controls container
+    const ctrl = document.createElement('div');
+    ctrl.className = 'item-def-entry__controls';
+
+    // Filter toggle
+    const filterBtn = document.createElement('button');
+    filterBtn.textContent = def.showInFilters ? 'Hide' : 'Show';
+    filterBtn.addEventListener('click', async () => {
+      def.showInFilters = !def.showInFilters;
+      await updateItemDefinition(db, def);
+      onDefinitionsChanged();
+      loadAndRender();
+    });
+    ctrl.appendChild(filterBtn);
+
+    // Edit
+    const editBtn = document.createElement('button');
+    editBtn.textContent = 'Edit';
+    editBtn.addEventListener('click', () => openEdit(def));
+    ctrl.appendChild(editBtn);
+
+    // Delete
+    const delBtn = document.createElement('button');
+    delBtn.textContent = 'Delete';
+    delBtn.addEventListener('click', async () => {
+      if (confirm('Delete this definition?')) {
+        await deleteItemDefinition(db, def.id);
+        onDefinitionsChanged();
+        loadAndRender();
+      }
+    });
+    ctrl.appendChild(delBtn);
+
+    row.appendChild(ctrl);
+    listWrap.appendChild(row);
   }
-  function copyDef(def){
-    resetForm();
-    heading3.innerText = "Add Item";
-    defName.value = def.name;
-    defType.value = def.type;
-    defRarity.value = def.rarity;
-    defDescription.value = def.description||"";
-    defImgS.value = def.imageSmall||"";
-    defImgL.value = def.imageBig||"";
-    extraLines = JSON.parse(JSON.stringify(def.extraLines||[]));
-    renderExtraLines();
-    modal.style.display = "block";
-  }
-  function resetForm(){
+
+  /**
+   * Populate the form for creating or editing
+   */
+  function resetForm() {
     form.reset();
     extraLines = [];
-    renderExtraLines();
-    [pkName,pkType,pkRare,pkDesc].forEach(p=>p.setColor("#E5E6E8"));
-    heading3.innerText = "Add Item";
+    activeDef = null;
+    heading3.textContent = 'Create New Definition';
+    clearExtraLines();
   }
 
-  // Show/hide wiring
-  manageBtn.addEventListener("click", () => {
-    console.log("🖱️ Manage Items clicked");
-    modal.style.display = "block";
+  /**
+   * Clear and destroy color pickers and list entries
+   */
+  function cleanupForm() {
+    form.reset();
+    extraLines = [];
+    pickrName.destroyAndRemove();
+    pickrType.destroyAndRemove();
+    pickrRarity.destroyAndRemove();
+    pickrDescription.destroyAndRemove();
+    listWrap.innerHTML = '';
+  }
+
+  /**
+   * Render extra info line inputs
+   */
+  function clearExtraLines() {
+    defExtraLinesContainer.innerHTML = '';
+  }
+
+  function renderExtraLines() {
+    clearExtraLines();
+    extraLines.forEach((line, idx) => {
+      const row = document.createElement('div');
+      row.className = 'def-extra-line';
+      const txt = document.createElement('input');
+      txt.value = line.text;
+      txt.addEventListener('input', e => extraLines[idx].text = e.target.value);
+      const clr = createColorPicker(`.extra-line-color-${idx}`, { defaultColor: line.color });
+      const rm  = document.createElement('button');
+      rm.textContent = '×';
+      rm.addEventListener('click', () => { extraLines.splice(idx,1); renderExtraLines(); });
+      row.append(txt, clr._root || clr.getRoot().root, rm);
+      defExtraLinesContainer.appendChild(row);
+    });
+  }
+
+  addExtraLineBtn.addEventListener('click', () => {
+    extraLines.push({ text: '', color: '#E5E6E8' });
+    renderExtraLines();
+  });
+
+  /**
+   * Open modal for editing a definition
+   */
+  function openEdit(def) {
+    activeDef = def;
+    heading3.textContent = `Edit: ${def.name}`;
+    defName.value = def.name;
+    defType.value = def.type;
+    defRarity.value = def.rarity;
+    defDescription.value = def.description;
+    defImageSmall.value = def.imageSmall;
+    defImageBig.value = def.imageBig;
+    extraLines = JSON.parse(JSON.stringify(def.extraLines || []));
+    pickrName.setColor(def.nameColor);
+    pickrType.setColor(def.itemTypeColor || def.typeColor);
+    pickrRarity.setColor(def.rarityColor);
+    pickrDescription.setColor(def.descriptionColor);
+    renderExtraLines();
+    modal.open();
+  }
+
+  // Handle form submission
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const payload = {
+      id:           activeDef?.id,
+      name:         defName.value.trim() || 'Unnamed',
+      type:         defType.value,
+      rarity:       defRarity.value,
+      description:  defDescription.value,
+      imageSmall:   defImageSmall.value,
+      imageBig:     defImageBig.value,
+      extraLines:   JSON.parse(JSON.stringify(extraLines)),
+      nameColor:    pickrName.getColor().toHEXA().toString(),
+      itemTypeColor: pickrType.getColor().toHEXA().toString(),
+      rarityColor:  pickrRarity.getColor().toHEXA().toString(),
+      descriptionColor: pickrDescription.getColor().toHEXA().toString(),
+      showInFilters: activeDef?.showInFilters || false
+    };
+
+    if (activeDef?.id) {
+      await updateItemDefinition(db, payload);
+    } else {
+      await addItemDefinition(db, payload);
+    }
+    onDefinitionsChanged();
     loadAndRender();
-  });
-  closeBtn.addEventListener("click", () => modal.style.display="none");
-  defCancelBtn.addEventListener("click", () => modal.style.display="none");
-  window.addEventListener("click", e => {
-    if(e.target === modal) modal.style.display="none";
+    resetForm();
   });
 
-  // Initial render
-  loadAndRender();
-
-  return { openModal:()=>modal.style.display="block", closeModal:()=>modal.style.display="none", refresh: loadAndRender };
+  return { openModal: modal.open, closeModal: modal.close, refresh: loadAndRender };
 }
+
+// @version: 2

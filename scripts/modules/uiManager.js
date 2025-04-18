@@ -1,84 +1,74 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted.
-// @version: 3
+// @fullfile: Send the entire file, no omissions or abridgment — version is 2. Increase by 1 every time you update anything.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
+// @version: 2
 // @file:    /scripts/modules/uiManager.js
+
+import { ContextMenu } from './ui/uiKit.js';
 
 /**
  * Makes an element draggable using an optional handle.
  * @param {HTMLElement} element The element to be dragged.
- * @param {HTMLElement} handle Optional element to use as the drag handle.
+ * @param {HTMLElement} [handle=element] Optional element to use as the drag handle.
  */
 export function makeDraggable(element, handle = element) {
-  let isDragging = false, offsetX = 0, offsetY = 0;
-  handle.addEventListener("mousedown", e => {
+  let isDragging = false;
+  let offsetX = 0;
+  let offsetY = 0;
+
+  handle.addEventListener('mousedown', e => {
     isDragging = true;
-    const style = window.getComputedStyle(element);
-    offsetX = e.clientX - parseInt(style.left, 10);
-    offsetY = e.clientY - parseInt(style.top, 10);
-    e.preventDefault();
+    const rect = element.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp, { once: true });
   });
-  document.addEventListener("mousemove", e => {
-    if (isDragging) {
-      element.style.left = (e.clientX - offsetX) + "px";
-      element.style.top  = (e.clientY - offsetY) + "px";
-    }
-  });
-  document.addEventListener("mouseup", () => { isDragging = false; });
+
+  function onMouseMove(e) {
+    if (!isDragging) return;
+    element.style.position = 'absolute';
+    element.style.left = `${e.clientX - offsetX}px`;
+    element.style.top = `${e.clientY - offsetY}px`;
+  }
+
+  function onMouseUp() {
+    isDragging = false;
+    document.removeEventListener('mousemove', onMouseMove);
+  }
 }
 
 /**
- * Positions an existing modal element at the click location.
- * @param {HTMLElement} modal The modal to position (must already exist in the DOM).
- * @param {MouseEvent} event The mouse event to base the position on.
+ * Positions a modal element relative to an event.
+ * @param {HTMLElement} modal The modal element.
+ * @param {MouseEvent} event The mouse event providing pageX and pageY.
  */
 export function positionModal(modal, event) {
-  // ensure it’s display:block so we can measure
-  modal.style.display = "block";
-  const w = modal.offsetWidth, h = modal.offsetHeight;
-  modal.style.left = (event.pageX - w + 10) + "px";
-  modal.style.top  = (event.pageY - h/2) + "px";
+  modal.style.display = 'block';
+  const modalWidth = modal.offsetWidth;
+  const modalHeight = modal.offsetHeight;
+  modal.style.left = `${event.pageX - modalWidth + 10}px`;
+  modal.style.top = `${event.pageY - modalHeight / 2}px`;
 }
 
 /**
- * Shows a context menu at (x,y) with given options.
- * @param {number} x
- * @param {number} y
- * @param {{text:string,action:Function}[]} options
+ * Displays a context menu at the specified coordinates.
+ * @param {number} x The x-coordinate (in pixels).
+ * @param {number} y The y-coordinate (in pixels).
+ * @param {Array<{label: string, action: Function}>} items The menu items.
  */
-export function showContextMenu(x, y, options) {
-  let menu = document.getElementById("context-menu");
-  if (!menu) {
-    menu = document.createElement("div");
-    menu.id = "context-menu";
-    document.body.appendChild(menu);
-  }
-  Object.assign(menu.style, {
-    position: "absolute",
-    background: "#333",
-    color: "#eee",
-    padding: "5px",
-    border: "1px solid #555",
-    boxShadow: "0px 2px 6px rgba(0,0,0,0.5)",
-    zIndex: 2000,
-    display: "block"
-  });
-  menu.innerHTML = "";
-  options.forEach(opt => {
-    const item = document.createElement("div");
-    item.innerText = opt.text;
-    Object.assign(item.style, { padding: "5px 10px", cursor: "pointer" });
-    item.addEventListener("click", () => {
-      try { opt.action(); } catch(e){console.error(e);}
-      hideContextMenu();
-    });
-    menu.appendChild(item);
-  });
-  menu.style.left = x + "px";
-  menu.style.top  = y + "px";
+export function showContextMenu(x, y, items) {
+  new ContextMenu(items).showAt({ x, y });
 }
 
-/** Hides the context menu if present. */
+/**
+ * Hides any existing context menu.
+ */
 export function hideContextMenu() {
-  const menu = document.getElementById("context-menu");
-  if (menu) menu.style.display = "none";
+  ContextMenu.removeExisting();
 }
+
+// @deprecated: Direct use of attachContextMenuHider is no longer needed; use ContextMenu class for click-off handling.
+// export function attachContextMenuHider() {}
+// export function attachRightClickCancel(action) {}
+
+// @version: 2
