@@ -365,6 +365,30 @@ body, html {
   resize: vertical;
 }
 
+#predefined-item-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+#predefined-item-container label {
+  width: 90px;
+  text-align: left;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+#predefined-item-container select {
+  background: #303030 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
+  padding: 4px 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+
 .color-btn {
   width: 32px;
   height: 32px;
