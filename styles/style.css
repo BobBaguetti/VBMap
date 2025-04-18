@@ -285,14 +285,6 @@ body, html {
 .field-row textarea {
   resize: vertical;
 }
-/* Force dark styling on all edit modal text inputs */
-#edit-modal input[type="text"],
-#edit-modal select,
-#edit-modal textarea {
-  background: #303030;
-  color: #e0e0e0;
-  border: 1px solid #555;
-}
 .color-btn {
   width: 32px;
   height: 32px;
