@@ -1,9 +1,9 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted.
-// @version: 2
+// @version: 3
 // @file:    /scripts/modules/markerForm.js
 
-import { makeDraggable } from "./uiManager.js";
+import { makeDraggable, positionModal } from "./uiManager.js";
 import { Modal } from "./uiKit/modalManager.js";
 import { pickerManager } from "./uiKit/pickerManager.js";
 import {
@@ -13,10 +13,10 @@ import {
 
 export function initMarkerForm(db) {
   /* ---------- DOM elements --------- */
-  const modalEl  = document.getElementById("edit-modal");
-  const grip     = document.getElementById("edit-modal-handle");
-  const form     = document.getElementById("edit-form");
-  const btnCancel= document.getElementById("edit-cancel");
+  const modalEl   = document.getElementById("edit-modal");
+  const grip      = document.getElementById("edit-modal-handle");
+  const form      = document.getElementById("edit-form");
+  const btnCancel = document.getElementById("edit-cancel");
 
   makeDraggable(modalEl, grip);
   const editModal = new Modal(modalEl);
@@ -71,9 +71,8 @@ export function initMarkerForm(db) {
       const clr = document.createElement("div");
       clr.className = "color-btn";
       clr.style.marginLeft = "5px";
-      wrapLines.appendChild(row);
-      row.append(txt, clr);
 
+      row.append(txt, clr);
       if (!readOnly) {
         const rm = document.createElement("button");
         rm.textContent = "×";
@@ -87,10 +86,14 @@ export function initMarkerForm(db) {
         row.append(rm);
       }
 
+      wrapLines.appendChild(row);
+
       // attach a picker to this new color-btn
       const p = pickerManager.create(clr);
-      if (p) p.setColor(ln.color || "#E5E6E8")
-        .on("change", color => { lines[i].color = color.toHEXA().toString(); });
+      if (p) {
+        p.setColor(ln.color || "#E5E6E8")
+         .on("change", color => { lines[i].color = color.toHEXA().toString(); });
+      }
     });
   }
 
@@ -127,7 +130,6 @@ export function initMarkerForm(db) {
       fldName, fldRare, fldIType,
       fldDescIt, fldImgS, fldImgL, fldVid
     ].forEach(e => setRO(e, on));
-    //[disable pickers]
   }
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
@@ -249,6 +251,7 @@ export function initMarkerForm(db) {
   let submitCB;
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
+    positionModal(modalEl, evt);
     editModal.open();
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
@@ -262,6 +265,7 @@ export function initMarkerForm(db) {
 
   function openCreate(coords, defaultType, evt, onCreate) {
     populateForm({ type: defaultType || "Item" });
+    positionModal(modalEl, evt);
     editModal.open();
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
@@ -280,5 +284,3 @@ export function initMarkerForm(db) {
     refreshPredefinedItems: refreshItems
   };
 }
-
-// @version: 2

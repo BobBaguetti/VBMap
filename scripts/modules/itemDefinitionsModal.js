@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted.
-// @version: 2
+// @version: 3
 // @file:    /scripts/modules/itemDefinitionsModal.js
 
 import {
@@ -192,7 +192,6 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       p.setColor(def[p._root._config.el.replace('#pickr-def-','')+'Color'] || "#E5E6E8")
     );
     heading3.innerText = "Edit Item";
-    modal.open();
   }
   async function deleteDef(id) {
     if (!confirm("Delete this item definition?")) return;
@@ -211,24 +210,18 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     defImgL.value = def.imageBig || "";
     extraLines = JSON.parse(JSON.stringify(def.extraLines || []));
     renderExtraLines();
-    modal.open();
-  }
-
-  function resetForm() {
-    form.reset();
-    extraLines = [];
-    renderExtraLines();
-    [pkName, pkType, pkRare, pkDesc].forEach(p => p.setColor("#E5E6E8"));
-    heading3.innerText = "Add Item";
   }
 
   /* ---------- Modal wiring ---------- */
-  manageBtn.addEventListener("click", () => modal.open());
+  manageBtn.addEventListener("click", () => {
+    console.log("🖱️ Manage Items clicked");
+    modal.open();
+  });
   closeBtn.addEventListener("click", () => modal.close());
   defCancel.addEventListener("click", () => modal.close());
 
   /* ---------- Initial load ---------- */
+  loadAndRender();
+
   return { openModal: () => modal.open(), closeModal: () => modal.close(), refresh: loadAndRender };
 }
-
-// @version: 2
