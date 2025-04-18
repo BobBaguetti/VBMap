@@ -112,6 +112,7 @@ export function initMarkerForm(db) {
 
       const clr = document.createElement("div");
       clr.className = "color-btn";
+      clr.id = `extra-color-${i}`; // ✅ assign a unique ID
       clr.style.marginLeft = "5px";
       clr.style.pointerEvents = readOnly ? "none" : "auto";
       clr.style.opacity = readOnly ? 0.5 : 1;
@@ -135,7 +136,7 @@ export function initMarkerForm(db) {
       wrapLines.appendChild(row);
 
       // Only create a Pickr if container exists
-      mkPicker(`#${clr.id || ''}`)?.setColor(ln.color || "#E5E6E8");
+      mkPicker(`#${clr.id}`)?.setColor(ln.color || "#E5E6E8");
     });
   }
   btnAddLine.onclick = () => {
