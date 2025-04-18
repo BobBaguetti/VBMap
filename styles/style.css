@@ -1,6 +1,6 @@
 /* @fullfile: Send the entire file, no omissions or abridgments. */
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
-/* @version: 3   The current file version is 3. Increase by 1 every time you update anything. */
+/* @version: 4   The current file version is 4. Increase by 1 every time you update anything. */
 /* @file:    /styles/style.css */
 
 /* ============================
@@ -14,25 +14,24 @@
 
 /* Consistent input styling for dark forms */
 .ui-input {
-  background: #303030; /* Consistent background for inputs */
-  color: #e5e6e8;
-  border: 1px solid #555;
+  background: #303030 !important; /* Dark background for input fields */
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
   padding: 4px 6px;
   font-size: 14px;
   box-sizing: border-box;
 }
 
-/* Consistent button appearance for modals & actions */
 .ui-button {
-  background: #333;
-  color: #e5e6e8;
-  border: 1px solid #555;
+  background: #333 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
   border-radius: 3px;
   cursor: pointer;
 }
 
 .ui-button:hover {
-  background: #444;
+  background: #444 !important;
 }
 
 /* Shared scrollbar styling for lists, textareas, etc. */
@@ -56,16 +55,6 @@
   color: #e0e0e0;
   border: 1px solid #555;
   padding: 20px;
-}
-
-/* Modal header layout */
-.ui-modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0 0 4px 0;
-  margin-bottom: 12px;
-  border-bottom: 2px solid #444;
 }
 
 /* ============================
@@ -156,27 +145,15 @@ body, html {
   display: none;
 }
 
-/* Search bar and button in sidebar */
+/* Input fields in sidebar */
 #search-bar,
 #manage-item-definitions {
   width: 100%;
   box-sizing: border-box;
-}
-
-#search-bar {
-  padding: 5px 8px;
-}
-
-#manage-item-definitions {
-  padding: 8px;
-}
-
-#search-bar,
-#manage-item-definitions {
-  background: #303030;
-  color: #e5e6e8;
-  border: 1px solid #555;
-  font-size: 14px;
+  background: #303030 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
+  font-size: 14px !important;
 }
 
 /* Hide stray elements */
@@ -223,22 +200,6 @@ body, html {
   width: 320px;
   color: #e0e0e0;
   border: none !important;
-}
-
-/* Popup Close Button */
-.popup-close-btn {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  background: transparent;
-  border: none;
-  color: #e0e0e0;
-  font-size: 18px;
-  cursor: pointer;
-}
-
-.leaflet-popup-close-button {
-  display: none !important;
 }
 
 /* Marker Style */
@@ -311,9 +272,9 @@ body, html {
 
 /* Video button */
 .more-info-btn {
-  background: #333;
-  color: #e5e6e8;
-  border: 1px solid #555;
+  background: #333 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
   border-radius: 3px;
   cursor: pointer;
   padding: 5px 10px;
@@ -325,13 +286,13 @@ body, html {
   font-family: Arial, sans-serif;
   font-size: 14px;
   border-radius: 3px;
-  background: #333;
-  color: #eee;
-  border: 1px solid #555;
+  background: #333 !important;
+  color: #eee !important;
+  border: 1px solid #555 !important;
 }
 
 #context-menu div:hover {
-  background-color: #555;
+  background-color: #555 !important;
 }
 
 /* Edit Modal */
@@ -341,9 +302,9 @@ body, html {
   width: 450px;
   z-index: 2100;
   cursor: default;
-  background-color: #222;
-  color: #e0e0e0;
-  border: 1px solid #555;
+  background-color: #222 !important;
+  color: #e0e0e0 !important;
+  border: 1px solid #555 !important;
   padding: 20px;
 }
 
@@ -370,9 +331,9 @@ body, html {
 .field-row input[type="text"],
 .field-row select,
 .field-row textarea {
-  background: #303030;
-  color: #e5e6e8;
-  border: 1px solid #555;
+  background: #303030 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
   padding: 4px 6px;
   font-size: 14px;
   box-sizing: border-box;
@@ -464,10 +425,10 @@ body, html {
 
 /* Search inside modal */
 #def-search {
-  background: #303030;
-  color: #e5e6e8;
-  border: 1px solid #555;
-  padding: 4px 8px;
+  background: #303030 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
+  padding: 4px 8px !important;
 }
 
 /* Item Definition List */
@@ -509,10 +470,11 @@ body, html {
 
 .item-action-buttons button {
   padding: 6px 12px;
-  background: #333;
-  color: #e5e6e8;
-  border: 1px solid #555;
-  border-radius: 3px;
+  background: #333 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
+  border-radius: 3px !important;
+  cursor: pointer !important;
 }
 
 /* Modal Separator */
@@ -525,12 +487,12 @@ body, html {
 /* Save / Cancel Buttons */
 #item-definition-form button[type="submit"],
 #item-definition-form button[type="button"] {
-  background: #333;
-  color: #e5e6e8;
-  border: 1px solid #555;
-  border-radius: 3px;
-  cursor: pointer;
-  padding: 6px 12px;
+  background: #333 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
+  border-radius: 3px !important;
+  cursor: pointer !important;
+  padding: 6px 12px !important;
 }
 
-/* @version: 3 */
+/* @version: 4 */
