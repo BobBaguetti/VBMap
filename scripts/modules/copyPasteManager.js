@@ -4,7 +4,7 @@
 // @file:    /scripts/modules/copyPasteManager.js
 
 import { ContextMenu } from './ui/uiKit.js';
-import L from 'leaflet';
+import * as L from 'leaflet';
 import { createCustomIcon } from './map/markerManager.js';
 
 /**
