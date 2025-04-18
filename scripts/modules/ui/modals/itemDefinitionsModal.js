@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
+// @version: 4   The current file version is 4. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -121,8 +121,12 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     listWrap.innerHTML = "";
     let defs = await loadItemDefinitions(db);
 
-    // Sort so most recently added/edited items appear first
-    defs.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+    // Sort so most recently added/edited items appear first (based on updatedAt or createdAt)
+    defs.sort((a, b) => {
+      const aTime = a.updatedAt?.toMillis?.() || a.updatedAt || a.createdAt?.toMillis?.() || 0;
+      const bTime = b.updatedAt?.toMillis?.() || b.updatedAt || b.createdAt?.toMillis?.() || 0;
+      return bTime - aTime;
+    });
 
     defs.forEach(def => {
       const row = document.createElement("div");
