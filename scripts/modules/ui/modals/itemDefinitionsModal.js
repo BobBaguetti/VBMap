@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -74,19 +74,7 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       const clr = document.createElement("div");
       clr.className = "color-btn";
       clr.style.marginLeft = "5px";
-      clr.id = `extra-line-color-${i}`; // ✅ Unique ID per line
-      try {
-        Pickr.create({
-          el: `#${clr.id}`, theme: "nano", default: line.color || "#E5E6E8",
-          components: {
-            preview: true, opacity: true, hue: true,
-            interaction: { hex: true, rgba: true, input: true, save: true }
-          }
-        })
-        .on("change", c => { extraLines[i].color = c.toHEXA().toString(); })
-        .on("save", (_i, p) => p.hide())
-        .setColor(line.color || "#E5E6E8");
-      } catch {}
+      clr.id = `extra-line-color-${i}`;
 
       const rm = document.createElement("button");
       rm.type = "button";
@@ -99,6 +87,28 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
 
       row.append(txt, clr, rm);
       defExtraLinesContainer.appendChild(row);
+
+      try {
+        const picker = Pickr.create({
+          el: `#${clr.id}`,
+          theme: "nano",
+          default: line.color || "#E5E6E8",
+          components: {
+            preview: true,
+            opacity: true,
+            hue: true,
+            interaction: { hex: true, rgba: true, input: true, save: true }
+          }
+        });
+        picker
+        .on("init", (instance) => {
+          instance.setColor(line.color || "#E5E6E8");
+        })
+        .on("change", (c) => {
+          extraLines[i].color = c.toHEXA().toString();
+        })
+          .on("save", (_i, p) => p.hide());
+      } catch {}
     });
   }
   addExtraLineBtn.addEventListener("click", () => {
@@ -282,4 +292,4 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   return { openModal, closeModal, refresh: loadAndRender };
 }
 
-// @version: 1
+// @version: 2
