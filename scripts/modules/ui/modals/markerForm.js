@@ -15,6 +15,7 @@ export function initMarkerForm(db) {
   const modal     = document.getElementById("edit-modal");
   const grip      = document.getElementById("edit-modal-handle");
   const form      = document.getElementById("edit-form");
+  const btnSave   = form.querySelector('button[type="submit"]');
   const btnCancel = document.getElementById("edit-cancel");
 
   const fldName   = document.getElementById("edit-name");
@@ -41,6 +42,7 @@ export function initMarkerForm(db) {
   grip.classList.add("ui-modal-header");
   btnCancel.classList.add("ui-button");
   btnAddLine.classList.add("ui-button");
+  btnSave.classList.add("ui-button"); //
   [
     fldName,
     fldType,
