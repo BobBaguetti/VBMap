@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 4   The current file version is 4. Increase by 1 every time you update anything.
+// @version: 5   The current file version is 5. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/markerForm.js
 
 import { makeDraggable, positionModal } from "../uiManager.js";
@@ -182,6 +182,7 @@ export function initMarkerForm(db) {
     el.style.cursor = on ? "not-allowed" : "text";
     if (el.tagName === "SELECT") el.style.pointerEvents = on ? "none" : "auto";
   }
+
   function lockItemFields(on) {
     ALL_FIELDS.forEach(e => setRO(e, on));
     pickrs.forEach(p => {
@@ -207,6 +208,7 @@ export function initMarkerForm(db) {
     if (!isItem) {
       ddPre.value = "";
       customMode = false;
+      wrapLines.innerHTML = ""; // Clear extra lines for non-Item marker types
     }
   }
 
@@ -378,4 +380,4 @@ export function initMarkerForm(db) {
   };
 }
 
-// @version: 4
+// @version: 5
