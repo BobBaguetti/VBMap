@@ -342,6 +342,23 @@ body, html {
   margin-bottom: 8px;
 }
 
+#predefined-item-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+#predefined-item-container label {
+  width: 90px;
+  text-align: left;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+#predefined-item-dropdown {
+  flex-grow: 1;
+}
+
 .field-row label {
   width: 90px;
   text-align: left;
