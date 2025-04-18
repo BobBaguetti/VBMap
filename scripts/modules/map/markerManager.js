@@ -78,7 +78,7 @@ export function createPopupContent(m) {
 
   return `
     <div class="custom-popup">
-      <button class="popup-close-btn" onclick="document.querySelector('.leaflet-popup-close-button')?.click()">
+      <button class="popup-close-btn" onclick="this.closest('.leaflet-popup')._popup?.remove()">
         ×
       </button>
       <div class="popup-header" style="display:flex; gap:5px;">
@@ -107,6 +107,16 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
     className: "custom-popup-wrapper",
     maxWidth: 350,
     closeButton: false
+  });
+  
+  markerObj.on("popupopen", () => {
+    const popupEl = document.querySelector(".custom-popup");
+    const closeBtn = popupEl?.querySelector(".popup-close-btn");
+    if (closeBtn) {
+      closeBtn.addEventListener("click", () => {
+        markerObj.closePopup();
+      });
+    }
   });
 
   layers[m.type].addLayer(markerObj);

@@ -120,13 +120,28 @@ body, html {
 }
 
 /* Popup Styling */
+.leaflet-popup {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
 .leaflet-popup-content-wrapper {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
-.leaflet-popup-tip-container {
-  display: none;
+.leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  width: auto !important;
+}
+.leaflet-popup-tip-container,
+.leaflet-popup-tip {
+  display: none !important;
 }
 .custom-popup-wrapper {
   background: transparent !important;
