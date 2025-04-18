@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted.
+// @version: 2
 // @file:    /scripts/modules/itemDefinitionsModal.js
 
 import {
@@ -9,57 +9,45 @@ import {
   updateItemDefinition,
   deleteItemDefinition
 } from "./itemDefinitionsService.js";
+import { Modal } from "./uiKit/modalManager.js";
+import { pickerManager } from "./uiKit/pickerManager.js";
 
 /**
  * Initialise the Manage Items modal.
- * @param {firebase.firestore.Firestore} db
- * @param {Function} onDefinitionsChanged
  */
 export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
-  // DOM handles
-  const manageBtn    = document.getElementById("manage-item-definitions");
-  const modal        = document.getElementById("item-definitions-modal");
-  const closeBtn     = document.getElementById("close-item-definitions");
-  const listWrap     = document.getElementById("item-definitions-list");
-  const form         = document.getElementById("item-definition-form");
-  const defName      = document.getElementById("def-name");
-  const defType      = document.getElementById("def-type");
-  const defRarity    = document.getElementById("def-rarity");
-  const defDescription = document.getElementById("def-description");
-  const defImageSmall  = document.getElementById("def-image-small");
-  const defImageBig    = document.getElementById("def-image-big");
-  const defExtraLinesContainer = document.getElementById("def-extra-lines");
-  const addExtraLineBtn = document.getElementById("add-def-extra-line");
-  const defSearch       = document.getElementById("def-search");
-  const filterNameBtn   = document.getElementById("filter-name");
-  const filterTypeBtn   = document.getElementById("filter-type");
-  const filterRarityBtn = document.getElementById("filter-rarity");
-  const heading3        = document.getElementById("def-form-subheading");
-  const defCancelBtn    = document.getElementById("def-cancel");
+  const manageBtn = document.getElementById("manage-item-definitions");
+  const modalEl   = document.getElementById("item-definitions-modal");
+  const closeBtn  = document.getElementById("close-item-definitions");
+  const listWrap  = document.getElementById("item-definitions-list");
+  const form      = document.getElementById("item-definition-form");
+  const defName   = document.getElementById("def-name");
+  const defType   = document.getElementById("def-type");
+  const defRarity = document.getElementById("def-rarity");
+  const defDesc   = document.getElementById("def-description");
+  const defImgS   = document.getElementById("def-image-small");
+  const defImgL   = document.getElementById("def-image-big");
+  const defExtra  = document.getElementById("def-extra-lines");
+  const addExtra  = document.getElementById("add-def-extra-line");
+  const defSearch = document.getElementById("def-search");
+  const filterName   = document.getElementById("filter-name");
+  const filterType   = document.getElementById("filter-type");
+  const filterRarity = document.getElementById("filter-rarity");
+  const heading3     = document.getElementById("def-form-subheading");
+  const defCancel    = document.getElementById("def-cancel");
 
-  // Utility: create or reuse a Pickr instance
-  function createPicker(selector) {
-    const el = document.querySelector(selector);
-    if (!el) return { on: ()=>{}, setColor: ()=>{}, getColor: ()=>({ toHEXA: ()=>["#E5E6E8"], toString: ()=>"#E5E6E8" }) };
-    return Pickr.create({
-      el: selector, theme: "nano", default: "#E5E6E8",
-      components: {
-        preview: true, opacity: true, hue: true,
-        interaction: { hex: true, rgba: true, input: true, save: true }
-      }
-    }).on("save", (_i, picker) => picker.hide());
-  }
-  if (!window.pickrDefName) {
-    window.pickrDefName        = createPicker("#pickr-def-name");
-    window.pickrDefType        = createPicker("#pickr-def-type");
-    window.pickrDefRarity      = createPicker("#pickr-def-rarity");
-    window.pickrDefDescription = createPicker("#pickr-def-description");
-  }
+  const modal = new Modal(modalEl);
 
-  // Manage extra-info lines
+  /* ---------- Pickers ---------- */
+  const pkName = pickerManager.create("#pickr-def-name");
+  const pkType = pickerManager.create("#pickr-def-type");
+  const pkRare = pickerManager.create("#pickr-def-rarity");
+  const pkDesc = pickerManager.create("#pickr-def-description");
+
+  /* ---------- Extra info lines ---------- */
   let extraLines = [];
   function renderExtraLines() {
-    defExtraLinesContainer.innerHTML = "";
+    defExtra.innerHTML = "";
     extraLines.forEach((line, i) => {
       const row = document.createElement("div");
       row.className = "field-row";
@@ -69,23 +57,17 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       txt.type = "text";
       txt.value = line.text;
       txt.style.cssText = "width:100%; background:#303030; color:#e0e0e0; padding:4px 6px; border:1px solid #555;";
-      txt.addEventListener("input", () => { extraLines[i].text = txt.value; });
+      txt.addEventListener("input", () => extraLines[i].text = txt.value);
 
       const clr = document.createElement("div");
       clr.className = "color-btn";
       clr.style.marginLeft = "5px";
-      try {
-        Pickr.create({
-          el: clr, theme: "nano", default: line.color || "#E5E6E8",
-          components: {
-            preview: true, opacity: true, hue: true,
-            interaction: { hex: true, rgba: true, input: true, save: true }
-          }
-        })
-        .on("change", c => { extraLines[i].color = c.toHEXA().toString(); })
-        .on("save", (_i, p) => p.hide())
-        .setColor(line.color || "#E5E6E8");
-      } catch {}
+
+      const picker = pickerManager.create(clr);
+      if (picker) {
+        picker.setColor(line.color || "#E5E6E8")
+          .on("change", c => extraLines[i].color = c.toHEXA().toString());
+      }
 
       const rm = document.createElement("button");
       rm.type = "button";
@@ -97,24 +79,23 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       });
 
       row.append(txt, clr, rm);
-      defExtraLinesContainer.appendChild(row);
+      defExtra.appendChild(row);
     });
   }
-  addExtraLineBtn.addEventListener("click", () => {
+  addExtra.addEventListener("click", () => {
     extraLines.push({ text: "", color: "#E5E6E8" });
     renderExtraLines();
   });
 
-  // Render the list of definitions
+  /* ---------- List rendering & filters ---------- */
+  const flags = { name:false, type:false, rarity:false };
   async function loadAndRender() {
     listWrap.innerHTML = "";
     const defs = await loadItemDefinitions(db);
     defs.forEach(def => {
       const row = document.createElement("div");
       row.className = "item-def-entry";
-
-      // Name, type, rarity (capitalized), description
-      const rare = def.rarity ? def.rarity.charAt(0).toUpperCase() + def.rarity.slice(1) : "";
+      const rare = def.rarity ? def.rarity[0].toUpperCase() + def.rarity.slice(1) : "";
       const content = document.createElement("div");
       content.innerHTML = `
         <span class="def-name"><strong>${def.name}</strong></span>
@@ -124,13 +105,9 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       `;
       row.appendChild(content);
 
-      // Add Filter toggle
       const tf = document.createElement("div");
       tf.className = "add-filter-toggle";
-      tf.innerHTML = `
-        <label><input type="checkbox" data-show-filter="${def.id}"
-          ${def.showInFilters?"checked":""}/> Add Filter</label>
-      `;
+      tf.innerHTML = `<label><input type="checkbox" data-show-filter="${def.id}" ${def.showInFilters?"checked":""}/> Add Filter</label>`;
       tf.querySelector("input").addEventListener("change", async e => {
         def.showInFilters = e.target.checked;
         await updateItemDefinition(db, { id: def.id, showInFilters: def.showInFilters });
@@ -138,14 +115,9 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       });
       row.appendChild(tf);
 
-      // Edit/Delete/Copy buttons
       const btns = document.createElement("div");
       btns.className = "item-action-buttons";
-      btns.innerHTML = `
-        <button data-edit="${def.id}">Edit</button>
-        <button data-delete="${def.id}">Delete</button>
-        <button data-copy="${def.id}">Copy</button>
-      `;
+      btns.innerHTML = `<button data-edit="${def.id}">Edit</button><button data-delete="${def.id}">Delete</button><button data-copy="${def.id}">Copy</button>`;
       btns.querySelector("[data-edit]").addEventListener("click", () => openEdit(def));
       btns.querySelector("[data-delete]").addEventListener("click", () => deleteDef(def.id));
       btns.querySelector("[data-copy]").addEventListener("click", () => copyDef(def));
@@ -154,20 +126,15 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       listWrap.appendChild(row);
     });
   }
-
-  // Search + tri-toggle logic
-  const flags = { name:false, type:false, rarity:false };
   function applyFilters() {
-    const q = (defSearch.value||"").toLowerCase();
+    const q = defSearch.value.toLowerCase();
     listWrap.childNodes.forEach(entry => {
       const name   = entry.querySelector(".def-name").innerText.toLowerCase();
       const type   = entry.querySelector(".def-type").innerText.toLowerCase();
       const rarity = entry.querySelector(".def-rarity").innerText.toLowerCase();
-      // Always filter by search text first
-      let show = q 
+      let show = q
         ? (name.includes(q) || type.includes(q) || rarity.includes(q))
         : true;
-      // If no search text, then apply tri-toggle flags:
       if (!q) {
         if (flags.name   && !name.includes(q))   show = false;
         if (flags.type   && !type.includes(q))   show = false;
@@ -176,27 +143,26 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
       entry.style.display = show ? "" : "none";
     });
   }
-  // Wire up buttons
-  filterNameBtn.addEventListener("click", () => { flags.name=!flags.name; filterNameBtn.classList.toggle("toggled"); applyFilters(); });
-  filterTypeBtn.addEventListener("click", () => { flags.type=!flags.type; filterTypeBtn.classList.toggle("toggled"); applyFilters(); });
-  filterRarityBtn.addEventListener("click", () => { flags.rarity=!flags.rarity; filterRarityBtn.classList.toggle("toggled"); applyFilters(); });
+  filterName.addEventListener("click", () => { flags.name = !flags.name; filterName.classList.toggle("toggled"); applyFilters(); });
+  filterType.addEventListener("click", () => { flags.type = !flags.type; filterType.classList.toggle("toggled"); applyFilters(); });
+  filterRarity.addEventListener("click", () => { flags.rarity = !flags.rarity; filterRarity.classList.toggle("toggled"); applyFilters(); });
   defSearch.addEventListener("input", applyFilters);
 
-  // Form handlers
+  /* ---------- Form submit ---------- */
   form.addEventListener("submit", async e => {
     e.preventDefault();
     const payload = {
-      name: defName.value.trim()||"Unnamed",
+      name: defName.value.trim() || "Unnamed",
       type: defType.value,
       rarity: defRarity.value,
-      description: defDescription.value,
-      imageSmall: defImageSmall.value,
-      imageBig: defImageBig.value,
-      extraLines: JSON.parse(JSON.stringify(extraLines)),
-      nameColor: window.pickrDefName.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      itemTypeColor: window.pickrDefType.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      rarityColor: window.pickrDefRarity.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      descriptionColor: window.pickrDefDescription.getColor()?.toHEXA()?.toString()||"#E5E6E8",
+      description: defDesc.value,
+      imageSmall: defImgS.value,
+      imageBig: defImgL.value,
+      extraLines: [...extraLines],
+      nameColor: pkName.getColor().toHEXA().toString(),
+      itemTypeColor: pkType.getColor().toHEXA().toString(),
+      rarityColor: pkRare.getColor().toHEXA().toString(),
+      descriptionColor: pkDesc.getColor().toHEXA().toString(),
       showInFilters: false
     };
     if (defName.dataset.editId) {
@@ -211,21 +177,22 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     resetForm();
   });
 
-  // Helpers for edit/delete/copy
+  /* ---------- Helpers ---------- */
   function openEdit(def) {
     defName.dataset.editId = def.id;
     defName.value = def.name;
     defType.value = def.type;
     defRarity.value = def.rarity;
-    defDescription.value = def.description||"";
-    defImageSmall.value = def.imageSmall||"";
-    defImageBig.value = def.imageBig||"";
-    extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+    defDesc.value = def.description || "";
+    defImgS.value = def.imageSmall || "";
+    defImgL.value = def.imageBig || "";
+    extraLines = JSON.parse(JSON.stringify(def.extraLines || []));
     renderExtraLines();
-    [window.pickrDefName, window.pickrDefType, window.pickrDefRarity, window.pickrDefDescription]
-      .forEach(p=>p.setColor(def[p._root._config.el.replace('#pickr-def-','')+'Color']||"#E5E6E8"));
+    [pkName, pkType, pkRare, pkDesc].forEach(p =>
+      p.setColor(def[p._root._config.el.replace('#pickr-def-','')+'Color'] || "#E5E6E8")
+    );
     heading3.innerText = "Edit Item";
-    openModal();
+    modal.open();
   }
   async function deleteDef(id) {
     if (!confirm("Delete this item definition?")) return;
@@ -239,42 +206,29 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     defName.value = def.name;
     defType.value = def.type;
     defRarity.value = def.rarity;
-    defDescription.value = def.description||"";
-    defImageSmall.value = def.imageSmall||"";
-    defImageBig.value = def.imageBig||"";
-    extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
+    defDesc.value = def.description || "";
+    defImgS.value = def.imageSmall || "";
+    defImgL.value = def.imageBig || "";
+    extraLines = JSON.parse(JSON.stringify(def.extraLines || []));
     renderExtraLines();
-    openModal();
+    modal.open();
   }
 
   function resetForm() {
     form.reset();
     extraLines = [];
     renderExtraLines();
-    [window.pickrDefName, window.pickrDefType, window.pickrDefRarity, window.pickrDefDescription]
-      .forEach(p=>p.setColor("#E5E6E8"));
+    [pkName, pkType, pkRare, pkDesc].forEach(p => p.setColor("#E5E6E8"));
     heading3.innerText = "Add Item";
   }
 
-  // Modal open/close
-  function onKeyDown(e) {
-    if (e.key === "Escape") closeModal();
-  }
-  function openModal() {
-    modal.style.display = "block";
-    loadAndRender();
-    document.addEventListener("keydown", onKeyDown);
-  }
-  function closeModal() {
-    modal.style.display = "none";
-    document.removeEventListener("keydown", onKeyDown);
-  }
-  manageBtn.addEventListener("click", openModal);
-  closeBtn.addEventListener("click", closeModal);
-  window.addEventListener("click", e => { if (e.target === modal) closeModal(); });
+  /* ---------- Modal wiring ---------- */
+  manageBtn.addEventListener("click", () => modal.open());
+  closeBtn.addEventListener("click", () => modal.close());
+  defCancel.addEventListener("click", () => modal.close());
 
-  // Initial load
-  return { openModal, closeModal, refresh: loadAndRender };
+  /* ---------- Initial load ---------- */
+  return { openModal: () => modal.open(), closeModal: () => modal.close(), refresh: loadAndRender };
 }
 
-// @version: 1
+// @version: 2
