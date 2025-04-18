@@ -3,11 +3,11 @@
 // @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/markerForm.js
 
-import { makeDraggable, positionModal } from "./uiManager.js";
+import { makeDraggable, positionModal } from ".../uiManager.js";
 import {
   loadItemDefinitions,
   addItemDefinition
-} from "./itemDefinitionsService.js";
+} from ".../itemDefinitionsService.js";
 
 export function initMarkerForm(db) {
   /* ---------- DOM elements --------- */
