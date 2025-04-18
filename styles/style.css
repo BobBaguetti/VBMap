@@ -365,32 +365,6 @@ body, html {
   resize: vertical;
 }
 
-/* Predefined Item Dropdown Container */
-#predefined-item-container {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  margin-bottom: 8px;
-}
-
-#predefined-item-container label {
-  width: 90px;
-  flex-shrink: 0;
-  text-align: left;
-}
-
-#predefined-item-container select {
-  flex-grow: 1;
-  background: #303030 !important;
-  color: #e5e6e8 !important;
-  border: 1px solid #555 !important;
-  padding: 4px 6px;
-  font-size: 14px;
-  box-sizing: border-box;
-}
-
-
-
 .color-btn {
   width: 32px;
   height: 32px;
