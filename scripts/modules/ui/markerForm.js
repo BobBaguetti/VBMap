@@ -1,6 +1,6 @@
-// @fullfile: Send the entire file, no omissions or abridgments — version is 0.4.0. Increase by 0.1.0 on significant API additions.
+// @fullfile: Send the entire file, no omissions or abridgments — version is 0.5.0. Increase by 0.1.0 on significant API additions.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 0.4.0
+// @version: 0.5.0
 // @file:    /scripts/modules/ui/markerForm.js
 
 import { Modal, createColorPicker } from './uiKit.js';
@@ -19,11 +19,15 @@ export function setMarkerFormDb(db) {
 }
 
 // Selectors
-const MODAL_SELECTOR     = '#marker-form-modal';
-const CLOSE_BTN_SELECTOR = '.marker-form__close-btn';
-const FORM_SELECTOR      = '#marker-form';
+const MODAL_SELECTOR       = '#marker-form-modal';
+const CLOSE_BTN_SELECTOR   = '.marker-form__close-btn';
+const FORM_SELECTOR        = '#marker-form';
+const DROPDOWN_SELECTOR    = '#predefined-item-dropdown';
+const COLOR_PICKER_SELECTOR  = '.marker-form__color-picker';
+const BORDER_PICKER_SELECTOR = '.marker-form__border-picker';
 
-let colorPicker, borderPicker;
+let colorPicker = null;
+let borderPicker = null;
 let activeMarkerData = null;
 
 // Initialize Modal (opened programmatically)
@@ -40,19 +44,23 @@ const formEl = document.querySelector(FORM_SELECTOR);
  * Populate form fields each time the modal opens.
  */
 async function populateForm() {
-  // Reset form and initialize color pickers
+  // Reset form
   formEl.reset();
-  initPickers();
 
-  // Load item definitions for dropdown
-  const itemDefs = await getItemDefinitions(firestoreDb);
-  const dropdown = formEl.querySelector('#predefined-item-dropdown');
-  if (dropdown) {
-    dropdown.innerHTML = '<option value="">-- Select item --</option>' +
-      itemDefs.map(def => `<option value="${def.id}">${def.name}</option>`).join('');
+  // Populate dropdown if Firestore configured
+  if (firestoreDb) {
+    const itemDefs = await getItemDefinitions(firestoreDb);
+    const dropdown = formEl.querySelector(DROPDOWN_SELECTOR);
+    if (dropdown) {
+      dropdown.innerHTML = '<option value="">-- Select item --</option>' +
+        itemDefs.map(def => `<option value="${def.id}">${def.name}</option>`).join('');
+    }
   }
 
-  // If editing, pre-fill fields
+  // Initialize pickers after DOM reset
+  initPickers();
+
+  // Pre-fill form when editing
   if (activeMarkerData) {
     fillFormFields(activeMarkerData);
   }
@@ -63,17 +71,23 @@ async function populateForm() {
  */
 function cleanupForm() {
   formEl.reset();
-  colorPicker?.destroyAndRemove();
-  borderPicker?.destroyAndRemove();
+  if (colorPicker) { colorPicker.destroyAndRemove(); colorPicker = null; }
+  if (borderPicker) { borderPicker.destroyAndRemove(); borderPicker = null; }
   activeMarkerData = null;
 }
 
 /**
- * Initialize color and border pickers.
+ * Initialize color and border pickers if containers exist.
  */
 function initPickers() {
-  colorPicker = createColorPicker('.marker-form__color-picker', { defaultColor: '#ffffff' });
-  borderPicker = createColorPicker('.marker-form__border-picker', { defaultColor: '#000000' });
+  const colorEl = formEl.querySelector(COLOR_PICKER_SELECTOR);
+  if (colorEl) {
+    colorPicker = createColorPicker(COLOR_PICKER_SELECTOR, { defaultColor: '#ffffff' });
+  }
+  const borderEl = formEl.querySelector(BORDER_PICKER_SELECTOR);
+  if (borderEl) {
+    borderPicker = createColorPicker(BORDER_PICKER_SELECTOR, { defaultColor: '#000000' });
+  }
 }
 
 /**
@@ -81,11 +95,11 @@ function initPickers() {
  */
 function fillFormFields(data) {
   activeMarkerData = deepClone(data);
-  formEl.querySelector('[name="name"]').value       = data.name;
-  formEl.querySelector('[name="type"]').value       = data.type;
-  formEl.querySelector('[name="rarity"]').value     = data.rarity;
-  colorPicker.setColor(data.color);
-  borderPicker.setColor(data.borderColor);
+  formEl.querySelector('[name="name"]').value   = data.name;
+  formEl.querySelector('[name="type"]').value   = data.type;
+  formEl.querySelector('[name="rarity"]').value = data.rarity;
+  if (colorPicker)  colorPicker.setColor(data.color);
+  if (borderPicker) borderPicker.setColor(data.borderColor);
 }
 
 /**
@@ -97,8 +111,8 @@ function collectFormData() {
     name:        formData.get('name'),
     type:        formData.get('type'),
     rarity:      formData.get('rarity'),
-    color:       colorPicker.getColor().toHEXA().toString(),
-    borderColor: borderPicker.getColor().toHEXA().toString(),
+    color:       colorPicker?.getColor().toHEXA().toString() || '#ffffff',
+    borderColor: borderPicker?.getColor().toHEXA().toString() || '#000000',
     extraInfo:   Array.from(formEl.querySelectorAll('.extra-info__input'))
                    .map(inp => inp.value).filter(v => v.trim()),
     images:      Array.from(formEl.querySelectorAll('.image-url__input'))
@@ -142,4 +156,4 @@ export function openEmptyMarkerForm() {
   markerFormModal.open();
 }
 
-// @version: 0.4.0
+// @version: 0.5.0
