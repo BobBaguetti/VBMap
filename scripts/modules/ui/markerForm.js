@@ -1,37 +1,47 @@
+// @fullfile: Send the entire file, no omissions or abridgments — version is 0.2.0. Increase by 0.1.0 on significant API additions.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
+// @version: 0.2.0
 // @file:    /scripts/modules/ui/markerForm.js
-// @version: 0.1.0
 
 import { Modal, createColorPicker } from './uiKit.js';
 import { addMarker, updateMarker }  from '../services/firebaseService.js';
 import { getItemDefinitions }       from '../services/itemDefinitionsService.js';
 import { deepClone }                from '../utils/utils.js';
 
+// Firestore instance to use in populateForm
+let firestoreDb;
+/**
+ * Set the Firestore instance for this module.
+ * @param {firebase.firestore.Firestore} db
+ */
+export function setMarkerFormDb(db) {
+  firestoreDb = db;
+}
 
 // Selectors
-const MODAL_SELECTOR = '#marker-form-modal';
-const OPEN_TRIGGER = 'body';  // opened via context menu rather than a button
-const CLOSE_BTN_SELECTOR = '.marker-form__close-btn';
-const FORM_SELECTOR = '#marker-form';
+const MODAL_SELECTOR       = '#marker-form-modal';
+const CLOSE_BTN_SELECTOR   = '.marker-form__close-btn';
+const FORM_SELECTOR        = '#marker-form';
 
 let colorPicker, borderPicker;
 let activeMarkerData = null;
 
-// Initialize Modal from UI Kit
- const markerFormModal = new Modal({
-    modalSelector: MODAL_SELECTOR,
-    // openBtnSelector removed so we only open programmatically
-    closeBtnSelector: CLOSE_BTN_SELECTOR,
-    onOpen: populateForm,
-    onClose: cleanupForm
-  });
+// Initialize Modal (opened programmatically)
+const markerFormModal = new Modal({
+  modalSelector: MODAL_SELECTOR,
+  closeBtnSelector: CLOSE_BTN_SELECTOR,
+  onOpen: populateForm,
+  onClose: cleanupForm
+});
 
 const formEl = document.querySelector(FORM_SELECTOR);
 
 /**
- * Populate form fields and dropdowns each time modal opens
+ * Populate form fields and dropdown each time modal opens
  */
 async function populateForm() {
-  const itemDefs = await getItemDefinitions();
+  // Fetch item definitions using stored Firestore instance
+  const itemDefs = await getItemDefinitions(firestoreDb);
   const dropdown = formEl.querySelector('[name="predefinedItem"]');
   dropdown.innerHTML = '<option value="">-- Select item --</option>' +
     itemDefs.map(def => `<option value="${def.id}">${def.name}</option>`).join('');
@@ -72,7 +82,6 @@ function fillFormFields(data) {
   formEl.querySelector('[name="rarity"]').value = data.rarity;
   colorPicker.setColor(data.color);
   borderPicker.setColor(data.borderColor);
-  // Additional dynamic fields (extraInfo, images) handled as needed
 }
 
 /**
@@ -129,4 +138,4 @@ export function openEmptyMarkerForm() {
   markerFormModal.open();
 }
 
-// @version: 0.1.0
+// @version: 0.2.0
