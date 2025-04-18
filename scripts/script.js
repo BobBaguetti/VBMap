@@ -169,4 +169,14 @@ map.on("contextmenu", evt => {
   }]);
 });
 
+// Hide context menu when clicking anywhere else
+document.addEventListener("click", (e) => {
+  const contextMenu = document.getElementById("context-menu");
+  if (contextMenu && contextMenu.style.display === "block") {
+    if (!contextMenu.contains(e.target)) {
+      contextMenu.style.display = "none";
+    }
+  }
+});
+
   // @version: 1
