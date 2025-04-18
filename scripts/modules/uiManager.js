@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted.
-// @version: 2
+// @version: 3
 // @file:    /scripts/modules/uiManager.js
 
 /**
@@ -31,6 +31,22 @@ export function makeDraggable(element, handle = element) {
   document.addEventListener("mouseup", () => {
     isDragging = false;
   });
+}
+
+/**
+ * Positions the modal relative to an event (e.g. mouse event).
+ * @param {HTMLElement} modal The modal element.
+ * @param {MouseEvent} event The event providing pageX and pageY.
+ */
+export function positionModal(modal, event) {
+  // ensure it's visible so offsets can be measured
+  modal.style.display = "block";
+  const modalWidth = modal.offsetWidth;
+  const modalHeight = modal.offsetHeight;
+
+  // position it near the click, with a small offset
+  modal.style.left = (event.pageX - modalWidth + 10) + "px";
+  modal.style.top  = (event.pageY - (modalHeight / 2)) + "px";
 }
 
 /**
@@ -74,7 +90,7 @@ export function showContextMenu(x, y, options) {
   });
 
   contextMenu.style.left = x + "px";
-  contextMenu.style.top = y + "px";
+  contextMenu.style.top  = y + "px";
 }
 
 /**
@@ -82,7 +98,9 @@ export function showContextMenu(x, y, options) {
  */
 export function hideContextMenu() {
   const contextMenu = document.getElementById("context-menu");
-  if (contextMenu) contextMenu.style.display = "none";
+  if (contextMenu) {
+    contextMenu.style.display = "none";
+  }
 }
 
-// @version: 2
+// @version: 3
