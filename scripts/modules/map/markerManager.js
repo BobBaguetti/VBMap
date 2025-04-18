@@ -3,7 +3,7 @@
 // @version: 2
 // @file:    /scripts/modules/map/markerManager.js
 
-import L from 'leaflet';
+import * from 'leaflet';
 import { openEmptyMarkerForm, openMarkerFormWithData } from '../ui/markerForm.js';
 import { formatRarity } from '../utils/utils.js';
 
