@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 6   The current file version is 6. Increase by 1 every time you update anything.
+// @version: 7   The current file version is 7. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -37,6 +37,7 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
   const defCancelBtn    = document.getElementById("def-cancel");
 
   let allDefinitions = [];
+  const flags = { name:false, type:false, rarity:false };
 
   function renderDefinitions(defs) {
     defs.sort((a, b) => {
@@ -105,7 +106,6 @@ export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
     renderDefinitions(filtered);
   }
 
-  const flags = { name:false, type:false, rarity:false };
   filterNameBtn.addEventListener("click", () => { flags.name=!flags.name; filterNameBtn.classList.toggle("toggled"); applyFilters(); });
   filterTypeBtn.addEventListener("click", () => { flags.type=!flags.type; filterTypeBtn.classList.toggle("toggled"); applyFilters(); });
   filterRarityBtn.addEventListener("click", () => { flags.rarity=!flags.rarity; filterRarityBtn.classList.toggle("toggled"); applyFilters(); });
