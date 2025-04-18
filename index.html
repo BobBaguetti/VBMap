@@ -1,6 +1,6 @@
 <!-- @fullfile: Send the entire file, no omissions or abridgments. -->
 <!-- @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. -->
-<!-- @version: 1   The current file version is 1. Increase by 1 every time you update anything. -->
+<!-- @version: 5   The current file version is 5. Increase by 1 every time you update anything. -->
 <!-- @file:    /index.html -->
 
 <!DOCTYPE html>
@@ -9,6 +9,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Vaultbreakers Interactive Map</title>
+
+  <!-- Import map for ES modules -->
+  <script type="importmap">
+  {
+    "imports": {
+      "leaflet": "https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.esm.js"
+    }
+  }
+  </script>
+
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <!-- MarkerCluster CSS -->
@@ -16,9 +26,9 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
   <!-- Custom CSS -->
   <link rel="stylesheet" href="styles/style.css" />
-  <!-- Font Awesome for icons -->
+  <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Pickr CSS (for custom color picker) -->
+  <!-- Pickr CSS -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
 </head>
 <body>
@@ -79,7 +89,7 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Load JS Libraries -->
+  <!-- JS Libraries -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
@@ -188,6 +198,48 @@
   <div id="paste-tooltip" style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
     Paste Mode ON
   </div>
+
+  <!-- Marker Form Modal -->
+  <div id="marker-form-modal" class="modal">
+    <div class="modal-content">
+      <span class="marker-form__close-btn">&times;</span>
+      <form id="marker-form">
+        <div class="field-row">
+          <label>Name:</label>
+          <input type="text" name="name" required />
+        </div>
+        <div class="field-row">
+          <label>Type:</label>
+          <select name="type">
+            <option value="Door">Door</option>
+            <option value="Extraction Portal">Extraction Portal</option>
+            <option value="Item">Item</option>
+            <option value="Teleport">Teleport</option>
+            <option value="Spawn Point">Spawn points</option>
+          </select>
+        </div>
+        <div class="field-row">
+          <label>Rarity:</label>
+          <select name="rarity">
+            <option value="">Select Rarity</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="epic">Epic</option>
+            <option value="legendary">Legendary</option>
+          </select>
+        </div>
+        <div class="color-btn marker-form__color-picker"></div>
+        <div class="color-btn marker-form__border-picker"></div>
+        <div id="extra-info-container"></div>
+        <div id="image-urls-container"></div>
+        <div class="field-row" style="text-align:center; margin-top:1rem;">
+          <button type="submit">Save</button>
+          <button type="button" class="marker-form__close-btn">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
   
   <!-- Item Definitions Modal -->
   <div id="item-definitions-modal" class="modal">
@@ -267,4 +319,4 @@
 </body>
 </html>
 
-<!-- @version: 1 -->
+<!-- @version: 5 -->
