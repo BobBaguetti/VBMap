@@ -1,16 +1,16 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
 // @version: 1   The current file version is 1. Increase by 1 every time you update anything.
-// @file:    /scripts/modules/itemDefinitionsService.js
+// @file:    /scripts/modules/services/itemDefinitionsService.js
 
 /**
  * Initializes and returns the itemDefinitions collection reference.
  * @param {firebase.firestore.Firestore} db - The Firestore instance.
  * @returns {firebase.firestore.CollectionReference}
  */
-export function getItemDefinitionsCollection(db) {
-  return db.collection("itemDefinitions");
-}
+export async function getItemDefinitions(db) {
+  const snap = await getItemDefinitionsCollection(db).get();
+  return snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
 /**
  * Loads all item definitions from Firestore.
