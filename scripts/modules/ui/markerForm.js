@@ -1,6 +1,6 @@
-// @fullfile: Send the entire file, no omissions or abridgments — version is 0.2.0. Increase by 0.1.0 on significant API additions.
+// @fullfile: Send the entire file, no omissions or abridgments — version is 0.3.0. Increase by 0.1.0 on significant API additions.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 0.2.0
+// @version: 0.3.0
 // @file:    /scripts/modules/ui/markerForm.js
 
 import { Modal, createColorPicker } from './uiKit.js';
@@ -42,9 +42,12 @@ const formEl = document.querySelector(FORM_SELECTOR);
 async function populateForm() {
   // Fetch item definitions using stored Firestore instance
   const itemDefs = await getItemDefinitions(firestoreDb);
-  const dropdown = formEl.querySelector('[name="predefinedItem"]');
-  dropdown.innerHTML = '<option value="">-- Select item --</option>' +
-    itemDefs.map(def => `<option value="${def.id}">${def.name}</option>`).join('');
+  // Only populate if the dropdown exists in the current form
+  const dropdown = formEl.querySelector('#predefined-item-dropdown');
+  if (dropdown) {
+    dropdown.innerHTML = '<option value="">-- Select item --</option>' +
+      itemDefs.map(def => `<option value="${def.id}">${def.name}</option>`).join('');
+  }
 
   formEl.reset();
   initPickers();
@@ -138,4 +141,4 @@ export function openEmptyMarkerForm() {
   markerFormModal.open();
 }
 
-// @version: 0.2.0
+// @version: 0.3.0
