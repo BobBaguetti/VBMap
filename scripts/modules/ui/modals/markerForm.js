@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
+// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/markerForm.js
 
 import { makeDraggable, positionModal } from "../uiManager.js";
@@ -11,7 +11,6 @@ import {
 import { deepClone } from "../../utils/utils.js"
 
 export function initMarkerForm(db) {
-  modal.classList.add("ui-modal");
   /* ---------- DOM elements --------- */
   const modal     = document.getElementById("edit-modal");
   const grip      = document.getElementById("edit-modal-handle");
@@ -37,7 +36,7 @@ export function initMarkerForm(db) {
   const btnAddLine = document.getElementById("add-extra-line");
   const wrapLines  = document.getElementById("extra-lines");
 
-  // ✅ Apply global styling classes
+  // ✅ Apply global styling classes after modal is defined
   modal.classList.add("ui-modal");
   grip.classList.add("ui-modal-header");
   btnCancel.classList.add("ui-button");
