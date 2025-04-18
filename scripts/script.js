@@ -1,6 +1,6 @@
-// @fullfile: Send the entire file, no omissions or abridgment — version is 2. Increase by 1 every time you update anything.
+// @fullfile: Send the entire file, no omissions or abridgment — version is 3. Increase by 1 every time you update anything.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 2
+// @version: 3
 // @file:    /scripts/script.js
 
 import {
@@ -14,7 +14,7 @@ import { initializeMap } from "./modules/map/map.js";
 import { initializeMarkerManager } from "./modules/map/markerManager.js";
 import { initCopyPasteManager } from "./modules/copyPasteManager.js";
 import { showContextMenu } from "./modules/uiManager.js";
-import { openEmptyMarkerForm, openMarkerFormWithData } from "./modules/ui/markerForm.js";
+import { openEmptyMarkerForm, openMarkerFormWithData, setMarkerFormDb } from "./modules/ui/markerForm.js";
 import { initItemDefinitionsModal } from "./modules/ui/itemDefinitionsModal.js";
 import { setupSidebar } from "./modules/sidebarManager.js";
 
@@ -29,6 +29,9 @@ import { setupSidebar } from "./modules/sidebarManager.js";
     appId: "1:244112699360:web:95f50adb6e10b438238585",
     measurementId: "G-7FDNWLRM95"
   });
+
+  // Provide db to marker form for dropdown loading
+  setMarkerFormDb(db);
 
   // Map Initialization
   // initializeMap now returns { map, bounds }
@@ -55,19 +58,14 @@ import { setupSidebar } from "./modules/sidebarManager.js";
     markerManager.addMarker(newData);
   });
 
-  //  Right‑click on map to “Create New Marker”
-   map.on('contextmenu', e => {
-     e.originalEvent.preventDefault();    // disable browser menu
-    openEmptyMarkerForm();               // open the blank marker form
-   });
-
-  // Map Context‑Menu for Creating New Markers
-  map.on("contextmenu", evt => {
+  // Right‑click on map: show custom context menu to create a new marker
+  map.on('contextmenu', evt => {
+    evt.originalEvent.preventDefault();
     const { pageX: x, pageY: y } = evt.originalEvent;
     showContextMenu(x, y, [
-      { label: "Create New Marker", action: () => openEmptyMarkerForm() }
+      { label: 'Create New Marker', action: () => openEmptyMarkerForm() }
     ]);
   });
 })();
 
-// @version: 2
+// @version: 3
