@@ -3,17 +3,19 @@
 
 import { createPickr } from "./pickrManager.js";
 
+// ─── Modal Helpers ───────────────────────────────────────────────────────────
+
 /**
  * Creates a modal window.
  *
- * @param {string}  id
- * @param {string}  title
- * @param {function} onClose
- * @param {string}  [size]       – "small" or "large"
- * @param {boolean} [backdrop]
- * @param {boolean} [draggable]
- * @param {boolean} [withDivider]
- * @returns {{modal:HTMLElement, content:HTMLElement, header:HTMLElement}}
+ * @param {Object} options
+ * @param {string}  options.id
+ * @param {string}  options.title
+ * @param {Function} options.onClose
+ * @param {string}  [options.size]      – "small" or "large"
+ * @param {boolean} [options.backdrop]
+ * @param {boolean} [options.draggable]
+ * @param {boolean} [options.withDivider]
  */
 export function createModal({
   id, title, onClose,
@@ -102,10 +104,10 @@ export function openModalAt(modal, evt) {
   const content = modal.querySelector(".modal-content");
   const rect = content.getBoundingClientRect();
   content.style.left = `${evt.clientX - rect.width}px`;
-  content.style.top  = `${evt.clientY - rect.height / 2}px`;
+  content.style.top  = `${evt.clientY - rect.height/2}px`;
 }
 
-// Field & Form Builders
+// ─── Form & Field Builders ──────────────────────────────────────────────────
 
 export function createFieldRow(labelText, inputEl) {
   const row = document.createElement("div");
@@ -163,15 +165,13 @@ export function createTextareaFieldWithColor(label, id) {
 
 export function createImageField(label, id) {
   const input = document.createElement("input");
-  input.id = id;
-  input.type = "text";
+  input.id = id; input.type = "text";
   return { row: createFieldRow(label, input), input };
 }
 
 export function createVideoField(label, id) {
   const input = document.createElement("input");
-  input.id = id;
-  input.type = "text";
+  input.id = id; input.type = "text";
   return { row: createFieldRow(label, input), input };
 }
 
@@ -180,18 +180,11 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
   row.className = "field-row";
   row.style.justifyContent = "center";
   row.style.marginTop = "10px";
-
   const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = saveText;
-
+  btnSave.type = "submit";  btnSave.className = "ui-button";  btnSave.textContent = saveText;
   const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "ui-button";
-  btnCancel.textContent = cancelText;
+  btnCancel.type = "button"; btnCancel.className = "ui-button"; btnCancel.textContent = cancelText;
   btnCancel.onclick = onCancel;
-
   row.append(btnSave, btnCancel);
   return row;
 }
@@ -200,113 +193,54 @@ export function createExtraInfoBlock(options = {}) {
   const { defaultColor = "#E5E6E8", readonly = false } = options;
   const wrap = document.createElement("div");
   wrap.className = "extra-info-block";
-
   const btnAdd = document.createElement("button");
-  btnAdd.type = "button";
-  btnAdd.textContent = "+";
-  btnAdd.classList.add("ui-button");
+  btnAdd.type = "button"; btnAdd.textContent = "+"; btnAdd.classList.add("ui-button");
   btnAdd.style.marginBottom = "8px";
-
   const lineWrap = document.createElement("div");
   wrap.append(btnAdd, lineWrap);
-
   let lines = [];
-
   function render() {
     lineWrap.innerHTML = "";
     lines.forEach((line, i) => {
       const row = document.createElement("div");
       row.className = "field-row";
       row.style.marginBottom = "5px";
-
       const input = document.createElement("input");
       input.className = "ui-input";
       input.value = line.text;
       input.readOnly = readonly;
       input.oninput = () => (lines[i].text = input.value);
-
       const color = document.createElement("div");
       color.className = "color-btn";
       color.id = `extra-color-${i}`;
       color.style.marginLeft = "5px";
-
       const btnRemove = document.createElement("button");
       btnRemove.type = "button";
       btnRemove.className = "ui-button";
       btnRemove.textContent = "×";
       btnRemove.style.marginLeft = "5px";
-      btnRemove.onclick = () => {
-        lines.splice(i, 1);
-        render();
-      };
-
+      btnRemove.onclick = () => { lines.splice(i,1); render(); };
       row.append(input, color);
       if (!readonly) row.appendChild(btnRemove);
       lineWrap.appendChild(row);
-
       const pickr = createPickr(`#${color.id}`);
-      pickr.setColor(line.color || defaultColor);
+      pickr.setColor(line.color||defaultColor);
       line._pickr = pickr;
     });
   }
-
-  btnAdd.onclick = () => {
-    lines.push({ text: "", color: defaultColor });
-    render();
-  };
-
+  btnAdd.onclick = () => { lines.push({ text:"", color: defaultColor }); render(); };
   function getLines() {
-    return lines.map(l => ({
+    return lines.map(l=>({
       text: l.text,
-      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
+      color: l._pickr?.getColor()?.toHEXA()?.toString()||defaultColor
     }));
   }
-
-  function setLines(newLines, isReadonly = false) {
-    lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
+  function setLines(newLines, isReadonly=false) {
+    lines = newLines.map(l=>({ text:l.text||"", color:l.color||defaultColor }));
     render();
-    if (isReadonly) btnAdd.style.display = "none";
+    if (isReadonly) btnAdd.style.display="none";
   }
-
   return { block: wrap, getLines, setLines };
 }
 
-// New helpers extracted from itemDefinitionModal
-
-export function createFilterButtonGroup(buttons, onToggle) {
-  const wrapper = document.createElement("div");
-  wrapper.classList.add("filter-buttons");
-  const btnMap = {};
-  buttons.forEach(({ id, label }) => {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.id = id;
-    btn.classList.add("filter-btn");
-    btn.textContent = label;
-    btn.addEventListener("click", () => {
-      const toggled = btn.classList.toggle("toggled");
-      onToggle(id, toggled);
-    });
-    wrapper.append(btn);
-    btnMap[id] = btn;
-  });
-  return { wrapper, buttons: btnMap };
-}
-
-export function createSearchRow(id, placeholder) {
-  const row = document.createElement("div");
-  row.classList.add("modal-header-right");
-  const input = document.createElement("input");
-  input.type = "text";
-  input.id = id;
-  input.placeholder = placeholder;
-  row.append(input);
-  return { row, input };
-}
-
-export function createDefListContainer(id) {
-  const list = document.createElement("div");
-  list.id = id;
-  list.classList.add("def-list", "ui-scrollbar");
-  return list;
-}
+// @version: 18

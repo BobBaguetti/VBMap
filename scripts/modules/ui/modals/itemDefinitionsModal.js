@@ -1,5 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 5   The current file version is 5. Increase by 1 every time you update anything.
+// @version: 6   The current file version is 6. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -32,7 +32,7 @@ import {
  * Returns an object with `open()` and `refresh()` methods.
  */
 export function initItemDefinitionsModal(db) {
-  // 1) Create a large, static modal with dark backdrop & divider
+  // ─── 1) Build modal ─────────────────────────────────────────────────────────
   const { modal, content } = createModal({
     id: "item-definitions-modal",
     title: "Manage Items",
@@ -42,11 +42,21 @@ export function initItemDefinitionsModal(db) {
     withDivider: true,
     onClose: () => closeModal(modal)
   });
-
-  // 2) Header controls
   const header = content.querySelector(".modal-header");
 
-  // 2a) Filter buttons
+  // ─── 2) Define sorting functions ───────────────────────────────────────────
+  const rarityOrder = { legendary:5, epic:4, rare:3, uncommon:2, common:1, "":0 };
+  const sortFns = {
+    "filter-name":        (a,b) => a.name.localeCompare(b.name),
+    "filter-type":        (a,b) => a.itemType.localeCompare(b.itemType),
+    "filter-rarity":      (a,b) => rarityOrder[b.rarity] - rarityOrder[a.rarity],
+    "filter-description": (a,b) => a.description.localeCompare(b.description),
+    "filter-quantity":    (a,b) => (parseInt(b.quantity)||0) - (parseInt(a.quantity)||0),
+    "filter-value":       (a,b) => (parseFloat(b.value)||0) - (parseFloat(a.value)||0)
+  };
+  let activeSorts = new Set();
+
+  // ─── 3) Filter buttons ─────────────────────────────────────────────────────
   const { wrapper: filterWrapper } = createFilterButtonGroup([
     { id: "filter-name",        label: "N"  },
     { id: "filter-type",        label: "T"  },
@@ -55,26 +65,26 @@ export function initItemDefinitionsModal(db) {
     { id: "filter-quantity",    label: "Qt" },
     { id: "filter-value",       label: "P"  }
   ], (btnId, isToggled) => {
-    applyDefinitionFilter(btnId, isToggled);
+    if (isToggled) activeSorts.add(btnId);
+    else           activeSorts.delete(btnId);
+    renderFilteredList();
   });
   header.appendChild(filterWrapper);
 
-  // 2b) Search row
+  // ─── 4) Search row ─────────────────────────────────────────────────────────
   const { row: searchRow, input: searchInput } =
-    createSearchRow("def-search", "Search...");
+    createSearchRow("def-search", "Search items…");
   header.appendChild(searchRow);
   searchInput.addEventListener("input", () => {
-    applySearchFilter(searchInput.value);
+    renderFilteredList();
   });
 
-  // 3) Definitions list
+  // ─── 5) Definitions list container ─────────────────────────────────────────
   const listContainer = createDefListContainer("item-definitions-list");
   content.appendChild(listContainer);
-
-  // 4) Separator
   content.appendChild(document.createElement("hr"));
 
-  // 5) Form (add/edit)
+  // ─── 6) Build Add/Edit form ────────────────────────────────────────────────
   const form = document.createElement("form");
   form.id = "item-definition-form";
 
@@ -83,12 +93,10 @@ export function initItemDefinitionsModal(db) {
   subheading.textContent = "Add / Edit Item";
   form.appendChild(subheading);
 
-  // — Name —
-  const { row: rowName, input: fldName } =
-    createTextField("Name:", "def-name");
+  // Name, Type, Rarity, Desc, Extra Info, Value, Quantity, Image S/L, Buttons
+  const { row: rowName, input: fldName } = createTextField("Name:", "def-name");
   form.appendChild(rowName);
 
-  // — Item Type —
   const { row: rowType, select: fldType } =
     createDropdownField("Item Type:", "def-type", [
       { value: "Crafting Material", label: "Crafting Material" },
@@ -98,7 +106,6 @@ export function initItemDefinitionsModal(db) {
     ]);
   form.appendChild(rowType);
 
-  // — Rarity —
   const { row: rowRarity, select: fldRarity } =
     createDropdownField("Rarity:", "def-rarity", [
       { value: "",          label: "Select Rarity" },
@@ -110,32 +117,28 @@ export function initItemDefinitionsModal(db) {
     ]);
   form.appendChild(rowRarity);
 
-  // — Description —
   const { row: rowDesc, textarea: fldDesc } =
     createTextareaFieldWithColor("Description:", "def-description");
   form.appendChild(rowDesc);
 
-  // — Extra Info —
-  const { block: extraBlock, getLines, setLines } =
-    createExtraInfoBlock();
+  const { block: extraBlock, getLines, setLines } = createExtraInfoBlock();
   const rowExtra = document.createElement("div");
   rowExtra.className = "field-row extra-row";
-  const lblExtra = document.createElement("label");
-  lblExtra.textContent = "Extra Info:";
-  rowExtra.append(lblExtra, extraBlock);
+  rowExtra.append(
+    (() => { const l = document.createElement("label"); l.textContent="Extra Info:"; return l; })(),
+    extraBlock
+  );
   form.appendChild(rowExtra);
 
-  // — Value (sell price) — immediately below Extra Info
+  // Value & Quantity under Extra Info
   const { row: rowValue, input: fldValue } =
     createTextField("Value:", "def-value");
   form.appendChild(rowValue);
 
-  // — Quantity — immediately below Value
   const { row: rowQty, input: fldQty } =
     createTextField("Quantity:", "def-quantity");
   form.appendChild(rowQty);
 
-  // — Image S & L —
   const { row: rowImgS, input: fldImgS } =
     createImageField("Image S:", "def-image-small");
   form.appendChild(rowImgS);
@@ -144,27 +147,31 @@ export function initItemDefinitionsModal(db) {
     createImageField("Image L:", "def-image-big");
   form.appendChild(rowImgL);
 
-  // — Save/Cancel & Delete buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
   form.appendChild(rowButtons);
-
   content.appendChild(form);
 
-  // 6) State & helpers
+  // ─── 7) State & CRUD handlers ─────────────────────────────────────────────
   let definitions = [];
-  let editingId = null;
-  let unsubscribe = null;
+  let editingId    = null;
 
+  // Fetch all definitions
   async function refreshDefinitions() {
     definitions = await loadItemDefinitions(db);
-    renderList(definitions);
+    renderFilteredList();
   }
 
-  function startSubscription() {
-    unsubscribe = subscribeItemDefinitions(db, defs => {
-      definitions = defs;
-      renderList(defs);
+  // Apply active sorts + search filter, then render
+  function renderFilteredList() {
+    let list = definitions.filter(d =>
+      d.name.toLowerCase().includes(searchInput.value.trim().toLowerCase())
+    );
+    // Apply each active sort in turn
+    activeSorts.forEach(id => {
+      const fn = sortFns[id];
+      if (fn) list = [...list].sort(fn);
     });
+    renderList(list);
   }
 
   function renderList(list) {
@@ -174,7 +181,7 @@ export function initItemDefinitionsModal(db) {
       entry.classList.add("item-def-entry");
       entry.innerHTML = `
         <strong>${def.name}</strong> (${def.rarity})<br/>
-        Type: ${def.itemType} • Qty: ${def.quantity || "—"} • Value: ${def.value || "—"}
+        Type: ${def.itemType} • Qty: ${def.quantity||"—"} • Value: ${def.value||"—"}
       `;
       entry.addEventListener("click", () => populateForm(def));
       listContainer.appendChild(entry);
@@ -182,90 +189,72 @@ export function initItemDefinitionsModal(db) {
   }
 
   function populateForm(def) {
-    editingId = def.id;
+    editingId        = def.id;
     fldName.value    = def.name;
     fldType.value    = def.itemType;
     fldRarity.value  = def.rarity;
     fldDesc.value    = def.description;
-    setLines(def.extraLines || [], false);
-    fldValue.value   = def.value      || "";
-    fldQty.value     = def.quantity   || "";
-    fldImgS.value    = def.imageSmall || "";
-    fldImgL.value    = def.imageBig   || "";
+    setLines(def.extraLines||[], false);
+    fldValue.value   = def.value    || "";
+    fldQty.value     = def.quantity || "";
+    fldImgS.value    = def.imageSmall||"";
+    fldImgL.value    = def.imageBig  || "";
     subheading.textContent = "Edit Item";
-    openModal();
+    modal.style.display = "block";
   }
 
   function clearForm() {
-    editingId        = null;
-    fldName.value    = "";
-    fldType.value    = "";
-    fldRarity.value  = "";
-    fldDesc.value    = "";
-    setLines([], false);
-    fldValue.value   = "";
-    fldQty.value     = "";
-    fldImgS.value    = "";
-    fldImgL.value    = "";
-    subheading.textContent = "Add Item";
+    editingId = null;
+    fldName.value= fldType.value= fldRarity.value= fldDesc.value=""
+    setLines([],false);
+    fldValue.value= fldQty.value= fldImgS.value= fldImgL.value=""
+    subheading.textContent="Add Item";
   }
 
-  async function handleSubmit(e) {
+  form.addEventListener("submit", async e => {
     e.preventDefault();
     const payload = {
-      name:         fldName.value.trim(),
-      itemType:     fldType.value,
-      rarity:       fldRarity.value,
-      description:  fldDesc.value.trim(),
-      extraLines:   getLines(),
-      value:        fldValue.value.trim(),
-      quantity:     fldQty.value.trim(),
-      imageSmall:   fldImgS.value.trim(),
-      imageBig:     fldImgL.value.trim()
+      name:        fldName.value.trim(),
+      itemType:    fldType.value,
+      rarity:      fldRarity.value,
+      description: fldDesc.value.trim(),
+      extraLines:  getLines(),
+      value:       fldValue.value.trim(),
+      quantity:    fldQty.value.trim(),
+      imageSmall:  fldImgS.value.trim(),
+      imageBig:    fldImgL.value.trim()
     };
-    // use save for create or full overwrite
     await saveItemDefinition(db, editingId, payload);
     closeModal(modal);
-    // subscription will push updated list
-  }
-
-  async function handleDelete() {
-    if (editingId) {
-      await deleteItemDefinition(db, editingId);
-      closeModal(modal);
-      // subscription will push updated list
-    }
-  }
-
-  form.addEventListener("submit", handleSubmit);
+    await refreshDefinitions();
+  });
 
   // Delete button
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
   btnDelete.className = "ui-button";
   btnDelete.textContent = "Delete";
-  btnDelete.onclick = handleDelete;
+  btnDelete.onclick = async () => {
+    if (!editingId) return;
+    await deleteItemDefinition(db, editingId);
+    closeModal(modal);
+    await refreshDefinitions();
+  };
   rowButtons.appendChild(btnDelete);
 
-  function openModal() {
-    clearForm();
-    if (!unsubscribe) startSubscription();
-    modal.style.display = "block";
-  }
+  // Real‑time subscription
+  subscribeItemDefinitions(db, defs => {
+    definitions = defs;
+    renderFilteredList();
+  });
 
-  function applyDefinitionFilter(btnId, toggled) {
-    // TODO: filter/sort logic
-  }
-
-  function applySearchFilter(query) {
-    const q = query.trim().toLowerCase();
-    renderList(definitions.filter(d => d.name.toLowerCase().includes(q)));
-  }
-
-  // 7) API
+  // ─── 8) API ────────────────────────────────────────────────────────────────
   return {
-    open: openModal,
-    refresh: refreshDefinitions,
-    unsubscribe
+    open: async () => {
+      clearForm();
+      await refreshDefinitions();
+      modal.style.display = "block";
+    },
+    refresh: refreshDefinitions
   };
 }
