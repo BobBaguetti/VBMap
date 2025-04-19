@@ -110,3 +110,8 @@
   border-top: 1px solid #444;
   margin: 12px 0;
 }
+
+/* give 16px bottom‑margin just on the three item‑specific rows */
+.modal-content .item-gap {
+  margin-bottom: 16px !important;
+}
