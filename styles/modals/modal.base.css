@@ -1,11 +1,11 @@
 /* modal.base.css – base styles for all modals */
 
-/* box‑sizing */
+/* 1) border‑box everywhere */
 *, *::before, *::after {
     box-sizing: border-box;
   }
   
-  /* backdrop & container */
+  /* 2) Backdrop & container */
   .modal {
     position: fixed;
     top: 0; left: 0;
@@ -14,7 +14,6 @@
     display: none;
     z-index: 1000;
   }
-  
   .modal-content {
     background: #222222;
     border: 1px solid #333;
@@ -22,54 +21,49 @@
     padding: 16px;
     color: #eee;
     box-shadow: 0 2px 10px rgba(0,0,0,0.7);
-    position: absolute;
+    position: absolute;  /* JS sets left/top */
     transform: none;
     width: auto;
     max-width: 90%;
-    overflow: auto;
   }
   
-  /* ensure selects & inputs don’t get forced full‑width by global CSS */
+  /* 3) Override global full‑width rules */
   .modal-content .field-row input[type="text"],
   .modal-content .field-row select,
   .modal-content .field-row textarea {
     width: auto !important;
   }
   
-  /* reset modal‑scoped color‑btn margins so remove‑buttons appear */
+  /* 4) Restore spacing before color‑btn pickers */
   .modal-content .color-btn {
-    margin-left: 0 !important;
+    margin-left: 8px !important;
   }
   
-  /* flex rows */
+  /* Flex rows */
   .modal-content .field-row {
     display: flex;
     align-items: center;
     margin-bottom: 8px;
   }
-  
   .modal-content .field-row label {
     flex: 0 0 100px;
     margin-right: 8px;
   }
-  
   .modal-content .field-row > *:last-child {
     margin-right: 0;
   }
   
-  /* top‑align the “Extra Info:” + + button row */
+  /* Extra‑row: top‑align the “Extra Info:” + + button */
   .modal-content .field-row.extra-row {
     align-items: flex-start;
   }
   
-  /* hr styling */
+  /* Horizontal rules */
   .modal-content hr {
     border: none;
     border-top: 1px solid #444;
     margin: 12px 0;
   }
-  
-  /* header divider under title */
   .modal-header + hr {
     border: none;
     border-top: 2px solid #444;

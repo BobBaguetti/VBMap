@@ -1,10 +1,11 @@
-// @version: 17
+// @version: 18
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal } from "../uiKit.js";
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 import {
   createTextField,
+  createDropdownField,
   createFieldRow,
   createTextareaFieldWithColor,
   createImageField,
@@ -15,7 +16,7 @@ import {
 import { createPickr } from "../pickrManager.js";
 
 export function initMarkerForm(db) {
-  // 1) Create the modal
+  // 1) Create modal
   const { modal, content } = createModal({
     id: "edit-marker-modal",
     title: "Edit Marker",
@@ -37,7 +38,7 @@ export function initMarkerForm(db) {
   const { row: rowName, input: fldName } = createTextField("Name:", "fld-name");
   fldName.classList.add("ui-input");
 
-  // — Type dropdown via createFieldRow —
+  // — Type dropdown (no pickr) —
   const fldType = document.createElement("select");
   fldType.id = "fld-type";
   fldType.classList.add("ui-input");
@@ -50,45 +51,37 @@ export function initMarkerForm(db) {
   `;
   const rowType = createFieldRow("Type:", fldType);
 
-  // — Item dropdown via createFieldRow —
+  // — Predefined‑Item dropdown (no pickr) —
   const ddPre = document.createElement("select");
   ddPre.id = "fld-predef";
   ddPre.classList.add("ui-input");
-  // options will be filled in refreshPredefinedItems()
   const rowPre = createFieldRow("Item:", ddPre);
 
-  // — Item‑specific fields —
-  const { row: rowRarity,     textarea: _r } = createTextareaFieldWithColor("", ""); // ignore
-  const { row: rowRarityField, select: fldRarity } = (() => {
-    const sel = document.createElement("select");
-    sel.id = "fld-rarity"; sel.classList.add("ui-input");
-    sel.innerHTML = `
-      <option value="">Select Rarity</option>
-      <option value="common">Common</option>
-      <option value="uncommon">Uncommon</option>
-      <option value="rare">Rare</option>
-      <option value="epic">Epic</option>
-      <option value="legendary">Legendary</option>
-    `;
-    return { row: createFieldRow("Rarity:", sel), select: sel };
-  })();
-  const { row: rowItemTypeField, select: fldItemType } = (() => {
-    const sel = document.createElement("select");
-    sel.id = "fld-item-type"; sel.classList.add("ui-input");
-    sel.innerHTML = `
-      <option value="Crafting Material">Crafting Material</option>
-      <option value="Special">Special</option>
-      <option value="Consumable">Consumable</option>
-      <option value="Quest">Quest</option>
-    `;
-    return { row: createFieldRow("Item Type:", sel), select: sel };
-  })();
-  const { row: rowDescItem, textarea: fldDescItem } = createTextareaFieldWithColor("Description:", "fld-desc-item");
+  // — Item‑specific fields with pickr —
+  const { row: rowRarity, select: fldRarity, colorBtn: pickrRarityBtn } =
+    createDropdownField("Rarity:", "fld-rarity", [
+      { value: "",         label: "Select Rarity" },
+      { value: "common",   label: "Common"       },
+      { value: "uncommon", label: "Uncommon"     },
+      { value: "rare",     label: "Rare"         },
+      { value: "epic",     label: "Epic"         },
+      { value: "legendary",label: "Legendary"    }
+    ]);
+  const { row: rowItemType, select: fldItemType, colorBtn: pickrItemTypeBtn } =
+    createDropdownField("Item Type:", "fld-item-type", [
+      { value: "Crafting Material", label: "Crafting Material" },
+      { value: "Special",           label: "Special"           },
+      { value: "Consumable",        label: "Consumable"        },
+      { value: "Quest",             label: "Quest"             }
+    ]);
+  const { row: rowDescItem, textarea: fldDescItem, colorBtn: pickrDescItemBtn } =
+    createTextareaFieldWithColor("Description:", "fld-desc-item");
 
-  // — Non‑item description —
-  const { row: rowDescNI, textarea: fldDescNI } = createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
+  // — Non‑item description with pickr —
+  const { row: rowDescNI, textarea: fldDescNI, colorBtn: pickrDescNIBtn } =
+    createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
 
-  // — Image & video fields —
+  // — Image & video fields (no pickr) —
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
   const { row: rowVid, input: fldVid }   = createVideoField("Video:",    "fld-vid");
@@ -108,11 +101,11 @@ export function initMarkerForm(db) {
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // Assemble item vs non‑item
+  // Assemble item vs non‑item sections
   const blockItem = document.createElement("div");
   blockItem.append(
-    rowRarityField,
-    rowItemTypeField,
+    rowRarity,
+    rowItemType,
     rowDescItem,
     hrBeforeExtra,
     rowExtra,
@@ -134,21 +127,19 @@ export function initMarkerForm(db) {
     rowButtons
   );
 
-  // 7) Add to document
+  // 7) Add modal to the DOM
   document.body.appendChild(modal);
 
-  // 8) Pickrs
-  const pickrName     = createPickr("#fld-name-color");
-  const pickrRare     = createPickr("#fld-rarity-color");
-  const pickrItemType = createPickr("#fld-item-type-color");
-  const pickrDescItem = createPickr("#fld-desc-item-color");
-  const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
+  // 8) Instantiate color pickers
+  createPickr("#fld-name-color");
+  createPickr("#fld-rarity-color");
+  createPickr("#fld-item-type-color");
+  createPickr("#fld-desc-item-color");
+  createPickr("#fld-desc-nonitem-color");
 
-  // State
+  // 9) Internal state and helper functions (unchanged)
   let defs = {};
   let customMode = false;
-
-  // Toggle sections
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
     blockNI.style.display   = isItem ? "none"  : "block";
@@ -156,7 +147,6 @@ export function initMarkerForm(db) {
   }
   fldType.onchange = () => toggleSections(fldType.value === "Item");
 
-  // Load definitions
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
     defs = Object.fromEntries(list.map(d => [d.id, d]));
@@ -169,7 +159,6 @@ export function initMarkerForm(db) {
     });
   }
 
-  // Populate form
   function populateForm(data = { type: "Item" }) {
     fldType.value = data.type;
     toggleSections(data.type === "Item");
@@ -217,7 +206,6 @@ export function initMarkerForm(db) {
     }
   }
 
-  // Harvest form
   function harvestForm(coords) {
     const out = { type: fldType.value, coords };
     if (out.type === "Item") {
@@ -266,7 +254,6 @@ export function initMarkerForm(db) {
     return out;
   }
 
-  // Position helper
   function positionAtCursor(evt) {
     modal.style.display = "block";
     const rect = content.getBoundingClientRect();
@@ -274,7 +261,6 @@ export function initMarkerForm(db) {
     content.style.top  = `${evt.clientY - rect.height/2}px`;
   }
 
-  // Open handlers
   let submitCB;
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
