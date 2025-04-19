@@ -41,10 +41,4 @@
   .ui-scrollbar::-webkit-scrollbar-thumb:hover {
     background: #777;
   }
-
-  #map,
-.leaflet-container {
-  z-index: 0 !important;
-}
-
   

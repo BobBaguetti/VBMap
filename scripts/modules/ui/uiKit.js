@@ -1,4 +1,5 @@
-// @version: 8
+
+// @version: 9
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -10,10 +11,12 @@ import { createPickr } from "./pickrManager.js";
 /**
  * Creates a modal window with a centered layout, header title, and close button.
  * Also attaches outside-click handler to close modal.
+ * Accepts an optional `size` argument: "small" (default) or "large".
  */
-export function createModal({ id, title, onClose }) {
+export function createModal({ id, title, onClose, size = "small" }) {
   const modal = document.createElement('div');
   modal.classList.add('modal');
+  modal.classList.add(`modal-${size}`); // size variant
   modal.id = id;
 
   const content = document.createElement('div');
@@ -22,6 +25,7 @@ export function createModal({ id, title, onClose }) {
   // Modal header
   const header = document.createElement('div');
   header.classList.add('modal-header');
+  header.id = `${id}-handle`; // For CSS or drag handle logic
 
   const titleEl = document.createElement('h2');
   titleEl.textContent = title;
@@ -47,8 +51,39 @@ export function createModal({ id, title, onClose }) {
     }
   });
 
+  // Make modal draggable by header
+  makeModalDraggable(modal, header);
+
   document.body.appendChild(modal);
   return { modal, content, header };
+}
+
+/**
+ * Enables basic dragging behavior on the modal using the given handle element.
+ */
+function makeModalDraggable(modal, handle) {
+  let offsetX = 0, offsetY = 0;
+  let isDragging = false;
+
+  handle.style.cursor = 'move';
+
+  handle.onmousedown = (e) => {
+    isDragging = true;
+    offsetX = e.clientX - modal.offsetLeft;
+    offsetY = e.clientY - modal.offsetTop;
+    document.onmousemove = (e) => {
+      if (isDragging) {
+        modal.style.left = `${e.clientX - offsetX}px`;
+        modal.style.top = `${e.clientY - offsetY}px`;
+        modal.style.position = 'absolute';
+      }
+    };
+    document.onmouseup = () => {
+      isDragging = false;
+      document.onmousemove = null;
+      document.onmouseup = null;
+    };
+  };
 }
 
 /**

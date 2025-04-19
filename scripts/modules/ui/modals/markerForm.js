@@ -1,4 +1,4 @@
-// @version: 12.2
+// @version: 11
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { positionModal } from "../uiManager.js";
@@ -16,17 +16,16 @@ import {
   createImageField,
   createVideoField,
   createExtraInfoBlock,
-  createFormButtonRow,
-  makeDraggable
+  createFormButtonRow
 } from "../uiKit.js";
 
-import { createPickr } from "../pickrManager.js";
+import { createPickr } from "../pickrManager.js"; 
+
 
 export function initMarkerForm(db) {
   const { modal, content } = createModal({
     id: "edit-marker-modal",
     title: "Edit Marker",
-    size: "small",
     onClose: () => closeModal(modal)
   });
 
@@ -35,20 +34,14 @@ export function initMarkerForm(db) {
   content.appendChild(form);
 
   // ------------------------------
-  // Modal Setup
-  // ------------------------------
-  modal.classList.add("no-backdrop");             // Remove dark backdrop
-  content.classList.add("modal-small");           // Apply small modal size
-  makeDraggable(content);                         // Enable dragging
-
-  // ------------------------------
   // Field Setup using uiKit.js
   // ------------------------------
+
   const { row: rowName, input: fldName } = createTextField("Name:", "fld-name");
   const { row: rowRarity, select: fldRarity } = createDropdownField("Rarity:", "fld-rarity", []);
   const { row: rowItemType, select: fldItemType } = createDropdownField("Item Type:", "fld-item-type", []);
   const { row: rowDescItem, textarea: fldDescItem } = createTextareaFieldWithColor("Description:", "fld-desc-item");
-  const { row: rowDescNI, textarea: fldDescNI } = createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
+  const { row: rowDescNI, textarea: fldDescNI } = createTextareaFieldWithColor("Description:", "fld-desc-nonitem");  
 
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
@@ -111,14 +104,13 @@ export function initMarkerForm(db) {
 
   document.body.appendChild(modal);
 
-  // ------------------------------
-  // Pickr Setup
-  // ------------------------------
-  const pickrName     = createPickr("#fld-name-color");
-  const pickrRare     = createPickr("#fld-rarity-color");
-  const pickrItemType = createPickr("#fld-item-type-color");
-  const pickrDescItem = createPickr("#fld-desc-item-color");
-  const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
+
+const pickrName     = createPickr("#fld-name-color");
+const pickrRare     = createPickr("#fld-rarity-color");
+const pickrItemType = createPickr("#fld-item-type-color");
+const pickrDescItem = createPickr("#fld-desc-item-color");
+const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
+
 
   // ------------------------------
   // Dropdown Setup
@@ -242,19 +234,20 @@ export function initMarkerForm(db) {
           imageBig:         d.imageBig
         });
       } else {
-        Object.assign(out, {
-          name: fldName.value.trim() || "Unnamed",
-          nameColor: pickrName.getColor().toHEXA().toString(),
-          rarity: fldRarity.value,
-          rarityColor: pickrRare.getColor().toHEXA().toString(),
-          itemType: fldItemType.value,
-          itemTypeColor: pickrItemType.getColor().toHEXA().toString(),
-          description: fldDescItem.value,
+        const payload = {
+          name:             fldName.value.trim() || "Unnamed",
+          nameColor:        pickrName.getColor().toHEXA().toString(),
+          rarity:           fldRarity.value,
+          rarityColor:      pickrRare.getColor().toHEXA().toString(),
+          itemType:         fldItemType.value,
+          itemTypeColor:    pickrItemType.getColor().toHEXA().toString(),
+          description:      fldDescItem.value,
           descriptionColor: pickrDescItem.getColor().toHEXA().toString(),
-          extraLines: getLines(),
-          imageSmall: fldImgS.value,
-          imageBig: fldImgL.value
-        });
+          extraLines:       getLines(),
+          imageSmall:       fldImgS.value,
+          imageBig:         fldImgL.value
+        };
+        Object.assign(out, payload);
       }
     } else {
       Object.assign(out, {
@@ -276,7 +269,6 @@ export function initMarkerForm(db) {
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
     positionModal(modal, evt);
-    content.style.display = "block";
     openModal(modal);
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
@@ -291,7 +283,6 @@ export function initMarkerForm(db) {
   function openCreate(coords, type, evt, onCreate) {
     populateForm({ type });
     positionModal(modal, evt);
-    content.style.display = "block";
     openModal(modal);
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
