@@ -17,7 +17,7 @@ import {
   createVideoField,
   createExtraInfoBlock,
   createFormButtonRow
-} from "../ui/uiKit.js";
+} from "../uiKit.js";
 
 export function initMarkerForm(db) {
   const { modal, content } = createModal({
