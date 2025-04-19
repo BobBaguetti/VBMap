@@ -1,4 +1,5 @@
-// /modules/ui/uiKit.js
+// @version: 8
+// @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
 
@@ -237,6 +238,16 @@ export function createDropdownField(labelText, id, options, defaultColor = "#E5E
 }
 
 /**
+ * Creates a labeled textarea with a color picker.
+ */
+export function createTextareaFieldWithColor(labelText, id, defaultColor = "#E5E6E8") {
+  const textarea = document.createElement("textarea");
+  textarea.id = id;
+  const { row, colorBtn } = createColorFieldRow(labelText, textarea, `${id}-color`);
+  return { row, textarea, colorBtn };
+}
+
+/**
  * Creates a labeled field for entering image URLs.
  */
 export function createImageField(labelText, id) {
@@ -256,6 +267,30 @@ export function createVideoField(labelText, id) {
   input.type = "text";
   const row = createFieldRow(labelText, input);
   return { row, input };
+}
+
+/**
+ * Creates a Save/Cancel row with default button labels.
+ */
+export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
+  const row = document.createElement("div");
+  row.className = "field-row";
+  row.style.justifyContent = "center";
+  row.style.marginTop = "10px";
+
+  const btnSave = document.createElement("button");
+  btnSave.type = "submit";
+  btnSave.className = "ui-button";
+  btnSave.textContent = saveText;
+
+  const btnCancel = document.createElement("button");
+  btnCancel.type = "button";
+  btnCancel.className = "ui-button";
+  btnCancel.textContent = cancelText;
+  btnCancel.onclick = onCancel;
+
+  row.append(btnSave, btnCancel);
+  return row;
 }
 
 // ------------------------------

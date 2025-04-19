@@ -1,4 +1,4 @@
-// @version: 7
+// @version: 8
 // @file:    /scripts/modules/ui/modals/markerForm.js
 
 import { positionModal } from "../uiManager.js";
@@ -6,13 +6,20 @@ import {
   loadItemDefinitions,
   addItemDefinition
 } from "../../services/itemDefinitionsService.js";
+
 import {
   createModal,
   createFieldRow,
   createColorFieldRow,
+  createExtraInfoBlock,
+  createTextField,
+  createDropdownField,
+  createImageField,
+  createVideoField,
   openModal,
   closeModal
 } from "../ui/uiKit.js";
+
 import { createPickr } from "../ui/pickrManager.js";
 
 export function initMarkerForm(db) {
@@ -329,3 +336,5 @@ export function initMarkerForm(db) {
     refreshPredefinedItems
   };
 }
+
+// @version: 8
