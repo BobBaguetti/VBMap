@@ -1,11 +1,11 @@
-// @version: 16
+// @version: 17
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal } from "../uiKit.js";
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 import {
   createTextField,
-  createDropdownField,
+  createFieldRow,
   createTextareaFieldWithColor,
   createImageField,
   createVideoField,
@@ -15,7 +15,7 @@ import {
 import { createPickr } from "../pickrManager.js";
 
 export function initMarkerForm(db) {
-  // 1) Create a small, draggable modal with no dark backdrop
+  // 1) Create a small, draggable modal with no backdrop
   const { modal, content } = createModal({
     id: "edit-marker-modal",
     title: "Edit Marker",
@@ -26,45 +26,64 @@ export function initMarkerForm(db) {
   });
 
   // 2) Divider under the header
-  const hrUnderHeader = document.createElement("hr");
-  content.appendChild(hrUnderHeader);
+  content.appendChild(document.createElement("hr"));
 
-  // 3) Build the form container
+  // 3) Build the form
   const form = document.createElement("form");
   form.id = "edit-form";
   content.appendChild(form);
 
-  // — Name field using uiKit (ensures consistent styling) —
+  // — Name field —
   const { row: rowName, input: fldName } = createTextField("Name:", "fld-name");
   fldName.classList.add("ui-input");
 
-  // — Type dropdown using uiKit (adds color-btn spacer) —
-  const { row: rowType, select: fldType } = createDropdownField("Type:", "fld-type", [
-    { value: "Door", label: "Door" },
-    { value: "Extraction Portal", label: "Extraction Portal" },
-    { value: "Item", label: "Item" },
-    { value: "Teleport", label: "Teleport" },
-    { value: "Spawn Point", label: "Spawn points" }
-  ]);
+  // — Type dropdown (no color‑btn) —
+  const fldType = document.createElement("select");
+  fldType.id = "fld-type";
+  fldType.classList.add("ui-input");
+  fldType.innerHTML = `
+    <option value="Door">Door</option>
+    <option value="Extraction Portal">Extraction Portal</option>
+    <option value="Item">Item</option>
+    <option value="Teleport">Teleport</option>
+    <option value="Spawn Point">Spawn points</option>
+  `;
+  const rowType = createFieldRow("Type:", fldType);
 
-  // — Predefined‑item dropdown using uiKit —
-  const { row: rowPre, select: ddPre } = createDropdownField("Item:", "fld-predef", []);
+  // — Predefined‑item dropdown (no color‑btn) —
+  const ddPre = document.createElement("select");
+  ddPre.id = "fld-predef";
+  ddPre.classList.add("ui-input");
+  const rowPre = createFieldRow("Item:", ddPre);
 
   // — Item‑specific fields —
-  const { row: rowRarity,     select: fldRarity   } = createDropdownField("Rarity:",    "fld-rarity",    [
-    { value: "",         label: "Select Rarity" },
-    { value: "common",   label: "Common" },
-    { value: "uncommon", label: "Uncommon" },
-    { value: "rare",     label: "Rare" },
-    { value: "epic",     label: "Epic" },
-    { value: "legendary",label: "Legendary" }
-  ]);
-  const { row: rowItemType,   select: fldItemType } = createDropdownField("Item Type:", "fld-item-type", [
-    { value: "Crafting Material", label: "Crafting Material" },
-    { value: "Special",           label: "Special" },
-    { value: "Consumable",        label: "Consumable" },
-    { value: "Quest",             label: "Quest" }
-  ]);
+  const { row: rowRarity,     textarea: _ignore1 } = createTextareaFieldWithColor("",""); 
+  // We only need createDropdownField for these so we import it
+  // but for brevity, inline here:
+  const { row: rowRarityField, select: fldRarity } = (() => {
+    const sel = document.createElement("select");
+    sel.id = "fld-rarity"; sel.classList.add("ui-input");
+    sel.innerHTML = `
+      <option value="">Select Rarity</option>
+      <option value="common">Common</option>
+      <option value="uncommon">Uncommon</option>
+      <option value="rare">Rare</option>
+      <option value="epic">Epic</option>
+      <option value="legendary">Legendary</option>
+    `;
+    return { row: createFieldRow("Rarity:", sel), select: sel };
+  })();
+  const { row: rowItemTypeField, select: fldItemType } = (() => {
+    const sel = document.createElement("select");
+    sel.id = "fld-item-type"; sel.classList.add("ui-input");
+    sel.innerHTML = `
+      <option value="Crafting Material">Crafting Material</option>
+      <option value="Special">Special</option>
+      <option value="Consumable">Consumable</option>
+      <option value="Quest">Quest</option>
+    `;
+    return { row: createFieldRow("Item Type:", sel), select: sel };
+  })();
   const { row: rowDescItem, textarea: fldDescItem } = createTextareaFieldWithColor("Description:", "fld-desc-item");
 
   // — Non‑item description —
@@ -75,7 +94,7 @@ export function initMarkerForm(db) {
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
   const { row: rowVid, input: fldVid }   = createVideoField("Video:",    "fld-vid");
 
-  // — Extra Info block —
+  // — Extra Info —
   const { block: extraInfoBlock, getLines, setLines } = createExtraInfoBlock();
   const rowExtra = document.createElement("div");
   rowExtra.className = "field-row extra-row";
@@ -90,11 +109,11 @@ export function initMarkerForm(db) {
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // 5) Assemble the item vs non‑item sections
+  // 5) Assemble item vs non‑item sections
   const blockItem = document.createElement("div");
   blockItem.append(
-    rowRarity,
-    rowItemType,
+    rowRarityField,
+    rowItemTypeField,
     rowDescItem,
     hrBeforeExtra,
     rowExtra,
@@ -104,7 +123,7 @@ export function initMarkerForm(db) {
   const blockNI = document.createElement("div");
   blockNI.append(rowDescNI);
 
-  // 6) Append all rows to the form
+  // 6) Append to form
   form.append(
     rowName,
     rowType,
@@ -117,21 +136,21 @@ export function initMarkerForm(db) {
     rowButtons
   );
 
-  // 7) Add modal to the document
+  // 7) Add modal to DOM
   document.body.appendChild(modal);
 
-  // 8) Instantiate color pickers
+  // 8) Color pickers
   const pickrName     = createPickr("#fld-name-color");
   const pickrRare     = createPickr("#fld-rarity-color");
   const pickrItemType = createPickr("#fld-item-type-color");
   const pickrDescItem = createPickr("#fld-desc-item-color");
   const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
-  // 9) Internal state for predefined items
+  // State
   let defs = {};
   let customMode = false;
 
-  // Show/hide item vs non‑item sections
+  // Toggle sections
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
     blockNI.style.display   = isItem ? "none"  : "block";
@@ -139,7 +158,7 @@ export function initMarkerForm(db) {
   }
   fldType.onchange = () => toggleSections(fldType.value === "Item");
 
-  // Load item definitions into the dropdown
+  // Load item definitions
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
     defs = Object.fromEntries(list.map(d => [d.id, d]));
@@ -152,11 +171,10 @@ export function initMarkerForm(db) {
     });
   }
 
-  // Fill the form from existing data
+  // Populate form
   function populateForm(data = { type: "Item" }) {
     fldType.value = data.type;
     toggleSections(data.type === "Item");
-
     if (data.type === "Item") {
       if (data.predefinedItemId && defs[data.predefinedItemId]) {
         const def = defs[data.predefinedItemId];
@@ -172,7 +190,7 @@ export function initMarkerForm(db) {
         fldImgS.value     = def.imageSmall;
         fldImgL.value     = def.imageBig;
         fldVid.value      = "";
-        setLines(def.extraLines || [], true);
+        setLines(def.extraLines || [], false);
         customMode = false;
       } else {
         ddPre.value       = "";
@@ -201,7 +219,7 @@ export function initMarkerForm(db) {
     }
   }
 
-  // Harvest form data into an object
+  // Harvest form
   function harvestForm(coords) {
     const out = { type: fldType.value, coords };
     if (out.type === "Item") {
@@ -250,7 +268,7 @@ export function initMarkerForm(db) {
     return out;
   }
 
-  // 9) Helper to position modal at cursor
+  // Position helper
   function positionAtCursor(evt) {
     modal.style.display = "block";
     const rect = content.getBoundingClientRect();
@@ -258,7 +276,7 @@ export function initMarkerForm(db) {
     content.style.top  = `${evt.clientY - rect.height / 2}px`;
   }
 
-  // 10) Attach openEdit/openCreate
+  // openEdit / openCreate
   let submitCB;
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
