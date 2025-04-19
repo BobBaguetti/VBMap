@@ -1,5 +1,7 @@
+// @version: 3
+// @file: /scripts/modules/ui/pickrManager.js
 
-import Pickr from '@simonwep/pickr';
+import Pickr from "@simonwep/pickr";
 
 const activePickrs = [];
 
@@ -10,7 +12,7 @@ const activePickrs = [];
 export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
   const el = document.querySelector(targetSelector);
   if (!el) {
-    console.warn(\`Pickr target \${targetSelector} not found\`);
+    console.warn(`Pickr target ${targetSelector} not found`);
     return {
       on: () => {},
       setColor: () => {},
