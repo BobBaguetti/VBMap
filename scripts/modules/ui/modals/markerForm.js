@@ -1,4 +1,4 @@
-// @version: 22
+// @version: 23
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal } from "../uiKit.js";
@@ -26,8 +26,7 @@ export function initMarkerForm(db) {
     onClose: () => closeModal(modal)
   });
 
-  // 2) Divider under header
-  content.appendChild(document.createElement("hr"));
+  // 2) (Removed <hr> under header)
 
   // 3) Form container
   const form = document.createElement("form");
@@ -101,7 +100,7 @@ export function initMarkerForm(db) {
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // Assemble item vs non‑item sections (hrBeforeExtra/hrAfterExtra removed)
+  // Assemble item vs non‑item sections
   const blockItem = document.createElement("div");
   blockItem.append(
     rowRarity,
@@ -112,7 +111,7 @@ export function initMarkerForm(db) {
   const blockNI = document.createElement("div");
   blockNI.append(rowDescNI);
 
-  // 6) Append all to the form
+  // 4) Append all to the form
   form.append(
     rowName,
     rowType,
@@ -125,20 +124,21 @@ export function initMarkerForm(db) {
     rowButtons
   );
 
-  // 7) Add modal to the DOM
+  // 5) Add modal to the DOM
   document.body.appendChild(modal);
 
-  // 8) Instantiate color pickers
+  // 6) Instantiate color pickers
   const pickrName     = createPickr("#fld-name-color");
   const pickrRare     = createPickr("#fld-rarity-color");
   const pickrItemType = createPickr("#fld-item-type-color");
   const pickrDescItem = createPickr("#fld-desc-item-color");
   const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
-  // 9) State & helpers
+  // Internal state
   let defs = {};
   let customMode = false;
 
+  // Show/hide correct sections
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
     blockNI.style.display   = isItem ? "none"  : "block";
@@ -146,6 +146,7 @@ export function initMarkerForm(db) {
   }
   fldType.onchange = () => toggleSections(fldType.value === "Item");
 
+  // Load predefined items
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
     defs = Object.fromEntries(list.map(d => [d.id, d]));
@@ -158,9 +159,11 @@ export function initMarkerForm(db) {
     });
   }
 
+  // Populate form
   function populateForm(data = { type: "Item" }) {
     fldType.value = data.type;
     toggleSections(data.type === "Item");
+
     if (data.type === "Item") {
       if (data.predefinedItemId && defs[data.predefinedItemId]) {
         const def = defs[data.predefinedItemId];
@@ -197,14 +200,15 @@ export function initMarkerForm(db) {
     } else {
       fldName.value     = data.name       || "";
       pickrName.setColor(data.nameColor   || "#E5E6E8");
+      fldDescNI.value   = data.description|| "";
+      pickrDescNI.setColor(data.descriptionColor || "#E5E6E8");
       fldImgS.value     = data.imageSmall || "";
       fldImgL.value     = data.imageBig   || "";
       fldVid.value      = data.videoURL   || "";
-      fldDescNI.value   = data.description|| "";
-      pickrDescNI.setColor(data.descriptionColor || "#E5E6E8");
     }
   }
 
+  // Harvest form
   function harvestForm(coords) {
     const out = { type: fldType.value, coords };
     if (out.type === "Item") {
@@ -253,13 +257,15 @@ export function initMarkerForm(db) {
     return out;
   }
 
+  // Position modal at cursor
   function positionAtCursor(evt) {
     modal.style.display = "block";
     const rect = content.getBoundingClientRect();
     content.style.left = `${evt.clientX - rect.width}px`;
-    content.style.top  = `${evt.clientY - rect.height/2}px`;
+    content.style.top  = `${evt.clientY - rect.height / 2}px`;
   }
 
+  // Handlers
   let submitCB;
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
