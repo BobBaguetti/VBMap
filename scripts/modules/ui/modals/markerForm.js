@@ -1,4 +1,4 @@
-// @version: 12
+// @version: 13
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { positionModal } from "../uiManager.js";
@@ -10,6 +10,7 @@ import {
   createModal,
   openModal,
   closeModal,
+  makeModalDraggable,
   createTextField,
   createDropdownField,
   createTextareaFieldWithColor,
@@ -26,12 +27,12 @@ import { createPickr } from "../pickrManager.js";
 export function initMarkerForm(db) {
   const { modal, content } = createModal({
     id: "edit-marker-modal",
-    title: "",
-    onClose: () => closeModal(modal)
+    size: "small"
   });
 
   const header = createModalHeader("Edit Marker", () => closeModal(modal));
   content.appendChild(header);
+  makeModalDraggable(modal, header);
 
   const form = document.createElement("form");
   form.id = "edit-form";

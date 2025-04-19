@@ -1,66 +1,88 @@
-// @version: 10
+// @version: 11
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
 
 // ------------------------------
-// Basic Modal and Layout Helpers
+// Smart Modal Creation
 // ------------------------------
 
 /**
- * Creates a modal window with a centered layout, header title, and close button.
- * Also attaches outside-click handler to close modal.
- * Accepts an optional `size` argument: "small" (default) or "large".
+ * Creates either a small draggable modal (no backdrop),
+ * or a large centered modal with dark backdrop.
  */
-export function createModal({ id, title, onClose, size = "small" }) {
-  const modal = document.createElement('div');
-  modal.classList.add('modal');
-  modal.classList.add(`modal-${size}`); // size variant
+export function createModal({ id, title = "", onClose, size = "small" }) {
+  if (size === "small") {
+    // No backdrop, draggable modal
+    const content = document.createElement("div");
+    content.classList.add("modal-content", "modal-small");
+    content.id = id;
+
+    // Make modal draggable
+    document.body.appendChild(content);
+
+    // Optional click outside to close: skip for small modal
+    // Instead, rely on close button via createModalHeader
+
+    return { modal: content, content };
+  }
+
+  // Large modal with backdrop
+  const modal = document.createElement("div");
+  modal.classList.add("modal");
+  modal.classList.add("modal-large");
   modal.id = id;
 
-  const content = document.createElement('div');
-  content.classList.add('modal-content');
+  const content = document.createElement("div");
+  content.classList.add("modal-content");
 
-  // Modal header
-  const header = document.createElement('div');
-  header.classList.add('modal-header');
-  header.id = `${id}-handle`; // For CSS or drag handle logic
+  // Optional built-in header (can be left out if using createModalHeader manually)
+  if (title) {
+    const header = document.createElement("div");
+    header.classList.add("modal-header");
+    header.id = `${id}-handle`;
 
-  const titleEl = document.createElement('h2');
-  titleEl.textContent = title;
+    const titleEl = document.createElement("h2");
+    titleEl.textContent = title;
 
-  const closeBtn = document.createElement('span');
-  closeBtn.classList.add('close');
-  closeBtn.innerHTML = '&times;';
-  closeBtn.addEventListener('click', () => {
-    closeModal(modal);
-    if (onClose) onClose();
-  });
+    const closeBtn = document.createElement("span");
+    closeBtn.classList.add("close");
+    closeBtn.innerHTML = "&times;";
+    closeBtn.addEventListener("click", () => {
+      closeModal(modal);
+      if (onClose) onClose();
+    });
 
-  header.appendChild(titleEl);
-  header.appendChild(closeBtn);
-  content.appendChild(header);
+    header.append(titleEl, closeBtn);
+    content.appendChild(header);
+  }
+
   modal.appendChild(content);
 
-  // Allow closing modal when clicking outside content
-  modal.addEventListener('click', (e) => {
+  modal.addEventListener("click", (e) => {
     if (e.target === modal) {
       closeModal(modal);
       if (onClose) onClose();
     }
   });
 
-  // Make modal draggable by header
-  makeModalDraggable(modal, header);
-
   document.body.appendChild(modal);
-  return { modal, content, header };
+  return { modal, content };
 }
 
-/**
- * Enables basic dragging behavior on the modal using the given handle element.
- */
-function makeModalDraggable(modal, handle) {
+// ------------------------------
+// Helpers
+// ------------------------------
+
+export function closeModal(modal) {
+  modal.style.display = "none";
+}
+
+export function openModal(modal) {
+  modal.style.display = "block";
+}
+
+export function makeModalDraggable(modal, handle) {
   let offsetX = 0, offsetY = 0;
   let isDragging = false;
 
@@ -85,28 +107,60 @@ function makeModalDraggable(modal, handle) {
   };
 }
 
-/**
- * Hides the given modal element.
- */
-export function closeModal(modal) {
-  modal.style.display = 'none';
+export function createModalHeader(titleText, onClose) {
+  const header = document.createElement("div");
+  header.className = "modal-header";
+
+  const title = document.createElement("h2");
+  title.textContent = titleText;
+
+  const close = document.createElement("span");
+  close.className = "close";
+  close.innerHTML = "&times;";
+  close.onclick = () => {
+    if (onClose) onClose();
+  };
+
+  header.append(title, close);
+  return header;
 }
 
-/**
- * Shows the given modal element.
- */
-export function openModal(modal) {
-  modal.style.display = 'block';
+export function createFormFooter(onCancel, onSave, {
+  saveText = "Save",
+  cancelText = "Cancel"
+} = {}) {
+  const row = document.createElement("div");
+  row.className = "field-row";
+  row.style.justifyContent = "center";
+  row.style.marginTop = "10px";
+
+  const btnSave = document.createElement("button");
+  btnSave.type = "submit";
+  btnSave.className = "ui-button";
+  btnSave.textContent = saveText;
+  if (onSave) btnSave.addEventListener("click", onSave);
+
+  const btnCancel = document.createElement("button");
+  btnCancel.type = "button";
+  btnCancel.className = "ui-button";
+  btnCancel.textContent = cancelText;
+  btnCancel.onclick = () => {
+    if (onCancel) onCancel();
+  };
+
+  row.append(btnSave, btnCancel);
+  return row;
 }
 
-/**
- * Creates a standard field row with a label and an input-like element.
- */
+// ------------------------------
+// Fields
+// ------------------------------
+
 export function createFieldRow(labelText, inputEl) {
-  const row = document.createElement('div');
-  row.classList.add('field-row');
+  const row = document.createElement("div");
+  row.classList.add("field-row");
 
-  const label = document.createElement('label');
+  const label = document.createElement("label");
   label.textContent = labelText;
 
   row.appendChild(label);
@@ -114,10 +168,6 @@ export function createFieldRow(labelText, inputEl) {
   return row;
 }
 
-/**
- * Returns a stub div used as a color picker button.
- * This is styled and then attached to Pickr.
- */
 export function createColorButton(id) {
   const btn = document.createElement("div");
   btn.className = "color-btn";
@@ -125,9 +175,6 @@ export function createColorButton(id) {
   return btn;
 }
 
-/**
- * Combines a label, input element, and color picker into a single row.
- */
 export function createColorFieldRow(labelText, inputEl, colorId) {
   const row = document.createElement("div");
   row.classList.add("field-row");
@@ -143,107 +190,6 @@ export function createColorFieldRow(labelText, inputEl, colorId) {
 
   return { row, colorBtn };
 }
-
-// ------------------------------
-// Modular Extra Info Line Builder
-// ------------------------------
-
-/**
- * Returns a block of dynamically addable "extra info" lines,
- * each with a text input and a color picker.
- */
-export function createExtraInfoBlock(options = {}) {
-  const {
-    defaultColor = "#E5E6E8",
-    readonly = false
-  } = options;
-
-  const wrap = document.createElement("div");
-  wrap.className = "extra-info-block";
-
-  const btnAdd = document.createElement("button");
-  btnAdd.type = "button";
-  btnAdd.textContent = "+";
-  btnAdd.classList.add("ui-button");
-  btnAdd.style.marginBottom = "8px";
-
-  const lineWrap = document.createElement("div");
-
-  wrap.appendChild(btnAdd);
-  wrap.appendChild(lineWrap);
-
-  let lines = [];
-
-  /**
-   * Re-renders all extra line rows in the DOM.
-   */
-  function render() {
-    lineWrap.innerHTML = "";
-
-    lines.forEach((line, i) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
-
-      const input = document.createElement("input");
-      input.className = "ui-input";
-      input.value = line.text;
-      input.readOnly = readonly;
-      input.oninput = () => {
-        lines[i].text = input.value;
-      };
-
-      const color = document.createElement("div");
-      color.className = "color-btn";
-      color.id = `extra-color-${i}`;
-      color.style.marginLeft = "5px";
-
-      const btnRemove = document.createElement("button");
-      btnRemove.type = "button";
-      btnRemove.className = "ui-button";
-      btnRemove.textContent = "×";
-      btnRemove.style.marginLeft = "5px";
-      btnRemove.onclick = () => {
-        lines.splice(i, 1);
-        render();
-      };
-
-      row.append(input, color);
-      if (!readonly) row.appendChild(btnRemove);
-      lineWrap.appendChild(row);
-
-      const pickr = createPickr(`#${color.id}`);
-      pickr.setColor(line.color || defaultColor);
-      line._pickr = pickr;
-    });
-  }
-
-  btnAdd.onclick = () => {
-    lines.push({ text: "", color: defaultColor });
-    render();
-  };
-
-  function getLines() {
-    return lines.map(l => ({
-      text: l.text,
-      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
-    }));
-  }
-
-  function setLines(newLines, isReadonly = false) {
-    lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
-    render();
-    if (isReadonly) {
-      btnAdd.style.display = "none";
-    }
-  }
-
-  return { block: wrap, getLines, setLines };
-}
-
-// ------------------------------
-// Modular Field Helpers
-// ------------------------------
 
 export function createTextField(labelText, id, defaultColor = "#E5E6E8") {
   const input = document.createElement("input");
@@ -309,9 +255,91 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
   return row;
 }
 
-// ------------------------------
-// Modular Scrollable List Block
-// ------------------------------
+export function createExtraInfoBlock(options = {}) {
+  const {
+    defaultColor = "#E5E6E8",
+    readonly = false
+  } = options;
+
+  const wrap = document.createElement("div");
+  wrap.className = "extra-info-block";
+
+  const btnAdd = document.createElement("button");
+  btnAdd.type = "button";
+  btnAdd.textContent = "+";
+  btnAdd.classList.add("ui-button");
+  btnAdd.style.marginBottom = "8px";
+
+  const lineWrap = document.createElement("div");
+
+  wrap.appendChild(btnAdd);
+  wrap.appendChild(lineWrap);
+
+  let lines = [];
+
+  function render() {
+    lineWrap.innerHTML = "";
+
+    lines.forEach((line, i) => {
+      const row = document.createElement("div");
+      row.className = "field-row";
+      row.style.marginBottom = "5px";
+
+      const input = document.createElement("input");
+      input.className = "ui-input";
+      input.value = line.text;
+      input.readOnly = readonly;
+      input.oninput = () => {
+        lines[i].text = input.value;
+      };
+
+      const color = document.createElement("div");
+      color.className = "color-btn";
+      color.id = `extra-color-${i}`;
+      color.style.marginLeft = "5px";
+
+      const btnRemove = document.createElement("button");
+      btnRemove.type = "button";
+      btnRemove.className = "ui-button";
+      btnRemove.textContent = "×";
+      btnRemove.style.marginLeft = "5px";
+      btnRemove.onclick = () => {
+        lines.splice(i, 1);
+        render();
+      };
+
+      row.append(input, color);
+      if (!readonly) row.appendChild(btnRemove);
+      lineWrap.appendChild(row);
+
+      const pickr = createPickr(`#${color.id}`);
+      pickr.setColor(line.color || defaultColor);
+      line._pickr = pickr;
+    });
+  }
+
+  btnAdd.onclick = () => {
+    lines.push({ text: "", color: defaultColor });
+    render();
+  };
+
+  function getLines() {
+    return lines.map(l => ({
+      text: l.text,
+      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
+    }));
+  }
+
+  function setLines(newLines, isReadonly = false) {
+    lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
+    render();
+    if (isReadonly) {
+      btnAdd.style.display = "none";
+    }
+  }
+
+  return { block: wrap, getLines, setLines };
+}
 
 export function createScrollableListBlock(maxHeight = "240px") {
   const wrapper = document.createElement("div");
@@ -320,53 +348,4 @@ export function createScrollableListBlock(maxHeight = "240px") {
   wrapper.style.overflowY = "auto";
   wrapper.style.padding = "5px";
   return wrapper;
-}
-
-// ------------------------------
-// Modular Header/Footer Helpers
-// ------------------------------
-
-export function createModalHeader(titleText, onClose) {
-  const header = document.createElement("div");
-  header.className = "modal-header";
-
-  const title = document.createElement("h2");
-  title.textContent = titleText;
-
-  const close = document.createElement("span");
-  close.className = "close";
-  close.innerHTML = "&times;";
-  close.onclick = () => {
-    if (onClose) onClose();
-  };
-
-  header.append(title, close);
-  return header;
-}
-
-export function createFormFooter(onCancel, onSave, {
-  saveText = "Save",
-  cancelText = "Cancel"
-} = {}) {
-  const row = document.createElement("div");
-  row.className = "field-row";
-  row.style.justifyContent = "center";
-  row.style.marginTop = "10px";
-
-  const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = saveText;
-  if (onSave) btnSave.addEventListener("click", onSave);
-
-  const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "ui-button";
-  btnCancel.textContent = cancelText;
-  btnCancel.onclick = () => {
-    if (onCancel) onCancel();
-  };
-
-  row.append(btnSave, btnCancel);
-  return row;
 }
