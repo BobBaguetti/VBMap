@@ -342,9 +342,19 @@ body, html {
   padding: 20px;
 }
 
+/* Header with title and close button */
+#edit-modal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid #444;
+  margin-bottom: 8px;
+}
+
+/* Edit Marker title */
 #edit-modal-handle {
   font-weight: bold;
-  margin-bottom: 12px;
   font-size: 16px;
 }
 
