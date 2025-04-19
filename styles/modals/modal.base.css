@@ -1,4 +1,4 @@
-/* modal.base.css – base styles for all modals */
+/* modal.base.css – base styles for all modals (v2) */
 
 /* 1) Global box‑sizing */
 *,
@@ -31,33 +31,35 @@
   overflow: auto;
 }
 
-/* 3) Header styling */
+/* 3) Header layout */
 .modal-header {
-  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .modal-header h2 {
-  /* shrink by ~1/3 from default 1.4em */
+  /* ~1/3 smaller than before */
   font-size: 1em;
   margin: 0;
 }
 
 .modal-header .close {
-  position: absolute;
-  top: 16px;
-  right: 16px;
+  /* remove absolute positioning;
+     flexbox takes care of positioning */
+  position: static;
   font-size: 1.4em;
   cursor: pointer;
 }
 
-/* tighten gap under header */
+/* 4) Tighter divider under header */
 .modal-header + hr {
   border: none;
   border-top: 2px solid #444;
-  margin: 8px 0 8px;
+  margin: 4px 0 8px;  /* less top‑gap before first row */
 }
 
-/* 4) Flex field rows & controls */
+/* 5) Flex rows for fields */
 .modal-content .field-row {
   display: flex;
   align-items: center;
@@ -69,9 +71,11 @@
   margin-right: 8px;
 }
 
+/* 6) Full‑width, flexing controls */
 .modal-content .field-row input[type="text"],
 .modal-content .field-row select,
-.modal-content .field-row textarea {
+.modal-content .field-row textarea,
+.modal-content .field-row .ui-input {
   flex: 1 1 auto;
   min-width: 0;
   width: auto !important;
@@ -87,7 +91,7 @@
   margin-right: 0;
 }
 
-/* 5) Color‑picker & remove‑line buttons */
+/* 7) Color‑picker & remove‑line buttons */
 .modal-content .color-btn {
   margin-left: 8px !important;
   flex: 0 0 24px;
@@ -97,16 +101,17 @@
   border-radius: 2px;
   cursor: pointer;
 }
+
 .modal-content .field-row button.ui-button {
   margin-left: 8px;
 }
 
-/* 6) Extra‑row top‑align */
+/* 8) Extra‑row top‑align */
 .modal-content .field-row.extra-row {
   align-items: flex-start;
 }
 
-/* 7) Content hr */
+/* 9) Internal content hr */
 .modal-content hr {
   border: none;
   border-top: 1px solid #444;
