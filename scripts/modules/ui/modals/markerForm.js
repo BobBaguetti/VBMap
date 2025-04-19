@@ -1,7 +1,7 @@
-// @version: 28
+// @version: 29
 // @file: /scripts/modules/ui/modals/markerForm.js
 
-import { createModal, closeModal } from "../uiKit.js";
+import { createModal, closeModal, openModalAt } from "../uiKit.js";
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 import {
   createTextField,
@@ -15,20 +15,18 @@ import {
 import { createPickr } from "../pickrManager.js";
 
 export function initMarkerForm(db) {
-  // 1) Create modal
+  // 1) Create modal (auto‑adds <hr> under header)
   const { modal, content } = createModal({
     id: "edit-marker-modal",
     title: "Edit Marker",
     size: "small",
     backdrop: false,
     draggable: true,
+    withDivider: true,
     onClose: () => closeModal(modal)
   });
 
-  // 2) Divider under header
-  content.appendChild(document.createElement("hr"));
-
-  // 3) Form container
+  // 2) Build the form container
   const form = document.createElement("form");
   form.id = "edit-form";
   content.appendChild(form);
@@ -37,23 +35,21 @@ export function initMarkerForm(db) {
   const { row: rowName, input: fldName } = createTextField("Name:", "fld-name");
   fldName.classList.add("ui-input");
 
-  // — Type dropdown (hide its pickr button entirely) —
-  const { row: rowType, select: fldType, colorBtn: pickrTypeBtn } =
+  // — Type dropdown (no pickr) —
+  const { row: rowType, select: fldType } =
     createDropdownField("Type:", "fld-type", [
       { value: "Door", label: "Door" },
       { value: "Extraction Portal", label: "Extraction Portal" },
       { value: "Item", label: "Item" },
       { value: "Teleport", label: "Teleport" },
       { value: "Spawn Point", label: "Spawn points" }
-    ]);
+    ], { showColor: false });
   fldType.classList.add("ui-input");
-  pickrTypeBtn.style.display = "none";
 
-  // — Predefined‑item dropdown (hide its pickr) —
-  const { row: rowPre, select: ddPre, colorBtn: pickrPreBtn } =
-    createDropdownField("Item:", "fld-predef", []);
+  // — Predefined‑item dropdown (no pickr) —
+  const { row: rowPre, select: ddPre } =
+    createDropdownField("Item:", "fld-predef", [], { showColor: false });
   ddPre.classList.add("ui-input");
-  pickrPreBtn.style.display = "none";
 
   // — Item‑specific fields with pickrs —
   const { row: rowRarity, select: fldRarity } =
@@ -95,14 +91,14 @@ export function initMarkerForm(db) {
   lblExtra.textContent = "Extra Info:";
   rowExtra.append(lblExtra, extraInfoBlock);
 
-  // 4) Dividers around Extra Info
+  // 3) Dividers around Extra Info
   const hrBeforeExtra = document.createElement("hr");
   const hrAfterExtra  = document.createElement("hr");
 
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // 5) Assemble item vs non‑item sections
+  // 4) Assemble item vs non‑item sections
   const blockItem = document.createElement("div");
   blockItem.append(
     rowRarity,
@@ -115,7 +111,7 @@ export function initMarkerForm(db) {
   const blockNI = document.createElement("div");
   blockNI.append(rowDescNI);
 
-  // 6) Build the form
+  // 5) Build the rest of the form
   form.append(
     rowName,
     rowType,
@@ -128,21 +124,18 @@ export function initMarkerForm(db) {
     rowButtons
   );
 
-  // 7) Add modal to DOM
+  // 6) Add modal to the DOM
   document.body.appendChild(modal);
 
-  // 8) Instantiate color pickrs
+  // 7) Instantiate color pickrs
   const pickrName     = createPickr("#fld-name-color");
   const pickrRare     = createPickr("#fld-rarity-color");
   const pickrItemType = createPickr("#fld-item-type-color");
   const pickrDescItem = createPickr("#fld-desc-item-color");
   const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
-  // 9) Internal state
-  let defs = {};
-  let customMode = false;
-
-  // Show/hide appropriate sections
+  // Internal state & helpers
+  let defs = {}, customMode = false;
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
     blockNI.style.display   = isItem ? "none"  : "block";
@@ -150,7 +143,6 @@ export function initMarkerForm(db) {
   }
   fldType.onchange = () => toggleSections(fldType.value === "Item");
 
-  // Load item definitions
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
     defs = Object.fromEntries(list.map(d => [d.id, d]));
@@ -163,11 +155,9 @@ export function initMarkerForm(db) {
     });
   }
 
-  // Populate form from data
   function populateForm(data = { type: "Item" }) {
     fldType.value = data.type;
     toggleSections(data.type === "Item");
-
     if (data.type === "Item") {
       if (data.predefinedItemId && defs[data.predefinedItemId]) {
         const def = defs[data.predefinedItemId];
@@ -212,7 +202,6 @@ export function initMarkerForm(db) {
     }
   }
 
-  // Harvest form data
   function harvestForm(coords) {
     const out = { type: fldType.value, coords };
     if (out.type === "Item") {
@@ -261,40 +250,30 @@ export function initMarkerForm(db) {
     return out;
   }
 
-  // Position modal at cursor
-  function positionAtCursor(evt) {
-    modal.style.display = "block";
-    const rect = content.getBoundingClientRect();
-    content.style.left = `${evt.clientX - rect.width}px`;
-    content.style.top  = `${evt.clientY - rect.height / 2}px`;
-  }
-
-  // Open in “edit” mode
-  let submitCB;
+  // — this now comes from uiKit —
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
-    positionAtCursor(evt);
-    if (submitCB) form.removeEventListener("submit", submitCB);
-    submitCB = e => {
+    openModalAt(modal, evt);
+    if (this._submitCb) form.removeEventListener("submit", this._submitCb);
+    this._submitCb = e => {
       e.preventDefault();
       Object.assign(data, harvestForm(data.coords));
       onSave(data);
       closeModal(modal);
     };
-    form.addEventListener("submit", submitCB);
+    form.addEventListener("submit", this._submitCb);
   }
 
-  // Open in “create” mode
   function openCreate(coords, type, evt, onCreate) {
     populateForm({ type });
-    positionAtCursor(evt);
-    if (submitCB) form.removeEventListener("submit", submitCB);
-    submitCB = e => {
+    openModalAt(modal, evt);
+    if (this._submitCb) form.removeEventListener("submit", this._submitCb);
+    this._submitCb = e => {
       e.preventDefault();
       onCreate(harvestForm(coords));
       closeModal(modal);
     };
-    form.addEventListener("submit", submitCB);
+    form.addEventListener("submit", this._submitCb);
   }
 
   return {
