@@ -18,7 +18,7 @@
     background-color: rgba(0,0,0,0.8);
 }
 
-.modal-content {
+.modal-small .modal-content {
     background-color: #222;
     color: #e0e0e0;
     border: 1px solid #555;
@@ -28,7 +28,7 @@
     left: 50%;
     transform: translate(-50%, -50%);
     padding: 5px 20px;
-    width: 500px;
+    width: 380px;
     max-height: 90vh;
     overflow: hidden;
 }
