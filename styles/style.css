@@ -466,6 +466,15 @@ body, html {
   padding: 5px;
 }
 
+/* Dark mode scrollbars for scrollable containers */
+.def-list,
+textarea,
+#extra-lines,
+#def-extra-lines {
+  scrollbar-width: thin;
+  scrollbar-color: #555 #2a2a2a;
+}
+
 /* Item Entry Row */
 .item-def-entry {
   position: relative;
