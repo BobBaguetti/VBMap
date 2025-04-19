@@ -57,6 +57,18 @@ const { filterMarkers, loadItemFilters } = await setupSidebar(map, layers, allMa
 const markerForm = initMarkerForm(db);
 
 /* ------------------------------------------------------------------ *
+ *  Edit Marker Modal X Button Close Handler
+ * ------------------------------------------------------------------ */
+const editCloseBtn = document.getElementById("edit-close-btn");
+const editModal = document.getElementById("edit-modal");
+
+if (editCloseBtn && editModal) {
+  editCloseBtn.addEventListener("click", () => {
+    editModal.style.display = "none";
+  });
+}
+
+/* ------------------------------------------------------------------ *
  *  Helper: Refresh Markers When Definitions Change
  * ------------------------------------------------------------------ */
 async function refreshMarkersFromDefinitions() {
