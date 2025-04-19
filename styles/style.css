@@ -211,8 +211,9 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 10px 0 10px;
-  position: relative;
+  padding: 10px 12px; /* balanced vertical padding */
+  margin-bottom: 12px; /* give breathing room from form */
+  border-bottom: 1px solid #444; /* optional divider */
 }
 
 /* Existing: Style the X button itself */
@@ -352,6 +353,7 @@ body, html {
   display: flex;
   flex-direction: column;
   gap: 10px;
+  padding-top: 8px; /* adds space below header */
 }
 
 .field-row {
