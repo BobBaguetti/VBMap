@@ -1,9 +1,8 @@
-// @version: 12
+// @version: 13
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import {
   createModal,
-  openModal,
   closeModal,
   createTextField,
   createDropdownField,
@@ -27,7 +26,9 @@ export function initMarkerForm(db) {
   form.id = "edit-form";
   content.appendChild(form);
 
-  // Field Setup
+  // ──────────────────────────────
+  // Field setup
+  // ──────────────────────────────
   const { row: rowName, input: fldName } = createTextField("Name:", "fld-name");
   const { row: rowRarity, select: fldRarity } = createDropdownField("Rarity:", "fld-rarity", []);
   const { row: rowItemType, select: fldItemType } = createDropdownField("Item Type:", "fld-item-type", []);
@@ -72,13 +73,18 @@ export function initMarkerForm(db) {
   form.append(rowName, rowType, rowPre, blockItem, blockNI, rowImgS, rowImgL, rowVid, rowButtons);
   document.body.appendChild(modal);
 
+  // ──────────────────────────────
+  // Color pickers
+  // ──────────────────────────────
   const pickrName     = createPickr("#fld-name-color");
   const pickrRare     = createPickr("#fld-rarity-color");
   const pickrItemType = createPickr("#fld-item-type-color");
   const pickrDescItem = createPickr("#fld-desc-item-color");
   const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
-  // Dropdowns
+  // ──────────────────────────────
+  // Dropdown options
+  // ──────────────────────────────
   fldType.innerHTML = `
     <option value="Door">Door</option>
     <option value="Extraction Portal">Extraction Portal</option>
@@ -101,7 +107,9 @@ export function initMarkerForm(db) {
     <option value="Quest">Quest</option>
   `;
 
-  // State & toggling
+  // ──────────────────────────────
+  // State & utility functions
+  // ──────────────────────────────
   let defs = {};
   let customMode = false;
   function toggleSections(isItem) {
@@ -126,6 +134,7 @@ export function initMarkerForm(db) {
   function populateForm(data = { type: "Item" }) {
     fldType.value = data.type;
     toggleSections(data.type === "Item");
+
     if (data.type === "Item") {
       if (data.predefinedItemId && defs[data.predefinedItemId]) {
         const def = defs[data.predefinedItemId];
@@ -221,9 +230,21 @@ export function initMarkerForm(db) {
 
   let submitCB = null;
 
+  // ──────────────────────────────
+  // Position modal so its right‑center edge is at the click
+  // ──────────────────────────────
+  function positionAtCursor(evt) {
+    modal.style.display = "block";
+    const rect = content.getBoundingClientRect();
+    const left = evt.clientX - rect.width;
+    const top  = evt.clientY - rect.height / 2;
+    content.style.left = `${left}px`;
+    content.style.top  = `${top}px`;
+  }
+
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
-    openModal(modal);
+    positionAtCursor(evt);
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
       e.preventDefault();
@@ -236,12 +257,12 @@ export function initMarkerForm(db) {
 
   function openCreate(coords, type, evt, onCreate) {
     populateForm({ type });
-    openModal(modal);
+    positionAtCursor(evt);
     if (submitCB) form.removeEventListener("submit", submitCB);
     submitCB = e => {
       e.preventDefault();
-      const data = harvestForm(coords);
-      onCreate(data);
+      const newData = harvestForm(coords);
+      onCreate(newData);
       closeModal(modal);
     };
     form.addEventListener("submit", submitCB);
