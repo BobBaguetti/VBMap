@@ -1,5 +1,5 @@
 <!-- @fullfile: Send the entire file, no omissions or abridgments. -->
-<!-- @version: 5 -->
+<!-- @version: 6 -->
 <!-- @file: /index.html -->
 
 <!DOCTYPE html>
@@ -8,20 +8,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1.0" />
   <title>Vaultbreakers Interactive Map</title>
-  <!-- Leaflet CSS -->
+
+  <!-- Leaflet & MarkerCluster CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <!-- MarkerCluster CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
   <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="styles/style.css" />
-  <!-- Modal CSS – split into base, small, large -->
+
+  <!-- Core UI styles -->
+  <link rel="stylesheet" href="styles/base.css" />
+  <link rel="stylesheet" href="styles/ui.css" />
+  <link rel="stylesheet" href="styles/sidebar.css" />
+  <link rel="stylesheet" href="styles/popup.css" />
+  <link rel="stylesheet" href="styles/context-menu.css" />
+  <link rel="stylesheet" href="styles/custom-markers.css" />
+  <link rel="stylesheet" href="styles/form.css" />
+
+  <!-- Modal variants -->
   <link rel="stylesheet" href="styles/modals/modal.base.css" />
   <link rel="stylesheet" href="styles/modals/modal.small.css" />
   <link rel="stylesheet" href="styles/modals/modal.large.css" />
-  <!-- Font Awesome for icons -->
+
+  <!-- Third‑party assets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Pickr CSS (for custom color picker) -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
 </head>
 <body>
@@ -176,21 +184,19 @@
     </div>
   </div>
 
-  <!-- Quest Definitions Modal (placeholder) -->
+  <!-- Quest Definitions Modal (generated via JS) -->
   <div id="edit-quest-modal" class="modal">
     <div class="modal-content">
-      <!-- Quest form will be generated via JS -->
+      <!-- JS will populate quest form -->
     </div>
   </div>
 
-  <!-- Load JS Libraries -->
+  <!-- Load JS Libraries & App Script -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-
-  <!-- Application Script -->
   <script type="module" src="scripts/script.js"></script>
 </body>
 </html>
