@@ -1,4 +1,4 @@
-// @version: 13
+// @version: 14
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { positionModal } from "../uiManager.js";
@@ -25,18 +25,18 @@ import { createPickr } from "../pickrManager.js";
 
 
 export function initMarkerForm(db) {
-  const { modal, content } = createModal({
+  const { modal } = createModal({
     id: "edit-marker-modal",
     size: "small"
   });
 
   const header = createModalHeader("Edit Marker", () => closeModal(modal));
-  content.appendChild(header);
+  modal.appendChild(header);
   makeModalDraggable(modal, header);
 
   const form = document.createElement("form");
   form.id = "edit-form";
-  content.appendChild(form);
+  modal.appendChild(form);
 
   // ------------------------------
   // Field Setup using uiKit.js
