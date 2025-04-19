@@ -1,4 +1,4 @@
-// @version: 9
+// @version: 10
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { positionModal } from "../uiManager.js";
@@ -104,27 +104,27 @@ export function initMarkerForm(db) {
   // ------------------------------
   // Dropdown Setup
   // ------------------------------
-  fldType.innerHTML = \`
+  fldType.innerHTML = `
     <option value="Door">Door</option>
     <option value="Extraction Portal">Extraction Portal</option>
     <option value="Item">Item</option>
     <option value="Teleport">Teleport</option>
     <option value="Spawn Point">Spawn points</option>
-  \`;
-  fldRarity.innerHTML = \`
+  `;
+  fldRarity.innerHTML = `
     <option value="">Select Rarity</option>
     <option value="common">Common</option>
     <option value="uncommon">Uncommon</option>
     <option value="rare">Rare</option>
     <option value="epic">Epic</option>
     <option value="legendary">Legendary</option>
-  \`;
-  fldItemType.innerHTML = \`
+  `;
+  fldItemType.innerHTML = `
     <option value="Crafting Material">Crafting Material</option>
     <option value="Special">Special</option>
     <option value="Consumable">Consumable</option>
     <option value="Quest">Quest</option>
-  \`;
+  `;
 
   // ------------------------------
   // State + Toggle Handling
@@ -145,7 +145,7 @@ export function initMarkerForm(db) {
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
     defs = Object.fromEntries(list.map(d => [d.id, d]));
-    ddPre.innerHTML = \`<option value="">None (custom)</option>\`;
+    ddPre.innerHTML = `<option value="">None (custom)</option>`;
     list.forEach(d => {
       const o = document.createElement("option");
       o.value = d.id;
