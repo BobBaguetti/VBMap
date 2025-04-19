@@ -113,5 +113,5 @@
 
 /* give 16px bottom‑margin just on the three item‑specific rows */
 .modal-content .item-gap {
-  margin-bottom: 16px !important;
+  margin-bottom: 8px !important;
 }
