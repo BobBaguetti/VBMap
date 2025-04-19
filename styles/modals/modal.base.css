@@ -1,4 +1,4 @@
-/* styles/modals/modal.base.css – base styles for all modals (v5) */
+/* modal.base.css – base styles for all modals (v6) */
 
 /* 1) Global box‑sizing */
 *,
@@ -31,7 +31,7 @@
   overflow: auto;
 }
 
-/* 3) Header & divider */
+/* 3) Header & under‑header divider */
 .modal-header {
   display: flex;
   align-items: center;
@@ -53,7 +53,7 @@
   margin: 8px 0 16px;
 }
 
-/* 4) Flex field rows + default gaps */
+/* 4) Flex field rows + default gap */
 .modal-content .field-row {
   display: flex;
   align-items: center;
@@ -102,9 +102,4 @@
   border: none;
   border-top: 1px solid #444;
   margin: 12px 0;
-}
-
-/* 9) Boost gap between item‑specific rows only */
-.modal-content .item-field {
-  margin-top: 8px !important;
 }
