@@ -1,5 +1,4 @@
 /* modal.small.css – overrides for small modals */
-
 .modal.modal-small .modal-content {
     width: 400px !important;
     max-width: 400px !important;
