@@ -14,7 +14,6 @@
   
   .field-row label {
     width: 90px;
-    text-align: left;
     margin-right: 5px;
     flex-shrink: 0;
   }
@@ -35,12 +34,12 @@
     resize: vertical;
   }
   
-  /* Add padding to all buttons inside .field-row */
+  /* Buttons inside .field-row */
   .field-row button {
     padding: 6px 12px !important;
   }
   
-  /* Color button (for Pickr) */
+  /* Color button (pickr) */
   .color-btn {
     width: 32px;
     height: 32px;

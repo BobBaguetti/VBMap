@@ -48,7 +48,7 @@ html {
   background: #444 !important;
 }
 
-/* 5) Dark scrollbars for any .ui-scrollbar */
+/* 5) Dark scrollbars for .ui-scrollbar */
 .ui-scrollbar::-webkit-scrollbar {
   width: 8px;
 }
@@ -63,7 +63,7 @@ html {
   background: #777;
 }
 
-/* 6) Hide off‑canvas popups/tooltips */
+/* 6) Hide off‑canvas tooltips/popups */
 #video-popup,
 #paste-tooltip {
   display: none !important;
