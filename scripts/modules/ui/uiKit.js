@@ -1,4 +1,4 @@
-// @version: 16
+// @version: 17
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -6,44 +6,36 @@ import { createPickr } from "./pickrManager.js";
 /**
  * Creates a modal window.
  *
- * @param {string}  id           – element ID for the modal container
- * @param {string}  title        – title text in the header
- * @param {function} onClose     – callback when closed
- * @param {string}  [size]       – "small" (default) or "large"
- * @param {boolean} [backdrop]   – true = dark overlay (default); false = transparent
- * @param {boolean} [draggable]  – true = allow dragging by header; false = fixed
- * @param {boolean} [withDivider]– true = insert an <hr> under the header
- *
- * @returns {{ modal:HTMLElement, content:HTMLElement, header:HTMLElement }}
+ * @param {string}  id
+ * @param {string}  title
+ * @param {function} onClose
+ * @param {string}  [size]       – "small" or "large"
+ * @param {boolean} [backdrop]
+ * @param {boolean} [draggable]
+ * @param {boolean} [withDivider]
  */
 export function createModal({
-  id,
-  title,
-  onClose,
+  id, title, onClose,
   size = "small",
   backdrop = true,
   draggable = false,
   withDivider = false
 }) {
-  // container / backdrop
   const modal = document.createElement("div");
   modal.classList.add("modal", `modal-${size}`);
   modal.id = id;
   if (!backdrop) modal.style.backgroundColor = "transparent";
 
-  // content window
   const content = document.createElement("div");
   content.classList.add("modal-content");
   content.style.position = "absolute";
   content.style.transform = "none";
 
-  // clamp small
   if (size === "small") {
     content.style.width    = "350px";
     content.style.maxWidth = "350px";
   }
 
-  // header
   const header = document.createElement("div");
   header.classList.add("modal-header");
   header.id = `${id}-handle`;
@@ -60,42 +52,33 @@ export function createModal({
     if (onClose) onClose();
   });
 
-  header.appendChild(titleEl);
-  header.appendChild(closeBtn);
+  header.append(titleEl, closeBtn);
   content.appendChild(header);
 
-  // optional divider
   if (withDivider) {
-    const hr = document.createElement("hr");
-    content.appendChild(hr);
+    content.appendChild(document.createElement("hr"));
   }
 
   modal.appendChild(content);
-
-  // click outside closes
-  modal.addEventListener("click", (e) => {
+  modal.addEventListener("click", e => {
     if (e.target === modal) {
       closeModal(modal);
       if (onClose) onClose();
     }
   });
 
-  // optional drag
-  if (draggable) {
-    makeModalDraggable(content, header);
-  }
-
+  if (draggable) makeModalDraggable(content, header);
   document.body.appendChild(modal);
   return { modal, content, header };
 }
 
 function makeModalDraggable(modalEl, handle) {
   let offsetX = 0, offsetY = 0, dragging = false;
-  handle.onmousedown = (e) => {
+  handle.onmousedown = e => {
     dragging = true;
     offsetX = e.clientX - modalEl.offsetLeft;
     offsetY = e.clientY - modalEl.offsetTop;
-    document.onmousemove = (e2) => {
+    document.onmousemove = e2 => {
       if (!dragging) return;
       modalEl.style.left     = `${e2.clientX - offsetX}px`;
       modalEl.style.top      = `${e2.clientY - offsetY}px`;
@@ -121,18 +104,17 @@ export function openModalAt(modal, evt) {
   const content = modal.querySelector(".modal-content");
   const rect = content.getBoundingClientRect();
   content.style.left = `${evt.clientX - rect.width}px`;
-  content.style.top  = `${evt.clientY - rect.height / 2}px`;
+  content.style.top  = `${evt.clientY - rect.height/2}px`;
 }
 
-// …––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––––…
+// … field builders …
 
 export function createFieldRow(labelText, inputEl) {
   const row = document.createElement("div");
   row.classList.add("field-row");
   const label = document.createElement("label");
   label.textContent = labelText;
-  row.appendChild(label);
-  row.appendChild(inputEl);
+  row.append(label, inputEl);
   return row;
 }
 
@@ -154,7 +136,7 @@ export function createColorFieldRow(labelText, inputEl, colorId) {
 }
 
 /**
- * @param showColor=false to omit the little pickr button.
+ * @param showColor=false hides the pickr visually but reserves space.
  */
 export function createDropdownField(label, id, options = [], { showColor = true } = {}) {
   const select = document.createElement("select");
@@ -163,10 +145,10 @@ export function createDropdownField(label, id, options = [], { showColor = true 
     const o = document.createElement("option");
     o.value = opt.value;
     o.textContent = opt.label;
-    select.appendChild(o);
+    select.append(o);
   });
   const { row, colorBtn } = createColorFieldRow(label, select, `${id}-color`);
-  if (!showColor) colorBtn.style.display = "none";
+  if (!showColor) colorBtn.style.visibility = "hidden";
   return { row, select, colorBtn };
 }
 
@@ -187,15 +169,13 @@ export function createTextareaFieldWithColor(label, id) {
 export function createImageField(label, id) {
   const input = document.createElement("input");
   input.id = id; input.type = "text";
-  const row = createFieldRow(label, input);
-  return { row, input };
+  return { row: createFieldRow(label, input), input };
 }
 
 export function createVideoField(label, id) {
   const input = document.createElement("input");
   input.id = id; input.type = "text";
-  const row = createFieldRow(label, input);
-  return { row, input };
+  return { row: createFieldRow(label, input), input };
 }
 
 export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
@@ -204,13 +184,9 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
   row.style.justifyContent = "center";
   row.style.marginTop = "10px";
   const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = saveText;
+  btnSave.type = "submit";  btnSave.className = "ui-button";  btnSave.textContent = saveText;
   const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "ui-button";
-  btnCancel.textContent = cancelText;
+  btnCancel.type = "button"; btnCancel.className = "ui-button"; btnCancel.textContent = cancelText;
   btnCancel.onclick = onCancel;
   row.append(btnSave, btnCancel);
   return row;
@@ -221,9 +197,7 @@ export function createExtraInfoBlock(options = {}) {
   const wrap = document.createElement("div");
   wrap.className = "extra-info-block";
   const btnAdd = document.createElement("button");
-  btnAdd.type = "button";
-  btnAdd.textContent = "+";
-  btnAdd.classList.add("ui-button");
+  btnAdd.type = "button"; btnAdd.textContent = "+"; btnAdd.classList.add("ui-button");
   btnAdd.style.marginBottom = "8px";
   const lineWrap = document.createElement("div");
   wrap.append(btnAdd, lineWrap);
@@ -248,35 +222,26 @@ export function createExtraInfoBlock(options = {}) {
       btnRemove.className = "ui-button";
       btnRemove.textContent = "×";
       btnRemove.style.marginLeft = "5px";
-      btnRemove.onclick = () => {
-        lines.splice(i, 1);
-        render();
-      };
+      btnRemove.onclick = () => { lines.splice(i,1); render(); };
       row.append(input, color);
       if (!readonly) row.appendChild(btnRemove);
       lineWrap.appendChild(row);
       const pickr = createPickr(`#${color.id}`);
-      pickr.setColor(line.color || defaultColor);
+      pickr.setColor(line.color||defaultColor);
       line._pickr = pickr;
     });
   }
-  btnAdd.onclick = () => {
-    lines.push({ text: "", color: defaultColor });
-    render();
-  };
+  btnAdd.onclick = () => { lines.push({ text:"", color: defaultColor }); render(); };
   function getLines() {
-    return lines.map(l => ({
+    return lines.map(l=>({
       text: l.text,
-      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
+      color: l._pickr?.getColor()?.toHEXA()?.toString()||defaultColor
     }));
   }
-  function setLines(newLines, isReadonly = false) {
-    lines = newLines.map(l => ({
-      text: l.text || "",
-      color: l.color || defaultColor
-    }));
+  function setLines(newLines, isReadonly=false) {
+    lines = newLines.map(l=>({ text:l.text||"", color:l.color||defaultColor }));
     render();
-    if (isReadonly) btnAdd.style.display = "none";
+    if (isReadonly) btnAdd.style.display="none";
   }
   return { block: wrap, getLines, setLines };
 }

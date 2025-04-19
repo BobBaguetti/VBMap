@@ -15,7 +15,7 @@ import {
 import { createPickr } from "../pickrManager.js";
 
 export function initMarkerForm(db) {
-  // 1) Create modal (auto‑adds <hr> under header)
+  // 1) Create modal (auto‐adds <hr> under header)
   const { modal, content } = createModal({
     id: "edit-marker-modal",
     title: "Edit Marker",
@@ -46,20 +46,20 @@ export function initMarkerForm(db) {
     ], { showColor: false });
   fldType.classList.add("ui-input");
 
-  // — Predefined‑item dropdown (no pickr) —
+  // — Predefined‐item dropdown (no pickr) —
   const { row: rowPre, select: ddPre } =
     createDropdownField("Item:", "fld-predef", [], { showColor: false });
   ddPre.classList.add("ui-input");
 
-  // — Item‑specific fields with pickrs —
+  // — Item‐specific fields with pickrs —
   const { row: rowRarity, select: fldRarity } =
     createDropdownField("Rarity:", "fld-rarity", [
-      { value: "",         label: "Select Rarity" },
-      { value: "common",   label: "Common"       },
-      { value: "uncommon", label: "Uncommon"     },
-      { value: "rare",     label: "Rare"         },
-      { value: "epic",     label: "Epic"         },
-      { value: "legendary",label: "Legendary"    }
+      { value: "",          label: "Select Rarity" },
+      { value: "common",    label: "Common"         },
+      { value: "uncommon",  label: "Uncommon"       },
+      { value: "rare",      label: "Rare"           },
+      { value: "epic",      label: "Epic"           },
+      { value: "legendary", label: "Legendary"      }
     ]);
   rowRarity.classList.add("item-gap");
 
@@ -76,14 +76,14 @@ export function initMarkerForm(db) {
     createTextareaFieldWithColor("Description:", "fld-desc-item");
   rowDescItem.classList.add("item-gap");
 
-  // — Non‑item description with pickr —
+  // — Non‐item description with pickr —
   const { row: rowDescNI, textarea: fldDescNI } =
     createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
 
   // — Image & video fields —
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
-  const { row: rowVid, input: fldVid }   = createVideoField("Video:",    "fld-vid");
+  const { row: rowVid, input: fldVid }   = createVideoField("Video:",      "fld-vid");
 
   // — Extra Info block —
   const { block: extraInfoBlock, getLines, setLines } = createExtraInfoBlock();
@@ -93,14 +93,14 @@ export function initMarkerForm(db) {
   lblExtra.textContent = "Extra Info:";
   rowExtra.append(lblExtra, extraInfoBlock);
 
-  // 3) Dividers around Extra Info
+  // Dividers around Extra Info
   const hrBeforeExtra = document.createElement("hr");
   const hrAfterExtra  = document.createElement("hr");
 
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // 4) Assemble item vs non‑item sections
+  // 3) Assemble item vs non‐item sections
   const blockItem = document.createElement("div");
   blockItem.append(
     rowRarity,
@@ -113,7 +113,7 @@ export function initMarkerForm(db) {
   const blockNI = document.createElement("div");
   blockNI.append(rowDescNI);
 
-  // 5) Build the rest of the form
+  // 4) Build the rest of the form
   form.append(
     rowName,
     rowType,
@@ -126,18 +126,20 @@ export function initMarkerForm(db) {
     rowButtons
   );
 
-  // 6) Add modal to the DOM
+  // 5) Add modal to the DOM
   document.body.appendChild(modal);
 
-  // 7) Instantiate color pickrs
+  // 6) Instantiate color pickrs
   const pickrName     = createPickr("#fld-name-color");
   const pickrRare     = createPickr("#fld-rarity-color");
   const pickrItemType = createPickr("#fld-item-type-color");
   const pickrDescItem = createPickr("#fld-desc-item-color");
   const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
-  // 8) Internal state & helpers
-  let defs = {}, customMode = false;
+  // 7) Internal state & helpers
+  let defs = {};
+  let customMode = false;
+
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
     blockNI.style.display   = isItem ? "none"  : "block";
@@ -160,6 +162,7 @@ export function initMarkerForm(db) {
   function populateForm(data = { type: "Item" }) {
     fldType.value = data.type;
     toggleSections(data.type === "Item");
+
     if (data.type === "Item") {
       if (data.predefinedItemId && defs[data.predefinedItemId]) {
         const def = defs[data.predefinedItemId];
@@ -194,13 +197,13 @@ export function initMarkerForm(db) {
         customMode = true;
       }
     } else {
-      fldName.value   = data.name       || "";
-      pickrName.setColor(data.nameColor || "#E5E6E8");
-      fldDescNI.value = data.description|| "";
+      fldName.value     = data.name       || "";
+      pickrName.setColor(data.nameColor   || "#E5E6E8");
+      fldDescNI.value   = data.description|| "";
       pickrDescNI.setColor(data.descriptionColor || "#E5E6E8");
-      fldImgS.value   = data.imageSmall || "";
-      fldImgL.value   = data.imageBig   || "";
-      fldVid.value    = data.videoURL   || "";
+      fldImgS.value     = data.imageSmall || "";
+      fldImgL.value     = data.imageBig   || "";
+      fldVid.value      = data.videoURL   || "";
     }
   }
 
@@ -252,7 +255,6 @@ export function initMarkerForm(db) {
     return out;
   }
 
-  // Replace original openEdit/openCreate logic with uiKit’s helper
   let submitCB;
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
