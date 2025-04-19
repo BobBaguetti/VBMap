@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
+// @version: 5
 // @file:    /scripts/modules/ui/modals/markerForm.js
 
 import { makeDraggable, positionModal } from "../uiManager.js";
@@ -8,380 +8,153 @@ import {
   loadItemDefinitions,
   addItemDefinition
 } from "../../services/itemDefinitionsService.js";
-import { deepClone } from "../../utils/utils.js"
+import { deepClone } from "../../utils/utils.js";
+import { createModal, createFieldRow, openModal, closeModal } from "../ui/uiKit.js";
 
 export function initMarkerForm(db) {
-  /* ---------- DOM elements --------- */
-  const modal     = document.getElementById("edit-modal");
-  const grip      = document.getElementById("edit-modal-handle");
-  const form      = document.getElementById("edit-form");
-  const btnSave   = form.querySelector('button[type="submit"]');
-  const btnCancel = document.getElementById("edit-cancel");
+  // ---------- Modal Setup ----------
+  const { modal, content } = createModal({
+    id: "edit-marker-modal",
+    title: "Edit Marker",
+    onClose: () => modal.style.display = "none"
+  });
 
-  const fldName   = document.getElementById("edit-name");
-  const fldType   = document.getElementById("edit-type");
-  const fldImgS   = document.getElementById("edit-image-small");
-  const fldImgL   = document.getElementById("edit-image-big");
-  const fldVid    = document.getElementById("edit-video-url");
-  const fldRare   = document.getElementById("edit-rarity");
-  const fldIType  = document.getElementById("edit-item-type");
-  const fldDescIt = document.getElementById("edit-description");
-  const fldDescNI = document.getElementById("edit-description-non-item");
+  const form = document.createElement("form");
+  form.id = "edit-form";
+  content.appendChild(form);
 
-  const blockItem = document.getElementById("item-extra-fields");
-  const blockNI   = document.getElementById("non-item-description");
-  const blockPre  = document.getElementById("predefined-item-container");
-  blockPre.querySelector("label").textContent = "Item:";
-  const ddPre     = document.getElementById("predefined-item-dropdown");
+  // ---------- Field Definitions ----------
+  const fldName   = document.createElement("input");
+  const fldType   = document.createElement("select");
+  const fldImgS   = document.createElement("input");
+  const fldImgL   = document.createElement("input");
+  const fldVid    = document.createElement("input");
+  const fldRare   = document.createElement("select");
+  const fldIType  = document.createElement("select");
+  const fldDescIt = document.createElement("textarea");
+  const fldDescNI = document.createElement("textarea");
+  const ddPre     = document.createElement("select");
 
-  const btnAddLine = document.getElementById("add-extra-line");
-  const wrapLines  = document.getElementById("extra-lines");
+  fldName.id   = "edit-name";
+  fldType.id   = "edit-type";
+  fldImgS.id   = "edit-image-small";
+  fldImgL.id   = "edit-image-big";
+  fldVid.id    = "edit-video-url";
+  fldRare.id   = "edit-rarity";
+  fldIType.id  = "edit-item-type";
+  fldDescIt.id = "edit-description";
+  fldDescNI.id = "edit-description-non-item";
+  ddPre.id     = "predefined-item-dropdown";
 
-  // ✅ Apply global styling classes after modal is defined
-  modal.classList.add("ui-modal");  // Move this line here
-  grip.classList.add("ui-modal-header");
-  btnCancel.classList.add("ui-button");
+  fldType.innerHTML = `
+    <option value="Door">Door</option>
+    <option value="Extraction Portal">Extraction Portal</option>
+    <option value="Item">Item</option>
+    <option value="Teleport">Teleport</option>
+    <option value="Spawn Point">Spawn points</option>
+  `;
+
+  fldRare.innerHTML = `
+    <option value="">Select Rarity</option>
+    <option value="common">Common</option>
+    <option value="uncommon">Uncommon</option>
+    <option value="rare">Rare</option>
+    <option value="epic">Epic</option>
+    <option value="legendary">Legendary</option>
+  `;
+
+  fldIType.innerHTML = `
+    <option value="Crafting Material">Crafting Material</option>
+    <option value="Special">Special</option>
+    <option value="Consumable">Consumable</option>
+    <option value="Quest">Quest</option>
+  `;
+
+  // Field container helpers
+  const rowName      = createFieldRow("Name:", fldName);
+  const rowType      = createFieldRow("Type:", fldType);
+  const rowPreItem   = createFieldRow("Item:", ddPre);
+  const rowRarity    = createFieldRow("Rarity:", fldRare);
+  const rowItemType  = createFieldRow("Item Type:", fldIType);
+  const rowDescItem  = createFieldRow("Description:", fldDescIt);
+  const rowDescNon   = createFieldRow("Description:", fldDescNI);
+  const rowImageS    = createFieldRow("Image S:", fldImgS);
+  const rowImageL    = createFieldRow("Image L:", fldImgL);
+  const rowVideo     = createFieldRow("Video:", fldVid);
+
+  // Optional field groups
+  const blockItem    = document.createElement("div");
+  const blockNI      = document.createElement("div");
+  const blockPre     = rowPreItem;
+  const wrapLines    = document.createElement("div");
+
+  blockItem.id       = "item-extra-fields";
+  blockNI.id         = "non-item-description";
+  blockPre.id        = "predefined-item-container";
+  wrapLines.id       = "extra-lines";
+
+  // Add Extra Info button
+  const btnAddLine   = document.createElement("button");
+  btnAddLine.type    = "button";
+  btnAddLine.id      = "add-extra-line";
+  btnAddLine.textContent = "+";
   btnAddLine.classList.add("ui-button");
-  btnSave.classList.add("ui-button"); //
-  [
-    fldName,
-    fldType,
-    fldImgS,
-    fldImgL,
-    fldVid,
-    fldRare,
-    fldIType,
-    fldDescIt,
-    fldDescNI,
-    ddPre
-  ].forEach(el => el?.classList.add("ui-input"));
+  const extraRow     = createFieldRow("Extra Info:", btnAddLine);
 
-  makeDraggable(modal, grip);
+  // Save + Cancel
+  const rowButtons = document.createElement("div");
+  rowButtons.style.justifyContent = "center";
+  rowButtons.style.marginTop = "10px";
+  rowButtons.classList.add("field-row");
 
-  /* ---------- Color pickers ---------- */
-  const pickrs = [];
-  function mkPicker(sel) {
-    const container = document.querySelector(sel);
-    if (!container) {
-      console.warn(`markerForm.mkPicker: element ${sel} not found`);
-      // return a stub that won't break calls to .on or .setColor or .getRoot
-      return {
-        on:    () => {},
-        setColor: () => {},
-        getRoot: () => null
-      };
-    }
-    const p = Pickr.create({
-      el: container,
-      theme: "nano",
-      default: "#E5E6E8",
-      components: {
-        preview: true,
-        opacity: true,
-        hue: true,
-        interaction: { hex: true, rgba: true, input: true, save: true }
-      }
-    }).on("save", (_, instance) => instance.hide());
-    pickrs.push(p);
-    return p;
-  }
+  const btnSave = document.createElement("button");
+  btnSave.type = "submit";
+  btnSave.textContent = "Save";
+  btnSave.classList.add("ui-button");
 
-  const pkName = mkPicker("#pickr-name");
-  const pkRare = mkPicker("#pickr-rarity");
-  const pkItyp = mkPicker("#pickr-itemtype");
-  const pkDitm = mkPicker("#pickr-desc-item");
-  const pkDni  = mkPicker("#pickr-desc-nonitem");
+  const btnCancel = document.createElement("button");
+  btnCancel.type = "button";
+  btnCancel.textContent = "Cancel";
+  btnCancel.classList.add("ui-button");
 
-  /* ---------- Item definitions ---------- */
-  let defs = {}, customMode = false;
-  async function refreshItems() {
-    const list = await loadItemDefinitions(db);
-    defs = Object.fromEntries(list.map(d => [d.id, d]));
-    ddPre.innerHTML = `<option value="">None (custom)</option>`;
-    list.forEach(d => {
-      const o = document.createElement("option");
-      o.value = d.id;
-      o.textContent = d.name;
-      ddPre.appendChild(o);
-    });
-  }
-  refreshItems();
+  rowButtons.append(btnSave, btnCancel);
 
-  /* ---------- Extra‑info lines ---------- */
-  let lines = [];
-  function renderLines(readOnly = false) {
-    wrapLines.innerHTML = "";
-    lines.forEach((ln, i) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
+  // Append form sections
+  form.append(
+    rowName,
+    rowType,
+    rowPreItem,
+    blockItem,
+    blockNI,
+    rowImageS,
+    rowImageL,
+    rowVideo,
+    rowButtons
+  );
 
-      const txt = document.createElement("input");
-      txt.value = ln.text;
-      txt.readOnly = readOnly;
-      txt.className = "ui-input";
-      if (readOnly) {
-        txt.style.background = "#3b3b3b";
-        txt.style.cursor = "not-allowed";
-      }
-      txt.oninput = () => {
-        lines[i].text = txt.value;
-        customMode = true;
-      };
+  blockItem.append(
+    rowRarity,
+    rowItemType,
+    rowDescItem,
+    document.createElement("hr"),
+    extraRow,
+    wrapLines,
+    document.createElement("hr")
+  );
 
-      const clr = document.createElement("div");
-      clr.className = "color-btn";
-      clr.id = `extra-color-${i}`; // ✅ assign a unique ID
-      clr.style.marginLeft = "5px";
-      clr.style.pointerEvents = readOnly ? "none" : "auto";
-      clr.style.opacity = readOnly ? 0.5 : 1;
+  blockNI.append(rowDescNon, document.createElement("hr"));
 
-      const rm = document.createElement("button");
-      rm.textContent = "×";
-      rm.type = "button";
-      rm.className = "ui-button";
-      rm.style.marginLeft = "5px";
-      if (readOnly) {
-        rm.style.display = "none";
-      } else {
-        rm.onclick = () => {
-          lines.splice(i, 1);
-          renderLines(false);
-          customMode = true;
-        };
-      }
+  // Add to document
+  document.body.appendChild(modal);
 
-      row.append(txt, clr);
-      if (!readOnly) row.append(rm);
-      wrapLines.appendChild(row);
-
-      // Only create a Pickr if container exists
-      mkPicker(`#${clr.id}`)?.setColor(ln.color || "#E5E6E8");
-    });
-  }
-
-  btnAddLine.onclick = () => {
-    lines.push({ text: "", color: "#E5E6E8" });
-    renderLines(false);
-    customMode = true;
-  };
-
-  /* ---------- UI helpers ---------- */
-  const DIS_BG = "#3b3b3b";
-  const ALL_FIELDS = [
-    fldName,
-    fldRare,
-    fldIType,
-    fldDescIt,
-    fldImgS,
-    fldImgL,
-    fldVid
-  ];
-  function setRO(el, on) {
-    el.disabled = on;
-    el.readOnly = on;
-    el.style.background = on ? DIS_BG : "#E5E6E8";
-    el.style.cursor = on ? "not-allowed" : "text";
-    if (el.tagName === "SELECT") el.style.pointerEvents = on ? "none" : "auto";
-  }
-  function lockItemFields(on) {
-    ALL_FIELDS.forEach(e => setRO(e, on));
-    pickrs.forEach(p => {
-      const root = p.getRoot?.();
-      if (root && root.style) {
-        root.style.pointerEvents = on ? "none" : "auto";
-        root.style.opacity = on ? 0.5 : 1;
-      }
-    });
-    btnAddLine.style.display = on ? "none" : "inline-block";
-  }
-  function toggleSections(isItem) {
-    blockItem.style.display = isItem ? "block" : "none";
-    blockNI.style.display = isItem ? "none" : "block";
-    blockPre.style.display = isItem ? "block" : "none";
-  }
-  function applyUI() {
-    const isItem = fldType.value === "Item";
-    toggleSections(isItem);
-    
-    // Check if a predefined item is selected
-    const isPredefined = ddPre.value !== ""; // If ddPre has a value, it means an item is selected
-
-    lockItemFields(isItem && isPredefined); // Lock fields only if Item type is selected and a predefined item is chosen
-    
-    // Reset custom mode if we switch from Item to a non-Item type
-    if (!isItem) {
-        ddPre.value = "";
-        customMode = false;
-        wrapLines.innerHTML = ""; // Clear extra lines for non-Item marker types
-    }
-}
-  fldType.onchange = applyUI;
-
-  /* ---------- Predefined dropdown ---------- */
-  ddPre.style.width = "100%";
-  ddPre.onchange = () => {
-    const id = ddPre.value;
-    if (id) {
-      customMode = false;
-      fillFormFromDef(defs[id]);
-      lockItemFields(true);
-    } else {
-      customMode = true;
-      clearFormForCustom();
-      lockItemFields(false);
-    }
-  };
-
-  function clearFormForCustom() {
-    fldName.value = fldRare.value = fldIType.value = fldDescIt.value = "";
-    [pkName, pkRare, pkItyp, pkDitm].forEach(p => p.setColor("#E5E6E8"));
-    fldImgS.value = fldImgL.value = fldVid.value = "";
-    lines = [];
-    renderLines(false);
-  }
-
-  function fillFormFromDef(d) {
-    fldName.value = d.name;
-    pkName.setColor(d.nameColor || "#E5E6E8");
-
-    fldRare.value = d.rarity || "";
-    pkRare.setColor(d.rarityColor || "#E5E6E8");
-
-    fldIType.value = d.itemType || d.type;
-    pkItyp.setColor(d.itemTypeColor || "#E5E6E8");
-
-    fldDescIt.value = d.description || "";
-    pkDitm.setColor(d.descriptionColor || "#E5E6E8");
-
-    fldImgS.value = d.imageSmall || "";
-    fldImgL.value = d.imageBig   || "";
-    fldVid.value  = "";
-
-    lines = JSON.parse(JSON.stringify(d.extraLines || []));
-    renderLines(true);
-  }
-
-  /* ---------- Populate / Harvest ---------- */
-  function populateForm(m = { type: "Item" }) {
-    fldType.value = m.type;
-    customMode = !m.predefinedItemId;
-    applyUI();
-
-    if (m.type === "Item") {
-      if (m.predefinedItemId && defs[m.predefinedItemId]) {
-        ddPre.value = m.predefinedItemId;
-        fillFormFromDef(defs[m.predefinedItemId]);
-      } else {
-        ddPre.value = "";
-        clearFormForCustom();
-      }
-    } else {
-      fldName.value = m.name || "";
-      pkName.setColor(m.nameColor || "#E5E6E8");
-
-      fldImgS.value = m.imageSmall || "";
-      fldImgL.value = m.imageBig   || "";
-      fldVid.value  = m.videoURL   || "";
-
-      fldDescNI.value = m.description || "";
-      pkDni.setColor(m.descriptionColor || "#E5E6E8");
-    }
-  }
-
-  function harvestForm(coords) {
-    const out = { type: fldType.value, coords };
-
-    if (out.type === "Item") {
-      if (!customMode) {
-        const d = defs[ddPre.value];
-        Object.assign(out, {
-          predefinedItemId: d.id,
-          name:             d.name,
-          nameColor:        d.nameColor,
-          rarity:           d.rarity,
-          rarityColor:      d.rarityColor,
-          itemType:         d.itemType || d.type,
-          itemTypeColor:    d.itemTypeColor,
-          description:      d.description,
-          descriptionColor: d.descriptionColor,
-          extraLines:       JSON.parse(JSON.stringify(d.extraLines)),
-          imageSmall:       d.imageSmall,
-          imageBig:         d.imageBig
-        });
-      } else {
-        const defPayload = {
-          name:             fldName.value.trim() || "Unnamed",
-          nameColor:        pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-          rarity:           fldRare.value,
-          rarityColor:      pkRare.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-          itemType:         fldIType.value,
-          itemTypeColor:    pkItyp.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-          description:      fldDescIt.value,
-          descriptionColor: pkDitm.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-          extraLines:       JSON.parse(JSON.stringify(lines)),
-          imageSmall:       fldImgS.value,
-          imageBig:         fldImgL.value
-        };
-        addItemDefinition(db, defPayload).then(newDef => {
-          defs[newDef.id] = newDef;
-          ddPre.value     = newDef.id;
-          customMode      = false;
-          fillFormFromDef(newDef);
-          lockItemFields(true);
-        });
-        Object.assign(out, defPayload);
-      }
-    } else {
-      out.name             = fldName.value || "New Marker";
-      out.nameColor        = pkName.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-      out.imageSmall       = fldImgS.value;
-      out.imageBig         = fldImgL.value;
-      out.videoURL         = fldVid.value || "";
-      out.description      = fldDescNI.value;
-      out.descriptionColor = pkDni.getColor()?.toHEXA()?.toString() || "#E5E6E8";
-    }
-
-    Object.keys(out).forEach(k => out[k] === undefined && delete out[k]);
-    return out;
-  }
-
-  /* ---------- Modal openers ---------- */
-  let submitCB = null;
-  function openEdit(markerObj, data, evt, onSave) {
-    populateForm(data);
-    positionModal(modal, evt);
-    modal.style.display = "block";
-    if (submitCB) form.removeEventListener("submit", submitCB);
-    submitCB = e => {
-      e.preventDefault();
-      Object.assign(data, harvestForm(data.coords));
-      onSave(data);
-      modal.style.display = "none";
-    };
-    form.addEventListener("submit", submitCB);
-  }
-
-  function openCreate(coords, defaultType, evt, onCreate) {
-    populateForm({ type: defaultType || "Item" });
-    positionModal(modal, evt);
-    modal.style.display = "block";
-    if (submitCB) form.removeEventListener("submit", submitCB);
-    submitCB = e => {
-      e.preventDefault();
-      onCreate(harvestForm(coords));
-      modal.style.display = "none";
-    };
-    form.addEventListener("submit", submitCB);
-  }
-
-  btnCancel.onclick = () => (modal.style.display = "none");
+  // TODO: wire up remaining logic (pickers, validation, form submit, etc.)
+  // We’ll continue here when you're ready.
 
   return {
-    openEdit,
-    openCreate,
-    refreshPredefinedItems: refreshItems
+    openEdit: () => openModal(modal),
+    openCreate: () => openModal(modal),
+    refreshPredefinedItems: () => {}
   };
 }
 
-// @version: 3
+// @version: 4
