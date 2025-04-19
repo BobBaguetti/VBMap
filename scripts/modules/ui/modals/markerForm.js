@@ -19,8 +19,8 @@ import {
   createFormButtonRow
 } from "../uiKit.js";
 
-// Initialize Pickr instances after DOM is ready
-import { createPickr } from "../ui/pickrManager.js";
+import { createPickr } from "../ui/pickrManager.js"; 
+
 
 export function initMarkerForm(db) {
   const { modal, content } = createModal({
@@ -103,6 +103,7 @@ export function initMarkerForm(db) {
   );
 
   document.body.appendChild(modal);
+
 
 const pickrName     = createPickr("#fld-name-color");
 const pickrRare     = createPickr("#fld-rarity-color");
@@ -264,19 +265,6 @@ const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
   }
 
   let submitCB = null;
-
-// ------------------------------
-// Pickr Instance Setup
-// ------------------------------
-import { createPickr } from "../ui/pickrManager.js";
-
-// Attach Pickr to each color field
-const pName     = createPickr("#fld-name-color");
-const pRare     = createPickr("#fld-rarity-color");
-const pItemType = createPickr("#fld-item-type-color");
-const pDescItem = createPickr("#fld-desc-item-color");
-const pDescNI   = createPickr("#fld-desc-nonitem-color");
-
 
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
