@@ -411,6 +411,9 @@ body, html {
 
 /* Modal Header */
 .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   background-color: #222;
   color: #e0e0e0;
   padding: 10px;
