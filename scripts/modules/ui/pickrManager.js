@@ -1,7 +1,5 @@
-// @version: 3
+// @version: 4
 // @file: /scripts/modules/ui/pickrManager.js
-
-import Pickr from "@simonwep/pickr";
 
 const activePickrs = [];
 
@@ -20,7 +18,7 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
     };
   }
 
-  const p = Pickr.create({
+  const p = window.Pickr.create({
     el,
     theme: "nano",
     default: defaultColor,
