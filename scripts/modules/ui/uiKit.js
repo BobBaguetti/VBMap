@@ -10,8 +10,8 @@ import { createPickr } from "./pickrManager.js";
 
 /**
  * Creates a modal window with a centered layout, header title, and close button.
- * Also attaches outside-click handler to close modal.
- * Accepts an optional `size` argument: "small" (default) or "large".
+ * Accepts `size` ("small" or "large").
+ * Drag behavior should be applied manually via `makeDraggable(...)` if needed.
  */
 export function createModal({ id, title, onClose, size = "small" }) {
   const modal = document.createElement('div');
@@ -51,39 +51,8 @@ export function createModal({ id, title, onClose, size = "small" }) {
     }
   });
 
-  // Make modal draggable by header
-  makeModalDraggable(modal, header);
-
   document.body.appendChild(modal);
   return { modal, content, header };
-}
-
-/**
- * Enables basic dragging behavior on the modal using the given handle element.
- */
-function makeModalDraggable(modal, handle) {
-  let offsetX = 0, offsetY = 0;
-  let isDragging = false;
-
-  handle.style.cursor = 'move';
-
-  handle.onmousedown = (e) => {
-    isDragging = true;
-    offsetX = e.clientX - modal.offsetLeft;
-    offsetY = e.clientY - modal.offsetTop;
-    document.onmousemove = (e) => {
-      if (isDragging) {
-        modal.style.left = `${e.clientX - offsetX}px`;
-        modal.style.top = `${e.clientY - offsetY}px`;
-        modal.style.position = 'absolute';
-      }
-    };
-    document.onmouseup = () => {
-      isDragging = false;
-      document.onmousemove = null;
-      document.onmouseup = null;
-    };
-  };
 }
 
 /**
@@ -349,4 +318,31 @@ export function createScrollableListBlock(maxHeight = "240px") {
   wrapper.style.overflowY = "auto";
   wrapper.style.padding = "5px";
   return wrapper;
+}
+
+/**
+ * Makes a modal content block draggable by clicking anywhere inside (except form fields).
+ */
+export function makeDraggable(modalContent) {
+  let isDragging = false;
+  let offsetX = 0, offsetY = 0;
+
+  modalContent.addEventListener("mousedown", (e) => {
+    if (e.target.closest("input, textarea, select, button, .color-btn")) return;
+    isDragging = true;
+    offsetX = e.clientX - modalContent.offsetLeft;
+    offsetY = e.clientY - modalContent.offsetTop;
+    document.body.style.userSelect = "none";
+  });
+
+  document.addEventListener("mousemove", (e) => {
+    if (!isDragging) return;
+    modalContent.style.left = `${e.clientX - offsetX}px`;
+    modalContent.style.top = `${e.clientY - offsetY}px`;
+  });
+
+  document.addEventListener("mouseup", () => {
+    isDragging = false;
+    document.body.style.userSelect = "";
+  });
 }

@@ -64,3 +64,16 @@
     border-top: 1px solid #444;
     margin: 12px 0;
 }
+
+/* Remove dark backdrop for modals that specify no-backdrop */
+.modal.no-backdrop {
+    background-color: transparent !important;
+    pointer-events: none;
+  }
+  
+  .modal.no-backdrop .modal-content {
+    pointer-events: all;
+    position: absolute;
+    cursor: move;
+  }
+  

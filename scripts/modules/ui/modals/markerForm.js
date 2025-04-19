@@ -1,4 +1,4 @@
-// @version: 11
+// @version: 12
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { positionModal } from "../uiManager.js";
@@ -16,7 +16,8 @@ import {
   createImageField,
   createVideoField,
   createExtraInfoBlock,
-  createFormButtonRow
+  createFormButtonRow,
+  makeDraggable
 } from "../uiKit.js";
 
 import { createPickr } from "../pickrManager.js"; 
@@ -104,7 +105,8 @@ export function initMarkerForm(db) {
   );
 
   document.body.appendChild(modal);
-
+  modal.classList.add("no-backdrop");
+  makeDraggable(content);
 
 const pickrName     = createPickr("#fld-name-color");
 const pickrRare     = createPickr("#fld-rarity-color");
