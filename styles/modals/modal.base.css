@@ -1,4 +1,4 @@
-/* modal.base.css – base styles for all modals (v6) */
+/* modal.base.css – base styles for all modals (v7) */
 
 /* 1) Global box‑sizing */
 *,
@@ -53,18 +53,25 @@
   margin: 8px 0 16px;
 }
 
-/* 4) Flex field rows + default gap */
+/* 4) Form flex + uniform gap */
+#edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* 5) Field‑row base styling */
 .modal-content .field-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 0; /* gap is handled by #edit-form gap */
 }
 .modal-content .field-row label {
   flex: 0 0 100px;
   margin-right: 8px;
 }
 
-/* 5) Full‑width inputs/selects/textarea */
+/* 6) Full‑width inputs/selects/textarea */
 .modal-content .field-row input[type="text"],
 .modal-content .field-row select,
 .modal-content .field-row textarea,
@@ -79,7 +86,7 @@
   color: #eee;
 }
 
-/* 6) Color‑picker & remove‑line buttons */
+/* 7) Color‑picker & remove‑line buttons */
 .modal-content .color-btn {
   margin-left: 8px !important;
   flex: 0 0 24px;
@@ -92,12 +99,12 @@
   margin-left: 8px;
 }
 
-/* 7) Extra‑row top‑align */
+/* 8) Extra‑row top‑align */
 .modal-content .field-row.extra-row {
   align-items: flex-start;
 }
 
-/* 8) Divider around Extra Info */
+/* 9) Dividers around Extra Info */
 .modal-content hr {
   border: none;
   border-top: 1px solid #444;
