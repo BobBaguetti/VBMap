@@ -74,11 +74,12 @@ document
   .addEventListener("click", () => questModal.open());
 
 /* ------------------------------------------------------------------ *
- *  Subscribe to Definition Changes to Refresh Markers & Sidebar
+ *  Subscribe to Item Definition Changes to Refresh Everything
  * ------------------------------------------------------------------ */
 subscribeItemDefinitions(db, async () => {
   await markerForm.refreshPredefinedItems();
-  // refresh existing markers
+
+  // refresh existing markers with updated item data
   const { loadItemDefinitions } = await import("./modules/services/itemDefinitionsService.js");
   const defsList = await loadItemDefinitions(db);
   const defMap = Object.fromEntries(defsList.map(d => [d.id, d]));
@@ -88,11 +89,11 @@ subscribeItemDefinitions(db, async () => {
     if (!def) return;
     Object.assign(data, {
       name:             def.name,
-      nameColor:        def.nameColor   || "#E5E6E8",
+      nameColor:        def.nameColor    || "#E5E6E8",
       rarity:           def.rarity,
-      rarityColor:      def.rarityColor|| "#E5E6E8",
+      rarityColor:      def.rarityColor || "#E5E6E8",
       itemType:         def.itemType,
-      itemTypeColor:    def.itemTypeColor || "#E5E6E8",
+      itemTypeColor:    def.itemTypeColor|| "#E5E6E8",
       description:      def.description,
       descriptionColor: def.descriptionColor || "#E5E6E8",
       extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
@@ -104,12 +105,13 @@ subscribeItemDefinitions(db, async () => {
     markerObj.setPopupContent(createPopupContent(data));
     firebaseUpdateMarker(db, data);
   });
+
   await loadItemFilters();
   filterMarkers();
 });
 
 /* ------------------------------------------------------------------ *
- *  Add & Persist Helper
+ *  Helper: Add & Persist New Marker
  * ------------------------------------------------------------------ */
 function addAndPersist(data) {
   const markerObj = addMarker(data, callbacks);
