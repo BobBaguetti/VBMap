@@ -1,4 +1,4 @@
-// @version: 12
+// @version: 13
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -10,10 +10,9 @@ import { createPickr } from "./pickrManager.js";
 export function createModal({ id, title = "", onClose, size = "small" }) {
   if (size === "small") {
     const content = document.createElement("div");
-    content.classList.add("modal-content", "modal-small");
+    content.classList.add("modal-small"); // ✅ No .modal-content
     content.id = id;
-    content.style.display = "none"; // 🛠️ Prevent auto-show on page load
-
+    content.style.display = "none";       // ✅ Prevent showing on load
     document.body.appendChild(content);
     return { modal: content, content };
   }
@@ -57,6 +56,10 @@ export function createModal({ id, title = "", onClose, size = "small" }) {
   return { modal, content };
 }
 
+// ------------------------------
+// Modal Controls
+// ------------------------------
+
 export function closeModal(modal) {
   modal.style.display = "none";
 }
@@ -88,6 +91,10 @@ export function makeModalDraggable(modal, handle) {
     };
   };
 }
+
+// ------------------------------
+// Header / Footer Components
+// ------------------------------
 
 export function createModalHeader(titleText, onClose) {
   const header = document.createElement("div");
@@ -131,7 +138,7 @@ export function createFormFooter(onCancel, onSave, {
 }
 
 // ------------------------------
-// Fields
+// Field and Utility Components
 // ------------------------------
 
 export function createFieldRow(labelText, inputEl) {
@@ -212,26 +219,9 @@ export function createVideoField(labelText, id) {
   return { row, input };
 }
 
-export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
-  const row = document.createElement("div");
-  row.className = "field-row";
-  row.style.justifyContent = "center";
-  row.style.marginTop = "10px";
-
-  const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = saveText;
-
-  const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "ui-button";
-  btnCancel.textContent = cancelText;
-  btnCancel.onclick = onCancel;
-
-  row.append(btnSave, btnCancel);
-  return row;
-}
+// ------------------------------
+// Extra Info Block
+// ------------------------------
 
 export function createExtraInfoBlock(options = {}) {
   const {
@@ -318,6 +308,10 @@ export function createExtraInfoBlock(options = {}) {
 
   return { block: wrap, getLines, setLines };
 }
+
+// ------------------------------
+// Scrollable List Container
+// ------------------------------
 
 export function createScrollableListBlock(maxHeight = "240px") {
   const wrapper = document.createElement("div");

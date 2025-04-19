@@ -34,18 +34,18 @@
     overflow: hidden;
   }
   
-  /* ===============================
-     Small Modal (No Backdrop)
-     =============================== */
-  .modal-small {
+/* ===============================
+      Small Modal (No Backdrop)
+   =============================== */
+   .modal-small {
+    position: absolute;
     width: 350px;
     background-color: #222;
     color: #e0e0e0;
     border: 1px solid #555;
     border-radius: 6px;
     padding: 15px;
-    z-index: 9999 !important;
-    position: absolute;
+    z-index: 2147483647 !important; /* Max z-index for debug or safety */
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
   }
   
