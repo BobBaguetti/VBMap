@@ -1,4 +1,4 @@
-// @version: 11
+// @version: 12
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { positionModal } from "../uiManager.js";
@@ -16,7 +16,8 @@ import {
   createImageField,
   createVideoField,
   createExtraInfoBlock,
-  createFormButtonRow
+  createFormFooter,
+  createModalHeader
 } from "../uiKit.js";
 
 import { createPickr } from "../pickrManager.js"; 
@@ -25,9 +26,12 @@ import { createPickr } from "../pickrManager.js";
 export function initMarkerForm(db) {
   const { modal, content } = createModal({
     id: "edit-marker-modal",
-    title: "Edit Marker",
+    title: "",
     onClose: () => closeModal(modal)
   });
+
+  const header = createModalHeader("Edit Marker", () => closeModal(modal));
+  content.appendChild(header);
 
   const form = document.createElement("form");
   form.id = "edit-form";
@@ -74,7 +78,7 @@ export function initMarkerForm(db) {
   rowPre.appendChild(lblPre);
   rowPre.appendChild(ddPre);
 
-  const rowButtons = createFormButtonRow(() => closeModal(modal));
+  const rowButtons = createFormFooter(() => closeModal(modal));
 
   // Group containers
   const blockItem = document.createElement("div");
@@ -105,12 +109,11 @@ export function initMarkerForm(db) {
   document.body.appendChild(modal);
 
 
-const pickrName     = createPickr("#fld-name-color");
-const pickrRare     = createPickr("#fld-rarity-color");
-const pickrItemType = createPickr("#fld-item-type-color");
-const pickrDescItem = createPickr("#fld-desc-item-color");
-const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
-
+  const pickrName     = createPickr("#fld-name-color");
+  const pickrRare     = createPickr("#fld-rarity-color");
+  const pickrItemType = createPickr("#fld-item-type-color");
+  const pickrDescItem = createPickr("#fld-desc-item-color");
+  const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
   // ------------------------------
   // Dropdown Setup

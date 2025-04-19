@@ -1,5 +1,4 @@
-
-// @version: 9
+// @version: 10
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -246,9 +245,6 @@ export function createExtraInfoBlock(options = {}) {
 // Modular Field Helpers
 // ------------------------------
 
-/**
- * Creates a labeled text input row with a color picker.
- */
 export function createTextField(labelText, id, defaultColor = "#E5E6E8") {
   const input = document.createElement("input");
   input.id = id;
@@ -256,9 +252,6 @@ export function createTextField(labelText, id, defaultColor = "#E5E6E8") {
   return { row, input, colorBtn };
 }
 
-/**
- * Creates a labeled <select> dropdown with a color picker.
- */
 export function createDropdownField(labelText, id, options, defaultColor = "#E5E6E8") {
   const select = document.createElement("select");
   select.id = id;
@@ -272,9 +265,6 @@ export function createDropdownField(labelText, id, options, defaultColor = "#E5E
   return { row, select, colorBtn };
 }
 
-/**
- * Creates a labeled textarea with a color picker.
- */
 export function createTextareaFieldWithColor(labelText, id, defaultColor = "#E5E6E8") {
   const textarea = document.createElement("textarea");
   textarea.id = id;
@@ -282,9 +272,6 @@ export function createTextareaFieldWithColor(labelText, id, defaultColor = "#E5E
   return { row, textarea, colorBtn };
 }
 
-/**
- * Creates a labeled field for entering image URLs.
- */
 export function createImageField(labelText, id) {
   const input = document.createElement("input");
   input.id = id;
@@ -293,9 +280,6 @@ export function createImageField(labelText, id) {
   return { row, input };
 }
 
-/**
- * Creates a labeled field for entering video URLs.
- */
 export function createVideoField(labelText, id) {
   const input = document.createElement("input");
   input.id = id;
@@ -304,9 +288,6 @@ export function createVideoField(labelText, id) {
   return { row, input };
 }
 
-/**
- * Creates a Save/Cancel row with default button labels.
- */
 export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
   const row = document.createElement("div");
   row.className = "field-row";
@@ -332,16 +313,6 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
 // Modular Scrollable List Block
 // ------------------------------
 
-/**
- * Creates a vertically scrollable container for displaying
- * entries like item definitions, quests, etc.
- * Includes zebra-striping styles (from .def-list).
- *
- * Usage:
- * const list = createScrollableListBlock();
- * someParent.appendChild(list);
- * list.appendChild(...items);
- */
 export function createScrollableListBlock(maxHeight = "240px") {
   const wrapper = document.createElement("div");
   wrapper.className = "def-list ui-scrollbar";
@@ -349,4 +320,53 @@ export function createScrollableListBlock(maxHeight = "240px") {
   wrapper.style.overflowY = "auto";
   wrapper.style.padding = "5px";
   return wrapper;
+}
+
+// ------------------------------
+// Modular Header/Footer Helpers
+// ------------------------------
+
+export function createModalHeader(titleText, onClose) {
+  const header = document.createElement("div");
+  header.className = "modal-header";
+
+  const title = document.createElement("h2");
+  title.textContent = titleText;
+
+  const close = document.createElement("span");
+  close.className = "close";
+  close.innerHTML = "&times;";
+  close.onclick = () => {
+    if (onClose) onClose();
+  };
+
+  header.append(title, close);
+  return header;
+}
+
+export function createFormFooter(onCancel, onSave, {
+  saveText = "Save",
+  cancelText = "Cancel"
+} = {}) {
+  const row = document.createElement("div");
+  row.className = "field-row";
+  row.style.justifyContent = "center";
+  row.style.marginTop = "10px";
+
+  const btnSave = document.createElement("button");
+  btnSave.type = "submit";
+  btnSave.className = "ui-button";
+  btnSave.textContent = saveText;
+  if (onSave) btnSave.addEventListener("click", onSave);
+
+  const btnCancel = document.createElement("button");
+  btnCancel.type = "button";
+  btnCancel.className = "ui-button";
+  btnCancel.textContent = cancelText;
+  btnCancel.onclick = () => {
+    if (onCancel) onCancel();
+  };
+
+  row.append(btnSave, btnCancel);
+  return row;
 }
