@@ -1,4 +1,4 @@
-// @version: 12
+// @version: 12.1
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { positionModal } from "../uiManager.js";
@@ -22,7 +22,6 @@ import {
 
 import { createPickr } from "../pickrManager.js"; 
 
-
 export function initMarkerForm(db) {
   const { modal, content } = createModal({
     id: "edit-marker-modal",
@@ -34,6 +33,11 @@ export function initMarkerForm(db) {
   const form = document.createElement("form");
   form.id = "edit-form";
   content.appendChild(form);
+
+  // Apply modal styling
+  modal.classList.add("no-backdrop");
+  content.classList.add("modal-small"); // ✅ Apply correct width styling
+  makeDraggable(content);
 
   // ------------------------------
   // Field Setup using uiKit.js
@@ -105,15 +109,12 @@ export function initMarkerForm(db) {
   );
 
   document.body.appendChild(modal);
-  modal.classList.add("no-backdrop");
-  makeDraggable(content);
 
-const pickrName     = createPickr("#fld-name-color");
-const pickrRare     = createPickr("#fld-rarity-color");
-const pickrItemType = createPickr("#fld-item-type-color");
-const pickrDescItem = createPickr("#fld-desc-item-color");
-const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
-
+  const pickrName     = createPickr("#fld-name-color");
+  const pickrRare     = createPickr("#fld-rarity-color");
+  const pickrItemType = createPickr("#fld-item-type-color");
+  const pickrDescItem = createPickr("#fld-desc-item-color");
+  const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
   // ------------------------------
   // Dropdown Setup
@@ -237,20 +238,19 @@ const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
           imageBig:         d.imageBig
         });
       } else {
-        const payload = {
-          name:             fldName.value.trim() || "Unnamed",
-          nameColor:        pickrName.getColor().toHEXA().toString(),
-          rarity:           fldRarity.value,
-          rarityColor:      pickrRare.getColor().toHEXA().toString(),
-          itemType:         fldItemType.value,
-          itemTypeColor:    pickrItemType.getColor().toHEXA().toString(),
-          description:      fldDescItem.value,
+        Object.assign(out, {
+          name: fldName.value.trim() || "Unnamed",
+          nameColor: pickrName.getColor().toHEXA().toString(),
+          rarity: fldRarity.value,
+          rarityColor: pickrRare.getColor().toHEXA().toString(),
+          itemType: fldItemType.value,
+          itemTypeColor: pickrItemType.getColor().toHEXA().toString(),
+          description: fldDescItem.value,
           descriptionColor: pickrDescItem.getColor().toHEXA().toString(),
-          extraLines:       getLines(),
-          imageSmall:       fldImgS.value,
-          imageBig:         fldImgL.value
-        };
-        Object.assign(out, payload);
+          extraLines: getLines(),
+          imageSmall: fldImgS.value,
+          imageBig: fldImgL.value
+        });
       }
     } else {
       Object.assign(out, {
