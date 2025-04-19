@@ -1,4 +1,4 @@
-// @version: 23
+// @version: 24
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal } from "../uiKit.js";
@@ -26,7 +26,9 @@ export function initMarkerForm(db) {
     onClose: () => closeModal(modal)
   });
 
-  // 2) (Removed <hr> under header)
+  // 2) Divider under header
+  const hrUnderHeader = document.createElement("hr");
+  content.appendChild(hrUnderHeader);
 
   // 3) Form container
   const form = document.createElement("form");
@@ -97,6 +99,10 @@ export function initMarkerForm(db) {
   lblExtra.textContent = "Extra Info:";
   rowExtra.append(lblExtra, extraInfoBlock);
 
+  // Dividers around Extra Info
+  const hrBeforeExtra = document.createElement("hr");
+  const hrAfterExtra  = document.createElement("hr");
+
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
@@ -106,7 +112,9 @@ export function initMarkerForm(db) {
     rowRarity,
     rowItemType,
     rowDescItem,
-    rowExtra
+    hrBeforeExtra,
+    rowExtra,
+    hrAfterExtra
   );
   const blockNI = document.createElement("div");
   blockNI.append(rowDescNI);

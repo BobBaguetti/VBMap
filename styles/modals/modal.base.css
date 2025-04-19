@@ -1,4 +1,4 @@
-/* styles/modals/modal.base.css – base styles for all modals (v4) */
+/* styles/modals/modal.base.css – base styles for all modals (v5) */
 
 /* 1) Global box‑sizing */
 *,
@@ -31,7 +31,7 @@
   overflow: auto;
 }
 
-/* 3) Header layout */
+/* 3) Header & divider */
 .modal-header {
   display: flex;
   align-items: center;
@@ -46,21 +46,25 @@
   font-size: 1.4em;
   cursor: pointer;
 }
+/* hr under header */
+.modal-header + hr {
+  border: none;
+  border-top: 2px solid #444;
+  margin: 8px 0 16px;
+}
 
-/* 4) (All <hr> rules removed) */
-
-/* 5) Flex field rows + uniform vertical gap */
+/* 4) Flex field rows + default gaps */
 .modal-content .field-row {
   display: flex;
   align-items: center;
-  margin: 12px 0;
+  margin-bottom: 8px;
 }
 .modal-content .field-row label {
   flex: 0 0 100px;
   margin-right: 8px;
 }
 
-/* 6) Full‑width, flexing controls */
+/* 5) Full‑width inputs/selects/textarea */
 .modal-content .field-row input[type="text"],
 .modal-content .field-row select,
 .modal-content .field-row textarea,
@@ -75,7 +79,7 @@
   color: #eee;
 }
 
-/* 7) Color‑picker & remove‑line buttons */
+/* 6) Color‑picker & remove‑line buttons */
 .modal-content .color-btn {
   margin-left: 8px !important;
   flex: 0 0 24px;
@@ -88,9 +92,19 @@
   margin-left: 8px;
 }
 
-/* 8) Extra‑row top‑align */
+/* 7) Extra‑row top‑align */
 .modal-content .field-row.extra-row {
   align-items: flex-start;
 }
 
-/* 9) (Internal <hr> rules removed) */
+/* 8) Divider around Extra Info */
+.modal-content hr {
+  border: none;
+  border-top: 1px solid #444;
+  margin: 12px 0;
+}
+
+/* 9) Boost gap between item‑specific rows only */
+.modal-content .item-field {
+  margin-top: 8px !important;
+}
