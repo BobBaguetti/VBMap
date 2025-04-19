@@ -202,22 +202,34 @@ body, html {
   border: none !important;
 }
 
-/* Fix the marker window close button appearance to match the item definition window X */
+/* =====================================
+   Edit Modal Header Layout + Close Btn
+   ===================================== */
+
+/* New: Align Edit Marker title and X */
+#edit-modal .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 10px 0 10px;
+  position: relative;
+}
+
+/* Existing: Style the X button itself */
 #edit-modal .modal-header .close-btn {
   position: absolute;
   top: 5px;
   right: 5px;
   background: transparent;
   border: none;
-  color: #e5e6e8;  /* Light color for visibility */
-  font-size: 20px;  /* Same font size as item definition window */
+  color: #e5e6e8;
+  font-size: 20px;
   cursor: pointer;
-  z-index: 999;  /* Ensure it appears above the popup content */
+  z-index: 999;
 }
 
-/* Add the X symbol to the marker window close button */
 #edit-modal .modal-header .close-btn:before {
-  content: "×";  /* The 'X' character */
+  content: "×";
   font-size: 20px;
   color: #e5e6e8;
   display: block;
