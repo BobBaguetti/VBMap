@@ -1,4 +1,4 @@
-// @version: 21
+// @version: 22
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal } from "../uiKit.js";
@@ -66,6 +66,8 @@ export function initMarkerForm(db) {
       { value: "epic",     label: "Epic"         },
       { value: "legendary",label: "Legendary"    }
     ]);
+  rowRarity.classList.add("item-field");
+
   const { row: rowItemType, select: fldItemType } =
     createDropdownField("Item Type:", "fld-item-type", [
       { value: "Crafting Material", label: "Crafting Material" },
@@ -73,8 +75,11 @@ export function initMarkerForm(db) {
       { value: "Consumable",        label: "Consumable"        },
       { value: "Quest",             label: "Quest"             }
     ]);
+  rowItemType.classList.add("item-field");
+
   const { row: rowDescItem, textarea: fldDescItem } =
     createTextareaFieldWithColor("Description:", "fld-desc-item");
+  rowDescItem.classList.add("item-field");
 
   // — Non‑item description with pickr —
   const { row: rowDescNI, textarea: fldDescNI } =
@@ -93,24 +98,16 @@ export function initMarkerForm(db) {
   lblExtra.textContent = "Extra Info:";
   rowExtra.append(lblExtra, extraInfoBlock);
 
-  // Dividers around Extra Info, with reduced margin
-  const hrBeforeExtra = document.createElement("hr");
-  hrBeforeExtra.style.margin = "8px 0";
-  const hrAfterExtra  = document.createElement("hr");
-  hrAfterExtra.style.margin  = "8px 0";
-
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // Assemble item vs non‑item sections
+  // Assemble item vs non‑item sections (hrBeforeExtra/hrAfterExtra removed)
   const blockItem = document.createElement("div");
   blockItem.append(
     rowRarity,
     rowItemType,
     rowDescItem,
-    hrBeforeExtra,
-    rowExtra,
-    hrAfterExtra
+    rowExtra
   );
   const blockNI = document.createElement("div");
   blockNI.append(rowDescNI);
