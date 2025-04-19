@@ -1,4 +1,4 @@
-// @version: 20
+// @version: 21
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal } from "../uiKit.js";
@@ -38,24 +38,22 @@ export function initMarkerForm(db) {
   const { row: rowName, input: fldName } = createTextField("Name:", "fld-name");
   fldName.classList.add("ui-input");
 
-  // — Type dropdown (no pickr) —
-  const fldType = document.createElement("select");
-  fldType.id = "fld-type";
+  // — Type dropdown via createDropdownField (hide its pickr) —
+  const { row: rowType, select: fldType, colorBtn: pickrTypeBtn } =
+    createDropdownField("Type:", "fld-type", [
+      { value: "Door", label: "Door" },
+      { value: "Extraction Portal", label: "Extraction Portal" },
+      { value: "Item", label: "Item" },
+      { value: "Teleport", label: "Teleport" },
+      { value: "Spawn Point", label: "Spawn points" }
+    ]);
   fldType.classList.add("ui-input");
-  fldType.innerHTML = `
-    <option value="Door">Door</option>
-    <option value="Extraction Portal">Extraction Portal</option>
-    <option value="Item">Item</option>
-    <option value="Teleport">Teleport</option>
-    <option value="Spawn Point">Spawn points</option>
-  `;
-  const rowType = createFieldRow("Type:", fldType);
+  pickrTypeBtn.style.visibility = "hidden";
 
-  // — Predefined‑Item dropdown with hidden pickr for consistent spacing —
+  // — Predefined‑Item dropdown with hidden pickr —
   const { row: rowPre, select: ddPre, colorBtn: pickrPreBtn } =
     createDropdownField("Item:", "fld-predef", []);
   ddPre.classList.add("ui-input");
-  // hide the color‑button but keep its space
   pickrPreBtn.style.visibility = "hidden";
 
   // — Item‑specific fields with pickr —
@@ -140,7 +138,7 @@ export function initMarkerForm(db) {
   const pickrDescItem = createPickr("#fld-desc-item-color");
   const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
-  // 9) Internal state & helpers
+  // 9) State & helpers
   let defs = {};
   let customMode = false;
 
