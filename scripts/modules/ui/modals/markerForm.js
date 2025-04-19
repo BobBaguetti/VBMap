@@ -138,16 +138,168 @@ export function initMarkerForm(db) {
   const pickrDescItem = createPickr("#fld-desc-item-color");
   const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
-  // 9) State & helpers (unchanged)…
-  let defs = {}, customMode = false;
-  function toggleSections(isItem) { /* … */ }
-  async function refreshPredefinedItems() { /* … */ }
-  function populateForm(data) { /* … */ }
-  function harvestForm(coords) { /* … */ }
-  function positionAtCursor(evt) { /* … */ }
-  let submitCB;
-  function openEdit(markerObj, data, evt, onSave) { /* … */ }
-  function openCreate(coords, type, evt, onCreate) { /* … */ }
+  // 9) Internal state
+  let defs = {};
+  let customMode = false;
 
-  return { openEdit, openCreate, refreshPredefinedItems };
+  // Show/hide appropriate sections
+  function toggleSections(isItem) {
+    blockItem.style.display = isItem ? "block" : "none";
+    blockNI.style.display   = isItem ? "none"  : "block";
+    rowPre.style.display    = isItem ? "flex"  : "none";
+  }
+  fldType.onchange = () => toggleSections(fldType.value === "Item");
+
+  // Load item definitions
+  async function refreshPredefinedItems() {
+    const list = await loadItemDefinitions(db);
+    defs = Object.fromEntries(list.map(d => [d.id, d]));
+    ddPre.innerHTML = `<option value="">None (custom)</option>`;
+    list.forEach(d => {
+      const o = document.createElement("option");
+      o.value = d.id;
+      o.textContent = d.name;
+      ddPre.appendChild(o);
+    });
+  }
+
+  // Populate form from data
+  function populateForm(data = { type: "Item" }) {
+    fldType.value = data.type;
+    toggleSections(data.type === "Item");
+
+    if (data.type === "Item") {
+      if (data.predefinedItemId && defs[data.predefinedItemId]) {
+        const def = defs[data.predefinedItemId];
+        ddPre.value       = def.id;
+        fldName.value     = def.name;
+        pickrName.setColor(def.nameColor   || "#E5E6E8");
+        fldRarity.value   = def.rarity;
+        pickrRare.setColor(def.rarityColor || "#E5E6E8");
+        fldItemType.value = def.itemType || def.type;
+        pickrItemType.setColor(def.itemTypeColor || "#E5E6E8");
+        fldDescItem.value = def.description;
+        pickrDescItem.setColor(def.descriptionColor || "#E5E6E8");
+        fldImgS.value     = def.imageSmall;
+        fldImgL.value     = def.imageBig;
+        fldVid.value      = "";
+        setLines(def.extraLines || [], false);
+        customMode = false;
+      } else {
+        ddPre.value       = "";
+        fldName.value     = "";
+        pickrName.setColor("#E5E6E8");
+        fldRarity.value   = "";
+        pickrRare.setColor("#E5E6E8");
+        fldItemType.value = "";
+        pickrItemType.setColor("#E5E6E8");
+        fldDescItem.value = "";
+        pickrDescItem.setColor("#E5E6E8");
+        fldImgS.value     = "";
+        fldImgL.value     = "";
+        fldVid.value      = "";
+        setLines([], false);
+        customMode = true;
+      }
+    } else {
+      fldName.value   = data.name       || "";
+      pickrName.setColor(data.nameColor || "#E5E6E8");
+      fldDescNI.value = data.description|| "";
+      pickrDescNI.setColor(data.descriptionColor || "#E5E6E8");
+      fldImgS.value   = data.imageSmall || "";
+      fldImgL.value   = data.imageBig   || "";
+      fldVid.value    = data.videoURL   || "";
+    }
+  }
+
+  // Harvest form data
+  function harvestForm(coords) {
+    const out = { type: fldType.value, coords };
+    if (out.type === "Item") {
+      if (!customMode) {
+        const d = defs[ddPre.value];
+        Object.assign(out, {
+          predefinedItemId: d.id,
+          name:             d.name,
+          nameColor:        d.nameColor,
+          rarity:           d.rarity,
+          rarityColor:      d.rarityColor,
+          itemType:         d.itemType,
+          itemTypeColor:    d.itemTypeColor,
+          description:      d.description,
+          descriptionColor: d.descriptionColor,
+          extraLines:       d.extraLines || [],
+          imageSmall:       d.imageSmall,
+          imageBig:         d.imageBig
+        });
+      } else {
+        Object.assign(out, {
+          name:             fldName.value.trim()   || "Unnamed",
+          nameColor:        pickrName.getColor().toHEXA().toString(),
+          rarity:           fldRarity.value,
+          rarityColor:      pickrRare.getColor().toHEXA().toString(),
+          itemType:         fldItemType.value,
+          itemTypeColor:    pickrItemType.getColor().toHEXA().toString(),
+          description:      fldDescItem.value,
+          descriptionColor: pickrDescItem.getColor().toHEXA().toString(),
+          extraLines:       getLines(),
+          imageSmall:       fldImgS.value,
+          imageBig:         fldImgL.value
+        });
+      }
+    } else {
+      Object.assign(out, {
+        name:             fldName.value,
+        nameColor:        pickrName.getColor().toHEXA().toString(),
+        description:      fldDescNI.value,
+        descriptionColor: pickrDescNI.getColor().toHEXA().toString(),
+        imageSmall:       fldImgS.value,
+        imageBig:         fldImgL.value,
+        videoURL:         fldVid.value
+      });
+    }
+    return out;
+  }
+
+  // Position modal at cursor
+  function positionAtCursor(evt) {
+    modal.style.display = "block";
+    const rect = content.getBoundingClientRect();
+    content.style.left = `${evt.clientX - rect.width}px`;
+    content.style.top  = `${evt.clientY - rect.height / 2}px`;
+  }
+
+  // Open in “edit” mode
+  let submitCB;
+  function openEdit(markerObj, data, evt, onSave) {
+    populateForm(data);
+    positionAtCursor(evt);
+    if (submitCB) form.removeEventListener("submit", submitCB);
+    submitCB = e => {
+      e.preventDefault();
+      Object.assign(data, harvestForm(data.coords));
+      onSave(data);
+      closeModal(modal);
+    };
+    form.addEventListener("submit", submitCB);
+  }
+
+  // Open in “create” mode
+  function openCreate(coords, type, evt, onCreate) {
+    populateForm({ type });
+    positionAtCursor(evt);
+    if (submitCB) form.removeEventListener("submit", submitCB);
+    submitCB = e => {
+      e.preventDefault();
+      onCreate(harvestForm(coords));
+      closeModal(modal);
+    };
+    form.addEventListener("submit", submitCB);
+  }
+
+  return {
+    openEdit,
+    openCreate,
+    refreshPredefinedItems
+  };
 }
