@@ -1,4 +1,4 @@
-// @version: 18
+// @version: 19
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal } from "../uiKit.js";
@@ -58,28 +58,24 @@ export function initMarkerForm(db) {
   const rowPre = createFieldRow("Item:", ddPre);
 
   // — Item‑specific fields with pickr —
-  const { row: rowRarity, select: fldRarity, colorBtn: pickrRarityBtn } =
-    createDropdownField("Rarity:", "fld-rarity", [
-      { value: "",         label: "Select Rarity" },
-      { value: "common",   label: "Common"       },
-      { value: "uncommon", label: "Uncommon"     },
-      { value: "rare",     label: "Rare"         },
-      { value: "epic",     label: "Epic"         },
-      { value: "legendary",label: "Legendary"    }
-    ]);
-  const { row: rowItemType, select: fldItemType, colorBtn: pickrItemTypeBtn } =
-    createDropdownField("Item Type:", "fld-item-type", [
-      { value: "Crafting Material", label: "Crafting Material" },
-      { value: "Special",           label: "Special"           },
-      { value: "Consumable",        label: "Consumable"        },
-      { value: "Quest",             label: "Quest"             }
-    ]);
-  const { row: rowDescItem, textarea: fldDescItem, colorBtn: pickrDescItemBtn } =
-    createTextareaFieldWithColor("Description:", "fld-desc-item");
+  const { row: rowRarity, select: fldRarity } = createDropdownField("Rarity:", "fld-rarity", [
+    { value: "",         label: "Select Rarity" },
+    { value: "common",   label: "Common"       },
+    { value: "uncommon", label: "Uncommon"     },
+    { value: "rare",     label: "Rare"         },
+    { value: "epic",     label: "Epic"         },
+    { value: "legendary",label: "Legendary"    }
+  ]);
+  const { row: rowItemType, select: fldItemType } = createDropdownField("Item Type:", "fld-item-type", [
+    { value: "Crafting Material", label: "Crafting Material" },
+    { value: "Special",           label: "Special"           },
+    { value: "Consumable",        label: "Consumable"        },
+    { value: "Quest",             label: "Quest"             }
+  ]);
+  const { row: rowDescItem, textarea: fldDescItem } = createTextareaFieldWithColor("Description:", "fld-desc-item");
 
   // — Non‑item description with pickr —
-  const { row: rowDescNI, textarea: fldDescNI, colorBtn: pickrDescNIBtn } =
-    createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
+  const { row: rowDescNI, textarea: fldDescNI } = createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
 
   // — Image & video fields (no pickr) —
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
@@ -130,16 +126,17 @@ export function initMarkerForm(db) {
   // 7) Add modal to the DOM
   document.body.appendChild(modal);
 
-  // 8) Instantiate color pickers
-  createPickr("#fld-name-color");
-  createPickr("#fld-rarity-color");
-  createPickr("#fld-item-type-color");
-  createPickr("#fld-desc-item-color");
-  createPickr("#fld-desc-nonitem-color");
+  // 8) Instantiate color pickers and capture references
+  const pickrName     = createPickr("#fld-name-color");
+  const pickrRare     = createPickr("#fld-rarity-color");
+  const pickrItemType = createPickr("#fld-item-type-color");
+  const pickrDescItem = createPickr("#fld-desc-item-color");
+  const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
-  // 9) Internal state and helper functions (unchanged)
+  // 9) Internal state & helpers
   let defs = {};
   let customMode = false;
+
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
     blockNI.style.display   = isItem ? "none"  : "block";
