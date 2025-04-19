@@ -1,4 +1,7 @@
-/* Modal container layout */
+/* @version: 10 */
+/* @file: /styles/modal.css */
+
+/* Modal container layout for pre-uiKit item definition modal*/
 .ui-modal {
     background-color: #222;
     color: #e0e0e0;
@@ -6,8 +9,12 @@
     padding: 20px;
 }
 
-/* Modal Defaults */
-.modal {
+
+/* ===========================
+   Modal Container Base Layout
+   =========================== */
+
+   .modal {
     display: none;
     position: fixed;
     z-index: 2300;
@@ -15,25 +22,53 @@
     top: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.8);
-}
-
-.modal-content.modal-small {
+    background-color: rgba(0, 0, 0, 0.8); /* dark backdrop for large modals */
+  }
+  
+  /* ===========================
+     Modal Content Base Styling
+     =========================== */
+  
+  .modal-content {
     background-color: #222;
     color: #e0e0e0;
     border: 1px solid #555;
     padding: 5px 20px;
+    max-height: 90vh;
+    overflow: hidden;
+  }
+  
+  /* ===========================
+     Small Modal Variant
+     =========================== */
+  
+  .modal-small {
+    position: absolute;
+    width: 380px;
+    cursor: move;
+    z-index: 2400; /* ensure above anything else */
+    background-color: #222;
+    border: 1px solid #555;
+    pointer-events: all;
+  }
+  
+  /* ===========================
+     Large Modal Variant
+     =========================== */
+  
+  .modal-large .modal-content {
     position: fixed;
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    width: 380px !important;
-    max-height: 90vh;
-    overflow: hidden;
-  }  
-
-/* Modal Header */
-.modal-header {
+    width: 500px;
+  }
+  
+  /* ===========================
+     Modal Header Area
+     =========================== */
+  
+  .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -41,40 +76,29 @@
     color: #e0e0e0;
     padding: 10px;
     border-bottom: 1px solid #444;
-}
-
-/* Optional layout helpers for header content */
-.modal-header-left {
+  }
+  
+  /* Optional helpers for aligned header content */
+  .modal-header-left {
     display: flex;
     align-items: center;
     gap: 10px;
-}
-
-.modal-header-right {
+  }
+  
+  .modal-header-right {
     display: flex;
     align-items: center;
     gap: 10px;
     margin-left: auto;
-}
-
-/* Modal Divider (used between sections) */
-.modal-content hr {
+  }
+  
+  /* ===========================
+     Divider Line Between Sections
+     =========================== */
+  
+  .modal-content hr {
     border: none;
     border-top: 1px solid #444;
     margin: 12px 0;
-}
-
-/* Remove dark backdrop for modals that specify no-backdrop */
-.modal.no-backdrop {
-    background-color: transparent !important;
-    pointer-events: none;
   }
-  
-  .modal.no-backdrop .modal-content {
-    pointer-events: all;
-    position: absolute;
-    cursor: move;
-  }
-  
-  
   
