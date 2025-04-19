@@ -26,6 +26,7 @@ export function initMarkerForm(db) {
   const { modal, content } = createModal({
     id: "edit-marker-modal",
     title: "Edit Marker",
+    size: "small",
     onClose: () => closeModal(modal)
   });
 
