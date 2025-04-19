@@ -1,4 +1,4 @@
-// @version: 29
+// @version: 30
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
@@ -61,6 +61,7 @@ export function initMarkerForm(db) {
       { value: "epic",     label: "Epic"         },
       { value: "legendary",label: "Legendary"    }
     ]);
+  rowRarity.classList.add("item-gap");
 
   const { row: rowItemType, select: fldItemType } =
     createDropdownField("Item Type:", "fld-item-type", [
@@ -69,9 +70,11 @@ export function initMarkerForm(db) {
       { value: "Consumable",        label: "Consumable"        },
       { value: "Quest",             label: "Quest"             }
     ]);
+  rowItemType.classList.add("item-gap");
 
   const { row: rowDescItem, textarea: fldDescItem } =
     createTextareaFieldWithColor("Description:", "fld-desc-item");
+  rowDescItem.classList.add("item-gap");
 
   // — Non‑item description with pickr —
   const { row: rowDescNI, textarea: fldDescNI } =
@@ -83,8 +86,7 @@ export function initMarkerForm(db) {
   const { row: rowVid, input: fldVid }   = createVideoField("Video:",    "fld-vid");
 
   // — Extra Info block —
-  const { block: extraInfoBlock, getLines, setLines } =
-    createExtraInfoBlock();
+  const { block: extraInfoBlock, getLines, setLines } = createExtraInfoBlock();
   const rowExtra = document.createElement("div");
   rowExtra.className = "field-row extra-row";
   const lblExtra = document.createElement("label");
@@ -134,7 +136,7 @@ export function initMarkerForm(db) {
   const pickrDescItem = createPickr("#fld-desc-item-color");
   const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
 
-  // Internal state & helpers
+  // 8) Internal state & helpers
   let defs = {}, customMode = false;
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
@@ -250,30 +252,31 @@ export function initMarkerForm(db) {
     return out;
   }
 
-  // — this now comes from uiKit —
+  // Replace original openEdit/openCreate logic with uiKit’s helper
+  let submitCB;
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
     openModalAt(modal, evt);
-    if (this._submitCb) form.removeEventListener("submit", this._submitCb);
-    this._submitCb = e => {
+    if (submitCB) form.removeEventListener("submit", submitCB);
+    submitCB = e => {
       e.preventDefault();
       Object.assign(data, harvestForm(data.coords));
       onSave(data);
       closeModal(modal);
     };
-    form.addEventListener("submit", this._submitCb);
+    form.addEventListener("submit", submitCB);
   }
 
   function openCreate(coords, type, evt, onCreate) {
     populateForm({ type });
     openModalAt(modal, evt);
-    if (this._submitCb) form.removeEventListener("submit", this._submitCb);
-    this._submitCb = e => {
+    if (submitCB) form.removeEventListener("submit", submitCB);
+    submitCB = e => {
       e.preventDefault();
       onCreate(harvestForm(coords));
       closeModal(modal);
     };
-    form.addEventListener("submit", this._submitCb);
+    form.addEventListener("submit", submitCB);
   }
 
   return {
