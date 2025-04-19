@@ -1,26 +1,23 @@
-/* modal.css – small (draggable) vs. large (static) modals */
-/* ------------------------------------------------------------- */
-/* Global box‑sizing (includes padding & borders in width/height) */
+/* modal.css – full drop‑in for both small & large modals */
+
+/* 1) border‑box everywhere */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* ------------------------------------------------------------- */
-/* Modal backdrop & container                                   */
-/* ------------------------------------------------------------- */
+/* 2) Backdrop & container */
 .modal {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
-  background-color: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.5);
   display: none;
   z-index: 1000;
 }
-
 .modal-content {
-  background-color: #1e1e3e;
+  background: #1e1e3e;
   border: 1px solid #333;
   border-radius: 4px;
   padding: 16px;
@@ -29,29 +26,23 @@
   position: absolute; /* JS sets left/top */
   transform: none;
   width: auto;
-  max-width: 90%;     /* fallback on narrow viewports */
+  max-width: 90%;
 }
-
 .modal-large .modal-content {
   max-width: 60%;
 }
-
-/* ------------------------------------------------------------- */
-/* Small modal clamp (350px total width)                        */
-/* ------------------------------------------------------------- */
+/* clamp the small modal absolutely */
 .modal.modal-small .modal-content {
   width: 350px !important;
   max-width: 350px !important;
 }
 
-/* ------------------------------------------------------------- */
-/* Header styling & divider under header                        */
-/* ------------------------------------------------------------- */
+/* 3) Header & dividers */
 .modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin: 0;  /* we use <hr> instead */
+  margin: 0;   /* remove default margins */
 }
 .modal-header h2 {
   font-size: 1.4em;
@@ -61,17 +52,14 @@
   font-size: 1.4em;
   cursor: pointer;
 }
-/* hr immediately after header */
-.modal-header + hr,
-.modal-content > hr:first-of-type {
+/* any <hr> in modal-content */
+.modal-content hr {
   border: none;
-  border-top: 2px solid #444;
-  margin: 8px 0 16px;
+  border-top: 1px solid #444;
+  margin: 12px 0;
 }
 
-/* ------------------------------------------------------------- */
-/* Flex‑based field rows                                        */
-/* ------------------------------------------------------------- */
+/* 4) Flex rows */
 .modal-content .field-row {
   display: flex;
   align-items: center;
@@ -85,7 +73,7 @@
 .modal-content .field-row select,
 .modal-content .field-row textarea {
   flex: 1 1 auto;
-  min-width: 0;   /* allows shrinking */
+  min-width: 0;
   margin-right: 8px;
   background: #2a2a2a;
   border: 1px solid #555;
@@ -93,14 +81,17 @@
   padding: 4px 6px;
   color: #eee;
 }
-/* drop the right‑margin on last child */
+/* drop extra right margin */
 .modal-content .field-row > *:last-child {
   margin-right: 0;
 }
 
-/* ------------------------------------------------------------- */
-/* Color‑picker “button” & extra‑info remove buttons            */
-/* ------------------------------------------------------------- */
+/* 5) Extra‑row top‑align */
+.modal-content .field-row.extra-row {
+  align-items: flex-start;
+}
+
+/* 6) Color‑picker & remove buttons */
 .modal-content .color-btn {
   flex: 0 0 24px;
   width: 24px; height: 24px;
@@ -113,25 +104,7 @@
   margin-left: 4px;
 }
 
-/* ------------------------------------------------------------- */
-/* Horizontal rules inside content                              */
-/* ------------------------------------------------------------- */
-.modal-content hr {
-  border: none;
-  border-top: 1px solid #333;
-  margin: 12px 0;
-}
-
-/* ------------------------------------------------------------- */
-/* Extra‑row (top‑align the “Extra Info:” + + button)           */
-/* ------------------------------------------------------------- */
-.modal-content .field-row.extra-row {
-  align-items: flex-start;
-}
-
-/* ------------------------------------------------------------- */
-/* Save/Cancel buttons                                          */
-/* ------------------------------------------------------------- */
+/* 7) Save/Cancel styling */
 .field-row button[type="submit"],
 .field-row button[type="button"] {
   background: #3a3a3a;
