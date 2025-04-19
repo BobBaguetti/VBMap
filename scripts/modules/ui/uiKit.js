@@ -1,4 +1,4 @@
-// @version: 10
+// @version: 10.1
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -38,6 +38,7 @@ export function createModal({ id, title, onClose, size = "small" }) {
 
   if (size === "small") {
     content.classList.add("modal-small");
+    content.style.display = "none";
     document.body.appendChild(content);
     return { modal: content, content, header };
   }
@@ -341,3 +342,4 @@ export function createExtraInfoBlock(options = {}) {
 
   return { block: wrap, getLines, setLines };
 }
+
