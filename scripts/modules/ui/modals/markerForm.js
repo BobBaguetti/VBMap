@@ -1,4 +1,4 @@
-// @version: 27
+// @version: 28
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal } from "../uiKit.js";
@@ -6,7 +6,6 @@ import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 import {
   createTextField,
   createDropdownField,
-  createFieldRow,
   createTextareaFieldWithColor,
   createImageField,
   createVideoField,
@@ -38,7 +37,7 @@ export function initMarkerForm(db) {
   const { row: rowName, input: fldName } = createTextField("Name:", "fld-name");
   fldName.classList.add("ui-input");
 
-  // — Type dropdown (hide pickr) —
+  // — Type dropdown (hide its pickr button entirely) —
   const { row: rowType, select: fldType, colorBtn: pickrTypeBtn } =
     createDropdownField("Type:", "fld-type", [
       { value: "Door", label: "Door" },
@@ -48,13 +47,13 @@ export function initMarkerForm(db) {
       { value: "Spawn Point", label: "Spawn points" }
     ]);
   fldType.classList.add("ui-input");
-  pickrTypeBtn.style.visibility = "hidden";
+  pickrTypeBtn.style.display = "none";
 
-  // — Predefined‑Item dropdown (hide pickr) —
+  // — Predefined‑item dropdown (hide its pickr) —
   const { row: rowPre, select: ddPre, colorBtn: pickrPreBtn } =
     createDropdownField("Item:", "fld-predef", []);
   ddPre.classList.add("ui-input");
-  pickrPreBtn.style.visibility = "hidden";
+  pickrPreBtn.style.display = "none";
 
   // — Item‑specific fields with pickrs —
   const { row: rowRarity, select: fldRarity } =
@@ -66,8 +65,6 @@ export function initMarkerForm(db) {
       { value: "epic",     label: "Epic"         },
       { value: "legendary",label: "Legendary"    }
     ]);
-  // add our custom spacer class:
-  rowRarity.classList.add("item-gap");
 
   const { row: rowItemType, select: fldItemType } =
     createDropdownField("Item Type:", "fld-item-type", [
@@ -76,13 +73,11 @@ export function initMarkerForm(db) {
       { value: "Consumable",        label: "Consumable"        },
       { value: "Quest",             label: "Quest"             }
     ]);
-  rowItemType.classList.add("item-gap");
 
   const { row: rowDescItem, textarea: fldDescItem } =
     createTextareaFieldWithColor("Description:", "fld-desc-item");
-  rowDescItem.classList.add("item-gap");
 
-  // — Non‑item description —
+  // — Non‑item description with pickr —
   const { row: rowDescNI, textarea: fldDescNI } =
     createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
 
@@ -91,22 +86,23 @@ export function initMarkerForm(db) {
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
   const { row: rowVid, input: fldVid }   = createVideoField("Video:",    "fld-vid");
 
-  // — Extra Info —
-  const { block: extraInfoBlock, getLines, setLines } = createExtraInfoBlock();
+  // — Extra Info block —
+  const { block: extraInfoBlock, getLines, setLines } =
+    createExtraInfoBlock();
   const rowExtra = document.createElement("div");
   rowExtra.className = "field-row extra-row";
   const lblExtra = document.createElement("label");
   lblExtra.textContent = "Extra Info:";
   rowExtra.append(lblExtra, extraInfoBlock);
 
-  // Dividers around Extra Info
+  // 4) Dividers around Extra Info
   const hrBeforeExtra = document.createElement("hr");
   const hrAfterExtra  = document.createElement("hr");
 
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // Assemble sections
+  // 5) Assemble item vs non‑item sections
   const blockItem = document.createElement("div");
   blockItem.append(
     rowRarity,
@@ -119,7 +115,7 @@ export function initMarkerForm(db) {
   const blockNI = document.createElement("div");
   blockNI.append(rowDescNI);
 
-  // 4) Build the form
+  // 6) Build the form
   form.append(
     rowName,
     rowType,
@@ -132,9 +128,10 @@ export function initMarkerForm(db) {
     rowButtons
   );
 
+  // 7) Add modal to DOM
   document.body.appendChild(modal);
 
-  // Instantiate color pickrs
+  // 8) Instantiate color pickrs
   const pickrName     = createPickr("#fld-name-color");
   const pickrRare     = createPickr("#fld-rarity-color");
   const pickrItemType = createPickr("#fld-item-type-color");
