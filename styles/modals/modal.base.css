@@ -1,4 +1,4 @@
-/* styles/modals/modal.base.css – base styles for all modals (v8) */
+/* styles/modals/modal.base.css – base styles for all modals (v9) */
 
 /* 1) Global box‑sizing */
 *,
@@ -38,7 +38,7 @@
   justify-content: space-between;
 }
 .modal-header h2 {
-  font-size: 1em;
+  font-size: 0.9em;  /* 10% smaller than default */
   margin: 0;
 }
 .modal-header .close {
@@ -84,6 +84,12 @@
   border-radius: 2px;
   padding: 4px 6px;
   color: #eee;
+}
+
+/* 6a) Force selects to fill their slot exactly */
+.modal-content .field-row select.ui-input {
+  flex: none;
+  width: 100%;
 }
 
 /* 7) Color‑picker & remove‑line buttons */
