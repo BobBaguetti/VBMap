@@ -1,0 +1,26 @@
+/* Leaflet Map Overrides */
+.leaflet-container {
+    background-color: #1a1a1a !important;
+  }
+  
+  /* Popup Styling */
+  .leaflet-popup,
+  .leaflet-popup-content-wrapper {
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  
+  .leaflet-popup-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: auto !important;
+  }
+  
+  .leaflet-popup-tip-container,
+  .leaflet-popup-tip {
+    display: none !important;
+  }
+  

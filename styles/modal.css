@@ -1,0 +1,66 @@
+/* Modal container layout */
+.ui-modal {
+    background-color: #222;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    padding: 20px;
+}
+
+/* Modal Defaults */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 2300;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.8);
+}
+
+.modal-content {
+    background-color: #222;
+    color: #e0e0e0;
+    border: 1px solid #555;
+    padding: 5px 20px;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    padding: 5px 20px;
+    width: 500px;
+    max-height: 90vh;
+    overflow: hidden;
+}
+
+/* Modal Header */
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #222;
+    color: #e0e0e0;
+    padding: 10px;
+    border-bottom: 1px solid #444;
+}
+
+/* Optional layout helpers for header content */
+.modal-header-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.modal-header-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: auto;
+}
+
+/* Modal Divider (used between sections) */
+.modal-content hr {
+    border: none;
+    border-top: 1px solid #444;
+    margin: 12px 0;
+}

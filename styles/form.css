@@ -1,0 +1,53 @@
+/* Form Field Layout */
+#edit-form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 8px;
+}
+
+.field-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.field-row label {
+    width: 90px;
+    text-align: left;
+    margin-right: 5px;
+    flex-shrink: 0;
+}
+
+.field-row input[type="text"],
+.field-row select,
+.field-row textarea {
+    background: #303030 !important;
+    color: #e5e6e8 !important;
+    border: 1px solid #555 !important;
+    padding: 4px 6px;
+    font-size: 14px;
+    box-sizing: border-box;
+    width: 100%;
+}
+
+.field-row textarea {
+    resize: vertical;
+}
+
+/* Add padding to all buttons inside .field-row for consistency */
+.field-row button {
+    padding: 6px 12px !important;
+}
+
+/* Color button (for Pickr) */
+.color-btn {
+    width: 32px;
+    height: 32px;
+    background: #666;
+    border: 1px solid #333;
+    border-radius: 2px;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-left: 86px;
+}

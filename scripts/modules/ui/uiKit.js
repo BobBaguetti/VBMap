@@ -1,5 +1,7 @@
 // /modules/ui/uiKit.js
 
+import { createPickr } from "./pickrManager.js";
+
 // ------------------------------
 // Basic Modal and Layout Helpers
 // ------------------------------
@@ -104,8 +106,6 @@ export function createColorFieldRow(labelText, inputEl, colorId) {
 // Modular Extra Info Line Builder
 // ------------------------------
 
-import { createPickr } from "./pickrManager.js";
-
 /**
  * Creates a reusable block for managing extra info lines (text + color).
  * Useful in item/quest/marker modals.
@@ -206,4 +206,56 @@ export function createExtraInfoBlock(options = {}) {
   }
 
   return { block: wrap, getLines, setLines };
+}
+
+// ------------------------------
+// Modular Fields for Item and Marker Modals
+// ------------------------------
+
+/**
+ * Creates a label and input for a text-based field (with optional color picker).
+ */
+export function createTextField(labelText, id, defaultColor = "#E5E6E8") {
+  const input = document.createElement("input");
+  input.id = id;
+  const { row, colorBtn } = createColorFieldRow(labelText, input, `${id}-color`);
+  return { row, input, colorBtn };
+}
+
+/**
+ * Creates a labeled dropdown with color picker and an id.
+ */
+export function createDropdownField(labelText, id, options, defaultColor = "#E5E6E8") {
+  const select = document.createElement("select");
+  select.id = id;
+  options.forEach(option => {
+    const optionEl = document.createElement("option");
+    optionEl.value = option.value;
+    optionEl.textContent = option.label;
+    select.appendChild(optionEl);
+  });
+  const { row, colorBtn } = createColorFieldRow(labelText, select, `${id}-color`);
+  return { row, select, colorBtn };
+}
+
+/**
+ * Creates a labeled image URL input field.
+ */
+export function createImageField(labelText, id) {
+  const input = document.createElement("input");
+  input.id = id;
+  input.type = "text";
+  const row = createFieldRow(labelText, input);
+  return { row, input };
+}
+
+/**
+ * Creates a labeled video URL input field.
+ */
+export function createVideoField(labelText, id) {
+  const input = document.createElement("input");
+  input.id = id;
+  input.type = "text";
+  const row = createFieldRow(labelText, input);
+  return { row, input };
 }
