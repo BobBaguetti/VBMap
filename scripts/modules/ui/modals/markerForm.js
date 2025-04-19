@@ -1,4 +1,4 @@
-// @version: 19
+// @version: 20
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal } from "../uiKit.js";
@@ -51,31 +51,36 @@ export function initMarkerForm(db) {
   `;
   const rowType = createFieldRow("Type:", fldType);
 
-  // — Predefined‑Item dropdown (no pickr) —
-  const ddPre = document.createElement("select");
-  ddPre.id = "fld-predef";
+  // — Predefined‑Item dropdown with hidden pickr for consistent spacing —
+  const { row: rowPre, select: ddPre, colorBtn: pickrPreBtn } =
+    createDropdownField("Item:", "fld-predef", []);
   ddPre.classList.add("ui-input");
-  const rowPre = createFieldRow("Item:", ddPre);
+  // hide the color‑button but keep its space
+  pickrPreBtn.style.visibility = "hidden";
 
   // — Item‑specific fields with pickr —
-  const { row: rowRarity, select: fldRarity } = createDropdownField("Rarity:", "fld-rarity", [
-    { value: "",         label: "Select Rarity" },
-    { value: "common",   label: "Common"       },
-    { value: "uncommon", label: "Uncommon"     },
-    { value: "rare",     label: "Rare"         },
-    { value: "epic",     label: "Epic"         },
-    { value: "legendary",label: "Legendary"    }
-  ]);
-  const { row: rowItemType, select: fldItemType } = createDropdownField("Item Type:", "fld-item-type", [
-    { value: "Crafting Material", label: "Crafting Material" },
-    { value: "Special",           label: "Special"           },
-    { value: "Consumable",        label: "Consumable"        },
-    { value: "Quest",             label: "Quest"             }
-  ]);
-  const { row: rowDescItem, textarea: fldDescItem } = createTextareaFieldWithColor("Description:", "fld-desc-item");
+  const { row: rowRarity, select: fldRarity } =
+    createDropdownField("Rarity:", "fld-rarity", [
+      { value: "",         label: "Select Rarity" },
+      { value: "common",   label: "Common"       },
+      { value: "uncommon", label: "Uncommon"     },
+      { value: "rare",     label: "Rare"         },
+      { value: "epic",     label: "Epic"         },
+      { value: "legendary",label: "Legendary"    }
+    ]);
+  const { row: rowItemType, select: fldItemType } =
+    createDropdownField("Item Type:", "fld-item-type", [
+      { value: "Crafting Material", label: "Crafting Material" },
+      { value: "Special",           label: "Special"           },
+      { value: "Consumable",        label: "Consumable"        },
+      { value: "Quest",             label: "Quest"             }
+    ]);
+  const { row: rowDescItem, textarea: fldDescItem } =
+    createTextareaFieldWithColor("Description:", "fld-desc-item");
 
   // — Non‑item description with pickr —
-  const { row: rowDescNI, textarea: fldDescNI } = createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
+  const { row: rowDescNI, textarea: fldDescNI } =
+    createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
 
   // — Image & video fields (no pickr) —
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
@@ -90,9 +95,11 @@ export function initMarkerForm(db) {
   lblExtra.textContent = "Extra Info:";
   rowExtra.append(lblExtra, extraInfoBlock);
 
-  // Dividers around Extra Info
+  // Dividers around Extra Info, with reduced margin
   const hrBeforeExtra = document.createElement("hr");
+  hrBeforeExtra.style.margin = "8px 0";
   const hrAfterExtra  = document.createElement("hr");
+  hrAfterExtra.style.margin  = "8px 0";
 
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
@@ -126,7 +133,7 @@ export function initMarkerForm(db) {
   // 7) Add modal to the DOM
   document.body.appendChild(modal);
 
-  // 8) Instantiate color pickers and capture references
+  // 8) Instantiate color pickers
   const pickrName     = createPickr("#fld-name-color");
   const pickrRare     = createPickr("#fld-rarity-color");
   const pickrItemType = createPickr("#fld-item-type-color");
@@ -140,7 +147,7 @@ export function initMarkerForm(db) {
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
     blockNI.style.display   = isItem ? "none"  : "block";
-    rowPre.style.display    = isItem ? "block" : "none";
+    rowPre.style.display    = isItem ? "flex"  : "none";
   }
   fldType.onchange = () => toggleSections(fldType.value === "Item");
 
