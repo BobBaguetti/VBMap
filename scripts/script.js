@@ -1,6 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
 // @file:    /scripts/script.js
 
 import { initializeMap } from "./modules/map/map.js";
@@ -17,6 +16,8 @@ import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsMod
 import { initMarkerForm } from "./modules/ui/modals/markerForm.js";
 import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
 import { setupSidebar } from "./modules/sidebar/sidebarManager.js";
+import { subscribeItemDefinitions } from "./modules/services/itemDefinitionsService.js";
+import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
 
 /* ------------------------------------------------------------------ *
  *  Firebase Initialization
@@ -57,58 +58,54 @@ const { filterMarkers, loadItemFilters } = await setupSidebar(map, layers, allMa
 const markerForm = initMarkerForm(db);
 
 /* ------------------------------------------------------------------ *
- *  Edit Marker Modal X Button Close Handler
+ *  Item Definitions Modal Initialization
  * ------------------------------------------------------------------ */
-const editCloseBtn = document.getElementById("edit-close-btn");
-const editModal = document.getElementById("edit-modal");
-
-if (editCloseBtn && editModal) {
-  editCloseBtn.addEventListener("click", () => {
-    editModal.style.display = "none";
-  });
-}
+const itemModal = initItemDefinitionsModal(db);
+document
+  .getElementById("manage-item-definitions")
+  .addEventListener("click", () => itemModal.open());
 
 /* ------------------------------------------------------------------ *
- *  Helper: Refresh Markers When Definitions Change
+ *  Quest Definitions Modal Initialization
  * ------------------------------------------------------------------ */
-async function refreshMarkersFromDefinitions() {
+const questModal = initQuestDefinitionsModal(db);
+document
+  .getElementById("manage-quest-definitions")
+  .addEventListener("click", () => questModal.open());
+
+/* ------------------------------------------------------------------ *
+ *  Subscribe to Definition Changes to Refresh Markers & Sidebar
+ * ------------------------------------------------------------------ */
+subscribeItemDefinitions(db, async () => {
+  await markerForm.refreshPredefinedItems();
+  // refresh existing markers
   const { loadItemDefinitions } = await import("./modules/services/itemDefinitionsService.js");
   const defsList = await loadItemDefinitions(db);
   const defMap = Object.fromEntries(defsList.map(d => [d.id, d]));
-
   allMarkers.forEach(({ markerObj, data }) => {
     if (!data.predefinedItemId) return;
     const def = defMap[data.predefinedItemId];
     if (!def) return;
-
     Object.assign(data, {
       name:             def.name,
-      nameColor:        def.nameColor       || "#E5E6E8",
+      nameColor:        def.nameColor   || "#E5E6E8",
       rarity:           def.rarity,
-      rarityColor:      def.rarityColor     || "#E5E6E8",
-      itemType:         def.itemType || def.type,
-      itemTypeColor:    def.itemTypeColor   || "#E5E6E8",
+      rarityColor:      def.rarityColor|| "#E5E6E8",
+      itemType:         def.itemType,
+      itemTypeColor:    def.itemTypeColor || "#E5E6E8",
       description:      def.description,
-      descriptionColor: def.descriptionColor|| "#E5E6E8",
+      descriptionColor: def.descriptionColor || "#E5E6E8",
       extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
       imageSmall:       def.imageSmall,
-      imageBig:         def.imageBig
+      imageBig:         def.imageBig,
+      value:            def.value,
+      quantity:         def.quantity
     });
-
     markerObj.setPopupContent(createPopupContent(data));
     firebaseUpdateMarker(db, data);
   });
-}
-
-/* ------------------------------------------------------------------ *
- *  Item Definitions Modal Initialization
- *  -> reload sidebar item filters after any change
- * ------------------------------------------------------------------ */
-initItemDefinitionsModal(db, async () => {
-  await markerForm.refreshPredefinedItems();
-  await refreshMarkersFromDefinitions();
-  await loadItemFilters();   // now defined
-  filterMarkers();           // now defined
+  await loadItemFilters();
+  filterMarkers();
 });
 
 /* ------------------------------------------------------------------ *
@@ -190,5 +187,3 @@ document.addEventListener("click", (e) => {
     }
   }
 });
-
-  // @version: 1

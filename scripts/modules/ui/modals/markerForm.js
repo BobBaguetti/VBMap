@@ -1,4 +1,4 @@
-// @version: 30
+// @version: 31
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
@@ -199,11 +199,11 @@ export function initMarkerForm(db) {
     } else {
       fldName.value     = data.name       || "";
       pickrName.setColor(data.nameColor   || "#E5E6E8");
-      fldDescNI.value   = data.description|| "";
-      pickrDescNI.setColor(data.descriptionColor || "#E5E6E8");
       fldImgS.value     = data.imageSmall || "";
       fldImgL.value     = data.imageBig   || "";
       fldVid.value      = data.videoURL   || "";
+      fldDescNI.value   = data.description|| "";
+      pickrDescNI.setColor(data.descriptionColor || "#E5E6E8");
     }
   }
 
@@ -224,7 +224,9 @@ export function initMarkerForm(db) {
           descriptionColor: d.descriptionColor,
           extraLines:       d.extraLines || [],
           imageSmall:       d.imageSmall,
-          imageBig:         d.imageBig
+          imageBig:         d.imageBig,
+          value:            d.value,      // ← now carried through
+          quantity:         d.quantity    // ← now carried through
         });
       } else {
         Object.assign(out, {
@@ -238,18 +240,20 @@ export function initMarkerForm(db) {
           descriptionColor: pickrDescItem.getColor().toHEXA().toString(),
           extraLines:       getLines(),
           imageSmall:       fldImgS.value,
-          imageBig:         fldImgL.value
+          imageBig:         fldImgL.value,
+          value:            "",  // custom markers start blank
+          quantity:         ""   // custom markers start blank
         });
       }
     } else {
       Object.assign(out, {
-        name:             fldName.value,
-        nameColor:        pickrName.getColor().toHEXA().toString(),
-        description:      fldDescNI.value,
-        descriptionColor: pickrDescNI.getColor().toHEXA().toString(),
-        imageSmall:       fldImgS.value,
-        imageBig:         fldImgL.value,
-        videoURL:         fldVid.value
+        name:            fldName.value,
+        nameColor:       pickrName.getColor().toHEXA().toString(),
+        description:     fldDescNI.value,
+        descriptionColor:pickrDescNI.getColor().toHEXA().toString(),
+        imageSmall:      fldImgS.value,
+        imageBig:        fldImgL.value,
+        videoURL:        fldVid.value
       });
     }
     return out;
@@ -280,6 +284,8 @@ export function initMarkerForm(db) {
     };
     form.addEventListener("submit", submitCB);
   }
+
+  const pickrRefs = { pickrName, pickrRare, pickrItemType, pickrDescItem, pickrDescNI };
 
   return {
     openEdit,

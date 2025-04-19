@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
@@ -58,6 +58,16 @@ export function createPopupContent(m) {
       </p>`;
   }
 
+  // New: Value and Quantity HTML
+  const valueHTML = `
+    <p style="margin:2px 0;">
+      <strong>Value:</strong> ${m.value ?? "—"}
+    </p>`;
+  const quantityHTML = `
+    <p style="margin:2px 0;">
+      <strong>Quantity:</strong> ${m.quantity ?? "—"}
+    </p>`;
+
   const nameHTML = `
     <h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">
       ${m.name}
@@ -92,6 +102,8 @@ export function createPopupContent(m) {
       <div class="popup-body">
         ${descHTML}
         ${extraHTML}
+        ${valueHTML}
+        ${quantityHTML}
         ${videoBtn}
       </div>
     </div>`;
@@ -157,4 +169,4 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   return markerObj;
 }
 
-// @version: 1
+// @version: 2
