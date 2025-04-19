@@ -1,6 +1,6 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @version: 2
 // @file:    /scripts/modules/ui/uiManager.js
 
 /**
@@ -96,16 +96,20 @@ export function hideContextMenu() {
 }
 
 /**
- * Positions the modal relative to an event (e.g. mouse event).
- * @param {HTMLElement} modal The modal element.
- * @param {Event} event The event providing pageX and pageY.
+ * Positions the modal relative to an event (e.g. mouse event or fallback to center).
+ * Works for both small and large modals.
+ * @param {HTMLElement} modal The modal element (container or content).
+ * @param {Event} event The mouse event used to position (optional).
  */
 export function positionModal(modal, event) {
   modal.style.display = "block";
-  const modalWidth = modal.offsetWidth;
-  const modalHeight = modal.offsetHeight;
-  modal.style.left = (event.pageX - modalWidth + 10) + "px";
-  modal.style.top = (event.pageY - (modalHeight / 2)) + "px";
+  const rect = modal.getBoundingClientRect();
+  const modalWidth = rect.width;
+  const modalHeight = rect.height;
+  const pageX = event?.pageX || window.innerWidth / 2;
+  const pageY = event?.pageY || window.innerHeight / 2;
+  modal.style.left = `${pageX - modalWidth + 10}px`;
+  modal.style.top = `${pageY - modalHeight / 2}px`;
 }
 
 /**
@@ -128,5 +132,3 @@ export function attachRightClickCancel(action) {
     }
   });
 }
-
-// @version: 1
