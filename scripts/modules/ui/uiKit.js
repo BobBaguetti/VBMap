@@ -1,4 +1,4 @@
-// @version: 10
+// @version: 12
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -9,27 +9,31 @@ import { createPickr } from "./pickrManager.js";
 
 /**
  * Creates a modal window with a centered layout, header title, and close button.
- * Also attaches outside-click handler to close modal.
+ * Also attaches outside‑click handler to close modal.
  * Accepts an optional `size` argument: "small" (default) or "large".
  */
 export function createModal({ id, title, onClose, size = "small" }) {
   const modal = document.createElement('div');
-  modal.classList.add('modal');
-  modal.classList.add(`modal-${size}`); // size variant
+  modal.classList.add('modal', `modal-${size}`);
   modal.id = id;
-
   // Disable the dark backdrop entirely
   modal.style.backgroundColor = 'transparent';
 
   const content = document.createElement('div');
   content.classList.add('modal-content');
+  // Ensure we can set numeric top/left
+  content.style.position = 'absolute';
+  content.style.transform = 'none';
 
-  // Modal header
+  // Header / handle
   const header = document.createElement('div');
   header.classList.add('modal-header');
-  header.id = `${id}-handle`; // For CSS or drag handle logic
+  header.id = `${id}-handle`;
+  header.style.cursor = 'move';
+
   const titleEl = document.createElement('h2');
   titleEl.textContent = title;
+
   const closeBtn = document.createElement('span');
   closeBtn.classList.add('close');
   closeBtn.innerHTML = '&times;';
@@ -37,22 +41,21 @@ export function createModal({ id, title, onClose, size = "small" }) {
     closeModal(modal);
     if (onClose) onClose();
   });
+
   header.appendChild(titleEl);
   header.appendChild(closeBtn);
-
   content.appendChild(header);
   modal.appendChild(content);
 
-  // Allow closing modal when clicking outside content
-  modal.addEventListener('click', (e) => {
+  // Clicking outside the content closes it
+  modal.addEventListener('click', e => {
     if (e.target === modal) {
       closeModal(modal);
       if (onClose) onClose();
     }
   });
 
-  // Instead of making the full-screen backdrop draggable,
-  // make just the modal window content draggable by its header
+  // Only drag the window, not the backdrop
   makeModalDraggable(content, header);
 
   document.body.appendChild(modal);
@@ -60,42 +63,45 @@ export function createModal({ id, title, onClose, size = "small" }) {
 }
 
 /**
- * Enables basic dragging behavior on the modal using the given handle element.
+ * Enables dragging of the given element via the provided handle.
  */
 function makeModalDraggable(modalEl, handle) {
-  let offsetX = 0, offsetY = 0;
-  let isDragging = false;
-  handle.style.cursor = 'move';
-  handle.onmousedown = (e) => {
+  let offsetX = 0, offsetY = 0, isDragging = false;
+
+  handle.onmousedown = e => {
     isDragging = true;
     offsetX = e.clientX - modalEl.offsetLeft;
     offsetY = e.clientY - modalEl.offsetTop;
-    document.onmousemove = (e) => {
+    document.onmousemove = e => {
       if (isDragging) {
         modalEl.style.left = `${e.clientX - offsetX}px`;
-        modalEl.style.top = `${e.clientY - offsetY}px`;
+        modalEl.style.top  = `${e.clientY - offsetY}px`;
         modalEl.style.position = 'absolute';
       }
     };
     document.onmouseup = () => {
       isDragging = false;
       document.onmousemove = null;
-      document.onmouseup = null;
+      document.onmouseup   = null;
     };
   };
 }
 
-/**
- * Hides the given modal element.
- */
+/** Hides the given modal element. */
 export function closeModal(modal) {
   modal.style.display = 'none';
 }
 
 /**
- * Shows the given modal element.
+ * Shows and centers the given modal element in the viewport.
  */
 export function openModal(modal) {
+  const content = modal.querySelector('.modal-content');
+  content.style.transform = 'none';
+  content.style.position  = 'absolute';
+  const rect = content.getBoundingClientRect();
+  content.style.left = `${window.innerWidth/2 - rect.width/2}px`;
+  content.style.top  = `${window.innerHeight/2 - rect.height/2}px`;
   modal.style.display = 'block';
 }
 
@@ -105,19 +111,14 @@ export function openModal(modal) {
 export function createFieldRow(labelText, inputEl) {
   const row = document.createElement('div');
   row.classList.add('field-row');
-
   const label = document.createElement('label');
   label.textContent = labelText;
-
   row.appendChild(label);
   row.appendChild(inputEl);
   return row;
 }
 
-/**
- * Returns a stub div used as a color picker button.
- * This is styled and then attached to Pickr.
- */
+/** Returns a stub div used as a color picker button. */
 export function createColorButton(id) {
   const btn = document.createElement("div");
   btn.className = "color-btn";
@@ -131,87 +132,56 @@ export function createColorButton(id) {
 export function createColorFieldRow(labelText, inputEl, colorId) {
   const row = document.createElement("div");
   row.classList.add("field-row");
-
   const label = document.createElement("label");
   label.textContent = labelText;
-
   const colorBtn = createColorButton(colorId);
-
   row.appendChild(label);
   row.appendChild(inputEl);
   row.appendChild(colorBtn);
-
   return { row, colorBtn };
 }
 
 // ------------------------------
 // Modular Extra Info Line Builder
 // ------------------------------
-
-/**
- * Returns a block of dynamically addable "extra info" lines,
- * each with a text input and a color picker.
- */
 export function createExtraInfoBlock(options = {}) {
-  const {
-    defaultColor = "#E5E6E8",
-    readonly = false
-  } = options;
-
+  const { defaultColor = "#E5E6E8", readonly = false } = options;
   const wrap = document.createElement("div");
   wrap.className = "extra-info-block";
-
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
   btnAdd.textContent = "+";
   btnAdd.classList.add("ui-button");
   btnAdd.style.marginBottom = "8px";
-
   const lineWrap = document.createElement("div");
-
   wrap.appendChild(btnAdd);
   wrap.appendChild(lineWrap);
-
   let lines = [];
 
-  /**
-   * Re-renders all extra line rows in the DOM.
-   */
   function render() {
     lineWrap.innerHTML = "";
-
     lines.forEach((line, i) => {
       const row = document.createElement("div");
       row.className = "field-row";
       row.style.marginBottom = "5px";
-
       const input = document.createElement("input");
       input.className = "ui-input";
       input.value = line.text;
       input.readOnly = readonly;
-      input.oninput = () => {
-        lines[i].text = input.value;
-      };
-
+      input.oninput = () => { lines[i].text = input.value; };
       const color = document.createElement("div");
       color.className = "color-btn";
       color.id = `extra-color-${i}`;
       color.style.marginLeft = "5px";
-
       const btnRemove = document.createElement("button");
       btnRemove.type = "button";
       btnRemove.className = "ui-button";
       btnRemove.textContent = "×";
       btnRemove.style.marginLeft = "5px";
-      btnRemove.onclick = () => {
-        lines.splice(i, 1);
-        render();
-      };
-
+      btnRemove.onclick = () => { lines.splice(i, 1); render(); };
       row.append(input, color);
       if (!readonly) row.appendChild(btnRemove);
       lineWrap.appendChild(row);
-
       const pickr = createPickr(`#${color.id}`);
       pickr.setColor(line.color || defaultColor);
       line._pickr = pickr;
@@ -233,21 +203,13 @@ export function createExtraInfoBlock(options = {}) {
   function setLines(newLines, isReadonly = false) {
     lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
     render();
-    if (isReadonly) {
-      btnAdd.style.display = "none";
-    }
+    if (isReadonly) btnAdd.style.display = "none";
   }
 
   return { block: wrap, getLines, setLines };
 }
 
-// ------------------------------
-// Modular Field Helpers
-// ------------------------------
-
-/**
- * Creates a labeled text input row with a color picker.
- */
+/** Creates a labeled text input row with a color picker. */
 export function createTextField(labelText, id, defaultColor = "#E5E6E8") {
   const input = document.createElement("input");
   input.id = id;
@@ -255,9 +217,7 @@ export function createTextField(labelText, id, defaultColor = "#E5E6E8") {
   return { row, input, colorBtn };
 }
 
-/**
- * Creates a labeled <select> dropdown with a color picker.
- */
+/** Creates a labeled <select> dropdown with a color picker. */
 export function createDropdownField(labelText, id, options, defaultColor = "#E5E6E8") {
   const select = document.createElement("select");
   select.id = id;
@@ -271,9 +231,7 @@ export function createDropdownField(labelText, id, options, defaultColor = "#E5E
   return { row, select, colorBtn };
 }
 
-/**
- * Creates a labeled textarea with a color picker.
- */
+/** Creates a labeled textarea with a color picker. */
 export function createTextareaFieldWithColor(labelText, id, defaultColor = "#E5E6E8") {
   const textarea = document.createElement("textarea");
   textarea.id = id;
@@ -281,9 +239,7 @@ export function createTextareaFieldWithColor(labelText, id, defaultColor = "#E5E
   return { row, textarea, colorBtn };
 }
 
-/**
- * Creates a labeled field for entering image URLs.
- */
+/** Creates a labeled field for entering image URLs. */
 export function createImageField(labelText, id) {
   const input = document.createElement("input");
   input.id = id;
@@ -292,9 +248,7 @@ export function createImageField(labelText, id) {
   return { row, input };
 }
 
-/**
- * Creates a labeled field for entering video URLs.
- */
+/** Creates a labeled field for entering video URLs. */
 export function createVideoField(labelText, id) {
   const input = document.createElement("input");
   input.id = id;
@@ -303,44 +257,26 @@ export function createVideoField(labelText, id) {
   return { row, input };
 }
 
-/**
- * Creates a Save/Cancel row with default button labels.
- */
+/** Creates a Save/Cancel row with default button labels. */
 export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
   const row = document.createElement("div");
   row.className = "field-row";
   row.style.justifyContent = "center";
   row.style.marginTop = "10px";
-
   const btnSave = document.createElement("button");
   btnSave.type = "submit";
   btnSave.className = "ui-button";
   btnSave.textContent = saveText;
-
   const btnCancel = document.createElement("button");
   btnCancel.type = "button";
   btnCancel.className = "ui-button";
   btnCancel.textContent = cancelText;
   btnCancel.onclick = onCancel;
-
   row.append(btnSave, btnCancel);
   return row;
 }
 
-// ------------------------------
-// Modular Scrollable List Block
-// ------------------------------
-
-/**
- * Creates a vertically scrollable container for displaying
- * entries like item definitions, quests, etc.
- * Includes zebra-striping styles (from .def-list).
- *
- * Usage:
- * const list = createScrollableListBlock();
- * someParent.appendChild(list);
- * list.appendChild(...items);
- */
+/** Creates a vertically scrollable container for lists (.def-list). */
 export function createScrollableListBlock(maxHeight = "240px") {
   const wrapper = document.createElement("div");
   wrapper.className = "def-list ui-scrollbar";
