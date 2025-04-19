@@ -1,4 +1,4 @@
-// @version: 10
+// @version: 11
 // @file: /scripts/modules/ui/modals/markerForm.js
 
 import { positionModal } from "../uiManager.js";
@@ -19,6 +19,9 @@ import {
   createFormButtonRow
 } from "../uiKit.js";
 
+// Initialize Pickr instances after DOM is ready
+import { createPickr } from "../ui/pickrManager.js";
+
 export function initMarkerForm(db) {
   const { modal, content } = createModal({
     id: "edit-marker-modal",
@@ -34,11 +37,11 @@ export function initMarkerForm(db) {
   // Field Setup using uiKit.js
   // ------------------------------
 
-  const { row: rowName, input: fldName, colorBtn: pickrName } = createTextField("Name:", "fld-name");
-  const { row: rowRarity, select: fldRarity, colorBtn: pickrRare } = createDropdownField("Rarity:", "fld-rarity", []);
-  const { row: rowItemType, select: fldItemType, colorBtn: pickrItemType } = createDropdownField("Item Type:", "fld-item-type", []);
-  const { row: rowDescItem, textarea: fldDescItem, colorBtn: pickrDescItem } = createTextareaFieldWithColor("Description:", "fld-desc-item");
-  const { row: rowDescNI, textarea: fldDescNI, colorBtn: pickrDescNI } = createTextareaFieldWithColor("Description:", "fld-desc-nonitem");
+  const { row: rowName, input: fldName } = createTextField("Name:", "fld-name");
+  const { row: rowRarity, select: fldRarity } = createDropdownField("Rarity:", "fld-rarity", []);
+  const { row: rowItemType, select: fldItemType } = createDropdownField("Item Type:", "fld-item-type", []);
+  const { row: rowDescItem, textarea: fldDescItem } = createTextareaFieldWithColor("Description:", "fld-desc-item");
+  const { row: rowDescNI, textarea: fldDescNI } = createTextareaFieldWithColor("Description:", "fld-desc-nonitem");  
 
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
@@ -100,6 +103,13 @@ export function initMarkerForm(db) {
   );
 
   document.body.appendChild(modal);
+
+const pickrName     = createPickr("#fld-name-color");
+const pickrRare     = createPickr("#fld-rarity-color");
+const pickrItemType = createPickr("#fld-item-type-color");
+const pickrDescItem = createPickr("#fld-desc-item-color");
+const pickrDescNI   = createPickr("#fld-desc-nonitem-color");
+
 
   // ------------------------------
   // Dropdown Setup
@@ -254,6 +264,19 @@ export function initMarkerForm(db) {
   }
 
   let submitCB = null;
+
+// ------------------------------
+// Pickr Instance Setup
+// ------------------------------
+import { createPickr } from "../ui/pickrManager.js";
+
+// Attach Pickr to each color field
+const pName     = createPickr("#fld-name-color");
+const pRare     = createPickr("#fld-rarity-color");
+const pItemType = createPickr("#fld-item-type-color");
+const pDescItem = createPickr("#fld-desc-item-color");
+const pDescNI   = createPickr("#fld-desc-nonitem-color");
+
 
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
