@@ -15,7 +15,8 @@ import {
 import {
   createFilterButtonGroup,
   createSearchRow,
-  createDefListContainer
+  createDefListContainer,
+  createFilterableList
 } from "../../utils/listUtils.js";
 
 import {
