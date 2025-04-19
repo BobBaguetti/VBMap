@@ -1,6 +1,6 @@
 /* modal.base.css – base styles for all modals */
 
-/* 1) Include padding & borders in width/height */
+/* 1) Global box‑sizing */
 *,
 *::before,
 *::after {
@@ -24,28 +24,14 @@
   padding: 16px;
   color: #eee;
   box-shadow: 0 2px 10px rgba(0,0,0,0.7);
-  position: absolute; /* JS sets left/top */
+  position: absolute;
   transform: none;
   width: auto;
   max-width: 90%;
   overflow: auto;
 }
 
-/* 3) Ensure all inputs, selects & textareas flex equally */
-.modal-content .field-row input[type="text"],
-.modal-content .field-row select,
-.modal-content .field-row textarea {
-  flex: 1 1 auto;
-  min-width: 0;
-  width: auto !important; /* override any global rule */
-}
-
-/* 4) Give every color‑btn its own left margin */
-.modal-content .color-btn {
-  margin-left: 8px !important;
-}
-
-/* 5) Flex rows */
+/* 3) Flex field rows & controls */
 .modal-content .field-row {
   display: flex;
   align-items: center;
@@ -57,25 +43,53 @@
   margin-right: 8px;
 }
 
-/* 6) Top‑align the “Extra Info:” + button row */
+.modal-content .field-row input[type="text"],
+.modal-content .field-row select,
+.modal-content .field-row textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  width: auto !important;
+  margin-right: 8px;
+  background: #2a2a2a;
+  border: 1px solid #555;
+  border-radius: 2px;
+  padding: 4px 6px;
+  color: #eee;
+}
+
+.modal-content .field-row > *:last-child {
+  margin-right: 0;
+}
+
+/* 4) Color‑picker & remove‑line buttons */
+.modal-content .color-btn {
+  margin-left: 8px !important;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  border: 1px solid #555;
+  border-radius: 2px;
+  cursor: pointer;
+}
+.modal-content .field-row button.ui-button {
+  margin-left: 8px;
+}
+
+/* 5) Extra‑row top‑align */
 .modal-content .field-row.extra-row {
   align-items: flex-start;
 }
 
-/* 7) Horizontal rules */
-.modal-content hr {
-  border: none;
-  border-top: 1px solid #444;
-  margin: 12px 0;
-}
-/* divider immediately under header */
+/* 6) Header divider */
 .modal-header + hr {
   border: none;
   border-top: 2px solid #444;
   margin: 8px 0 16px;
 }
 
-/* 8) Save/Cancel & remove‑line buttons */
-.modal-content .field-row button.ui-button {
-  margin-left: 8px; /* space before “×” or Save/Cancel */
+/* 7) Content hr */
+.modal-content hr {
+  border: none;
+  border-top: 1px solid #444;
+  margin: 12px 0;
 }

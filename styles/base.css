@@ -1,45 +1,70 @@
-/* Base Dark Mode UI Utilities */
-.ui-text-default {
-    color: #e5e6e8 !important;
-  }
-  
-  /* Consistent input styling for dark forms */
-  .ui-input {
-    background: #303030 !important;
-    color: #e5e6e8 !important;
-    border: 1px solid #555 !important;
-    padding: 4px 6px;
-    font-size: 14px;
-    box-sizing: border-box;
-  }
-  
-  .ui-button {
-    background: #333 !important;
-    color: #e5e6e8 !important;
-    border: 1px solid #555 !important;
-    border-radius: 3px;
-    cursor: pointer;
-  }
-  
-  .ui-button:hover {
-    background: #444 !important;
-  }
-  
-  /* Shared scrollbar styling for lists, textareas, etc. */
-  .ui-scrollbar::-webkit-scrollbar {
-    width: 8px;
-  }
-  
-  .ui-scrollbar::-webkit-scrollbar-track {
-    background: #2a2a2a;
-  }
-  
-  .ui-scrollbar::-webkit-scrollbar-thumb {
-    background: #555;
-    border-radius: 4px;
-  }
-  
-  .ui-scrollbar::-webkit-scrollbar-thumb:hover {
-    background: #777;
-  }
-  
+/* Base Dark Mode UI Utilities + Global Resets & Map Container */
+
+/* 1) Box‑sizing */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+/* 2) Global reset & dark‑mode background */
+body,
+html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
+  overflow: hidden;
+}
+
+/* 3) Map container full‑screen */
+#map {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background-color: #1a1a1a;
+}
+
+/* 4) Dark form controls & buttons */
+.ui-input {
+  background: #303030 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
+  padding: 4px 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.ui-button {
+  background: #333 !important;
+  color: #e5e6e8 !important;
+  border: 1px solid #555 !important;
+  border-radius: 3px !important;
+  cursor: pointer;
+}
+
+.ui-button:hover {
+  background: #444 !important;
+}
+
+/* 5) Dark scrollbars for any .ui-scrollbar */
+.ui-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.ui-scrollbar::-webkit-scrollbar-track {
+  background: #2a2a2a;
+}
+.ui-scrollbar::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 4px;
+}
+.ui-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #777;
+}
+
+/* 6) Hide off‑canvas popups/tooltips */
+#video-popup,
+#paste-tooltip {
+  display: none !important;
+}
