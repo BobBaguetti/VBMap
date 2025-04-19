@@ -19,6 +19,9 @@ export function initMarkerForm(db) {
   const { modal, content } = createModal({
     id: "edit-marker-modal",
     title: "Edit Marker",
+    size: "small",
+    backdrop: false,    // no dark overlay
+    draggable: true,    // allow drag
     onClose: () => closeModal(modal)
   });
 
