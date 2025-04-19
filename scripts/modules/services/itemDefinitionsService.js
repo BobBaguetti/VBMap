@@ -1,89 +1,72 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/services/itemDefinitionsService.js
 
 /**
- * Initializes and returns the itemDefinitions collection reference.
- * @param {firebase.firestore.Firestore} db - The Firestore instance.
- * @returns {firebase.firestore.CollectionReference}
+ * Firestore service for item definitions.
+ * Fields include:
+ *   - name: string
+ *   - itemType: string
+ *   - rarity: string
+ *   - description: string
+ *   - extraLines: Array<{ text: string, color: string }>
+ *   - imageSmall: string
+ *   - imageBig: string
+ *   - value: string           // sell price
+ *   - quantity: string
  */
+
 export function getItemDefinitionsCollection(db) {
   return db.collection("itemDefinitions");
 }
 
-/**
- * Loads all item definitions from Firestore.
- * @param {firebase.firestore.Firestore} db - The Firestore instance.
- * @returns {Promise<Array>} - Promise resolving to an array of item definition objects.
- */
 export async function loadItemDefinitions(db) {
   const definitions = [];
-  try {
-    const snapshot = await getItemDefinitionsCollection(db).get();
-    snapshot.forEach(doc => {
-      let data = doc.data();
-      data.id = doc.id;
-      definitions.push(data);
-    });
-  } catch (err) {
-    console.error("Error loading item definitions:", err);
-    throw err;
-  }
+  const snapshot = await getItemDefinitionsCollection(db).get();
+  snapshot.forEach(doc => {
+    definitions.push({ id: doc.id, ...doc.data() });
+  });
   return definitions;
 }
 
-/**
- * Adds a new item definition to Firestore.
- * @param {firebase.firestore.Firestore} db - The Firestore instance.
- * @param {Object} itemDef - The item definition object to add.
- * @returns {Promise<Object>} - Promise resolving to the item definition object with its new id.
- */
-export async function addItemDefinition(db, itemDef) {
-  try {
-    const docRef = await getItemDefinitionsCollection(db).add(itemDef);
-    itemDef.id = docRef.id;
-    console.log("Added item definition with ID:", docRef.id);
-    return itemDef;
-  } catch (err) {
-    console.error("Error adding item definition:", err);
-    throw err;
+export async function saveItemDefinition(db, id, data) {
+  const col = getItemDefinitionsCollection(db);
+  if (id) {
+    // overwrite provided fields
+    await col.doc(id).update(data);
+    return { id, ...data };
+  } else {
+    // create new doc
+    const docRef = await col.add(data);
+    return { id: docRef.id, ...data };
   }
 }
 
-/**
- * Updates an existing item definition in Firestore using merge.
- * @param {firebase.firestore.Firestore} db - The Firestore instance.
- * @param {Object} itemDef - The item definition object with an 'id' property.
- * @returns {Promise<void>}
- */
-export async function updateItemDefinition(db, itemDef) {
-  try {
-    // Use merge:true so we only overwrite the fields provided
-    await getItemDefinitionsCollection(db)
-      .doc(itemDef.id)
-      .set(itemDef, { merge: true });
-    console.log("Updated item definition (merged):", itemDef.id);
-  } catch (err) {
-    console.error("Error updating item definition:", err);
-    throw err;
-  }
+export async function updateItemDefinition(db, id, data) {
+  // merge update: only provided keys are written, others untouched
+  await getItemDefinitionsCollection(db)
+    .doc(id)
+    .set(data, { merge: true });
+  return { id, ...data };
 }
 
-/**
- * Deletes an item definition from Firestore by id.
- * @param {firebase.firestore.Firestore} db - The Firestore instance.
- * @param {string} id - The id of the item definition to delete.
- * @returns {Promise<void>}
- */
 export async function deleteItemDefinition(db, id) {
-  try {
-    await getItemDefinitionsCollection(db).doc(id).delete();
-    console.log("Deleted item definition:", id);
-  } catch (err) {
-    console.error("Error deleting item definition:", err);
-    throw err;
-  }
+  await getItemDefinitionsCollection(db).doc(id).delete();
 }
 
-// @version: 1
+/**
+ * Subscribe to real‑time updates on the entire collection.
+ * @param db
+ * @param onUpdate  – callback receiving an array of itemDefs each time data changes
+ * @returns unsubscribe() to stop listening
+ */
+export function subscribeItemDefinitions(db, onUpdate) {
+  const col = getItemDefinitionsCollection(db);
+  const unsubscribe = col.onSnapshot(snapshot => {
+    const defs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    onUpdate(defs);
+  }, err => {
+    console.error("ItemDefinitions subscription error:", err);
+  });
+  return unsubscribe;
+}

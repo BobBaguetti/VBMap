@@ -1,10 +1,12 @@
-// @version: 2
-// @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
+// @fullfile: Send the entire file, no omissions or abridgments.
+// @version: 5   The current file version is 5. Increase by 1 every time you update anything.
+// @file:    /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
   createModal,
   closeModal
 } from "../uiKit.js";
+
 import {
   createFilterButtonGroup,
   createSearchRow,
@@ -12,21 +14,25 @@ import {
   createTextField,
   createDropdownField,
   createTextareaFieldWithColor,
+  createImageField,
   createExtraInfoBlock,
   createFormButtonRow
 } from "../uiKit.js";
+
 import {
   loadItemDefinitions,
   saveItemDefinition,
-  deleteItemDefinition
-} from "../../services/itemDefinitionsService.js";
+  updateItemDefinition,
+  deleteItemDefinition,
+  subscribeItemDefinitions
+} from "../../modules/services/itemDefinitionsService.js";
 
 /**
  * Initializes the “Manage Items” modal.
  * Returns an object with `open()` and `refresh()` methods.
  */
 export function initItemDefinitionsModal(db) {
-  // 1) Create a large, static modal with dark backdrop and divider
+  // 1) Create a large, static modal with dark backdrop & divider
   const { modal, content } = createModal({
     id: "item-definitions-modal",
     title: "Manage Items",
@@ -37,24 +43,23 @@ export function initItemDefinitionsModal(db) {
     onClose: () => closeModal(modal)
   });
 
-  // 2) Grab the header element to append our controls
+  // 2) Header controls
   const header = content.querySelector(".modal-header");
 
-  // 3) Filter‐button group (N, T, R, D, Qt, P)
+  // 2a) Filter buttons
   const { wrapper: filterWrapper } = createFilterButtonGroup([
     { id: "filter-name",        label: "N"  },
     { id: "filter-type",        label: "T"  },
     { id: "filter-rarity",      label: "R"  },
     { id: "filter-description", label: "D"  },
     { id: "filter-quantity",    label: "Qt" },
-    { id: "filter-price",       label: "P"  }
+    { id: "filter-value",       label: "P"  }
   ], (btnId, isToggled) => {
-    // TODO: implement your filter logic here, e.g. sort or hide items
     applyDefinitionFilter(btnId, isToggled);
   });
   header.appendChild(filterWrapper);
 
-  // 4) Search row
+  // 2b) Search row
   const { row: searchRow, input: searchInput } =
     createSearchRow("def-search", "Search...");
   header.appendChild(searchRow);
@@ -62,17 +67,17 @@ export function initItemDefinitionsModal(db) {
     applySearchFilter(searchInput.value);
   });
 
-  // 5) Definitions list container
+  // 3) Definitions list
   const listContainer = createDefListContainer("item-definitions-list");
   content.appendChild(listContainer);
 
-  // 6) Separator
+  // 4) Separator
   content.appendChild(document.createElement("hr"));
 
-  // 7) Form for add/edit
+  // 5) Form (add/edit)
   const form = document.createElement("form");
   form.id = "item-definition-form";
-  // Subheading
+
   const subheading = document.createElement("h3");
   subheading.id = "def-form-subheading";
   subheading.textContent = "Add / Edit Item";
@@ -81,7 +86,6 @@ export function initItemDefinitionsModal(db) {
   // — Name —
   const { row: rowName, input: fldName } =
     createTextField("Name:", "def-name");
-  rowName.classList.add("field-row");
   form.appendChild(rowName);
 
   // — Item Type —
@@ -112,11 +116,8 @@ export function initItemDefinitionsModal(db) {
   form.appendChild(rowDesc);
 
   // — Extra Info —
-  const {
-    block: extraBlock,
-    getLines: getExtraLines,
-    setLines: setExtraLines
-  } = createExtraInfoBlock();
+  const { block: extraBlock, getLines, setLines } =
+    createExtraInfoBlock();
   const rowExtra = document.createElement("div");
   rowExtra.className = "field-row extra-row";
   const lblExtra = document.createElement("label");
@@ -124,37 +125,46 @@ export function initItemDefinitionsModal(db) {
   rowExtra.append(lblExtra, extraBlock);
   form.appendChild(rowExtra);
 
-  // — Image S —
-  const { row: rowImgS, input: fldImgS } =
-    createImageField("Image S:", "def-image-small");
-  form.appendChild(rowImgS);
+  // — Value (sell price) — immediately below Extra Info
+  const { row: rowValue, input: fldValue } =
+    createTextField("Value:", "def-value");
+  form.appendChild(rowValue);
 
-  // — Image L —
-  const { row: rowImgL, input: fldImgL } =
-    createImageField("Image L:", "def-image-big");
-  form.appendChild(rowImgL);
-
-  // — Quantity & Price (custom fields) —
+  // — Quantity — immediately below Value
   const { row: rowQty, input: fldQty } =
     createTextField("Quantity:", "def-quantity");
   form.appendChild(rowQty);
 
-  const { row: rowPrice, input: fldPrice } =
-    createTextField("Price:", "def-price");
-  form.appendChild(rowPrice);
+  // — Image S & L —
+  const { row: rowImgS, input: fldImgS } =
+    createImageField("Image S:", "def-image-small");
+  form.appendChild(rowImgS);
 
-  // — Save/Cancel —
+  const { row: rowImgL, input: fldImgL } =
+    createImageField("Image L:", "def-image-big");
+  form.appendChild(rowImgL);
+
+  // — Save/Cancel & Delete buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
   form.appendChild(rowButtons);
+
   content.appendChild(form);
 
-  // 8) Internal helpers & state
+  // 6) State & helpers
   let definitions = [];
   let editingId = null;
+  let unsubscribe = null;
 
   async function refreshDefinitions() {
     definitions = await loadItemDefinitions(db);
     renderList(definitions);
+  }
+
+  function startSubscription() {
+    unsubscribe = subscribeItemDefinitions(db, defs => {
+      definitions = defs;
+      renderList(defs);
+    });
   }
 
   function renderList(list) {
@@ -164,7 +174,7 @@ export function initItemDefinitionsModal(db) {
       entry.classList.add("item-def-entry");
       entry.innerHTML = `
         <strong>${def.name}</strong> (${def.rarity})<br/>
-        Type: ${def.itemType} • Qty: ${def.quantity || "—"} • Price: ${def.price || "—"}
+        Type: ${def.itemType} • Qty: ${def.quantity || "—"} • Value: ${def.value || "—"}
       `;
       entry.addEventListener("click", () => populateForm(def));
       listContainer.appendChild(entry);
@@ -173,80 +183,78 @@ export function initItemDefinitionsModal(db) {
 
   function populateForm(def) {
     editingId = def.id;
-    fldName.value        = def.name;
-    fldType.value        = def.itemType;
-    fldRarity.value      = def.rarity;
-    fldDesc.value        = def.description;
-    setExtraLines(def.extraLines || [], false);
-    fldImgS.value        = def.imageSmall || "";
-    fldImgL.value        = def.imageBig   || "";
-    fldQty.value         = def.quantity   || "";
-    fldPrice.value       = def.price      || "";
+    fldName.value    = def.name;
+    fldType.value    = def.itemType;
+    fldRarity.value  = def.rarity;
+    fldDesc.value    = def.description;
+    setLines(def.extraLines || [], false);
+    fldValue.value   = def.value      || "";
+    fldQty.value     = def.quantity   || "";
+    fldImgS.value    = def.imageSmall || "";
+    fldImgL.value    = def.imageBig   || "";
     subheading.textContent = "Edit Item";
     openModal();
   }
 
   function clearForm() {
-    editingId = null;
-    fldName.value = "";
-    fldType.value = "";
-    fldRarity.value = "";
-    fldDesc.value = "";
-    setExtraLines([], false);
-    fldImgS.value = "";
-    fldImgL.value = "";
-    fldQty.value = "";
-    fldPrice.value = "";
+    editingId        = null;
+    fldName.value    = "";
+    fldType.value    = "";
+    fldRarity.value  = "";
+    fldDesc.value    = "";
+    setLines([], false);
+    fldValue.value   = "";
+    fldQty.value     = "";
+    fldImgS.value    = "";
+    fldImgL.value    = "";
     subheading.textContent = "Add Item";
   }
 
   async function handleSubmit(e) {
     e.preventDefault();
     const payload = {
-      name: fldName.value.trim(),
-      itemType: fldType.value,
-      rarity: fldRarity.value,
-      description: fldDesc.value.trim(),
-      extraLines: getExtraLines(),
-      imageSmall: fldImgS.value.trim(),
-      imageBig: fldImgL.value.trim(),
-      quantity: fldQty.value.trim(),
-      price: fldPrice.value.trim()
+      name:         fldName.value.trim(),
+      itemType:     fldType.value,
+      rarity:       fldRarity.value,
+      description:  fldDesc.value.trim(),
+      extraLines:   getLines(),
+      value:        fldValue.value.trim(),
+      quantity:     fldQty.value.trim(),
+      imageSmall:   fldImgS.value.trim(),
+      imageBig:     fldImgL.value.trim()
     };
-    if (editingId) {
-      await saveItemDefinition(db, editingId, payload);
-    } else {
-      await saveItemDefinition(db, null, payload);
-    }
+    // use save for create or full overwrite
+    await saveItemDefinition(db, editingId, payload);
     closeModal(modal);
-    await refreshDefinitions();
+    // subscription will push updated list
   }
 
-  async function handleDeleteCurrent() {
+  async function handleDelete() {
     if (editingId) {
       await deleteItemDefinition(db, editingId);
       closeModal(modal);
-      await refreshDefinitions();
+      // subscription will push updated list
     }
   }
 
   form.addEventListener("submit", handleSubmit);
 
-  // Add a “Delete” button next to the form’s Cancel
+  // Delete button
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
   btnDelete.className = "ui-button";
   btnDelete.textContent = "Delete";
-  btnDelete.onclick = handleDeleteCurrent;
+  btnDelete.onclick = handleDelete;
   rowButtons.appendChild(btnDelete);
 
   function openModal() {
-    clearForm();               // if opening fresh
+    clearForm();
+    if (!unsubscribe) startSubscription();
     modal.style.display = "block";
   }
 
   function applyDefinitionFilter(btnId, toggled) {
-    // implement your sort/filter logic here...
+    // TODO: filter/sort logic
   }
 
   function applySearchFilter(query) {
@@ -254,13 +262,10 @@ export function initItemDefinitionsModal(db) {
     renderList(definitions.filter(d => d.name.toLowerCase().includes(q)));
   }
 
-  // 9) Return API
+  // 7) API
   return {
-    open: async () => {
-      clearForm();
-      await refreshDefinitions();
-      openModal();
-    },
-    refresh: refreshDefinitions
+    open: openModal,
+    refresh: refreshDefinitions,
+    unsubscribe
   };
 }
