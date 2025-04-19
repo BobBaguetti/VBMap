@@ -1,5 +1,4 @@
-
-// @version: 9
+// @version: 10
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -19,6 +18,9 @@ export function createModal({ id, title, onClose, size = "small" }) {
   modal.classList.add(`modal-${size}`); // size variant
   modal.id = id;
 
+  // Disable the dark backdrop entirely
+  modal.style.backgroundColor = 'transparent';
+
   const content = document.createElement('div');
   content.classList.add('modal-content');
 
@@ -26,10 +28,8 @@ export function createModal({ id, title, onClose, size = "small" }) {
   const header = document.createElement('div');
   header.classList.add('modal-header');
   header.id = `${id}-handle`; // For CSS or drag handle logic
-
   const titleEl = document.createElement('h2');
   titleEl.textContent = title;
-
   const closeBtn = document.createElement('span');
   closeBtn.classList.add('close');
   closeBtn.innerHTML = '&times;';
@@ -37,9 +37,9 @@ export function createModal({ id, title, onClose, size = "small" }) {
     closeModal(modal);
     if (onClose) onClose();
   });
-
   header.appendChild(titleEl);
   header.appendChild(closeBtn);
+
   content.appendChild(header);
   modal.appendChild(content);
 
@@ -51,8 +51,9 @@ export function createModal({ id, title, onClose, size = "small" }) {
     }
   });
 
-  // Make modal draggable by header
-  makeModalDraggable(modal, header);
+  // Instead of making the full-screen backdrop draggable,
+  // make just the modal window content draggable by its header
+  makeModalDraggable(content, header);
 
   document.body.appendChild(modal);
   return { modal, content, header };
@@ -61,21 +62,19 @@ export function createModal({ id, title, onClose, size = "small" }) {
 /**
  * Enables basic dragging behavior on the modal using the given handle element.
  */
-function makeModalDraggable(modal, handle) {
+function makeModalDraggable(modalEl, handle) {
   let offsetX = 0, offsetY = 0;
   let isDragging = false;
-
   handle.style.cursor = 'move';
-
   handle.onmousedown = (e) => {
     isDragging = true;
-    offsetX = e.clientX - modal.offsetLeft;
-    offsetY = e.clientY - modal.offsetTop;
+    offsetX = e.clientX - modalEl.offsetLeft;
+    offsetY = e.clientY - modalEl.offsetTop;
     document.onmousemove = (e) => {
       if (isDragging) {
-        modal.style.left = `${e.clientX - offsetX}px`;
-        modal.style.top = `${e.clientY - offsetY}px`;
-        modal.style.position = 'absolute';
+        modalEl.style.left = `${e.clientX - offsetX}px`;
+        modalEl.style.top = `${e.clientY - offsetY}px`;
+        modalEl.style.position = 'absolute';
       }
     };
     document.onmouseup = () => {
