@@ -1,5 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 6   The current file version is 6. Increase by 1 every time you update anything.
+// @version: 7   The current file version is 7. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -25,7 +25,7 @@ import {
   updateItemDefinition,
   deleteItemDefinition,
   subscribeItemDefinitions
-} from "../../modules/services/itemDefinitionsService.js";
+} from "../../services/itemDefinitionsService.js";  // ← corrected path
 
 /**
  * Initializes the “Manage Items” modal.
@@ -52,7 +52,7 @@ export function initItemDefinitionsModal(db) {
     "filter-rarity":      (a,b) => rarityOrder[b.rarity] - rarityOrder[a.rarity],
     "filter-description": (a,b) => a.description.localeCompare(b.description),
     "filter-quantity":    (a,b) => (parseInt(b.quantity)||0) - (parseInt(a.quantity)||0),
-    "filter-value":       (a,b) => (parseFloat(b.value)||0) - (parseFloat(a.value)||0)
+    "filter-price":       (a,b) => (parseFloat(b.value)||0) - (parseFloat(a.value)||0)
   };
   let activeSorts = new Set();
 
@@ -63,7 +63,7 @@ export function initItemDefinitionsModal(db) {
     { id: "filter-rarity",      label: "R"  },
     { id: "filter-description", label: "D"  },
     { id: "filter-quantity",    label: "Qt" },
-    { id: "filter-value",       label: "P"  }
+    { id: "filter-price",       label: "P"  }
   ], (btnId, isToggled) => {
     if (isToggled) activeSorts.add(btnId);
     else           activeSorts.delete(btnId);
@@ -224,7 +224,11 @@ export function initItemDefinitionsModal(db) {
       imageSmall:  fldImgS.value.trim(),
       imageBig:    fldImgL.value.trim()
     };
-    await saveItemDefinition(db, editingId, payload);
+    if (editingId) {
+      await updateItemDefinition(db, { id: editingId, ...payload });
+    } else {
+      await saveItemDefinition(db, null, payload);
+    }
     closeModal(modal);
     await refreshDefinitions();
   });
