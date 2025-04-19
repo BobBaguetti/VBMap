@@ -1,5 +1,5 @@
 <!-- @fullfile: Send the entire file, no omissions or abridgments. -->
-<!-- @version: 4 -->
+<!-- @version: 5 -->
 <!-- @file: /index.html -->
 
 <!DOCTYPE html>
@@ -83,14 +83,6 @@
   <!-- Map Container -->
   <div id="map"></div>
   
-  <!-- Load JS Libraries -->
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
-  <script type="module" src="scripts/script.js"></script>
-
   <!-- Video Popup -->
   <div id="video-popup">
     <button id="video-close">X</button>
@@ -131,9 +123,74 @@
       <hr />
       <form id="item-definition-form">
         <h3 id="def-form-subheading">Add Item</h3>
-        <!-- form fields here -->
+        <div class="field-row">
+          <label>Name:</label>
+          <input type="text" id="def-name" required />
+          <div class="color-btn" id="pickr-def-name"></div>
+        </div>
+        <div class="field-row">
+          <label>Item Type:</label>
+          <select id="def-type">
+            <option value="Crafting Material">Crafting Material</option>
+            <option value="Special">Special</option>
+            <option value="Consumable">Consumable</option>
+            <option value="Quest">Quest</option>
+          </select>
+          <div class="color-btn" id="pickr-def-type"></div>
+        </div>
+        <div class="field-row">
+          <label>Rarity:</label>
+          <select id="def-rarity">
+            <option value="">Select Rarity</option>
+            <option value="common">Common</option>
+            <option value="uncommon">Uncommon</option>
+            <option value="rare">Rare</option>
+            <option value="epic">Epic</option>
+            <option value="legendary">Legendary</option>
+          </select>
+          <div class="color-btn" id="pickr-def-rarity"></div>
+        </div>
+        <div class="field-row">
+          <label>Description:</label>
+          <textarea id="def-description" rows="2"></textarea>
+          <div class="color-btn" id="pickr-def-description"></div>
+        </div>
+        <div class="field-row">
+          <label>Extra Info:</label>
+          <button type="button" id="add-def-extra-line" style="margin-left:10px;">+</button>
+        </div>
+        <div id="def-extra-lines"></div>
+        <div class="field-row">
+          <label>Image S:</label>
+          <input type="text" id="def-image-small" />
+        </div>
+        <div class="field-row">
+          <label>Image L:</label>
+          <input type="text" id="def-image-big" />
+        </div>
+        <div class="field-row" style="justify-content:center; margin-top:10px;">
+          <button type="submit" style="margin-right:10px;">Save</button>
+          <button type="button" id="def-cancel">Cancel</button>
+        </div>
       </form>
     </div>
   </div>
+
+  <!-- Quest Definitions Modal (placeholder) -->
+  <div id="edit-quest-modal" class="modal">
+    <div class="modal-content">
+      <!-- Quest form will be generated via JS -->
+    </div>
+  </div>
+
+  <!-- Load JS Libraries -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
+  <!-- Application Script -->
+  <script type="module" src="scripts/script.js"></script>
 </body>
 </html>
