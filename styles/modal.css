@@ -1,66 +1,129 @@
-/* Modal container layout */
-.ui-modal {
-    background-color: #222;
-    color: #e0e0e0;
-    border: 1px solid #555;
-    padding: 20px;
-}
+/* modal.css – updated for small (draggable) vs large (static) modals */
 
-/* Modal Defaults */
+/* ------------------------------------------------------------- */
+/* Base modal classes (unchanged)                                */
+/* ------------------------------------------------------------- */
+
 .modal {
-    display: none;
     position: fixed;
-    z-index: 2300;
-    left: 0;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0,0,0,0.8);
-}
-
-.modal-content {
-    background-color: #222;
-    color: #e0e0e0;
+    /* default dark backdrop */
+    background-color: rgba(0, 0, 0, 0.5);
+    display: none;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 16px;
+    color: #eee;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+    /* we switch to absolute positioning in JS, so width:auto here */
+    width: auto;
+    max-width: 90%; /* fallback for large modals */
+  }
+  
+  /* Large modals use the full 60% width cap */
+  .modal-large .modal-content {
+    max-width: 60%;
+  }
+  
+  /* ------------------------------------------------------------- */
+  /* Small (draggable) modal tweaks                                */
+  /* ------------------------------------------------------------- */
+  
+  /* limit small modal to 350px wide */
+  .modal.modal-small .modal-content {
+    max-width: 350px;
+  }
+  
+  /* ------------------------------------------------------------- */
+  /* Flex rows for fields                                         */
+  /* ------------------------------------------------------------- */
+  
+  .modal-content .field-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+  }
+  
+  .modal-content .field-row label {
+    flex: 0 0 100px;    /* fixed label width */
+    margin-right: 8px;
+  }
+  
+  .modal-content .field-row input,
+  .modal-content .field-row select,
+  .modal-content .field-row textarea {
+    flex: 1;            /* take remaining space */
+    margin-right: 8px;
+    background: #2a2a2a;
     border: 1px solid #555;
-    padding: 5px 20px;
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    padding: 5px 20px;
-    width: 500px;
-    max-height: 90vh;
-    overflow: hidden;
-}
-
-/* Modal Header */
-.modal-header {
+    border-radius: 2px;
+    padding: 4px 6px;
+    color: #eee;
+  }
+  
+  /* color‑picker button stays a fixed square */
+  .modal-content .color-btn {
+    flex: 0 0 24px;
+    width: 24px;
+    height: 24px;
+    border: 1px solid #555;
+    border-radius: 2px;
+    cursor: pointer;
+  }
+  
+  /* the little “×” remove‑line buttons */
+  .modal-content .field-row button.ui-button {
+    flex: 0 0 auto;
+    margin-left: 4px;
+  }
+  
+  /* make sure horizontal rules aren’t too fat */
+  .modal-content hr {
+    border: none;
+    border-top: 1px solid #333;
+    margin: 12px 0;
+  }
+  
+  /* ------------------------------------------------------------- */
+  /* Header & buttons                                              */
+  /* ------------------------------------------------------------- */
+  
+  .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background-color: #222;
-    color: #e0e0e0;
-    padding: 10px;
-    border-bottom: 1px solid #444;
-}
-
-/* Optional layout helpers for header content */
-.modal-header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.modal-header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
-}
-
-/* Modal Divider (used between sections) */
-.modal-content hr {
-    border: none;
-    border-top: 1px solid #444;
-    margin: 12px 0;
-}
+    margin-bottom: 12px;
+  }
+  
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.2em;
+  }
+  
+  .modal-header .close {
+    font-size: 1.4em;
+    cursor: pointer;
+  }
+  
+  .modal-content .field-row:last-child {
+    margin-bottom: 0;
+  }
+  
+  .field-row button[type="submit"],
+  .field-row button[type="button"] {
+    background: #3a3a3a;
+    border: 1px solid #555;
+    border-radius: 2px;
+    padding: 6px 12px;
+    color: #eee;
+    cursor: pointer;
+  }
+  
