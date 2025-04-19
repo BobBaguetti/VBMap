@@ -32,39 +32,42 @@ export function createPopupContent(m) {
 
   if (m.type === "Item") {
     if (m.itemType) itemTypeHTML = `
-      <div class="popup-item-type" style="color:${m.itemTypeColor || "#E5E6E8"};">
+      <div style="margin:2px 0; font-size:18px; color:${m.itemTypeColor || "#E5E6E8"};">
         ${m.itemType}
       </div>`;
     if (m.rarity) rarityHTML = `
-      <div class="popup-rarity" style="color:${m.rarityColor || "#E5E6E8"};">
+      <div style="margin:2px 0; font-size:18px; color:${m.rarityColor || "#E5E6E8"};">
         ${formatRarity(m.rarity)}
       </div>`;
     if (m.description) descHTML = `
-      <p class="popup-description" style="color:${m.descriptionColor || "#E5E6E8"};">
+      <p style="margin:2px 0; color:${m.descriptionColor || "#E5E6E8"};">
         ${m.description}
       </p>`;
     if (m.extraLines?.length) {
       m.extraLines.forEach(line => {
         extraHTML += `
-          <p class="popup-extra-line" style="color:${line.color || "#E5E6E8"};">
+          <p style="margin:2px 0; color:${line.color || "#E5E6E8"};">
             ${line.text}
           </p>`;
       });
     }
   } else if (m.description) {
     descHTML = `
-      <p class="popup-description" style="color:${m.descriptionColor || "#E5E6E8"};">
+      <p style="margin:2px 0; color:${m.descriptionColor || "#E5E6E8"};">
         ${m.description}
       </p>`;
   }
 
   const nameHTML = `
-    <h3 class="popup-name" style="color:${m.nameColor || "#E5E6E8"};">
+    <h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">
       ${m.name}
     </h3>`;
 
   const bigImg = isImgUrl(m.imageBig)
-    ? `<img src="${m.imageBig}" class="popup-image" onerror="this.style.display='none'">`
+    ? `<img src="${m.imageBig}" class="popup-image"
+             style="width:64px; height:64px; object-fit:contain;
+                    background:#222; border:2px solid #777; border-radius:4px;"
+             onerror="this.style.display='none'">`
     : "";
 
   const videoBtn = m.videoURL ? `
@@ -78,9 +81,9 @@ export function createPopupContent(m) {
       <button class="popup-close-btn" onclick="this.closest('.leaflet-popup')._popup?.remove()">
         ×
       </button>
-      <div class="popup-header">
+      <div class="popup-header" style="display:flex; gap:5px;">
         ${bigImg}
-        <div>
+        <div style="margin-left:5px;">
           ${nameHTML}
           ${itemTypeHTML}
           ${rarityHTML}
@@ -93,7 +96,6 @@ export function createPopupContent(m) {
       </div>
     </div>`;
 }
-
 
 export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   const markerObj = L.marker(m.coords, {

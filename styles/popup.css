@@ -1,24 +1,41 @@
-/* --- New shared classes for popup --- */
-.popup-header {
+
+/* ==========================
+   Custom Popup Styling
+   ========================== */
+
+   .custom-popup-wrapper {
+    background: transparent !important;
+  }
+  
+  .custom-popup {
+    position: relative;
+    background: rgba(40, 40, 40, 0.92) !important;
+    border-radius: 8px;
+    padding: 15px;
+    width: 320px;
+    color: #e0e0e0;
+    border: none !important;
+  }
+  
+  .popup-header {
     display: flex;
     align-items: center;
-    gap: 5px;
+    padding: 0 0 4px 0;
     margin-bottom: 12px;
     border-bottom: 2px solid #444;
   }
   
-  .popup-image {
-    width: 64px;
-    height: 64px;
-    object-fit: contain;
-    background: #222;
-    border: 2px solid #777;
-    border-radius: 4px;
+  .popup-body {
+    margin-top: 10px;
+    font-size: 16px;
   }
   
-  .popup-body {
-    font-size: 16px;
-    margin-top: 10px;
+  .popup-name,
+  .popup-item-type,
+  .popup-rarity,
+  .popup-description,
+  .popup-extra-line {
+    color: #e5e6e8;
   }
   
   .popup-name {
@@ -35,19 +52,5 @@
   .popup-description,
   .popup-extra-line {
     margin: 2px 0;
-  }
-  
-  .popup-close-btn {
-    position: absolute;
-    top: 2px;
-    right: 2px;
-    background: none;
-    border: none;
-    color: #aaa;
-    font-size: 18px;
-    cursor: pointer;
-  }
-  .popup-close-btn:hover {
-    color: #fff;
   }
   
