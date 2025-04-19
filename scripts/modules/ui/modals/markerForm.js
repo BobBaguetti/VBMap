@@ -19,7 +19,7 @@ import {
   createFormButtonRow
 } from "../uiKit.js";
 
-import { createPickr } from "../ui/pickrManager.js"; 
+import { createPickr } from "../pickrManager.js"; 
 
 
 export function initMarkerForm(db) {
