@@ -1,9 +1,18 @@
-/* Modal container layout */
-.ui-modal {
+/* ===============================
+   Small Modal (No Backdrop)
+   =============================== */
+   .modal-small {
+    position: absolute;
+    width: 350px;
     background-color: #222;
     color: #e0e0e0;
     border: 1px solid #555;
-    padding: 20px;
+    border-radius: 6px;
+    padding: 15px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
+    z-index: 2500;
   }
   
   /* ===============================
@@ -33,57 +42,3 @@
     max-height: 90vh;
     overflow: hidden;
   }
-  
-/* ===============================
-      Small Modal (No Backdrop)
-   =============================== */
-   .modal-small {
-    position: absolute;
-    width: 350px;
-    background-color: #222;
-    color: #e0e0e0;
-    border: 1px solid #555;
-    border-radius: 6px;
-    padding: 15px;
-    z-index: 2147483647 !important; /* Max z-index for debug or safety */
-    box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
-  }
-  
-  /* Make small modal headers draggable */
-  .modal-small .modal-header {
-    cursor: move;
-  }
-  
-  /* ===============================
-     Shared Modal Styling
-     =============================== */
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background-color: #222;
-    color: #e0e0e0;
-    padding: 10px;
-    border-bottom: 1px solid #444;
-  }
-  
-  .modal-header-left {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  
-  .modal-header-right {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-left: auto;
-  }
-  
-  .modal-content hr,
-  .modal-small hr {
-    border: none;
-    border-top: 1px solid #444;
-    margin: 12px 0;
-  }
-  
