@@ -15,7 +15,7 @@ import {
 import { createPickr } from "../pickrManager.js";
 
 export function initMarkerForm(db) {
-  // 1) Create a small, draggable modal with no backdrop
+  // 1) Create the modal
   const { modal, content } = createModal({
     id: "edit-marker-modal",
     title: "Edit Marker",
@@ -25,10 +25,10 @@ export function initMarkerForm(db) {
     onClose: () => closeModal(modal)
   });
 
-  // 2) Divider under the header
+  // 2) Divider under header
   content.appendChild(document.createElement("hr"));
 
-  // 3) Build the form
+  // 3) Form container
   const form = document.createElement("form");
   form.id = "edit-form";
   content.appendChild(form);
@@ -37,7 +37,7 @@ export function initMarkerForm(db) {
   const { row: rowName, input: fldName } = createTextField("Name:", "fld-name");
   fldName.classList.add("ui-input");
 
-  // — Type dropdown (no color‑btn) —
+  // — Type dropdown via createFieldRow —
   const fldType = document.createElement("select");
   fldType.id = "fld-type";
   fldType.classList.add("ui-input");
@@ -50,16 +50,15 @@ export function initMarkerForm(db) {
   `;
   const rowType = createFieldRow("Type:", fldType);
 
-  // — Predefined‑item dropdown (no color‑btn) —
+  // — Item dropdown via createFieldRow —
   const ddPre = document.createElement("select");
   ddPre.id = "fld-predef";
   ddPre.classList.add("ui-input");
+  // options will be filled in refreshPredefinedItems()
   const rowPre = createFieldRow("Item:", ddPre);
 
   // — Item‑specific fields —
-  const { row: rowRarity,     textarea: _ignore1 } = createTextareaFieldWithColor("",""); 
-  // We only need createDropdownField for these so we import it
-  // but for brevity, inline here:
+  const { row: rowRarity,     textarea: _r } = createTextareaFieldWithColor("", ""); // ignore
   const { row: rowRarityField, select: fldRarity } = (() => {
     const sel = document.createElement("select");
     sel.id = "fld-rarity"; sel.classList.add("ui-input");
@@ -102,14 +101,14 @@ export function initMarkerForm(db) {
   lblExtra.textContent = "Extra Info:";
   rowExtra.append(lblExtra, extraInfoBlock);
 
-  // 4) Dividers around Extra Info
+  // Dividers around Extra Info
   const hrBeforeExtra = document.createElement("hr");
   const hrAfterExtra  = document.createElement("hr");
 
   // — Save/Cancel buttons —
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // 5) Assemble item vs non‑item sections
+  // Assemble item vs non‑item
   const blockItem = document.createElement("div");
   blockItem.append(
     rowRarityField,
@@ -119,11 +118,10 @@ export function initMarkerForm(db) {
     rowExtra,
     hrAfterExtra
   );
-
   const blockNI = document.createElement("div");
   blockNI.append(rowDescNI);
 
-  // 6) Append to form
+  // 6) Append all to the form
   form.append(
     rowName,
     rowType,
@@ -136,10 +134,10 @@ export function initMarkerForm(db) {
     rowButtons
   );
 
-  // 7) Add modal to DOM
+  // 7) Add to document
   document.body.appendChild(modal);
 
-  // 8) Color pickers
+  // 8) Pickrs
   const pickrName     = createPickr("#fld-name-color");
   const pickrRare     = createPickr("#fld-rarity-color");
   const pickrItemType = createPickr("#fld-item-type-color");
@@ -158,7 +156,7 @@ export function initMarkerForm(db) {
   }
   fldType.onchange = () => toggleSections(fldType.value === "Item");
 
-  // Load item definitions
+  // Load definitions
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
     defs = Object.fromEntries(list.map(d => [d.id, d]));
@@ -273,10 +271,10 @@ export function initMarkerForm(db) {
     modal.style.display = "block";
     const rect = content.getBoundingClientRect();
     content.style.left = `${evt.clientX - rect.width}px`;
-    content.style.top  = `${evt.clientY - rect.height / 2}px`;
+    content.style.top  = `${evt.clientY - rect.height/2}px`;
   }
 
-  // openEdit / openCreate
+  // Open handlers
   let submitCB;
   function openEdit(markerObj, data, evt, onSave) {
     populateForm(data);
