@@ -1,4 +1,4 @@
-/* modal.base.css – base styles for all modals (v2) */
+/* modal.base.css – base styles for all modals (v3) */
 
 /* 1) Global box‑sizing */
 *,
@@ -18,7 +18,7 @@
 }
 
 .modal-content {
-  background: #222222;
+  background: #1e1e3e;
   border: 1px solid #333;
   border-radius: 4px;
   padding: 16px;
@@ -39,14 +39,11 @@
 }
 
 .modal-header h2 {
-  /* ~1/3 smaller than before */
   font-size: 1em;
   margin: 0;
 }
 
 .modal-header .close {
-  /* remove absolute positioning;
-     flexbox takes care of positioning */
   position: static;
   font-size: 1.4em;
   cursor: pointer;
@@ -56,10 +53,10 @@
 .modal-header + hr {
   border: none;
   border-top: 2px solid #444;
-  margin: 4px 0 8px;  /* less top‑gap before first row */
+  margin: 4px 0 8px;
 }
 
-/* 5) Flex rows for fields */
+/* 5) Flex field rows */
 .modal-content .field-row {
   display: flex;
   align-items: center;
@@ -95,13 +92,11 @@
 .modal-content .color-btn {
   margin-left: 8px !important;
   flex: 0 0 24px;
-  width: 24px;
-  height: 24px;
+  width: 24px; height: 24px;
   border: 1px solid #555;
   border-radius: 2px;
   cursor: pointer;
 }
-
 .modal-content .field-row button.ui-button {
   margin-left: 8px;
 }
@@ -116,4 +111,9 @@
   border: none;
   border-top: 1px solid #444;
   margin: 12px 0;
+}
+
+/* 10) Boost gap between any row and the one before it */
+.modal-content .field-row + .field-row {
+  margin-top: 8px !important;
 }
