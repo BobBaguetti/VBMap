@@ -20,7 +20,6 @@
     background-color: rgba(0, 0, 0, 0.8);
   }
   
-  /* Content inside large modal */
   .modal-large .modal-content {
     background-color: #222;
     color: #e0e0e0;
@@ -45,12 +44,12 @@
     border: 1px solid #555;
     border-radius: 6px;
     padding: 15px;
-    z-index: 9999;
+    z-index: 9999 !important;
     position: absolute;
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.6);
   }
   
-  /* Make header draggable by default */
+  /* Make small modal headers draggable */
   .modal-small .modal-header {
     cursor: move;
   }
@@ -68,7 +67,6 @@
     border-bottom: 1px solid #444;
   }
   
-  /* Optional layout helpers for header content */
   .modal-header-left {
     display: flex;
     align-items: center;
@@ -82,7 +80,6 @@
     margin-left: auto;
   }
   
-  /* Divider used between sections */
   .modal-content hr,
   .modal-small hr {
     border: none;

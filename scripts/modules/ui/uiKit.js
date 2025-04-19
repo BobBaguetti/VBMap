@@ -1,4 +1,4 @@
-// @version: 11
+// @version: 12
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -7,36 +7,24 @@ import { createPickr } from "./pickrManager.js";
 // Smart Modal Creation
 // ------------------------------
 
-/**
- * Creates either a small draggable modal (no backdrop),
- * or a large centered modal with dark backdrop.
- */
 export function createModal({ id, title = "", onClose, size = "small" }) {
   if (size === "small") {
-    // No backdrop, draggable modal
     const content = document.createElement("div");
     content.classList.add("modal-content", "modal-small");
     content.id = id;
+    content.style.display = "none"; // 🛠️ Prevent auto-show on page load
 
-    // Make modal draggable
     document.body.appendChild(content);
-
-    // Optional click outside to close: skip for small modal
-    // Instead, rely on close button via createModalHeader
-
     return { modal: content, content };
   }
 
-  // Large modal with backdrop
   const modal = document.createElement("div");
-  modal.classList.add("modal");
-  modal.classList.add("modal-large");
+  modal.classList.add("modal", "modal-large");
   modal.id = id;
 
   const content = document.createElement("div");
   content.classList.add("modal-content");
 
-  // Optional built-in header (can be left out if using createModalHeader manually)
   if (title) {
     const header = document.createElement("div");
     header.classList.add("modal-header");
@@ -58,7 +46,6 @@ export function createModal({ id, title = "", onClose, size = "small" }) {
   }
 
   modal.appendChild(content);
-
   modal.addEventListener("click", (e) => {
     if (e.target === modal) {
       closeModal(modal);
@@ -70,10 +57,6 @@ export function createModal({ id, title = "", onClose, size = "small" }) {
   return { modal, content };
 }
 
-// ------------------------------
-// Helpers
-// ------------------------------
-
 export function closeModal(modal) {
   modal.style.display = "none";
 }
@@ -83,10 +66,9 @@ export function openModal(modal) {
 }
 
 export function makeModalDraggable(modal, handle) {
-  let offsetX = 0, offsetY = 0;
-  let isDragging = false;
+  let offsetX = 0, offsetY = 0, isDragging = false;
 
-  handle.style.cursor = 'move';
+  handle.style.cursor = "move";
 
   handle.onmousedown = (e) => {
     isDragging = true;
@@ -96,7 +78,7 @@ export function makeModalDraggable(modal, handle) {
       if (isDragging) {
         modal.style.left = `${e.clientX - offsetX}px`;
         modal.style.top = `${e.clientY - offsetY}px`;
-        modal.style.position = 'absolute';
+        modal.style.position = "absolute";
       }
     };
     document.onmouseup = () => {
@@ -117,9 +99,7 @@ export function createModalHeader(titleText, onClose) {
   const close = document.createElement("span");
   close.className = "close";
   close.innerHTML = "&times;";
-  close.onclick = () => {
-    if (onClose) onClose();
-  };
+  close.onclick = () => onClose?.();
 
   header.append(title, close);
   return header;
@@ -144,9 +124,7 @@ export function createFormFooter(onCancel, onSave, {
   btnCancel.type = "button";
   btnCancel.className = "ui-button";
   btnCancel.textContent = cancelText;
-  btnCancel.onclick = () => {
-    if (onCancel) onCancel();
-  };
+  btnCancel.onclick = onCancel;
 
   row.append(btnSave, btnCancel);
   return row;
