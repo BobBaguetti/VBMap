@@ -42,15 +42,15 @@
      Small Modal Variant
      =========================== */
   
-  .modal-content.modal-small {
-    position: absolute;
-    width: 380px !important;
-    cursor: move;
-    z-index: 2500; /* ensure above anything else */
-    background-color: #222;
-    border: 1px solid #555;
-    pointer-events: all;
-  }
+     .modal-content.modal-small {
+        position: absolute;
+        width: 380px !important;
+        z-index: 9999 !important;
+        background-color: #222;
+        border: 1px solid #555;
+        pointer-events: all;
+        cursor: move;
+      }
   
   /* ===========================
      Large Modal Variant
