@@ -1,20 +1,18 @@
-/* @version: 10 */
+/* @version: 11 */
 /* @file: /styles/modal.css */
 
-/* Modal container layout for pre-uiKit item definition modal*/
+/* Modal container layout for pre-uiKit item definition modal */
 .ui-modal {
     background-color: #222;
     color: #e0e0e0;
     border: 1px solid #555;
     padding: 20px;
-}
-
-
-/* ===========================
-   Modal Container Base Layout
-   =========================== */
-
-   .modal {
+  }
+  
+  /* ============================
+     Modal Container Base Layout
+     ============================ */
+  .modal {
     display: none;
     position: fixed;
     z-index: 2300;
@@ -25,10 +23,9 @@
     background-color: rgba(0, 0, 0, 0.8); /* dark backdrop for large modals */
   }
   
-  /* ===========================
+  /* ============================
      Modal Content Base Styling
-     =========================== */
-  
+     ============================ */
   .modal-content {
     background-color: #222;
     color: #e0e0e0;
@@ -38,24 +35,22 @@
     overflow: hidden;
   }
   
-  /* ===========================
+  /* ============================
      Small Modal Variant
-     =========================== */
+     ============================ */
+  .modal-content.modal-small {
+    position: absolute;
+    width: 380px !important;
+    z-index: 9999 !important;
+    background-color: #222;
+    border: 1px solid #555;
+    pointer-events: all;
+    cursor: move;
+  }
   
-     .modal-content.modal-small {
-        position: absolute;
-        width: 380px !important;
-        z-index: 9999 !important;
-        background-color: #222;
-        border: 1px solid #555;
-        pointer-events: all;
-        cursor: move;
-      }
-  
-  /* ===========================
+  /* ============================
      Large Modal Variant
-     =========================== */
-  
+     ============================ */
   .modal-large .modal-content {
     position: fixed;
     top: 50%;
@@ -64,10 +59,9 @@
     width: 500px;
   }
   
-  /* ===========================
+  /* ============================
      Modal Header Area
-     =========================== */
-  
+     ============================ */
   .modal-header {
     display: flex;
     justify-content: space-between;
@@ -92,13 +86,11 @@
     margin-left: auto;
   }
   
-  /* ===========================
+  /* ============================
      Divider Line Between Sections
-     =========================== */
-  
+     ============================ */
   .modal-content hr {
     border: none;
     border-top: 1px solid #444;
     margin: 12px 0;
   }
-  
