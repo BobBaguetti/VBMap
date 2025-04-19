@@ -1,4 +1,4 @@
-// @version: 14
+// @version: 15
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -41,6 +41,14 @@ export function createModal({
   // position absolutely so we can set left/top directly
   content.style.position = "absolute";
   content.style.transform = "none";
+
+  // ───────────────────────────────────────
+  // Inline clamp: force small modals to 350px
+  if (size === "small") {
+    content.style.width    = "350px";
+    content.style.maxWidth = "350px";
+  }
+  // ───────────────────────────────────────
 
   // header (drag handle + title + close)
   const header = document.createElement("div");
@@ -94,8 +102,8 @@ function makeModalDraggable(modalEl, handle) {
 
     document.onmousemove = (e) => {
       if (!dragging) return;
-      modalEl.style.left = `${e.clientX - offsetX}px`;
-      modalEl.style.top  = `${e.clientY - offsetY}px`;
+      modalEl.style.left     = `${e.clientX - offsetX}px`;
+      modalEl.style.top      = `${e.clientY - offsetY}px`;
       modalEl.style.position = 'absolute';
     };
 
@@ -252,7 +260,7 @@ export function createExtraInfoBlock(options = {}) {
       input.className = "ui-input";
       input.value = line.text;
       input.readOnly = readonly;
-      input.oninput = () => { lines[i].text = input.value; };
+      input.oninput = () => (lines[i].text = input.value);
 
       const color = document.createElement("div");
       color.className = "color-btn";
@@ -264,7 +272,10 @@ export function createExtraInfoBlock(options = {}) {
       btnRemove.className = "ui-button";
       btnRemove.textContent = "×";
       btnRemove.style.marginLeft = "5px";
-      btnRemove.onclick = () => { lines.splice(i, 1); render(); };
+      btnRemove.onclick = () => {
+        lines.splice(i, 1);
+        render();
+      };
 
       row.append(input, color);
       if (!readonly) row.appendChild(btnRemove);
@@ -282,16 +293,16 @@ export function createExtraInfoBlock(options = {}) {
   };
 
   function getLines() {
-    return lines.map(l => ({
+    return lines.map((l) => ({
       text: l.text,
-      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
+      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor,
     }));
   }
 
   function setLines(newLines, isReadonly = false) {
-    lines = newLines.map(l => ({
+    lines = newLines.map((l) => ({
       text: l.text || "",
-      color: l.color || defaultColor
+      color: l.color || defaultColor,
     }));
     render();
     if (isReadonly) btnAdd.style.display = "none";
