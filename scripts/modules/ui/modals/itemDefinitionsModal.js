@@ -1,303 +1,266 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 4   The current file version is 4. Increase by 1 every time you update anything.
-// @file:    /scripts/modules/ui/modals/itemDefinitionsModal.js
+// @version: 2
+// @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
+  createModal,
+  closeModal
+} from "../uiKit.js";
+import {
+  createFilterButtonGroup,
+  createSearchRow,
+  createDefListContainer,
+  createTextField,
+  createDropdownField,
+  createTextareaFieldWithColor,
+  createExtraInfoBlock,
+  createFormButtonRow
+} from "../uiKit.js";
+import {
   loadItemDefinitions,
-  addItemDefinition,
-  updateItemDefinition,
+  saveItemDefinition,
   deleteItemDefinition
 } from "../../services/itemDefinitionsService.js";
 
 /**
- * Initialise the Manage Items modal.
- * @param {firebase.firestore.Firestore} db
- * @param {Function} onDefinitionsChanged
+ * Initializes the “Manage Items” modal.
+ * Returns an object with `open()` and `refresh()` methods.
  */
-export function initItemDefinitionsModal(db, onDefinitionsChanged = () => {}) {
-  // DOM handles
-  const manageBtn    = document.getElementById("manage-item-definitions");
-  const modal        = document.getElementById("item-definitions-modal");
-  const closeBtn     = document.getElementById("close-item-definitions");
-  const listWrap     = document.getElementById("item-definitions-list");
-  const form         = document.getElementById("item-definition-form");
-  const defName      = document.getElementById("def-name");
-  const defType      = document.getElementById("def-type");
-  const defRarity    = document.getElementById("def-rarity");
-  const defDescription = document.getElementById("def-description");
-  const defImageSmall  = document.getElementById("def-image-small");
-  const defImageBig    = document.getElementById("def-image-big");
-  const defExtraLinesContainer = document.getElementById("def-extra-lines");
-  const addExtraLineBtn = document.getElementById("add-def-extra-line");
-  const defSearch       = document.getElementById("def-search");
-  const filterNameBtn   = document.getElementById("filter-name");
-  const filterTypeBtn   = document.getElementById("filter-type");
-  const filterRarityBtn = document.getElementById("filter-rarity");
-  const heading3        = document.getElementById("def-form-subheading");
-  const defCancelBtn    = document.getElementById("def-cancel");
-
-  // Utility: create or reuse a Pickr instance
-  function createPicker(selector) {
-    const el = document.querySelector(selector);
-    if (!el) return { on: ()=>{}, setColor: ()=>{}, getColor: ()=>({ toHEXA: ()=>["#E5E6E8"], toString: ()=>"#E5E6E8" }) };
-    return Pickr.create({
-      el: selector, theme: "nano", default: "#E5E6E8",
-      components: {
-        preview: true, opacity: true, hue: true,
-        interaction: { hex: true, rgba: true, input: true, save: true }
-      }
-    }).on("save", (_i, picker) => picker.hide());
-  }
-  if (!window.pickrDefName) {
-    window.pickrDefName        = createPicker("#pickr-def-name");
-    window.pickrDefType        = createPicker("#pickr-def-type");
-    window.pickrDefRarity      = createPicker("#pickr-def-rarity");
-    window.pickrDefDescription = createPicker("#pickr-def-description");
-  }
-
-  // Manage extra-info lines
-  let extraLines = [];
-  function renderExtraLines() {
-    defExtraLinesContainer.innerHTML = "";
-    extraLines.forEach((line, i) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
-
-      const txt = document.createElement("input");
-      txt.type = "text";
-      txt.value = line.text;
-      txt.style.cssText = "width:100%; background:#303030; color:#e0e0e0; padding:4px 6px; border:1px solid #555;";
-      txt.addEventListener("input", () => { extraLines[i].text = txt.value; });
-
-      const clr = document.createElement("div");
-      clr.className = "color-btn";
-      clr.style.marginLeft = "5px";
-      clr.id = `extra-line-color-${i}`;
-
-      const rm = document.createElement("button");
-      rm.type = "button";
-      rm.textContent = "×";
-      rm.style.marginLeft = "5px";
-      rm.addEventListener("click", () => {
-        extraLines.splice(i, 1);
-        renderExtraLines();
-      });
-
-      row.append(txt, clr, rm);
-      defExtraLinesContainer.appendChild(row);
-
-      try {
-        const picker = Pickr.create({
-          el: `#${clr.id}`,
-          theme: "nano",
-          default: line.color || "#E5E6E8",
-          components: {
-            preview: true,
-            opacity: true,
-            hue: true,
-            interaction: { hex: true, rgba: true, input: true, save: true }
-          }
-        });
-        picker
-        .on("init", (instance) => {
-          instance.setColor(line.color || "#E5E6E8");
-        })
-        .on("change", (c) => {
-          extraLines[i].color = c.toHEXA().toString();
-        })
-          .on("save", (_i, p) => p.hide());
-      } catch {}
-    });
-  }
-  addExtraLineBtn.addEventListener("click", () => {
-    extraLines.push({ text: "", color: "#E5E6E8" });
-    renderExtraLines();
+export function initItemDefinitionsModal(db) {
+  // 1) Create a large, static modal with dark backdrop and divider
+  const { modal, content } = createModal({
+    id: "item-definitions-modal",
+    title: "Manage Items",
+    size: "large",
+    backdrop: true,
+    draggable: false,
+    withDivider: true,
+    onClose: () => closeModal(modal)
   });
 
-  // Render the list of definitions
-  async function loadAndRender() {
-    listWrap.innerHTML = "";
-    let defs = await loadItemDefinitions(db);
+  // 2) Grab the header element to append our controls
+  const header = content.querySelector(".modal-header");
 
-    // Sort so most recently added/edited items appear first (based on updatedAt or createdAt)
-    defs.sort((a, b) => {
-      const aTime = a.updatedAt?.toMillis?.() || a.updatedAt || a.createdAt?.toMillis?.() || 0;
-      const bTime = b.updatedAt?.toMillis?.() || b.updatedAt || b.createdAt?.toMillis?.() || 0;
-      return bTime - aTime;
-    });
+  // 3) Filter‐button group (N, T, R, D, Qt, P)
+  const { wrapper: filterWrapper } = createFilterButtonGroup([
+    { id: "filter-name",        label: "N"  },
+    { id: "filter-type",        label: "T"  },
+    { id: "filter-rarity",      label: "R"  },
+    { id: "filter-description", label: "D"  },
+    { id: "filter-quantity",    label: "Qt" },
+    { id: "filter-price",       label: "P"  }
+  ], (btnId, isToggled) => {
+    // TODO: implement your filter logic here, e.g. sort or hide items
+    applyDefinitionFilter(btnId, isToggled);
+  });
+  header.appendChild(filterWrapper);
 
-    defs.forEach(def => {
-      const row = document.createElement("div");
-      row.className = "item-def-entry";
+  // 4) Search row
+  const { row: searchRow, input: searchInput } =
+    createSearchRow("def-search", "Search...");
+  header.appendChild(searchRow);
+  searchInput.addEventListener("input", () => {
+    applySearchFilter(searchInput.value);
+  });
 
-      // Name, type, rarity (capitalized), description
-      const rare = def.rarity ? def.rarity.charAt(0).toUpperCase() + def.rarity.slice(1) : "";
-      const content = document.createElement("div");
-      content.innerHTML = `
-        <span class="def-name"><strong>${def.name}</strong></span>
-        (<span class="def-type">${def.itemType||def.type}</span>)
-        – <span class="def-rarity">${rare}</span>
-        <br/><em>${def.description||""}</em>
+  // 5) Definitions list container
+  const listContainer = createDefListContainer("item-definitions-list");
+  content.appendChild(listContainer);
+
+  // 6) Separator
+  content.appendChild(document.createElement("hr"));
+
+  // 7) Form for add/edit
+  const form = document.createElement("form");
+  form.id = "item-definition-form";
+  // Subheading
+  const subheading = document.createElement("h3");
+  subheading.id = "def-form-subheading";
+  subheading.textContent = "Add / Edit Item";
+  form.appendChild(subheading);
+
+  // — Name —
+  const { row: rowName, input: fldName } =
+    createTextField("Name:", "def-name");
+  rowName.classList.add("field-row");
+  form.appendChild(rowName);
+
+  // — Item Type —
+  const { row: rowType, select: fldType } =
+    createDropdownField("Item Type:", "def-type", [
+      { value: "Crafting Material", label: "Crafting Material" },
+      { value: "Special",           label: "Special"           },
+      { value: "Consumable",        label: "Consumable"        },
+      { value: "Quest",             label: "Quest"             }
+    ]);
+  form.appendChild(rowType);
+
+  // — Rarity —
+  const { row: rowRarity, select: fldRarity } =
+    createDropdownField("Rarity:", "def-rarity", [
+      { value: "",          label: "Select Rarity" },
+      { value: "common",    label: "Common"         },
+      { value: "uncommon",  label: "Uncommon"       },
+      { value: "rare",      label: "Rare"           },
+      { value: "epic",      label: "Epic"           },
+      { value: "legendary", label: "Legendary"      }
+    ]);
+  form.appendChild(rowRarity);
+
+  // — Description —
+  const { row: rowDesc, textarea: fldDesc } =
+    createTextareaFieldWithColor("Description:", "def-description");
+  form.appendChild(rowDesc);
+
+  // — Extra Info —
+  const {
+    block: extraBlock,
+    getLines: getExtraLines,
+    setLines: setExtraLines
+  } = createExtraInfoBlock();
+  const rowExtra = document.createElement("div");
+  rowExtra.className = "field-row extra-row";
+  const lblExtra = document.createElement("label");
+  lblExtra.textContent = "Extra Info:";
+  rowExtra.append(lblExtra, extraBlock);
+  form.appendChild(rowExtra);
+
+  // — Image S —
+  const { row: rowImgS, input: fldImgS } =
+    createImageField("Image S:", "def-image-small");
+  form.appendChild(rowImgS);
+
+  // — Image L —
+  const { row: rowImgL, input: fldImgL } =
+    createImageField("Image L:", "def-image-big");
+  form.appendChild(rowImgL);
+
+  // — Quantity & Price (custom fields) —
+  const { row: rowQty, input: fldQty } =
+    createTextField("Quantity:", "def-quantity");
+  form.appendChild(rowQty);
+
+  const { row: rowPrice, input: fldPrice } =
+    createTextField("Price:", "def-price");
+  form.appendChild(rowPrice);
+
+  // — Save/Cancel —
+  const rowButtons = createFormButtonRow(() => closeModal(modal));
+  form.appendChild(rowButtons);
+  content.appendChild(form);
+
+  // 8) Internal helpers & state
+  let definitions = [];
+  let editingId = null;
+
+  async function refreshDefinitions() {
+    definitions = await loadItemDefinitions(db);
+    renderList(definitions);
+  }
+
+  function renderList(list) {
+    listContainer.innerHTML = "";
+    list.forEach(def => {
+      const entry = document.createElement("div");
+      entry.classList.add("item-def-entry");
+      entry.innerHTML = `
+        <strong>${def.name}</strong> (${def.rarity})<br/>
+        Type: ${def.itemType} • Qty: ${def.quantity || "—"} • Price: ${def.price || "—"}
       `;
-      row.appendChild(content);
-
-      // Add Filter toggle
-      const tf = document.createElement("div");
-      tf.className = "add-filter-toggle";
-      tf.innerHTML = `
-        <label><input type="checkbox" data-show-filter="${def.id}"
-          ${def.showInFilters?"checked":""}/> Add Filter</label>
-      `;
-      tf.querySelector("input").addEventListener("change", async e => {
-        def.showInFilters = e.target.checked;
-        await updateItemDefinition(db, { id: def.id, showInFilters: def.showInFilters });
-        onDefinitionsChanged();
-      });
-      row.appendChild(tf);
-
-      // Edit/Delete/Copy buttons
-      const btns = document.createElement("div");
-      btns.className = "item-action-buttons";
-      btns.innerHTML = `
-        <button data-edit="${def.id}">Edit</button>
-        <button data-delete="${def.id}">Delete</button>
-        <button data-copy="${def.id}">Copy</button>
-      `;
-      btns.querySelector("[data-edit]").addEventListener("click", () => openEdit(def));
-      btns.querySelector("[data-delete]").addEventListener("click", () => deleteDef(def.id));
-      btns.querySelector("[data-copy]").addEventListener("click", () => copyDef(def));
-      row.appendChild(btns);
-
-      listWrap.appendChild(row);
+      entry.addEventListener("click", () => populateForm(def));
+      listContainer.appendChild(entry);
     });
   }
 
-  // Search + tri-toggle logic
-  const flags = { name:false, type:false, rarity:false };
-  function applyFilters() {
-    const q = (defSearch.value||"").toLowerCase();
-    listWrap.childNodes.forEach(entry => {
-      const name   = entry.querySelector(".def-name").innerText.toLowerCase();
-      const type   = entry.querySelector(".def-type").innerText.toLowerCase();
-      const rarity = entry.querySelector(".def-rarity").innerText.toLowerCase();
-      // Always filter by search text first
-      let show = q 
-        ? (name.includes(q) || type.includes(q) || rarity.includes(q))
-        : true;
-      // If no search text, then apply tri-toggle flags:
-      if (!q) {
-        if (flags.name   && !name.includes(q))   show = false;
-        if (flags.type   && !type.includes(q))   show = false;
-        if (flags.rarity && !rarity.includes(q)) show = false;
-      }
-      entry.style.display = show ? "" : "none";
-    });
+  function populateForm(def) {
+    editingId = def.id;
+    fldName.value        = def.name;
+    fldType.value        = def.itemType;
+    fldRarity.value      = def.rarity;
+    fldDesc.value        = def.description;
+    setExtraLines(def.extraLines || [], false);
+    fldImgS.value        = def.imageSmall || "";
+    fldImgL.value        = def.imageBig   || "";
+    fldQty.value         = def.quantity   || "";
+    fldPrice.value       = def.price      || "";
+    subheading.textContent = "Edit Item";
+    openModal();
   }
-  // Wire up buttons
-  filterNameBtn.addEventListener("click", () => { flags.name=!flags.name; filterNameBtn.classList.toggle("toggled"); applyFilters(); });
-  filterTypeBtn.addEventListener("click", () => { flags.type=!flags.type; filterTypeBtn.classList.toggle("toggled"); applyFilters(); });
-  filterRarityBtn.addEventListener("click", () => { flags.rarity=!flags.rarity; filterRarityBtn.classList.toggle("toggled"); applyFilters(); });
-  defSearch.addEventListener("input", applyFilters);
 
-  // Form handlers
-  form.addEventListener("submit", async e => {
+  function clearForm() {
+    editingId = null;
+    fldName.value = "";
+    fldType.value = "";
+    fldRarity.value = "";
+    fldDesc.value = "";
+    setExtraLines([], false);
+    fldImgS.value = "";
+    fldImgL.value = "";
+    fldQty.value = "";
+    fldPrice.value = "";
+    subheading.textContent = "Add Item";
+  }
+
+  async function handleSubmit(e) {
     e.preventDefault();
     const payload = {
-      name: defName.value.trim()||"Unnamed",
-      type: defType.value,
-      rarity: defRarity.value,
-      description: defDescription.value,
-      imageSmall: defImageSmall.value,
-      imageBig: defImageBig.value,
-      extraLines: JSON.parse(JSON.stringify(extraLines)),
-      nameColor: window.pickrDefName.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      itemTypeColor: window.pickrDefType.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      rarityColor: window.pickrDefRarity.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      descriptionColor: window.pickrDefDescription.getColor()?.toHEXA()?.toString()||"#E5E6E8",
-      showInFilters: false
+      name: fldName.value.trim(),
+      itemType: fldType.value,
+      rarity: fldRarity.value,
+      description: fldDesc.value.trim(),
+      extraLines: getExtraLines(),
+      imageSmall: fldImgS.value.trim(),
+      imageBig: fldImgL.value.trim(),
+      quantity: fldQty.value.trim(),
+      price: fldPrice.value.trim()
     };
-    if (defName.dataset.editId) {
-      payload.id = defName.dataset.editId;
-      delete defName.dataset.editId;
-      await updateItemDefinition(db, payload);
+    if (editingId) {
+      await saveItemDefinition(db, editingId, payload);
     } else {
-      await addItemDefinition(db, payload);
+      await saveItemDefinition(db, null, payload);
     }
-    await loadAndRender();
-    onDefinitionsChanged();
-    resetForm();
-  });
-
-  // Helpers for edit/delete/copy
-  function openEdit(def) {
-    defName.dataset.editId = def.id;
-    defName.value = def.name;
-    defType.value = def.type;
-    defRarity.value = def.rarity;
-    defDescription.value = def.description||"";
-    defImageSmall.value = def.imageSmall||"";
-    defImageBig.value = def.imageBig||"";
-    extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
-    renderExtraLines();
-    window.pickrDefName.setColor(def.nameColor || "#E5E6E8");
-    window.pickrDefType.setColor(def.itemTypeColor || "#E5E6E8");
-    window.pickrDefRarity.setColor(def.rarityColor || "#E5E6E8");
-    window.pickrDefDescription.setColor(def.descriptionColor || "#E5E6E8");    
-    heading3.innerText = "Edit Item";
-    openModal();
-  }
-  async function deleteDef(id) {
-    if (!confirm("Delete this item definition?")) return;
-    await deleteItemDefinition(db, id);
-    await loadAndRender();
-    onDefinitionsChanged();
-  }
-  function copyDef(def) {
-    resetForm();
-    heading3.innerText = "Add Item";
-    defName.value = def.name;
-    defType.value = def.type;
-    defRarity.value = def.rarity;
-    defDescription.value = def.description||"";
-    defImageSmall.value = def.imageSmall||"";
-    defImageBig.value = def.imageBig||"";
-    extraLines = def.extraLines ? JSON.parse(JSON.stringify(def.extraLines)) : [];
-    renderExtraLines();
-    openModal();
+    closeModal(modal);
+    await refreshDefinitions();
   }
 
-  function resetForm() {
-    form.reset();
-    extraLines = [];
-    renderExtraLines();
-    [window.pickrDefName, window.pickrDefType, window.pickrDefRarity, window.pickrDefDescription]
-      .forEach(p=>p.setColor("#E5E6E8"));
-    heading3.innerText = "Add Item";
+  async function handleDeleteCurrent() {
+    if (editingId) {
+      await deleteItemDefinition(db, editingId);
+      closeModal(modal);
+      await refreshDefinitions();
+    }
   }
 
-  // Modal open/close
-  function onKeyDown(e) {
-    if (e.key === "Escape") closeModal();
-  }
+  form.addEventListener("submit", handleSubmit);
+
+  // Add a “Delete” button next to the form’s Cancel
+  const btnDelete = document.createElement("button");
+  btnDelete.type = "button";
+  btnDelete.className = "ui-button";
+  btnDelete.textContent = "Delete";
+  btnDelete.onclick = handleDeleteCurrent;
+  rowButtons.appendChild(btnDelete);
+
   function openModal() {
+    clearForm();               // if opening fresh
     modal.style.display = "block";
-    loadAndRender();
-    document.addEventListener("keydown", onKeyDown);
   }
-  function closeModal() {
-    modal.style.display = "none";
-    document.removeEventListener("keydown", onKeyDown);
-  }
-  manageBtn.addEventListener("click", openModal);
-  closeBtn.addEventListener("click", closeModal);
-  window.addEventListener("click", e => { if (e.target === modal) closeModal(); });
-  defCancelBtn.addEventListener("click", () => {
-    resetForm();
-  });
-  // Initial load
-  return { openModal, closeModal, refresh: loadAndRender };
-}
 
-// @version: 3
+  function applyDefinitionFilter(btnId, toggled) {
+    // implement your sort/filter logic here...
+  }
+
+  function applySearchFilter(query) {
+    const q = query.trim().toLowerCase();
+    renderList(definitions.filter(d => d.name.toLowerCase().includes(q)));
+  }
+
+  // 9) Return API
+  return {
+    open: async () => {
+      clearForm();
+      await refreshDefinitions();
+      openModal();
+    },
+    refresh: refreshDefinitions
+  };
+}
