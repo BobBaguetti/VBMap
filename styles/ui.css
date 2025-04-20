@@ -1,4 +1,3 @@
-
 /* ============================
    Base Dark Mode UI Utilities
    ============================ */
@@ -28,6 +27,7 @@
     background: #444 !important;
   }
   
+  /* Dark scrollbar for .ui-scrollbar */
   .ui-scrollbar::-webkit-scrollbar {
     width: 8px;
   }
@@ -42,27 +42,25 @@
     background: #777;
   }
   
-  /* Floating scrollbar that only appears on hover */
+  /* Floating dark scrollbar — only visible while scrolling */
   .ui-scroll-float {
-    scrollbar-width: thin;
+    overflow-y: auto;
+    scrollbar-width: none;
     scrollbar-color: transparent transparent;
   }
-
-  .ui-scroll-float:hover {
+  .ui-scroll-float.scrolling {
     scrollbar-color: #555 transparent;
   }
-
   .ui-scroll-float::-webkit-scrollbar {
     width: 8px;
     background: transparent;
   }
-
   .ui-scroll-float::-webkit-scrollbar-thumb {
     background-color: transparent;
     border-radius: 4px;
     transition: background-color 0.3s;
   }
-
-  .ui-scroll-float:hover::-webkit-scrollbar-thumb {
+  .ui-scroll-float.scrolling::-webkit-scrollbar-thumb {
     background-color: #555;
   }
+  

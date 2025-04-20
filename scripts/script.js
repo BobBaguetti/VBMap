@@ -1,5 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
+// @version: 4
 // @file:    /scripts/script.js
 
 import { initializeMap } from "./modules/map/map.js";
@@ -18,6 +18,7 @@ import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
 import { setupSidebar } from "./modules/sidebar/sidebarManager.js";
 import { subscribeItemDefinitions } from "./modules/services/itemDefinitionsService.js";
 import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
+import { activateFloatingScrollbars } from "./modules/ui/uiKit.js"; // ✅ Scrollbar utility
 
 /* ------------------------------------------------------------------ *
  *  Firebase Initialization
@@ -95,7 +96,6 @@ subscribeItemDefinitions(db, async () => {
       quantity:         def.quantity ?? null
     });
 
-    // Add only if itemType is defined
     if (def.itemType) {
       data.itemType = def.itemType;
       data.itemTypeColor = def.itemTypeColor || "#E5E6E8";
@@ -190,4 +190,11 @@ document.addEventListener("click", e => {
       contextMenu.style.display = "none";
     }
   }
+});
+
+/* ------------------------------------------------------------------ *
+ *  Global Floating Scrollbar Activation
+ * ------------------------------------------------------------------ */
+document.addEventListener("DOMContentLoaded", () => {
+  activateFloatingScrollbars();
 });
