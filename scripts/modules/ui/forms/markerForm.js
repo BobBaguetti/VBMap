@@ -61,6 +61,7 @@ import {
     }
   
     function setFromDefinition(def = {}) {
+        if (!def) def = {};
       fldName.value = safe(def.name);
       fldName.style.color = safe(def.nameColor, "#E5E6E8");
       pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");

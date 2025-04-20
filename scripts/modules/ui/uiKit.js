@@ -257,7 +257,7 @@ export function createExtraInfoBlock(options = {}) {
       input.className = "ui-input";
       input.value = line.text;
       input.readOnly = readonly;
-      input.oninput = () => (lines[i].text = input.value);
+      input.oninput = () => (line.text = input.value);
 
       const color = document.createElement("div");
       color.className = "color-btn";
@@ -281,7 +281,7 @@ export function createExtraInfoBlock(options = {}) {
       const pickr = createPickr(`#${color.id}`);
       pickr.setColor(line.color || defaultColor);
       pickr.on("change", (colorObj) => {
-        lines[i].color = colorObj.toHEXA().toString();
+        line.color = colorObj.toHEXA().toString();
       });
       line._pickr = pickr;
     });
