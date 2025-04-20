@@ -205,63 +205,67 @@ export function createExtraInfoBlock(options = {}) {
   const wrap = document.createElement("div");
   wrap.className = "extra-info-block";
   const btnAdd = document.createElement("button");
-  btnAdd.type = "button";
-  btnAdd.textContent = "+";
-  btnAdd.classList.add("ui-button");
+  btnAdd.type = "button"; btnAdd.textContent = "+"; btnAdd.classList.add("ui-button");
   btnAdd.style.marginBottom = "8px";
   const lineWrap = document.createElement("div");
   wrap.append(btnAdd, lineWrap);
   let lines = [];
+
   function render() {
     lineWrap.innerHTML = "";
     lines.forEach((line, i) => {
       const row = document.createElement("div");
       row.className = "field-row";
       row.style.marginBottom = "5px";
+
       const input = document.createElement("input");
       input.className = "ui-input";
       input.value = line.text;
       input.readOnly = readonly;
       input.oninput = () => (lines[i].text = input.value);
+
       const color = document.createElement("div");
       color.className = "color-btn";
       color.id = `extra-color-${i}`;
       color.style.marginLeft = "5px";
+
       const btnRemove = document.createElement("button");
       btnRemove.type = "button";
       btnRemove.className = "ui-button";
       btnRemove.textContent = "×";
       btnRemove.style.marginLeft = "5px";
-      btnRemove.onclick = () => {
-        lines.splice(i, 1);
-        render();
-      };
+      btnRemove.onclick = () => { lines.splice(i, 1); render(); };
+
       row.append(input, color);
       if (!readonly) row.appendChild(btnRemove);
       lineWrap.appendChild(row);
+
+      // ✅ Reverted: createPickr immediately after DOM render cycle
       requestAnimationFrame(() => {
         const pickr = createPickr(`#${color.id}`);
         pickr.setColor(line.color || defaultColor);
-        line.pickr = pickr;
+        line._pickr = pickr;
+      });
     });
   }
+
   btnAdd.onclick = () => {
     lines.push({ text: "", color: defaultColor });
     render();
   };
+
   function getLines() {
     return lines.map(l => ({
       text: l.text,
       color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
     }));
   }
+
   function setLines(newLines, isReadonly = false) {
-    lines = newLines.map(l => ({
-      text: l.text || "",
-      color: l.color || defaultColor
-    }));
+    lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
     render();
     if (isReadonly) btnAdd.style.display = "none";
   }
+
   return { block: wrap, getLines, setLines };
 }
