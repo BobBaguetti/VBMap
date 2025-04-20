@@ -1,10 +1,9 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 import { createFormButtonRow } from "../uiKit.js";
-import { createPickr } from "../pickrManager.js";
 import { createDropdownField } from "../uiKit.js";
 import { createMarkerForm } from "../forms/markerForm.js";
 
@@ -42,19 +41,18 @@ export function initMarkerModal(db) {
   blockItem.append(
     formApi.fields.fldRarity.closest(".field-row"),
     formApi.fields.fldItemType.closest(".field-row"),
-    formApi.fields.fldDesc.closest(".field-row"),
-    formApi.fields.extraInfo.block.closest(".field-row")
+    formApi.fields.fldDesc.closest(".field-row")
   );
 
-  const blockNI = document.createElement("div");
-  blockNI.append(formApi.fields.fldDescNI.closest(".field-row"));
+  const blockExtra = document.createElement("div");
+  blockExtra.append(formApi.fields.extraInfo.block.closest(".field-row"));
 
   form.append(
     formApi.fields.fldName.closest(".field-row"),
     rowType,
     rowPredef,
     blockItem,
-    blockNI,
+    blockExtra,
     formApi.fields.fldImgS.closest(".field-row"),
     formApi.fields.fldImgL.closest(".field-row"),
     formApi.fields.fldVid.closest(".field-row"),
@@ -70,7 +68,6 @@ export function initMarkerModal(db) {
 
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
-    blockNI.style.display = isItem ? "none" : "block";
     rowPredef.style.display = isItem ? "flex" : "none";
   }
   fldType.onchange = () => toggleSections(fldType.value === "Item");
