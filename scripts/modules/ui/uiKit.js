@@ -178,6 +178,7 @@ export function createDropdownField(label, id, options = [], { showColor = true 
 export function createTextField(label, id) {
   const input = document.createElement("input");
   input.id = id;
+  input.className = "ui-input"; // Ensure consistent appearance
   const { row, colorBtn } = createColorFieldRow(label, input, `${id}-color`);
   return { row, input, colorBtn };
 }
