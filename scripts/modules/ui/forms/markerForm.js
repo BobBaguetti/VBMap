@@ -66,7 +66,7 @@ import {
       fldDesc.value = def.description || "";
       fldDesc.style.color = def.descriptionColor || "#E5E6E8";
   
-      extraInfo.setLines(def.extraLines || [], true);
+      extraInfo.setLines(def.extraLines || [], false);
   
       fldImgS.value = def.imageSmall || "";
       fldImgL.value = def.imageBig || "";
