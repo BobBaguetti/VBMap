@@ -1,4 +1,4 @@
-/* @version: 10 */
+/* @version: 11 */
 /* @file: /styles/modals/modal.large.css */
 
 .modal.modal-large {
@@ -11,15 +11,16 @@
   top: 0;
   width: 100%;
   height: 100%;
-  background: none; 
+  background: none;
   pointer-events: auto;
 }
 
+/* Core modal box */
 .modal.modal-large .modal-content {
   position: relative;
   width: 100%;
   max-width: 550px;
-  max-height: 90vh;
+  height: 90vh; /* 👈 Lock vertical height */
   background-color: #222;
   border: 1px solid #333;
   border-radius: 6px;
@@ -30,6 +31,7 @@
   overflow: hidden;
 }
 
+/* Header */
 .modal.modal-large .modal-header {
   display: flex;
   justify-content: space-between;
@@ -64,32 +66,15 @@
   max-height: 240px;
 }
 
-/* Scrollable form */
+/* Scrollable form area */
 .modal.modal-large form {
   flex: 1 1 auto;
-  overflow-y: auto;
   min-height: 0;
   max-height: 100%;
   padding-right: 4px;
-  scrollbar-width: none;
-  scrollbar-color: transparent transparent;
-}
-.modal.modal-large form.scrolling {
-  scrollbar-color: #555 transparent;
-}
-.modal.modal-large form::-webkit-scrollbar {
-  width: 8px;
-  background: transparent;
-}
-.modal.modal-large form::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-.modal.modal-large form.scrolling::-webkit-scrollbar-thumb {
-  background-color: #555;
 }
 
+/* Fields */
 .modal.modal-large .field-row {
   display: flex;
   align-items: center;
@@ -129,6 +114,7 @@
   border-radius: 2px;
 }
 
+/* Buttons */
 .modal.modal-large .ui-button {
   background-color: #444;
   color: white;

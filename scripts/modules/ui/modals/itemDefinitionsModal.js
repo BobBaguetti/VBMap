@@ -1,3 +1,6 @@
+// @version: 2
+// @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
+
 import {
   createModal,
   closeModal,
@@ -95,6 +98,8 @@ export function initItemDefinitionsModal(db) {
       await refreshDefinitions();
     }
   });
+
+  formApi.form.classList.add("ui-scroll-float"); // ✅ Enable floating scrollbar behavior
 
   content.appendChild(formApi.form);
 

@@ -41,26 +41,29 @@
     background: #777;
   }
   
-  /* Floating scrollbar only during scroll */
-  .ui-scroll-float {
-    overflow-y: auto;
-    scrollbar-width: none;
-    scrollbar-color: transparent transparent;
-  }
-  .ui-scroll-float.scrolling {
-    scrollbar-color: #555 transparent;
-  }
-  .ui-scroll-float::-webkit-scrollbar {
-    width: 8px;
-    background: transparent;
-    position: absolute;
-  }
-  .ui-scroll-float::-webkit-scrollbar-thumb {
-    background-color: transparent;
-    border-radius: 4px;
-    transition: background-color 0.3s;
-  }
-  .ui-scroll-float.scrolling::-webkit-scrollbar-thumb {
-    background-color: #555;
-  }
-  
+/* Floating scrollbar only during scroll */
+.ui-scroll-float {
+  overflow-y: auto;
+  scrollbar-width: none;
+  scrollbar-color: transparent transparent;
+}
+
+.ui-scroll-float.scrolling {
+  scrollbar-color: #555 transparent;
+}
+
+.ui-scroll-float::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+  position: absolute;
+}
+
+.ui-scroll-float::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.ui-scroll-float.scrolling::-webkit-scrollbar-thumb {
+  background-color: #555;
+}
