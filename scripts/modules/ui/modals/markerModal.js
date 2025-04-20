@@ -1,4 +1,4 @@
-// @version: 4
+// @version: 5
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
@@ -111,15 +111,13 @@ export function initMarkerModal(db) {
     toggleSections(data.type === "Item");
 
     if (data.type === "Item") {
-      if (data.predefinedItemId && defs[data.predefinedItemId]) {
-        const def = defs[data.predefinedItemId];
-        ddPredef.value = def.id;
-        formApi.setFromDefinition(def);
-        customMode = false;
+      const def = data.predefinedItemId ? defs[data.predefinedItemId] : null;
+      ddPredef.value = def?.id || "";
+      customMode = !def;
+      if (customMode) {
+        formApi.setFromDefinition();
       } else {
-        ddPredef.value = "";
-        formApi.setFromDefinition(null);
-        customMode = true;
+        formApi.setFromDefinition(def);
       }
     } else {
       formApi.setFromNonItem(data);
