@@ -10,9 +10,11 @@
 /* 2) Backdrop & container */
 .modal {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  background: none; 
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: transparent !important; /* ✅ prevent html bg bleed-through */
   display: none;
   z-index: 1000;
 }

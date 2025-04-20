@@ -1,4 +1,4 @@
-// @version: 22
+// @version: 23
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -34,11 +34,13 @@ export function createModal({
   const modal = document.createElement("div");
   modal.classList.add("modal", `modal-${size}`);
   modal.id = id;
-  modal.style.backgroundColor = "transparent"; // safe fallback
+
+  // Always start with transparent background to prevent html background bleed-through
+  modal.style.backgroundColor = "transparent";
+
   const content = document.createElement("div");
   content.classList.add("modal-content");
 
-  // Large modal layout
   if (size === "large") {
     content.style.position = "fixed";
     content.style.top = "50%";
@@ -120,7 +122,6 @@ export function closeModal(modal) {
 export function openModal(modal) {
   modal.style.display = "block";
 
-  // ✅ Reapply background on next frame to avoid flash
   requestAnimationFrame(() => {
     if (modal.classList.contains("modal-large")) {
       modal.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
