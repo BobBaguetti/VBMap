@@ -115,3 +115,34 @@
 .modal-content .item-gap {
   margin-bottom: 8px !important;
 }
+
+/* Limit definition list height to scroll independently */
+#item-definitions-list,
+#quest-definitions-list {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+/* Dimmed display text and consistent rarity styling */
+.item-def-entry .dimmed {
+  color: #bbb;
+  font-size: 0.95em;
+}
+.item-def-entry .rarity {
+  color: #aaa;
+  font-weight: normal;
+}
+
+/* Reduce vertical spacing between field rows */
+.modal-content .field-row:not(.extra-row) {
+  margin-bottom: 4px;
+}
+
+/* Slightly increase input padding for usability */
+.modal-content .field-row input[type="text"],
+.modal-content .field-row select,
+.modal-content .field-row textarea,
+.modal-content .field-row .ui-input {
+  padding: 6px 8px;
+}
