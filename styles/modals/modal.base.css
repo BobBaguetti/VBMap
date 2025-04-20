@@ -1,5 +1,3 @@
-/* styles/modals/modal.base.css – base styles for all modals (v11) */
-
 /* 1) Global box‑sizing */
 *,
 *::before,
@@ -7,7 +5,7 @@
   box-sizing: border-box;
 }
 
-/* 2) Backdrop & container */
+/* 2) Modal backdrop and container */
 .modal {
   position: fixed;
   top: 0; left: 0;
@@ -24,11 +22,6 @@
   padding: 10px 16px 16px;
   color: #eee;
   box-shadow: 0 2px 10px rgba(0,0,0,0.7);
-  position: absolute;
-  transform: none;
-  width: auto;
-  max-width: 90%;
-  overflow: auto;
 }
 
 /* 3) Header & under‑header divider */
@@ -38,7 +31,7 @@
   justify-content: space-between;
 }
 .modal-header h2 {
-  font-size: 1em;  
+  font-size: 1em;
   margin: 0;
 }
 .modal-header .close {
@@ -53,44 +46,42 @@
   margin: 4px 0;
 }
 
-/* 4) Form flex + uniform gap */
+/* 4) Form layout */
 #edit-form {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-/* 5) Field‑row base styling */
+/* 5) Field row structure */
 .modal-content .field-row {
   display: flex;
   align-items: center;
-  margin-bottom: 0; /* gap handled by form’s gap */
+  margin-bottom: 0;
 }
 .modal-content .field-row label {
   flex: 0 0 100px;
   margin-right: 8px;
 }
 
-/* 6) Full‑width inputs/selects/textarea */
-.modal-content .field-row input[type="text"],
-.modal-content .field-row select,
-.modal-content .field-row textarea,
-.modal-content .field-row .ui-input {
+/* 6) Universal input class */
+.ui-input {
   flex: 1 1 auto;
   min-width: 0;
   margin-right: 8px;
   background: #2a2a2a;
   border: 1px solid #555;
   border-radius: 2px;
-  padding: 4px 6px;
+  padding: 6px 8px;
   color: #eee;
 }
 
-/* 7) Color‑picker & remove‑line buttons */
-.modal-content .color-btn {
+/* 7) Color picker button & line remover */
+.color-btn {
   margin-left: 8px !important;
   flex: 0 0 19px;
-  width: 19px; height: 19px;
+  width: 19px;
+  height: 19px;
   border: 1px solid #555;
   border-radius: 2px;
   cursor: pointer;
@@ -99,50 +90,19 @@
   margin-left: 8px;
 }
 
-/* 8) Extra‑row top‑align */
+/* 8) Top-aligned for multi-line */
 .modal-content .field-row.extra-row {
   align-items: flex-start;
 }
 
-/* 9) Dividers around Extra Info */
+/* 9) Dividers */
 .modal-content hr {
   border: none;
   border-top: 1px solid #444;
   margin: 12px 0;
 }
 
-/* give 16px bottom‑margin just on the three item‑specific rows */
-.modal-content .item-gap {
-  margin-bottom: 8px !important;
-}
-
-/* Limit definition list height to scroll independently */
-#item-definitions-list,
-#quest-definitions-list {
-  max-height: 300px;
-  overflow-y: auto;
-  margin-bottom: 12px;
-}
-
-/* Dimmed display text and consistent rarity styling */
-.item-def-entry .dimmed {
-  color: #bbb;
-  font-size: 0.95em;
-}
-.item-def-entry .rarity {
-  color: #aaa;
-  font-weight: normal;
-}
-
-/* Reduce vertical spacing between field rows */
+/* 10) Reduce vertical spacing between field rows */
 .modal-content .field-row:not(.extra-row) {
   margin-bottom: 4px;
-}
-
-/* Slightly increase input padding for usability */
-.modal-content .field-row input[type="text"],
-.modal-content .field-row select,
-.modal-content .field-row textarea,
-.modal-content .field-row .ui-input {
-  padding: 6px 8px;
 }

@@ -28,6 +28,7 @@
   flex: 1 1 auto;
   overflow-y: auto;
   max-height: 240px;
+  margin-bottom: 12px;
 }
 
 .modal-large form {
