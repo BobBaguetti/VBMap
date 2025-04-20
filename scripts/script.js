@@ -13,7 +13,7 @@ import {
 } from "./modules/services/firebaseService.js";
 import { createMarker, createPopupContent } from "./modules/map/markerManager.js";
 import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initMarkerForm } from "./modules/ui/modals/markerForm.js";
+import { initMarkerModal } from "./modules/ui/modals/markerModal.js";
 import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
 import { setupSidebar } from "./modules/sidebar/sidebarManager.js";
 import { subscribeItemDefinitions } from "./modules/services/itemDefinitionsService.js";
@@ -53,9 +53,9 @@ const allMarkers = [];
 const { filterMarkers, loadItemFilters } = await setupSidebar(map, layers, allMarkers, db);
 
 /* ------------------------------------------------------------------ *
- *  Marker Form
+ *  Marker Modal
  * ------------------------------------------------------------------ */
-const markerForm = initMarkerForm(db);
+const markerForm = initMarkerModal(db);
 
 /* ------------------------------------------------------------------ *
  *  Modals
