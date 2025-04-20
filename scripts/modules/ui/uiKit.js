@@ -235,15 +235,19 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
 
 export function createExtraInfoBlock(options = {}) {
   const { defaultColor = "#E5E6E8", readonly = false } = options;
+
   const wrap = document.createElement("div");
   wrap.className = "extra-info-block";
+
+  const lineWrap = document.createElement("div");
+
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
   btnAdd.textContent = "+";
   btnAdd.classList.add("ui-button");
-  btnAdd.style.marginBottom = "8px";
-  const lineWrap = document.createElement("div");
-  wrap.append(btnAdd, lineWrap);
+  btnAdd.style.marginTop = "8px";
+
+  wrap.append(lineWrap, btnAdd); // ⬅️ Button goes after rows now
 
   let lines = [];
 
@@ -305,3 +309,4 @@ export function createExtraInfoBlock(options = {}) {
 
   return { block: wrap, getLines, setLines };
 }
+
