@@ -104,13 +104,17 @@
   align-items: flex-start;
 }
 
-/* Align label with + button */
-.modal-content .field-row.extra-row > label {
-  margin-top: 6px;
+/* 8) Extra-row layout tweaks */
+.modal-content .field-row.extra-row {
+  align-items: flex-start;
 }
 
-/* Ensure + button stacks and aligns with input start */
-/* Label width: 100px + 8px gap = 108px total offset */
+/* Remove manual vertical offsets — row utility handles alignment now */
+.modal-content .field-row.extra-row > label {
+  margin-top: 0;
+}
+
+/* Ensure + button lines up and grows down as needed */
 .extra-info-block {
   flex: 1;
   display: flex;
@@ -118,15 +122,11 @@
 }
 
 .extra-info-block > button {
-  align-self: stretch;
-  width: fit-content;
+  align-self: flex-start;
   margin-left: 0;
-  margin-top: 6px;
+  margin-top: 0;
   padding: 6px 12px;
 }
-
-
-
 
 /* 9) Dividers around Extra Info */
 .modal-content hr {

@@ -27,5 +27,5 @@ export function createTopAlignedFieldRow(labelText, contentEl) {
   
     row.append(label, contentEl);
     return row;
-  }
+  } 
   
