@@ -1,29 +1,27 @@
-/* @version: 5 */
+/* @version: 6 */
 /* @file: /styles/modals/modal.large.css */
 
 .modal.modal-large {
-  display: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
   position: fixed;
-  z-index: 1001;
+  z-index: 9999; /* Ensure it's above all UI */
   left: 0;
   top: 0;
   width: 100%;
   height: 100%;
   background-color: rgba(0, 0, 0, 0.75);
-  justify-content: center;
-  align-items: center;
+  pointer-events: auto;
 }
 
-/* Core modal content container */
+/* Core modal box */
 .modal.modal-large .modal-content {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  position: relative;
   width: 100%;
   max-width: 550px;
   max-height: 90vh;
-  background-color: #222222;
+  background-color: #222;
   border: 1px solid #333;
   border-radius: 6px;
   padding: 16px;
@@ -33,7 +31,7 @@
   flex-direction: column;
 }
 
-/* Modal header */
+/* Header section */
 .modal.modal-large .modal-header {
   display: flex;
   justify-content: space-between;
@@ -53,7 +51,7 @@
   color: #fff;
 }
 
-/* Divider */
+/* Divider under header */
 .modal.modal-large hr {
   margin: 8px 0;
   border: 0;
@@ -66,19 +64,9 @@
   overflow-y: auto;
   padding-right: 4px;
   margin-bottom: 12px;
-  scrollbar-width: thin;
-  scrollbar-color: #555 #2a2a2a;
 }
 
-.modal.modal-large .def-list::-webkit-scrollbar {
-  width: 6px;
-}
-.modal.modal-large .def-list::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 4px;
-}
-
-/* Form layout */
+/* Form section */
 .modal.modal-large form {
   flex-shrink: 0;
   overflow: visible;
@@ -99,7 +87,7 @@
   flex-shrink: 0;
 }
 
-/* Input/Select/Textarea styling */
+/* Inputs, selects, textareas */
 .modal.modal-large .field-row input,
 .modal.modal-large .field-row textarea,
 .modal.modal-large .field-row select {
@@ -112,11 +100,11 @@
   font-size: 14px;
 }
 
-.modal.modal-large .field-row textarea {
+.modal-large .field-row textarea {
   resize: vertical;
 }
 
-/* Color picker button */
+/* Color pickr button */
 .modal.modal-large .field-row .color-btn {
   width: 24px;
   height: 24px;
@@ -126,7 +114,7 @@
   border-radius: 2px;
 }
 
-/* Buttons */
+/* Button styling */
 .modal.modal-large .ui-button {
   background-color: #444;
   color: white;
