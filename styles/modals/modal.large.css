@@ -30,16 +30,24 @@
   box-shadow: 0 0 10px #000;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;              /* Enable vertical scroll if needed */
-  scrollbar-width: none;         /* Firefox: hide scrollbar */
-  -ms-overflow-style: none;      /* IE 10+ */
+  overflow: overlay; /* floating scrollbar */
+  scrollbar-gutter: stable both-edges; /* optional, not needed with overlay but harmless */
 }
 
-/* Chrome, Safari, Edge (WebKit/Blink) */
+/* Chrome, Safari, Edge */
 .modal.modal-large .modal-content::-webkit-scrollbar {
-  width: 0px;
-  height: 0px;
-  background: transparent;       /* Optional: hides any background track */
+  width: 8px;
+  background: transparent;
+}
+
+.modal.modal-large .modal-content::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+
+.modal.modal-large .modal-content:hover::-webkit-scrollbar-thumb {
+  background-color: #555; /* visible on hover */
 }
 
 /* Header section */
