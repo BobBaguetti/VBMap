@@ -104,11 +104,6 @@
   align-items: flex-start;
 }
 
-/* 8) Extra-row layout tweaks */
-.modal-content .field-row.extra-row {
-  align-items: flex-start;
-}
-
 /* Remove manual vertical offsets — row utility handles alignment now */
 .modal-content .field-row.extra-row > label {
   margin-top: 0;
@@ -119,6 +114,13 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+}
+
+.extra-info-block > button {
+  align-self: flex-start;
+  margin-left: 0;
+  margin-top: 0;
+  padding: 6px 12px;
 }
 
 .extra-info-block > button {
