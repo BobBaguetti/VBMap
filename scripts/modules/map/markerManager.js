@@ -58,7 +58,6 @@ export function createPopupContent(m) {
       </p>`;
   }
 
-  // New: Value and Quantity HTML
   const valueHTML = `
     <p style="margin:2px 0;">
       <strong>Value:</strong> ${m.value ?? "—"}
@@ -80,11 +79,12 @@ export function createPopupContent(m) {
              onerror="this.style.display='none'">`
     : "";
 
-  const videoBtn = m.videoURL ? `
-    <button class="more-info-btn"
-            onclick="openVideoPopup(event.clientX, event.clientY, '${m.videoURL}')">
-      Play Video
-    </button>` : "";
+  const videoBtn = m.video
+    ? `<button class="more-info-btn"
+               onclick="openVideoPopup(event.clientX, event.clientY, '${m.video}')">
+        Play Video
+      </button>`
+    : "";
 
   return `
     <div class="custom-popup">
@@ -108,6 +108,7 @@ export function createPopupContent(m) {
       </div>
     </div>`;
 }
+
 
 export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   const markerObj = L.marker(m.coords, {

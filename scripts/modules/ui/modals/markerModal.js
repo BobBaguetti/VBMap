@@ -1,4 +1,4 @@
-// @version: 8
+// @version: 9
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
@@ -36,7 +36,6 @@ export function initMarkerModal(db) {
   const formApi = createMarkerForm();
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // Item-only fields
   const blockItem = document.createElement("div");
   blockItem.classList.add("item-gap");
   blockItem.append(
@@ -44,10 +43,6 @@ export function initMarkerModal(db) {
     formApi.fields.fldItemType.closest(".field-row"),
     formApi.fields.fldDesc.closest(".field-row")
   );
-
-  // Always shown
-  const blockExtra = document.createElement("div");
-  blockExtra.append(formApi.fields.extraRow);
 
   form.append(
     formApi.fields.fldName.closest(".field-row"),
@@ -64,7 +59,6 @@ export function initMarkerModal(db) {
   content.appendChild(form);
   document.body.appendChild(modal);
 
-  // State
   let defs = {};
   let customMode = false;
 
@@ -140,35 +134,32 @@ export function initMarkerModal(db) {
 
   function harvest(coords) {
     const type = fldType.value;
-    if (type === "Item") {
-      const selectedId = ddPredef.value;
-      if (!selectedId || !defs[selectedId]) {
-        return { type, coords, ...formApi.getCustom() };
-      } else {
-        const def = defs[selectedId];
-        return {
-          type,
-          coords,
-          predefinedItemId: selectedId,
-          name: def.name,
-          nameColor: def.nameColor || "#E5E6E8",
-          itemType: def.itemType || "",
-          itemTypeColor: def.itemTypeColor || "#E5E6E8",
-          rarity: def.rarity || "",
-          rarityColor: def.rarityColor || "#E5E6E8",
-          description: def.description || "",
-          descriptionColor: def.descriptionColor || "#E5E6E8",
-          extraLines: def.extraLines || [],
-          imageSmall: def.imageSmall || "",
-          imageBig: def.imageBig || "",
-          video: def.video || "",
-          value: def.value || "",
-          quantity: def.quantity || ""
-        };
-      }
-    } else {
-      return { type, coords, ...formApi.getNonItem() };
+    const selectedId = ddPredef.value;
+
+    if (type === "Item" && selectedId && defs[selectedId]) {
+      const def = defs[selectedId];
+      return {
+        type,
+        coords,
+        predefinedItemId: selectedId,
+        name: def.name,
+        nameColor: def.nameColor || "#E5E6E8",
+        itemType: def.itemType || "",
+        itemTypeColor: def.itemTypeColor || "#E5E6E8",
+        rarity: def.rarity || "",
+        rarityColor: def.rarityColor || "#E5E6E8",
+        description: def.description || "",
+        descriptionColor: def.descriptionColor || "#E5E6E8",
+        extraLines: def.extraLines || [],
+        imageSmall: def.imageSmall || "",
+        imageBig: def.imageBig || "",
+        video: def.video || "",
+        value: def.value || "",
+        quantity: def.quantity || ""
+      };
     }
+
+    return { type, coords, ...formApi.getCustom() };
   }
 
   return {
