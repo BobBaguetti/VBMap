@@ -1,5 +1,5 @@
 <!-- @fullfile: Send the entire file, no omissions or abridgments. -->
-<!-- @version: 7 -->
+<!-- @version: 8 -->
 <!-- @file: /index.html -->
 
 <!DOCTYPE html>
@@ -39,11 +39,11 @@
   <!-- Sidebar -->
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
-    
+
     <!-- Filters Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
-      
+
       <!-- Main Filters -->
       <div class="filter-group" id="main-filters">
         <h3>Main</h3>
@@ -55,7 +55,7 @@
           <label><input type="checkbox" checked data-layer="Spawn Point" /> Spawn points</label>
         </div>
       </div>
-      
+
       <!-- Item Filters -->
       <div class="filter-group" id="item-filters">
         <h3>Items</h3>
@@ -79,7 +79,7 @@
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
     </div>
-    
+
     <!-- Admin Tools Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-tools"></i> Admin Tools</h2>
@@ -87,10 +87,10 @@
       <button id="manage-quest-definitions">Manage Quests</button>
     </div>
   </div>
-  
+
   <!-- Map Container -->
   <div id="map"></div>
-  
+
   <!-- Video Popup -->
   <div id="video-popup">
     <button id="video-close">X</button>
@@ -99,14 +99,14 @@
       Your browser does not support the video tag.
     </video>
   </div>
-  
+
   <!-- Paste Mode Tooltip -->
   <div id="paste-tooltip" style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
     Paste Mode ON
   </div>
-  
+
   <!-- Item Definitions Modal -->
-  <div id="item-definitions-modal" class="modal">
+  <div id="item-definitions-modal" class="modal modal-large">
     <div class="modal-content">
       <div class="modal-header">
         <div class="modal-header-left">
@@ -125,11 +125,16 @@
           <span class="close" id="close-item-definitions">&times;</span>
         </div>
       </div>
-      <div id="item-definitions-list" class="def-list">
+
+      <!-- Scrollable List -->
+      <div id="item-definitions-list" class="def-list ui-scroll-float">
         <!-- Definitions will be populated here -->
       </div>
+
       <hr />
-      <form id="item-definition-form">
+
+      <!-- Scrollable Form -->
+      <form id="item-definition-form" class="ui-scroll-float">
         <h3 id="def-form-subheading">Add Item</h3>
         <div class="field-row">
           <label>Name:</label>
