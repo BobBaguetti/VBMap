@@ -88,3 +88,17 @@ import {
     return createTextField("Quantity:", id);
   }
   
+  /**
+ * Builds a colored dropdown for rarity.
+ */
+export function createRarityField(id = "fld-rarity") {
+    return createDropdownField("Rarity:", id, [
+      { value: "", label: "Select Rarity" },
+      { value: "common", label: "Common" },
+      { value: "uncommon", label: "Uncommon" },
+      { value: "rare", label: "Rare" },
+      { value: "epic", label: "Epic" },
+      { value: "legendary", label: "Legendary" }
+    ]);
+  }
+  

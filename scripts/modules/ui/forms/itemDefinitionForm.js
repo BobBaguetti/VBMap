@@ -28,7 +28,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   form.appendChild(subheading);
 
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
-  const { row: rowType, select: fldType, colorBtn: colorType } = createTypeField("def-type");
+  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("def-description");
 
