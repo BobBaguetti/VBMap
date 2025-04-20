@@ -10,7 +10,7 @@ import { createPickr } from "../../ui/pickrManager.js";
 
 import {
   createNameField,
-  createTypeField,
+  createItemTypeField,
   createRarityField,
   createDescriptionField,
   createExtraInfoField,
