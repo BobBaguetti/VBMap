@@ -36,6 +36,7 @@ export function initMarkerModal(db) {
   const formApi = createMarkerForm();
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
+  // Item-only fields
   const blockItem = document.createElement("div");
   blockItem.classList.add("item-gap");
   blockItem.append(
@@ -43,6 +44,10 @@ export function initMarkerModal(db) {
     formApi.fields.fldItemType.closest(".field-row"),
     formApi.fields.fldDesc.closest(".field-row")
   );
+
+  // Always shown
+  const blockExtra = document.createElement("div");
+  blockExtra.append(formApi.fields.extraRow);
 
   form.append(
     formApi.fields.fldName.closest(".field-row"),
@@ -67,7 +72,18 @@ export function initMarkerModal(db) {
     blockItem.style.display = isItem ? "block" : "none";
     rowPredef.style.display = isItem ? "flex" : "none";
   }
+
   fldType.onchange = () => toggleSections(fldType.value === "Item");
+  ddPredef.onchange = () => {
+    const def = defs[ddPredef.value];
+    if (def) {
+      formApi.setFromDefinition(def);
+      customMode = false;
+    } else {
+      formApi.setFromDefinition(null);
+      customMode = true;
+    }
+  };
 
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
@@ -80,19 +96,6 @@ export function initMarkerModal(db) {
       ddPredef.appendChild(o);
     });
   }
-
-  // ✅ NEW: respond to dropdown change
-  ddPredef.onchange = () => {
-    const selectedId = ddPredef.value;
-    const def = defs[selectedId];
-    if (selectedId && def) {
-      formApi.setFromDefinition(def);
-      customMode = false;
-    } else {
-      formApi.setFromDefinition(null);
-      customMode = true;
-    }
-  };
 
   function openEdit(markerObj, data, evt, onSave) {
     populate(data);
@@ -138,9 +141,31 @@ export function initMarkerModal(db) {
   function harvest(coords) {
     const type = fldType.value;
     if (type === "Item") {
-      return customMode ?
-        { type, coords, ...formApi.getCustom() } :
-        { type, coords, predefinedItemId: ddPredef.value };
+      const selectedId = ddPredef.value;
+      if (!selectedId || !defs[selectedId]) {
+        return { type, coords, ...formApi.getCustom() };
+      } else {
+        const def = defs[selectedId];
+        return {
+          type,
+          coords,
+          predefinedItemId: selectedId,
+          name: def.name,
+          nameColor: def.nameColor || "#E5E6E8",
+          itemType: def.itemType || "",
+          itemTypeColor: def.itemTypeColor || "#E5E6E8",
+          rarity: def.rarity || "",
+          rarityColor: def.rarityColor || "#E5E6E8",
+          description: def.description || "",
+          descriptionColor: def.descriptionColor || "#E5E6E8",
+          extraLines: def.extraLines || [],
+          imageSmall: def.imageSmall || "",
+          imageBig: def.imageBig || "",
+          video: def.video || "",
+          value: def.value || "",
+          quantity: def.quantity || ""
+        };
+      }
     } else {
       return { type, coords, ...formApi.getNonItem() };
     }
