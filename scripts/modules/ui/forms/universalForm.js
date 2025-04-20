@@ -1,4 +1,4 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/forms/universalForm.js
 
 import {
@@ -10,7 +10,7 @@ import {
     createExtraInfoBlock
   } from "../../ui/uiKit.js";
   
-  import { createTopAlignedFieldRow } from "../../utils/formUtils.js"; 
+  import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
   
   /**
    * Builds a basic name field with color.
@@ -20,21 +20,20 @@ import {
   }
   
   /**
-   * Builds a colored dropdown for rarity.
+   * Builds a colored dropdown for marker type (used in marker modals).
    */
-  export function createRarityField(id = "fld-rarity") {
-    return createDropdownField("Rarity:", id, [
-      { value: "", label: "Select Rarity" },
-      { value: "common", label: "Common" },
-      { value: "uncommon", label: "Uncommon" },
-      { value: "rare", label: "Rare" },
-      { value: "epic", label: "Epic" },
-      { value: "legendary", label: "Legendary" }
-    ]);
+  export function createTypeField(id = "fld-type") {
+    return createDropdownField("Type:", id, [
+      { value: "Door", label: "Door" },
+      { value: "Extraction Portal", label: "Extraction Portal" },
+      { value: "Item", label: "Item" },
+      { value: "Teleport", label: "Teleport" },
+      { value: "Spawn Point", label: "Spawn Point" }
+    ], { showColor: false });
   }
   
   /**
-   * Builds a colored dropdown for item type.
+   * Builds a colored dropdown for item type (used in item definition forms).
    */
   export function createItemTypeField(id = "fld-item-type") {
     return createDropdownField("Item Type:", id, [
