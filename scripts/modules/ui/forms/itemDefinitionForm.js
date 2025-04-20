@@ -1,19 +1,22 @@
+// @version: 9
+// @file: /scripts/modules/ui/forms/itemDefinitionForm.js
+
 import {
-  createFormButtonRow,
-  createImageField
+  createImageField,
+  createFormButtonRow
 } from "../../ui/uiKit.js";
 
 import { createPickr } from "../../ui/pickrManager.js";
+
 import {
   createNameField,
   createTypeField,
   createRarityField,
   createDescriptionField,
-  createExtraInfoBlock,
+  createExtraInfoField,
   createValueField,
   createQuantityField
-} from "./universalForm.js";
-
+} from "../universalForm.js";
 
 export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const form = document.createElement("form");
@@ -25,12 +28,15 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   form.appendChild(subheading);
 
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
-  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");
+  const { row: rowType, select: fldType, colorBtn: colorType } = createTypeField("def-type");
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("def-description");
-  const { row: rowExtra, extraInfo } = createExtraInfoField("def-extra");
+
+  const { row: rowExtra, extraInfo } = createExtraInfoField();
+
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField("def-value");
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField("def-quantity");
+
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "def-image-small");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "def-image-big");
 
@@ -87,7 +93,9 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     colorDesc, colorValue, colorQty
   ];
   setTimeout(() => {
-    pickrTargets.forEach(el => createPickr(`#${el.id}`));
+    pickrTargets.forEach(el => {
+      createPickr(`#${el.id}`);
+    });
   }, 0);
 
   return {
