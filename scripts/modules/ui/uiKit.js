@@ -287,11 +287,6 @@ export function createExtraInfoBlock(options = {}) {
     });
   }
 
-  btnAdd.onclick = () => {
-    lines.push({ text: "", color: defaultColor });
-    render();
-  };
-
   function getLines() {
     return lines.map(l => ({
       text: l.text,
@@ -300,11 +295,15 @@ export function createExtraInfoBlock(options = {}) {
   }
 
   function setLines(newLines, isReadonly = false) {
+    console.log("[ExtraInfo] setLines input:", JSON.stringify(newLines, null, 2)); // 🔍 Logging
+
     lines = newLines.map(l => ({
       text: l.text || "",
       color: l.color || defaultColor
     }));
+
     render();
+
     if (isReadonly) btnAdd.style.display = "none";
   }
 
