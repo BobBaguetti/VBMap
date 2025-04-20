@@ -7,9 +7,10 @@ import {
     createTextareaFieldWithColor,
     createImageField,
     createVideoField,
-    createExtraInfoBlock,
-    createTopAlignedFieldRow
+    createExtraInfoBlock
   } from "../../ui/uiKit.js";
+  
+  import { createTopAlignedFieldRow } from "../../utils/formUtils.js"; 
   
   /**
    * Builds a basic name field with color.
