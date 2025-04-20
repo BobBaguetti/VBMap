@@ -1,17 +1,22 @@
-// @version: 6
+// @version: 8
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
-  createTextField,
-  createDropdownField,
-  createTextareaFieldWithColor,
   createImageField,
-  createExtraInfoBlock,
   createFormButtonRow
 } from "../../ui/uiKit.js";
 
 import { createPickr } from "../../ui/pickrManager.js";
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
+import {
+  createNameField,
+  createTypeField,
+  createRarityField,
+  createDescriptionField,
+  createExtraInfoBlock,
+  createValueField,
+  createQuantityField
+} from "../universalForm.js";
 
 export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const form = document.createElement("form");
@@ -22,33 +27,16 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   subheading.textContent = "Add / Edit Item";
   form.appendChild(subheading);
 
-  const { row: rowName, input: fldName, colorBtn: colorName } = createTextField("Name:", "def-name");
+  const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
+  const { row: rowType, select: fldType, colorBtn: colorType } = createTypeField("def-type");
+  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
+  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("def-description");
 
-  const { row: rowType, select: fldType, colorBtn: colorType } = createDropdownField("Item Type:", "def-type", [
-    { value: "Crafting Material", label: "Crafting Material" },
-    { value: "Special", label: "Special" },
-    { value: "Consumable", label: "Consumable" },
-    { value: "Quest", label: "Quest" }
-  ]);
-
-  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createDropdownField("Rarity:", "def-rarity", [
-    { value: "", label: "Select Rarity" },
-    { value: "common", label: "Common" },
-    { value: "uncommon", label: "Uncommon" },
-    { value: "rare", label: "Rare" },
-    { value: "epic", label: "Epic" },
-    { value: "legendary", label: "Legendary" }
-  ]);
-
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
-    createTextareaFieldWithColor("Description:", "def-description");
-
-  // ⬇️ Use extraInfo block and wrap with top-aligned field row
   const extraInfo = createExtraInfoBlock();
   const rowExtra = createTopAlignedFieldRow("Extra Info:", extraInfo.block);
 
-  const { row: rowValue, input: fldValue, colorBtn: colorValue } = createTextField("Value:", "def-value");
-  const { row: rowQty, input: fldQty, colorBtn: colorQty } = createTextField("Quantity:", "def-quantity");
+  const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField("def-value");
+  const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField("def-quantity");
 
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "def-image-small");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "def-image-big");
@@ -76,7 +64,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     fldType.value = def.itemType || "";
     fldRarity.value = def.rarity || "";
     fldDesc.value = def.description || "";
-    extraInfo.setLines(def.extraLines || [], false); // ✅ Correct usage
+    extraInfo.setLines(def.extraLines || [], false);
     fldValue.value = def.value || "";
     fldQty.value = def.quantity || "";
     fldImgS.value = def.imageSmall || "";
@@ -92,7 +80,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
       itemType: fldType.value,
       rarity: fldRarity.value,
       description: fldDesc.value.trim(),
-      extraLines: extraInfo.getLines(), // ✅ Correct usage
+      extraLines: extraInfo.getLines(),
       value: fldValue.value.trim(),
       quantity: fldQty.value.trim(),
       imageSmall: fldImgS.value.trim(),
