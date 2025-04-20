@@ -60,20 +60,35 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   function populate(def) {
     editingId = def.id || null;
     fldName.value = def.name || "";
+    fldName.style.color = def.nameColor || "#E5E6E8";
+
     fldType.value = def.itemType || "";
+    fldType.style.color = def.itemTypeColor || "#E5E6E8";
+
     fldRarity.value = def.rarity || "";
+    fldRarity.style.color = def.rarityColor || "#E5E6E8";
+
     fldDesc.value = def.description || "";
+    fldDesc.style.color = def.descriptionColor || "#E5E6E8";
+
     extraInfo.setLines(def.extraLines || [], false);
+
     fldValue.value = def.value || "";
+    fldValue.style.color = def.valueColor || "#E5E6E8";
+
     fldQty.value = def.quantity || "";
+    fldQty.style.color = def.quantityColor || "#E5E6E8";
+
     fldImgS.value = def.imageSmall || "";
     fldImgL.value = def.imageBig || "";
+
     subheading.textContent = editingId ? "Edit Item" : "Add / Edit Item";
   }
 
   form.addEventListener("submit", e => {
     e.preventDefault();
     const payload = {
+      id: editingId,
       name: fldName.value.trim(),
       nameColor: fldName.style.color || "#E5E6E8",
       itemType: fldType.value,
@@ -90,8 +105,6 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
       imageSmall: fldImgS.value.trim(),
       imageBig: fldImgL.value.trim()
     };
-
-    if (editingId) payload.id = String(editingId);
 
     onSubmit(payload);
   });
