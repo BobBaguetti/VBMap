@@ -127,3 +127,40 @@
 .modal.modal-large .ui-button:hover {
   background-color: #666;
 }
+
+.item-def-entry {
+  padding: 10px 12px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+}
+.item-def-entry:nth-child(even) {
+  background-color: #2a2a2a;
+}
+.item-def-entry:nth-child(odd) {
+  background-color: #1f1f1f;
+}
+.item-def-entry:hover {
+  background-color: #3a3a3a;
+}
+.item-def-entry .item-name {
+  font-weight: bold;
+  color: #eee;
+}
+.item-def-entry .item-subline {
+  font-size: 0.9em;
+  color: #ccc;
+}
+.item-def-entry .item-subline .rarity {
+  font-weight: bold;
+  margin-left: 4px;
+}
+.item-def-entry .item-description {
+  font-style: italic;
+  color: #aaa;
+  margin-top: 4px;
+}
+.rarity-common    { color: #b0b0b0; }
+.rarity-uncommon  { color: #5caf6b; }
+.rarity-rare      { color: #3399ff; }
+.rarity-epic      { color: #a470f1; }
+.rarity-legendary { color: #ffcc33; }

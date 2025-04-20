@@ -124,10 +124,16 @@ export function initItemDefinitionsModal(db) {
     list.forEach(def => {
       const entry = document.createElement("div");
       entry.className = "item-def-entry";
+  
+      const rarityClass = def.rarity ? `rarity-${def.rarity.toLowerCase()}` : "";
+  
       entry.innerHTML = `
-        <strong>${def.name}</strong>
-        <small>(${def.itemType || "—"}) – ${def.rarity || "—"}</small>
-        <em>${def.description || ""}</em>
+        <div class="item-name">${def.name}</div>
+        <div class="item-subline">
+          ${def.itemType || "Unknown"} —
+          <span class="rarity ${rarityClass}">${def.rarity || "Unknown"}</span>
+        </div>
+        <div class="item-description">${def.description || ""}</div>
       `;
       entry.addEventListener("click", () => formApi.populate(def));
       listContainer.appendChild(entry);

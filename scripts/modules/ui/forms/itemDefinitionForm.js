@@ -1,138 +1,148 @@
 // @version: 14
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
-import {
-  createImageField,
-  createFormButtonRow
-} from "../../ui/uiKit.js";
+import { createTextField, createDropdownField, createTextareaFieldWithColor, createImageField, createVideoField, createExtraInfoBlock } from "../../universalForm.js";
+import { createIcon } from "../../utils/iconUtils.js";
 
-import { createPickr } from "../../ui/pickrManager.js";
-
-import {
-  createNameField,
-  createItemTypeField,
-  createRarityField,
-  createDescriptionField,
-  createExtraInfoField,
-  createValueField,
-  createQuantityField
-} from "./universalForm.js";
-
-export function createItemDefinitionForm({ onCancel, onSubmit }) {
+export function createItemDefinitionForm({ onSubmit, onCancel }) {
   const form = document.createElement("form");
   form.id = "item-definition-form";
 
-  const subheading = document.createElement("h3");
-  subheading.id = "def-form-subheading";
-  subheading.textContent = "Add / Edit Item";
-  form.appendChild(subheading);
+  const heading = document.createElement("h3");
+  heading.id = "def-form-subheading";
+  heading.textContent = "Add Item";
 
-  const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
-  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");
-  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("def-description");
+  const buttonRow = document.createElement("div");
+  buttonRow.className = "field-row";
+  buttonRow.style.justifyContent = "flex-end";
 
-  const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true });
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "submit";
+  saveBtn.className = "ui-button";
+  saveBtn.textContent = "Save";
 
-  const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField("def-value");
-  const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField("def-quantity");
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.className = "ui-button";
+  cancelBtn.textContent = "Clear";
+  cancelBtn.addEventListener("click", () => {
+    if (editing) {
+      setEditing(null);
+      cancelBtn.textContent = "Clear";
+    }
+    reset();
+    onCancel?.();
+  });
 
-  const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "def-image-small");
-  const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "def-image-big");
+  buttonRow.append(saveBtn, cancelBtn);
 
-  const rowButtons = createFormButtonRow(onCancel);
+  const fields = {};
 
-  form.append(
-    rowName,
-    rowType,
-    rowRarity,
-    rowDesc,
-    rowExtra,
-    rowValue,
-    rowQty,
-    rowImgS,
-    rowImgL,
-    rowButtons
-  );
+  const { row: nameRow, input: nameInput, colorBtn: nameColor } = createTextField("Name", "def-name");
+  const { row: typeRow, select: typeSelect, colorBtn: typeColor } = createDropdownField("Item Type", "def-type", [
+    { label: "Crafting Material", value: "Crafting Material" },
+    { label: "Special", value: "Special" },
+    { label: "Consumable", value: "Consumable" },
+    { label: "Quest", value: "Quest" }
+  ]);
+  const { row: rarityRow, select: raritySelect, colorBtn: rarityColor } = createDropdownField("Rarity", "def-rarity", [
+    { label: "Common", value: "common" },
+    { label: "Uncommon", value: "uncommon" },
+    { label: "Rare", value: "rare" },
+    { label: "Epic", value: "epic" },
+    { label: "Legendary", value: "legendary" }
+  ]);
+  const { row: descRow, textarea: descArea, colorBtn: descColor } = createTextareaFieldWithColor("Description", "def-description");
+  const extra = createExtraInfoBlock();
 
-  let editingId = null;
-  const pickrs = new Map();
+  const imgRow = createImageField("Image S", "def-image-small");
+  const bigImgRow = createImageField("Image L", "def-image-big");
+
+  fields.nameInput = nameInput;
+  fields.nameColor = nameColor;
+  fields.typeSelect = typeSelect;
+  fields.typeColor = typeColor;
+  fields.raritySelect = raritySelect;
+  fields.rarityColor = rarityColor;
+  fields.descArea = descArea;
+  fields.descColor = descColor;
+  fields.extraBlock = extra;
+  fields.imageSmall = imgRow.input;
+  fields.imageBig = bigImgRow.input;
+
+  let editing = null;
+
+  function reset() {
+    form.reset();
+    Object.values(fields).forEach(field => {
+      if (field.setColor) field.setColor("#E5E6E8");
+    });
+    extra.setLines([]);
+    heading.textContent = "Add Item";
+    cancelBtn.textContent = "Clear";
+    editing = null;
+  }
 
   function populate(def) {
-    editingId = def.id || null;
-    const safe = (v, d = "") => v ?? d;
+    editing = def.id;
+    heading.textContent = "Edit Item";
+    cancelBtn.textContent = "Cancel Edit";
 
-    fldName.value = safe(def.name);
-    fldName.style.color = safe(def.nameColor, "#E5E6E8");
-    pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
+    fields.nameInput.value = def.name || "";
+    fields.nameColor._pickr.setColor(def.nameColor || "#E5E6E8");
 
-    fldType.value = safe(def.itemType);
-    fldType.style.color = safe(def.itemTypeColor, "#E5E6E8");
-    pickrs.get(colorType)?.setColor(def.itemTypeColor || "#E5E6E8");
+    fields.typeSelect.value = def.itemType || "";
+    fields.typeColor._pickr.setColor(def.itemTypeColor || "#E5E6E8");
 
-    fldRarity.value = safe(def.rarity);
-    fldRarity.style.color = safe(def.rarityColor, "#E5E6E8");
-    pickrs.get(colorRarity)?.setColor(def.rarityColor || "#E5E6E8");
+    fields.raritySelect.value = def.rarity || "";
+    fields.rarityColor._pickr.setColor(def.rarityColor || "#E5E6E8");
 
-    fldDesc.value = safe(def.description);
-    fldDesc.style.color = safe(def.descriptionColor, "#E5E6E8");
-    pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
+    fields.descArea.value = def.description || "";
+    fields.descColor._pickr.setColor(def.descriptionColor || "#E5E6E8");
 
-    extraInfo.setLines(safe(def.extraLines, []), false);
+    fields.extraBlock.setLines(def.extraLines || []);
 
-    fldValue.value = safe(def.value);
-    fldValue.style.color = safe(def.valueColor, "#E5E6E8");
-    pickrs.get(colorValue)?.setColor(def.valueColor || "#E5E6E8");
-
-    fldQty.value = safe(def.quantity);
-    fldQty.style.color = safe(def.quantityColor, "#E5E6E8");
-    pickrs.get(colorQty)?.setColor(def.quantityColor || "#E5E6E8");
-
-    fldImgS.value = safe(def.imageSmall);
-    fldImgL.value = safe(def.imageBig);
-
-    subheading.textContent = editingId ? "Edit Item" : "Add / Edit Item";
+    fields.imageSmall.value = def.imageSmall || "";
+    fields.imageBig.value = def.imageBig || "";
   }
+
+  function setEditing(id) {
+    editing = id;
+  }
+
+  form.append(heading, buttonRow, nameRow, typeRow, rarityRow, descRow);
+
+  const labelRow = document.createElement("div");
+  labelRow.className = "field-row";
+  const extraLabel = document.createElement("label");
+  extraLabel.textContent = "Extra Info:";
+  labelRow.appendChild(extraLabel);
+  form.append(labelRow, extra.block);
+
+  form.append(imgRow.row, bigImgRow.row);
 
   form.addEventListener("submit", e => {
     e.preventDefault();
-    const payload = {
-      id: editingId,
-      name: fldName.value.trim(),
-      nameColor: fldName.style.color || "#E5E6E8",
-      itemType: fldType.value,
-      itemTypeColor: fldType.style.color || "#E5E6E8",
-      rarity: fldRarity.value,
-      rarityColor: fldRarity.style.color || "#E5E6E8",
-      description: fldDesc.value.trim(),
-      descriptionColor: fldDesc.style.color || "#E5E6E8",
-      extraLines: extraInfo.getLines(),
-      value: fldValue.value.trim(),
-      valueColor: fldValue.style.color || "#E5E6E8",
-      quantity: fldQty.value.trim(),
-      quantityColor: fldQty.style.color || "#E5E6E8",
-      imageSmall: fldImgS.value.trim(),
-      imageBig: fldImgL.value.trim()
-    };
-
-    onSubmit(payload);
-  });
-
-  const pickrTargets = [
-    colorName, colorType, colorRarity,
-    colorDesc, colorValue, colorQty
-  ];
-
-  setTimeout(() => {
-    pickrTargets.forEach(el => {
-      const p = createPickr(`#${el.id}`);
-      pickrs.set(el, p);
+    onSubmit({
+      id: editing,
+      name: nameInput.value,
+      nameColor: nameColor._pickr.getColor().toHEXA().toString(),
+      itemType: typeSelect.value,
+      itemTypeColor: typeColor._pickr.getColor().toHEXA().toString(),
+      rarity: raritySelect.value,
+      rarityColor: rarityColor._pickr.getColor().toHEXA().toString(),
+      description: descArea.value,
+      descriptionColor: descColor._pickr.getColor().toHEXA().toString(),
+      extraLines: extra.getLines(),
+      imageSmall: fields.imageSmall.value,
+      imageBig: fields.imageBig.value
     });
-  }, 0);
+  });
 
   return {
     form,
+    reset,
     populate,
-    reset: () => populate({})
+    setEditing
   };
 }
