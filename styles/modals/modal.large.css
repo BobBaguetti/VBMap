@@ -19,7 +19,10 @@
 
 /* Core modal box */
 .modal.modal-large .modal-content {
-  position: relative;
+  position: fixed;
+  top: 60px; /* grow from a fixed top, not center */
+  left: 50%;
+  transform: translateX(-50%); /* center horizontally */
   width: 100%;
   max-width: 550px;
   max-height: 90vh;
@@ -28,7 +31,8 @@
   border-radius: 6px;
   padding: 16px;
   box-shadow: 0 0 10px #000;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
 }
