@@ -30,9 +30,16 @@
   box-shadow: 0 0 10px #000;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* prevent entire modal from jumping */
+  overflow-y: scroll;           /* Enables scrolling */
+  scrollbar-width: none;        /* Firefox: hides scrollbar */
+  -ms-overflow-style: none;     /* IE/Edge legacy: hides scrollbar */
 }
 
+/* Chrome, Safari */
+.modal.modal-large .modal-content::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;      /* Optional: no background */
+}
 
 /* Header section */
 .modal.modal-large .modal-header {
