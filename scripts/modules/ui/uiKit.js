@@ -8,15 +8,15 @@ import { createPickr } from "./pickrManager.js";
 function attachModalLifecycle(modal) {
   const previouslyFocused = document.activeElement;
   const scrollY = window.scrollY;
-  document.body.style.top = `-${scrollY}px`;
-  document.body.style.position = "fixed";
+  document.documentElement.style.overflow = "hidden"; // Prevent scroll
+
 
   function restoreFocusAndScroll() {
-    document.body.style.position = "";
-    document.body.style.top = "";
+    document.documentElement.style.overflow = ""; // Re-enable scroll
     window.scrollTo(0, scrollY);
     if (previouslyFocused?.focus) previouslyFocused.focus();
   }
+  
 
   modal.dataset.lifecycleAttached = "true";
   modal.addEventListener("close", restoreFocusAndScroll, { once: true });
