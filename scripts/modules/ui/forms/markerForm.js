@@ -1,14 +1,16 @@
-// markerForm.js
 import {
     createNameField,
     createRarityField,
     createItemTypeField,
     createDescriptionField,
-    createExtraInfoField,
-    createVideoField
+    createExtraInfoField
   } from "./universalForm.js";
   
-  import { createImageField } from "../../ui/uiKit.js";
+  import {
+    createImageField,
+    createVideoField
+  } from "../../ui/uiKit.js";
+  
   
   export function createMarkerForm() {
     const form = document.createElement("form");
