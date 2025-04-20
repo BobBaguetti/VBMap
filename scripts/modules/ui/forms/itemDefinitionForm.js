@@ -1,4 +1,4 @@
-// @version: 10
+// @version: 11
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -10,7 +10,7 @@ import { createPickr } from "../../ui/pickrManager.js";
 
 import {
   createNameField,
-  createItemTypeField,  // ✅ correct usage here
+  createItemTypeField,
   createRarityField,
   createDescriptionField,
   createExtraInfoField,
@@ -28,11 +28,11 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   form.appendChild(subheading);
 
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
-  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");  // ✅ fixed
+  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("def-description");
 
-  const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true })
+  const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true });
 
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField("def-value");
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField("def-quantity");
@@ -74,7 +74,6 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   form.addEventListener("submit", e => {
     e.preventDefault();
     const payload = {
-      id: editingId,
       name: fldName.value.trim(),
       nameColor: fldName.style.color || "#E5E6E8",
       itemType: fldType.value,
@@ -91,7 +90,9 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
       imageSmall: fldImgS.value.trim(),
       imageBig: fldImgL.value.trim()
     };
-    
+
+    if (editingId) payload.id = String(editingId);
+
     onSubmit(payload);
   });
 
