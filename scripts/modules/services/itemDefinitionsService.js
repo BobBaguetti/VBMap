@@ -43,12 +43,17 @@ export async function saveItemDefinition(db, id, data) {
 }
 
 export async function updateItemDefinition(db, id, data) {
-  // merge update: only provided keys are written, others untouched
+  if (typeof id !== "string") {
+    throw new Error("Invalid ID passed to updateItemDefinition");
+  }
+
   await getItemDefinitionsCollection(db)
     .doc(id)
     .set(data, { merge: true });
+
   return { id, ...data };
 }
+
 
 export async function deleteItemDefinition(db, id) {
   await getItemDefinitionsCollection(db).doc(id).delete();

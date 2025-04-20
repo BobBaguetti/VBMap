@@ -87,7 +87,7 @@ export function initItemDefinitionsModal(db) {
     onCancel: () => closeModal(modal),
     onSubmit: async (payload) => {
       if (payload.id) {
-        await updateItemDefinition(db, payload);
+        await updateItemDefinition(db, String(payload.id), payload);
       } else {
         await saveItemDefinition(db, null, payload);
       }
