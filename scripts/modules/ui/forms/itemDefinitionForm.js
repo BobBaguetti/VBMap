@@ -6,13 +6,14 @@ import {
 import { createPickr } from "../../ui/pickrManager.js";
 import {
   createNameField,
-  createItemTypeField,
+  createTypeField,
   createRarityField,
   createDescriptionField,
-  createExtraInfoField,
+  createExtraInfoBlock,
   createValueField,
   createQuantityField
-} from "../universalForm.js";
+} from "./universalForm.js";
+
 
 export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const form = document.createElement("form");
