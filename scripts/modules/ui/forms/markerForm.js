@@ -122,21 +122,22 @@ import {
     }
   
     return {
-      form,
-      fields: {
-        fldName, colorName,
-        fldRarity, colorRarity,
-        fldItemType, colorItemType,
-        fldDesc, colorDesc,
-        extraInfo,
-        fldImgS,
-        fldImgL,
-        fldVid
-      },
-      setFromDefinition,
-      setFromNonItem,
-      getCustom,
-      getNonItem
-    };
+        form,
+        fields: {
+          fldName, colorName,
+          fldRarity, colorRarity,
+          fldItemType, colorItemType,
+          fldDesc, colorDesc,
+          extraInfo,
+          extraRow: rowExtra, // ✅ expose the labeled row properly
+          fldImgS,
+          fldImgL,
+          fldVid
+        },
+        setFromDefinition,
+        setFromNonItem,
+        getCustom,
+        getNonItem
+      };
   }
   
