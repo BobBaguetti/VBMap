@@ -1,4 +1,4 @@
-// @version: 23
+// @version: 24
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -8,15 +8,13 @@ import { createPickr } from "./pickrManager.js";
 function attachModalLifecycle(modal) {
   const previouslyFocused = document.activeElement;
   const scrollY = window.scrollY;
-  document.documentElement.style.overflow = "hidden"; // Prevent scroll
-
+  document.documentElement.style.overflow = "hidden";
 
   function restoreFocusAndScroll() {
-    document.documentElement.style.overflow = ""; // Re-enable scroll
+    document.documentElement.style.overflow = "";
     window.scrollTo(0, scrollY);
     if (previouslyFocused?.focus) previouslyFocused.focus();
   }
-  
 
   modal.dataset.lifecycleAttached = "true";
   modal.addEventListener("close", restoreFocusAndScroll, { once: true });
@@ -34,28 +32,30 @@ export function createModal({
   const modal = document.createElement("div");
   modal.classList.add("modal", `modal-${size}`);
   modal.id = id;
-
-  // ✅ Set background based on backdrop setting right away
   modal.style.backgroundColor = backdrop ? "rgba(0, 0, 0, 0.5)" : "transparent";
 
   const content = document.createElement("div");
   content.classList.add("modal-content");
 
   if (size === "large") {
-    content.style.position = "fixed";
-    content.style.top = "50%";
-    content.style.left = "50%";
-    content.style.transform = "translate(-50%, -50%)";
-    content.style.maxWidth = "550px";
-    content.style.maxHeight = "90vh";
-    content.style.overflow = "hidden";
-    content.style.display = "flex";
-    content.style.flexDirection = "column";
+    Object.assign(content.style, {
+      position: "fixed",
+      top: "50%",
+      left: "50%",
+      transform: "translate(-50%, -50%)",
+      maxWidth: "550px",
+      maxHeight: "90vh",
+      overflow: "hidden",
+      display: "flex",
+      flexDirection: "column"
+    });
   } else {
-    content.style.position = "absolute";
-    content.style.transform = "none";
-    content.style.width = "350px";
-    content.style.maxWidth = "350px";
+    Object.assign(content.style, {
+      position: "absolute",
+      transform: "none",
+      width: "350px",
+      maxWidth: "350px"
+    });
   }
 
   const header = document.createElement("div");
@@ -121,14 +121,10 @@ export function closeModal(modal) {
 
 export function openModal(modal) {
   modal.style.display = "block";
-
-  // ✅ Ensure background is correctly applied after DOM paint
   requestAnimationFrame(() => {
-    if (modal.classList.contains("modal-large")) {
-      modal.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
-    } else {
-      modal.style.backgroundColor = "transparent";
-    }
+    modal.style.backgroundColor = modal.classList.contains("modal-large")
+      ? "rgba(0, 0, 0, 0.5)"
+      : "transparent";
   });
 
   if (!modal.dataset.lifecycleAttached) {
@@ -244,9 +240,9 @@ export function createExtraInfoBlock(options = {}) {
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
   btnAdd.textContent = "+";
-  btnAdd.classList.add("ui-button");  
+  btnAdd.classList.add("ui-button");
 
-  wrap.append(lineWrap, btnAdd); // ⬅️ Button goes after rows now
+  wrap.append(lineWrap, btnAdd);
 
   let lines = [];
 
@@ -284,6 +280,9 @@ export function createExtraInfoBlock(options = {}) {
 
       const pickr = createPickr(`#${color.id}`);
       pickr.setColor(line.color || defaultColor);
+      pickr.on("change", (colorObj) => {
+        lines[i].color = colorObj.toHEXA().toString();
+      });
       line._pickr = pickr;
     });
   }
@@ -301,11 +300,13 @@ export function createExtraInfoBlock(options = {}) {
   }
 
   function setLines(newLines, isReadonly = false) {
-    lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
+    lines = newLines.map(l => ({
+      text: l.text || "",
+      color: l.color || defaultColor
+    }));
     render();
     if (isReadonly) btnAdd.style.display = "none";
   }
 
   return { block: wrap, getLines, setLines };
 }
-
