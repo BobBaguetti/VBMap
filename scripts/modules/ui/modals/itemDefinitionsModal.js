@@ -160,8 +160,7 @@ export function initItemDefinitionsModal(db) {
 
   return {
     open: async () => {
-      editingId = null;
-      clearForm();
+      formApi.reset();
       await refreshDefinitions();
       openModal(modal);
     },
