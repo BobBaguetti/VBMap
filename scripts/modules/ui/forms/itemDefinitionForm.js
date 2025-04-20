@@ -1,4 +1,4 @@
-// @version: 11
+// @version: 12
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -56,31 +56,40 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   );
 
   let editingId = null;
+  const pickrs = new Map();
 
   function populate(def) {
     editingId = def.id || null;
-    fldName.value = def.name || "";
-    fldName.style.color = def.nameColor || "#E5E6E8";
+    const safe = (v, d = "") => v ?? d;
 
-    fldType.value = def.itemType || "";
-    fldType.style.color = def.itemTypeColor || "#E5E6E8";
+    fldName.value = safe(def.name);
+    fldName.style.color = safe(def.nameColor, "#E5E6E8");
+    pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
 
-    fldRarity.value = def.rarity || "";
-    fldRarity.style.color = def.rarityColor || "#E5E6E8";
+    fldType.value = safe(def.itemType);
+    fldType.style.color = safe(def.itemTypeColor, "#E5E6E8");
+    pickrs.get(colorType)?.setColor(def.itemTypeColor || "#E5E6E8");
 
-    fldDesc.value = def.description || "";
-    fldDesc.style.color = def.descriptionColor || "#E5E6E8";
+    fldRarity.value = safe(def.rarity);
+    fldRarity.style.color = safe(def.rarityColor, "#E5E6E8");
+    pickrs.get(colorRarity)?.setColor(def.rarityColor || "#E5E6E8");
 
-    extraInfo.setLines(def.extraLines || [], false);
+    fldDesc.value = safe(def.description);
+    fldDesc.style.color = safe(def.descriptionColor, "#E5E6E8");
+    pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
 
-    fldValue.value = def.value || "";
-    fldValue.style.color = def.valueColor || "#E5E6E8";
+    extraInfo.setLines(safe(def.extraLines, []), false);
 
-    fldQty.value = def.quantity || "";
-    fldQty.style.color = def.quantityColor || "#E5E6E8";
+    fldValue.value = safe(def.value);
+    fldValue.style.color = safe(def.valueColor, "#E5E6E8");
+    pickrs.get(colorValue)?.setColor(def.valueColor || "#E5E6E8");
 
-    fldImgS.value = def.imageSmall || "";
-    fldImgL.value = def.imageBig || "";
+    fldQty.value = safe(def.quantity);
+    fldQty.style.color = safe(def.quantityColor, "#E5E6E8");
+    pickrs.get(colorQty)?.setColor(def.quantityColor || "#E5E6E8");
+
+    fldImgS.value = safe(def.imageSmall);
+    fldImgL.value = safe(def.imageBig);
 
     subheading.textContent = editingId ? "Edit Item" : "Add / Edit Item";
   }
@@ -113,9 +122,11 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     colorName, colorType, colorRarity,
     colorDesc, colorValue, colorQty
   ];
+
   setTimeout(() => {
     pickrTargets.forEach(el => {
-      createPickr(`#${el.id}`);
+      const p = createPickr(`#${el.id}`);
+      pickrs.set(el, p);
     });
   }, 0);
 
