@@ -1,4 +1,4 @@
-// @version: 4
+// @version: 5
 // @file: /scripts/modules/ui/forms/markerForm.js
 
 import {
@@ -29,7 +29,7 @@ import {
     const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
     const { row: rowVid, input: fldVid } = createVideoField("Video:", "fld-vid");
   
-    // Re-apply visual spacing class to item-only rows
+    // Apply item-specific spacing class
     rowRarity.classList.add("item-gap");
     rowItemType.classList.add("item-gap");
     rowDesc.classList.add("item-gap");
@@ -52,9 +52,7 @@ import {
       });
     }, 0);
   
-    function setFromDefinition(def) {
-      def = def || {}; // Fallback for null
-  
+    function setFromDefinition(def = {}) {
       fldName.value = def.name || "";
       fldName.style.color = def.nameColor || "#E5E6E8";
   
