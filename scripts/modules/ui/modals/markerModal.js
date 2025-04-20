@@ -1,4 +1,4 @@
-// @version: 7
+// @version: 8
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
@@ -36,7 +36,6 @@ export function initMarkerModal(db) {
   const formApi = createMarkerForm();
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // Item-only fields
   const blockItem = document.createElement("div");
   blockItem.classList.add("item-gap");
   blockItem.append(
@@ -45,16 +44,12 @@ export function initMarkerModal(db) {
     formApi.fields.fldDesc.closest(".field-row")
   );
 
-  // Always shown
-  const blockExtra = document.createElement("div");
-  blockExtra.append(formApi.fields.extraRow);
-
   form.append(
     formApi.fields.fldName.closest(".field-row"),
     rowType,
     rowPredef,
     blockItem,
-    formApi.fields.extraRow, // includes the label, block, and <hr> dividers if enabled
+    formApi.fields.extraRow,
     formApi.fields.fldImgS.closest(".field-row"),
     formApi.fields.fldImgL.closest(".field-row"),
     formApi.fields.fldVid.closest(".field-row"),
@@ -85,6 +80,19 @@ export function initMarkerModal(db) {
       ddPredef.appendChild(o);
     });
   }
+
+  // ✅ NEW: respond to dropdown change
+  ddPredef.onchange = () => {
+    const selectedId = ddPredef.value;
+    const def = defs[selectedId];
+    if (selectedId && def) {
+      formApi.setFromDefinition(def);
+      customMode = false;
+    } else {
+      formApi.setFromDefinition(null);
+      customMode = true;
+    }
+  };
 
   function openEdit(markerObj, data, evt, onSave) {
     populate(data);
