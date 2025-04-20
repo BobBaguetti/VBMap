@@ -119,10 +119,10 @@
 
 .extra-info-block > button {
   align-self: flex-start;
-  margin-top: 0;          /* ← No top gap */
-  margin-left: 0;         /* ← Let flex take over, not fixed width */
+  margin-top: 0;
+  margin-left: 108px; /* ← Match label + spacing */
   padding: 6px 8px;
-  height: 32px;           /* ← Match input height */
+  height: 32px;
   line-height: 1;
 }
 
