@@ -1,4 +1,4 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/forms/markerForm.js
 
 import {
@@ -39,6 +39,27 @@ import {
     );
   
     function setFromDefinition(def) {
+      if (!def) {
+        fldName.value = "";
+        fldName.style.color = "#E5E6E8";
+  
+        fldRarity.value = "";
+        fldRarity.style.color = "#E5E6E8";
+  
+        fldItemType.value = "";
+        fldItemType.style.color = "#E5E6E8";
+  
+        fldDesc.value = "";
+        fldDesc.style.color = "#E5E6E8";
+  
+        extraInfo.setLines([], true);
+  
+        fldImgS.value = "";
+        fldImgL.value = "";
+        fldVid.value = "";
+        return;
+      }
+  
       fldName.value = def.name || "";
       fldName.style.color = def.nameColor || "#E5E6E8";
   
