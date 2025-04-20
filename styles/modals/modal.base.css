@@ -102,14 +102,15 @@
 /* 8) Extra-row layout tweaks */
 .modal-content .field-row.extra-row {
   align-items: flex-start;
+  gap: 0; /* Ensure no gap pushes things off */
 }
 
-/* Align label with + button (adjusted from 12px to 6px) */
+/* Align label with + button */
 .modal-content .field-row.extra-row > label {
-  margin-top: 6px;
+  margin-top: 8px; /* Matches input vertical center */
 }
 
-/* Ensure + button stacks and aligns with other inputs */
+/* Ensure + button stacks and aligns like input fields */
 .extra-info-block {
   flex: 1;
   display: flex;
@@ -118,9 +119,11 @@
 
 .extra-info-block > button {
   align-self: flex-start;
-  margin-top: 6px;
-  margin-left: 100px; /* aligns with input start (same as label width) */
-  padding: 6px 12px;
+  margin-top: 0;          /* ← No top gap */
+  margin-left: 0;         /* ← Let flex take over, not fixed width */
+  padding: 6px 8px;
+  height: 32px;           /* ← Match input height */
+  line-height: 1;
 }
 
 
