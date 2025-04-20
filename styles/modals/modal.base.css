@@ -152,3 +152,17 @@
   color: #aaa;
   margin-top: 2px;
 }
+
+/* Sidebar visibility toggle row */
+.sidebar-toggle-row {
+  display: flex;
+  align-items: center;
+  margin: 8px 0;
+  gap: 8px;
+  font-size: 13px;
+  color: #ccc;
+}
+.sidebar-toggle-row input[type="checkbox"] {
+  transform: scale(1.1);
+  cursor: pointer;
+}

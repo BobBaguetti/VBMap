@@ -36,7 +36,8 @@ export function createIcon(name, options = {}) {
       "M12 8v8",
       "M9 10h6",
       "M9 14h6"
-    ],
+    ]
+  };
     // more icons will go here...
   };
   

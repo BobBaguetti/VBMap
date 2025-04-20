@@ -221,3 +221,30 @@
   transform: scale(1.2);
   margin-left: 6px;
 }
+
+.item-def-entry .item-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  color: #ccc;
+}
+
+.item-def-entry .item-value-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+}
+
+.item-def-entry .item-value {
+  color: #ffcc33;
+  font-weight: bold;
+}
+
+.gold-icon {
+  width: 16px;
+  height: 16px;
+  stroke: #ffcc33;
+  stroke-width: 2;
+}
