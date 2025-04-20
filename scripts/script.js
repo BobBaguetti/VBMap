@@ -1,5 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
+// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
 // @file:    /scripts/script.js
 
 import { initializeMap } from "./modules/map/map.js";
@@ -47,61 +47,63 @@ const layers = {
 Object.values(layers).forEach(layerGroup => layerGroup.addTo(map));
 
 /* ------------------------------------------------------------------ *
- *  Sidebar Setup (await the promise to get API)
+ *  Sidebar Setup
  * ------------------------------------------------------------------ */
 const allMarkers = [];
 const { filterMarkers, loadItemFilters } = await setupSidebar(map, layers, allMarkers, db);
 
 /* ------------------------------------------------------------------ *
- *  Marker Form Module Initialization
+ *  Marker Form
  * ------------------------------------------------------------------ */
 const markerForm = initMarkerForm(db);
 
 /* ------------------------------------------------------------------ *
- *  Item Definitions Modal Initialization
+ *  Modals
  * ------------------------------------------------------------------ */
 const itemModal = initItemDefinitionsModal(db);
-document
-  .getElementById("manage-item-definitions")
-  .addEventListener("click", () => itemModal.open());
+document.getElementById("manage-item-definitions").addEventListener("click", () => itemModal.open());
 
-/* ------------------------------------------------------------------ *
- *  Quest Definitions Modal Initialization
- * ------------------------------------------------------------------ */
 const questModal = initQuestDefinitionsModal(db);
-document
-  .getElementById("manage-quest-definitions")
-  .addEventListener("click", () => questModal.open());
+document.getElementById("manage-quest-definitions").addEventListener("click", () => questModal.open());
 
 /* ------------------------------------------------------------------ *
- *  Subscribe to Item Definition Changes to Refresh Everything
+ *  Subscriptions for Item Definition Changes
  * ------------------------------------------------------------------ */
 subscribeItemDefinitions(db, async () => {
   await markerForm.refreshPredefinedItems();
 
-  // refresh existing markers with updated item data
   const { loadItemDefinitions } = await import("./modules/services/itemDefinitionsService.js");
   const defsList = await loadItemDefinitions(db);
   const defMap = Object.fromEntries(defsList.map(d => [d.id, d]));
+
   allMarkers.forEach(({ markerObj, data }) => {
     if (!data.predefinedItemId) return;
     const def = defMap[data.predefinedItemId];
     if (!def) return;
+
     Object.assign(data, {
       name:             def.name,
       nameColor:        def.nameColor    || "#E5E6E8",
       rarity:           def.rarity,
-      rarityColor:      def.rarityColor || "#E5E6E8",
-      itemType:         def.itemType,
-      itemTypeColor:    def.itemTypeColor|| "#E5E6E8",
+      rarityColor:      def.rarityColor  || "#E5E6E8",
       description:      def.description,
       descriptionColor: def.descriptionColor || "#E5E6E8",
       extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
       imageSmall:       def.imageSmall,
       imageBig:         def.imageBig,
-      value:            def.value,
-      quantity:         def.quantity
+      value:            def.value ?? null,
+      quantity:         def.quantity ?? null
     });
+
+    // Add only if itemType is defined
+    if (def.itemType) {
+      data.itemType = def.itemType;
+      data.itemTypeColor = def.itemTypeColor || "#E5E6E8";
+    } else {
+      delete data.itemType;
+      delete data.itemTypeColor;
+    }
+
     markerObj.setPopupContent(createPopupContent(data));
     firebaseUpdateMarker(db, data);
   });
@@ -111,7 +113,7 @@ subscribeItemDefinitions(db, async () => {
 });
 
 /* ------------------------------------------------------------------ *
- *  Helper: Add & Persist New Marker
+ *  Add & Persist Marker
  * ------------------------------------------------------------------ */
 function addAndPersist(data) {
   const markerObj = addMarker(data, callbacks);
@@ -120,12 +122,12 @@ function addAndPersist(data) {
 }
 
 /* ------------------------------------------------------------------ *
- *  Copy‑Paste Manager Initialization
+ *  Copy‑Paste Manager
  * ------------------------------------------------------------------ */
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 /* ------------------------------------------------------------------ *
- *  Marker Creation & Callbacks
+ *  Marker Management
  * ------------------------------------------------------------------ */
 function addMarker(data, cbs = {}) {
   const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
@@ -151,7 +153,7 @@ const callbacks = {
 };
 
 /* ------------------------------------------------------------------ *
- *  Initial Marker Load from Firestore
+ *  Load Markers from Firestore
  * ------------------------------------------------------------------ */
 (async () => {
   const markers = await loadMarkers(db);
@@ -180,8 +182,8 @@ map.on("contextmenu", evt => {
   }]);
 });
 
-// Hide context menu when clicking anywhere else
-document.addEventListener("click", (e) => {
+// Hide context menu on click outside
+document.addEventListener("click", e => {
   const contextMenu = document.getElementById("context-menu");
   if (contextMenu && contextMenu.style.display === "block") {
     if (!contextMenu.contains(e.target)) {
