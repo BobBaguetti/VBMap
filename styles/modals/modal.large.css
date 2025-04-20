@@ -1,4 +1,4 @@
-/* @version: 8 */
+/* @version: 9 */
 /* @file: /styles/modals/modal.large.css */
 
 .modal.modal-large {
@@ -15,7 +15,6 @@
   pointer-events: auto;
 }
 
-/* Core modal box */
 .modal.modal-large .modal-content {
   position: relative;
   width: 100%;
@@ -28,10 +27,9 @@
   box-shadow: 0 0 10px #000;
   display: flex;
   flex-direction: column;
-  overflow: hidden; /* 👈 Important: prevent modal from scrolling */
+  overflow: hidden; /* prevents modal from growing */
 }
 
-/* Header section */
 .modal.modal-large .modal-header {
   display: flex;
   justify-content: space-between;
@@ -61,18 +59,38 @@
 .modal.modal-large .def-list {
   flex: 0 0 240px;
   overflow-y: auto;
-  margin-bottom: 12px;
   padding-right: 4px;
+  min-height: 0;
+  max-height: 240px;
 }
 
-/* Form section */
+/* Scrollable form area */
 .modal.modal-large form {
   flex: 1 1 auto;
   overflow-y: auto;
   min-height: 0;
+  padding-right: 4px;
+  max-height: 100%;
+  /* IMPORTANT: floating scrollbars */
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+.modal.modal-large form.scrolling {
+  scrollbar-color: #555 transparent;
+}
+.modal.modal-large form::-webkit-scrollbar {
+  width: 8px;
+  background: transparent;
+}
+.modal.modal-large form::-webkit-scrollbar-thumb {
+  background-color: transparent;
+  border-radius: 4px;
+  transition: background-color 0.3s;
+}
+.modal.modal-large form.scrolling::-webkit-scrollbar-thumb {
+  background-color: #555;
 }
 
-/* Field rows */
 .modal.modal-large .field-row {
   display: flex;
   align-items: center;
@@ -87,7 +105,6 @@
   flex-shrink: 0;
 }
 
-/* Inputs, selects, textareas */
 .modal.modal-large .field-row input,
 .modal.modal-large .field-row textarea,
 .modal.modal-large .field-row select {
@@ -104,7 +121,6 @@
   resize: vertical;
 }
 
-/* Color pickr button */
 .modal.modal-large .field-row .color-btn {
   width: 24px;
   height: 24px;
@@ -114,7 +130,6 @@
   border-radius: 2px;
 }
 
-/* Button styling */
 .modal.modal-large .ui-button {
   background-color: #444;
   color: white;

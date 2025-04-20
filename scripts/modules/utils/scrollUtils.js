@@ -7,7 +7,7 @@
  */
 export function activateFloatingScrollbars() {
     document.addEventListener("DOMContentLoaded", () => {
-      document.querySelectorAll(".ui-scroll-float").forEach(el => {
+      document.querySelectorAll(".ui-scroll-float, form").forEach(el => {
         let timeout;
         el.addEventListener("scroll", () => {
           el.classList.add("scrolling");
