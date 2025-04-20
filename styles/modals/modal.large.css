@@ -1,5 +1,4 @@
-/* @fullfile: Send the entire file, no omissions or abridgments. */
-/* @version: 4 */
+/* @version: 5 */
 /* @file: /styles/modals/modal.large.css */
 
 .modal.modal-large {
@@ -17,15 +16,21 @@
 
 /* Core modal content container */
 .modal.modal-large .modal-content {
-  background-color: #222222;
-  border-radius: 8px;
-  padding: 16px;
-  width: 800px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 550px;
   max-height: 90vh;
+  background-color: #222222;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 16px;
+  box-shadow: 0 0 10px #000;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 0 10px #000;
-  overflow: visible;
 }
 
 /* Modal header */
@@ -57,11 +62,12 @@
 
 /* Scrollable list container */
 .modal.modal-large .def-list {
-  flex: 0 1 300px;
+  flex: 0 1 240px;
   overflow-y: auto;
-  border: 1px solid #444;
-  padding: 8px;
+  padding-right: 4px;
   margin-bottom: 12px;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #2a2a2a;
 }
 
 .modal.modal-large .def-list::-webkit-scrollbar {
@@ -87,9 +93,10 @@
 }
 
 .modal.modal-large .field-row label {
-  width: 120px;
+  width: 100px;
   font-weight: bold;
   color: #ccc;
+  flex-shrink: 0;
 }
 
 /* Input/Select/Textarea styling */
@@ -97,11 +104,12 @@
 .modal.modal-large .field-row textarea,
 .modal.modal-large .field-row select {
   flex: 1;
-  background-color: #111;
+  background-color: #2a2a2a;
   color: #eee;
   border: 1px solid #555;
-  padding: 6px;
-  border-radius: 4px;
+  padding: 6px 8px;
+  border-radius: 3px;
+  font-size: 14px;
 }
 
 .modal.modal-large .field-row textarea {
@@ -115,6 +123,7 @@
   background-color: #e5e6e8;
   border: 1px solid #555;
   cursor: pointer;
+  border-radius: 2px;
 }
 
 /* Buttons */
@@ -129,10 +138,4 @@
 }
 .modal.modal-large .ui-button:hover {
   background-color: #666;
-}
-
-/* Ensure modal content stretches with added fields */
-.modal.modal-large .modal-content {
-  display: flex;
-  flex-direction: column;
 }
