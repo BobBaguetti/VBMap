@@ -43,9 +43,9 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
     createTextareaFieldWithColor("Description:", "def-description");
 
-  // ✅ Proper extra info layout and logic
-  const { block: extraBlock, getLines, setLines } = createExtraInfoBlock();
-  const rowExtra = createTopAlignedFieldRow("Extra Info:", extraBlock);
+  // ⬇️ Use extraInfo block and wrap with top-aligned field row
+  const extraInfo = createExtraInfoBlock();
+  const rowExtra = createTopAlignedFieldRow("Extra Info:", extraInfo.block);
 
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createTextField("Value:", "def-value");
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createTextField("Quantity:", "def-quantity");
@@ -76,7 +76,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     fldType.value = def.itemType || "";
     fldRarity.value = def.rarity || "";
     fldDesc.value = def.description || "";
-    setLines(def.extraLines || [], false);
+    extraInfo.setLines(def.extraLines || [], false); // ✅ Correct usage
     fldValue.value = def.value || "";
     fldQty.value = def.quantity || "";
     fldImgS.value = def.imageSmall || "";
@@ -92,7 +92,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
       itemType: fldType.value,
       rarity: fldRarity.value,
       description: fldDesc.value.trim(),
-      extraLines: getLines(),
+      extraLines: extraInfo.getLines(), // ✅ Correct usage
       value: fldValue.value.trim(),
       quantity: fldQty.value.trim(),
       imageSmall: fldImgS.value.trim(),
