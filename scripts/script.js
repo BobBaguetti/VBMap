@@ -18,7 +18,8 @@ import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
 import { setupSidebar } from "./modules/sidebar/sidebarManager.js";
 import { subscribeItemDefinitions } from "./modules/services/itemDefinitionsService.js";
 import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
-import { activateFloatingScrollbars } from "./modules/ui/uiKit.js"; // ✅ Scrollbar utility
+import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js"; 
+
 
 /* ------------------------------------------------------------------ *
  *  Firebase Initialization
