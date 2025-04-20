@@ -1,4 +1,4 @@
-/* styles/modals/modal.base.css – base styles for all modals (v12) */
+/* styles/modals/modal.base.css – base styles for all modals (v13) */
 
 /* 1) Global box-sizing */
 *,
@@ -103,26 +103,14 @@
 .modal-content .field-row.extra-row {
   align-items: flex-start;
 }
-
-/* Remove manual vertical offsets — row utility handles alignment now */
 .modal-content .field-row.extra-row > label {
   margin-top: 0;
 }
-
-/* Ensure + button lines up and grows down as needed */
 .extra-info-block {
   flex: 1;
   display: flex;
   flex-direction: column;
 }
-
-.extra-info-block > button {
-  align-self: flex-start;
-  margin-left: 0;
-  margin-top: 0;
-  padding: 6px 12px;
-}
-
 .extra-info-block > button {
   align-self: flex-start;
   margin-left: 0;
@@ -140,4 +128,27 @@
 /* 10) Extra bottom space for item-specific group */
 .modal-content .item-gap {
   margin-bottom: 8px !important;
+}
+
+/* 11) Zebra-striped entry styling for item definition list */
+.item-def-entry {
+  padding: 6px 10px;
+  border-bottom: 1px solid #333;
+  cursor: pointer;
+}
+.item-def-entry:nth-child(even) {
+  background-color: #2a2a2a;
+}
+.item-def-entry strong {
+  color: #fff;
+}
+.item-def-entry small {
+  font-size: 0.85em;
+  color: #ccc;
+}
+.item-def-entry em {
+  display: block;
+  font-style: italic;
+  color: #aaa;
+  margin-top: 2px;
 }

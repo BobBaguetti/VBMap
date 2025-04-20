@@ -125,8 +125,9 @@ export function initItemDefinitionsModal(db) {
       const entry = document.createElement("div");
       entry.className = "item-def-entry";
       entry.innerHTML = `
-        <strong>${def.name}</strong> (${def.rarity})<br/>
-        Type: ${def.itemType} • Qty: ${def.quantity || "—"} • Value: ${def.value || "—"}
+        <strong>${def.name}</strong>
+        <small>(${def.itemType || "—"}) – ${def.rarity || "—"}</small>
+        <em>${def.description || ""}</em>
       `;
       entry.addEventListener("click", () => formApi.populate(def));
       listContainer.appendChild(entry);
