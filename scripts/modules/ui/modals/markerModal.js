@@ -46,7 +46,9 @@ export function initMarkerModal(db) {
   );
 
   // Always shown
+  const hrAboveExtra = document.createElement("hr");
   const blockExtra = document.createElement("div");
+  const hrBelowExtra = document.createElement("hr");
   blockExtra.append(formApi.fields.extraRow);
 
   form.append(
@@ -54,7 +56,9 @@ export function initMarkerModal(db) {
     rowType,
     rowPredef,
     blockItem,
+    hrAboveExtra,
     blockExtra,
+    hrBelowExtra,
     formApi.fields.fldImgS.closest(".field-row"),
     formApi.fields.fldImgL.closest(".field-row"),
     formApi.fields.fldVid.closest(".field-row"),
