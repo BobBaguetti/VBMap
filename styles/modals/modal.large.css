@@ -1,138 +1,36 @@
-/* @fullfile: Send the entire file, no omissions or abridgments. */
-/* @version: 4 */
+/* @version: 3 */
 /* @file: /styles/modals/modal.large.css */
 
-.modal.modal-large {
-  display: none;
-  position: fixed;
-  z-index: 1001;
-  left: 0;
-  top: 0;
+.modal-large .modal-content {
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
   width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.75);
-  justify-content: center;
-  align-items: center;
-}
-
-/* Core modal content container */
-.modal.modal-large .modal-content {
-  background-color: #222222;
-  border-radius: 8px;
-  padding: 16px;
-  width: 800px;
+  max-width: 550px;
   max-height: 90vh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  box-shadow: 0 0 10px #000;
-  overflow: visible;
-}
-
-/* Modal header */
-.modal.modal-large .modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.modal.modal-large .modal-header h2 {
-  margin: 0;
-  font-size: 20px;
-  color: #fff;
-}
-
-.modal.modal-large .modal-header .close {
-  font-size: 24px;
-  cursor: pointer;
-  color: #fff;
-}
-
-/* Divider */
-.modal.modal-large hr {
-  margin: 8px 0;
-  border: 0;
-  border-top: 1px solid #444;
-}
-
-/* Scrollable list container */
-.modal.modal-large .def-list {
-  flex: 0 1 300px;
-  overflow-y: auto;
-  border: 1px solid #444;
-  padding: 8px;
-  margin-bottom: 12px;
-}
-
-.modal.modal-large .def-list::-webkit-scrollbar {
-  width: 6px;
-}
-.modal.modal-large .def-list::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 4px;
-}
-
-/* Form layout */
-.modal.modal-large form {
-  flex-shrink: 0;
-  overflow: visible;
-}
-
-/* Field rows */
-.modal.modal-large .field-row {
-  display: flex;
-  align-items: center;
-  margin-bottom: 8px;
-  gap: 10px;
-}
-
-.modal.modal-large .field-row label {
-  width: 120px;
-  font-weight: bold;
-  color: #ccc;
-}
-
-/* Input/Select/Textarea styling */
-.modal.modal-large .field-row input,
-.modal.modal-large .field-row textarea,
-.modal.modal-large .field-row select {
-  flex: 1;
-  background-color: #111;
+  position: fixed;
+  background: #222;
   color: #eee;
-  border: 1px solid #555;
-  padding: 6px;
+  padding: 10px 16px 16px;
+  border: 1px solid #333;
   border-radius: 4px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
 }
 
-.modal.modal-large .field-row textarea {
-  resize: vertical;
+.modal-large .modal-header {
+  flex: 0 0 auto;
 }
 
-/* Color picker button */
-.modal.modal-large .field-row .color-btn {
-  width: 24px;
-  height: 24px;
-  background-color: #e5e6e8;
-  border: 1px solid #555;
-  cursor: pointer;
+.modal-large .def-list {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  max-height: 240px;
 }
 
-/* Buttons */
-.modal.modal-large .ui-button {
-  background-color: #444;
-  color: white;
-  border: none;
-  padding: 6px 12px;
-  margin-left: 5px;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.modal.modal-large .ui-button:hover {
-  background-color: #666;
-}
-
-/* Ensure modal content stretches with added fields */
-.modal.modal-large .modal-content {
-  display: flex;
-  flex-direction: column;
+.modal-large form {
+  flex: 0 0 auto;
+  margin-top: 12px;
 }

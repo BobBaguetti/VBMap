@@ -1,21 +1,10 @@
-// @version: 18
+// @version: 19
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
 
-// ─── Modal Helpers ───────────────────────────────────────────────────────────
-
 /**
  * Creates a modal window.
- *
- * @param {Object} options
- * @param {string}  options.id
- * @param {string}  options.title
- * @param {Function} options.onClose
- * @param {string}  [options.size]      – "small" or "large"
- * @param {boolean} [options.backdrop]
- * @param {boolean} [options.draggable]
- * @param {boolean} [options.withDivider]
  */
 export function createModal({
   id, title, onClose,
@@ -31,18 +20,29 @@ export function createModal({
 
   const content = document.createElement("div");
   content.classList.add("modal-content");
-  content.style.position = "absolute";
-  content.style.transform = "none";
 
-  if (size === "small") {
-    content.style.width    = "350px";
+  // Special handling for large modal layout
+  if (size === "large") {
+    content.style.position = "fixed";
+    content.style.top = "50%";
+    content.style.left = "50%";
+    content.style.transform = "translate(-50%, -50%)";
+    content.style.maxWidth = "550px";
+    content.style.maxHeight = "90vh";
+    content.style.overflow = "hidden";
+    content.style.display = "flex";
+    content.style.flexDirection = "column";
+  } else {
+    content.style.position = "absolute";
+    content.style.transform = "none";
+    content.style.width = "350px";
     content.style.maxWidth = "350px";
   }
 
   const header = document.createElement("div");
   header.classList.add("modal-header");
   header.id = `${id}-handle`;
-  header.style.cursor = "move";
+  header.style.cursor = draggable ? "move" : "default";
 
   const titleEl = document.createElement("h2");
   titleEl.textContent = title;
@@ -58,11 +58,9 @@ export function createModal({
   header.append(titleEl, closeBtn);
   content.appendChild(header);
 
-  if (withDivider) {
-    content.appendChild(document.createElement("hr"));
-  }
-
+  if (withDivider) content.appendChild(document.createElement("hr"));
   modal.appendChild(content);
+
   modal.addEventListener("click", e => {
     if (e.target === modal) {
       closeModal(modal);
@@ -70,7 +68,10 @@ export function createModal({
     }
   });
 
-  if (draggable) makeModalDraggable(content, header);
+  if (draggable && size !== "large") {
+    makeModalDraggable(content, header);
+  }
+
   document.body.appendChild(modal);
   return { modal, content, header };
 }
@@ -83,14 +84,14 @@ function makeModalDraggable(modalEl, handle) {
     offsetY = e.clientY - modalEl.offsetTop;
     document.onmousemove = e2 => {
       if (!dragging) return;
-      modalEl.style.left     = `${e2.clientX - offsetX}px`;
-      modalEl.style.top      = `${e2.clientY - offsetY}px`;
-      modalEl.style.position = 'absolute';
+      modalEl.style.left = `${e2.clientX - offsetX}px`;
+      modalEl.style.top = `${e2.clientY - offsetY}px`;
+      modalEl.style.position = "absolute";
     };
     document.onmouseup = () => {
       dragging = false;
       document.onmousemove = null;
-      document.onmouseup   = null;
+      document.onmouseup = null;
     };
   };
 }
@@ -104,7 +105,7 @@ export function openModalAt(modal, evt) {
   const content = modal.querySelector(".modal-content");
   const rect = content.getBoundingClientRect();
   content.style.left = `${evt.clientX - rect.width}px`;
-  content.style.top  = `${evt.clientY - rect.height/2}px`;
+  content.style.top = `${evt.clientY - rect.height / 2}px`;
 }
 
 // ─── Form & Field Builders ──────────────────────────────────────────────────
