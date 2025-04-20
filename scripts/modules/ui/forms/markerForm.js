@@ -5,7 +5,6 @@ import {
     createDescriptionField,
     createExtraInfoField,
     createImageField,
-    createVideoField
   } from "./universalForm.js";
   
   export function createMarkerForm() {
