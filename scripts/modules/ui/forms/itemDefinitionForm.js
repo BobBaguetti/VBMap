@@ -9,6 +9,7 @@ import {
   createExtraInfoBlock,
   createFormButtonRow
 } from "../../ui/uiKit.js";
+
 import { createPickr } from "../../ui/pickrManager.js";
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 
@@ -22,12 +23,14 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   form.appendChild(subheading);
 
   const { row: rowName, input: fldName, colorBtn: colorName } = createTextField("Name:", "def-name");
+
   const { row: rowType, select: fldType, colorBtn: colorType } = createDropdownField("Item Type:", "def-type", [
     { value: "Crafting Material", label: "Crafting Material" },
     { value: "Special", label: "Special" },
     { value: "Consumable", label: "Consumable" },
     { value: "Quest", label: "Quest" }
   ]);
+
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createDropdownField("Rarity:", "def-rarity", [
     { value: "", label: "Select Rarity" },
     { value: "common", label: "Common" },
@@ -36,10 +39,12 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     { value: "epic", label: "Epic" },
     { value: "legendary", label: "Legendary" }
   ]);
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createTextareaFieldWithColor("Description:", "def-description");
 
-  const { block: extraBlock, getLines, setLines } = createExtraInfoBlock();
-  const rowExtra = createTopAlignedFieldRow("Extra Info:", extraBlock); // 🆕 Replaces custom row
+  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
+    createTextareaFieldWithColor("Description:", "def-description");
+
+  const { row: rowExtra, getLines, setLines } =
+    createTopAlignedFieldRow("Extra Info:", createExtraInfoBlock());
 
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createTextField("Value:", "def-value");
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createTextField("Quantity:", "def-quantity");
@@ -48,7 +53,19 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "def-image-big");
 
   const rowButtons = createFormButtonRow(onCancel);
-  form.append(rowName, rowType, rowRarity, rowDesc, rowExtra, rowValue, rowQty, rowImgS, rowImgL, rowButtons);
+
+  form.append(
+    rowName,
+    rowType,
+    rowRarity,
+    rowDesc,
+    rowExtra,
+    rowValue,
+    rowQty,
+    rowImgS,
+    rowImgL,
+    rowButtons
+  );
 
   let editingId = null;
 
@@ -83,7 +100,6 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     onSubmit(payload);
   });
 
-  // Delay Pickr init until form is mounted in DOM
   const pickrTargets = [
     colorName, colorType, colorRarity,
     colorDesc, colorValue, colorQty
