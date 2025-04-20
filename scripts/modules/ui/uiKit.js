@@ -34,7 +34,8 @@ export function createModal({
   const modal = document.createElement("div");
   modal.classList.add("modal", `modal-${size}`);
   modal.id = id;
-  if (!backdrop) modal.style.backgroundColor = "transparent";
+  modal.style.backgroundColor = backdrop ? "rgba(0,0,0,0.5)" : "transparent";
+
 
   const content = document.createElement("div");
   content.classList.add("modal-content");
