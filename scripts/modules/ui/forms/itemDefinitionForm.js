@@ -1,4 +1,4 @@
-// @version: 3
+// @version: 4
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -53,11 +53,6 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const rowButtons = createFormButtonRow(onCancel);
   form.append(rowName, rowType, rowRarity, rowDesc, rowExtra, rowValue, rowQty, rowImgS, rowImgL, rowButtons);
 
-  // Initialize Pickr color buttons
-  [colorName, colorType, colorRarity, colorDesc, colorValue, colorQty].forEach(el => {
-    createPickr(`#${el.id}`);
-  });
-
   let editingId = null;
 
   function populate(def) {
@@ -90,6 +85,17 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     };
     onSubmit(payload);
   });
+
+  // Delay Pickr init until form is mounted in DOM
+  const pickrTargets = [
+    colorName, colorType, colorRarity,
+    colorDesc, colorValue, colorQty
+  ];
+  setTimeout(() => {
+    pickrTargets.forEach(el => {
+      createPickr(`#${el.id}`);
+    });
+  }, 0);
 
   return {
     form,
