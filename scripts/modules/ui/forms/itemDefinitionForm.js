@@ -76,15 +76,22 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     const payload = {
       id: editingId,
       name: fldName.value.trim(),
+      nameColor: fldName.style.color || "#E5E6E8",
       itemType: fldType.value,
+      itemTypeColor: fldType.style.color || "#E5E6E8",
       rarity: fldRarity.value,
+      rarityColor: fldRarity.style.color || "#E5E6E8",
       description: fldDesc.value.trim(),
+      descriptionColor: fldDesc.style.color || "#E5E6E8",
       extraLines: extraInfo.getLines(),
       value: fldValue.value.trim(),
+      valueColor: fldValue.style.color || "#E5E6E8",
       quantity: fldQty.value.trim(),
+      quantityColor: fldQty.style.color || "#E5E6E8",
       imageSmall: fldImgS.value.trim(),
       imageBig: fldImgL.value.trim()
     };
+    
     onSubmit(payload);
   });
 
