@@ -10,7 +10,7 @@ import {
   createFormButtonRow
 } from "../../ui/uiKit.js";
 import { createPickr } from "../../ui/pickrManager.js";
-import { createTopAlignedFieldRow } from "../formUtils.js"; // 🆕 NEW import
+import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 
 export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const form = document.createElement("form");
