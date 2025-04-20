@@ -1,4 +1,4 @@
-// @version: 24
+// @version: 25
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -279,13 +279,22 @@ export function createExtraInfoBlock(options = {}) {
       lineWrap.appendChild(row);
 
       const pickr = createPickr(`#${color.id}`);
-      pickr.setColor(line.color || defaultColor);
+      line._pickr = pickr;
+
+      setTimeout(() => {
+        pickr.setColor(line.color || defaultColor);
+      }, 0);
+
       pickr.on("change", (colorObj) => {
         line.color = colorObj.toHEXA().toString();
       });
-      line._pickr = pickr;
     });
   }
+
+  btnAdd.onclick = () => {
+    lines.push({ text: "", color: defaultColor });
+    render();
+  };
 
   function getLines() {
     return lines.map(l => ({
@@ -295,15 +304,11 @@ export function createExtraInfoBlock(options = {}) {
   }
 
   function setLines(newLines, isReadonly = false) {
-    console.log("[ExtraInfo] setLines input:", JSON.stringify(newLines, null, 2)); // 🔍 Logging
-
     lines = newLines.map(l => ({
       text: l.text || "",
       color: l.color || defaultColor
     }));
-
     render();
-
     if (isReadonly) btnAdd.style.display = "none";
   }
 
