@@ -29,22 +29,14 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  scrollbar-gutter: stable both-edges;
+  scrollbar-width: none; /* Firefox: hides default width reservation */
 }
 
-/* Floating scrollbars (hover only) */
-.modal.modal-large .modal-content {
-  scrollbar-width: thin;
-  scrollbar-color: transparent transparent;
-}
-
-.modal.modal-large .modal-content:hover {
-  scrollbar-color: #555 transparent;
-}
-
+/* WebKit (Chrome/Safari/Edge) */
 .modal.modal-large .modal-content::-webkit-scrollbar {
   width: 8px;
   background: transparent;
+  position: absolute;
 }
 
 .modal.modal-large .modal-content::-webkit-scrollbar-thumb {
