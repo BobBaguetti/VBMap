@@ -244,8 +244,7 @@ export function createExtraInfoBlock(options = {}) {
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
   btnAdd.textContent = "+";
-  btnAdd.classList.add("ui-button");
-  btnAdd.style.marginTop = "8px";
+  btnAdd.classList.add("ui-button");  
 
   wrap.append(lineWrap, btnAdd); // ⬅️ Button goes after rows now
 
