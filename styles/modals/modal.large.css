@@ -15,6 +15,23 @@
   pointer-events: auto;
 }
 
+/* @version: 7 */
+/* @file: /styles/modals/modal.large.css */
+
+.modal.modal-large {
+  display: none;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  z-index: 9999;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: none; 
+  pointer-events: auto;
+}
+
 /* Core modal box */
 .modal.modal-large .modal-content {
   position: relative;
@@ -29,14 +46,13 @@
   display: flex;
   flex-direction: column;
   overflow-y: auto;
-  scrollbar-width: none; /* Firefox: hides default width reservation */
+  scrollbar-width: none; /* Firefox hides scrollbar track */
 }
 
-/* WebKit (Chrome/Safari/Edge) */
+/* WebKit floating dark scrollbar (initially invisible) */
 .modal.modal-large .modal-content::-webkit-scrollbar {
   width: 8px;
   background: transparent;
-  position: absolute;
 }
 
 .modal.modal-large .modal-content::-webkit-scrollbar-thumb {
@@ -45,8 +61,108 @@
   transition: background-color 0.3s;
 }
 
-.modal.modal-large .modal-content:hover::-webkit-scrollbar-thumb {
+/* Appear only during scroll using JS class toggle */
+.modal.modal-large .modal-content.scrolling::-webkit-scrollbar-thumb {
   background-color: #555;
+}
+
+/* Firefox match */
+.modal.modal-large .modal-content {
+  scrollbar-color: transparent transparent;
+}
+.modal.modal-large .modal-content.scrolling {
+  scrollbar-color: #555 transparent;
+}
+
+/* Header section */
+.modal.modal-large .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.modal.modal-large .modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: #fff;
+}
+
+.modal.modal-large .modal-header .close {
+  font-size: 24px;
+  cursor: pointer;
+  color: #fff;
+}
+
+.modal.modal-large hr {
+  margin: 6px 0;
+  border: 0;
+  border-top: 2px solid #444;
+}
+
+.modal.modal-large .def-list {
+  flex: 0 0 240px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  padding-right: 4px;
+}
+
+.modal.modal-large form {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  min-height: 0;
+}
+
+.modal.modal-large .field-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 10px;
+}
+
+.modal.modal-large .field-row label {
+  width: 100px;
+  font-weight: bold;
+  color: #ccc;
+  flex-shrink: 0;
+}
+
+.modal.modal-large .field-row input,
+.modal.modal-large .field-row textarea,
+.modal.modal-large .field-row select {
+  flex: 1;
+  background-color: #2a2a2a;
+  color: #eee;
+  border: 1px solid #555;
+  padding: 6px 8px;
+  border-radius: 3px;
+  font-size: 14px;
+}
+
+.modal-large .field-row textarea {
+  resize: vertical;
+}
+
+.modal.modal-large .field-row .color-btn {
+  width: 24px;
+  height: 24px;
+  background-color: #e5e6e8;
+  border: 1px solid #555;
+  cursor: pointer;
+  border-radius: 2px;
+}
+
+.modal.modal-large .ui-button {
+  background-color: #444;
+  color: white;
+  border: none;
+  padding: 6px 12px;
+  margin-left: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.modal.modal-large .ui-button:hover {
+  background-color: #666;
 }
 
 /* Header section */
