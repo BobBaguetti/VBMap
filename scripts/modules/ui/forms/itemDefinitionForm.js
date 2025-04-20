@@ -1,4 +1,4 @@
-// @version: 12
+// @version: 13
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -96,29 +96,27 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
 
   form.addEventListener("submit", e => {
     e.preventDefault();
-  
     const payload = {
       id: editingId,
       name: fldName.value.trim(),
-      nameColor: pickrs.get(colorName)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      nameColor: fldName.style.color || "#E5E6E8",
       itemType: fldType.value,
-      itemTypeColor: pickrs.get(colorType)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      itemTypeColor: fldType.style.color || "#E5E6E8",
       rarity: fldRarity.value,
-      rarityColor: pickrs.get(colorRarity)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      rarityColor: fldRarity.style.color || "#E5E6E8",
       description: fldDesc.value.trim(),
-      descriptionColor: pickrs.get(colorDesc)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      descriptionColor: fldDesc.style.color || "#E5E6E8",
       extraLines: extraInfo.getLines(),
       value: fldValue.value.trim(),
-      valueColor: pickrs.get(colorValue)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      valueColor: fldValue.style.color || "#E5E6E8",
       quantity: fldQty.value.trim(),
-      quantityColor: pickrs.get(colorQty)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      quantityColor: fldQty.style.color || "#E5E6E8",
       imageSmall: fldImgS.value.trim(),
       imageBig: fldImgL.value.trim()
     };
-  
+
     onSubmit(payload);
   });
-  
 
   const pickrTargets = [
     colorName, colorType, colorRarity,
