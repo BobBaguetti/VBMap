@@ -118,8 +118,11 @@
 
 .extra-info-block > button {
   align-self: flex-start;
-  margin-top: 6px;
+  margin-top: 0;
+  margin-left: 0;
+  padding: 6px 12px;
 }
+
 
 /* 9) Dividers around Extra Info */
 .modal-content hr {
