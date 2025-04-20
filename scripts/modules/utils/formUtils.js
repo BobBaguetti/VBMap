@@ -15,8 +15,11 @@ export function createTopAlignedFieldRow(labelText, contentEl) {
   
     const label = document.createElement("label");
     label.textContent = labelText;
+    label.style.alignSelf = "flex-start"; // ⬅️ top-align label
+  
+    contentEl.style.flex = "1";           // ⬅️ allow content to stretch left
+    contentEl.style.marginLeft = "0px";   // ⬅️ remove excess left margin
   
     row.append(label, contentEl);
     return row;
   }
-  
