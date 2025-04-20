@@ -1,4 +1,4 @@
-// @version: 5
+// @version: 6
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
@@ -38,6 +38,7 @@ export function initMarkerModal(db) {
 
   // Item-only fields
   const blockItem = document.createElement("div");
+  blockItem.classList.add("item-gap");
   blockItem.append(
     formApi.fields.fldRarity.closest(".field-row"),
     formApi.fields.fldItemType.closest(".field-row"),
@@ -46,7 +47,7 @@ export function initMarkerModal(db) {
 
   // Always shown
   const blockExtra = document.createElement("div");
-  blockExtra.append(formApi.fields.extraInfo.block.closest(".field-row"));
+  blockExtra.append(formApi.fields.extraRow);
 
   form.append(
     formApi.fields.fldName.closest(".field-row"),
@@ -111,13 +112,15 @@ export function initMarkerModal(db) {
     toggleSections(data.type === "Item");
 
     if (data.type === "Item") {
-      const def = data.predefinedItemId ? defs[data.predefinedItemId] : null;
-      ddPredef.value = def?.id || "";
-      customMode = !def;
-      if (customMode) {
-        formApi.setFromDefinition();
-      } else {
+      if (data.predefinedItemId && defs[data.predefinedItemId]) {
+        const def = defs[data.predefinedItemId];
+        ddPredef.value = def.id;
         formApi.setFromDefinition(def);
+        customMode = false;
+      } else {
+        ddPredef.value = "";
+        formApi.setFromDefinition(null);
+        customMode = true;
       }
     } else {
       formApi.setFromNonItem(data);

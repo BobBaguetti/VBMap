@@ -25,16 +25,11 @@ import {
     const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("fld-rarity");
     const { row: rowItemType, select: fldItemType, colorBtn: colorItemType } = createItemTypeField("fld-item-type");
     const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("fld-desc-item");
-    const { row: rowExtra, extraInfo } = createExtraInfoField();
+    const { extraInfo } = createExtraInfoField();
     const extraRow = createTopAlignedFieldRow("Extra Info:", extraInfo.block);
     const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
     const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
     const { row: rowVid, input: fldVid } = createVideoField("Video:", "fld-vid");
-  
-    // Apply item-gap spacing to specific rows
-    rowRarity.classList.add("item-gap");
-    rowItemType.classList.add("item-gap");
-    rowDesc.classList.add("item-gap");
   
     form.append(
       rowName,
@@ -130,6 +125,7 @@ import {
         fldItemType, colorItemType,
         fldDesc, colorDesc,
         extraInfo,
+        extraRow,
         fldImgS,
         fldImgL,
         fldVid
