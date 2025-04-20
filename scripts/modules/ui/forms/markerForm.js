@@ -1,4 +1,4 @@
-// @version: 3
+// @version: 4
 // @file: /scripts/modules/ui/forms/markerForm.js
 
 import {
@@ -30,6 +30,11 @@ import {
     const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
     const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
     const { row: rowVid, input: fldVid } = createVideoField("Video:", "fld-vid");
+  
+    // Apply item-gap spacing to specific rows
+    rowRarity.classList.add("item-gap");
+    rowItemType.classList.add("item-gap");
+    rowDesc.classList.add("item-gap");
   
     form.append(
       rowName,
