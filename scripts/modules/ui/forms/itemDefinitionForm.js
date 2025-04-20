@@ -1,4 +1,4 @@
-// @version: 9
+// @version: 10
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -10,7 +10,7 @@ import { createPickr } from "../../ui/pickrManager.js";
 
 import {
   createNameField,
-  createTypeField,
+  createItemTypeField,  // ✅ correct usage here
   createRarityField,
   createDescriptionField,
   createExtraInfoField,
@@ -28,7 +28,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   form.appendChild(subheading);
 
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
-  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");
+  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");  // ✅ fixed
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("def-description");
 
