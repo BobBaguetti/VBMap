@@ -53,6 +53,7 @@ import {
     }, 0);
   
     function setFromDefinition(def = {}) {
+        def = def || {}; // ensure it's never null
       fldName.value = def.name || "";
       fldName.style.color = def.nameColor || "#E5E6E8";
   
