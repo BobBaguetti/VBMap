@@ -1,4 +1,4 @@
-// @version: 5
+// @version: 6
 // @file: /scripts/modules/ui/forms/markerForm.js
 
 import {
@@ -28,9 +28,7 @@ import {
     const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
     const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
     const { row: rowVid, input: fldVid } = createVideoField("Video:", "fld-vid");
-    
   
-    // Apply item-specific spacing class
     rowRarity.classList.add("item-gap");
     rowItemType.classList.add("item-gap");
     rowDesc.classList.add("item-gap");
@@ -46,46 +44,62 @@ import {
       rowVid
     );
   
-    // Initialize Pickr color pickers
+    const pickrs = new Map();
+    const pickrTargets = [
+      colorName, colorRarity, colorItemType, colorDesc
+    ];
+  
     setTimeout(() => {
-      [colorName, colorRarity, colorItemType, colorDesc].forEach(btn => {
-        createPickr(`#${btn.id}`);
+      pickrTargets.forEach(el => {
+        const p = createPickr(`#${el.id}`);
+        pickrs.set(el, p);
       });
     }, 0);
   
+    function safe(val, fallback = "") {
+      return val ?? fallback;
+    }
+  
     function setFromDefinition(def = {}) {
-        def = def || {}; // ensure it's never null
-      fldName.value = def.name || "";
-      fldName.style.color = def.nameColor || "#E5E6E8";
+      fldName.value = safe(def.name);
+      fldName.style.color = safe(def.nameColor, "#E5E6E8");
+      pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
   
-      fldRarity.value = def.rarity || "";
-      fldRarity.style.color = def.rarityColor || "#E5E6E8";
+      fldRarity.value = safe(def.rarity);
+      fldRarity.style.color = safe(def.rarityColor, "#E5E6E8");
+      pickrs.get(colorRarity)?.setColor(def.rarityColor || "#E5E6E8");
   
-      fldItemType.value = def.itemType || "";
-      fldItemType.style.color = def.itemTypeColor || "#E5E6E8";
+      fldItemType.value = safe(def.itemType);
+      fldItemType.style.color = safe(def.itemTypeColor, "#E5E6E8");
+      pickrs.get(colorItemType)?.setColor(def.itemTypeColor || "#E5E6E8");
   
-      fldDesc.value = def.description || "";
-      fldDesc.style.color = def.descriptionColor || "#E5E6E8";
+      fldDesc.value = safe(def.description);
+      fldDesc.style.color = safe(def.descriptionColor, "#E5E6E8");
+      pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
   
-      extraInfo.setLines(def.extraLines || [], false);
-  
-      fldImgS.value = def.imageSmall || "";
-      fldImgL.value = def.imageBig || "";
-      fldVid.value = def.video || "";
+      extraInfo.setLines(safe(def.extraLines, []), false);
+      fldImgS.value = safe(def.imageSmall);
+      fldImgL.value = safe(def.imageBig);
+      fldVid.value = safe(def.video);
     }
   
     function setFromNonItem(data = {}) {
-      fldName.value = data.name || "";
-      fldName.style.color = data.nameColor || "#E5E6E8";
+      fldName.value = safe(data.name);
+      fldName.style.color = safe(data.nameColor, "#E5E6E8");
+      pickrs.get(colorName)?.setColor(data.nameColor || "#E5E6E8");
   
-      fldDesc.value = data.description || "";
-      fldDesc.style.color = data.descriptionColor || "#E5E6E8";
+      fldDesc.value = safe(data.description);
+      fldDesc.style.color = safe(data.descriptionColor, "#E5E6E8");
+      pickrs.get(colorDesc)?.setColor(data.descriptionColor || "#E5E6E8");
   
-      extraInfo.setLines(data.extraLines || [], false);
+      extraInfo.setLines(safe(data.extraLines, []), false);
+      fldImgS.value = safe(data.imageSmall);
+      fldImgL.value = safe(data.imageBig);
+      fldVid.value = safe(data.video);
+    }
   
-      fldImgS.value = data.imageSmall || "";
-      fldImgL.value = data.imageBig || "";
-      fldVid.value = data.video || "";
+    function getColor(el) {
+      return el.style.color || "#E5E6E8";
     }
   
     function getCustom() {
@@ -118,27 +132,23 @@ import {
       };
     }
   
-    function getColor(el) {
-      return el.style.color || "#E5E6E8";
-    }
-  
     return {
-        form,
-        fields: {
-          fldName, colorName,
-          fldRarity, colorRarity,
-          fldItemType, colorItemType,
-          fldDesc, colorDesc,
-          extraInfo,
-          extraRow: rowExtra, // ✅ expose the labeled row properly
-          fldImgS,
-          fldImgL,
-          fldVid
-        },
-        setFromDefinition,
-        setFromNonItem,
-        getCustom,
-        getNonItem
-      };
+      form,
+      fields: {
+        fldName, colorName,
+        fldRarity, colorRarity,
+        fldItemType, colorItemType,
+        fldDesc, colorDesc,
+        extraInfo,
+        extraRow: rowExtra,
+        fldImgS,
+        fldImgL,
+        fldVid
+      },
+      setFromDefinition,
+      setFromNonItem,
+      getCustom,
+      getNonItem
+    };
   }
   
