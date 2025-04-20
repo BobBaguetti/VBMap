@@ -1,4 +1,4 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -22,7 +22,6 @@ import {
 } from "../../services/itemDefinitionsService.js";
 
 import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
-
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 
 export function initItemDefinitionsModal(db) {
@@ -37,14 +36,44 @@ export function initItemDefinitionsModal(db) {
   });
 
   const header = content.querySelector(".modal-header");
+  const heading = header.querySelector("h2");
+
+  // 🔽 Modal switcher popup for future modals (quests, NPCs)
+  const switcherPopup = document.createElement("div");
+  switcherPopup.className = "modal-switcher-popup";
+  switcherPopup.style.display = "none";
+
+  [
+    { label: "Items",  action: () => {} },
+    { label: "Quests", action: () => document.getElementById("manage-quest-definitions").click() },
+  ].forEach(opt => {
+    const option = document.createElement("div");
+    option.className = "modal-switcher-option";
+    option.textContent = opt.label;
+    option.addEventListener("click", () => {
+      switcherPopup.style.display = "none";
+      opt.action();
+    });
+    switcherPopup.appendChild(option);
+  });
+
+  document.body.appendChild(switcherPopup);
+  heading.style.cursor = "pointer";
+  heading.addEventListener("click", (e) => {
+    const rect = heading.getBoundingClientRect();
+    switcherPopup.style.top = `${rect.bottom + window.scrollY + 4}px`;
+    switcherPopup.style.left = `${rect.left + window.scrollX}px`;
+    switcherPopup.style.display =
+      switcherPopup.style.display === "none" ? "block" : "none";
+  });
+  document.addEventListener("click", (e) => {
+    if (!switcherPopup.contains(e.target) && e.target !== heading) {
+      switcherPopup.style.display = "none";
+    }
+  });
 
   const rarityOrder = {
-    legendary: 5,
-    epic: 4,
-    rare: 3,
-    uncommon: 2,
-    common: 1,
-    "": 0
+    legendary: 5, epic: 4, rare: 3, uncommon: 2, common: 1, "": 0
   };
 
   const sortFns = {
@@ -68,8 +97,7 @@ export function initItemDefinitionsModal(db) {
       { id: "filter-price",       label: "P"  }
     ],
     (btnId, isToggled) => {
-      if (isToggled) activeSorts.add(btnId);
-      else activeSorts.delete(btnId);
+      isToggled ? activeSorts.add(btnId) : activeSorts.delete(btnId);
       renderFilteredList();
     }
   );
@@ -89,6 +117,8 @@ export function initItemDefinitionsModal(db) {
   const formApi = createItemDefinitionForm({
     onCancel: () => closeModal(modal),
     onSubmit: async (payload) => {
+      payload._justUpdated = true;
+      payload._updated = Date.now();
       if (payload.id) {
         await updateItemDefinition(db, String(payload.id), payload);
       } else {
@@ -96,15 +126,27 @@ export function initItemDefinitionsModal(db) {
       }
       closeModal(modal);
       await refreshDefinitions();
+    },
+    onDelete: async (id, name) => {
+      const confirmed = confirm(`Are you sure you want to delete "${name}"?`);
+      if (!confirmed) return;
+
+      await deleteItemDefinition(db, id);
+      closeModal(modal);
+      await refreshDefinitions();
     }
   });
 
-  formApi.form.classList.add("ui-scroll-float"); // ✅ Enable floating scrollbar behavior
-
+  formApi.form.classList.add("ui-scroll-float");
   content.appendChild(formApi.form);
 
   async function refreshDefinitions() {
-    definitions = await loadItemDefinitions(db);
+    const newDefs = await loadItemDefinitions(db);
+    const now = Date.now();
+    definitions = newDefs.map(def => {
+      const existing = definitions.find(d => d.id === def.id);
+      return { ...def, _updated: existing?._updated || now };
+    });
     renderFilteredList();
   }
 
@@ -112,10 +154,16 @@ export function initItemDefinitionsModal(db) {
     let list = definitions.filter(d =>
       d.name.toLowerCase().includes(searchInput.value.trim().toLowerCase())
     );
-    activeSorts.forEach(id => {
-      const fn = sortFns[id];
-      if (fn) list = [...list].sort(fn);
-    });
+
+    if (activeSorts.size > 0) {
+      activeSorts.forEach(id => {
+        const fn = sortFns[id];
+        if (fn) list = [...list].sort(fn);
+      });
+    } else {
+      list = [...list].sort((a, b) => (b._updated || 0) - (a._updated || 0));
+    }
+
     renderList(list);
   }
 
@@ -124,9 +172,8 @@ export function initItemDefinitionsModal(db) {
     list.forEach(def => {
       const entry = document.createElement("div");
       entry.className = "item-def-entry";
-  
+
       const rarityClass = def.rarity ? `rarity-${def.rarity.toLowerCase()}` : "";
-  
       entry.innerHTML = `
         <div class="item-name">${def.name}</div>
         <div class="item-subline">
@@ -135,6 +182,12 @@ export function initItemDefinitionsModal(db) {
         </div>
         <div class="item-description">${def.description || ""}</div>
       `;
+
+      if (def._justUpdated) {
+        entry.classList.add("recently-updated");
+        setTimeout(() => entry.classList.remove("recently-updated"), 1400);
+      }
+
       entry.addEventListener("click", () => formApi.populate(def));
       listContainer.appendChild(entry);
     });

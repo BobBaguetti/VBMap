@@ -1,17 +1,23 @@
-// @version: 14
+// @version: 15
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
-import { createTextField, createDropdownField, createTextareaFieldWithColor, createImageField, createVideoField, createExtraInfoBlock } from "../../universalForm.js";
+import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
+import { createColorButton } from "../uiKit.js";
 import { createIcon } from "../../utils/iconUtils.js";
 
-export function createItemDefinitionForm({ onSubmit, onCancel }) {
+export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const form = document.createElement("form");
   form.id = "item-definition-form";
 
-  const heading = document.createElement("h3");
-  heading.id = "def-form-subheading";
-  heading.textContent = "Add Item";
+  // ─────────────────────────────────────────────────────────────────────────────
+  // State
+  // ─────────────────────────────────────────────────────────────────────────────
+  let currentId = null;
+  let lastEditedName = null;
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Save/Cancel Button Row
+  // ─────────────────────────────────────────────────────────────────────────────
   const buttonRow = document.createElement("div");
   buttonRow.className = "field-row";
   buttonRow.style.justifyContent = "flex-end";
@@ -24,125 +30,223 @@ export function createItemDefinitionForm({ onSubmit, onCancel }) {
   const cancelBtn = document.createElement("button");
   cancelBtn.type = "button";
   cancelBtn.className = "ui-button";
+  cancelBtn.id = "def-cancel";
   cancelBtn.textContent = "Clear";
   cancelBtn.addEventListener("click", () => {
-    if (editing) {
-      setEditing(null);
-      cancelBtn.textContent = "Clear";
+    if (currentId) {
+      // Cancel edit
+      reset();
+    } else {
+      // Clear all
+      reset();
     }
-    reset();
-    onCancel?.();
   });
 
-  buttonRow.append(saveBtn, cancelBtn);
+  buttonRow.appendChild(saveBtn);
+  buttonRow.appendChild(cancelBtn);
+  form.appendChild(buttonRow);
 
-  const fields = {};
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Subheading
+  // ─────────────────────────────────────────────────────────────────────────────
+  const subheading = document.createElement("h3");
+  subheading.id = "def-form-subheading";
+  subheading.textContent = "Add Item";
+  form.appendChild(subheading);
 
-  const { row: nameRow, input: nameInput, colorBtn: nameColor } = createTextField("Name", "def-name");
-  const { row: typeRow, select: typeSelect, colorBtn: typeColor } = createDropdownField("Item Type", "def-type", [
-    { label: "Crafting Material", value: "Crafting Material" },
-    { label: "Special", value: "Special" },
-    { label: "Consumable", value: "Consumable" },
-    { label: "Quest", value: "Quest" }
-  ]);
-  const { row: rarityRow, select: raritySelect, colorBtn: rarityColor } = createDropdownField("Rarity", "def-rarity", [
-    { label: "Common", value: "common" },
-    { label: "Uncommon", value: "uncommon" },
-    { label: "Rare", value: "rare" },
-    { label: "Epic", value: "epic" },
-    { label: "Legendary", value: "legendary" }
-  ]);
-  const { row: descRow, textarea: descArea, colorBtn: descColor } = createTextareaFieldWithColor("Description", "def-description");
-  const extra = createExtraInfoBlock();
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Name
+  // ─────────────────────────────────────────────────────────────────────────────
+  const nameRow = createTopAlignedFieldRow("Name:");
+  const nameInput = document.createElement("input");
+  nameInput.type = "text";
+  nameInput.required = true;
+  const nameColorBtn = createColorButton("pickr-def-name", "#E5E6E8");
+  nameRow.appendChild(nameInput);
+  nameRow.appendChild(nameColorBtn);
+  form.appendChild(nameRow);
 
-  const imgRow = createImageField("Image S", "def-image-small");
-  const bigImgRow = createImageField("Image L", "def-image-big");
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Item Type
+  // ─────────────────────────────────────────────────────────────────────────────
+  const typeRow = createTopAlignedFieldRow("Item Type:");
+  const typeSelect = document.createElement("select");
+  ["Crafting Material", "Special", "Consumable", "Quest"].forEach(type => {
+    const option = document.createElement("option");
+    option.value = option.textContent = type;
+    typeSelect.appendChild(option);
+  });
+  const typeColorBtn = createColorButton("pickr-def-type", "#E5E6E8");
+  typeRow.appendChild(typeSelect);
+  typeRow.appendChild(typeColorBtn);
+  form.appendChild(typeRow);
 
-  fields.nameInput = nameInput;
-  fields.nameColor = nameColor;
-  fields.typeSelect = typeSelect;
-  fields.typeColor = typeColor;
-  fields.raritySelect = raritySelect;
-  fields.rarityColor = rarityColor;
-  fields.descArea = descArea;
-  fields.descColor = descColor;
-  fields.extraBlock = extra;
-  fields.imageSmall = imgRow.input;
-  fields.imageBig = bigImgRow.input;
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Rarity
+  // ─────────────────────────────────────────────────────────────────────────────
+  const rarityRow = createTopAlignedFieldRow("Rarity:");
+  const raritySelect = document.createElement("select");
+  ["", "Common", "Uncommon", "Rare", "Epic", "Legendary"].forEach(r => {
+    const option = document.createElement("option");
+    option.value = option.textContent = r.toLowerCase();
+    option.textContent = r;
+    raritySelect.appendChild(option);
+  });
+  const rarityColorBtn = createColorButton("pickr-def-rarity", "#E5E6E8");
+  rarityRow.appendChild(raritySelect);
+  rarityRow.appendChild(rarityColorBtn);
+  form.appendChild(rarityRow);
 
-  let editing = null;
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Description
+  // ─────────────────────────────────────────────────────────────────────────────
+  const descRow = createTopAlignedFieldRow("Description:");
+  const descTextarea = document.createElement("textarea");
+  descTextarea.rows = 2;
+  const descColorBtn = createColorButton("pickr-def-description", "#E5E6E8");
+  descRow.appendChild(descTextarea);
+  descRow.appendChild(descColorBtn);
+  form.appendChild(descRow);
 
-  function reset() {
-    form.reset();
-    Object.values(fields).forEach(field => {
-      if (field.setColor) field.setColor("#E5E6E8");
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Extra Info
+  // ─────────────────────────────────────────────────────────────────────────────
+  const extraRow = createTopAlignedFieldRow("Extra Info:");
+  extraRow.classList.add("extra-row");
+  const extraBlock = document.createElement("div");
+  extraBlock.className = "extra-info-block";
+  const addExtraBtn = document.createElement("button");
+  addExtraBtn.type = "button";
+  addExtraBtn.textContent = "+";
+  addExtraBtn.className = "ui-button";
+  extraBlock.appendChild(addExtraBtn);
+  extraRow.appendChild(extraBlock);
+  form.appendChild(extraRow);
+
+  const extraLinesContainer = document.createElement("div");
+  form.appendChild(extraLinesContainer);
+
+  addExtraBtn.addEventListener("click", () => {
+    const row = document.createElement("div");
+    row.className = "field-row";
+
+    const input = document.createElement("input");
+    const color = createColorButton(null, "#E5E6E8");
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.textContent = "−";
+    remove.className = "ui-button";
+
+    remove.addEventListener("click", () => {
+      extraLinesContainer.removeChild(row);
     });
-    extra.setLines([]);
-    heading.textContent = "Add Item";
-    cancelBtn.textContent = "Clear";
-    editing = null;
-  }
 
+    row.appendChild(input);
+    row.appendChild(color);
+    row.appendChild(remove);
+    extraLinesContainer.appendChild(row);
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Image fields
+  // ─────────────────────────────────────────────────────────────────────────────
+  const imgSmallRow = createTopAlignedFieldRow("Image S:");
+  const imgSmallInput = document.createElement("input");
+  imgSmallRow.appendChild(imgSmallInput);
+  form.appendChild(imgSmallRow);
+
+  const imgBigRow = createTopAlignedFieldRow("Image L:");
+  const imgBigInput = document.createElement("input");
+  imgBigRow.appendChild(imgBigInput);
+  form.appendChild(imgBigRow);
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Form submit
+  // ─────────────────────────────────────────────────────────────────────────────
+  form.addEventListener("submit", ev => {
+    ev.preventDefault();
+    const payload = {
+      id: currentId,
+      name: nameInput.value.trim(),
+      nameColor: nameColorBtn.dataset.color,
+      itemType: typeSelect.value,
+      itemTypeColor: typeColorBtn.dataset.color,
+      rarity: raritySelect.value,
+      rarityColor: rarityColorBtn.dataset.color,
+      description: descTextarea.value.trim(),
+      descriptionColor: descColorBtn.dataset.color,
+      imageSmall: imgSmallInput.value.trim(),
+      imageBig: imgBigInput.value.trim(),
+      extraLines: Array.from(extraLinesContainer.children).map(row => ({
+        text: row.querySelector("input").value.trim(),
+        color: row.querySelector(".color-btn").dataset.color
+      }))
+    };
+    onSubmit(payload);
+  });
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Helper methods
+  // ─────────────────────────────────────────────────────────────────────────────
   function populate(def) {
-    editing = def.id;
-    heading.textContent = "Edit Item";
+    currentId = def.id;
+    subheading.textContent = "Edit Item";
     cancelBtn.textContent = "Cancel Edit";
 
-    fields.nameInput.value = def.name || "";
-    fields.nameColor._pickr.setColor(def.nameColor || "#E5E6E8");
+    nameInput.value = def.name || "";
+    nameColorBtn.dataset.color = def.nameColor || "#E5E6E8";
 
-    fields.typeSelect.value = def.itemType || "";
-    fields.typeColor._pickr.setColor(def.itemTypeColor || "#E5E6E8");
+    typeSelect.value = def.itemType || "Crafting Material";
+    typeColorBtn.dataset.color = def.itemTypeColor || "#E5E6E8";
 
-    fields.raritySelect.value = def.rarity || "";
-    fields.rarityColor._pickr.setColor(def.rarityColor || "#E5E6E8");
+    raritySelect.value = def.rarity || "";
+    rarityColorBtn.dataset.color = def.rarityColor || "#E5E6E8";
 
-    fields.descArea.value = def.description || "";
-    fields.descColor._pickr.setColor(def.descriptionColor || "#E5E6E8");
+    descTextarea.value = def.description || "";
+    descColorBtn.dataset.color = def.descriptionColor || "#E5E6E8";
 
-    fields.extraBlock.setLines(def.extraLines || []);
+    imgSmallInput.value = def.imageSmall || "";
+    imgBigInput.value = def.imageBig || "";
 
-    fields.imageSmall.value = def.imageSmall || "";
-    fields.imageBig.value = def.imageBig || "";
-  }
-
-  function setEditing(id) {
-    editing = id;
-  }
-
-  form.append(heading, buttonRow, nameRow, typeRow, rarityRow, descRow);
-
-  const labelRow = document.createElement("div");
-  labelRow.className = "field-row";
-  const extraLabel = document.createElement("label");
-  extraLabel.textContent = "Extra Info:";
-  labelRow.appendChild(extraLabel);
-  form.append(labelRow, extra.block);
-
-  form.append(imgRow.row, bigImgRow.row);
-
-  form.addEventListener("submit", e => {
-    e.preventDefault();
-    onSubmit({
-      id: editing,
-      name: nameInput.value,
-      nameColor: nameColor._pickr.getColor().toHEXA().toString(),
-      itemType: typeSelect.value,
-      itemTypeColor: typeColor._pickr.getColor().toHEXA().toString(),
-      rarity: raritySelect.value,
-      rarityColor: rarityColor._pickr.getColor().toHEXA().toString(),
-      description: descArea.value,
-      descriptionColor: descColor._pickr.getColor().toHEXA().toString(),
-      extraLines: extra.getLines(),
-      imageSmall: fields.imageSmall.value,
-      imageBig: fields.imageBig.value
+    extraLinesContainer.innerHTML = "";
+    (def.extraLines || []).forEach(line => {
+      const row = document.createElement("div");
+      row.className = "field-row";
+      const input = document.createElement("input");
+      input.value = line.text;
+      const color = createColorButton(null, line.color || "#E5E6E8");
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.textContent = "−";
+      remove.className = "ui-button";
+      remove.addEventListener("click", () => extraLinesContainer.removeChild(row));
+      row.appendChild(input);
+      row.appendChild(color);
+      row.appendChild(remove);
+      extraLinesContainer.appendChild(row);
     });
-  });
+  }
+
+  function reset() {
+    currentId = null;
+    subheading.textContent = "Add Item";
+    cancelBtn.textContent = "Clear";
+    nameInput.value = "";
+    typeSelect.value = "Crafting Material";
+    raritySelect.value = "";
+    descTextarea.value = "";
+    imgSmallInput.value = "";
+    imgBigInput.value = "";
+    extraLinesContainer.innerHTML = "";
+
+    [nameColorBtn, typeColorBtn, rarityColorBtn, descColorBtn].forEach(btn => {
+      btn.dataset.color = "#E5E6E8";
+    });
+  }
 
   return {
     form,
-    reset,
     populate,
-    setEditing
+    reset
   };
 }

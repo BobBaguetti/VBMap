@@ -67,3 +67,13 @@
 .ui-scroll-float.scrolling::-webkit-scrollbar-thumb {
   background-color: #555;
 }
+
+/* Delete button styling */
+.modal.modal-large .ui-button.danger {
+  background-color: #8e2d2d;
+  color: #fff;
+  border: 1px solid #aa4444;
+}
+.modal.modal-large .ui-button.danger:hover {
+  background-color: #a73333;
+}
