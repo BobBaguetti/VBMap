@@ -14,6 +14,9 @@ import {
     createVideoField
   } from "../../ui/uiKit.js";
   
+  import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
+  import { createPickr } from "../../ui/pickrManager.js";
+  
   export function createMarkerForm() {
     const form = document.createElement("form");
     form.id = "marker-form";
@@ -23,6 +26,7 @@ import {
     const { row: rowItemType, select: fldItemType, colorBtn: colorItemType } = createItemTypeField("fld-item-type");
     const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("fld-desc-item");
     const { row: rowExtra, extraInfo } = createExtraInfoField();
+    const extraRow = createTopAlignedFieldRow("Extra Info:", extraInfo.block);
     const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
     const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
     const { row: rowVid, input: fldVid } = createVideoField("Video:", "fld-vid");
@@ -32,34 +36,20 @@ import {
       rowRarity,
       rowItemType,
       rowDesc,
-      rowExtra,
+      extraRow,
       rowImgS,
       rowImgL,
       rowVid
     );
   
-    function setFromDefinition(def) {
-      if (!def) {
-        fldName.value = "";
-        fldName.style.color = "#E5E6E8";
+    // Initialize Pickr color pickers
+    setTimeout(() => {
+      [colorName, colorRarity, colorItemType, colorDesc].forEach(btn => {
+        createPickr(`#${btn.id}`);
+      });
+    }, 0);
   
-        fldRarity.value = "";
-        fldRarity.style.color = "#E5E6E8";
-  
-        fldItemType.value = "";
-        fldItemType.style.color = "#E5E6E8";
-  
-        fldDesc.value = "";
-        fldDesc.style.color = "#E5E6E8";
-  
-        extraInfo.setLines([], true);
-  
-        fldImgS.value = "";
-        fldImgL.value = "";
-        fldVid.value = "";
-        return;
-      }
-  
+    function setFromDefinition(def = {}) {
       fldName.value = def.name || "";
       fldName.style.color = def.nameColor || "#E5E6E8";
   
@@ -79,7 +69,7 @@ import {
       fldVid.value = def.video || "";
     }
   
-    function setFromNonItem(data) {
+    function setFromNonItem(data = {}) {
       fldName.value = data.name || "";
       fldName.style.color = data.nameColor || "#E5E6E8";
   
