@@ -1,4 +1,5 @@
-// @version: 16
+
+// @version: 17
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
@@ -11,6 +12,9 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
 
   let currentId = null;
 
+  // ─────────────────────────────────────────────────────────────
+  // Save / Cancel Button Row (Top-Right)
+  // ─────────────────────────────────────────────────────────────
   const buttonRow = document.createElement("div");
   buttonRow.className = "field-row";
   buttonRow.style.justifyContent = "flex-end";
@@ -31,77 +35,84 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   buttonRow.appendChild(cancelBtn);
   form.appendChild(buttonRow);
 
+  // ─────────────────────────────────────────────────────────────
+  // Section Heading
+  // ─────────────────────────────────────────────────────────────
   const subheading = document.createElement("h3");
   subheading.id = "def-form-subheading";
   subheading.textContent = "Add Item";
   form.appendChild(subheading);
 
+  // ─────────────────────────────────────────────────────────────
+  // Name
+  // ─────────────────────────────────────────────────────────────
   const nameRow = createTopAlignedFieldRow("Name:");
   const nameInput = document.createElement("input");
   nameInput.type = "text";
   nameInput.required = true;
   const nameColorBtn = createColorButton("pickr-def-name", "#E5E6E8");
-  nameRow.appendChild(nameInput);
-  nameRow.appendChild(nameColorBtn);
+  nameRow.append(nameInput, nameColorBtn);
   form.appendChild(nameRow);
 
+  // ─────────────────────────────────────────────────────────────
+  // Item Type
+  // ─────────────────────────────────────────────────────────────
   const typeRow = createTopAlignedFieldRow("Item Type:");
   const typeSelect = document.createElement("select");
   ["Crafting Material", "Special", "Consumable", "Quest"].forEach(type => {
-    const opt = document.createElement("option");
-    opt.value = opt.textContent = type;
-    typeSelect.appendChild(opt);
+    const option = document.createElement("option");
+    option.value = option.textContent = type;
+    typeSelect.appendChild(option);
   });
   const typeColorBtn = createColorButton("pickr-def-type", "#E5E6E8");
-  typeRow.appendChild(typeSelect);
-  typeRow.appendChild(typeColorBtn);
+  typeRow.append(typeSelect, typeColorBtn);
   form.appendChild(typeRow);
 
+  // ─────────────────────────────────────────────────────────────
+  // Rarity
+  // ─────────────────────────────────────────────────────────────
   const rarityRow = createTopAlignedFieldRow("Rarity:");
   const raritySelect = document.createElement("select");
   ["", "Common", "Uncommon", "Rare", "Epic", "Legendary"].forEach(r => {
-    const opt = document.createElement("option");
-    opt.value = r.toLowerCase();
-    opt.textContent = r;
-    raritySelect.appendChild(opt);
+    const option = document.createElement("option");
+    option.value = r.toLowerCase();
+    option.textContent = r;
+    raritySelect.appendChild(option);
   });
   const rarityColorBtn = createColorButton("pickr-def-rarity", "#E5E6E8");
-  rarityRow.appendChild(raritySelect);
-  rarityRow.appendChild(rarityColorBtn);
+  rarityRow.append(raritySelect, rarityColorBtn);
   form.appendChild(rarityRow);
 
+  // ─────────────────────────────────────────────────────────────
+  // Description
+  // ─────────────────────────────────────────────────────────────
   const descRow = createTopAlignedFieldRow("Description:");
   const descTextarea = document.createElement("textarea");
   descTextarea.rows = 2;
   const descColorBtn = createColorButton("pickr-def-description", "#E5E6E8");
-  descRow.appendChild(descTextarea);
-  descRow.appendChild(descColorBtn);
+  descRow.append(descTextarea, descColorBtn);
   form.appendChild(descRow);
 
-  // ✅ Sidebar toggle checkbox
-  const toggleRow = createTopAlignedFieldRow("");
-  const toggleWrapper = document.createElement("div");
-  toggleWrapper.style.display = "flex";
-  toggleWrapper.style.alignItems = "center";
-  toggleWrapper.style.gap = "8px";
+  // ─────────────────────────────────────────────────────────────
+  // Sidebar Visibility Toggle
+  // ─────────────────────────────────────────────────────────────
+  const sidebarRow = document.createElement("div");
+  sidebarRow.className = "sidebar-toggle-row";
+  const sidebarCheckbox = document.createElement("input");
+  sidebarCheckbox.type = "checkbox";
+  sidebarCheckbox.id = "def-show-in-filter";
+  const sidebarLabel = document.createElement("label");
+  sidebarLabel.textContent = "Visible in Sidebar";
+  sidebarRow.append(sidebarCheckbox, sidebarLabel);
+  form.appendChild(sidebarRow);
 
-  const toggleInput = document.createElement("input");
-  toggleInput.type = "checkbox";
-  toggleInput.id = "def-visible";
-  toggleInput.style.marginLeft = "2px";
-
-  const toggleLabel = document.createElement("label");
-  toggleLabel.textContent = "Visible in Sidebar";
-  toggleLabel.setAttribute("for", "def-visible");
-  toggleLabel.style.color = "#ccc";
-
-  toggleWrapper.appendChild(toggleInput);
-  toggleWrapper.appendChild(toggleLabel);
-  toggleRow.appendChild(toggleWrapper);
-  form.appendChild(toggleRow);
-
-  const extraRow = createTopAlignedFieldRow("Extra Info:");
-  extraRow.classList.add("extra-row");
+  // ─────────────────────────────────────────────────────────────
+  // Extra Info Block
+  // ─────────────────────────────────────────────────────────────
+  const extraRow = document.createElement("div");
+  extraRow.className = "field-row extra-row";
+  const extraLabel = document.createElement("label");
+  extraLabel.textContent = "Extra Info:";
   const extraBlock = document.createElement("div");
   extraBlock.className = "extra-info-block";
   const addExtraBtn = document.createElement("button");
@@ -109,7 +120,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   addExtraBtn.textContent = "+";
   addExtraBtn.className = "ui-button";
   extraBlock.appendChild(addExtraBtn);
-  extraRow.appendChild(extraBlock);
+  extraRow.append(extraLabel, extraBlock);
   form.appendChild(extraRow);
 
   const extraLinesContainer = document.createElement("div");
@@ -122,25 +133,29 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     const color = createColorButton(null, "#E5E6E8");
     const remove = document.createElement("button");
     remove.type = "button";
-    remove.textContent = "−";
     remove.className = "ui-button";
+    remove.textContent = "−";
     remove.addEventListener("click", () => extraLinesContainer.removeChild(row));
-    row.appendChild(input);
-    row.appendChild(color);
-    row.appendChild(remove);
+    row.append(input, color, remove);
     extraLinesContainer.appendChild(row);
   });
 
+  // ─────────────────────────────────────────────────────────────
+  // Images
+  // ─────────────────────────────────────────────────────────────
   const imgSmallRow = createTopAlignedFieldRow("Image S:");
   const imgSmallInput = document.createElement("input");
-  imgSmallRow.appendChild(imgSmallInput);
+  imgSmallRow.append(imgSmallInput);
   form.appendChild(imgSmallRow);
 
   const imgBigRow = createTopAlignedFieldRow("Image L:");
   const imgBigInput = document.createElement("input");
-  imgBigRow.appendChild(imgBigInput);
+  imgBigRow.append(imgBigInput);
   form.appendChild(imgBigRow);
 
+  // ─────────────────────────────────────────────────────────────
+  // Form submission handler
+  // ─────────────────────────────────────────────────────────────
   form.addEventListener("submit", ev => {
     ev.preventDefault();
     const payload = {
@@ -155,7 +170,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
       descriptionColor: descColorBtn.dataset.color,
       imageSmall: imgSmallInput.value.trim(),
       imageBig: imgBigInput.value.trim(),
-      visibleInSidebar: toggleInput.checked, // ✅ Include in payload
+      visibleInSidebar: sidebarCheckbox.checked,
       extraLines: Array.from(extraLinesContainer.children).map(row => ({
         text: row.querySelector("input").value.trim(),
         color: row.querySelector(".color-btn").dataset.color
@@ -164,6 +179,9 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     onSubmit(payload);
   });
 
+  // ─────────────────────────────────────────────────────────────
+  // Helpers: populate/reset
+  // ─────────────────────────────────────────────────────────────
   function populate(def) {
     currentId = def.id;
     subheading.textContent = "Edit Item";
@@ -178,8 +196,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     descColorBtn.dataset.color = def.descriptionColor || "#E5E6E8";
     imgSmallInput.value = def.imageSmall || "";
     imgBigInput.value = def.imageBig || "";
-    toggleInput.checked = !!def.visibleInSidebar;
-
+    sidebarCheckbox.checked = !!def.visibleInSidebar;
     extraLinesContainer.innerHTML = "";
     (def.extraLines || []).forEach(line => {
       const row = document.createElement("div");
@@ -192,9 +209,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
       remove.textContent = "−";
       remove.className = "ui-button";
       remove.addEventListener("click", () => extraLinesContainer.removeChild(row));
-      row.appendChild(input);
-      row.appendChild(color);
-      row.appendChild(remove);
+      row.append(input, color, remove);
       extraLinesContainer.appendChild(row);
     });
   }
@@ -209,11 +224,12 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     descTextarea.value = "";
     imgSmallInput.value = "";
     imgBigInput.value = "";
-    toggleInput.checked = false;
+    sidebarCheckbox.checked = false;
     extraLinesContainer.innerHTML = "";
     [nameColorBtn, typeColorBtn, rarityColorBtn, descColorBtn].forEach(btn => {
       btn.dataset.color = "#E5E6E8";
     });
+    nameInput.focus();
   }
 
   return { form, populate, reset };
