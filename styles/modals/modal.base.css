@@ -102,25 +102,26 @@
 
 /* 8) Extra-row top-align */
 .modal-content .field-row.extra-row {
-  align-items: center; /* ensures both label and block are aligned properly */
+  align-items: flex-start;
 }
 
 .modal-content .field-row.extra-row > label {
-  margin-top: 0;        /* reset previous attempt */
-  padding-top: 6px;     /* tweak as needed to match vertical centering */
+  margin-top: 6px;
 }
 
-/* Fix horizontal offset of the + button */
+/* Ensure button aligns like an input */
 .extra-info-block {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 6px;               /* spacing between lines */
 }
 
+/* Align + button left */
 .extra-info-block > button {
-  align-self: flex-start;  /* ⬅️ aligns "+" button to start like other fields */
-  margin-left: 0;          /* ensures it aligns with text inputs */
+  align-self: flex-start;
+  margin-top: 6px;
 }
+
 
 
 /* 9) Dividers around Extra Info */
