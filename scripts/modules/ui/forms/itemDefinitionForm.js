@@ -8,7 +8,7 @@ import {
   } from "../../ui/uiKit.js";
   import { closeModal } from "../../ui/uiKit.js";
   
-  export function buildItemDefinitionForm({ onCancel, onSubmit }) {
+  export function createItemDefinitionForm({ onCancel, onSubmit }) {
     const form = document.createElement("form");
     form.id = "item-definition-form";
   
