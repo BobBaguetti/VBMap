@@ -1,4 +1,4 @@
-// @version: 6
+// @version: 7
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
@@ -46,9 +46,7 @@ export function initMarkerModal(db) {
   );
 
   // Always shown
-  const hrAboveExtra = document.createElement("hr");
   const blockExtra = document.createElement("div");
-  const hrBelowExtra = document.createElement("hr");
   blockExtra.append(formApi.fields.extraRow);
 
   form.append(
@@ -56,9 +54,7 @@ export function initMarkerModal(db) {
     rowType,
     rowPredef,
     blockItem,
-    hrAboveExtra,
-    blockExtra,
-    hrBelowExtra,
+    formApi.fields.extraRow, // includes the label, block, and <hr> dividers if enabled
     formApi.fields.fldImgS.closest(".field-row"),
     formApi.fields.fldImgL.closest(".field-row"),
     formApi.fields.fldVid.closest(".field-row"),

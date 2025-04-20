@@ -32,7 +32,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("def-description");
 
-  const { row: rowExtra, extraInfo } = createExtraInfoField();
+  const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true })
 
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField("def-value");
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField("def-quantity");

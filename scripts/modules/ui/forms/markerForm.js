@@ -24,10 +24,11 @@ import {
     const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("fld-rarity");
     const { row: rowItemType, select: fldItemType, colorBtn: colorItemType } = createItemTypeField("fld-item-type");
     const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("fld-desc-item");
-    const { row: rowExtra, extraInfo } = createExtraInfoField();
+    const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true });
     const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
     const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
     const { row: rowVid, input: fldVid } = createVideoField("Video:", "fld-vid");
+    
   
     // Apply item-specific spacing class
     rowRarity.classList.add("item-gap");

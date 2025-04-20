@@ -54,10 +54,20 @@ import {
   /**
    * Creates extra info section with label + block layout
    */
-  export function createExtraInfoField() {
+  export function createExtraInfoField({ withDividers = false } = {}) {
     const extra = createExtraInfoBlock();
     const row = createTopAlignedFieldRow("Extra Info:", extra.block);
-    return { row, extraInfo: extra };
+  
+    if (!withDividers) {
+      return { row, extraInfo: extra };
+    }
+  
+    const container = document.createElement("div");
+    const hrAbove = document.createElement("hr");
+    const hrBelow = document.createElement("hr");
+    container.append(hrAbove, row, hrBelow);
+  
+    return { row: container, extraInfo: extra };
   }
   
   /**
