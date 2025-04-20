@@ -13,6 +13,8 @@ import {
   createFormButtonRow
 } from "../uiKit.js";
 import { createPickr } from "../pickrManager.js";
+import { createTopAlignedFieldRow } from "../formUtils.js";
+
 
 export function initMarkerForm(db) {
   // 1) Create modal (auto‐adds <hr> under header)
@@ -87,11 +89,7 @@ export function initMarkerForm(db) {
 
   // — Extra Info block —
   const { block: extraInfoBlock, getLines, setLines } = createExtraInfoBlock();
-  const rowExtra = document.createElement("div");
-  rowExtra.className = "field-row extra-row";
-  const lblExtra = document.createElement("label");
-  lblExtra.textContent = "Extra Info:";
-  rowExtra.append(lblExtra, extraInfoBlock);
+  const rowExtra = createTopAlignedFieldRow("Extra Info:", extraInfoBlock);
 
   // Dividers around Extra Info
   const hrBeforeExtra = document.createElement("hr");

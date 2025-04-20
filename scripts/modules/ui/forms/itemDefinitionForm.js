@@ -1,4 +1,4 @@
-// @version: 4
+// @version: 5
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -10,6 +10,7 @@ import {
   createFormButtonRow
 } from "../../ui/uiKit.js";
 import { createPickr } from "../../ui/pickrManager.js";
+import { createTopAlignedFieldRow } from "../formUtils.js"; // 🆕 NEW import
 
 export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const form = document.createElement("form");
@@ -38,11 +39,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createTextareaFieldWithColor("Description:", "def-description");
 
   const { block: extraBlock, getLines, setLines } = createExtraInfoBlock();
-  const rowExtra = document.createElement("div");
-  rowExtra.className = "field-row extra-row";
-  const lblExtra = document.createElement("label");
-  lblExtra.textContent = "Extra Info:";
-  rowExtra.append(lblExtra, extraBlock);
+  const rowExtra = createTopAlignedFieldRow("Extra Info:", extraBlock); // 🆕 Replaces custom row
 
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createTextField("Value:", "def-value");
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createTextField("Quantity:", "def-quantity");
