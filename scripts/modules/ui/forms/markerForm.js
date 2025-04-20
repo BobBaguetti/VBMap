@@ -1,3 +1,6 @@
+// @version: 2
+// @file: /scripts/modules/ui/forms/markerForm.js
+
 import {
     createNameField,
     createRarityField,
@@ -10,7 +13,6 @@ import {
     createImageField,
     createVideoField
   } from "../../ui/uiKit.js";
-  
   
   export function createMarkerForm() {
     const form = document.createElement("form");
@@ -36,6 +38,74 @@ import {
       rowVid
     );
   
+    function setFromDefinition(def) {
+      fldName.value = def.name || "";
+      fldName.style.color = def.nameColor || "#E5E6E8";
+  
+      fldRarity.value = def.rarity || "";
+      fldRarity.style.color = def.rarityColor || "#E5E6E8";
+  
+      fldItemType.value = def.itemType || "";
+      fldItemType.style.color = def.itemTypeColor || "#E5E6E8";
+  
+      fldDesc.value = def.description || "";
+      fldDesc.style.color = def.descriptionColor || "#E5E6E8";
+  
+      extraInfo.setLines(def.extraLines || [], true);
+  
+      fldImgS.value = def.imageSmall || "";
+      fldImgL.value = def.imageBig || "";
+      fldVid.value = def.video || "";
+    }
+  
+    function setFromNonItem(data) {
+      fldName.value = data.name || "";
+      fldName.style.color = data.nameColor || "#E5E6E8";
+  
+      fldDesc.value = data.description || "";
+      fldDesc.style.color = data.descriptionColor || "#E5E6E8";
+  
+      extraInfo.setLines(data.extraLines || [], false);
+  
+      fldImgS.value = data.imageSmall || "";
+      fldImgL.value = data.imageBig || "";
+      fldVid.value = data.video || "";
+    }
+  
+    function getCustom() {
+      return {
+        name: fldName.value.trim(),
+        nameColor: getColor(fldName),
+        rarity: fldRarity.value,
+        rarityColor: getColor(fldRarity),
+        itemType: fldItemType.value,
+        itemTypeColor: getColor(fldItemType),
+        description: fldDesc.value.trim(),
+        descriptionColor: getColor(fldDesc),
+        extraLines: extraInfo.getLines(),
+        imageSmall: fldImgS.value.trim(),
+        imageBig: fldImgL.value.trim(),
+        video: fldVid.value.trim()
+      };
+    }
+  
+    function getNonItem() {
+      return {
+        name: fldName.value.trim(),
+        nameColor: getColor(fldName),
+        description: fldDesc.value.trim(),
+        descriptionColor: getColor(fldDesc),
+        extraLines: extraInfo.getLines(),
+        imageSmall: fldImgS.value.trim(),
+        imageBig: fldImgL.value.trim(),
+        video: fldVid.value.trim()
+      };
+    }
+  
+    function getColor(el) {
+      return el.style.color || "#E5E6E8";
+    }
+  
     return {
       form,
       fields: {
@@ -47,7 +117,11 @@ import {
         fldImgS,
         fldImgL,
         fldVid
-      }
+      },
+      setFromDefinition,
+      setFromNonItem,
+      getCustom,
+      getNonItem
     };
   }
   

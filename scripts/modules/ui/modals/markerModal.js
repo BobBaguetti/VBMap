@@ -1,4 +1,4 @@
-// @version: 3
+// @version: 4
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
@@ -27,16 +27,16 @@ export function initMarkerModal(db) {
       { value: "Extraction Portal", label: "Extraction Portal" },
       { value: "Item", label: "Item" },
       { value: "Teleport", label: "Teleport" },
-      { value: "Spawn Point", label: "Spawn points" }
+      { value: "Spawn Point", label: "Spawn Point" }
     ], { showColor: false });
 
   const { row: rowPredef, select: ddPredef } =
     createDropdownField("Item:", "fld-predef", [], { showColor: false });
 
   const formApi = createMarkerForm();
-
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
+  // Item-only fields
   const blockItem = document.createElement("div");
   blockItem.append(
     formApi.fields.fldRarity.closest(".field-row"),
@@ -44,6 +44,7 @@ export function initMarkerModal(db) {
     formApi.fields.fldDesc.closest(".field-row")
   );
 
+  // Always shown
   const blockExtra = document.createElement("div");
   blockExtra.append(formApi.fields.extraInfo.block.closest(".field-row"));
 
