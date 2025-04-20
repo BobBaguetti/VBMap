@@ -1,4 +1,4 @@
-// @version: 21
+// @version: 22
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -34,13 +34,11 @@ export function createModal({
   const modal = document.createElement("div");
   modal.classList.add("modal", `modal-${size}`);
   modal.id = id;
-  // initial backgroundColor (just in case it's shown before openModal is called)
-  modal.style.backgroundColor = backdrop ? "rgba(0,0,0,0.5)" : "transparent";
-
+  modal.style.backgroundColor = "transparent"; // safe fallback
   const content = document.createElement("div");
   content.classList.add("modal-content");
 
-  // Special layout for large modals
+  // Large modal layout
   if (size === "large") {
     content.style.position = "fixed";
     content.style.top = "50%";
@@ -122,12 +120,14 @@ export function closeModal(modal) {
 export function openModal(modal) {
   modal.style.display = "block";
 
-  // Reapply backgroundColor explicitly
-  if (modal.classList.contains("modal-large")) {
-    modal.style.backgroundColor = "rgba(0,0,0,0.5)";
-  } else {
-    modal.style.backgroundColor = "transparent";
-  }
+  // ✅ Reapply background on next frame to avoid flash
+  requestAnimationFrame(() => {
+    if (modal.classList.contains("modal-large")) {
+      modal.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
+    } else {
+      modal.style.backgroundColor = "transparent";
+    }
+  });
 
   if (!modal.dataset.lifecycleAttached) {
     attachModalLifecycle(modal);
@@ -143,6 +143,7 @@ export function openModalAt(modal, evt) {
 }
 
 // ─── Form & Field Builders ──────────────────────────────────────────────────
+// [unchanged: same functions for createTextField, createDropdownField, etc.]
 
 export function createFieldRow(labelText, inputEl) {
   const row = document.createElement("div");
