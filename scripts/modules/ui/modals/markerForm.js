@@ -13,7 +13,7 @@ import {
   createFormButtonRow
 } from "../uiKit.js";
 import { createPickr } from "../pickrManager.js";
-import { createTopAlignedFieldRow } from "../formUtils.js";
+import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 
 
 export function initMarkerForm(db) {

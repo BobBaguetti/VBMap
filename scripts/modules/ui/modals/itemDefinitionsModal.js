@@ -20,6 +20,8 @@ import {
 
 import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
 
+import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
+
 export function initItemDefinitionsModal(db) {
   const { modal, content } = createModal({
     id: "item-definitions-modal",
