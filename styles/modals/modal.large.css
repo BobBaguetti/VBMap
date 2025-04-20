@@ -19,10 +19,7 @@
 
 /* Core modal box */
 .modal.modal-large .modal-content {
-  position: fixed;
-  top: 60px; /* grow from a fixed top, not center */
-  left: 50%;
-  transform: translateX(-50%); /* center horizontally */
+  position: relative;
   width: 100%;
   max-width: 550px;
   max-height: 90vh;
@@ -31,11 +28,11 @@
   border-radius: 6px;
   padding: 16px;
   box-shadow: 0 0 10px #000;
-  overflow-y: auto;
-  overflow-x: hidden;
   display: flex;
   flex-direction: column;
+  overflow: hidden; /* prevent entire modal from jumping */
 }
+
 
 /* Header section */
 .modal.modal-large .modal-header {
@@ -66,16 +63,17 @@
 
 /* Scrollable list container */
 .modal.modal-large .def-list {
-  flex: 0 1 240px;
+  flex: 0 0 240px;
   overflow-y: auto;
-  padding-right: 4px;
   margin-bottom: 12px;
+  padding-right: 4px;
 }
 
 /* Form section */
 .modal.modal-large form {
-  flex-shrink: 0;
-  overflow: visible;
+  flex: 1 1 auto; /* allow form to grow */
+  overflow-y: auto; /* scroll when overflowing */
+  min-height: 0;    /* necessary to prevent overflow on flex children */
 }
 
 /* Field rows */
