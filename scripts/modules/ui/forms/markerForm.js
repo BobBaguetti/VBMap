@@ -1,6 +1,3 @@
-// @version: 1
-// @file: /scripts/modules/ui/forms/markerForm.js
-
 import {
     createNameField,
     createRarityField,
@@ -15,7 +12,6 @@ import {
     const form = document.createElement("form");
     form.id = "marker-form";
   
-    // Build individual fields using universal form helpers
     const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("fld-name");
     const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("fld-rarity");
     const { row: rowItemType, select: fldItemType, colorBtn: colorItemType } = createItemTypeField("fld-item-type");

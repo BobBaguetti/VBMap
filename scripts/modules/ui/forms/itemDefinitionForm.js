@@ -1,19 +1,15 @@
-// @version: 8
-// @file: /scripts/modules/ui/forms/itemDefinitionForm.js
-
 import {
-  createImageField,
-  createFormButtonRow
+  createFormButtonRow,
+  createImageField
 } from "../../ui/uiKit.js";
 
 import { createPickr } from "../../ui/pickrManager.js";
-import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 import {
   createNameField,
-  createTypeField,
+  createItemTypeField,
   createRarityField,
   createDescriptionField,
-  createExtraInfoBlock,
+  createExtraInfoField,
   createValueField,
   createQuantityField
 } from "../universalForm.js";
@@ -28,16 +24,12 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   form.appendChild(subheading);
 
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
-  const { row: rowType, select: fldType, colorBtn: colorType } = createTypeField("def-type");
+  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("def-description");
-
-  const extraInfo = createExtraInfoBlock();
-  const rowExtra = createTopAlignedFieldRow("Extra Info:", extraInfo.block);
-
+  const { row: rowExtra, extraInfo } = createExtraInfoField("def-extra");
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField("def-value");
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField("def-quantity");
-
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "def-image-small");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "def-image-big");
 
@@ -69,7 +61,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     fldQty.value = def.quantity || "";
     fldImgS.value = def.imageSmall || "";
     fldImgL.value = def.imageBig || "";
-    form.querySelector("#def-form-subheading").textContent = editingId ? "Edit Item" : "Add / Edit Item";
+    subheading.textContent = editingId ? "Edit Item" : "Add / Edit Item";
   }
 
   form.addEventListener("submit", e => {
@@ -94,9 +86,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     colorDesc, colorValue, colorQty
   ];
   setTimeout(() => {
-    pickrTargets.forEach(el => {
-      createPickr(`#${el.id}`);
-    });
+    pickrTargets.forEach(el => createPickr(`#${el.id}`));
   }, 0);
 
   return {
