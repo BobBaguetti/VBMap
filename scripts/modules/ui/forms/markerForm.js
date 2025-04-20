@@ -49,25 +49,28 @@ import {
       });
     }, 0);
   
-    function setFromDefinition(def = {}) {
-      fldName.value = def.name || "";
-      fldName.style.color = def.nameColor || "#E5E6E8";
-  
-      fldRarity.value = def.rarity || "";
-      fldRarity.style.color = def.rarityColor || "#E5E6E8";
-  
-      fldItemType.value = def.itemType || "";
-      fldItemType.style.color = def.itemTypeColor || "#E5E6E8";
-  
-      fldDesc.value = def.description || "";
-      fldDesc.style.color = def.descriptionColor || "#E5E6E8";
-  
-      extraInfo.setLines(def.extraLines || [], true);
-  
-      fldImgS.value = def.imageSmall || "";
-      fldImgL.value = def.imageBig || "";
-      fldVid.value = def.video || "";
-    }
+    function setFromDefinition(def) {
+        def = def || {}; // restore safety fallback
+      
+        fldName.value = def.name || "";
+        fldName.style.color = def.nameColor || "#E5E6E8";
+      
+        fldRarity.value = def.rarity || "";
+        fldRarity.style.color = def.rarityColor || "#E5E6E8";
+      
+        fldItemType.value = def.itemType || "";
+        fldItemType.style.color = def.itemTypeColor || "#E5E6E8";
+      
+        fldDesc.value = def.description || "";
+        fldDesc.style.color = def.descriptionColor || "#E5E6E8";
+      
+        extraInfo.setLines(def.extraLines || [], true);
+      
+        fldImgS.value = def.imageSmall || "";
+        fldImgL.value = def.imageBig || "";
+        fldVid.value = def.video || "";
+      }
+      
   
     function setFromNonItem(data = {}) {
       fldName.value = data.name || "";
