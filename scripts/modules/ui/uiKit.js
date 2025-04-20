@@ -35,8 +35,8 @@ export function createModal({
   modal.classList.add("modal", `modal-${size}`);
   modal.id = id;
 
-  // Always start with transparent background to prevent html background bleed-through
-  modal.style.backgroundColor = "transparent";
+  // ✅ Set background based on backdrop setting right away
+  modal.style.backgroundColor = backdrop ? "rgba(0, 0, 0, 0.5)" : "transparent";
 
   const content = document.createElement("div");
   content.classList.add("modal-content");
@@ -122,6 +122,7 @@ export function closeModal(modal) {
 export function openModal(modal) {
   modal.style.display = "block";
 
+  // ✅ Ensure background is correctly applied after DOM paint
   requestAnimationFrame(() => {
     if (modal.classList.contains("modal-large")) {
       modal.style.backgroundColor = "rgba(0, 0, 0, 0.5)";
@@ -143,8 +144,7 @@ export function openModalAt(modal, evt) {
   content.style.top  = `${evt.clientY - rect.height / 2}px`;
 }
 
-// ─── Form & Field Builders ──────────────────────────────────────────────────
-// [unchanged: same functions for createTextField, createDropdownField, etc.]
+// ─── Field Builders ───────────────────────────────────────────────────────────
 
 export function createFieldRow(labelText, inputEl) {
   const row = document.createElement("div");
