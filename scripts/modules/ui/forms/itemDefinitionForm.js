@@ -1,4 +1,4 @@
-// @version: 5
+// @version: 6
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -43,8 +43,9 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
     createTextareaFieldWithColor("Description:", "def-description");
 
-  const { row: rowExtra, getLines, setLines } =
-    createTopAlignedFieldRow("Extra Info:", createExtraInfoBlock());
+  // ✅ Proper extra info layout and logic
+  const { block: extraBlock, getLines, setLines } = createExtraInfoBlock();
+  const rowExtra = createTopAlignedFieldRow("Extra Info:", extraBlock);
 
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createTextField("Value:", "def-value");
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createTextField("Quantity:", "def-quantity");
