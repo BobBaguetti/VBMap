@@ -1,9 +1,9 @@
-// @version: 1
+// @version: 2
 // @file: /scripts/modules/utils/scrollUtils.js
 
 /**
- * Adds a 'scrolling' class to any .ui-scroll-float element during scroll,
- * which can be styled in CSS to show the scrollbar thumb.
+ * Adds 'scrolling' class to elements while scrolling
+ * used with .ui-scroll-float or scrollable forms.
  */
 export function activateFloatingScrollbars() {
     document.addEventListener("DOMContentLoaded", () => {
