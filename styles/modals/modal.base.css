@@ -102,15 +102,15 @@
 /* 8) Extra-row layout tweaks */
 .modal-content .field-row.extra-row {
   align-items: flex-start;
-  gap: 0; /* Ensure no gap pushes things off */
 }
 
 /* Align label with + button */
 .modal-content .field-row.extra-row > label {
-  margin-top: 8px; /* Matches input vertical center */
+  margin-top: 6px;
 }
 
-/* Ensure + button stacks and aligns like input fields */
+/* Ensure + button stacks and aligns with input start */
+/* Label width: 100px + 8px gap = 108px total offset */
 .extra-info-block {
   flex: 1;
   display: flex;
@@ -119,12 +119,11 @@
 
 .extra-info-block > button {
   align-self: flex-start;
-  margin-top: 4px;         /* tweak vertical spacing */
-  margin-left: 108px;      /* label width + margin-right */
-  padding: 6px 8px;
-  height: 32px;            /* match input height */
-  box-sizing: border-box;
+  margin-top: 6px;
+  margin-left: 108px;
+  padding: 6px 12px;
 }
+
 
 
 /* 9) Dividers around Extra Info */
