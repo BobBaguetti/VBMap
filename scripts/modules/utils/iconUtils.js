@@ -38,6 +38,4 @@ export function createIcon(name, options = {}) {
       "M9 14h6"
     ]
   };
-    // more icons will go here...
-  };
   
