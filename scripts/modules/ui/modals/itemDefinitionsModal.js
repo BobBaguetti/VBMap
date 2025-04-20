@@ -1,24 +1,6 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 8   The current file version is 8. Increase by 1 every time you update anything.
-// @file:    /scripts/modules/ui/modals/itemDefinitionsModal.js
-
 import { createModal, closeModal } from "../uiKit.js";
-import {
-  createTextField,
-  createDropdownField,
-  createTextareaFieldWithColor,
-  createImageField,
-  createExtraInfoBlock,
-  createFormButtonRow
-} from "../uiKit.js";
-
-import {
-  createFilterButtonGroup,
-  createSearchRow,
-  createDefListContainer,
-  createFilterableList
-} from "../../utils/listUtils.js";
-
+import { createFilterableList } from "../../utils/listUtils.js";
+import { buildItemDefinitionForm } from "../forms/itemDefinitionForm.js";
 import {
   loadItemDefinitions,
   saveItemDefinition,
@@ -27,12 +9,7 @@ import {
   subscribeItemDefinitions
 } from "../../services/itemDefinitionsService.js";
 
-/**
- * Initializes the “Manage Items” modal.
- * Returns an object with `open()` and `refresh()` methods.
- */
 export function initItemDefinitionsModal(db) {
-  // ─── 1) Build modal ─────────────────────────────────────────────────────────
   const { modal, content } = createModal({
     id: "item-definitions-modal",
     title: "Manage Items",
@@ -42,228 +19,97 @@ export function initItemDefinitionsModal(db) {
     withDivider: true,
     onClose: () => closeModal(modal)
   });
-  const header = content.querySelector(".modal-header");
 
-  // ─── 2) Define sorting functions ───────────────────────────────────────────
-  const rarityOrder = { legendary:5, epic:4, rare:3, uncommon:2, common:1, "":0 };
+  const listContainer = document.createElement("div");
+  listContainer.id = "item-definitions-list";
+  content.appendChild(listContainer);
+
   const sortFns = {
     "filter-name":        (a,b) => a.name.localeCompare(b.name),
     "filter-type":        (a,b) => a.itemType.localeCompare(b.itemType),
-    "filter-rarity":      (a,b) => rarityOrder[b.rarity] - rarityOrder[a.rarity],
-    "filter-description": (a,b) => a.description.localeCompare(b.description),
+    "filter-rarity":      (a,b) => (b.rarity||"").localeCompare(a.rarity||""),
+    "filter-description": (a,b) => (a.description||"").localeCompare(b.description||""),
     "filter-quantity":    (a,b) => (parseInt(b.quantity)||0) - (parseInt(a.quantity)||0),
     "filter-price":       (a,b) => (parseFloat(b.value)||0) - (parseFloat(a.value)||0)
   };
-  let activeSorts = new Set();
+  const filters = [
+    { id: "filter-name", label: "N" },
+    { id: "filter-type", label: "T" },
+    { id: "filter-rarity", label: "R" },
+    { id: "filter-description", label: "D" },
+    { id: "filter-quantity", label: "Qt" },
+    { id: "filter-price", label: "P" }
+  ];
 
-  // ─── 3) Filter buttons ─────────────────────────────────────────────────────
-  const { wrapper: filterWrapper } = createFilterButtonGroup(
-    [
-      { id: "filter-name",        label: "N"  },
-      { id: "filter-type",        label: "T"  },
-      { id: "filter-rarity",      label: "R"  },
-      { id: "filter-description", label: "D"  },
-      { id: "filter-quantity",    label: "Qt" },
-      { id: "filter-price",       label: "P"  }
-    ],
-    (btnId, isToggled) => {
-      if (isToggled) activeSorts.add(btnId);
-      else           activeSorts.delete(btnId);
-      renderFilteredList();
-    }
-  );
-  header.appendChild(filterWrapper);
-
-  // ─── 4) Search row ─────────────────────────────────────────────────────────
-  const { row: searchRow, input: searchInput } =
-    createSearchRow("def-search", "Search items…");
-  header.appendChild(searchRow);
-  searchInput.addEventListener("input", () => {
-    renderFilteredList();
-  });
-
-  // ─── 5) Definitions list container ─────────────────────────────────────────
-  const listContainer = createDefListContainer("item-definitions-list");
-  content.appendChild(listContainer);
-  content.appendChild(document.createElement("hr"));
-
-  // ─── 6) Build Add/Edit form ────────────────────────────────────────────────
-  const form = document.createElement("form");
-  form.id = "item-definition-form";
-
-  const subheading = document.createElement("h3");
-  subheading.id = "def-form-subheading";
-  subheading.textContent = "Add / Edit Item";
-  form.appendChild(subheading);
-
-  // Name
-  const { row: rowName, input: fldName } = createTextField("Name:", "def-name");
-  form.appendChild(rowName);
-
-  // Item Type
-  const { row: rowType, select: fldType } =
-    createDropdownField("Item Type:", "def-type", [
-      { value: "Crafting Material", label: "Crafting Material" },
-      { value: "Special",           label: "Special"           },
-      { value: "Consumable",        label: "Consumable"        },
-      { value: "Quest",             label: "Quest"             }
-    ]);
-  form.appendChild(rowType);
-
-  // Rarity
-  const { row: rowRarity, select: fldRarity } =
-    createDropdownField("Rarity:", "def-rarity", [
-      { value: "",          label: "Select Rarity" },
-      { value: "common",    label: "Common"         },
-      { value: "uncommon",  label: "Uncommon"       },
-      { value: "rare",      label: "Rare"           },
-      { value: "epic",      label: "Epic"           },
-      { value: "legendary", label: "Legendary"      }
-    ]);
-  form.appendChild(rowRarity);
-
-  // Description
-  const { row: rowDesc, textarea: fldDesc } =
-    createTextareaFieldWithColor("Description:", "def-description");
-  form.appendChild(rowDesc);
-
-  // Extra Info
-  const { block: extraBlock, getLines, setLines } = createExtraInfoBlock();
-  const rowExtra = document.createElement("div");
-  rowExtra.className = "field-row extra-row";
-  const lblExtra = document.createElement("label");
-  lblExtra.textContent = "Extra Info:";
-  rowExtra.append(lblExtra, extraBlock);
-  form.appendChild(rowExtra);
-
-  // Value
-  const { row: rowValue, input: fldValue } =
-    createTextField("Value:", "def-value");
-  form.appendChild(rowValue);
-
-  // Quantity
-  const { row: rowQty, input: fldQty } =
-    createTextField("Quantity:", "def-quantity");
-  form.appendChild(rowQty);
-
-  // Image S
-  const { row: rowImgS, input: fldImgS } =
-    createImageField("Image S:", "def-image-small");
-  form.appendChild(rowImgS);
-
-  // Image L
-  const { row: rowImgL, input: fldImgL } =
-    createImageField("Image L:", "def-image-big");
-  form.appendChild(rowImgL);
-
-  // Buttons
-  const rowButtons = createFormButtonRow(() => closeModal(modal));
-  form.appendChild(rowButtons);
-  content.appendChild(form);
-
-  // ─── 7) State & CRUD handlers ─────────────────────────────────────────────
-  let definitions = [];
-  let editingId    = null;
-
-  async function refreshDefinitions() {
-    definitions = await loadItemDefinitions(db);
-    renderFilteredList();
-  }
-
-  function renderFilteredList() {
-    let list = definitions.filter(d =>
-      d.name.toLowerCase().includes(searchInput.value.trim().toLowerCase())
-    );
-    activeSorts.forEach(id => {
-      const fn = sortFns[id];
-      if (fn) list = [...list].sort(fn);
-    });
-    renderList(list);
-  }
-
-  function renderList(list) {
-    listContainer.innerHTML = "";
-    list.forEach(def => {
-      const entry = document.createElement("div");
-      entry.className = "item-def-entry";
-      entry.innerHTML = `
+  const { refresh, open } = createFilterableList(
+    listContainer,
+    [],
+    sortFns,
+    def => {
+      const div = document.createElement("div");
+      div.className = "item-def-entry";
+      div.innerHTML = `
         <strong>${def.name}</strong> (${def.rarity})<br/>
         Type: ${def.itemType} • Qty: ${def.quantity||"—"} • Value: ${def.value||"—"}
       `;
-      entry.addEventListener("click", () => populateForm(def));
-      listContainer.appendChild(entry);
-    });
-  }
-
-  function populateForm(def) {
-    editingId        = def.id;
-    fldName.value    = def.name;
-    fldType.value    = def.itemType;
-    fldRarity.value  = def.rarity;
-    fldDesc.value    = def.description;
-    setLines(def.extraLines||[], false);
-    fldValue.value   = def.value    || "";
-    fldQty.value     = def.quantity || "";
-    fldImgS.value    = def.imageSmall   || "";
-    fldImgL.value    = def.imageBig     || "";
-    subheading.textContent = "Edit Item";
-    modal.style.display = "block";
-  }
-
-  function clearForm() {
-    editingId = null;
-    fldName.value= fldType.value= fldRarity.value= fldDesc.value="";
-    setLines([], false);
-    fldValue.value= fldQty.value= fldImgS.value= fldImgL.value= "";
-    subheading.textContent = "Add / Edit Item";
-  }
-
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    const payload = {
-      name:        fldName.value.trim(),
-      itemType:    fldType.value,
-      rarity:      fldRarity.value,
-      description: fldDesc.value.trim(),
-      extraLines:  getLines(),
-      value:       fldValue.value.trim(),
-      quantity:    fldQty.value.trim(),
-      imageSmall:  fldImgS.value.trim(),
-      imageBig:    fldImgL.value.trim()
-    };
-    if (editingId) {
-      await updateItemDefinition(db, { id: editingId, ...payload });
-    } else {
-      await saveItemDefinition(db, null, payload);
+      div.onclick = () => {
+        formBuilder.populate(def);
+        open();
+      };
+      return div;
+    },
+    {
+      filters,
+      searchPlaceholder: "Search items…"
     }
-    closeModal(modal);
-    await refreshDefinitions();
-  });
+  );
 
-  const btnDelete = document.createElement("button");
-  btnDelete.type = "button";
-  btnDelete.className = "ui-button";
-  btnDelete.textContent = "Delete";
-  btnDelete.onclick = async () => {
-    if (!editingId) return;
-    await deleteItemDefinition(db, editingId);
+  content.appendChild(document.createElement("hr"));
+
+  // Build Form
+  const formBuilder = buildItemDefinitionForm({
+    onCancel: () => closeModal(modal),
+    onSubmit: async def => {
+      if (def.id) {
+        await updateItemDefinition(db, def);
+      } else {
+        await saveItemDefinition(db, null, def);
+      }
+      closeModal(modal);
+      await loadAndRefresh();
+    }
+  });
+  content.appendChild(formBuilder.form);
+
+  // Delete button
+  const delBtn = document.createElement("button");
+  delBtn.type = "button";
+  delBtn.textContent = "Delete";
+  delBtn.className = "ui-button";
+  delBtn.onclick = async () => {
+    const id = formBuilder?.form.querySelector("#def-form-subheading")?.textContent.includes("Edit")
+      ? formBuilder?.form.id
+      : null;
+    if (!id) return;
+    await deleteItemDefinition(db, id);
     closeModal(modal);
-    await refreshDefinitions();
+    await loadAndRefresh();
   };
-  rowButtons.appendChild(btnDelete);
+  formBuilder.form.querySelector(".field-row:last-child")?.appendChild(delBtn);
 
-  subscribeItemDefinitions(db, defs => {
-    definitions = defs;
-    renderFilteredList();
-  });
+  async function loadAndRefresh() {
+    const defs = await loadItemDefinitions(db);
+    refresh(defs);
+  }
 
-  // ─── 8) API ────────────────────────────────────────────────────────────────
+  subscribeItemDefinitions(db, defs => refresh(defs));
+
   return {
     open: async () => {
-      clearForm();
-      await refreshDefinitions();
+      formBuilder.reset();
+      await loadAndRefresh();
       modal.style.display = "block";
     },
-    refresh: refreshDefinitions
+    refresh: loadAndRefresh
   };
 }
