@@ -1,4 +1,4 @@
-/* @version: 6 */
+/* @version: 7 */
 /* @file: /styles/modals/modal.large.css */
 
 .modal.modal-large {
@@ -15,8 +15,6 @@
   pointer-events: auto;
 }
 
-
-
 /* Core modal box */
 .modal.modal-large .modal-content {
   position: relative;
@@ -30,11 +28,20 @@
   box-shadow: 0 0 10px #000;
   display: flex;
   flex-direction: column;
-  overflow: overlay; /* floating scrollbar */
-  scrollbar-gutter: stable both-edges; /* optional, not needed with overlay but harmless */
+  overflow-y: auto;
+  scrollbar-gutter: stable both-edges;
 }
 
-/* Chrome, Safari, Edge */
+/* Floating scrollbars (hover only) */
+.modal.modal-large .modal-content {
+  scrollbar-width: thin;
+  scrollbar-color: transparent transparent;
+}
+
+.modal.modal-large .modal-content:hover {
+  scrollbar-color: #555 transparent;
+}
+
 .modal.modal-large .modal-content::-webkit-scrollbar {
   width: 8px;
   background: transparent;
@@ -47,7 +54,7 @@
 }
 
 .modal.modal-large .modal-content:hover::-webkit-scrollbar-thumb {
-  background-color: #555; /* visible on hover */
+  background-color: #555;
 }
 
 /* Header section */
@@ -144,6 +151,7 @@
   border-radius: 4px;
   cursor: pointer;
 }
+
 .modal.modal-large .ui-button:hover {
   background-color: #666;
 }

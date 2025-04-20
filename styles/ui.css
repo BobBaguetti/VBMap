@@ -42,3 +42,27 @@
     background: #777;
   }
   
+  /* Floating scrollbar that only appears on hover */
+  .ui-scroll-float {
+    scrollbar-width: thin;
+    scrollbar-color: transparent transparent;
+  }
+
+  .ui-scroll-float:hover {
+    scrollbar-color: #555 transparent;
+  }
+
+  .ui-scroll-float::-webkit-scrollbar {
+    width: 8px;
+    background: transparent;
+  }
+
+  .ui-scroll-float::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+
+  .ui-scroll-float:hover::-webkit-scrollbar-thumb {
+    background-color: #555;
+  }
