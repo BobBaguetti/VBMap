@@ -101,15 +101,19 @@
 }
 
 /* 8) Extra‑row top‑align */
-.modal-content .field-row.extra-row {
-  align-items: flex-start;
+.modal-content .field-row.extra-row > label {
+  margin-top: 6px; /* Adjust if needed */
+}
+
+.extra-info-block {
+  flex: 1;
 }
 
 /* 9) Dividers around Extra Info */
 .modal-content hr {
   border: none;
   border-top: 2px solid #444;
-  margin: 4px 0;
+  margin: 6px 0;
 }
 
 /* give 16px bottom‑margin just on the three item‑specific rows */
