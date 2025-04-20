@@ -1,4 +1,4 @@
-// @version: 1
+// @version: 2
 // @file: /scripts/modules/ui/formUtils.js
 
 /**
@@ -15,11 +15,17 @@ export function createTopAlignedFieldRow(labelText, contentEl) {
   
     const label = document.createElement("label");
     label.textContent = labelText;
-    label.style.alignSelf = "flex-start"; // ⬅️ top-align label
   
-    contentEl.style.flex = "1";           // ⬅️ allow content to stretch left
-    contentEl.style.marginLeft = "0px";   // ⬅️ remove excess left margin
+    // Match default label spacing
+    label.style.alignSelf = "flex-start";
+    label.style.width = "100px";
+    label.style.marginRight = "8px";
+  
+    // Allow block content to stretch cleanly
+    contentEl.style.flex = "1";
+    contentEl.style.marginLeft = "0";
   
     row.append(label, contentEl);
     return row;
   }
+  

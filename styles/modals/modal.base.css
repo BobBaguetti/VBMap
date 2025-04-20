@@ -118,11 +118,13 @@
 }
 
 .extra-info-block > button {
-  align-self: flex-start;
+  align-self: stretch;
+  width: fit-content;
+  margin-left: 0;
   margin-top: 6px;
-  margin-left: 108px;
   padding: 6px 12px;
 }
+
 
 
 
