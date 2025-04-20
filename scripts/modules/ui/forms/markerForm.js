@@ -14,7 +14,6 @@ import {
     createVideoField
   } from "../../ui/uiKit.js";
   
-  import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
   import { createPickr } from "../../ui/pickrManager.js";
   
   export function createMarkerForm() {
@@ -25,18 +24,22 @@ import {
     const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("fld-rarity");
     const { row: rowItemType, select: fldItemType, colorBtn: colorItemType } = createItemTypeField("fld-item-type");
     const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("fld-desc-item");
-    const { extraInfo } = createExtraInfoField();
-    const extraRow = createTopAlignedFieldRow("Extra Info:", extraInfo.block);
+    const { row: rowExtra, extraInfo } = createExtraInfoField();
     const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
     const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
     const { row: rowVid, input: fldVid } = createVideoField("Video:", "fld-vid");
+  
+    // Re-apply visual spacing class to item-only rows
+    rowRarity.classList.add("item-gap");
+    rowItemType.classList.add("item-gap");
+    rowDesc.classList.add("item-gap");
   
     form.append(
       rowName,
       rowRarity,
       rowItemType,
       rowDesc,
-      extraRow,
+      rowExtra,
       rowImgS,
       rowImgL,
       rowVid
@@ -50,27 +53,26 @@ import {
     }, 0);
   
     function setFromDefinition(def) {
-        def = def || {}; // restore safety fallback
-      
-        fldName.value = def.name || "";
-        fldName.style.color = def.nameColor || "#E5E6E8";
-      
-        fldRarity.value = def.rarity || "";
-        fldRarity.style.color = def.rarityColor || "#E5E6E8";
-      
-        fldItemType.value = def.itemType || "";
-        fldItemType.style.color = def.itemTypeColor || "#E5E6E8";
-      
-        fldDesc.value = def.description || "";
-        fldDesc.style.color = def.descriptionColor || "#E5E6E8";
-      
-        extraInfo.setLines(def.extraLines || [], true);
-      
-        fldImgS.value = def.imageSmall || "";
-        fldImgL.value = def.imageBig || "";
-        fldVid.value = def.video || "";
-      }
-      
+      def = def || {}; // Fallback for null
+  
+      fldName.value = def.name || "";
+      fldName.style.color = def.nameColor || "#E5E6E8";
+  
+      fldRarity.value = def.rarity || "";
+      fldRarity.style.color = def.rarityColor || "#E5E6E8";
+  
+      fldItemType.value = def.itemType || "";
+      fldItemType.style.color = def.itemTypeColor || "#E5E6E8";
+  
+      fldDesc.value = def.description || "";
+      fldDesc.style.color = def.descriptionColor || "#E5E6E8";
+  
+      extraInfo.setLines(def.extraLines || [], true);
+  
+      fldImgS.value = def.imageSmall || "";
+      fldImgL.value = def.imageBig || "";
+      fldVid.value = def.video || "";
+    }
   
     function setFromNonItem(data = {}) {
       fldName.value = data.name || "";
@@ -128,7 +130,6 @@ import {
         fldItemType, colorItemType,
         fldDesc, colorDesc,
         extraInfo,
-        extraRow,
         fldImgS,
         fldImgL,
         fldVid
