@@ -15,6 +15,7 @@ export const rarityColors = {
     Consumable: "#d2dee1",
     Special: "#e1dbe2",
     Quest: "#f4e0d6",
+    Crafting Material: "#6F84AD"
     "": "#bbb"
   };
   
