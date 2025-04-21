@@ -136,12 +136,12 @@ export function initItemDefinitionsModal(db) {
   document.body.appendChild(previewPanel);
   const previewApi = createItemPreviewPanel(previewPanel);
 
-  function updatePreview() {
+  formApi.form.addEventListener("input", () => {
     const data = formApi.getCustom?.();
-    if (data) previewApi.renderPreview(data);
-  }
-
-  formApi.form.addEventListener("input", updatePreview);
+    if (data) {
+      previewApi.setFromDefinition(data);
+    }
+  });
 
   const bodyWrap = document.createElement("div");
   bodyWrap.style.display = "flex";
@@ -210,7 +210,7 @@ export function initItemDefinitionsModal(db) {
             formApi.populate(def);
             previewPanel.classList.remove("hidden");
             previewPanel.classList.add("visible");
-            previewApi.renderPreview(formApi.getCustom?.());
+            previewApi.setFromDefinition(def);
           }
         });
 
@@ -244,7 +244,6 @@ export function initItemDefinitionsModal(db) {
 
       previewPanel.classList.remove("hidden");
       previewPanel.classList.add("visible");
-      updatePreview();
     },
     refresh: refreshDefinitions
   };
