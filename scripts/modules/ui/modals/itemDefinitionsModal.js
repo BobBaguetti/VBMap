@@ -1,4 +1,4 @@
-// @version: 23
+// @version: 24
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 // Modal creation utilities
@@ -117,19 +117,17 @@ export function initItemDefinitionsModal(db) {
       } else {
         saved = await saveItemDefinition(db, null, payload);
       }
-
-      // Update in local array
-      const idx = definitions.findIndex(d => d.id === saved.id);
-      if (idx !== -1) {
-        definitions[idx] = saved;
+    
+      // Fully refresh from the database to ensure a correct ID
+      await refreshDefinitions();
+    
+      const match = definitions.find(d => d.id === saved.id);
+      if (match) {
+        formApi.populate(match);
       } else {
-        definitions.unshift(saved); // New item goes to top
+        console.warn("[submit] Saved item not found in refreshed list:", saved);
       }
-
-      renderFilteredList();
-      formApi.populate(saved); // Reopen item in edit mode
     }
-  });
 
   // Enable floating scrollbar on form
   formApi.form.classList.add("ui-scroll-float");
