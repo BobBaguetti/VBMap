@@ -1,8 +1,9 @@
-/* @version: 15 */
+/* @version: 16 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
 
+/* Leaflet Overrides */
 .leaflet-container {
   background-color: #1a1a1a !important;
 }
@@ -36,6 +37,7 @@
   display: none !important;
 }
 
+/* Custom Popup */
 .custom-popup {
   position: relative;
   background: rgba(34, 34, 34, 0.95) !important;
@@ -49,12 +51,13 @@
   line-height: 1.4;
 }
 
+/* Header */
 .popup-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 12px;
+  margin-bottom: 13px; /* adjusted down */
   border-bottom: 2px solid #444;
   padding: 0;
 }
@@ -66,6 +69,17 @@
   flex: 1;
 }
 
+.popup-image {
+  width: 64px;
+  height: 64px;
+  object-fit: contain;
+  background: #222;
+  border: 2px solid #777;
+  border-radius: 6px;
+  flex-shrink: 0;
+}
+
+/* Info Block */
 .popup-info {
   display: flex;
   flex-direction: column;
@@ -98,17 +112,17 @@
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* New value icon block (numeric + icon) */
+/* Value (coins) block */
 .popup-value-icon {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 520;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
   margin-top: 32px;
   margin-right: 4px;
   white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 .popup-value-icon svg {
@@ -117,15 +131,15 @@
   fill: #d4af37;
 }
 
-/* Description box wraps all lower body now */
+/* Body (with box style) */
 .popup-body.popup-info-box {
   font-weight: 420;
   font-size: 14px;
   background: rgba(20, 20, 20, 0.6);
   border: 1px solid #444;
   border-radius: 4px;
-  padding: 10px;
-  margin-top: 8px;
+  padding: 9px;
+  margin-top: 7px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -143,6 +157,7 @@
   font-weight: 400;
 }
 
+/* Extras + Meta */
 .popup-extra-line {
   font-size: 14px;
   font-weight: 420;
@@ -155,22 +170,23 @@
   color: #e0e0e0;
 }
 
-.popup-image {
-  width: 64px;
-  height: 64px;
-  object-fit: contain;
-  background: #222;
-  border: 2px solid #777;
-  border-radius: 6px;
-  flex-shrink: 0;
+.popup-divider {
+  border: none;
+  height: 1px;
+  background: #444;
+  margin: 6px 0;
 }
 
+/* Close Button */
 .popup-close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  align-self: flex-start;
+  z-index: 10;
 }
 
 .popup-close-btn svg {
