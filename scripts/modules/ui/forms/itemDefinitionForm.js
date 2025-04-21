@@ -1,4 +1,4 @@
-// @version: 21
+// @version: 23
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -55,14 +55,14 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   btnCancel.className = "ui-button";
   btnCancel.onclick = () => {
     console.log("[cancel] Returning to Add mode");
-    populate({}); // Return to Add mode
+    populate({});
   };
 
   const btnClear = document.createElement("button");
   btnClear.type = "button";
   btnClear.textContent = "Clear";
   btnClear.className = "ui-button";
-  btnClear.onclick = () => populate({}); // Fully clear the form
+  btnClear.onclick = () => populate({});
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
@@ -123,35 +123,28 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     const safe = (v, d = "") => v ?? d;
 
     fldName.value = safe(def.name);
-    fldName.style.color = safe(def.nameColor, "#E5E6E8");
     pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
 
     fldType.value = safe(def.itemType);
-    fldType.style.color = safe(def.itemTypeColor, "#E5E6E8");
     pickrs.get(colorType)?.setColor(def.itemTypeColor || "#E5E6E8");
 
     fldRarity.value = safe(def.rarity);
-    fldRarity.style.color = safe(def.rarityColor, "#E5E6E8");
     pickrs.get(colorRarity)?.setColor(def.rarityColor || "#E5E6E8");
 
     fldDesc.value = safe(def.description);
-    fldDesc.style.color = safe(def.descriptionColor, "#E5E6E8");
     pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
 
     extraInfo.setLines(safe(def.extraLines, []), false);
 
     fldValue.value = safe(def.value);
-    fldValue.style.color = safe(def.valueColor, "#E5E6E8");
     pickrs.get(colorValue)?.setColor(def.valueColor || "#E5E6E8");
 
     fldQty.value = safe(def.quantity);
-    fldQty.style.color = safe(def.quantityColor, "#E5E6E8");
     pickrs.get(colorQty)?.setColor(def.quantityColor || "#E5E6E8");
 
     fldImgS.value = safe(def.imageSmall);
     fldImgL.value = safe(def.imageBig);
 
-    // Update heading and buttons
     subheading.textContent = editingId ? "Edit Item" : "Add Item";
     floatingBtns.innerHTML = "";
     floatingBtns.append(btnSave);
@@ -176,18 +169,18 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     const payload = {
       id: editingId,
       name,
-      nameColor: fldName.style.color || "#E5E6E8",
+      nameColor: pickrs.get(colorName)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
       itemType: fldType.value,
-      itemTypeColor: fldType.style.color || "#E5E6E8",
+      itemTypeColor: pickrs.get(colorType)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
       rarity: fldRarity.value,
-      rarityColor: fldRarity.style.color || "#E5E6E8",
+      rarityColor: pickrs.get(colorRarity)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
       description: fldDesc.value.trim(),
-      descriptionColor: fldDesc.style.color || "#E5E6E8",
+      descriptionColor: pickrs.get(colorDesc)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
       extraLines: extraInfo.getLines(),
       value: fldValue.value.trim(),
-      valueColor: fldValue.style.color || "#E5E6E8",
+      valueColor: pickrs.get(colorValue)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
       quantity: fldQty.value.trim(),
-      quantityColor: fldQty.style.color || "#E5E6E8",
+      quantityColor: pickrs.get(colorQty)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
       imageSmall: fldImgS.value.trim(),
       imageBig: fldImgL.value.trim()
     };
@@ -195,7 +188,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     onSubmit(payload);
 
     if (!editingId) {
-      setTimeout(() => populate({}), 0); // Reset after adding
+      setTimeout(() => populate({}), 0);
     }
   });
 
