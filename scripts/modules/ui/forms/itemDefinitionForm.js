@@ -1,4 +1,4 @@
-// @version: 19
+// @version: 20
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -48,6 +48,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   btnCancel.textContent = "Cancel";
   btnCancel.className = "ui-button";
   btnCancel.onclick = () => {
+    console.log("[cancel] Returning to Add mode");
     populate({}); // Return to Add Item mode instead of closing modal
   };
 
@@ -108,6 +109,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   const pickrs = new Map();
 
   function populate(def) {
+    console.log("[populate] Incoming definition:", def);
+
     editingId = def.id || null;
     const safe = (v, d = "") => v ?? d;
 
@@ -184,8 +187,6 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
 
     if (!editingId) {
       setTimeout(() => populate({}), 0); // Reset form after add without closing modal
-    } else {
-      // Refresh the edited item in list if needed (handled externally)
     }
   });
 
