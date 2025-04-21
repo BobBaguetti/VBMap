@@ -1,4 +1,4 @@
-// @version: 2
+// @version: 21
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -81,7 +81,6 @@ export function initItemDefinitionsModal(db) {
   searchInput.addEventListener("input", () => renderFilteredList());
 
   const listContainer = createDefListContainer("item-definitions-list");
-  listContainer.classList.add("ui-scroll-float");
   content.appendChild(listContainer);
   content.appendChild(document.createElement("hr"));
 
@@ -89,19 +88,30 @@ export function initItemDefinitionsModal(db) {
 
   const formApi = createItemDefinitionForm({
     onCancel: () => closeModal(modal),
-    onSubmit: async (payload) => {
-      if (payload.id) {
-        await updateItemDefinition(db, String(payload.id), payload);
-      } else {
-        await saveItemDefinition(db, null, payload);
-      }
-      closeModal(modal);
+    onDelete: async (idToDelete) => {
+      await deleteItemDefinition(db, idToDelete);
       await refreshDefinitions();
+    },
+    onSubmit: async (payload) => {
+      let saved;
+      if (payload.id) {
+        saved = await updateItemDefinition(db, String(payload.id), payload);
+      } else {
+        saved = await saveItemDefinition(db, null, payload);
+      }
+
+      const idx = definitions.findIndex(d => d.id === saved.id);
+      if (idx !== -1) {
+        definitions[idx] = saved;
+      } else {
+        definitions.unshift(saved);
+      }
+
+      renderFilteredList();
     }
   });
 
-  formApi.form.classList.add("ui-scroll-float"); // ✅ Enable floating scrollbar behavior
-
+  formApi.form.classList.add("ui-scroll-float");
   content.appendChild(formApi.form);
 
   async function refreshDefinitions() {
@@ -111,7 +121,7 @@ export function initItemDefinitionsModal(db) {
 
   function renderFilteredList() {
     let list = definitions.filter(d =>
-      d.name.toLowerCase().includes(searchInput.value.trim().toLowerCase())
+      d.name?.toLowerCase().includes(searchInput.value.trim().toLowerCase())
     );
     activeSorts.forEach(id => {
       const fn = sortFns[id];
