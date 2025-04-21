@@ -1,4 +1,4 @@
-// @version: 17
+// @version: 18
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -154,9 +154,16 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
 
   form.addEventListener("submit", e => {
     e.preventDefault();
+    const name = fldName.value.trim();
+    if (!name) {
+      alert("Name is required.");
+      fldName.focus();
+      return;
+    }
+
     const payload = {
       id: editingId,
-      name: fldName.value.trim(),
+      name,
       nameColor: fldName.style.color || "#E5E6E8",
       itemType: fldType.value,
       itemTypeColor: fldType.style.color || "#E5E6E8",
@@ -173,6 +180,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
       imageBig: fldImgL.value.trim()
     };
     onSubmit(payload);
+    if (!editingId) populate({}); // Reset form after add
   });
 
   const pickrTargets = [
