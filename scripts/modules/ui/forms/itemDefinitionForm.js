@@ -1,4 +1,4 @@
-// @version: 29
+// @version: 30
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -60,7 +60,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
-  btnDelete.className = "entry-delete";
+  btnDelete.className = "form-delete-btn";
   btnDelete.title = "Delete this item";
   btnDelete.appendChild(createIcon("trash"));
   btnDelete.onclick = () => {
