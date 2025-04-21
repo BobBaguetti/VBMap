@@ -1,5 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 6   The current file version is 6. Increase by 1 every time you update anything.
+// @version: 7   The current file version is 7. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/services/itemDefinitionsService.js
 
 /**
@@ -40,12 +40,8 @@ export function getItemDefinitionsCollection(db) {
  * @returns {Promise<Array>} Array of item definition objects
  */
 export async function loadItemDefinitions(db) {
-  const definitions = [];
   const snapshot = await getItemDefinitionsCollection(db).get();
-  snapshot.forEach(doc => {
-    definitions.push({ id: doc.id, ...doc.data() });
-  });
-  return definitions;
+  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 }
 
 //////////////////////////////
@@ -69,10 +65,11 @@ export async function saveItemDefinition(db, id, data) {
     await col.doc(id).update(data);
     return { id, ...data };
   } else {
-    // Add new document and fetch it back to ensure ID and saved fields are valid
+    // Create new document, then fetch back the full saved data
     const docRef = await col.add(data);
-    const savedDoc = await docRef.get(); // ✅ Ensure correct fields are returned
+    const savedDoc = await docRef.get();
     const saved = { id: docRef.id, ...savedDoc.data() };
+
     console.log("[saveItemDefinition] Saved new item with ID:", saved.id, saved);
     return saved;
   }
