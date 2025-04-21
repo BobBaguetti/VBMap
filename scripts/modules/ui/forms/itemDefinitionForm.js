@@ -1,4 +1,4 @@
-// @version: 26
+// @version: 27
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -18,6 +18,7 @@ import {
 } from "./universalForm.js";
 
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
+import { createIcon } from "../../utils/iconUtils.js";
 
 export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   const form = document.createElement("form");
@@ -59,17 +60,9 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
-  btnDelete.textContent = "Delete";
-  btnDelete.className = "ui-button";
-  btnDelete.style.transition = "background 0.3s, color 0.3s";
-  btnDelete.onmouseenter = () => {
-    btnDelete.style.background = "#922";
-    btnDelete.style.color = "#fff";
-  };
-  btnDelete.onmouseleave = () => {
-    btnDelete.style.background = "";
-    btnDelete.style.color = "";
-  };
+  btnDelete.className = "entry-delete";
+  btnDelete.title = "Delete this item";
+  btnDelete.innerHTML = createIcon("trash").outerHTML;
   btnDelete.onclick = () => {
     if (editingId && confirm(`Are you sure you want to delete "${fldName.value}"?`)) {
       onDelete?.(editingId);
