@@ -1,4 +1,4 @@
-// @version: 15
+// @version: 16
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -22,14 +22,21 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   const form = document.createElement("form");
   form.id = "item-definition-form";
 
+  // 🔹 Subheading + Floating Buttons Wrapper
+  const subheadingWrap = document.createElement("div");
+  subheadingWrap.style.display = "flex";
+  subheadingWrap.style.justifyContent = "space-between";
+  subheadingWrap.style.alignItems = "center";
+
+  const subheading = document.createElement("h3");
+  subheading.id = "def-form-subheading";
+  subheading.textContent = "Add Item";
+  subheadingWrap.appendChild(subheading);
+
   // 🔹 Floating Save/Cancel/Clear/Delete Button Row
   const floatingBtns = document.createElement("div");
   floatingBtns.style.display = "flex";
   floatingBtns.style.gap = "10px";
-  floatingBtns.style.position = "absolute";
-  floatingBtns.style.top = "16px";
-  floatingBtns.style.right = "16px";
-  floatingBtns.style.zIndex = "10";
 
   const btnSave = document.createElement("button");
   btnSave.type = "submit";
@@ -65,19 +72,14 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.color = "";
   };
   btnDelete.onclick = () => {
-    if (editingId && confirm(`Are you sure you want to delete "${fldName.value}"?`)) {
+    if (editingId && confirm(`Are you sure you want to delete \"${fldName.value}\"?`)) {
       onDelete?.(editingId);
     }
   };
 
-  floatingBtns.append(btnSave); // Always show save
-  form.appendChild(floatingBtns); // ⬅ Add before form content
-
-  // 🔹 Subheading
-  const subheading = document.createElement("h3");
-  subheading.id = "def-form-subheading";
-  subheading.textContent = "Add Item";
-  form.appendChild(subheading);
+  floatingBtns.append(btnSave);
+  subheadingWrap.appendChild(floatingBtns);
+  form.appendChild(subheadingWrap);
 
   // 🔹 Fields
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
