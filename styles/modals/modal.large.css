@@ -236,3 +236,85 @@
 }
 
 
+/* ─── Layout Mode: Row View (Default) ──────────────────────────────────────── */
+.modal-large .layout-row .item-def-entry {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+}
+
+.modal-large .layout-row .item-def-entry > .entry-name {
+  flex: 2;
+}
+
+.modal-large .layout-row .item-def-entry > .entry-meta,
+.modal-large .layout-row .item-def-entry > .entry-description,
+.modal-large .layout-row .item-def-entry > .entry-details {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-large .layout-row .item-def-entry > .entry-delete {
+  align-self: flex-start;
+  margin-left: auto;
+}
+
+/* ─── Layout Mode: Stacked View ───────────────────────────────────────────── */
+.modal-large .layout-stacked .item-def-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 10px;
+}
+
+.modal-large .layout-stacked .item-def-entry > .entry-delete {
+  align-self: flex-end;
+  margin-top: 4px;
+}
+
+/* ─── Layout Mode: Gallery View ───────────────────────────────────────────── */
+.modal-large .layout-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-evenly;
+  padding: 6px;
+}
+
+.modal-large .layout-gallery .item-def-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  padding: 10px;
+  width: 110px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.modal-large .layout-gallery .item-def-entry:hover {
+  background: #333;
+}
+
+.modal-large .layout-gallery .item-def-entry > .entry-name {
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.modal-large .layout-gallery .item-def-entry > .entry-meta,
+.modal-large .layout-gallery .item-def-entry > .entry-details {
+  font-size: 11px;
+  text-align: center;
+}
+
+.modal-large .layout-gallery .item-def-entry .entry-delete {
+  margin-top: 6px;
+}
