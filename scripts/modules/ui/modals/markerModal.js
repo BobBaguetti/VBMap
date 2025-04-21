@@ -74,7 +74,7 @@ export function initMarkerModal(db) {
       formApi.setFromDefinition(def);
       customMode = false;
     } else {
-      formApi.setFromDefinition(null);
+      formApi.setFromDefinition({});
       customMode = true;
     }
   };

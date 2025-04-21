@@ -1,4 +1,4 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/preview/itemPreview.js
 
 export function createItemPreviewPanel(container) {
