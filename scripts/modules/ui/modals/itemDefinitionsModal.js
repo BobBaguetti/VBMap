@@ -1,4 +1,4 @@
-// @version: 29
+// @version: 30
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 // Modal creation utilities
@@ -114,9 +114,11 @@ export function initItemDefinitionsModal(db) {
       if (shouldUpdateColor) {
         if (payload.rarity in rarityColors) {
           payload.rarityColor = rarityColors[payload.rarity];
+          formApi.setFieldColor("rarity", rarityColors[payload.rarity]);
         }
         if (payload.itemType in itemTypeColors) {
           payload.itemTypeColor = itemTypeColors[payload.itemType];
+          formApi.setFieldColor("itemType", itemTypeColors[payload.itemType]);
         }
       }
 
