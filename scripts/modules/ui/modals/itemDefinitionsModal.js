@@ -1,4 +1,4 @@
-// @version: 26
+// @version: 27
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 // Modal creation utilities
@@ -101,36 +101,16 @@ export function initItemDefinitionsModal(db) {
       await refreshDefinitions();
     },
     onSubmit: async (payload) => {
-      let saved;
-
       if (payload.id) {
-        saved = await updateItemDefinition(db, String(payload.id), payload);
+        await updateItemDefinition(db, String(payload.id), payload);
       } else {
-        saved = await saveItemDefinition(db, null, payload);
+        await saveItemDefinition(db, null, payload);
       }
 
-      // Reload all items after saving to get proper ID
       await refreshDefinitions();
-
-      // Try exact match using returned ID
-      let match = definitions.find(d => d.id === saved.id);
-
-      // Fallback match (when ID isn't immediately returned)
-      if (!match) {
-        match = definitions.find(d =>
-          d.name === payload.name &&
-          d.description === payload.description &&
-          d.itemType === payload.itemType
-        );
-      }
-
-      if (match) {
-        formApi.populate(match);
-      } else {
-        console.warn("[submit] Could not locate freshly saved item in refreshed list:", saved);
-      }
+      formApi.reset(); // ✅ Always reset to Add mode after save
     }
-  }); // ← This closing brace was missing previously ❗
+  });
 
   formApi.form.classList.add("ui-scroll-float");
   content.appendChild(formApi.form);
