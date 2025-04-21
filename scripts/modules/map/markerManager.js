@@ -1,4 +1,4 @@
-// @version: 10
+// @version: 6
 // @file: /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
@@ -11,7 +11,8 @@ function isImgUrl(str) {
 
 export function createCustomIcon(m) {
   const imgHTML = isImgUrl(m.imageSmall)
-    ? `<img src="${m.imageSmall}" class="marker-icon" onerror="this.style.display='none'">`
+    ? `<img src="${m.imageSmall}" class="marker-icon"
+            onerror="this.style.display='none'">`
     : "";
 
   return L.divIcon({
@@ -28,7 +29,7 @@ export function createCustomIcon(m) {
 export function createPopupContent(m) {
   const nameHTML = `<div class="popup-name" style="color:${m.nameColor || "#E5E6E8"};">${m.name}</div>`;
   const bigImg = isImgUrl(m.imageBig)
-    ? `<img src="${m.imageBig}" class="popup-image" style="border-color:${m.rarityColor || "#777"};" onerror="this.style.display='none'">`
+    ? `<img src="${m.imageBig}" class="popup-image" onerror="this.style.display='none'">`
     : "";
 
   const itemTypeHTML = m.itemType
@@ -39,6 +40,13 @@ export function createPopupContent(m) {
     ? `<div class="popup-rarity" style="color:${m.rarityColor || "#E5E6E8"};">${formatRarity(m.rarity)}</div>`
     : "";
 
+  const valueHTML = m.value
+    ? `<div class="popup-value-icon" title="Value">
+         ${m.value}
+         ${createIcon("coins", { inline: true }).outerHTML}
+       </div>`
+    : "";
+
   const descHTML = m.description
     ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
     : "";
@@ -47,12 +55,8 @@ export function createPopupContent(m) {
     <p class="popup-extra-line" style="color:${line.color || "#E5E6E8"};">${line.text}</p>
   `).join("");
 
-  const valueHTML = m.value
-    ? `<p class="popup-meta"><strong>Value:</strong> ${m.value}</p>`
-    : "";
-
   const quantityHTML = m.quantity && m.quantity > 1
-    ? `<p class="popup-meta"><strong>Quantity:</strong> ${m.quantity}</p>`
+    ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
     : "";
 
   const videoBtn = m.video
@@ -65,7 +69,8 @@ export function createPopupContent(m) {
     </button>`;
 
   return `
-    <div class="custom-popup">
+    <div class="custom-popup" style="position: relative;">
+      ${closeButton}
       <div class="popup-header">
         <div class="popup-header-left">
           ${bigImg}
@@ -75,12 +80,11 @@ export function createPopupContent(m) {
             ${rarityHTML}
           </div>
         </div>
-        ${closeButton}
+        ${valueHTML}
       </div>
-      <div class="popup-body">
+      <div class="popup-body popup-info-box">
         ${descHTML}
         ${extraHTML}
-        ${valueHTML}
         ${quantityHTML}
         ${videoBtn}
       </div>
