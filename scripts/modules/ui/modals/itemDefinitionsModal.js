@@ -1,4 +1,4 @@
-// @version: 28
+// @version: 29
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 // Modal creation utilities
@@ -49,6 +49,22 @@ export function initItemDefinitionsModal(db) {
     "": 0
   };
 
+  const rarityColors = {
+    legendary: "#E6C200",
+    epic: "#A335EE",
+    rare: "#0070DD",
+    uncommon: "#1EFF00",
+    common: "#FFFFFF"
+  };
+
+  const itemTypeColors = {
+    Weapon: "#e1d7d2",
+    Armor: "#d2e1da",
+    Consumable: "#d2dee1",
+    Special: "#e1dbe2",
+    "": "#bbb"
+  };
+
   const sortFns = {
     "filter-name":        (a, b) => a.name.localeCompare(b.name),
     "filter-type":        (a, b) => a.itemType.localeCompare(b.itemType),
@@ -94,6 +110,16 @@ export function initItemDefinitionsModal(db) {
       await refreshDefinitions();
     },
     onSubmit: async (payload) => {
+      const shouldUpdateColor = (payload.id != null);
+      if (shouldUpdateColor) {
+        if (payload.rarity in rarityColors) {
+          payload.rarityColor = rarityColors[payload.rarity];
+        }
+        if (payload.itemType in itemTypeColors) {
+          payload.itemTypeColor = itemTypeColors[payload.itemType];
+        }
+      }
+
       if (payload.id) {
         await updateItemDefinition(db, String(payload.id), payload);
       } else {
