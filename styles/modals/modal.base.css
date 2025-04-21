@@ -59,7 +59,7 @@
   gap: 8px;
 }
 
-/* 5) Field-row base styling */
+/* 5) Field‑row base styling */
 .modal-content .field-row {
   display: flex;
   align-items: center;
@@ -83,12 +83,6 @@
   border-radius: 2px;
   padding: 6px 8px;
   color: #eee;
-}
-
-/* 6a) Stretch only image-row inputs to full width */
-.modal-content .field-row.image-row input {
-  width: 100%;
-  box-sizing: border-box;
 }
 
 /* 7) Color‑picker & remove‑line buttons */
