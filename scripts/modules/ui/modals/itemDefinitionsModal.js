@@ -117,10 +117,10 @@ export function initItemDefinitionsModal(db) {
       } else {
         saved = await saveItemDefinition(db, null, payload);
       }
-    
+
       // Fully refresh from the database to ensure a correct ID
       await refreshDefinitions();
-    
+
       const match = definitions.find(d => d.id === saved.id);
       if (match) {
         formApi.populate(match);
@@ -128,6 +128,7 @@ export function initItemDefinitionsModal(db) {
         console.warn("[submit] Saved item not found in refreshed list:", saved);
       }
     }
+  }); // ✅ This closing brace was missing before
 
   // Enable floating scrollbar on form
   formApi.form.classList.add("ui-scroll-float");
