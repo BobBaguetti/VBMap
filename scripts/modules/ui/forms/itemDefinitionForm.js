@@ -1,11 +1,10 @@
+
 // @version: 17
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 import { createColorButton } from "../uiKit.js";
 import { createIcon } from "../../utils/iconUtils.js";
-// ─── Add this import ─────────────────────────────────────────────
-import { createPickr } from "../../ui/pickrManager.js";
 
 export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const form = document.createElement("form");
@@ -179,21 +178,6 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     };
     onSubmit(payload);
   });
-
-  // ─────────────────────────────────────────────────────────────
-  // ─── Initialise Pickr on the four swatches ─────────────────────
-  // ─────────────────────────────────────────────────────────────
-  setTimeout(() => {
-    [nameColorBtn, typeColorBtn, rarityColorBtn, descColorBtn].forEach(btn => {
-      const p = createPickr(`#${btn.id}`);
-      // seed initial value
-      btn.dataset.color = p.getColor().toHEXA().toString();
-      p.on("save", (color, instance) => {
-        btn.dataset.color = color.toHEXA().toString();
-        instance.hide();
-      });
-    });
-  }, 0);
 
   // ─────────────────────────────────────────────────────────────
   // Helpers: populate/reset
