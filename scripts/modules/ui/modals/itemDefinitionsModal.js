@@ -146,59 +146,50 @@ export function initItemDefinitionsModal(db) {
 
       const meta = document.createElement("div");
       meta.className = "entry-meta";
-      meta.innerHTML = `
-        <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
-        <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity || "—"}</span>
-      `;
+      const typeSpan = document.createElement("span");
+      typeSpan.className = "entry-type";
+      typeSpan.textContent = def.itemType || "—";
+      typeSpan.style.color = def.itemTypeColor || "#bbb";
+
+      const raritySpan = document.createElement("span");
+      raritySpan.className = "entry-rarity";
+      raritySpan.textContent = def.rarity || "—";
+      raritySpan.style.color = def.rarityColor || "#bbb";
+
+      meta.append(typeSpan, " – ", raritySpan);
 
       const desc = document.createElement("div");
       desc.className = "entry-description";
       desc.textContent = def.description || "";
 
-      const bottom = document.createElement("div");
-      bottom.className = "entry-bottom";
-
       const details = document.createElement("div");
       details.className = "entry-details";
-
       if (def.value) {
-        const val = document.createElement("span");
-        val.className = "entry-value";
-        val.textContent = def.value;
-        val.appendChild(createIcon("coins"));
-        details.appendChild(val);
+        const valueEl = document.createElement("div");
+        valueEl.className = "entry-value";
+        valueEl.innerHTML = `${def.value} ${createIcon("coins", { inline: true }).outerHTML}`;
+        details.appendChild(valueEl);
       }
-
       if (def.quantity) {
-        const qty = document.createElement("span");
-        qty.className = "entry-quantity";
-        qty.textContent = `x${def.quantity}`;
-        details.appendChild(qty);
+        const qtyEl = document.createElement("div");
+        qtyEl.className = "entry-quantity";
+        qtyEl.textContent = `x${def.quantity}`;
+        details.appendChild(qtyEl);
       }
 
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "entry-delete";
-      deleteBtn.innerHTML = createIcon("trash").outerHTML;
-      deleteBtn.title = "Delete this item";
-      deleteBtn.onclick = (e) => {
+      const btnDelete = document.createElement("button");
+      btnDelete.className = "entry-delete";
+      btnDelete.title = "Delete";
+      btnDelete.innerHTML = createIcon("trash").outerHTML;
+      btnDelete.onclick = (e) => {
         e.stopPropagation();
         if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
           deleteItemDefinition(db, def.id).then(refreshDefinitions);
         }
       };
 
-      bottom.append(details, deleteBtn);
-
-      entry.append(name, meta, desc, bottom);
-
-      entry.addEventListener("click", () => {
-        if (def.id) {
-          formApi.populate(def);
-        } else {
-          console.warn("[warn] Skipping entry with missing id:", def);
-        }
-      });
-
+      entry.append(name, meta, desc, details, btnDelete);
+      entry.addEventListener("click", () => def.id && formApi.populate(def));
       listContainer.appendChild(entry);
     });
   }
