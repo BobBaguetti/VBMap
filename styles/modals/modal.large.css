@@ -223,3 +223,16 @@
   height: 16px;
 }
 
+/* Form header buttons: reduce horizontal spacing */
+.modal-large .floating-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* Reduce top margin above delete button in item entry */
+.modal-large .item-def-entry .entry-delete.ui-button-delete {
+  margin-top: 2px;
+}
+
+

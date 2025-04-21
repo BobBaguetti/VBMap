@@ -35,8 +35,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   subheadingWrap.appendChild(subheading);
 
   const floatingBtns = document.createElement("div");
-  floatingBtns.style.display = "flex";
-  floatingBtns.style.gap = "10px";
+  floatingBtns.classList.add("floating-buttons");
 
   const btnSave = document.createElement("button");
   btnSave.type = "submit";
