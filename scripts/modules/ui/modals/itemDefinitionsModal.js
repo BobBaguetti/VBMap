@@ -1,21 +1,18 @@
 // @version: 31
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
-// Modal creation utilities
 import {
   createModal,
   closeModal,
   openModal
 } from "../uiKit.js";
 
-// List utilities for filters, search, and containers
 import {
   createFilterButtonGroup,
   createSearchRow,
   createDefListContainer
 } from "../../utils/listUtils.js";
 
-// Firestore services for item definitions
 import {
   loadItemDefinitions,
   saveItemDefinition,
@@ -24,11 +21,9 @@ import {
   subscribeItemDefinitions
 } from "../../services/itemDefinitionsService.js";
 
-// Form creation for item definition management
 import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
-
-// Shared color presets
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
+import { createIcon } from "../../utils/iconUtils.js";
 
 export function initItemDefinitionsModal(db) {
   const { modal, content } = createModal({
@@ -144,6 +139,25 @@ export function initItemDefinitionsModal(db) {
     list.forEach(def => {
       const entry = document.createElement("div");
       entry.className = "item-def-entry";
+
+      const valueHtml = def.value
+        ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true })}</div>`
+        : "";
+
+      const quantityHtml = def.quantity
+        ? `<div class="entry-quantity">x${def.quantity}</div>`
+        : "";
+
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "entry-delete";
+      deleteBtn.innerHTML = createIcon("trash") + " Delete";
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
+          deleteItemDefinition(db, def.id).then(refreshDefinitions);
+        }
+      };
+
       entry.innerHTML = `
         <div class="entry-name">${def.name}</div>
         <div class="entry-meta">
@@ -151,7 +165,13 @@ export function initItemDefinitionsModal(db) {
           <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity || "—"}</span>
         </div>
         <div class="entry-description">${def.description || ""}</div>
+        <div class="entry-details">
+          ${valueHtml}
+          ${quantityHtml}
+        </div>
       `;
+      entry.appendChild(deleteBtn);
+
       entry.addEventListener("click", () => {
         if (def.id) {
           formApi.populate(def);
@@ -159,6 +179,7 @@ export function initItemDefinitionsModal(db) {
           console.warn("[warn] Skipping entry with missing id:", def);
         }
       });
+
       listContainer.appendChild(entry);
     });
   }
