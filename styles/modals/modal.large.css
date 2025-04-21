@@ -127,3 +127,14 @@
 .modal.modal-large .ui-button:hover {
   background-color: #666;
 }
+
+/* Item entry interactivity */
+.modal.modal-large .item-def-entry {
+  padding: 6px 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.modal.modal-large .item-def-entry:hover {
+  background-color: #333;
+}
