@@ -40,8 +40,12 @@ export function getItemDefinitionsCollection(db) {
  * @returns {Promise<Array>} Array of item definition objects
  */
 export async function loadItemDefinitions(db) {
+  const definitions = [];
   const snapshot = await getItemDefinitionsCollection(db).get();
-  return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  snapshot.forEach(doc => {
+    definitions.push({ id: doc.id, ...doc.data() });
+  });
+  return definitions;
 }
 
 //////////////////////////////
@@ -60,16 +64,18 @@ export async function loadItemDefinitions(db) {
 export async function saveItemDefinition(db, id, data) {
   const col = getItemDefinitionsCollection(db);
 
+  // Strip `id` to prevent null from being saved to Firestore
+  const { id: ignoredId, ...cleanData } = data;
+
   if (id) {
     // Update existing document
-    await col.doc(id).update(data);
-    return { id, ...data };
+    await col.doc(id).update(cleanData);
+    return { id, ...cleanData };
   } else {
-    // Create new document, then fetch back the full saved data
-    const docRef = await col.add(data);
-    const savedDoc = await docRef.get();
+    // Add new document and fetch it back to ensure ID and saved fields are valid
+    const docRef = await col.add(cleanData);
+    const savedDoc = await docRef.get(); // ✅ Ensure correct fields are returned
     const saved = { id: docRef.id, ...savedDoc.data() };
-
     console.log("[saveItemDefinition] Saved new item with ID:", saved.id, saved);
     return saved;
   }
@@ -127,7 +133,7 @@ export function subscribeItemDefinitions(db, onUpdate) {
   const unsubscribe = col.onSnapshot(snapshot => {
     const defs = snapshot.docs
       .map(doc => ({ id: doc.id, ...doc.data() }))
-      .filter(def => !!def.id); // ✅ Filter out null/missing IDs
+      .filter(def => !!def.id); // ✅ Filter out entries with invalid/null ID
 
     onUpdate(defs);
   }, err => {
