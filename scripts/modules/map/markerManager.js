@@ -1,4 +1,4 @@
-// @version: 5
+// @version: 6
 // @file: /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
@@ -40,11 +40,11 @@ export function createPopupContent(m) {
     : "";
 
   const descHTML = m.description
-    ? `<p class="popup-desc">${m.description}</p>`
+    ? `<p class="popup-desc" style="--popup-desc-color: ${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
     : "";
 
   const extraHTML = (m.extraLines || []).map(line => `
-    <p class="popup-extra-line">${line.text}</p>
+    <p class="popup-extra-line" style="--popup-extra-color: ${line.color || "#E5E6E8"};">${line.text}</p>
   `).join("");
 
   const valueHTML = m.value
@@ -64,12 +64,19 @@ export function createPopupContent(m) {
       ${createIcon("x", { inline: true }).outerHTML}
     </button>`;
 
+  const popupInfoStyle = `
+    style="
+      --popup-name-color: ${m.nameColor || "#E5E6E8"};
+      --popup-type-color: ${m.itemTypeColor || "#E5E6E8"};
+      --popup-rarity-color: ${m.rarityColor || "#E5E6E8"};
+    "`;
+
   return `
     <div class="custom-popup">
       ${closeButton}
       <div class="popup-header">
         ${bigImg}
-        <div class="popup-info">
+        <div class="popup-info" ${popupInfoStyle}>
           ${nameHTML}
           ${itemTypeHTML}
           ${rarityHTML}
