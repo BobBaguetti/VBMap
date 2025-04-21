@@ -1,4 +1,4 @@
-/* @version: 11 */
+/* @version: 12 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
@@ -35,10 +35,6 @@
 .leaflet-popup-tip {
   display: none !important;
 }
-
-/* ================================
-   Marker Popup Custom Layout
-   ================================ */
 
 .custom-popup {
   position: relative;
@@ -77,7 +73,6 @@
   margin-top: 0;
   padding-top: 0;
   gap: 2px;
-  transform: translate(-1px, -3px); /* Move everything up 3px, including rarity+type */
 }
 
 .popup-info > * {
@@ -97,14 +92,14 @@
 .popup-type,
 .popup-rarity {
   font-size: 15px;
-  font-weight: 600; /* 15% heavier */
+  font-weight: 525; /* 5% thicker than 500 */
   transform: translateY(-1px); /* move up 1px */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 .popup-body p {
   margin: 2px 0;
-  font-weight: 400; /* Satoshi Regular */
+  font-weight: 400;
 }
 
 .popup-desc {
@@ -141,7 +136,7 @@
   height: 64px;
   object-fit: contain;
   background: #222;
-  border: 2px solid #777; /* overridden inline */
+  border: 2px solid #777;
   border-radius: 6px;
   flex-shrink: 0;
 }
