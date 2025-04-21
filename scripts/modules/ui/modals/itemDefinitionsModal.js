@@ -1,4 +1,4 @@
-// @version: 3
+// @version: 4
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -178,26 +178,26 @@ export function initItemDefinitionsModal(db) {
       const value = parseFloat(def.value);
       const valueHTML = value ? `<span class="item-value">${value}</span>` : "";
   
-      entry.innerHTML = `
+      entry.innerHTML = ``
         <div class="item-line">
           <strong>${def.name}</strong>
-          <span class="item-type">${def.itemType || "Unknown"}</span> —
+          <span class="item-type">${def.itemType || "Unknown"}</span> — 
           <span class="rarity ${rarityClass}">${def.rarity || "Unknown"}</span>
           ${value ? `<span class="item-value-wrap">${valueHTML}</span>` : ""}
         </div>
         <div class="item-description">${def.description || ""}</div>
       `;
-  
+
       if (value) {
         const valueWrap = entry.querySelector(".item-value-wrap");
         valueWrap.appendChild(createIcon("coin", { class: "gold-icon" }));
       }
-  
+
       if (def._justUpdated) {
         entry.classList.add("recently-updated");
         setTimeout(() => entry.classList.remove("recently-updated"), 1400);
       }
-  
+
       entry.addEventListener("click", () => formApi.populate(def));
       listContainer.appendChild(entry);
     });

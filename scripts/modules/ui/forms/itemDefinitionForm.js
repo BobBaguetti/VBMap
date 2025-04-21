@@ -1,4 +1,3 @@
-
 // @version: 17
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
