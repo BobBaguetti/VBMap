@@ -1,4 +1,5 @@
-import { createPickr } from "../ui/pickrManager.js"; 
+import { createPickr } from "../../ui/pickrManager.js";
+
 import {
   createModal,
   closeModal,
