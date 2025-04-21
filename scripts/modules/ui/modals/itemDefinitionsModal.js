@@ -140,17 +140,42 @@ export function initItemDefinitionsModal(db) {
       const entry = document.createElement("div");
       entry.className = "item-def-entry";
 
-      const valueHtml = def.value
-        ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true })}</div>`
-        : "";
+      const name = document.createElement("div");
+      name.className = "entry-name";
+      name.textContent = def.name;
 
-      const quantityHtml = def.quantity
-        ? `<div class="entry-quantity">x${def.quantity}</div>`
-        : "";
+      const meta = document.createElement("div");
+      meta.className = "entry-meta";
+      meta.innerHTML = `
+        <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
+        <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity || "—"}</span>
+      `;
+
+      const desc = document.createElement("div");
+      desc.className = "entry-description";
+      desc.textContent = def.description || "";
+
+      const details = document.createElement("div");
+      details.className = "entry-details";
+
+      if (def.value) {
+        const val = document.createElement("span");
+        val.className = "entry-value";
+        val.textContent = def.value;
+        val.appendChild(createIcon("coins"));
+        details.appendChild(val);
+      }
+
+      if (def.quantity) {
+        const qty = document.createElement("span");
+        qty.className = "entry-quantity";
+        qty.textContent = `x${def.quantity}`;
+        details.appendChild(qty);
+      }
 
       const deleteBtn = document.createElement("button");
       deleteBtn.className = "entry-delete";
-      deleteBtn.innerHTML = createIcon("trash") + " Delete";
+      deleteBtn.innerHTML = `${createIcon("trash").outerHTML}<span>Delete</span>`;
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
         if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
@@ -158,19 +183,7 @@ export function initItemDefinitionsModal(db) {
         }
       };
 
-      entry.innerHTML = `
-        <div class="entry-name">${def.name}</div>
-        <div class="entry-meta">
-          <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
-          <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity || "—"}</span>
-        </div>
-        <div class="entry-description">${def.description || ""}</div>
-        <div class="entry-details">
-          ${valueHtml}
-          ${quantityHtml}
-        </div>
-      `;
-      entry.appendChild(deleteBtn);
+      entry.append(name, meta, desc, details, deleteBtn);
 
       entry.addEventListener("click", () => {
         if (def.id) {
