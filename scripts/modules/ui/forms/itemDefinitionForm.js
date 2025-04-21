@@ -159,11 +159,13 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
 
   // ─── Image S & L ─────────────────────────────────────────────────────────────────────────
   const imgSmallRow = createTopAlignedFieldRow("Image S:");
+  imgSmallRow.classList.add("image-row");
   const imgSmallInput = document.createElement("input");
   imgSmallRow.append(imgSmallInput);
   form.append(imgSmallRow);
-
+  
   const imgBigRow = createTopAlignedFieldRow("Image L:");
+  imgBigRow.classList.add("image-row");
   const imgBigInput = document.createElement("input");
   imgBigRow.append(imgBigInput);
   form.append(imgBigRow);

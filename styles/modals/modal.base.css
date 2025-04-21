@@ -1,10 +1,10 @@
 /* styles/modals/modal.base.css – base styles for all modals (v13) */
 
-/* 1) Global box-sizing */
+/* 1) Global box‑sizing */
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+  box‑sizing: border‑box;
 }
 
 /* 2) Backdrop & container */
@@ -14,39 +14,36 @@
   width: 100%; height: 100%;
   background: transparent;
   display: none;
-  z-index: 1000;
+  z‑index: 1000;
 }
 
 .modal-content {
-  background: #222222;
+  background: #222;
   border: 1px solid #333;
-  border-radius: 4px;
+  border‑radius: 4px;
   padding: 10px 16px 16px;
   color: #eee;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.7);
+  box‑shadow: 0 2px 10px rgba(0,0,0,0.7);
   position: absolute;
-  transform: none;
   width: auto;
   max-width: 90%;
   overflow: auto;
 }
 
-/* 3) Header & under-header divider */
+/* 3) Header & under‑header divider */
 .modal-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
 .modal-header h2 {
-  font-size: 1em;  
+  font-size: 1em;
   margin: 0;
 }
 .modal-header .close {
-  position: static;
   font-size: 1.4em;
   cursor: pointer;
 }
-/* hr under header – tighter spacing */
 .modal-header + hr {
   border: none;
   border-top: 2px solid #444;
@@ -64,14 +61,14 @@
 .modal-content .field-row {
   display: flex;
   align-items: center;
-  margin-bottom: 0; /* spacing is handled by form gap */
+  margin-bottom: 0; /* spacing via form gap */
 }
 .modal-content .field-row label {
   flex: 0 0 100px;
   margin-right: 8px;
 }
 
-/* 6) Full-width inputs/selects/textarea */
+/* 6) Standard inputs/selects/textarea styling */
 .modal-content .field-row input[type="text"],
 .modal-content .field-row select,
 .modal-content .field-row textarea,
@@ -86,15 +83,13 @@
   color: #eee;
 }
 
-/* Ensure all form controls fill the available width */
-.modal-content form .field-row input,
-.modal-content form .field-row select,
-.modal-content form .field-row textarea {
+/* 6a) Stretch only image-row inputs to full width */
+.modal-content .field-row.image-row input {
   width: 100%;
   box-sizing: border-box;
 }
 
-/* 7) Color-picker & remove-line buttons */
+/* 7) Color‑picker & remove‑line buttons */
 .modal-content .color-btn {
   margin-left: 8px !important;
   flex: 0 0 19px;
@@ -107,7 +102,7 @@
   margin-left: 8px;
 }
 
-/* 8) Extra-row layout tweaks */
+/* 8) Extra‑row layout tweaks */
 .modal-content .field-row.extra-row {
   align-items: flex-start;
 }
@@ -121,8 +116,7 @@
 }
 .extra-info-block > button {
   align-self: flex-start;
-  margin-left: 0;
-  margin-top: 0;
+  margin: 0;
   padding: 6px 12px;
 }
 
@@ -138,7 +132,7 @@
   margin-bottom: 8px !important;
 }
 
-/* 11) Zebra-striped entry styling for item definition list */
+/* 11) Zebra‑striped entry styling for definition list */
 .item-def-entry {
   padding: 6px 10px;
   border-bottom: 1px solid #333;
@@ -161,7 +155,7 @@
   margin-top: 2px;
 }
 
-/* Sidebar visibility toggle row */
+/* Sidebar toggle row */
 .sidebar-toggle-row {
   display: flex;
   align-items: center;
