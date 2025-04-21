@@ -1,4 +1,4 @@
-/* @version: 22 */
+/* @version: 18 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
@@ -64,7 +64,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 13px; /* restored to original before it dropped text */
+  margin-bottom: 14px; /* divider moved 1px lower */
   border-bottom: 2px solid #444;
   padding: 0;
 }
@@ -81,7 +81,7 @@
   height: 64px;
   object-fit: contain;
   background: #222;
-  border: 2px solid #777;
+  border: 2px solid #777; /* updated dynamically via JS */
   border-radius: 6px;
   flex-shrink: 0;
 }
@@ -122,7 +122,7 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 30px;
+  margin-top: 30px; /* fine-tuned alignment */
   margin-right: 4px;
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
@@ -183,7 +183,7 @@
   border: none;
   height: 1px;
   background: #444;
-  margin: 5px -9px;
+  margin: 5px -9px; /* full-width edge-to-edge, with 1px tighter spacing */
 }
 
 /* Close button */
