@@ -1,4 +1,4 @@
-// @version: 31
+// @version: 32
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -155,6 +155,9 @@ export function initItemDefinitionsModal(db) {
       desc.className = "entry-description";
       desc.textContent = def.description || "";
 
+      const bottom = document.createElement("div");
+      bottom.className = "entry-bottom";
+
       const details = document.createElement("div");
       details.className = "entry-details";
 
@@ -175,7 +178,8 @@ export function initItemDefinitionsModal(db) {
 
       const deleteBtn = document.createElement("button");
       deleteBtn.className = "entry-delete";
-      deleteBtn.innerHTML = `${createIcon("trash").outerHTML}<span>Delete</span>`;
+      deleteBtn.innerHTML = createIcon("trash").outerHTML;
+      deleteBtn.title = "Delete this item";
       deleteBtn.onclick = (e) => {
         e.stopPropagation();
         if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
@@ -183,7 +187,9 @@ export function initItemDefinitionsModal(db) {
         }
       };
 
-      entry.append(name, meta, desc, details, deleteBtn);
+      bottom.append(details, deleteBtn);
+
+      entry.append(name, meta, desc, bottom);
 
       entry.addEventListener("click", () => {
         if (def.id) {
