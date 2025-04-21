@@ -1,4 +1,4 @@
-// @version: 6
+// @version: 7
 // @file: /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
@@ -64,23 +64,24 @@ export function createPopupContent(m) {
       ${createIcon("x", { inline: true }).outerHTML}
     </button>`;
 
-  const popupInfoStyle = `
-    style="
-      --popup-name-color: ${m.nameColor || "#E5E6E8"};
-      --popup-type-color: ${m.itemTypeColor || "#E5E6E8"};
-      --popup-rarity-color: ${m.rarityColor || "#E5E6E8"};
-    "`;
-
   return `
-    <div class="custom-popup">
-      ${closeButton}
+    <div class="custom-popup"
+      style="
+        --popup-name-color: ${m.nameColor || "#E5E6E8"};
+        --popup-type-color: ${m.itemTypeColor || "#E5E6E8"};
+        --popup-rarity-color: ${m.rarityColor || "#E5E6E8"};
+        --popup-desc-color: ${m.descriptionColor || "#E5E6E8"};
+      ">
       <div class="popup-header">
-        ${bigImg}
-        <div class="popup-info" ${popupInfoStyle}>
-          ${nameHTML}
-          ${itemTypeHTML}
-          ${rarityHTML}
+        <div class="popup-header-left">
+          ${bigImg}
+          <div class="popup-info">
+            ${nameHTML}
+            ${itemTypeHTML}
+            ${rarityHTML}
+          </div>
         </div>
+        ${closeButton}
       </div>
       <div class="popup-body">
         ${descHTML}
