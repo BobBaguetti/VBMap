@@ -81,6 +81,7 @@ export function initItemDefinitionsModal(db) {
   searchInput.addEventListener("input", () => renderFilteredList());
 
   const listContainer = createDefListContainer("item-definitions-list");
+  listContainer.classList.add("ui-scroll-float");
   content.appendChild(listContainer);
   content.appendChild(document.createElement("hr"));
 
