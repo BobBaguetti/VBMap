@@ -172,32 +172,36 @@ export function initItemDefinitionsModal(db) {
     list.forEach(def => {
       const entry = document.createElement("div");
       entry.className = "item-def-entry";
-  
+
       const rarityClass = def.rarity ? `rarity-${def.rarity.toLowerCase()}` : "";
-  
+
       const value = parseFloat(def.value);
       const valueHTML = value ? `<span class="item-value">${value}</span>` : "";
-  
-      entry.innerHTML = ``
+
+      // Use template literal properly for inner HTML
+      entry.innerHTML = `
         <div class="item-line">
           <strong>${def.name}</strong>
-          <span class="item-type">${def.itemType || "Unknown"}</span> — 
+          <span class="item-type">${def.itemType || "Unknown"}</span> —
           <span class="rarity ${rarityClass}">${def.rarity || "Unknown"}</span>
           ${value ? `<span class="item-value-wrap">${valueHTML}</span>` : ""}
         </div>
         <div class="item-description">${def.description || ""}</div>
       `;
 
+      // Add icons if needed
       if (value) {
         const valueWrap = entry.querySelector(".item-value-wrap");
         valueWrap.appendChild(createIcon("coin", { class: "gold-icon" }));
       }
 
+      // Add animation for recently updated items
       if (def._justUpdated) {
         entry.classList.add("recently-updated");
         setTimeout(() => entry.classList.remove("recently-updated"), 1400);
       }
 
+      // Handle item click (populate form)
       entry.addEventListener("click", () => formApi.populate(def));
       listContainer.appendChild(entry);
     });
