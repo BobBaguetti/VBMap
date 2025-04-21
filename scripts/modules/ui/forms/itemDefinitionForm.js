@@ -1,4 +1,4 @@
-// @version: 18
+// @version: 19
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -179,8 +179,14 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
       imageSmall: fldImgS.value.trim(),
       imageBig: fldImgL.value.trim()
     };
+
     onSubmit(payload);
-    if (!editingId) populate({}); // Reset form after add
+
+    if (!editingId) {
+      setTimeout(() => populate({}), 0); // Reset form after add without closing modal
+    } else {
+      // Refresh the edited item in list if needed (handled externally)
+    }
   });
 
   const pickrTargets = [
