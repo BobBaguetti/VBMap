@@ -145,3 +145,5 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
 
   return markerObj;
 }
+
+// @version: 4
