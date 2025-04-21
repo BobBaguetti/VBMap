@@ -1,4 +1,4 @@
-// @version: 36
+// @version: 37
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -232,9 +232,10 @@ export function initItemDefinitionsModal(db) {
       openModal(modal);
 
       const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
+      const previewRect = previewPanel.getBoundingClientRect();
       if (modalRect) {
         previewPanel.style.left = `${modalRect.right + 30}px`;
-        previewPanel.style.top = `${modalRect.top}px`;
+        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
         previewPanel.style.position = "absolute";
       }
 
