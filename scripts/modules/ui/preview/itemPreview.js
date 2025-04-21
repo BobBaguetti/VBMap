@@ -1,53 +1,42 @@
 // @version: 1
 // @file: /scripts/modules/ui/preview/itemPreview.js
 
-import { createIcon } from "../../utils/iconUtils.js";
-
 export function createItemPreviewPanel(container) {
-  container.className = "item-preview-panel";
+  container.classList.add("item-preview");
+  container.classList.add("hidden");
 
-  const header = document.createElement("div");
-  header.className = "preview-header";
-  header.textContent = "Preview";
+  const content = document.createElement("div");
+  content.className = "preview-content";
+  container.appendChild(content);
 
   const pinBtn = document.createElement("button");
-  pinBtn.className = "preview-pin ui-button";
-  pinBtn.title = "Pin preview panel";
-  pinBtn.appendChild(createIcon("push-pin"));
+  pinBtn.className = "pin-button";
+  pinBtn.title = "Pin preview";
+  pinBtn.innerHTML = "📌";
 
-  header.appendChild(pinBtn);
-  container.appendChild(header);
-
-  const previewBox = document.createElement("div");
-  previewBox.className = "preview-content";
-  container.appendChild(previewBox);
-
-  let isPinned = false;
   pinBtn.addEventListener("click", () => {
-    isPinned = !isPinned;
-    container.classList.toggle("pinned", isPinned);
+    container.classList.toggle("pinned");
   });
 
-  function renderPreview(data) {
-    const rarity = data.rarity || "";
-    const itemType = data.itemType || "";
-    const nameColor = data.nameColor || "#fff";
-    const rarityColor = data.rarityColor || "#bbb";
-    const itemTypeColor = data.itemTypeColor || "#bbb";
-    const value = data.value || "";
-    const description = data.description || "";
-    const quantity = data.quantity || "";
+  container.appendChild(pinBtn);
 
-    previewBox.innerHTML = `
-      <div class="popup-header" style="color: ${nameColor}">
-        ${data.name} ${quantity ? `<span class="popup-qty">x${quantity}</span>` : ""}
-      </div>
-      <div class="popup-sub" style="color: ${itemTypeColor}">${itemType}</div>
-      <div class="popup-sub" style="color: ${rarityColor}">${rarity.toUpperCase()}</div>
-      <div class="popup-desc">${description}</div>
-      ${value ? `<div class="popup-value">${value} ${createIcon("coins", { inline: true }).outerHTML}</div>` : ""}
-    `;
-  }
+  return {
+    renderPreview(data) {
+      if (!data) return;
 
-  return { renderPreview };
+      content.innerHTML = "";
+
+      const name = document.createElement("div");
+      name.className = "preview-name";
+      name.textContent = data.name || "Unnamed Item";
+      name.style.color = data.nameColor || "#fff";
+
+      const desc = document.createElement("div");
+      desc.className = "preview-description";
+      desc.textContent = data.description || "";
+      desc.style.color = data.descriptionColor || "#aaa";
+
+      content.append(name, desc);
+    }
+  };
 }
