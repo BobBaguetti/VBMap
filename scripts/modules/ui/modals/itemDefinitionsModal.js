@@ -1,4 +1,4 @@
-// @version: 33
+// @version: 34
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -35,7 +35,10 @@ export function initItemDefinitionsModal(db) {
     backdrop: true,
     draggable: false,
     withDivider: true,
-    onClose: () => closeModal(modal)
+    onClose: () => {
+      closeModal(modal);
+      document.getElementById("item-preview-panel")?.classList.add("hidden");
+    }
   });
 
   const header = content.querySelector(".modal-header");
@@ -130,6 +133,7 @@ export function initItemDefinitionsModal(db) {
 
   const previewPanel = document.createElement("div");
   previewPanel.id = "item-preview-panel";
+  previewPanel.classList.add("hidden");
   document.body.appendChild(previewPanel);
 
   const previewApi = createItemPreviewPanel(previewPanel);
@@ -202,7 +206,10 @@ export function initItemDefinitionsModal(db) {
 
         entry.appendChild(deleteBtn);
         entry.addEventListener("click", () => {
-          if (def.id) formApi.populate(def);
+          if (def.id) {
+            formApi.populate(def);
+            previewPanel.classList.remove("hidden");
+          }
         });
 
         listContainer.appendChild(entry);
@@ -224,6 +231,7 @@ export function initItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       openModal(modal);
+      previewPanel.classList.remove("hidden");
     },
     refresh: refreshDefinitions
   };
