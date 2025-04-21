@@ -18,6 +18,8 @@ export const rarityColors = {
     "Crafting Material": "#6F84AD",
     "": "#bbb"
   };
+
+  export const goldColor = "#D4AF37"; // or "#FFD700" for brighter tone
   
   export const questTypeColors = {
     Main: "#ffdf91",
