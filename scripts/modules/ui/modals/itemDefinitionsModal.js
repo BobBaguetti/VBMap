@@ -1,18 +1,21 @@
-// @version: 21
+// @version: 23
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
+// Modal creation utilities
 import {
   createModal,
   closeModal,
   openModal
 } from "../uiKit.js";
 
+// List utilities for filters, search, and containers
 import {
   createFilterButtonGroup,
   createSearchRow,
   createDefListContainer
 } from "../../utils/listUtils.js";
 
+// Firestore services for item definitions
 import {
   loadItemDefinitions,
   saveItemDefinition,
@@ -21,11 +24,15 @@ import {
   subscribeItemDefinitions
 } from "../../services/itemDefinitionsService.js";
 
+// Form creation for item definition management
 import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
 
+// Optional vertical label-row layout
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 
+// Main modal initializer
 export function initItemDefinitionsModal(db) {
+  // Create modal shell
   const { modal, content } = createModal({
     id: "item-definitions-modal",
     title: "Manage Items",
@@ -38,6 +45,7 @@ export function initItemDefinitionsModal(db) {
 
   const header = content.querySelector(".modal-header");
 
+  // For sorting rarity by logical order (not alphabetical)
   const rarityOrder = {
     legendary: 5,
     epic: 4,
@@ -47,6 +55,7 @@ export function initItemDefinitionsModal(db) {
     "": 0
   };
 
+  // Sorting functions for each filter toggle
   const sortFns = {
     "filter-name":        (a, b) => a.name.localeCompare(b.name),
     "filter-type":        (a, b) => a.itemType.localeCompare(b.itemType),
@@ -56,8 +65,9 @@ export function initItemDefinitionsModal(db) {
     "filter-price":       (a, b) => (parseFloat(b.value) || 0) - (parseFloat(a.value) || 0)
   };
 
-  let activeSorts = new Set();
+  let activeSorts = new Set(); // Active filter buttons
 
+  // Filter buttons (Name, Type, etc.)
   const { wrapper: filterWrapper } = createFilterButtonGroup(
     [
       { id: "filter-name",        label: "N"  },
@@ -70,28 +80,36 @@ export function initItemDefinitionsModal(db) {
     (btnId, isToggled) => {
       if (isToggled) activeSorts.add(btnId);
       else activeSorts.delete(btnId);
-      renderFilteredList();
+      renderFilteredList(); // re-sort when toggles change
     }
   );
   header.appendChild(filterWrapper);
 
+  // Search bar
   const { row: searchRow, input: searchInput } =
     createSearchRow("def-search", "Search items…");
   header.appendChild(searchRow);
   searchInput.addEventListener("input", () => renderFilteredList());
 
+  // Entry list container
   const listContainer = createDefListContainer("item-definitions-list");
   content.appendChild(listContainer);
   content.appendChild(document.createElement("hr"));
 
-  let definitions = [];
+  let definitions = []; // All loaded items
 
+  // Initialize item definition form
   const formApi = createItemDefinitionForm({
-    onCancel: () => closeModal(modal),
+    // Cancel switches back to Add mode (doesn't close modal)
+    onCancel: () => formApi.reset(),
+
+    // Delete an item and refresh list
     onDelete: async (idToDelete) => {
       await deleteItemDefinition(db, idToDelete);
       await refreshDefinitions();
     },
+
+    // Save or update an item, repopulate form
     onSubmit: async (payload) => {
       let saved;
       if (payload.id) {
@@ -100,25 +118,30 @@ export function initItemDefinitionsModal(db) {
         saved = await saveItemDefinition(db, null, payload);
       }
 
+      // Update in local array
       const idx = definitions.findIndex(d => d.id === saved.id);
       if (idx !== -1) {
         definitions[idx] = saved;
       } else {
-        definitions.unshift(saved);
+        definitions.unshift(saved); // New item goes to top
       }
 
       renderFilteredList();
+      formApi.populate(saved); // Reopen item in edit mode
     }
   });
 
+  // Enable floating scrollbar on form
   formApi.form.classList.add("ui-scroll-float");
   content.appendChild(formApi.form);
 
+  // Loads definitions from Firestore
   async function refreshDefinitions() {
     definitions = await loadItemDefinitions(db);
     renderFilteredList();
   }
 
+  // Filter and sort item definitions
   function renderFilteredList() {
     let list = definitions.filter(d =>
       d.name?.toLowerCase().includes(searchInput.value.trim().toLowerCase())
@@ -130,6 +153,7 @@ export function initItemDefinitionsModal(db) {
     renderList(list);
   }
 
+  // Render each item entry
   function renderList(list) {
     listContainer.innerHTML = "";
     list.forEach(def => {
@@ -140,21 +164,29 @@ export function initItemDefinitionsModal(db) {
         <small>(${def.itemType || "—"}) – ${def.rarity || "—"}</small>
         <em>${def.description || ""}</em>
       `;
-      entry.addEventListener("click", () => formApi.populate(def));
+      entry.addEventListener("click", () => {
+        if (def.id) {
+          formApi.populate(def);
+        } else {
+          console.warn("[warn] Skipping entry with missing id:", def);
+        }
+      });
       listContainer.appendChild(entry);
     });
   }
 
+  // Live updates from Firestore
   subscribeItemDefinitions(db, defs => {
     definitions = defs;
     renderFilteredList();
   });
 
+  // Exposed API
   return {
     open: async () => {
-      formApi.reset();
-      await refreshDefinitions();
-      openModal(modal);
+      formApi.reset(); // Reset to Add mode
+      await refreshDefinitions(); // Load data
+      openModal(modal); // Show modal
     },
     refresh: refreshDefinitions
   };

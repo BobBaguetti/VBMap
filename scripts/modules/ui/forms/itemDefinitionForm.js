@@ -1,9 +1,8 @@
-// @version: 20
+// @version: 21
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
-  createImageField,
-  createFormButtonRow
+  createImageField
 } from "../../ui/uiKit.js";
 
 import { createPickr } from "../../ui/pickrManager.js";
@@ -18,11 +17,17 @@ import {
   createQuantityField
 } from "./universalForm.js";
 
+/**
+ * Creates the item definition form for adding/editing items.
+ * Includes logic for field rendering, color pickers, Save/Cancel/Delete buttons,
+ * and switching between Add and Edit modes.
+ */
 export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   const form = document.createElement("form");
   form.id = "item-definition-form";
 
-  // 🔹 Subheading + Floating Buttons Wrapper
+  // ─── Heading and Button Bar ──────────────────────────────────────────────
+
   const subheadingWrap = document.createElement("div");
   subheadingWrap.style.display = "flex";
   subheadingWrap.style.justifyContent = "space-between";
@@ -33,10 +38,11 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   subheading.textContent = "Add Item";
   subheadingWrap.appendChild(subheading);
 
-  // 🔹 Floating Save/Cancel/Clear/Delete Button Row
   const floatingBtns = document.createElement("div");
   floatingBtns.style.display = "flex";
   floatingBtns.style.gap = "10px";
+
+  // ─── Action Buttons ──────────────────────────────────────────────────────
 
   const btnSave = document.createElement("button");
   btnSave.type = "submit";
@@ -49,14 +55,14 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   btnCancel.className = "ui-button";
   btnCancel.onclick = () => {
     console.log("[cancel] Returning to Add mode");
-    populate({}); // Return to Add Item mode instead of closing modal
+    populate({}); // Return to Add mode
   };
 
   const btnClear = document.createElement("button");
   btnClear.type = "button";
   btnClear.textContent = "Clear";
   btnClear.className = "ui-button";
-  btnClear.onclick = () => populate({});
+  btnClear.onclick = () => populate({}); // Fully clear the form
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
@@ -72,7 +78,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.color = "";
   };
   btnDelete.onclick = () => {
-    if (editingId && confirm(`Are you sure you want to delete \"${fldName.value}\"?`)) {
+    if (editingId && confirm(`Are you sure you want to delete "${fldName.value}"?`)) {
       onDelete?.(editingId);
     }
   };
@@ -81,7 +87,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   subheadingWrap.appendChild(floatingBtns);
   form.appendChild(subheadingWrap);
 
-  // 🔹 Fields
+  // ─── Fields ──────────────────────────────────────────────────────────────
+
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
   const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
@@ -104,7 +111,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     rowImgL
   );
 
-  // 🔹 Form Logic
+  // ─── State + Population ───────────────────────────────────────────────────
+
   let editingId = null;
   const pickrs = new Map();
 
@@ -143,9 +151,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     fldImgS.value = safe(def.imageSmall);
     fldImgL.value = safe(def.imageBig);
 
+    // Update heading and buttons
     subheading.textContent = editingId ? "Edit Item" : "Add Item";
-
-    // Update button row
     floatingBtns.innerHTML = "";
     floatingBtns.append(btnSave);
     if (editingId) {
@@ -154,6 +161,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
       floatingBtns.append(btnClear);
     }
   }
+
+  // ─── Submission ──────────────────────────────────────────────────────────
 
   form.addEventListener("submit", e => {
     e.preventDefault();
@@ -186,9 +195,11 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     onSubmit(payload);
 
     if (!editingId) {
-      setTimeout(() => populate({}), 0); // Reset form after add without closing modal
+      setTimeout(() => populate({}), 0); // Reset after adding
     }
   });
+
+  // ─── Pickr Initialization ────────────────────────────────────────────────
 
   const pickrTargets = [
     colorName, colorType, colorRarity,
