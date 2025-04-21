@@ -1,5 +1,8 @@
-/* @version: 8 */
+/* @version: 9 */
 /* @file: /styles/popup.css */
+
+/* Google Font: Manrope */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&display=swap');
 
 .leaflet-container {
   background-color: #1a1a1a !important;
@@ -46,7 +49,7 @@
   width: 320px;
   color: #e0e0e0;
   border: none !important;
-  font-family: "Inter", sans-serif;
+  font-family: 'Manrope', sans-serif;
   font-size: 14px;
   line-height: 1.4;
 }
@@ -80,7 +83,7 @@
 .popup-info > * {
   margin: 0;
   padding: 0;
-  line-height: 1.2;
+  line-height: 1.25;
 }
 
 .popup-name {
@@ -95,6 +98,7 @@
 .popup-rarity {
   font-size: 15px;
   font-weight: 500;
+  line-height: 1.2;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
@@ -133,7 +137,7 @@
   height: 64px;
   object-fit: contain;
   background: #222;
-  border: 2px solid #777; /* this will be overridden inline */
+  border: 2px solid #777; /* overridden inline */
   border-radius: 6px;
   flex-shrink: 0;
 }
