@@ -1,26 +1,20 @@
-// @version: 7
+// @version: 8
 // @file: /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
 import { createIcon } from "../utils/iconUtils.js";
 
-// Basic URL check for images
 function isImgUrl(str) {
   return /^https?:\/\/.+|^\/.+\.(png|jpe?g|gif|webp)$/i.test(str || "");
 }
 
 export function createCustomIcon(m) {
   const imgHTML = isImgUrl(m.imageSmall)
-    ? `<img src="${m.imageSmall}" class="marker-icon"
-            onerror="this.style.display='none'">`
+    ? `<img src="${m.imageSmall}" class="marker-icon" onerror="this.style.display='none'">`
     : "";
 
   return L.divIcon({
-    html: `
-      <div class="custom-marker">
-        <div class="marker-border"></div>
-        ${imgHTML}
-      </div>`,
+    html: `<div class="custom-marker"><div class="marker-border"></div>${imgHTML}</div>`,
     className: "custom-marker-container",
     iconSize: [32, 32]
   });
@@ -41,8 +35,8 @@ export function createPopupContent(m) {
     : "";
 
   const valueHTML = m.value
-    ? `<div class="popup-value-icon" title="Value" style="color:${m.rarityColor || "#E5E6E8"};">
-         ${m.value}
+    ? `<div class="popup-value-icon" title="Value">
+         <span class="popup-value-number">${m.value}</span>
          ${createIcon("coins", { inline: true }).outerHTML}
        </div>`
     : "";
@@ -69,7 +63,7 @@ export function createPopupContent(m) {
     </button>`;
 
   return `
-    <div class="custom-popup" style="position: relative;">
+    <div class="custom-popup">
       ${closeButton}
       <div class="popup-header">
         <div class="popup-header-left">
