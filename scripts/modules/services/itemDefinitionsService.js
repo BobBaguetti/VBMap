@@ -1,5 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 5   The current file version is 5. Increase by 1 every time you update anything.
+// @version: 6   The current file version is 6. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/services/itemDefinitionsService.js
 
 /**
@@ -72,7 +72,9 @@ export async function saveItemDefinition(db, id, data) {
     // Add new document and fetch it back to ensure ID and saved fields are valid
     const docRef = await col.add(data);
     const savedDoc = await docRef.get(); // ✅ Ensure correct fields are returned
-    return { id: docRef.id, ...savedDoc.data() };
+    const saved = { id: docRef.id, ...savedDoc.data() };
+    console.log("[saveItemDefinition] Saved new item with ID:", saved.id, saved);
+    return saved;
   }
 }
 
@@ -126,7 +128,10 @@ export function subscribeItemDefinitions(db, onUpdate) {
   const col = getItemDefinitionsCollection(db);
 
   const unsubscribe = col.onSnapshot(snapshot => {
-    const defs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const defs = snapshot.docs
+      .map(doc => ({ id: doc.id, ...doc.data() }))
+      .filter(def => !!def.id); // ✅ Filter out null/missing IDs
+
     onUpdate(defs);
   }, err => {
     console.error("ItemDefinitions subscription error:", err);
