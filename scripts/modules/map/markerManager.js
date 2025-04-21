@@ -1,4 +1,4 @@
-// @version: 8
+// @version: 9
 // @file: /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
@@ -26,25 +26,25 @@ export function createCustomIcon(m) {
 }
 
 export function createPopupContent(m) {
-  const nameHTML = `<div class="popup-name">${m.name}</div>`;
+  const nameHTML = `<div class="popup-name" style="color:${m.nameColor || "#E5E6E8"};">${m.name}</div>`;
   const bigImg = isImgUrl(m.imageBig)
     ? `<img src="${m.imageBig}" class="popup-image" onerror="this.style.display='none'">`
     : "";
 
   const itemTypeHTML = m.itemType
-    ? `<div class="popup-type">${m.itemType}</div>`
+    ? `<div class="popup-type" style="color:${m.itemTypeColor || "#E5E6E8"};">${m.itemType}</div>`
     : "";
 
   const rarityHTML = m.rarity
-    ? `<div class="popup-rarity">${formatRarity(m.rarity)}</div>`
+    ? `<div class="popup-rarity" style="color:${m.rarityColor || "#E5E6E8"};">${formatRarity(m.rarity)}</div>`
     : "";
 
   const descHTML = m.description
-    ? `<p class="popup-desc">${m.description}</p>`
+    ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
     : "";
 
   const extraHTML = (m.extraLines || []).map(line => `
-    <p class="popup-extra-line" style="--popup-extra-color: ${line.color || "#E5E6E8"};">${line.text}</p>
+    <p class="popup-extra-line" style="color:${line.color || "#E5E6E8"};">${line.text}</p>
   `).join("");
 
   const valueHTML = m.value
@@ -65,13 +65,7 @@ export function createPopupContent(m) {
     </button>`;
 
   return `
-    <div class="custom-popup"
-      style="
-        --popup-name-color: ${m.nameColor || "#E5E6E8"};
-        --popup-type-color: ${m.itemTypeColor || "#E5E6E8"};
-        --popup-rarity-color: ${m.rarityColor || "#E5E6E8"};
-        --popup-desc-color: ${m.descriptionColor || "#E5E6E8"};
-      ">
+    <div class="custom-popup">
       <div class="popup-header">
         <div class="popup-header-left">
           ${bigImg}
