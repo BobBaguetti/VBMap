@@ -35,8 +35,7 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
     }
   }).on("save", (_, instance) => instance.hide());
 
-  el.addEventListener("click", () => p.show()); // Ensure the color picker shows on button click
-
+  activePickrs.push(p);
   return p;
 }
 
