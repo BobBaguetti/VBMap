@@ -2,7 +2,8 @@
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
-  createImageField
+  createImageField,
+  createFormButtonRow
 } from "../../ui/uiKit.js";
 
 import { createPickr } from "../../ui/pickrManager.js";
@@ -17,25 +18,18 @@ import {
   createQuantityField
 } from "./universalForm.js";
 
-export function createItemDefinitionForm({ onCancel, onSubmit }) {
+export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   const form = document.createElement("form");
   form.id = "item-definition-form";
 
-  // 🔹 Subheading row with Save/Cancel buttons on right
-  const headingRow = document.createElement("div");
-  headingRow.style.display = "flex";
-  headingRow.style.justifyContent = "space-between";
-  headingRow.style.alignItems = "center";
-  headingRow.style.marginBottom = "10px";
-
-  const subheading = document.createElement("h3");
-  subheading.id = "def-form-subheading";
-  subheading.textContent = "Add / Edit Item";
-  subheading.style.margin = "0";
-
-  const buttonRow = document.createElement("div");
-  buttonRow.style.display = "flex";
-  buttonRow.style.gap = "8px";
+  // 🔹 Floating Save/Cancel/Clear/Delete Button Row
+  const floatingBtns = document.createElement("div");
+  floatingBtns.style.display = "flex";
+  floatingBtns.style.gap = "10px";
+  floatingBtns.style.position = "absolute";
+  floatingBtns.style.top = "16px";
+  floatingBtns.style.right = "16px";
+  floatingBtns.style.zIndex = "10";
 
   const btnSave = document.createElement("button");
   btnSave.type = "submit";
@@ -46,11 +40,44 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   btnCancel.type = "button";
   btnCancel.textContent = "Cancel";
   btnCancel.className = "ui-button";
-  btnCancel.onclick = onCancel;
+  btnCancel.onclick = () => {
+    populate({});
+    if (onCancel) onCancel();
+  };
 
-  buttonRow.append(btnSave, btnCancel);
-  headingRow.append(subheading, buttonRow);
-  form.appendChild(headingRow);
+  const btnClear = document.createElement("button");
+  btnClear.type = "button";
+  btnClear.textContent = "Clear";
+  btnClear.className = "ui-button";
+  btnClear.onclick = () => populate({});
+
+  const btnDelete = document.createElement("button");
+  btnDelete.type = "button";
+  btnDelete.textContent = "Delete";
+  btnDelete.className = "ui-button";
+  btnDelete.style.transition = "background 0.3s, color 0.3s";
+  btnDelete.onmouseenter = () => {
+    btnDelete.style.background = "#922";
+    btnDelete.style.color = "#fff";
+  };
+  btnDelete.onmouseleave = () => {
+    btnDelete.style.background = "";
+    btnDelete.style.color = "";
+  };
+  btnDelete.onclick = () => {
+    if (editingId && confirm(`Are you sure you want to delete "${fldName.value}"?`)) {
+      onDelete?.(editingId);
+    }
+  };
+
+  floatingBtns.append(btnSave); // Always show save
+  form.appendChild(floatingBtns); // ⬅ Add before form content
+
+  // 🔹 Subheading
+  const subheading = document.createElement("h3");
+  subheading.id = "def-form-subheading";
+  subheading.textContent = "Add Item";
+  form.appendChild(subheading);
 
   // 🔹 Fields
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
@@ -112,7 +139,16 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     fldImgS.value = safe(def.imageSmall);
     fldImgL.value = safe(def.imageBig);
 
-    subheading.textContent = editingId ? "Edit Item" : "Add / Edit Item";
+    subheading.textContent = editingId ? "Edit Item" : "Add Item";
+
+    // Update button row
+    floatingBtns.innerHTML = "";
+    floatingBtns.append(btnSave);
+    if (editingId) {
+      floatingBtns.append(btnCancel, btnDelete);
+    } else {
+      floatingBtns.append(btnClear);
+    }
   }
 
   form.addEventListener("submit", e => {
