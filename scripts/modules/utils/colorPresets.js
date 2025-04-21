@@ -34,4 +34,3 @@ export const rarityColors = {
     Hostile: "#f0b0b0",
     "": "#bbb"
   };
-  

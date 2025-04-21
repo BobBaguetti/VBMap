@@ -1,4 +1,4 @@
-// @version: 28
+// @version: 29
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -17,7 +17,7 @@ import {
   createQuantityField
 } from "./universalForm.js";
 
-import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
+import { rarityColors, itemTypeColors, goldColor } from "../../utils/colorPresets.js";
 import { createIcon } from "../../utils/iconUtils.js";
 
 export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
@@ -118,7 +118,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     extraInfo.setLines(safe(def.extraLines, []), false);
 
     fldValue.value = safe(def.value);
-    pickrs.get(colorValue)?.setColor(def.valueColor || "#E5E6E8");
+    pickrs.get(colorValue)?.setColor(def.valueColor || goldColor);
 
     fldQty.value = safe(def.quantity);
     pickrs.get(colorQty)?.setColor(def.quantityColor || "#E5E6E8");
@@ -157,7 +157,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
       descriptionColor: pickrs.get(colorDesc)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
       extraLines: extraInfo.getLines(),
       value: fldValue.value.trim(),
-      valueColor: pickrs.get(colorValue)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      valueColor: pickrs.get(colorValue)?.getColor()?.toHEXA()?.toString() || goldColor,
       quantity: fldQty.value.trim(),
       quantityColor: pickrs.get(colorQty)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
       imageSmall: fldImgS.value.trim(),
