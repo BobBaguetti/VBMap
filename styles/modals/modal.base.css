@@ -86,6 +86,14 @@
   color: #eee;
 }
 
+/* Ensure all form controls fill the available width */
+.modal-content form .field-row input,
+.modal-content form .field-row select,
+.modal-content form .field-row textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
 /* 7) Color-picker & remove-line buttons */
 .modal-content .color-btn {
   margin-left: 8px !important;
