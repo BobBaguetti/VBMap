@@ -1,4 +1,4 @@
-// @version: 35
+// @version: 36
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -230,6 +230,14 @@ export function initItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       openModal(modal);
+
+      const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
+      if (modalRect) {
+        previewPanel.style.left = `${modalRect.right + 30}px`;
+        previewPanel.style.top = `${modalRect.top}px`;
+        previewPanel.style.position = "absolute";
+      }
+
       previewPanel.classList.remove("hidden");
       previewPanel.classList.add("visible");
     },

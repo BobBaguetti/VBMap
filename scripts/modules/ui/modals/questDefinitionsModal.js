@@ -1,31 +1,25 @@
-// @version: 36
-// @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
+// @version: 1
+// @file: /scripts/modules/ui/modals/questDefinitionsModal.js
 
+import { createModal, closeModal } from "../uiKit.js";
 import {
-  createModal,
-  closeModal,
-  openModal
+    createFilterButtonGroup,
+    createSearchRow,
+    createDefListContainer,
+    createFilterableList
+  } from "../../utils/listUtils.js";
+import {
+  loadQuestDefinitions,
+  saveQuestDefinition,
+  deleteQuestDefinition,
+  subscribeQuestDefinitions
+} from "../../services/questDefinitionsService.js";
+import {
+  createTextField,
+  createTextareaFieldWithColor,
+  createExtraInfoBlock,
+  createFormButtonRow
 } from "../uiKit.js";
-
-import {
-  createFilterButtonGroup,
-  createSearchRow,
-  createDefListContainer
-} from "../../utils/listUtils.js";
-
-import {
-  loadItemDefinitions,
-  saveItemDefinition,
-  updateItemDefinition,
-  deleteItemDefinition,
-  subscribeItemDefinitions
-} from "../../services/itemDefinitionsService.js";
-
-import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
-import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
-import { createIcon } from "../../utils/iconUtils.js";
-import { createLayoutSwitcher } from "../uiKit.js";
-import { createItemPreviewPanel } from "../preview/itemPreview.js";
 
 export function initItemDefinitionsModal(db) {
   const { modal, content } = createModal({
@@ -45,21 +39,16 @@ export function initItemDefinitionsModal(db) {
   const header = content.querySelector(".modal-header");
 
   const rarityOrder = {
-    legendary: 5,
-    epic: 4,
-    rare: 3,
-    uncommon: 2,
-    common: 1,
-    "": 0
+    legendary: 5, epic: 4, rare: 3, uncommon: 2, common: 1, "": 0
   };
 
   const sortFns = {
-    "filter-name":        (a, b) => a.name.localeCompare(b.name),
-    "filter-type":        (a, b) => a.itemType.localeCompare(b.itemType),
-    "filter-rarity":      (a, b) => rarityOrder[b.rarity] - rarityOrder[a.rarity],
+    "filter-name": (a, b) => a.name.localeCompare(b.name),
+    "filter-type": (a, b) => a.itemType.localeCompare(b.itemType),
+    "filter-rarity": (a, b) => rarityOrder[b.rarity] - rarityOrder[a.rarity],
     "filter-description": (a, b) => a.description.localeCompare(b.description),
-    "filter-quantity":    (a, b) => (parseInt(b.quantity) || 0) - (parseInt(a.quantity) || 0),
-    "filter-price":       (a, b) => (parseFloat(b.value) || 0) - (parseFloat(a.value) || 0)
+    "filter-quantity": (a, b) => (parseInt(b.quantity) || 0) - (parseInt(a.quantity) || 0),
+    "filter-price": (a, b) => (parseFloat(b.value) || 0) - (parseFloat(a.value) || 0)
   };
 
   let activeSorts = new Set();
@@ -67,12 +56,12 @@ export function initItemDefinitionsModal(db) {
 
   const { wrapper: filterWrapper } = createFilterButtonGroup(
     [
-      { id: "filter-name",        label: "N"  },
-      { id: "filter-type",        label: "T"  },
-      { id: "filter-rarity",      label: "R"  },
-      { id: "filter-description", label: "D"  },
-      { id: "filter-quantity",    label: "Qt" },
-      { id: "filter-price",       label: "P"  }
+      { id: "filter-name", label: "N" },
+      { id: "filter-type", label: "T" },
+      { id: "filter-rarity", label: "R" },
+      { id: "filter-description", label: "D" },
+      { id: "filter-quantity", label: "Qt" },
+      { id: "filter-price", label: "P" }
     ],
     (btnId, isToggled) => {
       if (isToggled) activeSorts.add(btnId);
@@ -85,7 +74,7 @@ export function initItemDefinitionsModal(db) {
   const layoutSwitcher = createLayoutSwitcher({
     available: ["row", "stacked", "gallery"],
     defaultView: "row",
-    onChange: (layout) => {
+    onChange: layout => {
       currentLayout = layout;
       renderFilteredList();
     }
@@ -97,7 +86,6 @@ export function initItemDefinitionsModal(db) {
   searchInput.addEventListener("input", () => renderFilteredList());
 
   const listContainer = createDefListContainer("item-definitions-list");
-
   let definitions = [];
 
   const formApi = createItemDefinitionForm({
@@ -146,11 +134,7 @@ export function initItemDefinitionsModal(db) {
   bodyWrap.style.flexDirection = "column";
   bodyWrap.style.flex = "1 1 auto";
   bodyWrap.style.minHeight = 0;
-
-  bodyWrap.appendChild(listContainer);
-  bodyWrap.appendChild(document.createElement("hr"));
-  bodyWrap.appendChild(formApi.form);
-
+  bodyWrap.append(listContainer, document.createElement("hr"), formApi.form);
   content.appendChild(bodyWrap);
 
   function renderFilteredList() {
@@ -184,7 +168,7 @@ export function initItemDefinitionsModal(db) {
         deleteBtn.appendChild(createIcon("trash"));
         deleteBtn.onclick = (e) => {
           e.stopPropagation();
-          if (def.id && confirm(`Are you sure you want to delete \"${def.name}\"?`)) {
+          if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
             deleteItemDefinition(db, def.id).then(refreshDefinitions);
           }
         };
