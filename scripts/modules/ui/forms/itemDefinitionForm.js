@@ -1,4 +1,4 @@
-// @version: 23
+// @version: 24
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -80,6 +80,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   btnDelete.onclick = () => {
     if (editingId && confirm(`Are you sure you want to delete "${fldName.value}"?`)) {
       onDelete?.(editingId);
+      populate({}); // ✅ Reset form after delete
     }
   };
 
@@ -186,10 +187,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     };
 
     onSubmit(payload);
-
-    if (!editingId) {
-      setTimeout(() => populate({}), 0);
-    }
+    setTimeout(() => populate({}), 0); // ✅ Always reset to Add mode
   });
 
   // ─── Pickr Initialization ────────────────────────────────────────────────
