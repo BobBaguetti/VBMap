@@ -51,7 +51,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   headerRow.append(subheading, controls);
   form.append(headerRow);
 
-  // ─── Name
+  // ─── Name ────────────────────────────────────────────────────────────────────────────────
   const nameRow = createTopAlignedFieldRow("Name:");
   const nameInput = document.createElement("input");
   nameInput.type = "text";
@@ -60,7 +60,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   nameRow.append(nameInput, nameColorBtn);
   form.append(nameRow);
 
-  // ─── Item Type
+  // ─── Item Type ─────────────────────────────────────────────────────────────────────────
   const typeRow = createTopAlignedFieldRow("Item Type:");
   const typeSelect = document.createElement("select");
   const opt0 = document.createElement("option");
@@ -78,7 +78,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   typeRow.append(typeSelect, typeColorBtn);
   form.append(typeRow);
 
-  // ─── Rarity
+  // ─── Rarity ─────────────────────────────────────────────────────────────────────────────
   const rarityRow = createTopAlignedFieldRow("Rarity:");
   const raritySelect = document.createElement("select");
   const optR0 = document.createElement("option");
@@ -97,7 +97,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   rarityRow.append(raritySelect, rarityColorBtn);
   form.append(rarityRow);
 
-  // ─── Description
+  // ─── Description ────────────────────────────────────────────────────────────────────────
   const descRow = createTopAlignedFieldRow("Description:");
   const descTextarea = document.createElement("textarea");
   descTextarea.rows = 2;
@@ -107,7 +107,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
 
   form.append(document.createElement("hr"));
 
-  // ─── Extra Info
+  // ─── Extra Info ──────────────────────────────────────────────────────────────────────────
   const extraRow = document.createElement("div");
   extraRow.className = "field-row extra-row";
   const extraLabel = document.createElement("label");
@@ -139,18 +139,17 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     // initialize pickr for this extra‑line
     setTimeout(() => {
       const p = createPickr(`#${colorBtn.id}`);
+      colorBtn.dataset.color = p.getColor().toHEXA().toString();
       p.on("save", (color, inst) => {
         colorBtn.dataset.color = color.toHEXA().toString();
         inst.hide();
       });
-      // seed its dataset
-      colorBtn.dataset.color = p.getColor().toHEXA().toString();
     }, 0);
   });
 
   form.append(document.createElement("hr"));
 
-  // ─── Value & Quantity
+  // ─── Value & Quantity ───────────────────────────────────────────────────────────────────
   const valueRow = createTopAlignedFieldRow("Value:");
   const valueInput = document.createElement("input");
   valueRow.append(valueInput);
@@ -161,7 +160,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   qtyRow.append(qtyInput);
   form.append(qtyRow);
 
-  // ─── Image S & L
+  // ─── Image S & L ─────────────────────────────────────────────────────────────────────────
   const imgSmallRow = createTopAlignedFieldRow("Image S:");
   imgSmallRow.classList.add("image-row");
   const imgSmallInput = document.createElement("input");
@@ -174,7 +173,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   imgBigRow.append(imgBigInput);
   form.append(imgBigRow);
 
-  // ─── Form submission
+  // ─── Form submission & payload gathering ────────────────────────────────────────────────
   form.addEventListener("submit", ev => {
     ev.preventDefault();
     const payload = {
@@ -200,20 +199,27 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     onSubmit(payload);
   });
 
-  // ─── Initialize Pickr on the four header color buttons
+  // ─── Initialize Pickr on the four header color buttons ─────────────────────────────────
   setTimeout(() => {
     [nameColorBtn, typeColorBtn, rarityColorBtn, descColorBtn].forEach(btn => {
       const p = createPickr(`#${btn.id}`);
       // seed initial dataset
       btn.dataset.color = p.getColor().toHEXA().toString();
+      // handle save event
       p.on("save", (color, inst) => {
-        btn.dataset.color = color.toHEXA().toString();
+        const hex = color.toHEXA().toString();
+        btn.dataset.color = hex;
+        // apply to associated field
+        if (btn === nameColorBtn)    nameInput.style.color = hex;
+        else if (btn === typeColorBtn)    typeSelect.style.color = hex;
+        else if (btn === rarityColorBtn)  raritySelect.style.color = hex;
+        else if (btn === descColorBtn)    descTextarea.style.color = hex;
         inst.hide();
       });
     });
   }, 0);
 
-  // ─── Helpers: populate / reset
+  // ─── Helpers: populate / reset ─────────────────────────────────────────────────────────
   function populate(def) {
     currentId = def.id;
     subheading.textContent = "Edit Item";
