@@ -1,4 +1,4 @@
-// @version: 24
+// @version: 25
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -17,16 +17,9 @@ import {
   createQuantityField
 } from "./universalForm.js";
 
-/**
- * Creates the item definition form for adding/editing items.
- * Includes logic for field rendering, color pickers, Save/Cancel/Delete buttons,
- * and switching between Add and Edit modes.
- */
 export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   const form = document.createElement("form");
   form.id = "item-definition-form";
-
-  // ─── Heading and Button Bar ──────────────────────────────────────────────
 
   const subheadingWrap = document.createElement("div");
   subheadingWrap.style.display = "flex";
@@ -41,8 +34,6 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   const floatingBtns = document.createElement("div");
   floatingBtns.style.display = "flex";
   floatingBtns.style.gap = "10px";
-
-  // ─── Action Buttons ──────────────────────────────────────────────────────
 
   const btnSave = document.createElement("button");
   btnSave.type = "submit";
@@ -80,15 +71,13 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   btnDelete.onclick = () => {
     if (editingId && confirm(`Are you sure you want to delete "${fldName.value}"?`)) {
       onDelete?.(editingId);
-      populate({}); // ✅ Reset form after delete
+      populate({});
     }
   };
 
   floatingBtns.append(btnSave);
   subheadingWrap.appendChild(floatingBtns);
   form.appendChild(subheadingWrap);
-
-  // ─── Fields ──────────────────────────────────────────────────────────────
 
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
   const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");
@@ -112,14 +101,10 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     rowImgL
   );
 
-  // ─── State + Population ───────────────────────────────────────────────────
-
   let editingId = null;
   const pickrs = new Map();
 
   function populate(def) {
-    console.log("[populate] Incoming definition:", def);
-
     editingId = def.id || null;
     const safe = (v, d = "") => v ?? d;
 
@@ -156,8 +141,6 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     }
   }
 
-  // ─── Submission ──────────────────────────────────────────────────────────
-
   form.addEventListener("submit", e => {
     e.preventDefault();
     const name = fldName.value.trim();
@@ -187,10 +170,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     };
 
     onSubmit(payload);
-    setTimeout(() => populate({}), 0); // ✅ Always reset to Add mode
+    setTimeout(() => populate({}), 0);
   });
-
-  // ─── Pickr Initialization ────────────────────────────────────────────────
 
   const pickrTargets = [
     colorName, colorType, colorRarity,
@@ -204,9 +185,25 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     });
   }, 0);
 
+  function setFieldColor(fieldKey, hexColor) {
+    const map = {
+      name: colorName,
+      itemType: colorType,
+      rarity: colorRarity,
+      description: colorDesc,
+      value: colorValue,
+      quantity: colorQty
+    };
+    const btn = map[fieldKey];
+    if (btn) {
+      pickrs.get(btn)?.setColor(hexColor);
+    }
+  }
+
   return {
     form,
     populate,
-    reset: () => populate({})
+    reset: () => populate({}),
+    setFieldColor
   };
 }
