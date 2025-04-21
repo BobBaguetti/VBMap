@@ -1,12 +1,9 @@
-/* @version: 19 */
+/* @version: 20 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
 
-/* ================================
-   Leaflet Overrides
-================================ */
-
+/* Leaflet Overrides */
 .leaflet-container {
   background-color: #1a1a1a !important;
 }
@@ -40,10 +37,7 @@
   display: none !important;
 }
 
-/* ================================
-   Custom Marker Popup Styles
-================================ */
-
+/* Popup Base */
 .custom-popup {
   position: relative;
   background: rgba(34, 34, 34, 0.95) !important;
@@ -58,13 +52,12 @@
 }
 
 /* Header */
-
 .popup-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 12px; /* restored to original */
+  margin-bottom: 13px;
   border-bottom: 2px solid #444;
   padding: 0;
 }
@@ -81,13 +74,12 @@
   height: 64px;
   object-fit: contain;
   background: #222;
-  border: 2px solid #777; /* updated dynamically via JS */
+  border: 2px solid #777;
   border-radius: 6px;
   flex-shrink: 0;
 }
 
-/* Info Text */
-
+/* Info */
 .popup-info {
   display: flex;
   flex-direction: column;
@@ -95,6 +87,13 @@
   margin-top: 0;
   padding-top: 0;
   gap: 2px;
+  transform: translateY(-2px); /* restore original alignment */
+}
+
+.popup-info > * {
+  margin: 0;
+  padding: 0;
+  line-height: 1.2;
 }
 
 .popup-name {
@@ -109,22 +108,22 @@
 .popup-type,
 .popup-rarity {
   font-size: 15px;
-  font-weight: 520;
+  font-weight: 440;
   transform: translateY(-1px);
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Value (top-right) */
-
+/* Coin Value */
 .popup-value-icon {
   font-size: 15px;
-  font-weight: 520;
+  font-weight: 420;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 30px;
+  margin-top: 32px;
   margin-right: 4px;
   white-space: nowrap;
+  color: #e0e0e0;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
@@ -134,12 +133,7 @@
   fill: #d4af37;
 }
 
-.popup-value-number {
-  color: #e0e0e0 !important;
-}
-
-/* Body with border box */
-
+/* Body */
 .popup-body.popup-info-box {
   font-weight: 420;
   font-size: 14px;
@@ -147,7 +141,7 @@
   border: 1px solid #444;
   border-radius: 4px;
   padding: 9px;
-  margin-top: 8px; /* adjusted upward to offset removed header margin */
+  margin-top: 7px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -165,8 +159,7 @@
   font-weight: 400;
 }
 
-/* Extra lines and meta */
-
+/* Extra + Meta */
 .popup-extra-line {
   font-size: 14px;
   font-weight: 420;
@@ -183,11 +176,10 @@
   border: none;
   height: 1px;
   background: #444;
-  margin: 5px -9px; /* edge-to-edge with tightened gap */
+  margin: 6px 0;
 }
 
-/* Close button */
-
+/* Close Button */
 .popup-close-btn {
   position: absolute;
   top: 8px;
