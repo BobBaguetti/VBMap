@@ -1,4 +1,4 @@
-/* @version: 12 */
+/* @version: 13 */
 /* @file: /styles/modals/modal.large.css */
 
 .modal.modal-large {
@@ -65,7 +65,6 @@
   min-height: 0;
   max-height: 240px;
 
-  /* Invisible/floating scrollbar behavior */
   scrollbar-width: none;        /* Firefox */
   -ms-overflow-style: none;     /* IE/Edge */
 }
@@ -81,7 +80,6 @@
   max-height: 100%;
   padding-right: 4px;
 
-  /* Already has floating scrollbar style */
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -144,13 +142,33 @@
   background-color: #666;
 }
 
-/* Item entry interactivity */
+/* ─── Styled Item Entry Layout ─────────────────────────────────────────────── */
+
 .modal.modal-large .item-def-entry {
   padding: 6px 8px;
   cursor: pointer;
   transition: background 0.2s;
+  border-radius: 4px;
 }
 
 .modal.modal-large .item-def-entry:hover {
   background-color: #333;
+}
+
+.modal.modal-large .item-def-entry .entry-name {
+  font-weight: bold;
+  font-size: 15px;
+}
+
+.modal.modal-large .item-def-entry .entry-meta {
+  font-size: 12px;
+  color: #bbb;
+  margin-top: 2px;
+}
+
+.modal.modal-large .item-def-entry .entry-description {
+  font-style: italic;
+  font-size: 13px;
+  color: #aaa;
+  margin-top: 2px;
 }

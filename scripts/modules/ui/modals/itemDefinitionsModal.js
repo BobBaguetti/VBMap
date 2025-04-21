@@ -1,4 +1,4 @@
-// @version: 27
+// @version: 28
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 // Modal creation utilities
@@ -27,7 +27,6 @@ import {
 // Form creation for item definition management
 import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
 
-// Main modal initializer
 export function initItemDefinitionsModal(db) {
   const { modal, content } = createModal({
     id: "item-definitions-modal",
@@ -41,7 +40,6 @@ export function initItemDefinitionsModal(db) {
 
   const header = content.querySelector(".modal-header");
 
-  // Sorting order for rarity
   const rarityOrder = {
     legendary: 5,
     epic: 4,
@@ -51,7 +49,6 @@ export function initItemDefinitionsModal(db) {
     "": 0
   };
 
-  // Sort function definitions
   const sortFns = {
     "filter-name":        (a, b) => a.name.localeCompare(b.name),
     "filter-type":        (a, b) => a.itemType.localeCompare(b.itemType),
@@ -63,7 +60,6 @@ export function initItemDefinitionsModal(db) {
 
   let activeSorts = new Set();
 
-  // Filter buttons
   const { wrapper: filterWrapper } = createFilterButtonGroup(
     [
       { id: "filter-name",        label: "N"  },
@@ -81,19 +77,16 @@ export function initItemDefinitionsModal(db) {
   );
   header.appendChild(filterWrapper);
 
-  // Search bar
   const { row: searchRow, input: searchInput } = createSearchRow("def-search", "Search items…");
   header.appendChild(searchRow);
   searchInput.addEventListener("input", () => renderFilteredList());
 
-  // List container
   const listContainer = createDefListContainer("item-definitions-list");
   content.appendChild(listContainer);
   content.appendChild(document.createElement("hr"));
 
   let definitions = [];
 
-  // Form logic
   const formApi = createItemDefinitionForm({
     onCancel: () => formApi.reset(),
     onDelete: async (idToDelete) => {
@@ -108,20 +101,18 @@ export function initItemDefinitionsModal(db) {
       }
 
       await refreshDefinitions();
-      formApi.reset(); // ✅ Always reset to Add mode after save
+      formApi.reset();
     }
   });
 
   formApi.form.classList.add("ui-scroll-float");
   content.appendChild(formApi.form);
 
-  // Reload from Firestore
   async function refreshDefinitions() {
     definitions = await loadItemDefinitions(db);
     renderFilteredList();
   }
 
-  // Search + sort logic
   function renderFilteredList() {
     let list = definitions.filter(d =>
       d.name?.toLowerCase().includes(searchInput.value.trim().toLowerCase())
@@ -133,16 +124,18 @@ export function initItemDefinitionsModal(db) {
     renderList(list);
   }
 
-  // Render entry list
   function renderList(list) {
     listContainer.innerHTML = "";
     list.forEach(def => {
       const entry = document.createElement("div");
       entry.className = "item-def-entry";
       entry.innerHTML = `
-        <strong>${def.name}</strong>
-        <small>(${def.itemType || "—"}) – ${def.rarity || "—"}</small>
-        <em>${def.description || ""}</em>
+        <div class="entry-name">${def.name}</div>
+        <div class="entry-meta">
+          <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
+          <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity || "—"}</span>
+        </div>
+        <div class="entry-description">${def.description || ""}</div>
       `;
       entry.addEventListener("click", () => {
         if (def.id) {
@@ -155,7 +148,6 @@ export function initItemDefinitionsModal(db) {
     });
   }
 
-  // Real-time listener
   subscribeItemDefinitions(db, defs => {
     definitions = defs;
     renderFilteredList();
