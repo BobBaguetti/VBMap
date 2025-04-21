@@ -1,9 +1,12 @@
-/* @version: 20 */
+/* @version: 22 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
 
-/* Leaflet Overrides */
+/* ================================
+   Leaflet Overrides
+================================ */
+
 .leaflet-container {
   background-color: #1a1a1a !important;
 }
@@ -37,7 +40,10 @@
   display: none !important;
 }
 
-/* Popup Base */
+/* ================================
+   Custom Marker Popup Styles
+================================ */
+
 .custom-popup {
   position: relative;
   background: rgba(34, 34, 34, 0.95) !important;
@@ -52,12 +58,13 @@
 }
 
 /* Header */
+
 .popup-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
-  margin-bottom: 13px;
+  margin-bottom: 13px; /* restored to original before it dropped text */
   border-bottom: 2px solid #444;
   padding: 0;
 }
@@ -79,7 +86,8 @@
   flex-shrink: 0;
 }
 
-/* Info */
+/* Info Text */
+
 .popup-info {
   display: flex;
   flex-direction: column;
@@ -87,13 +95,6 @@
   margin-top: 0;
   padding-top: 0;
   gap: 2px;
-  transform: translateY(-2px); /* restore original alignment */
-}
-
-.popup-info > * {
-  margin: 0;
-  padding: 0;
-  line-height: 1.2;
 }
 
 .popup-name {
@@ -108,22 +109,22 @@
 .popup-type,
 .popup-rarity {
   font-size: 15px;
-  font-weight: 440;
+  font-weight: 520;
   transform: translateY(-1px);
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Coin Value */
+/* Value (top-right) */
+
 .popup-value-icon {
   font-size: 15px;
-  font-weight: 420;
+  font-weight: 520;
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  margin-top: 32px;
+  margin-top: 30px;
   margin-right: 4px;
   white-space: nowrap;
-  color: #e0e0e0;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
@@ -133,7 +134,12 @@
   fill: #d4af37;
 }
 
-/* Body */
+.popup-value-number {
+  color: #e0e0e0 !important;
+}
+
+/* Body with border box */
+
 .popup-body.popup-info-box {
   font-weight: 420;
   font-size: 14px;
@@ -141,7 +147,7 @@
   border: 1px solid #444;
   border-radius: 4px;
   padding: 9px;
-  margin-top: 7px;
+  margin-top: 6px;
   display: flex;
   flex-direction: column;
   gap: 4px;
@@ -159,7 +165,8 @@
   font-weight: 400;
 }
 
-/* Extra + Meta */
+/* Extra lines and meta */
+
 .popup-extra-line {
   font-size: 14px;
   font-weight: 420;
@@ -176,10 +183,11 @@
   border: none;
   height: 1px;
   background: #444;
-  margin: 6px 0;
+  margin: 5px -9px;
 }
 
-/* Close Button */
+/* Close button */
+
 .popup-close-btn {
   position: absolute;
   top: 8px;
