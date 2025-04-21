@@ -1,6 +1,4 @@
-// @version: 4
-// @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
-
+import { createPickr } from "../ui/pickrManager.js"; 
 import {
   createModal,
   closeModal,
@@ -21,8 +19,7 @@ import {
   subscribeItemDefinitions
 } from "../../services/itemDefinitionsService.js";
 
-import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
-import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
+import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js"; // keep this import
 
 export function initItemDefinitionsModal(db) {
   const { modal, content } = createModal({
