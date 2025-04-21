@@ -1,4 +1,4 @@
-// @version: 4
+// @version: 5
 // @file: /scripts/modules/ui/pickrManager.js
 
 const activePickrs = [];
@@ -14,6 +14,7 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
     return {
       on: () => {},
       setColor: () => {},
+      getColor: () => defaultColor,
       getRoot: () => null
     };
   }
@@ -48,6 +49,16 @@ export function disablePickr(pickr, disabled = true) {
     root.style.pointerEvents = disabled ? "none" : "auto";
     root.style.opacity = disabled ? 0.5 : 1;
   }
+}
+
+/**
+ * Get the current color from a Pickr instance in HEXA format.
+ * @param {Pickr} pickr
+ * @param {string} fallback
+ * @returns {string} hex color string (e.g. "#E5E6E8")
+ */
+export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
+  return pickr?.getColor?.()?.toHEXA?.()?.toString?.() || fallback;
 }
 
 /**
