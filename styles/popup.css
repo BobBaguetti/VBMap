@@ -1,4 +1,4 @@
-/* @version: 4 */
+/* @version: 5 */
 /* @file: /styles/popup.css */
 
 .leaflet-container {
@@ -50,7 +50,6 @@
   font-size: 14px;
   line-height: 1.4;
 
-  /* Default vars (overridden inline) */
   --popup-name-color: #e5e6e8;
   --popup-type-color: #ccc;
   --popup-rarity-color: #ccc;
@@ -80,23 +79,28 @@
   flex-direction: column;
   justify-content: center;
   flex-grow: 1;
-  color: var(--popup-name-color);
 }
 
 .popup-name {
   font-size: 18px;
   font-weight: 700;
+  font-variant: small-caps;
   text-transform: uppercase;
   color: var(--popup-name-color);
+  margin-bottom: 2px;
 }
 
 .popup-type {
   font-size: 15px;
+  margin: 0;
+  line-height: 1.2;
   color: var(--popup-type-color);
 }
 
 .popup-rarity {
   font-size: 15px;
+  margin: 0;
+  line-height: 1.2;
   color: var(--popup-rarity-color);
 }
 
@@ -144,7 +148,7 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  margin-top: 2px;
+  align-self: flex-start;
 }
 
 .popup-close-btn svg {

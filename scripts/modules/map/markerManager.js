@@ -1,4 +1,4 @@
-// @version: 7
+// @version: 8
 // @file: /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
@@ -40,7 +40,7 @@ export function createPopupContent(m) {
     : "";
 
   const descHTML = m.description
-    ? `<p class="popup-desc" style="--popup-desc-color: ${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
+    ? `<p class="popup-desc">${m.description}</p>`
     : "";
 
   const extraHTML = (m.extraLines || []).map(line => `
