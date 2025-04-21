@@ -1,4 +1,4 @@
-// @version: 25
+// @version: 26
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -16,6 +16,8 @@ import {
   createValueField,
   createQuantityField
 } from "./universalForm.js";
+
+import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
 export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   const form = document.createElement("form");
@@ -182,6 +184,20 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     pickrTargets.forEach(el => {
       const p = createPickr(`#${el.id}`);
       pickrs.set(el, p);
+    });
+
+    fldRarity.addEventListener("change", () => {
+      const val = fldRarity.value;
+      if (val in rarityColors) {
+        pickrs.get(colorRarity)?.setColor(rarityColors[val]);
+      }
+    });
+
+    fldType.addEventListener("change", () => {
+      const val = fldType.value;
+      if (val in itemTypeColors) {
+        pickrs.get(colorType)?.setColor(itemTypeColors[val]);
+      }
     });
   }, 0);
 
