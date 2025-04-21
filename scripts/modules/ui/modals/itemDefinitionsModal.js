@@ -1,4 +1,4 @@
-// @version: 34
+// @version: 35
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -37,7 +37,8 @@ export function initItemDefinitionsModal(db) {
     withDivider: true,
     onClose: () => {
       closeModal(modal);
-      document.getElementById("item-preview-panel")?.classList.add("hidden");
+      previewPanel.classList.remove("visible");
+      previewPanel.classList.add("hidden");
     }
   });
 
@@ -132,10 +133,7 @@ export function initItemDefinitionsModal(db) {
   formApi.form.classList.add("ui-scroll-float");
 
   const previewPanel = document.createElement("div");
-  previewPanel.id = "item-preview-panel";
-  previewPanel.classList.add("hidden");
   document.body.appendChild(previewPanel);
-
   const previewApi = createItemPreviewPanel(previewPanel);
 
   formApi.form.addEventListener("input", () => {
@@ -209,6 +207,7 @@ export function initItemDefinitionsModal(db) {
           if (def.id) {
             formApi.populate(def);
             previewPanel.classList.remove("hidden");
+            previewPanel.classList.add("visible");
           }
         });
 
@@ -232,6 +231,7 @@ export function initItemDefinitionsModal(db) {
       await refreshDefinitions();
       openModal(modal);
       previewPanel.classList.remove("hidden");
+      previewPanel.classList.add("visible");
     },
     refresh: refreshDefinitions
   };
