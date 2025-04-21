@@ -41,61 +41,83 @@
     background: #777;
   }
   
-/* Floating scrollbar only during scroll */
-.ui-scroll-float {
-  overflow-y: auto;
-  scrollbar-width: none;
-  scrollbar-color: transparent transparent;
-}
-
-.ui-scroll-float.scrolling {
-  scrollbar-color: #555 transparent;
-}
-
-.ui-scroll-float::-webkit-scrollbar {
-  width: 8px;
-  background: transparent;
-  position: absolute;
-}
-
-.ui-scroll-float::-webkit-scrollbar-thumb {
-  background-color: transparent;
-  border-radius: 4px;
-  transition: background-color 0.3s;
-}
-
-.ui-scroll-float.scrolling::-webkit-scrollbar-thumb {
-  background-color: #555;
-}
-
-/* ============================
-   Global Red Delete Button
-   ============================ */
-
-   .ui-button-delete {
+  /* Floating scrollbar only during scroll */
+  .ui-scroll-float {
+    overflow-y: auto;
+    scrollbar-width: none;
+    scrollbar-color: transparent transparent;
+  }
+  
+  .ui-scroll-float.scrolling {
+    scrollbar-color: #555 transparent;
+  }
+  
+  .ui-scroll-float::-webkit-scrollbar {
+    width: 8px;
+    background: transparent;
+    position: absolute;
+  }
+  
+  .ui-scroll-float::-webkit-scrollbar-thumb {
+    background-color: transparent;
+    border-radius: 4px;
+    transition: background-color 0.3s;
+  }
+  
+  .ui-scroll-float.scrolling::-webkit-scrollbar-thumb {
+    background-color: #555;
+  }
+  
+  /* ============================
+     Global Red Delete Button
+     ============================ */
+  
+  .ui-button-delete {
     background-color: #551111 !important;
     color: #eee !important;
     border: none !important;
-    border-radius: 4px;
-    padding: 4px;
-    width: 32px;
-    height: 32px;
+    padding: 6px;
+    width: 28px;
+    height: 28px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    border-radius: 4px;
     cursor: pointer;
-    transition: background 0.3s, color 0.3s;
+    transition: background-color 0.3s, color 0.3s;
+    font-size: 13px;
   }
   
   .ui-button-delete:hover {
     background-color: #772222 !important;
-    color: #fff !important;
+    color: white !important;
   }
   
-  .ui-button-delete svg,
-  .ui-button-delete i {
+  .ui-button-delete svg {
     width: 16px;
     height: 16px;
-    pointer-events: none;
+  }
+  
+  /* ============================
+     Scaled Buttons (Modal-Specific)
+     ============================ */
+  
+  /* In modal-large context: scale form buttons slightly smaller */
+  .modal-large .ui-button {
+    padding: 4px 10px;
+    font-size: 13px;
+  }
+  
+  /* Entry delete buttons can be even smaller */
+  .modal-large .item-def-entry .entry-delete.ui-button-delete {
+    width: 24px;
+    height: 24px;
+    padding: 4px;
+    font-size: 0;
+  }
+  
+  .modal-large .item-def-entry .entry-delete.ui-button-delete svg {
+    width: 14px;
+    height: 14px;
   }
   
