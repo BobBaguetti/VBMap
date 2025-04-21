@@ -1,7 +1,7 @@
-/* @version: 12 */
+/* @version: 13 */
 /* @file: /styles/popup.css */
 
-@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;510&display=swap');
 
 .leaflet-container {
   background-color: #1a1a1a !important;
@@ -83,7 +83,7 @@
 
 .popup-name {
   font-size: 18px;
-  font-weight: 500; /* Satoshi Medium */
+  font-weight: 510; /* Custom medium weight */
   font-variant: small-caps;
   text-transform: uppercase;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
@@ -92,14 +92,14 @@
 .popup-type,
 .popup-rarity {
   font-size: 15px;
-  font-weight: 525; /* 5% thicker than 500 */
-  transform: translateY(-1px); /* move up 1px */
+  font-weight: 420; /* Slightly above normal */
+  transform: translateY(-1px);
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 .popup-body p {
   margin: 2px 0;
-  font-weight: 400;
+  font-weight: 420;
 }
 
 .popup-desc {
@@ -117,7 +117,7 @@
 
 .popup-extra-line {
   font-size: 14px;
-  font-weight: 400;
+  font-weight: 420;
   margin: 2px 0;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
@@ -125,7 +125,7 @@
 .popup-meta {
   font-size: 12px;
   text-transform: uppercase;
-  font-weight: 400;
+  font-weight: 420;
   color: #e0e0e0;
   margin: 2px 0;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
