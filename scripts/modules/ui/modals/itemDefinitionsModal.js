@@ -1,4 +1,4 @@
-// @version: 33
+// @version: 32
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -24,6 +24,7 @@ import {
 import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 import { createIcon } from "../../utils/iconUtils.js";
+import { createLayoutSwitcher } from "../uiKit.js";
 
 export function initItemDefinitionsModal(db) {
   const { modal, content } = createModal({
@@ -57,6 +58,7 @@ export function initItemDefinitionsModal(db) {
   };
 
   let activeSorts = new Set();
+  let currentLayout = "row";
 
   const { wrapper: filterWrapper } = createFilterButtonGroup(
     [
@@ -74,6 +76,16 @@ export function initItemDefinitionsModal(db) {
     }
   );
   header.appendChild(filterWrapper);
+
+  const layoutSwitcher = createLayoutSwitcher({
+    available: ["row", "stacked", "gallery"],
+    defaultView: "row",
+    onChange: (layout) => {
+      currentLayout = layout;
+      renderFilteredList();
+    }
+  });
+  header.appendChild(layoutSwitcher);
 
   const { row: searchRow, input: searchInput } = createSearchRow("def-search", "Search items…");
   header.appendChild(searchRow);
@@ -136,9 +148,11 @@ export function initItemDefinitionsModal(db) {
 
   function renderList(list) {
     listContainer.innerHTML = "";
+    listContainer.className = `def-list ui-scroll-float layout-${currentLayout}`;
+
     list.forEach(def => {
       const entry = document.createElement("div");
-      entry.className = "item-def-entry";
+      entry.className = `item-def-entry layout-${currentLayout}`;
 
       const valueHtml = def.value
         ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true }).outerHTML}</div>`
@@ -148,33 +162,30 @@ export function initItemDefinitionsModal(db) {
         ? `<div class="entry-quantity">x${def.quantity}</div>`
         : "";
 
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "entry-delete ui-button-delete";
+      deleteBtn.title = "Delete this item";
+      deleteBtn.appendChild(createIcon("trash"));
+      deleteBtn.onclick = (e) => {
+        e.stopPropagation();
+        if (def.id && confirm(`Are you sure you want to delete \"${def.name}\"?`)) {
+          deleteItemDefinition(db, def.id).then(refreshDefinitions);
+        }
+      };
+
       entry.innerHTML = `
         <div class="entry-name">${def.name}</div>
         <div class="entry-meta">
           <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
-          <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity || "—"}</span>
+          <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity?.toUpperCase() || "—"}</span>
         </div>
         <div class="entry-description">${def.description || ""}</div>
-        <div class="entry-details">${valueHtml}${quantityHtml}</div>
+        <div class="entry-details">
+          ${valueHtml}
+          ${quantityHtml}
+        </div>
       `;
 
-      // Delete button: red square, trash icon only
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "ui-button-delete";
-      deleteBtn.title = "Delete item";
-      deleteBtn.appendChild(createIcon("trash"));
-      deleteBtn.onclick = (e) => {
-        e.stopPropagation();
-        if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
-          deleteItemDefinition(db, def.id).then(refreshDefinitions);
-        }
-      };
-      deleteBtn.style.position = "absolute";
-      deleteBtn.style.bottom = "6px";
-      deleteBtn.style.right = "6px";
-
-      // Add delete button as absolute child
-      entry.style.position = "relative";
       entry.appendChild(deleteBtn);
 
       entry.addEventListener("click", () => {

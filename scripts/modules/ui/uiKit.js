@@ -1,4 +1,4 @@
-// @version: 25
+// @version: 26
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -313,4 +313,39 @@ export function createExtraInfoBlock(options = {}) {
   }
 
   return { block: wrap, getLines, setLines };
+}
+
+// ─── Layout Switcher Control ─────────────────────────────────────────────────
+
+export function createLayoutSwitcher({ available = ["row", "stacked", "gallery"], onChange, defaultView = "row" } = {}) {
+  const wrap = document.createElement("div");
+  wrap.className = "layout-switcher";
+  wrap.style.display = "flex";
+  wrap.style.gap = "4px";
+
+  const layouts = {
+    row: { icon: "📄", label: "Row View" },
+    stacked: { icon: "🧾", label: "Stacked View" },
+    gallery: { icon: "🖼️", label: "Gallery View" }
+  };
+
+  available.forEach(layout => {
+    const btn = document.createElement("button");
+    btn.className = "ui-button layout-button";
+    btn.title = layouts[layout]?.label || layout;
+    btn.textContent = layouts[layout]?.icon || layout;
+    btn.dataset.layout = layout;
+
+    btn.onclick = () => {
+      const all = wrap.querySelectorAll(".layout-button");
+      all.forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      if (onChange) onChange(layout);
+    };
+
+    wrap.appendChild(btn);
+    if (layout === defaultView) btn.classList.add("active");
+  });
+
+  return wrap;
 }
