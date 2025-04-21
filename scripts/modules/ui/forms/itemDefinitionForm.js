@@ -1,9 +1,8 @@
-// @version: 14
+// @version: 15
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
-  createImageField,
-  createFormButtonRow
+  createImageField
 } from "../../ui/uiKit.js";
 
 import { createPickr } from "../../ui/pickrManager.js";
@@ -22,14 +21,21 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const form = document.createElement("form");
   form.id = "item-definition-form";
 
-  // 🔹 Floating Save/Cancel Button Row
-  const floatingBtns = document.createElement("div");
-  floatingBtns.style.display = "flex";
-  floatingBtns.style.gap = "10px";
-  floatingBtns.style.position = "absolute";
-  floatingBtns.style.top = "16px";
-  floatingBtns.style.right = "16px";
-  floatingBtns.style.zIndex = "10";
+  // 🔹 Subheading row with Save/Cancel buttons on right
+  const headingRow = document.createElement("div");
+  headingRow.style.display = "flex";
+  headingRow.style.justifyContent = "space-between";
+  headingRow.style.alignItems = "center";
+  headingRow.style.marginBottom = "10px";
+
+  const subheading = document.createElement("h3");
+  subheading.id = "def-form-subheading";
+  subheading.textContent = "Add / Edit Item";
+  subheading.style.margin = "0";
+
+  const buttonRow = document.createElement("div");
+  buttonRow.style.display = "flex";
+  buttonRow.style.gap = "8px";
 
   const btnSave = document.createElement("button");
   btnSave.type = "submit";
@@ -42,14 +48,9 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   btnCancel.className = "ui-button";
   btnCancel.onclick = onCancel;
 
-  floatingBtns.append(btnSave, btnCancel);
-  form.appendChild(floatingBtns); // ⬅ Add before form content
-
-  // 🔹 Subheading
-  const subheading = document.createElement("h3");
-  subheading.id = "def-form-subheading";
-  subheading.textContent = "Add / Edit Item";
-  form.appendChild(subheading);
+  buttonRow.append(btnSave, btnCancel);
+  headingRow.append(subheading, buttonRow);
+  form.appendChild(headingRow);
 
   // 🔹 Fields
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
@@ -72,7 +73,6 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     rowQty,
     rowImgS,
     rowImgL
-    // ⛔ Removed the old bottom-aligned button row
   );
 
   // 🔹 Form Logic
