@@ -1,4 +1,4 @@
-// @version: 24
+// @version: 25
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 // Modal creation utilities
@@ -109,26 +109,40 @@ export function initItemDefinitionsModal(db) {
       await refreshDefinitions();
     },
 
-    // Save or update an item, repopulate form
-    onSubmit: async (payload) => {
-      let saved;
-      if (payload.id) {
-        saved = await updateItemDefinition(db, String(payload.id), payload);
-      } else {
-        saved = await saveItemDefinition(db, null, payload);
-      }
+// Save or update an item, then repopulate form using refreshed list
+onSubmit: async (payload) => {
+  let saved;
 
-      // Fully refresh from the database to ensure a correct ID
-      await refreshDefinitions();
+  if (payload.id) {
+    // Updating an existing item
+    saved = await updateItemDefinition(db, String(payload.id), payload);
+  } else {
+    // Saving a new item — but ID might be missing from return value
+    saved = await saveItemDefinition(db, null, payload);
+  }
 
-      const match = definitions.find(d => d.id === saved.id);
-      if (match) {
-        formApi.populate(match);
-      } else {
-        console.warn("[submit] Saved item not found in refreshed list:", saved);
-      }
-    }
-  }); // ✅ This closing brace was missing before
+  // Refresh the full definitions list to ensure we have latest data (with ID)
+  await refreshDefinitions();
+
+  // Try to find the freshly saved item from refreshed list
+  let match = definitions.find(d => d.id === saved.id);
+
+  // If saved.id is null, fallback to matching key fields
+  if (!match) {
+    match = definitions.find(d =>
+      d.name === payload.name &&
+      d.description === payload.description &&
+      d.itemType === payload.itemType
+    );
+  }
+
+  // Populate the form if we found it
+  if (match) {
+    formApi.populate(match);
+  } else {
+    console.warn("[submit] Could not locate freshly saved item in refreshed list:", saved);
+  }
+}
 
   // Enable floating scrollbar on form
   formApi.form.classList.add("ui-scroll-float");
