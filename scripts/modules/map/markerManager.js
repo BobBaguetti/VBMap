@@ -1,9 +1,8 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
-// @file:    /scripts/modules/map/markerManager.js
+// @version: 4
+// @file: /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
+import { createIcon } from "../utils/iconUtils.js";
 
 // Basic URL check for images
 function isImgUrl(str) {
@@ -28,72 +27,50 @@ export function createCustomIcon(m) {
 }
 
 export function createPopupContent(m) {
-  let itemTypeHTML = "", rarityHTML = "", descHTML = "", extraHTML = "";
-
-  if (m.type === "Item") {
-    if (m.itemType) itemTypeHTML = `
-      <div style="margin:2px 0; font-size:18px; color:${m.itemTypeColor || "#E5E6E8"};">
-        ${m.itemType}
-      </div>`;
-    if (m.rarity) rarityHTML = `
-      <div style="margin:2px 0; font-size:18px; color:${m.rarityColor || "#E5E6E8"};">
-        ${formatRarity(m.rarity)}
-      </div>`;
-    if (m.description) descHTML = `
-      <p style="margin:2px 0; color:${m.descriptionColor || "#E5E6E8"};">
-        ${m.description}
-      </p>`;
-    if (m.extraLines?.length) {
-      m.extraLines.forEach(line => {
-        extraHTML += `
-          <p style="margin:2px 0; color:${line.color || "#E5E6E8"};">
-            ${line.text}
-          </p>`;
-      });
-    }
-  } else if (m.description) {
-    descHTML = `
-      <p style="margin:2px 0; color:${m.descriptionColor || "#E5E6E8"};">
-        ${m.description}
-      </p>`;
-  }
-
-  const valueHTML = `
-    <p style="margin:2px 0;">
-      <strong>Value:</strong> ${m.value ?? "—"}
-    </p>`;
-  const quantityHTML = `
-    <p style="margin:2px 0;">
-      <strong>Quantity:</strong> ${m.quantity ?? "—"}
-    </p>`;
-
-  const nameHTML = `
-    <h3 style="margin:0; font-size:20px; color:${m.nameColor || "#E5E6E8"};">
-      ${m.name}
-    </h3>`;
-
+  const nameHTML = `<div class="popup-name" style="color:${m.nameColor || "#E5E6E8"};">${m.name}</div>`;
   const bigImg = isImgUrl(m.imageBig)
-    ? `<img src="${m.imageBig}" class="popup-image"
-             style="width:64px; height:64px; object-fit:contain;
-                    background:#222; border:2px solid #777; border-radius:4px;"
-             onerror="this.style.display='none'">`
+    ? `<img src="${m.imageBig}" class="popup-image" onerror="this.style.display='none'">`
+    : "";
+
+  const itemTypeHTML = m.itemType
+    ? `<div class="popup-type" style="color:${m.itemTypeColor || "#E5E6E8"};">${m.itemType}</div>`
+    : "";
+
+  const rarityHTML = m.rarity
+    ? `<div class="popup-rarity" style="color:${m.rarityColor || "#E5E6E8"};">${formatRarity(m.rarity)}</div>`
+    : "";
+
+  const descHTML = m.description
+    ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
+    : "";
+
+  const extraHTML = (m.extraLines || []).map(line => `
+    <p class="popup-extra" style="color:${line.color || "#E5E6E8"};">${line.text}</p>
+  `).join("");
+
+  const valueHTML = m.value
+    ? `<p class="popup-meta"><strong>Value:</strong> ${m.value}</p>`
+    : "";
+
+  const quantityHTML = m.quantity && m.quantity > 1
+    ? `<p class="popup-meta"><strong>Quantity:</strong> ${m.quantity}</p>`
     : "";
 
   const videoBtn = m.video
-    ? `<button class="more-info-btn"
-               onclick="openVideoPopup(event.clientX, event.clientY, '${m.video}')">
-        Play Video
-      </button>`
+    ? `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.video}')">Play Video</button>`
     : "";
 
+  const closeButton = `
+    <button class="popup-close-btn" onclick="this.closest('.leaflet-popup')._popup?.remove()" aria-label="Close">
+      ${createIcon("x", { inline: true }).outerHTML}
+    </button>`;
+
   return `
-    <div class="custom-popup">
-      <button class="popup-close-btn" onclick="this.closest('.leaflet-popup')._popup?.remove()">
-        ×
-      </button>
-      <div class="popup-header" style="display:flex; gap:5px;">
+    <div class="custom-popup" style="position: relative;">
+      ${closeButton}
+      <div class="popup-header">
         ${bigImg}
-        <div style="margin-left:5px;">
+        <div class="popup-info">
           ${nameHTML}
           ${itemTypeHTML}
           ${rarityHTML}
@@ -109,7 +86,6 @@ export function createPopupContent(m) {
     </div>`;
 }
 
-
 export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   const markerObj = L.marker(m.coords, {
     icon: createCustomIcon(m),
@@ -121,7 +97,7 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
     maxWidth: 350,
     closeButton: false
   });
-  
+
   markerObj.on("popupopen", () => {
     const popupEl = document.querySelector(".custom-popup");
     const closeBtn = popupEl?.querySelector(".popup-close-btn");
@@ -169,5 +145,3 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
 
   return markerObj;
 }
-
-// @version: 2
