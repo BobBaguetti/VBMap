@@ -1,4 +1,4 @@
-// @version: 32
+// @version: 33
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -25,6 +25,7 @@ import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 import { createIcon } from "../../utils/iconUtils.js";
 import { createLayoutSwitcher } from "../uiKit.js";
+import { createItemPreviewPanel } from "../preview/itemPreview.js";
 
 export function initItemDefinitionsModal(db) {
   const { modal, content } = createModal({
@@ -92,8 +93,6 @@ export function initItemDefinitionsModal(db) {
   searchInput.addEventListener("input", () => renderFilteredList());
 
   const listContainer = createDefListContainer("item-definitions-list");
-  content.appendChild(listContainer);
-  content.appendChild(document.createElement("hr"));
 
   let definitions = [];
 
@@ -128,76 +127,91 @@ export function initItemDefinitionsModal(db) {
   });
 
   formApi.form.classList.add("ui-scroll-float");
-  content.appendChild(formApi.form);
+
+  const previewPanel = document.createElement("div");
+  previewPanel.id = "item-preview-panel";
+  document.body.appendChild(previewPanel);
+
+  const previewApi = createItemPreviewPanel(previewPanel);
+
+  formApi.form.addEventListener("input", () => {
+    const data = formApi.getLiveData?.();
+    if (data) previewApi.renderPreview(data);
+  });
+
+  const bodyWrap = document.createElement("div");
+  bodyWrap.style.display = "flex";
+  bodyWrap.style.flexDirection = "column";
+  bodyWrap.style.flex = "1 1 auto";
+  bodyWrap.style.minHeight = 0;
+
+  bodyWrap.appendChild(listContainer);
+  bodyWrap.appendChild(document.createElement("hr"));
+  bodyWrap.appendChild(formApi.form);
+
+  content.appendChild(bodyWrap);
+
+  function renderFilteredList() {
+    listContainer.innerHTML = "";
+    listContainer.className = `def-list ui-scroll-float layout-${currentLayout}`;
+
+    definitions
+      .filter(d => d.name?.toLowerCase().includes(searchInput.value.trim().toLowerCase()))
+      .sort((a, b) => {
+        for (let id of activeSorts) {
+          const fn = sortFns[id];
+          if (fn) return fn(a, b);
+        }
+        return 0;
+      })
+      .forEach(def => {
+        const entry = document.createElement("div");
+        entry.className = `item-def-entry layout-${currentLayout}`;
+
+        const valueHtml = def.value
+          ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true }).outerHTML}</div>`
+          : "";
+
+        const quantityHtml = def.quantity
+          ? `<div class="entry-quantity">x${def.quantity}</div>`
+          : "";
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "entry-delete ui-button-delete";
+        deleteBtn.title = "Delete this item";
+        deleteBtn.appendChild(createIcon("trash"));
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (def.id && confirm(`Are you sure you want to delete \"${def.name}\"?`)) {
+            deleteItemDefinition(db, def.id).then(refreshDefinitions);
+          }
+        };
+
+        entry.innerHTML = `
+          <div class="entry-name">${def.name}</div>
+          <div class="entry-meta">
+            <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
+            <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity?.toUpperCase() || "—"}</span>
+          </div>
+          <div class="entry-description">${def.description || ""}</div>
+          <div class="entry-details">
+            ${valueHtml}
+            ${quantityHtml}
+          </div>
+        `;
+
+        entry.appendChild(deleteBtn);
+        entry.addEventListener("click", () => {
+          if (def.id) formApi.populate(def);
+        });
+
+        listContainer.appendChild(entry);
+      });
+  }
 
   async function refreshDefinitions() {
     definitions = await loadItemDefinitions(db);
     renderFilteredList();
-  }
-
-  function renderFilteredList() {
-    let list = definitions.filter(d =>
-      d.name?.toLowerCase().includes(searchInput.value.trim().toLowerCase())
-    );
-    activeSorts.forEach(id => {
-      const fn = sortFns[id];
-      if (fn) list = [...list].sort(fn);
-    });
-    renderList(list);
-  }
-
-  function renderList(list) {
-    listContainer.innerHTML = "";
-    listContainer.className = `def-list ui-scroll-float layout-${currentLayout}`;
-
-    list.forEach(def => {
-      const entry = document.createElement("div");
-      entry.className = `item-def-entry layout-${currentLayout}`;
-
-      const valueHtml = def.value
-        ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true }).outerHTML}</div>`
-        : "";
-
-      const quantityHtml = def.quantity
-        ? `<div class="entry-quantity">x${def.quantity}</div>`
-        : "";
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "entry-delete ui-button-delete";
-      deleteBtn.title = "Delete this item";
-      deleteBtn.appendChild(createIcon("trash"));
-      deleteBtn.onclick = (e) => {
-        e.stopPropagation();
-        if (def.id && confirm(`Are you sure you want to delete \"${def.name}\"?`)) {
-          deleteItemDefinition(db, def.id).then(refreshDefinitions);
-        }
-      };
-
-      entry.innerHTML = `
-        <div class="entry-name">${def.name}</div>
-        <div class="entry-meta">
-          <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
-          <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity?.toUpperCase() || "—"}</span>
-        </div>
-        <div class="entry-description">${def.description || ""}</div>
-        <div class="entry-details">
-          ${valueHtml}
-          ${quantityHtml}
-        </div>
-      `;
-
-      entry.appendChild(deleteBtn);
-
-      entry.addEventListener("click", () => {
-        if (def.id) {
-          formApi.populate(def);
-        } else {
-          console.warn("[warn] Skipping entry with missing id:", def);
-        }
-      });
-
-      listContainer.appendChild(entry);
-    });
   }
 
   subscribeItemDefinitions(db, defs => {
