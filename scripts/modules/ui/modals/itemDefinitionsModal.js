@@ -1,4 +1,4 @@
-// @version: 32
+// @version: 33
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -140,56 +140,51 @@ export function initItemDefinitionsModal(db) {
       const entry = document.createElement("div");
       entry.className = "item-def-entry";
 
-      const name = document.createElement("div");
-      name.className = "entry-name";
-      name.textContent = def.name;
+      const valueHtml = def.value
+        ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true }).outerHTML}</div>`
+        : "";
 
-      const meta = document.createElement("div");
-      meta.className = "entry-meta";
-      const typeSpan = document.createElement("span");
-      typeSpan.className = "entry-type";
-      typeSpan.textContent = def.itemType || "—";
-      typeSpan.style.color = def.itemTypeColor || "#bbb";
+      const quantityHtml = def.quantity
+        ? `<div class="entry-quantity">x${def.quantity}</div>`
+        : "";
 
-      const raritySpan = document.createElement("span");
-      raritySpan.className = "entry-rarity";
-      raritySpan.textContent = def.rarity || "—";
-      raritySpan.style.color = def.rarityColor || "#bbb";
+      entry.innerHTML = `
+        <div class="entry-name">${def.name}</div>
+        <div class="entry-meta">
+          <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
+          <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity || "—"}</span>
+        </div>
+        <div class="entry-description">${def.description || ""}</div>
+        <div class="entry-details">${valueHtml}${quantityHtml}</div>
+      `;
 
-      meta.append(typeSpan, " – ", raritySpan);
-
-      const desc = document.createElement("div");
-      desc.className = "entry-description";
-      desc.textContent = def.description || "";
-
-      const details = document.createElement("div");
-      details.className = "entry-details";
-      if (def.value) {
-        const valueEl = document.createElement("div");
-        valueEl.className = "entry-value";
-        valueEl.innerHTML = `${def.value} ${createIcon("coins", { inline: true }).outerHTML}`;
-        details.appendChild(valueEl);
-      }
-      if (def.quantity) {
-        const qtyEl = document.createElement("div");
-        qtyEl.className = "entry-quantity";
-        qtyEl.textContent = `x${def.quantity}`;
-        details.appendChild(qtyEl);
-      }
-
-      const btnDelete = document.createElement("button");
-      btnDelete.className = "entry-delete";
-      btnDelete.title = "Delete";
-      btnDelete.innerHTML = createIcon("trash").outerHTML;
-      btnDelete.onclick = (e) => {
+      // Delete button: red square, trash icon only
+      const deleteBtn = document.createElement("button");
+      deleteBtn.className = "ui-button-delete";
+      deleteBtn.title = "Delete item";
+      deleteBtn.appendChild(createIcon("trash"));
+      deleteBtn.onclick = (e) => {
         e.stopPropagation();
         if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
           deleteItemDefinition(db, def.id).then(refreshDefinitions);
         }
       };
+      deleteBtn.style.position = "absolute";
+      deleteBtn.style.bottom = "6px";
+      deleteBtn.style.right = "6px";
 
-      entry.append(name, meta, desc, details, btnDelete);
-      entry.addEventListener("click", () => def.id && formApi.populate(def));
+      // Add delete button as absolute child
+      entry.style.position = "relative";
+      entry.appendChild(deleteBtn);
+
+      entry.addEventListener("click", () => {
+        if (def.id) {
+          formApi.populate(def);
+        } else {
+          console.warn("[warn] Skipping entry with missing id:", def);
+        }
+      });
+
       listContainer.appendChild(entry);
     });
   }

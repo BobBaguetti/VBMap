@@ -67,3 +67,35 @@
 .ui-scroll-float.scrolling::-webkit-scrollbar-thumb {
   background-color: #555;
 }
+
+/* ============================
+   Global Red Delete Button
+   ============================ */
+
+   .ui-button-delete {
+    background-color: #551111 !important;
+    color: #eee !important;
+    border: none !important;
+    border-radius: 4px;
+    padding: 4px;
+    width: 32px;
+    height: 32px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.3s, color 0.3s;
+  }
+  
+  .ui-button-delete:hover {
+    background-color: #772222 !important;
+    color: #fff !important;
+  }
+  
+  .ui-button-delete svg,
+  .ui-button-delete i {
+    width: 16px;
+    height: 16px;
+    pointer-events: none;
+  }
+  
