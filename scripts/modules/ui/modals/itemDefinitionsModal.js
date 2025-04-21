@@ -114,6 +114,7 @@ export function initItemDefinitionsModal(db) {
 
   let definitions = [];
 
+  // Getting the form with the color pickers properly initialized
   const formApi = createItemDefinitionForm({
     onCancel: () => closeModal(modal),
     onSubmit: async (payload) => {
@@ -140,7 +141,7 @@ export function initItemDefinitionsModal(db) {
   formApi.form.classList.add("ui-scroll-float");
   content.appendChild(formApi.form);
 
-  // Initialize color pickers
+  // Initialize color pickers for the form fields
   const pickrTargets = [
     formApi.fields.colorName,
     formApi.fields.colorRarity,
@@ -148,6 +149,7 @@ export function initItemDefinitionsModal(db) {
     formApi.fields.colorDesc
   ];
 
+  // Initializing the color pickers after form is created
   setTimeout(() => {
     pickrTargets.forEach(el => {
       const pickr = createPickr(`#${el.id}`);
