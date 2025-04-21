@@ -1,4 +1,4 @@
-// @version: 16
+// @version: 17
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -48,8 +48,7 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   btnCancel.textContent = "Cancel";
   btnCancel.className = "ui-button";
   btnCancel.onclick = () => {
-    populate({});
-    if (onCancel) onCancel();
+    populate({}); // Return to Add Item mode instead of closing modal
   };
 
   const btnClear = document.createElement("button");
