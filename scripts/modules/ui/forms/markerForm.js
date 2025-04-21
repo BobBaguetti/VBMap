@@ -64,7 +64,7 @@ export function createMarkerForm() {
   }
 
   function setFromDefinition(def = {}) {
-    fldName.value = safe(def.name);
+    def = def || {};
     pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
 
     fldRarity.value = safe(def.rarity);
