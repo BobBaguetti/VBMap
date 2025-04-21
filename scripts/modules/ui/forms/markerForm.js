@@ -1,4 +1,4 @@
-// @version: 7
+// @version: 8
 // @file: /scripts/modules/ui/forms/markerForm.js
 
 import {
@@ -15,6 +15,7 @@ import {
 } from "../../ui/uiKit.js";
 
 import { createPickr } from "../../ui/pickrManager.js";
+import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
 export function createMarkerForm() {
   const form = document.createElement("form");
@@ -67,10 +68,12 @@ export function createMarkerForm() {
     pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
 
     fldRarity.value = safe(def.rarity);
-    pickrs.get(colorRarity)?.setColor(def.rarityColor || "#E5E6E8");
+    const rarity = fldRarity.value;
+    pickrs.get(colorRarity)?.setColor(rarityColors[rarity] || def.rarityColor || "#E5E6E8");
 
     fldItemType.value = safe(def.itemType);
-    pickrs.get(colorItemType)?.setColor(def.itemTypeColor || "#E5E6E8");
+    const itemType = fldItemType.value;
+    pickrs.get(colorItemType)?.setColor(itemTypeColors[itemType] || def.itemTypeColor || "#E5E6E8");
 
     fldDesc.value = safe(def.description);
     pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");

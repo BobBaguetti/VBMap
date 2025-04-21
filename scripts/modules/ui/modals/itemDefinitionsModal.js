@@ -1,4 +1,4 @@
-// @version: 30
+// @version: 31
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 // Modal creation utilities
@@ -27,6 +27,9 @@ import {
 // Form creation for item definition management
 import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
 
+// Shared color presets
+import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
+
 export function initItemDefinitionsModal(db) {
   const { modal, content } = createModal({
     id: "item-definitions-modal",
@@ -47,22 +50,6 @@ export function initItemDefinitionsModal(db) {
     uncommon: 2,
     common: 1,
     "": 0
-  };
-
-  const rarityColors = {
-    legendary: "#E6C200",
-    epic: "#A335EE",
-    rare: "#0070DD",
-    uncommon: "#1EFF00",
-    common: "#FFFFFF"
-  };
-
-  const itemTypeColors = {
-    Weapon: "#e1d7d2",
-    Armor: "#d2e1da",
-    Consumable: "#d2dee1",
-    Special: "#e1dbe2",
-    "": "#bbb"
   };
 
   const sortFns = {
