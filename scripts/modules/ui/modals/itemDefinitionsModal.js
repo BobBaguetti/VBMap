@@ -1,4 +1,4 @@
-// @version: 37
+// @version: 39
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -136,10 +136,12 @@ export function initItemDefinitionsModal(db) {
   document.body.appendChild(previewPanel);
   const previewApi = createItemPreviewPanel(previewPanel);
 
-  formApi.form.addEventListener("input", () => {
-    const data = formApi.getLiveData?.();
+  function updatePreview() {
+    const data = formApi.getCustom?.();
     if (data) previewApi.renderPreview(data);
-  });
+  }
+
+  formApi.form.addEventListener("input", updatePreview);
 
   const bodyWrap = document.createElement("div");
   bodyWrap.style.display = "flex";
@@ -208,6 +210,7 @@ export function initItemDefinitionsModal(db) {
             formApi.populate(def);
             previewPanel.classList.remove("hidden");
             previewPanel.classList.add("visible");
+            previewApi.renderPreview(formApi.getCustom?.());
           }
         });
 
@@ -241,6 +244,7 @@ export function initItemDefinitionsModal(db) {
 
       previewPanel.classList.remove("hidden");
       previewPanel.classList.add("visible");
+      updatePreview();
     },
     refresh: refreshDefinitions
   };
