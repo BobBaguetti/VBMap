@@ -5,7 +5,7 @@ import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 import { createColorButton } from "../uiKit.js";
 import { createIcon } from "../../utils/iconUtils.js";
 // ─── Add this import ─────────────────────────────────────────────
-import { createPickr } from "../pickrManager.js";
+import { createPickr } from "../../ui/pickrManager.js";
 
 export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const form = document.createElement("form");
