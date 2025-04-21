@@ -1,4 +1,4 @@
-// @version: 25
+// @version: 26
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 // Modal creation utilities
@@ -27,12 +27,8 @@ import {
 // Form creation for item definition management
 import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
 
-// Optional vertical label-row layout
-import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
-
 // Main modal initializer
 export function initItemDefinitionsModal(db) {
-  // Create modal shell
   const { modal, content } = createModal({
     id: "item-definitions-modal",
     title: "Manage Items",
@@ -45,7 +41,7 @@ export function initItemDefinitionsModal(db) {
 
   const header = content.querySelector(".modal-header");
 
-  // For sorting rarity by logical order (not alphabetical)
+  // Sorting order for rarity
   const rarityOrder = {
     legendary: 5,
     epic: 4,
@@ -55,7 +51,7 @@ export function initItemDefinitionsModal(db) {
     "": 0
   };
 
-  // Sorting functions for each filter toggle
+  // Sort function definitions
   const sortFns = {
     "filter-name":        (a, b) => a.name.localeCompare(b.name),
     "filter-type":        (a, b) => a.itemType.localeCompare(b.itemType),
@@ -65,9 +61,9 @@ export function initItemDefinitionsModal(db) {
     "filter-price":       (a, b) => (parseFloat(b.value) || 0) - (parseFloat(a.value) || 0)
   };
 
-  let activeSorts = new Set(); // Active filter buttons
+  let activeSorts = new Set();
 
-  // Filter buttons (Name, Type, etc.)
+  // Filter buttons
   const { wrapper: filterWrapper } = createFilterButtonGroup(
     [
       { id: "filter-name",        label: "N"  },
@@ -80,81 +76,72 @@ export function initItemDefinitionsModal(db) {
     (btnId, isToggled) => {
       if (isToggled) activeSorts.add(btnId);
       else activeSorts.delete(btnId);
-      renderFilteredList(); // re-sort when toggles change
+      renderFilteredList();
     }
   );
   header.appendChild(filterWrapper);
 
   // Search bar
-  const { row: searchRow, input: searchInput } =
-    createSearchRow("def-search", "Search items…");
+  const { row: searchRow, input: searchInput } = createSearchRow("def-search", "Search items…");
   header.appendChild(searchRow);
   searchInput.addEventListener("input", () => renderFilteredList());
 
-  // Entry list container
+  // List container
   const listContainer = createDefListContainer("item-definitions-list");
   content.appendChild(listContainer);
   content.appendChild(document.createElement("hr"));
 
-  let definitions = []; // All loaded items
+  let definitions = [];
 
-  // Initialize item definition form
+  // Form logic
   const formApi = createItemDefinitionForm({
-    // Cancel switches back to Add mode (doesn't close modal)
     onCancel: () => formApi.reset(),
-
-    // Delete an item and refresh list
     onDelete: async (idToDelete) => {
       await deleteItemDefinition(db, idToDelete);
       await refreshDefinitions();
     },
+    onSubmit: async (payload) => {
+      let saved;
 
-// Save or update an item, then repopulate form using refreshed list
-onSubmit: async (payload) => {
-  let saved;
+      if (payload.id) {
+        saved = await updateItemDefinition(db, String(payload.id), payload);
+      } else {
+        saved = await saveItemDefinition(db, null, payload);
+      }
 
-  if (payload.id) {
-    // Updating an existing item
-    saved = await updateItemDefinition(db, String(payload.id), payload);
-  } else {
-    // Saving a new item — but ID might be missing from return value
-    saved = await saveItemDefinition(db, null, payload);
-  }
+      // Reload all items after saving to get proper ID
+      await refreshDefinitions();
 
-  // Refresh the full definitions list to ensure we have latest data (with ID)
-  await refreshDefinitions();
+      // Try exact match using returned ID
+      let match = definitions.find(d => d.id === saved.id);
 
-  // Try to find the freshly saved item from refreshed list
-  let match = definitions.find(d => d.id === saved.id);
+      // Fallback match (when ID isn't immediately returned)
+      if (!match) {
+        match = definitions.find(d =>
+          d.name === payload.name &&
+          d.description === payload.description &&
+          d.itemType === payload.itemType
+        );
+      }
 
-  // If saved.id is null, fallback to matching key fields
-  if (!match) {
-    match = definitions.find(d =>
-      d.name === payload.name &&
-      d.description === payload.description &&
-      d.itemType === payload.itemType
-    );
-  }
+      if (match) {
+        formApi.populate(match);
+      } else {
+        console.warn("[submit] Could not locate freshly saved item in refreshed list:", saved);
+      }
+    }
+  }); // ← This closing brace was missing previously ❗
 
-  // Populate the form if we found it
-  if (match) {
-    formApi.populate(match);
-  } else {
-    console.warn("[submit] Could not locate freshly saved item in refreshed list:", saved);
-  }
-}
-
-  // Enable floating scrollbar on form
   formApi.form.classList.add("ui-scroll-float");
   content.appendChild(formApi.form);
 
-  // Loads definitions from Firestore
+  // Reload from Firestore
   async function refreshDefinitions() {
     definitions = await loadItemDefinitions(db);
     renderFilteredList();
   }
 
-  // Filter and sort item definitions
+  // Search + sort logic
   function renderFilteredList() {
     let list = definitions.filter(d =>
       d.name?.toLowerCase().includes(searchInput.value.trim().toLowerCase())
@@ -166,7 +153,7 @@ onSubmit: async (payload) => {
     renderList(list);
   }
 
-  // Render each item entry
+  // Render entry list
   function renderList(list) {
     listContainer.innerHTML = "";
     list.forEach(def => {
@@ -188,18 +175,17 @@ onSubmit: async (payload) => {
     });
   }
 
-  // Live updates from Firestore
+  // Real-time listener
   subscribeItemDefinitions(db, defs => {
     definitions = defs;
     renderFilteredList();
   });
 
-  // Exposed API
   return {
     open: async () => {
-      formApi.reset(); // Reset to Add mode
-      await refreshDefinitions(); // Load data
-      openModal(modal); // Show modal
+      formApi.reset();
+      await refreshDefinitions();
+      openModal(modal);
     },
     refresh: refreshDefinitions
   };
