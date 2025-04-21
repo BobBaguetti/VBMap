@@ -1,4 +1,4 @@
-/* @version: 7 */
+/* @version: 8 */
 /* @file: /styles/popup.css */
 
 .leaflet-container {
@@ -40,7 +40,7 @@
 
 .custom-popup {
   position: relative;
-  background: rgba(34, 34, 34, 0.95) !important; /* Updated color */
+  background: rgba(34, 34, 34, 0.95) !important;
   border-radius: 8px;
   padding: 11px;
   width: 320px;
@@ -88,15 +88,14 @@
   font-weight: 700;
   font-variant: small-caps;
   text-transform: uppercase;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5); /* Subtle shadow added */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-.popup-type {
-  font-size: 15px;
-}
-
+.popup-type,
 .popup-rarity {
   font-size: 15px;
+  font-weight: 500;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 .popup-body p {
@@ -112,11 +111,13 @@
   border-radius: 4px;
   margin: 6px 0;
   line-height: 1.4;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 .popup-extra-line {
   font-size: 14px;
   margin: 2px 0;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 .popup-meta {
@@ -124,6 +125,7 @@
   text-transform: uppercase;
   color: #e0e0e0;
   margin: 2px 0;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 .popup-image {
@@ -131,7 +133,7 @@
   height: 64px;
   object-fit: contain;
   background: #222;
-  border: 2px solid #777;
+  border: 2px solid #777; /* this will be overridden inline */
   border-radius: 6px;
   flex-shrink: 0;
 }

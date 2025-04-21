@@ -1,4 +1,4 @@
-// @version: 9
+// @version: 10
 // @file: /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
@@ -28,7 +28,7 @@ export function createCustomIcon(m) {
 export function createPopupContent(m) {
   const nameHTML = `<div class="popup-name" style="color:${m.nameColor || "#E5E6E8"};">${m.name}</div>`;
   const bigImg = isImgUrl(m.imageBig)
-    ? `<img src="${m.imageBig}" class="popup-image" onerror="this.style.display='none'">`
+    ? `<img src="${m.imageBig}" class="popup-image" style="border-color:${m.rarityColor || "#777"};" onerror="this.style.display='none'">`
     : "";
 
   const itemTypeHTML = m.itemType
