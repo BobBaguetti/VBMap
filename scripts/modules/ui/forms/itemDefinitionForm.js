@@ -1,4 +1,4 @@
-// @version: 17
+// @version: 18
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
@@ -49,8 +49,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const nameInput = document.createElement("input");
   nameInput.type = "text";
   nameInput.required = true;
-  const nameColorBtn = createColorButton("pickr-def-name", "#E5E6E8");
-  nameRow.append(nameInput, nameColorBtn);
+  const colorNameBtn = createColorButton("pickr-def-name", "#E5E6E8");
+  nameRow.append(nameInput, colorNameBtn);
   form.appendChild(nameRow);
 
   // ─────────────────────────────────────────────────────────────
@@ -63,8 +63,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     option.value = option.textContent = type;
     typeSelect.appendChild(option);
   });
-  const typeColorBtn = createColorButton("pickr-def-type", "#E5E6E8");
-  typeRow.append(typeSelect, typeColorBtn);
+  const colorItemTypeBtn = createColorButton("pickr-def-type", "#E5E6E8");
+  typeRow.append(typeSelect, colorItemTypeBtn);
   form.appendChild(typeRow);
 
   // ─────────────────────────────────────────────────────────────
@@ -78,8 +78,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     option.textContent = r;
     raritySelect.appendChild(option);
   });
-  const rarityColorBtn = createColorButton("pickr-def-rarity", "#E5E6E8");
-  rarityRow.append(raritySelect, rarityColorBtn);
+  const colorRarityBtn = createColorButton("pickr-def-rarity", "#E5E6E8");
+  rarityRow.append(raritySelect, colorRarityBtn);
   form.appendChild(rarityRow);
 
   // ─────────────────────────────────────────────────────────────
@@ -88,8 +88,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
   const descRow = createTopAlignedFieldRow("Description:");
   const descTextarea = document.createElement("textarea");
   descTextarea.rows = 2;
-  const descColorBtn = createColorButton("pickr-def-description", "#E5E6E8");
-  descRow.append(descTextarea, descColorBtn);
+  const colorDescBtn = createColorButton("pickr-def-description", "#E5E6E8");
+  descRow.append(descTextarea, colorDescBtn);
   form.appendChild(descRow);
 
   // ─────────────────────────────────────────────────────────────
@@ -160,13 +160,13 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     const payload = {
       id: currentId,
       name: nameInput.value.trim(),
-      nameColor: nameColorBtn.dataset.color,
+      nameColor: colorNameBtn.dataset.color,
       itemType: typeSelect.value,
-      itemTypeColor: typeColorBtn.dataset.color,
+      itemTypeColor: colorItemTypeBtn.dataset.color,
       rarity: raritySelect.value,
-      rarityColor: rarityColorBtn.dataset.color,
+      rarityColor: colorRarityBtn.dataset.color,
       description: descTextarea.value.trim(),
-      descriptionColor: descColorBtn.dataset.color,
+      descriptionColor: colorDescBtn.dataset.color,
       imageSmall: imgSmallInput.value.trim(),
       imageBig: imgBigInput.value.trim(),
       visibleInSidebar: sidebarCheckbox.checked,
@@ -186,13 +186,13 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     subheading.textContent = "Edit Item";
     cancelBtn.textContent = "Cancel Edit";
     nameInput.value = def.name || "";
-    nameColorBtn.dataset.color = def.nameColor || "#E5E6E8";
+    colorNameBtn.dataset.color = def.nameColor || "#E5E6E8";
     typeSelect.value = def.itemType || "Crafting Material";
-    typeColorBtn.dataset.color = def.itemTypeColor || "#E5E6E8";
+    colorItemTypeBtn.dataset.color = def.itemTypeColor || "#E5E6E8";
     raritySelect.value = def.rarity || "";
-    rarityColorBtn.dataset.color = def.rarityColor || "#E5E6E8";
+    colorRarityBtn.dataset.color = def.rarityColor || "#E5E6E8";
     descTextarea.value = def.description || "";
-    descColorBtn.dataset.color = def.descriptionColor || "#E5E6E8";
+    colorDescBtn.dataset.color = def.descriptionColor || "#E5E6E8";
     imgSmallInput.value = def.imageSmall || "";
     imgBigInput.value = def.imageBig || "";
     sidebarCheckbox.checked = !!def.visibleInSidebar;
@@ -225,11 +225,11 @@ export function createItemDefinitionForm({ onCancel, onSubmit }) {
     imgBigInput.value = "";
     sidebarCheckbox.checked = false;
     extraLinesContainer.innerHTML = "";
-    [nameColorBtn, typeColorBtn, rarityColorBtn, descColorBtn].forEach(btn => {
+    [colorNameBtn, colorItemTypeBtn, colorRarityBtn, colorDescBtn].forEach(btn => {
       btn.dataset.color = "#E5E6E8";
     });
     nameInput.focus();
   }
 
-  return { form, populate, reset };
+  return { form, populate, reset, fields: { colorNameBtn, colorRarityBtn, colorItemTypeBtn, colorDescBtn } };
 }
