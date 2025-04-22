@@ -1,4 +1,4 @@
-/* @version: 14 */
+/* @version: 15 */
 /* @file: /styles/modals/modal.large.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
@@ -17,6 +17,7 @@
   pointer-events: auto;
   font-family: 'Satoshi', sans-serif;
   font-weight: 400;
+  color: #e5e6e8;
 }
 
 /* Core modal box */
@@ -33,6 +34,7 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  font-family: 'Satoshi', sans-serif;
 }
 
 /* Header */
@@ -46,18 +48,19 @@
 .modal.modal-large .modal-header h2 {
   margin: 0;
   font-size: 20px;
-  color: #fff;
+  color: #e5e6e8;
   font-weight: 600;
 }
 
 .modal.modal-large h3 {
   font-weight: 500;
+  color: #e5e6e8;
 }
 
 .modal.modal-large .modal-header .close {
   font-size: 24px;
   cursor: pointer;
-  color: #fff;
+  color: #e5e6e8;
 }
 
 .modal.modal-large hr {
@@ -107,10 +110,9 @@
 
 .modal.modal-large .field-row label {
   width: 100px;
-  font-weight: bold;
-  color: #ccc;
-  flex-shrink: 0;
   font-weight: 400;
+  color: #e5e6e8;
+  flex-shrink: 0;
 }
 
 .modal.modal-large .field-row input,
@@ -118,7 +120,7 @@
 .modal.modal-large .field-row select {
   flex: 1;
   background-color: #2a2a2a;
-  color: #eee;
+  color: #e5e6e8;
   border: 1px solid #555;
   padding: 6px 8px;
   border-radius: 3px;
@@ -142,13 +144,14 @@
 /* Buttons */
 .modal.modal-large .ui-button {
   background-color: #444;
-  color: white;
+  color: #e5e6e8;
   border: none;
   padding: 6px 12px;
   margin-left: 5px;
   border-radius: 4px;
   cursor: pointer;
   font-weight: 400;
+  font-family: 'Satoshi', sans-serif;
 }
 .modal.modal-large .ui-button:hover {
   background-color: #666;
