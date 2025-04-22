@@ -1,4 +1,4 @@
-/* @version: 17 */
+/* @version: 16 */
 /* @file: /styles/modals/modal.large.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
@@ -76,8 +76,9 @@
   padding-right: 4px;
   min-height: 0;
   max-height: 240px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
 }
 .modal.modal-large .def-list::-webkit-scrollbar {
   width: 0;
@@ -90,6 +91,7 @@
   min-height: 0;
   max-height: 100%;
   padding-right: 4px;
+
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -126,7 +128,7 @@
   font-weight: 400;
 }
 
-.modal.modal-large .field-row textarea {
+.modal-large .field-row textarea {
   resize: vertical;
 }
 
@@ -139,14 +141,76 @@
   border-radius: 2px;
 }
 
+/* Buttons */
+.modal.modal-large .ui-button {
+  background-color: #444;
+  color: #e5e6e8;
+  border: none;
+  padding: 6px 10px;
+  margin-left: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 400;
+  font-family: 'Satoshi', sans-serif;
+}
+.modal.modal-large .ui-button:hover {
+  background-color: #666;
+}
+
+/* Extra Info '+' button and layout fixes */
+.modal.modal-large .field-row.extra-row {
+  align-items: center;
+}
+
+.modal.modal-large .extra-info-block > button {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.modal.modal-large .extra-info-block > button svg {
+  width: 22px;
+  height: 22px;
+  fill: #e5e6e8;
+}
+
+.modal.modal-large .extra-info-line .remove-line-btn {
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.modal.modal-large .extra-info-line .remove-line-btn svg {
+  width: 20px;
+  height: 20px;
+  fill: #e5e6e8;
+}
+
+/* Fix width alignment for Image fields */
+.modal.modal-large .field-row input[id^="def-image"] {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
 /* ─── Styled Item Entry Layout ─────────────────────────────────────────────── */
 
 .modal.modal-large .item-def-entry {
-  padding: 8px 10px;
+  padding: 6px 8px;
   cursor: pointer;
   transition: background 0.2s;
   border-radius: 4px;
-  overflow: hidden;
 }
 
 .modal.modal-large .item-def-entry:hover {
@@ -156,37 +220,22 @@
 .modal.modal-large .item-def-entry .entry-name {
   font-weight: bold;
   font-size: 15px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
 }
 
 .modal.modal-large .item-def-entry .entry-meta {
   font-size: 12px;
   color: #bbb;
-  margin-top: 4px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.modal.modal-large .item-def-entry .entry-type,
-.modal.modal-large .item-def-entry .entry-rarity {
-  font-size: 13px;
-}
-
-.modal.modal-large .item-def-entry .entry-rarity {
-  text-transform: uppercase;
+  margin-top: 2px;
 }
 
 .modal.modal-large .item-def-entry .entry-description {
   font-style: italic;
   font-size: 13px;
   color: #aaa;
-  margin-top: 4px;
+  margin-top: 2px;
 }
 
+/* Entry details: value + quantity row */
 .modal.modal-large .item-def-entry .entry-details {
   display: flex;
   gap: 12px;
@@ -196,14 +245,15 @@
   align-items: center;
 }
 
+/* Value field with coins icon */
 .modal.modal-large .item-def-entry .entry-value svg {
-  width: 16px;
-  height: 16px;
+  width: 14px;
+  height: 14px;
   vertical-align: middle;
   margin-left: 4px;
-  fill: #d4af37;
 }
 
+/* Quantity */
 .modal.modal-large .item-def-entry .entry-quantity {
   font-style: italic;
   color: #aaa;
@@ -245,4 +295,88 @@
 /* Reduce top margin above delete button in item entry */
 .modal-large .item-def-entry .entry-delete.ui-button-delete {
   margin-top: 2px;
+}
+
+
+/* ─── Layout Mode: Row View (Default) ──────────────────────────────────────── */
+.modal-large .layout-row .item-def-entry {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+}
+
+.modal-large .layout-row .item-def-entry > .entry-name {
+  flex: 2;
+}
+
+.modal-large .layout-row .item-def-entry > .entry-meta,
+.modal-large .layout-row .item-def-entry > .entry-description,
+.modal-large .layout-row .item-def-entry > .entry-details {
+  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.modal-large .layout-row .item-def-entry > .entry-delete {
+  align-self: flex-start;
+  margin-left: auto;
+}
+
+/* ─── Layout Mode: Stacked View ───────────────────────────────────────────── */
+.modal-large .layout-stacked .item-def-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 8px 10px;
+}
+
+.modal-large .layout-stacked .item-def-entry > .entry-delete {
+  align-self: flex-end;
+  margin-top: 4px;
+}
+
+/* ─── Layout Mode: Gallery View ───────────────────────────────────────────── */
+.modal-large .layout-gallery {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: space-evenly;
+  padding: 6px;
+}
+
+.modal-large .layout-gallery .item-def-entry {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #2a2a2a;
+  border: 1px solid #444;
+  padding: 10px;
+  width: 110px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.modal-large .layout-gallery .item-def-entry:hover {
+  background: #333;
+}
+
+.modal-large .layout-gallery .item-def-entry > .entry-name {
+  font-size: 13px;
+  font-weight: bold;
+  text-align: center;
+}
+
+.modal-large .layout-gallery .item-def-entry > .entry-meta,
+.modal-large .layout-gallery .item-def-entry > .entry-details {
+  font-size: 11px;
+  text-align: center;
+}
+
+.modal-large .layout-gallery .item-def-entry .entry-delete {
+  margin-top: 6px;
 }
