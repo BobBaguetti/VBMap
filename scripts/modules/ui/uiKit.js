@@ -1,7 +1,8 @@
-// @version: 26
+// @version: 27
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
+import { createIcon } from "../utils/iconUtils.js";
 
 // ─── Modal Lifecycle Utility ──────────────────────────────────────────────────
 
@@ -239,8 +240,12 @@ export function createExtraInfoBlock(options = {}) {
 
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
-  btnAdd.textContent = "+";
-  btnAdd.classList.add("ui-button");
+  btnAdd.className = "ui-button";
+  btnAdd.title = "Add Extra Info";
+  btnAdd.style.width = "32px";
+  btnAdd.style.height = "32px";
+  btnAdd.style.padding = "0";
+  btnAdd.appendChild(createIcon("plus", { inline: true }));
 
   wrap.append(lineWrap, btnAdd);
 
@@ -252,6 +257,7 @@ export function createExtraInfoBlock(options = {}) {
       const row = document.createElement("div");
       row.className = "field-row";
       row.style.marginBottom = "5px";
+      row.style.alignItems = "center";
 
       const input = document.createElement("input");
       input.className = "ui-input";
@@ -267,8 +273,12 @@ export function createExtraInfoBlock(options = {}) {
       const btnRemove = document.createElement("button");
       btnRemove.type = "button";
       btnRemove.className = "ui-button";
-      btnRemove.textContent = "×";
+      btnRemove.title = "Remove";
+      btnRemove.style.width = "32px";
+      btnRemove.style.height = "32px";
+      btnRemove.style.padding = "0";
       btnRemove.style.marginLeft = "5px";
+      btnRemove.appendChild(createIcon("minus", { inline: true }));
       btnRemove.onclick = () => {
         lines.splice(i, 1);
         render();
