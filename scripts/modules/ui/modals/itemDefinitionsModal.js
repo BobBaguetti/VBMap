@@ -1,4 +1,4 @@
-// @version: 39
+// @version: 40
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -37,8 +37,6 @@ export function initItemDefinitionsModal(db) {
     withDivider: true,
     onClose: () => {
       closeModal(modal);
-      previewPanel.classList.remove("visible");
-      previewPanel.classList.add("hidden");
     }
   });
 
@@ -133,7 +131,6 @@ export function initItemDefinitionsModal(db) {
   formApi.form.classList.add("ui-scroll-float");
 
   const previewPanel = document.createElement("div");
-  document.body.appendChild(previewPanel);
   const previewApi = createItemPreviewPanel(previewPanel);
 
   formApi.form.addEventListener("input", () => {
@@ -143,17 +140,29 @@ export function initItemDefinitionsModal(db) {
     }
   });
 
-  const bodyWrap = document.createElement("div");
-  bodyWrap.style.display = "flex";
-  bodyWrap.style.flexDirection = "column";
-  bodyWrap.style.flex = "1 1 auto";
-  bodyWrap.style.minHeight = 0;
+  const layoutWrap = document.createElement("div");
+  layoutWrap.style.display = "flex";
+  layoutWrap.style.gap = "30px";
+  layoutWrap.style.alignItems = "flex-start";
+  layoutWrap.style.flex = "1 1 auto";
+  layoutWrap.style.minHeight = 0;
+  layoutWrap.style.overflow = "hidden";
 
-  bodyWrap.appendChild(listContainer);
-  bodyWrap.appendChild(document.createElement("hr"));
-  bodyWrap.appendChild(formApi.form);
+  const leftPanel = document.createElement("div");
+  leftPanel.style.flex = "1 1 auto";
+  leftPanel.style.display = "flex";
+  leftPanel.style.flexDirection = "column";
+  leftPanel.style.minHeight = 0;
 
-  content.appendChild(bodyWrap);
+  leftPanel.appendChild(listContainer);
+  leftPanel.appendChild(document.createElement("hr"));
+  leftPanel.appendChild(formApi.form);
+
+  previewPanel.style.flex = "0 0 260px";
+  previewPanel.classList.add("visible");
+
+  layoutWrap.append(leftPanel, previewPanel);
+  content.appendChild(layoutWrap);
 
   function renderFilteredList() {
     listContainer.innerHTML = "";
@@ -208,8 +217,6 @@ export function initItemDefinitionsModal(db) {
         entry.addEventListener("click", () => {
           if (def.id) {
             formApi.populate(def);
-            previewPanel.classList.remove("hidden");
-            previewPanel.classList.add("visible");
             previewApi.setFromDefinition(def);
           }
         });
@@ -233,17 +240,6 @@ export function initItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       openModal(modal);
-
-      const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
-      const previewRect = previewPanel.getBoundingClientRect();
-      if (modalRect) {
-        previewPanel.style.left = `${modalRect.right + 30}px`;
-        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
-        previewPanel.style.position = "absolute";
-      }
-
-      previewPanel.classList.remove("hidden");
-      previewPanel.classList.add("visible");
     },
     refresh: refreshDefinitions
   };
