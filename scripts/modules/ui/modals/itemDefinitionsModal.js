@@ -1,4 +1,4 @@
-// @version: 46
+// @version: 47
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -105,11 +105,15 @@ export function initItemDefinitionsModal(db) {
   const formApi = createItemDefinitionForm({
     onCancel: () => {
       formApi.reset();
-      previewApi.setFromDefinition({});
+      const def = formApi.getCustom?.();
+      if (def) previewApi.setFromDefinition(def);
     },
     onDelete: async (idToDelete) => {
       await deleteItemDefinition(db, idToDelete);
       await refreshDefinitions();
+      formApi.reset();
+      const def = formApi.getCustom?.();
+      if (def) previewApi.setFromDefinition(def);
     },
     onSubmit: async (payload) => {
       const shouldUpdateColor = (payload.id != null);
@@ -132,13 +136,14 @@ export function initItemDefinitionsModal(db) {
 
       await refreshDefinitions();
       formApi.reset();
-      previewApi.setFromDefinition({});
+      const def = formApi.getCustom?.();
+      if (def) previewApi.setFromDefinition(def);
     }
   });
 
   formApi.form.classList.add("ui-scroll-float");
 
-  // Real-time preview update
+  // Always visible preview, real-time updates
   formApi.form.addEventListener("input", () => {
     const liveData = formApi.getCustom?.();
     if (liveData) {
@@ -156,6 +161,7 @@ export function initItemDefinitionsModal(db) {
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
+
   content.appendChild(bodyWrap);
 
   function renderFilteredList() {
@@ -236,7 +242,7 @@ export function initItemDefinitionsModal(db) {
       await refreshDefinitions();
       openModal(modal);
 
-      // Reposition preview panel
+      // Recalculate preview position
       const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
       const previewRect = previewPanel.getBoundingClientRect();
       if (modalRect) {
@@ -245,7 +251,8 @@ export function initItemDefinitionsModal(db) {
         previewPanel.style.position = "absolute";
       }
 
-      previewApi.setFromDefinition({}); // Show default blank preview
+      const def = formApi.getCustom?.();
+      if (def) previewApi.setFromDefinition(def);
       previewApi.show();
     },
     refresh: refreshDefinitions
