@@ -1,4 +1,4 @@
-// @version: 40
+// @version: 39
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -35,42 +35,57 @@ export function initItemDefinitionsModal(db) {
     backdrop: true,
     draggable: false,
     withDivider: true,
-    onClose: () => closeModal(modal)
+    onClose: () => {
+      closeModal(modal);
+      previewPanel.classList.remove("visible");
+      previewPanel.classList.add("hidden");
+    }
   });
 
   const header = content.querySelector(".modal-header");
 
-  const rarityOrder = { legendary: 5, epic: 4, rare: 3, uncommon: 2, common: 1, "": 0 };
+  const rarityOrder = {
+    legendary: 5,
+    epic: 4,
+    rare: 3,
+    uncommon: 2,
+    common: 1,
+    "": 0
+  };
 
   const sortFns = {
-    "filter-name": (a, b) => a.name.localeCompare(b.name),
-    "filter-type": (a, b) => a.itemType.localeCompare(b.itemType),
-    "filter-rarity": (a, b) => rarityOrder[b.rarity] - rarityOrder[a.rarity],
+    "filter-name":        (a, b) => a.name.localeCompare(b.name),
+    "filter-type":        (a, b) => a.itemType.localeCompare(b.itemType),
+    "filter-rarity":      (a, b) => rarityOrder[b.rarity] - rarityOrder[a.rarity],
     "filter-description": (a, b) => a.description.localeCompare(b.description),
-    "filter-quantity": (a, b) => (parseInt(b.quantity) || 0) - (parseInt(a.quantity) || 0),
-    "filter-price": (a, b) => (parseFloat(b.value) || 0) - (parseFloat(a.value) || 0)
+    "filter-quantity":    (a, b) => (parseInt(b.quantity) || 0) - (parseInt(a.quantity) || 0),
+    "filter-price":       (a, b) => (parseFloat(b.value) || 0) - (parseFloat(a.value) || 0)
   };
 
   let activeSorts = new Set();
   let currentLayout = "row";
 
-  const { wrapper: filterWrapper } = createFilterButtonGroup([
-    { id: "filter-name", label: "N" },
-    { id: "filter-type", label: "T" },
-    { id: "filter-rarity", label: "R" },
-    { id: "filter-description", label: "D" },
-    { id: "filter-quantity", label: "Qt" },
-    { id: "filter-price", label: "P" }
-  ], (btnId, isToggled) => {
-    isToggled ? activeSorts.add(btnId) : activeSorts.delete(btnId);
-    renderFilteredList();
-  });
+  const { wrapper: filterWrapper } = createFilterButtonGroup(
+    [
+      { id: "filter-name",        label: "N"  },
+      { id: "filter-type",        label: "T"  },
+      { id: "filter-rarity",      label: "R"  },
+      { id: "filter-description", label: "D"  },
+      { id: "filter-quantity",    label: "Qt" },
+      { id: "filter-price",       label: "P"  }
+    ],
+    (btnId, isToggled) => {
+      if (isToggled) activeSorts.add(btnId);
+      else activeSorts.delete(btnId);
+      renderFilteredList();
+    }
+  );
   header.appendChild(filterWrapper);
 
   const layoutSwitcher = createLayoutSwitcher({
     available: ["row", "stacked", "gallery"],
     defaultView: "row",
-    onChange: layout => {
+    onChange: (layout) => {
       currentLayout = layout;
       renderFilteredList();
     }
@@ -87,13 +102,13 @@ export function initItemDefinitionsModal(db) {
 
   const formApi = createItemDefinitionForm({
     onCancel: () => formApi.reset(),
-    onDelete: async (id) => {
-      await deleteItemDefinition(db, id);
+    onDelete: async (idToDelete) => {
+      await deleteItemDefinition(db, idToDelete);
       await refreshDefinitions();
     },
     onSubmit: async (payload) => {
-      const isUpdate = !!payload.id;
-      if (isUpdate) {
+      const shouldUpdateColor = (payload.id != null);
+      if (shouldUpdateColor) {
         if (payload.rarity in rarityColors) {
           payload.rarityColor = rarityColors[payload.rarity];
           formApi.setFieldColor("rarity", rarityColors[payload.rarity]);
@@ -102,40 +117,48 @@ export function initItemDefinitionsModal(db) {
           payload.itemTypeColor = itemTypeColors[payload.itemType];
           formApi.setFieldColor("itemType", itemTypeColors[payload.itemType]);
         }
-        await updateItemDefinition(db, payload.id, payload);
+      }
+
+      if (payload.id) {
+        await updateItemDefinition(db, String(payload.id), payload);
       } else {
         await saveItemDefinition(db, null, payload);
       }
+
       await refreshDefinitions();
       formApi.reset();
     }
   });
 
-  const previewWrapper = document.createElement("div");
-  previewWrapper.id = "item-preview-wrapper";
-  const previewApi = createItemPreviewPanel(previewWrapper);
+  formApi.form.classList.add("ui-scroll-float");
+
+  const previewPanel = document.createElement("div");
+  document.body.appendChild(previewPanel);
+  const previewApi = createItemPreviewPanel(previewPanel);
 
   formApi.form.addEventListener("input", () => {
     const data = formApi.getCustom?.();
-    if (data) previewApi.setFromDefinition(data);
+    if (data) {
+      previewApi.setFromDefinition(data);
+    }
   });
 
-  const modalLayout = document.createElement("div");
-  modalLayout.className = "modal-flex-layout";
+  const bodyWrap = document.createElement("div");
+  bodyWrap.style.display = "flex";
+  bodyWrap.style.flexDirection = "column";
+  bodyWrap.style.flex = "1 1 auto";
+  bodyWrap.style.minHeight = 0;
 
-  const mainColumn = document.createElement("div");
-  mainColumn.className = "modal-main-column";
-  mainColumn.appendChild(listContainer);
-  mainColumn.appendChild(document.createElement("hr"));
-  mainColumn.appendChild(formApi.form);
+  bodyWrap.appendChild(listContainer);
+  bodyWrap.appendChild(document.createElement("hr"));
+  bodyWrap.appendChild(formApi.form);
 
-  modalLayout.appendChild(mainColumn);
-  modalLayout.appendChild(previewWrapper);
-  content.appendChild(modalLayout);
+  content.appendChild(bodyWrap);
 
   function renderFilteredList() {
     listContainer.innerHTML = "";
     listContainer.className = `def-list ui-scroll-float layout-${currentLayout}`;
+
     definitions
       .filter(d => d.name?.toLowerCase().includes(searchInput.value.trim().toLowerCase()))
       .sort((a, b) => {
@@ -148,6 +171,26 @@ export function initItemDefinitionsModal(db) {
       .forEach(def => {
         const entry = document.createElement("div");
         entry.className = `item-def-entry layout-${currentLayout}`;
+
+        const valueHtml = def.value
+          ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true }).outerHTML}</div>`
+          : "";
+
+        const quantityHtml = def.quantity
+          ? `<div class="entry-quantity">x${def.quantity}</div>`
+          : "";
+
+        const deleteBtn = document.createElement("button");
+        deleteBtn.className = "entry-delete ui-button-delete";
+        deleteBtn.title = "Delete this item";
+        deleteBtn.appendChild(createIcon("trash"));
+        deleteBtn.onclick = (e) => {
+          e.stopPropagation();
+          if (def.id && confirm(`Are you sure you want to delete \"${def.name}\"?`)) {
+            deleteItemDefinition(db, def.id).then(refreshDefinitions);
+          }
+        };
+
         entry.innerHTML = `
           <div class="entry-name">${def.name}</div>
           <div class="entry-meta">
@@ -156,28 +199,19 @@ export function initItemDefinitionsModal(db) {
           </div>
           <div class="entry-description">${def.description || ""}</div>
           <div class="entry-details">
-            ${def.value ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true }).outerHTML}</div>` : ""}
-            ${def.quantity ? `<div class="entry-quantity">x${def.quantity}</div>` : ""}
+            ${valueHtml}
+            ${quantityHtml}
           </div>
         `;
 
-        const deleteBtn = document.createElement("button");
-        deleteBtn.className = "entry-delete ui-button-delete";
-        deleteBtn.title = "Delete this item";
-        deleteBtn.appendChild(createIcon("trash"));
-        deleteBtn.onclick = (e) => {
-          e.stopPropagation();
-          if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
-            deleteItemDefinition(db, def.id).then(refreshDefinitions);
-          }
-        };
-
         entry.appendChild(deleteBtn);
         entry.addEventListener("click", () => {
-          formApi.populate(def);
-          previewWrapper.classList.remove("hidden");
-          previewWrapper.classList.add("visible");
-          previewApi.setFromDefinition(def);
+          if (def.id) {
+            formApi.populate(def);
+            previewPanel.classList.remove("hidden");
+            previewPanel.classList.add("visible");
+            previewApi.setFromDefinition(def);
+          }
         });
 
         listContainer.appendChild(entry);
@@ -199,8 +233,17 @@ export function initItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       openModal(modal);
-      previewWrapper.classList.remove("hidden");
-      previewWrapper.classList.add("visible");
+
+      const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
+      const previewRect = previewPanel.getBoundingClientRect();
+      if (modalRect) {
+        previewPanel.style.left = `${modalRect.right + 30}px`;
+        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
+        previewPanel.style.position = "absolute";
+      }
+
+      previewPanel.classList.remove("hidden");
+      previewPanel.classList.add("visible");
     },
     refresh: refreshDefinitions
   };
