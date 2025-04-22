@@ -1,3 +1,6 @@
+/* @version: 7 */
+/* @file: /styles/ui.css */
+
 /* ============================
    Base Dark Mode UI Utilities
    ============================ */
@@ -22,11 +25,15 @@
     border-radius: 3px;
     cursor: pointer;
   }
+  
   .ui-button:hover {
     background: #444 !important;
   }
   
-  /* Static dark scrollbar */
+  /* ============================
+     Static Dark Scrollbar
+     ============================ */
+  
   .ui-scrollbar::-webkit-scrollbar {
     width: 8px;
   }
@@ -41,29 +48,28 @@
     background: #777;
   }
   
-  /* Floating scrollbar only during scroll */
+  /* ============================
+     Floating Scrollbar Only During Scroll
+     ============================ */
+  
   .ui-scroll-float {
     overflow-y: auto;
     scrollbar-width: none;
     scrollbar-color: transparent transparent;
   }
-  
   .ui-scroll-float.scrolling {
     scrollbar-color: #555 transparent;
   }
-  
   .ui-scroll-float::-webkit-scrollbar {
     width: 8px;
     background: transparent;
     position: absolute;
   }
-  
   .ui-scroll-float::-webkit-scrollbar-thumb {
     background-color: transparent;
     border-radius: 4px;
     transition: background-color 0.3s;
   }
-  
   .ui-scroll-float.scrolling::-webkit-scrollbar-thumb {
     background-color: #555;
   }
@@ -101,7 +107,6 @@
      Scaled Buttons (Modal-Specific)
      ============================ */
   
-  /* In modal-large context: scale form buttons slightly smaller */
   .modal-large .ui-button {
     padding: 4px 10px;
     font-size: 13px;
@@ -119,7 +124,6 @@
     font-size: 0;
     margin-top: 2px;
   }
-  
   .modal-large .item-def-entry .entry-delete.ui-button-delete svg {
     width: 14px;
     height: 14px;
@@ -139,14 +143,25 @@
     flex-direction: column;
   }
   
-  .modal-large .item-def-entry .entry-name,
-  .modal-large .item-def-entry .entry-meta,
-  .modal-large .item-def-entry .entry-description,
-  .modal-large .item-def-entry .entry-details {
-    margin-right: auto;
+  /* Typography tweaks */
+  .modal-large .item-def-entry .entry-name {
+    font-weight: bold;
+    font-size: 15px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
   }
   
-  /* Typography tweaks */
+  .modal-large .item-def-entry .entry-meta {
+    font-size: 12px;
+    color: #bbb;
+    margin-top: 4px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  
   .modal-large .item-def-entry .entry-type,
   .modal-large .item-def-entry .entry-rarity {
     font-size: 13px;
@@ -156,10 +171,11 @@
     text-transform: uppercase;
   }
   
-  .modal-large .item-def-entry .entry-quantity {
-    font-size: 13px;
+  .modal-large .item-def-entry .entry-description {
     font-style: italic;
+    font-size: 13px;
     color: #aaa;
+    margin-top: 4px;
   }
   
   .modal-large .item-def-entry .entry-value svg {
@@ -170,9 +186,10 @@
     fill: #d4af37;
   }
   
-  .modal-large .item-def-entry .entry-quantity svg {
-    width: 16px;
-    height: 16px;
+  .modal-large .item-def-entry .entry-quantity {
+    font-size: 13px;
+    font-style: italic;
+    color: #aaa;
   }
   
   .modal-large .item-def-entry .entry-name .entry-qty {
@@ -182,7 +199,6 @@
     color: #aaa;
   }
   
-  /* Entry icon button (e.g. magnifying glass) */
   .modal-large .item-def-entry .entry-preview-btn {
     margin-right: 6px;
     cursor: pointer;
