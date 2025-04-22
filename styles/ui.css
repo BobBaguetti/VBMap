@@ -222,3 +222,22 @@
     gap: 6px;
   }
   
+
+  /* Fix SVG-only buttons (like + and -) */
+.ui-button:has(svg):only-child {
+  width: 24px !important;
+  height: 24px !important;
+  padding: 0 !important;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 4px;
+}
+
+/* Ensure SVGs inside buttons have consistent size and fill */
+.ui-button svg {
+  width: 20px !important;
+  height: 20px !important;
+  display: block;
+  margin: auto;
+  fill: #e5e6e8;
+}
