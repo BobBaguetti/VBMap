@@ -1,4 +1,4 @@
-// @version: 1
+// @version: 2
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
 
 import {
@@ -31,15 +31,18 @@ import {
       }
     });
   
-    // Setup layout switcher
+    let currentLayout = "row";
+  
     const layoutSwitcher = createLayoutSwitcher({
       available: ["row", "stacked", "gallery"],
       defaultView: "row",
-      onChange: layout => listApi.setLayout(layout)
+      onChange: layout => {
+        currentLayout = layout;
+        listApi.setLayout(layout);
+      }
     });
     header.appendChild(layoutSwitcher);
   
-    // List + Preview + Form
     const listContainer = createDefListContainer("test-item-def-list");
     const previewPanel = document.createElement("div");
     previewPanel.style.zIndex = 1101;
@@ -87,6 +90,7 @@ import {
     const listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => definitions,
+      getCurrentLayout: () => currentLayout,
       onEntryClick: def => {
         formApi.populate(def);
         previewApi.setFromDefinition(def);
