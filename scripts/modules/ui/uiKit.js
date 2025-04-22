@@ -273,7 +273,6 @@ export function createExtraInfoBlock(options = {}) {
       btnRemove.className = "ui-button";
       btnRemove.title = "Remove";
       btnRemove.style.padding = "0";
-      btnRemove.style.marginLeft = "5px";
       btnRemove.appendChild(createIcon("minus", { inline: true }));
       btnRemove.onclick = () => {
         lines.splice(i, 1);
