@@ -1,8 +1,7 @@
-// @version: 29
+// @version: 26
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
-import { createIcon } from "../utils/iconUtils.js";
 
 // ─── Modal Lifecycle Utility ──────────────────────────────────────────────────
 
@@ -240,10 +239,8 @@ export function createExtraInfoBlock(options = {}) {
 
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
-  btnAdd.className = "ui-button icon-only";
-  btnAdd.title = "Add Extra Info";
-  btnAdd.style.padding = "0"; // let CSS handle size
-  btnAdd.appendChild(createIcon("plus", { inline: true }));
+  btnAdd.textContent = "+";
+  btnAdd.classList.add("ui-button");
 
   wrap.append(lineWrap, btnAdd);
 
@@ -255,7 +252,6 @@ export function createExtraInfoBlock(options = {}) {
       const row = document.createElement("div");
       row.className = "field-row";
       row.style.marginBottom = "5px";
-      row.style.alignItems = "center";
 
       const input = document.createElement("input");
       input.className = "ui-input";
@@ -270,9 +266,9 @@ export function createExtraInfoBlock(options = {}) {
 
       const btnRemove = document.createElement("button");
       btnRemove.type = "button";
-      btnRemove.className = "ui-button icon-only";
-      btnRemove.title = "Remove";
-      btnRemove.appendChild(createIcon("minus", { inline: true }));
+      btnRemove.className = "ui-button";
+      btnRemove.textContent = "×";
+      btnRemove.style.marginLeft = "5px";
       btnRemove.onclick = () => {
         lines.splice(i, 1);
         render();
@@ -318,7 +314,6 @@ export function createExtraInfoBlock(options = {}) {
 
   return { block: wrap, getLines, setLines };
 }
-
 
 // ─── Layout Switcher Control ─────────────────────────────────────────────────
 
