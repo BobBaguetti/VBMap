@@ -1,4 +1,4 @@
-// @version: 42
+// @version: 43
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -135,7 +135,6 @@ export function initItemDefinitionsModal(db) {
   document.body.appendChild(previewPanel);
   const previewApi = createItemPreviewPanel(previewPanel);
 
-  // Real-time updates
   formApi.form.addEventListener("input", () => {
     const data = formApi.getCustom?.();
     if (data) {
