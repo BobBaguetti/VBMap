@@ -1,4 +1,4 @@
-// @version: 34
+// @version: 35
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -49,13 +49,23 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   btnCancel.onclick = () => {
     console.log("[cancel] Returning to Add mode");
     populate({});
+    setTimeout(() => {
+      const inputEvent = new Event("input", { bubbles: true });
+      form.dispatchEvent(inputEvent);
+    }, 0);
   };
 
   const btnClear = document.createElement("button");
   btnClear.type = "button";
   btnClear.textContent = "Clear";
   btnClear.className = "ui-button";
-  btnClear.onclick = () => populate({});
+  btnClear.onclick = () => {
+    populate({});
+    setTimeout(() => {
+      const inputEvent = new Event("input", { bubbles: true });
+      form.dispatchEvent(inputEvent);
+    }, 0);
+  };
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
@@ -68,6 +78,10 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     if (editingId && confirm(`Are you sure you want to delete "${fldName.value}"?`)) {
       onDelete?.(editingId);
       populate({});
+      setTimeout(() => {
+        const inputEvent = new Event("input", { bubbles: true });
+        form.dispatchEvent(inputEvent);
+      }, 0);
     }
   };
 
@@ -150,7 +164,13 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     payload.id = editingId;
 
     onSubmit(payload);
-    setTimeout(() => populate({}), 0);
+    setTimeout(() => {
+      populate({});
+      setTimeout(() => {
+        const inputEvent = new Event("input", { bubbles: true });
+        form.dispatchEvent(inputEvent);
+      }, 0);
+    }, 0);
   });
 
   const pickrTargets = [
@@ -219,10 +239,10 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     populate,
     reset: () => {
       populate({});
-      // Optional: trigger a real-time preview update after reset
-      const custom = getCustom();
-      const inputEvent = new Event("input", { bubbles: true });
-      form.dispatchEvent(inputEvent); // Trigger 'input' to notify listeners like modal
+      setTimeout(() => {
+        const inputEvent = new Event("input", { bubbles: true });
+        form.dispatchEvent(inputEvent);
+      }, 0);
     },
     setFieldColor,
     getCustom
