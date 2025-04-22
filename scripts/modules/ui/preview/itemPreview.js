@@ -41,10 +41,6 @@ export function createItemPreviewPanel(container) {
       desc.style.color = data.descriptionColor || "#aaa";
 
       content.append(name, typeLine, rarityLine, valueLine, qtyLine, desc);
-    },
-
-    setFromDefinition(data) {
-      this.renderPreview(data);
     }
   };
 }
