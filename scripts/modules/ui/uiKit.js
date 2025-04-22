@@ -1,4 +1,4 @@
-// @version: 28
+// @version: 29
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -272,7 +272,6 @@ export function createExtraInfoBlock(options = {}) {
       btnRemove.type = "button";
       btnRemove.className = "ui-button";
       btnRemove.title = "Remove";
-      btnRemove.style.padding = "0";
       btnRemove.appendChild(createIcon("minus", { inline: true }));
       btnRemove.onclick = () => {
         lines.splice(i, 1);

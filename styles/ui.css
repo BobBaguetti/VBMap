@@ -1,3 +1,6 @@
+/* @version: 6 */
+/* @file: /styles/ui.css */
+
 /* ============================
    Base Dark Mode UI Utilities
    ============================ */
@@ -21,9 +24,30 @@
     border: 1px solid #555 !important;
     border-radius: 3px;
     cursor: pointer;
+    padding: 4px 6px;
+    font-size: 13px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
   }
+  
+  .ui-button svg {
+    width: 20px;
+    height: 20px;
+    fill: #e5e6e8;
+    display: block;
+    margin: auto;
+  }
+  
   .ui-button:hover {
     background: #444 !important;
+  }
+  
+  /* Force icon buttons (like + or -) to be square */
+  .ui-button:has(svg):only-child {
+    width: 24px;
+    height: 24px;
+    padding: 0;
   }
   
   /* Static dark scrollbar */
@@ -47,23 +71,19 @@
     scrollbar-width: none;
     scrollbar-color: transparent transparent;
   }
-  
   .ui-scroll-float.scrolling {
     scrollbar-color: #555 transparent;
   }
-  
   .ui-scroll-float::-webkit-scrollbar {
     width: 8px;
     background: transparent;
     position: absolute;
   }
-  
   .ui-scroll-float::-webkit-scrollbar-thumb {
     background-color: transparent;
     border-radius: 4px;
     transition: background-color 0.3s;
   }
-  
   .ui-scroll-float.scrolling::-webkit-scrollbar-thumb {
     background-color: #555;
   }
@@ -101,7 +121,6 @@
      Scaled Buttons (Modal-Specific)
      ============================ */
   
-  /* In modal-large context: scale form buttons slightly smaller */
   .modal-large .ui-button {
     padding: 4px 10px;
     font-size: 13px;
