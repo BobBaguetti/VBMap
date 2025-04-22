@@ -1,3 +1,6 @@
+// @version: 11
+// @file: /scripts/modules/map/markerManager.js
+
 import { formatRarity } from "../utils/utils.js";
 import { createIcon } from "../utils/iconUtils.js";
 
@@ -5,25 +8,10 @@ function isImgUrl(str) {
   return /^https?:\/\/.+|^\/.+\.(png|jpe?g|gif|webp)$/i.test(str || "");
 }
 
-export function renderPopup(data, container) {
-  if (!container || !data) return;
-  container.innerHTML = createPopupContent(data);
-}
+export { renderPopup };
 
-export function createCustomIcon(m) {
-  const imgHTML = isImgUrl(m.imageSmall)
-    ? `<img src="${m.imageSmall}" class="marker-icon" onerror="this.style.display='none'">`
-    : "";
-
-  return L.divIcon({
-    html: `<div class="custom-marker"><div class="marker-border"></div>${imgHTML}</div>`,
-    className: "custom-marker-container",
-    iconSize: [32, 32]
-  });
-}
-
-export function createPopupContent(m) {
-  const nameHTML = `<div class="popup-name" style="color:${m.nameColor || "#E5E6E8"};">${m.name}</div>`;
+export function renderPopup(m) {
+  const nameHTML = `<div class="popup-name" style="color:${m.nameColor || "#E5E6E8"};">${m.name || "Unnamed Item"}</div>`;
   const bigImg = isImgUrl(m.imageBig)
     ? `<img src="${m.imageBig}" class="popup-image" style="border-color:${m.rarityColor || "#777"};" onerror="this.style.display='none'">`
     : "";
@@ -55,18 +43,8 @@ export function createPopupContent(m) {
     ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
     : "";
 
-  const videoBtn = m.video
-    ? `<button class="more-info-btn" onclick="openVideoPopup(event.clientX, event.clientY, '${m.video}')">Play Video</button>`
-    : "";
-
-  const closeButton = `
-    <button class="popup-close-btn" onclick="this.closest('.leaflet-popup')._popup?.remove()" aria-label="Close">
-      ${createIcon("x", { inline: true }).outerHTML}
-    </button>`;
-
   return `
     <div class="custom-popup">
-      ${closeButton}
       <div class="popup-header">
         <div class="popup-header-left">
           ${bigImg}
@@ -83,9 +61,20 @@ export function createPopupContent(m) {
         <hr class="popup-divider">
         ${extraHTML}
         ${quantityHTML}
-        ${videoBtn}
       </div>
     </div>`;
+}
+
+export function createCustomIcon(m) {
+  const imgHTML = isImgUrl(m.imageSmall)
+    ? `<img src="${m.imageSmall}" class="marker-icon" onerror="this.style.display='none'">`
+    : "";
+
+  return L.divIcon({
+    html: `<div class="custom-marker"><div class="marker-border"></div>${imgHTML}</div>`,
+    className: "custom-marker-container",
+    iconSize: [32, 32]
+  });
 }
 
 export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
@@ -94,7 +83,7 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
     draggable: false
   });
 
-  markerObj.bindPopup(createPopupContent(m), {
+  markerObj.bindPopup(renderPopup(m), {
     className: "custom-popup-wrapper",
     maxWidth: 350,
     closeButton: false
