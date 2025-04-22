@@ -105,15 +105,13 @@ export function initItemDefinitionsModal(db) {
   const formApi = createItemDefinitionForm({
     onCancel: () => {
       formApi.reset();
-      const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
+      previewApi.setFromDefinition({});
     },
     onDelete: async (idToDelete) => {
       await deleteItemDefinition(db, idToDelete);
       await refreshDefinitions();
       formApi.reset();
-      const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
+      previewApi.setFromDefinition({});
     },
     onSubmit: async (payload) => {
       const shouldUpdateColor = (payload.id != null);
@@ -127,17 +125,16 @@ export function initItemDefinitionsModal(db) {
           formApi.setFieldColor("itemType", itemTypeColors[payload.itemType]);
         }
       }
-
+    
       if (payload.id) {
         await updateItemDefinition(db, String(payload.id), payload);
       } else {
         await saveItemDefinition(db, null, payload);
       }
-
+    
       await refreshDefinitions();
       formApi.reset();
-      const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
+      previewApi.setFromDefinition({});
     }
   });
 
