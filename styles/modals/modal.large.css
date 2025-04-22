@@ -1,5 +1,7 @@
-/* @version: 15 */
+/* @version: 14 */
 /* @file: /styles/modals/modal.large.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
 
 .modal.modal-large {
   display: none;
@@ -13,12 +15,11 @@
   height: 100%;
   background: none;
   pointer-events: auto;
+  font-family: 'Satoshi', sans-serif;
+  font-weight: 400;
 }
 
-.modal-backdrop {
-  z-index: 9998;
-}
-
+/* Core modal box */
 .modal.modal-large .modal-content {
   position: relative;
   width: 100%;
@@ -32,11 +33,9 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: normal;
-  text-shadow: none;
 }
 
+/* Header */
 .modal.modal-large .modal-header {
   display: flex;
   justify-content: space-between;
@@ -48,16 +47,17 @@
   margin: 0;
   font-size: 20px;
   color: #fff;
-  font-weight: bold;
-  text-shadow: none;
-  font-family: inherit;
+  font-weight: 600;
+}
+
+.modal.modal-large h3 {
+  font-weight: 500;
 }
 
 .modal.modal-large .modal-header .close {
   font-size: 24px;
   cursor: pointer;
   color: #fff;
-  text-shadow: none;
 }
 
 .modal.modal-large hr {
@@ -66,25 +66,29 @@
   border-top: 2px solid #444;
 }
 
+/* Scrollable list container */
 .modal.modal-large .def-list {
   flex: 0 0 240px;
   overflow-y: auto;
   padding-right: 4px;
   min-height: 0;
   max-height: 240px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE/Edge */
 }
 .modal.modal-large .def-list::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
+/* Scrollable form area */
 .modal.modal-large form {
   flex: 1 1 auto;
   min-height: 0;
   max-height: 100%;
   padding-right: 4px;
+
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -93,6 +97,7 @@
   height: 0;
 }
 
+/* Fields */
 .modal.modal-large .field-row {
   display: flex;
   align-items: center;
@@ -105,7 +110,7 @@
   font-weight: bold;
   color: #ccc;
   flex-shrink: 0;
-  font-family: inherit;
+  font-weight: 400;
 }
 
 .modal.modal-large .field-row input,
@@ -118,9 +123,7 @@
   padding: 6px 8px;
   border-radius: 3px;
   font-size: 14px;
-  font-weight: normal;
-  font-family: inherit;
-  text-shadow: none;
+  font-weight: 400;
 }
 
 .modal-large .field-row textarea {
@@ -136,6 +139,7 @@
   border-radius: 2px;
 }
 
+/* Buttons */
 .modal.modal-large .ui-button {
   background-color: #444;
   color: white;
@@ -144,9 +148,7 @@
   margin-left: 5px;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: bold;
-  text-shadow: none;
-  font-family: inherit;
+  font-weight: 400;
 }
 .modal.modal-large .ui-button:hover {
   background-color: #666;
