@@ -1,4 +1,4 @@
-// @version: 44
+// @version: 45
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -63,18 +63,21 @@ export function initItemDefinitionsModal(db) {
   let activeSorts = new Set();
   let currentLayout = "row";
 
-  const { wrapper: filterWrapper } = createFilterButtonGroup([
-    { id: "filter-name",        label: "N"  },
-    { id: "filter-type",        label: "T"  },
-    { id: "filter-rarity",      label: "R"  },
-    { id: "filter-description", label: "D"  },
-    { id: "filter-quantity",    label: "Qt" },
-    { id: "filter-price",       label: "P"  }
-  ], (btnId, isToggled) => {
-    if (isToggled) activeSorts.add(btnId);
-    else activeSorts.delete(btnId);
-    renderFilteredList();
-  });
+  const { wrapper: filterWrapper } = createFilterButtonGroup(
+    [
+      { id: "filter-name",        label: "N"  },
+      { id: "filter-type",        label: "T"  },
+      { id: "filter-rarity",      label: "R"  },
+      { id: "filter-description", label: "D"  },
+      { id: "filter-quantity",    label: "Qt" },
+      { id: "filter-price",       label: "P"  }
+    ],
+    (btnId, isToggled) => {
+      if (isToggled) activeSorts.add(btnId);
+      else activeSorts.delete(btnId);
+      renderFilteredList();
+    }
+  );
   header.appendChild(filterWrapper);
 
   const layoutSwitcher = createLayoutSwitcher({
@@ -102,30 +105,47 @@ export function initItemDefinitionsModal(db) {
       await refreshDefinitions();
     },
     onSubmit: async (payload) => {
+      const shouldUpdateColor = (payload.id != null);
+      if (shouldUpdateColor) {
+        if (payload.rarity in rarityColors) {
+          payload.rarityColor = rarityColors[payload.rarity];
+          formApi.setFieldColor("rarity", rarityColors[payload.rarity]);
+        }
+        if (payload.itemType in itemTypeColors) {
+          payload.itemTypeColor = itemTypeColors[payload.itemType];
+          formApi.setFieldColor("itemType", itemTypeColors[payload.itemType]);
+        }
+      }
+
       if (payload.id) {
         await updateItemDefinition(db, String(payload.id), payload);
       } else {
         await saveItemDefinition(db, null, payload);
       }
+
       await refreshDefinitions();
       formApi.reset();
+      const live = formApi.getCustom?.();
+      if (live) {
+        previewApi.setFromDefinition(live);
+      }
     }
   });
+
   formApi.form.classList.add("ui-scroll-float");
 
   const previewPanel = document.createElement("div");
   document.body.appendChild(previewPanel);
   const previewApi = createItemPreviewPanel(previewPanel);
 
-  // LIVE updates: input, change, and color changes (pickr emits 'change' only)
-  const syncPreview = () => {
-    const data = formApi.getCustom?.();
-    if (data) {
-      previewApi.setFromDefinition(data);
+  // Always visible preview, real-time updates
+  formApi.form.addEventListener("input", () => {
+    const liveData = formApi.getCustom?.();
+    if (liveData) {
+      previewApi.setFromDefinition(liveData);
+      previewApi.show();
     }
-  };
-  formApi.form.addEventListener("input", syncPreview);
-  formApi.form.addEventListener("change", syncPreview);
+  });
 
   const bodyWrap = document.createElement("div");
   bodyWrap.style.display = "flex";
@@ -193,7 +213,7 @@ export function initItemDefinitionsModal(db) {
           if (def.id) {
             formApi.populate(def);
             previewApi.setFromDefinition(def);
-            repositionPreview();
+            previewApi.show();
           }
         });
 
@@ -206,16 +226,6 @@ export function initItemDefinitionsModal(db) {
     renderFilteredList();
   }
 
-  function repositionPreview() {
-    const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
-    const previewRect = previewPanel.getBoundingClientRect();
-    if (modalRect) {
-      previewPanel.style.left = `${modalRect.right + 30}px`;
-      previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
-      previewPanel.style.position = "absolute";
-    }
-  }
-
   subscribeItemDefinitions(db, defs => {
     definitions = defs;
     renderFilteredList();
@@ -226,7 +236,17 @@ export function initItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       openModal(modal);
-      repositionPreview();
+
+      // Recalculate preview position
+      const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
+      const previewRect = previewPanel.getBoundingClientRect();
+      if (modalRect) {
+        previewPanel.style.left = `${modalRect.right + 30}px`;
+        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
+        previewPanel.style.position = "absolute";
+      }
+
+      previewApi.show();
     },
     refresh: refreshDefinitions
   };
