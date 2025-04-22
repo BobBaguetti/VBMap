@@ -1,24 +1,16 @@
-/* @version: 2 */
+/* @version: 3 */
 /* @file: /styles/preview/itemPreview.css */
 
 #item-preview-panel {
-  position: fixed;
-/*  top: 60px;
-  right: 20px; */
-  width: 260px;
   background-color: #1e1e1e;
   border: 1px solid #444;
   border-radius: 6px;
   padding: 12px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  z-index: 1100;
+  z-index: 1;
   color: #eee;
   font-family: sans-serif;
   pointer-events: auto;
-  display: none; /* Hidden by default */
-}
-
-#item-preview-panel.visible {
   display: block;
 }
 
