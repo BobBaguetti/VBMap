@@ -1,4 +1,4 @@
-// @version: 40
+// @version: 41
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -37,7 +37,8 @@ export function initItemDefinitionsModal(db) {
     withDivider: true,
     onClose: () => {
       closeModal(modal);
-      previewApi.hide();
+      previewPanel.classList.remove("visible");
+      previewPanel.classList.add("hidden");
     }
   });
 
@@ -99,6 +100,10 @@ export function initItemDefinitionsModal(db) {
 
   let definitions = [];
 
+  const previewPanel = document.createElement("div");
+  document.body.appendChild(previewPanel);
+  const previewApi = createItemPreviewPanel(previewPanel);
+
   const formApi = createItemDefinitionForm({
     onCancel: () => formApi.reset(),
     onDelete: async (idToDelete) => {
@@ -126,22 +131,23 @@ export function initItemDefinitionsModal(db) {
 
       await refreshDefinitions();
       formApi.reset();
+      updatePreview(); // rerender on save
     }
   });
 
   formApi.form.classList.add("ui-scroll-float");
 
-  const previewPanel = document.createElement("div");
-  document.body.appendChild(previewPanel);
-  const previewApi = createItemPreviewPanel(previewPanel);
-
-  formApi.form.addEventListener("input", () => {
+  function updatePreview() {
     const data = formApi.getCustom?.();
     if (data) {
       previewApi.setFromDefinition(data);
-      previewApi.show();
+      previewPanel.classList.remove("hidden");
+      previewPanel.classList.add("visible");
     }
-  });
+  }
+
+  formApi.form.addEventListener("input", updatePreview);
+  formApi.form.addEventListener("change", updatePreview);
 
   const bodyWrap = document.createElement("div");
   bodyWrap.style.display = "flex";
@@ -186,7 +192,7 @@ export function initItemDefinitionsModal(db) {
         deleteBtn.appendChild(createIcon("trash"));
         deleteBtn.onclick = (e) => {
           e.stopPropagation();
-          if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
+          if (def.id && confirm(`Are you sure you want to delete \"${def.name}\"?`)) {
             deleteItemDefinition(db, def.id).then(refreshDefinitions);
           }
         };
@@ -208,8 +214,7 @@ export function initItemDefinitionsModal(db) {
         entry.addEventListener("click", () => {
           if (def.id) {
             formApi.populate(def);
-            previewApi.setFromDefinition(def);
-            previewApi.show();
+            updatePreview();
           }
         });
 
@@ -234,14 +239,15 @@ export function initItemDefinitionsModal(db) {
       openModal(modal);
 
       const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
+      const previewRect = previewPanel.getBoundingClientRect();
       if (modalRect) {
         previewPanel.style.left = `${modalRect.right + 30}px`;
-        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - 216}px`; // center over 432px preview
+        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
         previewPanel.style.position = "absolute";
       }
 
-      previewApi.setFromDefinition(formApi.getCustom?.());
-      previewApi.show();
+      previewPanel.classList.remove("hidden");
+      previewPanel.classList.add("visible");
     },
     refresh: refreshDefinitions
   };
