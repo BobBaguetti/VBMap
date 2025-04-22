@@ -217,8 +217,13 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   return {
     form,
     populate,
-    reset: () => populate({}),
+    reset: () => {
+      populate({});
+      // Optional: trigger a real-time preview update after reset
+      const custom = getCustom();
+      const inputEvent = new Event("input", { bubbles: true });
+      form.dispatchEvent(inputEvent); // Trigger 'input' to notify listeners like modal
+    },
     setFieldColor,
     getCustom
   };
-}
