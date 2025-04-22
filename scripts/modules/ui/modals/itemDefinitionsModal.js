@@ -1,4 +1,4 @@
-// @version: 47
+// @version: 49
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -105,13 +105,19 @@ export function initItemDefinitionsModal(db) {
   const formApi = createItemDefinitionForm({
     onCancel: () => {
       formApi.reset();
-      previewApi.setFromDefinition({});
+      setTimeout(() => {
+        const def = formApi.getCustom?.();
+        if (def) previewApi.setFromDefinition(def);
+      }, 0);
     },
     onDelete: async (idToDelete) => {
       await deleteItemDefinition(db, idToDelete);
       await refreshDefinitions();
       formApi.reset();
-      previewApi.setFromDefinition({});
+      setTimeout(() => {
+        const def = formApi.getCustom?.();
+        if (def) previewApi.setFromDefinition(def);
+      }, 0);
     },
     onSubmit: async (payload) => {
       const shouldUpdateColor = (payload.id != null);
@@ -125,16 +131,19 @@ export function initItemDefinitionsModal(db) {
           formApi.setFieldColor("itemType", itemTypeColors[payload.itemType]);
         }
       }
-    
+
       if (payload.id) {
         await updateItemDefinition(db, String(payload.id), payload);
       } else {
         await saveItemDefinition(db, null, payload);
       }
-    
+
       await refreshDefinitions();
       formApi.reset();
-      previewApi.setFromDefinition({});
+      setTimeout(() => {
+        const def = formApi.getCustom?.();
+        if (def) previewApi.setFromDefinition(def);
+      }, 0);
     }
   });
 
@@ -239,7 +248,6 @@ export function initItemDefinitionsModal(db) {
       await refreshDefinitions();
       openModal(modal);
 
-      // Recalculate preview position
       const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
       const previewRect = previewPanel.getBoundingClientRect();
       if (modalRect) {
@@ -248,9 +256,11 @@ export function initItemDefinitionsModal(db) {
         previewPanel.style.position = "absolute";
       }
 
-      const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
-      previewApi.show();
+      setTimeout(() => {
+        const def = formApi.getCustom?.();
+        if (def) previewApi.setFromDefinition(def);
+        previewApi.show();
+      }, 0);
     },
     refresh: refreshDefinitions
   };
