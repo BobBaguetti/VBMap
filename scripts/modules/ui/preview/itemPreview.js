@@ -7,21 +7,7 @@ export function createItemPreviewPanel(container) {
   container.id = "item-preview-panel";
   container.classList.add("hidden");
 
-  const content = document.createElement("div");
-  content.className = "preview-content preview-popup-wrapper";
-  container.appendChild(content);
-
-  return {
-    renderPreview(data) {
-      renderPopup(data, content);
-    },
-    setFromDefinition(data) {
-      this.renderPreview(data);
-    }
-  };
-}
-
-  // Background image and popup wrapper
+  // Set background + container styles
   container.style.backgroundImage = "url('media/images/itemPreview.png')";
   container.style.backgroundSize = "cover";
   container.style.backgroundPosition = "center";
@@ -34,6 +20,7 @@ export function createItemPreviewPanel(container) {
   container.style.pointerEvents = "auto";
   container.style.display = "none"; // default hidden
 
+  // Create popup wrapper centered inside panel
   const popupWrapper = document.createElement("div");
   popupWrapper.className = "preview-popup-wrapper";
   popupWrapper.style.position = "absolute";
@@ -47,7 +34,7 @@ export function createItemPreviewPanel(container) {
     setFromDefinition(def) {
       popupWrapper.innerHTML = ""; // clear previous
       if (def) {
-        const popup = renderPopup(def); // same layout as markers
+        const popup = renderPopup(def); // generate marker-style popup
         popupWrapper.appendChild(popup);
       }
     },
