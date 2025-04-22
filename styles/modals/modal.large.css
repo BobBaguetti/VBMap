@@ -1,4 +1,4 @@
-/* @version: 13 */
+/* @version: 14 */
 /* @file: /styles/modals/modal.large.css */
 
 .modal.modal-large {
@@ -15,7 +15,10 @@
   pointer-events: auto;
 }
 
-/* Core modal box */
+.modal-backdrop {
+  z-index: 9998;
+}
+
 .modal.modal-large .modal-content {
   position: relative;
   width: 100%;
@@ -29,9 +32,11 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 420;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Header */
 .modal.modal-large .modal-header {
   display: flex;
   justify-content: space-between;
@@ -43,12 +48,15 @@
   margin: 0;
   font-size: 20px;
   color: #fff;
+  font-weight: 520;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 .modal.modal-large .modal-header .close {
   font-size: 24px;
   cursor: pointer;
   color: #fff;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 .modal.modal-large hr {
@@ -57,29 +65,25 @@
   border-top: 2px solid #444;
 }
 
-/* Scrollable list container */
 .modal.modal-large .def-list {
   flex: 0 0 240px;
   overflow-y: auto;
   padding-right: 4px;
   min-height: 0;
   max-height: 240px;
-
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 .modal.modal-large .def-list::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-/* Scrollable form area */
 .modal.modal-large form {
   flex: 1 1 auto;
   min-height: 0;
   max-height: 100%;
   padding-right: 4px;
-
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -88,7 +92,6 @@
   height: 0;
 }
 
-/* Fields */
 .modal.modal-large .field-row {
   display: flex;
   align-items: center;
@@ -101,6 +104,7 @@
   font-weight: bold;
   color: #ccc;
   flex-shrink: 0;
+  font-weight: 520;
 }
 
 .modal.modal-large .field-row input,
@@ -113,6 +117,9 @@
   padding: 6px 8px;
   border-radius: 3px;
   font-size: 14px;
+  font-weight: 420;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
 }
 
 .modal-large .field-row textarea {
@@ -128,7 +135,6 @@
   border-radius: 2px;
 }
 
-/* Buttons */
 .modal.modal-large .ui-button {
   background-color: #444;
   color: white;
@@ -137,6 +143,8 @@
   margin-left: 5px;
   border-radius: 4px;
   cursor: pointer;
+  font-weight: 520;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.4);
 }
 .modal.modal-large .ui-button:hover {
   background-color: #666;
