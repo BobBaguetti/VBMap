@@ -12,10 +12,10 @@ import {
   } from "../../services/itemDefinitionsService.js";
   
   import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
-  import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
   import { createLayoutSwitcher } from "../uiKit.js";
   import { createItemPreviewPanel } from "../preview/itemPreview.js";
   import { createDefinitionListManager } from "../../utils/definitionListManager.js";
+  import { applyColorPresets } from "../../utils/colorUtils.js";
   
   export function initTestItemDefinitionsModal(db) {
     const { modal, content, header } = createModal({
@@ -31,18 +31,15 @@ import {
       }
     });
   
-    let currentLayout = "row";
-  
+    // Layout switcher
     const layoutSwitcher = createLayoutSwitcher({
       available: ["row", "stacked", "gallery"],
       defaultView: "row",
-      onChange: layout => {
-        currentLayout = layout;
-        listApi.refresh(definitions);
-      }
+      onChange: layout => listApi.setLayout(layout)
     });
     header.appendChild(layoutSwitcher);
   
+    // List, preview panel, form
     const listContainer = createDefListContainer("test-item-def-list");
     const previewPanel = document.createElement("div");
     previewPanel.style.zIndex = 1101;
@@ -61,12 +58,9 @@ import {
         formApi.reset();
       },
       onSubmit: async (payload) => {
-        const isUpdate = payload.id != null;
-        if (isUpdate) {
-          if (payload.rarity in rarityColors)
-            payload.rarityColor = rarityColors[payload.rarity];
-          if (payload.itemType in itemTypeColors)
-            payload.itemTypeColor = itemTypeColors[payload.itemType];
+        applyColorPresets(payload);
+  
+        if (payload.id) {
           await updateItemDefinition(db, payload.id, payload);
         } else {
           await saveItemDefinition(db, null, payload);
@@ -90,7 +84,6 @@ import {
     const listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => definitions,
-      getCurrentLayout: () => currentLayout, // ✅ Fix added
       onEntryClick: def => {
         formApi.populate(def);
         previewApi.setFromDefinition(def);
