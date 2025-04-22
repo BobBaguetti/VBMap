@@ -31,14 +31,18 @@ import {
       }
     });
   
+    // Track layout mode
     let currentLayout = "row";
+    function getCurrentLayout() {
+      return currentLayout;
+    }
   
     const layoutSwitcher = createLayoutSwitcher({
       available: ["row", "stacked", "gallery"],
       defaultView: "row",
       onChange: layout => {
         currentLayout = layout;
-        listApi.setLayout(layout);
+        listApi.render(); // refresh to apply layout
       }
     });
     header.appendChild(layoutSwitcher);
@@ -90,7 +94,6 @@ import {
     const listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => definitions,
-      getCurrentLayout: () => currentLayout,
       onEntryClick: def => {
         formApi.populate(def);
         previewApi.setFromDefinition(def);
@@ -99,7 +102,8 @@ import {
       onDelete: async id => {
         await deleteItemDefinition(db, id);
         await refreshDefinitions();
-      }
+      },
+      getCurrentLayout
     });
   
     const bodyWrap = document.createElement("div");
