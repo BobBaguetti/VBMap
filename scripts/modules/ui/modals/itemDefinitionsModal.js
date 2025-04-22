@@ -1,4 +1,4 @@
-// @version: 41
+// @version: 42
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -37,8 +37,7 @@ export function initItemDefinitionsModal(db) {
     withDivider: true,
     onClose: () => {
       closeModal(modal);
-      previewPanel.classList.remove("visible");
-      previewPanel.classList.add("hidden");
+      previewApi.hide();
     }
   });
 
@@ -100,10 +99,6 @@ export function initItemDefinitionsModal(db) {
 
   let definitions = [];
 
-  const previewPanel = document.createElement("div");
-  document.body.appendChild(previewPanel);
-  const previewApi = createItemPreviewPanel(previewPanel);
-
   const formApi = createItemDefinitionForm({
     onCancel: () => formApi.reset(),
     onDelete: async (idToDelete) => {
@@ -131,23 +126,23 @@ export function initItemDefinitionsModal(db) {
 
       await refreshDefinitions();
       formApi.reset();
-      updatePreview(); // rerender on save
     }
   });
 
   formApi.form.classList.add("ui-scroll-float");
 
-  function updatePreview() {
+  const previewPanel = document.createElement("div");
+  document.body.appendChild(previewPanel);
+  const previewApi = createItemPreviewPanel(previewPanel);
+
+  // Real-time updates
+  formApi.form.addEventListener("input", () => {
     const data = formApi.getCustom?.();
     if (data) {
       previewApi.setFromDefinition(data);
-      previewPanel.classList.remove("hidden");
-      previewPanel.classList.add("visible");
+      previewApi.show();
     }
-  }
-
-  formApi.form.addEventListener("input", updatePreview);
-  formApi.form.addEventListener("change", updatePreview);
+  });
 
   const bodyWrap = document.createElement("div");
   bodyWrap.style.display = "flex";
@@ -214,7 +209,8 @@ export function initItemDefinitionsModal(db) {
         entry.addEventListener("click", () => {
           if (def.id) {
             formApi.populate(def);
-            updatePreview();
+            previewApi.setFromDefinition(def);
+            previewApi.show();
           }
         });
 
@@ -246,8 +242,7 @@ export function initItemDefinitionsModal(db) {
         previewPanel.style.position = "absolute";
       }
 
-      previewPanel.classList.remove("hidden");
-      previewPanel.classList.add("visible");
+      previewApi.show();
     },
     refresh: refreshDefinitions
   };
