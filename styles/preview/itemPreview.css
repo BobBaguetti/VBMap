@@ -5,7 +5,7 @@
   position: fixed;
   width: 432px;
   height: 432px;
-  background-image: url('../../media/images/itemPreview.png');
+  background-image: url('media/images/itemPreview.png');
   background-size: cover;
   background-position: center;
   border: 1px solid #444;
