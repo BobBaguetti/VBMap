@@ -1,4 +1,4 @@
-// @version: 33
+// @version: 34
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -227,3 +227,4 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     setFieldColor,
     getCustom
   };
+}
