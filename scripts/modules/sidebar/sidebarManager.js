@@ -1,9 +1,10 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
+
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/sidebar/sidebarManager.js
 
 import { loadItemDefinitions } from "../services/itemDefinitionsService.js";
+import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js";
 
 export async function setupSidebar(map, layers, allMarkers, db) {
   const searchBar     = document.getElementById("search-bar");
@@ -94,7 +95,15 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   }
   await loadItemFilters();
 
+  // Add test item modal button
+  const testItemModal = initTestItemDefinitionsModal(db);
+  const testItemBtn = document.createElement("button");
+  testItemBtn.className = "ui-button";
+  testItemBtn.textContent = "🧪 Test Item Modal";
+  testItemBtn.onclick = () => testItemModal.open();
+  sidebar.appendChild(testItemBtn);
+
   return { filterMarkers, loadItemFilters };
 }
 
-// @version: 1
+// @version: 2
