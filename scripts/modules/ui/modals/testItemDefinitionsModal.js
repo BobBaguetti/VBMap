@@ -1,4 +1,4 @@
-// @version: 3
+// @version: 5
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
 
 import {
@@ -11,11 +11,11 @@ import {
     deleteItemDefinition, subscribeItemDefinitions
   } from "../../services/itemDefinitionsService.js";
   
-  import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
   import { createLayoutSwitcher } from "../uiKit.js";
   import { createItemPreviewPanel } from "../preview/itemPreview.js";
   import { createDefinitionListManager } from "../../utils/definitionListManager.js";
   import { applyColorPresets } from "../../utils/colorUtils.js";
+  import { createItemFormController } from "../forms/itemFormController.js";
   
   export function initTestItemDefinitionsModal(db) {
     const { modal, content, header } = createModal({
@@ -31,7 +31,6 @@ import {
       }
     });
   
-    // Layout switcher
     const layoutSwitcher = createLayoutSwitcher({
       available: ["row", "stacked", "gallery"],
       defaultView: "row",
@@ -39,14 +38,13 @@ import {
     });
     header.appendChild(layoutSwitcher);
   
-    // List, preview panel, form
     const listContainer = createDefListContainer("test-item-def-list");
     const previewPanel = document.createElement("div");
     previewPanel.style.zIndex = 1101;
     document.body.appendChild(previewPanel);
     const previewApi = createItemPreviewPanel(previewPanel);
   
-    const formApi = createItemDefinitionForm({
+    const formApi = createItemFormController({
       onCancel: () => {
         formApi.reset();
         const def = formApi.getCustom?.();
@@ -59,13 +57,11 @@ import {
       },
       onSubmit: async (payload) => {
         applyColorPresets(payload);
-  
         if (payload.id) {
           await updateItemDefinition(db, payload.id, payload);
         } else {
           await saveItemDefinition(db, null, payload);
         }
-  
         await refreshDefinitions();
         formApi.reset();
       }
