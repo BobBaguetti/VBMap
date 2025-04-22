@@ -1,4 +1,4 @@
-// @version: 31
+// @version: 32
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -62,6 +62,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
   btnDelete.className = "ui-button-delete";
   btnDelete.title = "Delete this item";
   btnDelete.appendChild(createIcon("trash"));
+  btnDelete.style.width = "28px";
+  btnDelete.style.height = "28px";
   btnDelete.onclick = () => {
     if (editingId && confirm(`Are you sure you want to delete "${fldName.value}"?`)) {
       onDelete?.(editingId);
