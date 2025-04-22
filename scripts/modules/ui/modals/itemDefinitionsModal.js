@@ -1,4 +1,4 @@
-// @version: 49
+// @version: 50
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -37,6 +37,7 @@ export function initItemDefinitionsModal(db) {
     withDivider: true,
     onClose: () => {
       closeModal(modal);
+      previewApi.hide(); // Hide preview when modal closes
     }
   });
 
@@ -99,6 +100,7 @@ export function initItemDefinitionsModal(db) {
   let definitions = [];
 
   const previewPanel = document.createElement("div");
+  previewPanel.style.zIndex = 1101; // ensure above backdrop
   document.body.appendChild(previewPanel);
   const previewApi = createItemPreviewPanel(previewPanel);
 
