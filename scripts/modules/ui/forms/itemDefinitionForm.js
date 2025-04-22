@@ -21,7 +21,6 @@ import {
   subscribeItemDefinitions
 } from "../../services/itemDefinitionsService.js";
 
-import { createItemDefinitionForm } from "../forms/itemDefinitionForm.js";
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 import { createIcon } from "../../utils/iconUtils.js";
 import { createLayoutSwitcher } from "../uiKit.js";
