@@ -26,3 +26,13 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+.preview-popup-wrapper {
+  pointer-events: none; /* block interaction inside preview */
+}
+
+#item-preview-panel {
+  border: 1px solid #444;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  border-radius: 10px;
+}

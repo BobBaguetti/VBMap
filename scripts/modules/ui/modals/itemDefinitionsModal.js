@@ -1,4 +1,4 @@
-// @version: 39
+// @version: 40
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -37,8 +37,7 @@ export function initItemDefinitionsModal(db) {
     withDivider: true,
     onClose: () => {
       closeModal(modal);
-      previewPanel.classList.remove("visible");
-      previewPanel.classList.add("hidden");
+      previewApi.hide();
     }
   });
 
@@ -140,6 +139,7 @@ export function initItemDefinitionsModal(db) {
     const data = formApi.getCustom?.();
     if (data) {
       previewApi.setFromDefinition(data);
+      previewApi.show();
     }
   });
 
@@ -186,7 +186,7 @@ export function initItemDefinitionsModal(db) {
         deleteBtn.appendChild(createIcon("trash"));
         deleteBtn.onclick = (e) => {
           e.stopPropagation();
-          if (def.id && confirm(`Are you sure you want to delete \"${def.name}\"?`)) {
+          if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
             deleteItemDefinition(db, def.id).then(refreshDefinitions);
           }
         };
@@ -208,9 +208,8 @@ export function initItemDefinitionsModal(db) {
         entry.addEventListener("click", () => {
           if (def.id) {
             formApi.populate(def);
-            previewPanel.classList.remove("hidden");
-            previewPanel.classList.add("visible");
             previewApi.setFromDefinition(def);
+            previewApi.show();
           }
         });
 
@@ -235,15 +234,14 @@ export function initItemDefinitionsModal(db) {
       openModal(modal);
 
       const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
-      const previewRect = previewPanel.getBoundingClientRect();
       if (modalRect) {
         previewPanel.style.left = `${modalRect.right + 30}px`;
-        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
+        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - 216}px`; // center over 432px preview
         previewPanel.style.position = "absolute";
       }
 
-      previewPanel.classList.remove("hidden");
-      previewPanel.classList.add("visible");
+      previewApi.setFromDefinition(formApi.getCustom?.());
+      previewApi.show();
     },
     refresh: refreshDefinitions
   };
