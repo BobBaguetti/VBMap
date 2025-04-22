@@ -8,8 +8,6 @@ function isImgUrl(str) {
   return /^https?:\/\/.+|^\/.+\.(png|jpe?g|gif|webp)$/i.test(str || "");
 }
 
-export { renderPopup };
-
 export function renderPopup(m) {
   const nameHTML = `<div class="popup-name" style="color:${m.nameColor || "#E5E6E8"};">${m.name || "Unnamed Item"}</div>`;
   const bigImg = isImgUrl(m.imageBig)
