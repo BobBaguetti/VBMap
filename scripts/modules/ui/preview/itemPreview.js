@@ -12,8 +12,8 @@ export function createItemPreviewPanel(container) {
   container.style.backgroundPosition = "center";
   container.style.width = "432px";
   container.style.height = "432px";
-  container.style.position = "absolute"; // ensures we can position it beside modal
-  container.style.zIndex = "1101";
+  container.style.position = "absolute";
+  container.style.zIndex = "10001"; // above modal + backdrop
   container.style.borderRadius = "12px";
   container.style.overflow = "hidden";
   container.style.pointerEvents = "auto";
