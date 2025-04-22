@@ -1,4 +1,4 @@
-// @version: 45
+// @version: 46
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -98,8 +98,15 @@ export function initItemDefinitionsModal(db) {
 
   let definitions = [];
 
+  const previewPanel = document.createElement("div");
+  document.body.appendChild(previewPanel);
+  const previewApi = createItemPreviewPanel(previewPanel);
+
   const formApi = createItemDefinitionForm({
-    onCancel: () => formApi.reset(),
+    onCancel: () => {
+      formApi.reset();
+      previewApi.setFromDefinition({});
+    },
     onDelete: async (idToDelete) => {
       await deleteItemDefinition(db, idToDelete);
       await refreshDefinitions();
@@ -125,20 +132,13 @@ export function initItemDefinitionsModal(db) {
 
       await refreshDefinitions();
       formApi.reset();
-      const live = formApi.getCustom?.();
-      if (live) {
-        previewApi.setFromDefinition(live);
-      }
+      previewApi.setFromDefinition({});
     }
   });
 
   formApi.form.classList.add("ui-scroll-float");
 
-  const previewPanel = document.createElement("div");
-  document.body.appendChild(previewPanel);
-  const previewApi = createItemPreviewPanel(previewPanel);
-
-  // Always visible preview, real-time updates
+  // Real-time preview update
   formApi.form.addEventListener("input", () => {
     const liveData = formApi.getCustom?.();
     if (liveData) {
@@ -156,7 +156,6 @@ export function initItemDefinitionsModal(db) {
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
-
   content.appendChild(bodyWrap);
 
   function renderFilteredList() {
@@ -237,7 +236,7 @@ export function initItemDefinitionsModal(db) {
       await refreshDefinitions();
       openModal(modal);
 
-      // Recalculate preview position
+      // Reposition preview panel
       const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
       const previewRect = previewPanel.getBoundingClientRect();
       if (modalRect) {
@@ -246,6 +245,7 @@ export function initItemDefinitionsModal(db) {
         previewPanel.style.position = "absolute";
       }
 
+      previewApi.setFromDefinition({}); // Show default blank preview
       previewApi.show();
     },
     refresh: refreshDefinitions
