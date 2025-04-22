@@ -1,4 +1,4 @@
-// @version: 32
+// @version: 33
 // @file: /scripts/modules/ui/forms/itemDefinitionForm.js
 
 import {
@@ -146,24 +146,8 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
       return;
     }
 
-    const payload = {
-      id: editingId,
-      name,
-      nameColor: pickrs.get(colorName)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-      itemType: fldType.value,
-      itemTypeColor: pickrs.get(colorType)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-      rarity: fldRarity.value,
-      rarityColor: pickrs.get(colorRarity)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-      description: fldDesc.value.trim(),
-      descriptionColor: pickrs.get(colorDesc)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-      extraLines: extraInfo.getLines(),
-      value: fldValue.value.trim(),
-      valueColor: pickrs.get(colorValue)?.getColor()?.toHEXA()?.toString() || goldColor,
-      quantity: fldQty.value.trim(),
-      quantityColor: pickrs.get(colorQty)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
-      imageSmall: fldImgS.value.trim(),
-      imageBig: fldImgL.value.trim()
-    };
+    const payload = getCustom();
+    payload.id = editingId;
 
     onSubmit(payload);
     setTimeout(() => populate({}), 0);
@@ -210,10 +194,31 @@ export function createItemDefinitionForm({ onCancel, onSubmit, onDelete }) {
     }
   }
 
+  function getCustom() {
+    return {
+      name: fldName.value.trim(),
+      nameColor: pickrs.get(colorName)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      itemType: fldType.value,
+      itemTypeColor: pickrs.get(colorType)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      rarity: fldRarity.value,
+      rarityColor: pickrs.get(colorRarity)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      description: fldDesc.value.trim(),
+      descriptionColor: pickrs.get(colorDesc)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      extraLines: extraInfo.getLines(),
+      value: fldValue.value.trim(),
+      valueColor: pickrs.get(colorValue)?.getColor()?.toHEXA()?.toString() || goldColor,
+      quantity: fldQty.value.trim(),
+      quantityColor: pickrs.get(colorQty)?.getColor()?.toHEXA()?.toString() || "#E5E6E8",
+      imageSmall: fldImgS.value.trim(),
+      imageBig: fldImgL.value.trim()
+    };
+  }
+
   return {
     form,
     populate,
     reset: () => populate({}),
-    setFieldColor
+    setFieldColor,
+    getCustom
   };
 }
