@@ -1,19 +1,19 @@
 /* @version: 3 */
 /* @file: /styles/preview/itemPreview.css */
 
-#item-preview-panel {
+.item-preview-panel {
   position: fixed;
+  z-index: 10000; /* Must be higher than modal (9999) and backdrop (9998) */
+  top: 0;
+  left: 0;
   width: 432px;
   height: 432px;
-  background-image: url('/VBMap/media/images/itemPreview.png');
+  background: #1a1a1a url("/VBMap/media/images/itemPreview.png") center center no-repeat;
   background-size: cover;
-  background-position: center;
-  border: 1px solid #444;
+  border: 1px solid #333;
   border-radius: 6px;
-  padding: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-  z-index: 1100;
-  display: none; /* Hidden by default */
+  box-shadow: 0 0 10px #000;
+  padding: 8px;
 }
 
 #item-preview-panel.visible {
