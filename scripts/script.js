@@ -1,5 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 4
+// @version: 5
 // @file:    /scripts/script.js
 
 import { initializeMap } from "./modules/map/map.js";
@@ -11,7 +11,7 @@ import {
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
-import { createMarker, createPopupContent } from "./modules/map/markerManager.js";
+import { createMarker, renderPopup } from "./modules/map/markerManager.js";
 import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
 import { initMarkerModal } from "./modules/ui/modals/markerModal.js";
 import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
@@ -105,7 +105,7 @@ subscribeItemDefinitions(db, async () => {
       delete data.itemTypeColor;
     }
 
-    markerObj.setPopupContent(createPopupContent(data));
+    markerObj.setPopupContent(renderPopup(data));
     firebaseUpdateMarker(db, data);
   });
 
@@ -139,7 +139,7 @@ function addMarker(data, cbs = {}) {
 const callbacks = {
   onEdit:   (markerObj, data, ev) => {
     markerForm.openEdit(markerObj, data, ev, updated => {
-      markerObj.setPopupContent(createPopupContent(updated));
+      markerObj.setPopupContent(renderPopup(updated));
       firebaseUpdateMarker(db, updated);
     });
   },
