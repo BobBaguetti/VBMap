@@ -1,46 +1,60 @@
-// @version: 3
-// @file: /scripts/modules/ui/preview/itemPreview.js
+/* @version: 3 */
+/* @file: /styles/preview/itemPreview.css */
 
-export function createItemPreviewPanel(container) {
-  container.id = "item-preview-panel";
-  container.classList.add("hidden");
+#item-preview-panel {
+  width: 260px;
+  background-color: #1e1e1e;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
+  z-index: 1100;
+  color: #eee;
+  font-family: sans-serif;
+  pointer-events: auto;
+  display: none;
+  flex-shrink: 0;
+  align-self: flex-start;
+}
 
-  const content = document.createElement("div");
-  content.className = "preview-content";
-  container.appendChild(content);
+#item-preview-panel.visible {
+  display: block;
+}
 
-  return {
-    renderPreview(data) {
-      if (!data) return;
+#item-preview-panel.pinned {
+  border-color: gold;
+  box-shadow: 0 0 10px gold;
+}
 
-      content.innerHTML = "";
+#item-preview-panel .preview-content {
+  margin-bottom: 10px;
+}
 
-      const name = document.createElement("h4");
-      name.textContent = data.name || "Unnamed Item";
-      name.style.color = data.nameColor || "#fff";
+#item-preview-panel .preview-name {
+  font-size: 16px;
+  font-weight: bold;
+  color: #fff;
+  margin-bottom: 4px;
+}
 
-      const typeLine = document.createElement("div");
-      typeLine.className = "preview-line";
-      typeLine.innerHTML = `<span class="label">Type:</span> <span class="value" style="color: ${data.itemTypeColor || "#ccc"}">${data.itemType || "—"}</span>`;
+#item-preview-panel .preview-description {
+  font-style: italic;
+  font-size: 13px;
+  color: #bbb;
+}
 
-      const rarityLine = document.createElement("div");
-      rarityLine.className = "preview-line";
-      rarityLine.innerHTML = `<span class="label">Rarity:</span> <span class="value" style="color: ${data.rarityColor || "#ccc"}">${data.rarity?.toUpperCase() || "—"}</span>`;
+#item-preview-panel .pin-button {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: none;
+  color: #aaa;
+  border: none;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 2px;
+}
 
-      const valueLine = document.createElement("div");
-      valueLine.className = "preview-line";
-      valueLine.innerHTML = `<span class="label">Value:</span> <span class="value">${data.value || 0}</span>`;
-
-      const qtyLine = document.createElement("div");
-      qtyLine.className = "preview-line";
-      qtyLine.innerHTML = `<span class="label">Quantity:</span> <span class="value">x${data.quantity || 0}</span>`;
-
-      const desc = document.createElement("div");
-      desc.className = "preview-description";
-      desc.textContent = data.description || "";
-      desc.style.color = data.descriptionColor || "#aaa";
-
-      content.append(name, typeLine, rarityLine, valueLine, qtyLine, desc);
-    }
-  };
+#item-preview-panel .pin-button:hover {
+  color: gold;
 }

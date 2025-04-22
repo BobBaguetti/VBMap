@@ -1,4 +1,4 @@
-// @version: 39
+// @version: 40
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
 
 import {
@@ -132,9 +132,31 @@ export function initItemDefinitionsModal(db) {
 
   formApi.form.classList.add("ui-scroll-float");
 
+  // Create preview panel and layout wrapper
   const previewPanel = document.createElement("div");
-  document.body.appendChild(previewPanel);
   const previewApi = createItemPreviewPanel(previewPanel);
+
+  const flexWrap = document.createElement("div");
+  flexWrap.style.display = "flex";
+  flexWrap.style.gap = "30px";
+  flexWrap.style.alignItems = "flex-start";
+  flexWrap.style.justifyContent = "center";
+  flexWrap.style.flexWrap = "wrap";
+  flexWrap.style.marginTop = "10px";
+
+  const bodyWrap = document.createElement("div");
+  bodyWrap.style.display = "flex";
+  bodyWrap.style.flexDirection = "column";
+  bodyWrap.style.flex = "1 1 auto";
+  bodyWrap.style.minHeight = 0;
+  bodyWrap.appendChild(listContainer);
+  bodyWrap.appendChild(document.createElement("hr"));
+  bodyWrap.appendChild(formApi.form);
+
+  flexWrap.appendChild(bodyWrap);
+  flexWrap.appendChild(previewPanel);
+
+  content.appendChild(flexWrap);
 
   formApi.form.addEventListener("input", () => {
     const data = formApi.getCustom?.();
@@ -142,18 +164,6 @@ export function initItemDefinitionsModal(db) {
       previewApi.setFromDefinition(data);
     }
   });
-
-  const bodyWrap = document.createElement("div");
-  bodyWrap.style.display = "flex";
-  bodyWrap.style.flexDirection = "column";
-  bodyWrap.style.flex = "1 1 auto";
-  bodyWrap.style.minHeight = 0;
-
-  bodyWrap.appendChild(listContainer);
-  bodyWrap.appendChild(document.createElement("hr"));
-  bodyWrap.appendChild(formApi.form);
-
-  content.appendChild(bodyWrap);
 
   function renderFilteredList() {
     listContainer.innerHTML = "";
@@ -233,14 +243,6 @@ export function initItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       openModal(modal);
-
-      const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
-      const previewRect = previewPanel.getBoundingClientRect();
-      if (modalRect) {
-        previewPanel.style.left = `${modalRect.right + 30}px`;
-        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
-        previewPanel.style.position = "absolute";
-      }
 
       previewPanel.classList.remove("hidden");
       previewPanel.classList.add("visible");
