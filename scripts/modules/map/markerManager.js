@@ -8,6 +8,8 @@ function isImgUrl(str) {
   return /^https?:\/\/.+|^\/.+\.(png|jpe?g|gif|webp)$/i.test(str || "");
 }
 
+export { renderPopup };
+
 export function createCustomIcon(m) {
   const imgHTML = isImgUrl(m.imageSmall)
     ? `<img src="${m.imageSmall}" class="marker-icon" onerror="this.style.display='none'">`
