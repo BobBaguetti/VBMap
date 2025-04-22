@@ -1,66 +1,61 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/utils/definitionListManager.js
 
-import { createIcon } from "./iconUtils.js";
+import { renderItemEntry } from "./itemEntryRenderer.js";
 
+/**
+ * Creates and manages a sortable, searchable definition list.
+ *
+ * @param {{
+ *   container: HTMLElement,
+ *   getDefinitions: () => Array,
+ *   onEntryClick: (def: Object) => void,
+ *   onDelete: (id: string) => Promise<void>,
+ *   getCurrentLayout?: () => string
+ * }} options
+ */
 export function createDefinitionListManager({
   container,
   getDefinitions,
   onEntryClick,
   onDelete,
-  getCurrentLayout = () => "row" // ✅ fallback to "row"
+  getCurrentLayout = () => "row"
 }) {
+  let layout = getCurrentLayout();
+
   function render() {
-    const layout = typeof getCurrentLayout === "function" ? getCurrentLayout() : "row";
-    const defs = getDefinitions();
+    const data = getDefinitions();
+    const q = searchInput.value.trim().toLowerCase();
+
+    const filtered = data.filter(d =>
+      d.name?.toLowerCase().includes(q)
+    );
 
     container.innerHTML = "";
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
-    defs.forEach(def => {
-      const entry = document.createElement("div");
-      entry.className = `item-def-entry layout-${layout}`;
-
-      const valueHtml = def.value
-        ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true }).outerHTML}</div>`
-        : "";
-
-      const quantityHtml = def.quantity
-        ? `<div class="entry-quantity">x${def.quantity}</div>`
-        : "";
-
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "entry-delete ui-button-delete";
-      deleteBtn.title = "Delete this item";
-      deleteBtn.appendChild(createIcon("trash"));
-      deleteBtn.onclick = (e) => {
-        e.stopPropagation();
-        if (def.id && confirm(`Delete “${def.name}”?`)) {
-          onDelete(def.id);
-        }
-      };
-
-      entry.innerHTML = `
-        <div class="entry-name">${def.name}</div>
-        <div class="entry-meta">
-          <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
-          <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity?.toUpperCase() || "—"}</span>
-        </div>
-        <div class="entry-description">${def.description || ""}</div>
-        <div class="entry-details">
-          ${valueHtml}
-          ${quantityHtml}
-        </div>
-      `;
-
-      entry.appendChild(deleteBtn);
-      entry.addEventListener("click", () => onEntryClick(def));
+    filtered.forEach(def => {
+      const entry = renderItemEntry(def, layout, onEntryClick, onDelete);
       container.appendChild(entry);
     });
   }
 
+  const header = document.createElement("div");
+  header.className = "list-header";
+
+  const searchInput = document.createElement("input");
+  searchInput.className = "ui-input";
+  searchInput.placeholder = "Search items...";
+  searchInput.addEventListener("input", render);
+  header.appendChild(searchInput);
+
+  container.parentNode.insertBefore(header, container);
+
   return {
-    refresh: () => render(),
-    setLayout: () => render() // no internal layout state, always call getCurrentLayout
+    refresh: render,
+    setLayout: newLayout => {
+      layout = newLayout;
+      render();
+    }
   };
 }
