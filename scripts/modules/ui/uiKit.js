@@ -240,7 +240,7 @@ export function createExtraInfoBlock(options = {}) {
 
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
-  btnAdd.className = "ui-button";
+  btnAdd.className = "ui-button icon-only";
   btnAdd.title = "Add Extra Info";
   btnAdd.style.padding = "0"; // let CSS handle size
   btnAdd.appendChild(createIcon("plus", { inline: true }));
@@ -270,7 +270,7 @@ export function createExtraInfoBlock(options = {}) {
 
       const btnRemove = document.createElement("button");
       btnRemove.type = "button";
-      btnRemove.className = "ui-button";
+      btnRemove.className = "ui-button icon-only";
       btnRemove.title = "Remove";
       btnRemove.appendChild(createIcon("minus", { inline: true }));
       btnRemove.onclick = () => {
