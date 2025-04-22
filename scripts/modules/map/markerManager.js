@@ -1,6 +1,3 @@
-// @version: 8
-// @file: /scripts/modules/map/markerManager.js
-
 import { formatRarity } from "../utils/utils.js";
 import { createIcon } from "../utils/iconUtils.js";
 
@@ -8,7 +5,10 @@ function isImgUrl(str) {
   return /^https?:\/\/.+|^\/.+\.(png|jpe?g|gif|webp)$/i.test(str || "");
 }
 
-export { renderPopup };
+export function renderPopup(data, container) {
+  if (!container || !data) return;
+  container.innerHTML = createPopupContent(data);
+}
 
 export function createCustomIcon(m) {
   const imgHTML = isImgUrl(m.imageSmall)

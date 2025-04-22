@@ -1,11 +1,25 @@
 // @version: 4
 // @file: /scripts/modules/ui/preview/itemPreview.js
 
-import { renderPopup } from "../../map/markerManager.js"; // reuse popup layout
+import { renderPopup } from "../../map/markerManager.js";
 
 export function createItemPreviewPanel(container) {
   container.id = "item-preview-panel";
   container.classList.add("hidden");
+
+  const content = document.createElement("div");
+  content.className = "preview-content preview-popup-wrapper";
+  container.appendChild(content);
+
+  return {
+    renderPreview(data) {
+      renderPopup(data, content);
+    },
+    setFromDefinition(data) {
+      this.renderPreview(data);
+    }
+  };
+}
 
   // Background image and popup wrapper
   container.style.backgroundImage = "url('media/images/itemPreview.png')";
