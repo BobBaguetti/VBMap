@@ -10,11 +10,11 @@ export const rarityColors = {
   };
   
   export const itemTypeColors = {
-    Weapon: "#e1d7d2",
-    Armor: "#d2e1da",
-    Consumable: "#d2dee1",
-    Special: "#e1dbe2",
-    Quest: "#f4e0d6",
+    Weapon: "#6F84AD",
+    Armor: "#6F84AD",
+    Consumable: "#6F84AD",
+    Special: "#6F84AD",
+    Quest: "#6F84AD",
     "Crafting Material": "#6F84AD",
     "": "#bbb"
   };
