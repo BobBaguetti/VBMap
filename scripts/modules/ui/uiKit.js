@@ -1,4 +1,4 @@
-// @version: 27
+// @version: 28
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -242,9 +242,7 @@ export function createExtraInfoBlock(options = {}) {
   btnAdd.type = "button";
   btnAdd.className = "ui-button";
   btnAdd.title = "Add Extra Info";
-  btnAdd.style.width = "32px";
-  btnAdd.style.height = "32px";
-  btnAdd.style.padding = "0";
+  btnAdd.style.padding = "0"; // let CSS handle size
   btnAdd.appendChild(createIcon("plus", { inline: true }));
 
   wrap.append(lineWrap, btnAdd);
@@ -274,8 +272,6 @@ export function createExtraInfoBlock(options = {}) {
       btnRemove.type = "button";
       btnRemove.className = "ui-button";
       btnRemove.title = "Remove";
-      btnRemove.style.width = "32px";
-      btnRemove.style.height = "32px";
       btnRemove.style.padding = "0";
       btnRemove.style.marginLeft = "5px";
       btnRemove.appendChild(createIcon("minus", { inline: true }));
@@ -324,6 +320,7 @@ export function createExtraInfoBlock(options = {}) {
 
   return { block: wrap, getLines, setLines };
 }
+
 
 // ─── Layout Switcher Control ─────────────────────────────────────────────────
 

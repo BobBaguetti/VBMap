@@ -1,11 +1,5 @@
-/* Version: 3 */
+/* Version: 4 */
 
-/**
- * Utility to generate icon elements for use in the UI.
- * Now supports inline SVGs for custom icons.
- */
-
-// Inline SVG map
 const INLINE_SVGS = {
   trash: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" stroke-width="1.5" fill="none" stroke="#000000"><path d="M20 9L18.005 20.3463C17.8369 21.3026 17.0062 22 16.0353 22H7.96474C6.99379 22 6.1631 21.3026 5.99496 20.3463L4 9" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 6L15.375 6M3 6L8.625 6M8.625 6V4C8.625 2.89543 9.52043 2 10.625 2H13.375C14.4796 2 15.375 2.89543 15.375 4V6M8.625 6L15.375 6" stroke-linecap="round" stroke-linejoin="round"/></svg>`,
 
@@ -13,14 +7,14 @@ const INLINE_SVGS = {
 
   x: `<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 256 256"><path d="M205.66,194.34a8,8,0,0,1-11.32,11.32L128,139.31,61.66,205.66a8,8,0,0,1-11.32-11.32L116.69,128,50.34,61.66A8,8,0,0,1,61.66,50.34L128,116.69l66.34-66.35a8,8,0,0,1,11.32,11.32L139.31,128Z"/></svg>`,
 
-  plus: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"></path></svg>`,
+  plus: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H136v80a8,8,0,0,1-16,0V136H40a8,8,0,0,1,0-16h80V40a8,8,0,0,1,16,0v80h80A8,8,0,0,1,224,128Z"/></svg>`,
 
-  minus: `<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="#000000" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z"></path></svg>`
+  minus: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256"><path d="M224,128a8,8,0,0,1-8,8H40a8,8,0,0,1,0-16H216A8,8,0,0,1,224,128Z"/></svg>`
 };
 
 /**
  * Creates an inline icon or Phosphor icon.
- * @param {string} name - Icon name ("coins", "trash", "plus", etc.)
+ * @param {string} name - Icon name ("plus", "minus", etc.)
  * @param {object} [options]
  * @param {boolean} [options.inline=false] - Whether to use inline SVG
  * @param {string} [options.className] - Additional CSS classes
@@ -33,6 +27,14 @@ export function createIcon(name, options = {}) {
     const wrapper = document.createElement("span");
     wrapper.innerHTML = INLINE_SVGS[name];
     const svg = wrapper.firstChild;
+
+    // Default styles for inline icons
+    svg.style.display = "block";
+    svg.style.margin = "auto";
+    svg.style.fill = "#E5E6E8";
+    svg.style.width = "18px";
+    svg.style.height = "18px";
+
     if (className) svg.classList.add(...className.split(" "));
     Object.assign(svg.style, style);
     return svg;
