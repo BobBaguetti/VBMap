@@ -7,7 +7,6 @@ export function createItemPreviewPanel(container) {
   container.id = "item-preview-panel";
   container.classList.add("hidden");
 
-  // Set background + container styles
   container.style.backgroundImage = "url('media/images/itemPreview.png')";
   container.style.backgroundSize = "cover";
   container.style.backgroundPosition = "center";
@@ -18,24 +17,25 @@ export function createItemPreviewPanel(container) {
   container.style.borderRadius = "12px";
   container.style.overflow = "hidden";
   container.style.pointerEvents = "auto";
-  container.style.display = "none"; // default hidden
+  container.style.display = "none";
 
-  // Create popup wrapper centered inside panel
   const popupWrapper = document.createElement("div");
   popupWrapper.className = "preview-popup-wrapper";
   popupWrapper.style.position = "absolute";
   popupWrapper.style.top = "50%";
   popupWrapper.style.left = "50%";
   popupWrapper.style.transform = "translate(-50%, -50%)";
-  popupWrapper.style.zIndex = "1"; // ensure above bg
+  popupWrapper.style.zIndex = "1";
   container.appendChild(popupWrapper);
 
   return {
     setFromDefinition(def) {
-      popupWrapper.innerHTML = ""; // clear previous
+      popupWrapper.innerHTML = "";
       if (def) {
-        const popup = renderPopup(def); // generate marker-style popup
-        popupWrapper.appendChild(popup);
+        const tempDiv = document.createElement("div");
+        tempDiv.innerHTML = renderPopup(def);
+        const popupEl = tempDiv.firstElementChild;
+        if (popupEl) popupWrapper.appendChild(popupEl);
       }
     },
     show() {
