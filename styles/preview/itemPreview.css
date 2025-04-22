@@ -3,7 +3,7 @@
 
 .item-preview-panel {
   position: fixed;
-  z-index: 10000; /* Must be higher than modal (9999) and backdrop (9998) */
+  z-index: 9999; /* Must be higher than modal (9999) and backdrop (9998) */
   top: 0;
   left: 0;
   width: 432px;
