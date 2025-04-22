@@ -1,4 +1,4 @@
-// @version: 5
+// @version: 4
 // @file: /scripts/modules/ui/preview/itemPreview.js
 
 import { renderPopup } from "../../map/markerManager.js";
@@ -7,20 +7,18 @@ export function createItemPreviewPanel(container) {
   container.id = "item-preview-panel";
   container.classList.add("hidden");
 
-  // Preview background and dimensions
-  container.style.backgroundImage = "url('/VBMap/media/images/itemPreview.png')";
+  container.style.backgroundImage = "url('media/images/itemPreview.png')";
   container.style.backgroundSize = "cover";
   container.style.backgroundPosition = "center";
   container.style.width = "432px";
   container.style.height = "432px";
-  container.style.position = "fixed";
+  container.style.position = "absolute"; // ensures we can position it beside modal
   container.style.zIndex = "1101";
   container.style.borderRadius = "12px";
   container.style.overflow = "hidden";
   container.style.pointerEvents = "auto";
   container.style.display = "none";
 
-  // Centered popup wrapper
   const popupWrapper = document.createElement("div");
   popupWrapper.className = "preview-popup-wrapper";
   popupWrapper.style.position = "absolute";
@@ -34,7 +32,8 @@ export function createItemPreviewPanel(container) {
     setFromDefinition(def) {
       popupWrapper.innerHTML = "";
       if (def) {
-        popupWrapper.innerHTML = renderPopup(def);
+        const popupHTML = renderPopup(def);
+        popupWrapper.innerHTML = popupHTML;
       }
     },
     show() {
