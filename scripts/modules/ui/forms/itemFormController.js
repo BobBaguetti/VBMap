@@ -7,7 +7,7 @@ import { createItemFormLayout } from "./itemFormBuilder.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
- * Handles wiring, reset, populate, and getCustom logic.
+ * Handles wiring, reset, populate, getCustom, and color sync logic.
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
@@ -15,25 +15,25 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   function initPickrs() {
     requestAnimationFrame(() => {
-      pickrs.name        = createPickr(`#${fields.colorName.id}`);
-      pickrs.itemType    = createPickr(`#${fields.colorType.id}`);
-      pickrs.rarity      = createPickr(`#${fields.colorRarity.id}`);
+      pickrs.name     = createPickr(`#${fields.colorName.id}`);
+      pickrs.itemType = createPickr(`#${fields.colorType.id}`);
+      pickrs.rarity   = createPickr(`#${fields.colorRarity.id}`);
       pickrs.description = createPickr(`#${fields.colorDesc.id}`);
-      pickrs.value       = createPickr(`#${fields.colorValue.id}`);
-      pickrs.quantity    = createPickr(`#${fields.colorQty.id}`);
+      pickrs.value    = createPickr(`#${fields.colorValue.id}`);
+      pickrs.quantity = createPickr(`#${fields.colorQty.id}`);
     });
   }
 
   function reset() {
-    fields.fldName.value   = "";
-    fields.fldType.value   = "";
+    fields.fldName.value = "";
+    fields.fldType.value = "";
     fields.fldRarity.value = "";
-    fields.fldDesc.value   = "";
-    fields.fldValue.value  = "";
-    fields.fldQty.value    = "";
-    fields.fldImgS.value   = "";
-    fields.fldImgL.value   = "";
-    fields.fldVid.value    = "";
+    fields.fldDesc.value = "";
+    fields.fldValue.value = "";
+    fields.fldQty.value = "";
+    fields.fldImgS.value = "";
+    fields.fldImgL.value = "";
+    fields.fldVid.value = "";
     fields.extraInfo.setLines([]);
     _id = null;
     _subheading.textContent = "Add Item";
@@ -52,6 +52,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
+    applyVisualColors(def);
   }
 
   function getCustom() {
@@ -79,6 +80,15 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   function setFieldColor(field, color) {
     const target = pickrs[field];
     if (target && color) target.setColor(color);
+  }
+
+  function applyVisualColors(def) {
+    if (def.nameColor)     setFieldColor("name", def.nameColor);
+    if (def.itemTypeColor) setFieldColor("itemType", def.itemTypeColor);
+    if (def.rarityColor)   setFieldColor("rarity", def.rarityColor);
+    if (def.descColor)     setFieldColor("description", def.descColor);
+    if (def.valueColor)    setFieldColor("value", def.valueColor);
+    if (def.quantityColor) setFieldColor("quantity", def.quantityColor);
   }
 
   const _subheading = document.createElement("h3");
@@ -125,6 +135,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     populate,
     getCustom,
     setFieldColor,
-    initPickrs
+    initPickrs,
+    applyVisualColors // ✅ new method
   };
 }
