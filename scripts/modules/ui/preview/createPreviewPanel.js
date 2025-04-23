@@ -1,5 +1,6 @@
-// @version: 2
+// comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed
 // @file: /scripts/modules/ui/preview/createPreviewPanel.js
+// @version: 3
 
 import { createItemPreviewPanel } from "./itemPreview.js";
 import { createQuestPreviewPanel } from "./questPreview.js";
@@ -17,9 +18,11 @@ export function createPreviewPanel(type, mountTo = null) {
       api = createItemPreviewPanel(container);
       break;
     case "quest":
+      container.innerHTML = ""; // Remove any placeholder text
       api = createQuestPreviewPanel(container);
       break;
     case "npc":
+      container.innerHTML = ""; // Remove any placeholder text
       api = createNpcPreviewPanel(container);
       break;
     default:
