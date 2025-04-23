@@ -13,6 +13,9 @@ import {
   createImageField
 } from "../universalForm.js";
 
+import { createImageField } from "../../ui/uiKit.js";
+
+
 /**
  * Creates the item definition form layout with all labeled fields.
  */

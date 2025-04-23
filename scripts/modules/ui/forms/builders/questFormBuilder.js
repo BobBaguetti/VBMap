@@ -1,11 +1,12 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/forms/builders/questFormBuilder.js
-// @version: 1.1
+// @version: 1.2
 
 import {
   createNameField,
   createDescriptionField,
-  createExtraInfoField
+  createExtraInfoField,
+  createImageFieldSet
 } from "../universalForm.js";
 
 /**
@@ -28,8 +29,9 @@ export function createQuestForm() {
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("quest-name");
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("quest-description");
   const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true });
+  const { rowImgS, fldImgS, rowImgL, fldImgL } = createImageFieldSet();
 
-  form.append(rowName, rowDesc, rowExtra);
+  form.append(rowName, rowDesc, rowExtra, rowImgS, rowImgL);
 
   return {
     form,
@@ -37,6 +39,8 @@ export function createQuestForm() {
       fldName,
       fldDesc,
       extraInfo,
+      fldImgS,
+      fldImgL,
       colorName,
       colorDesc
     },
