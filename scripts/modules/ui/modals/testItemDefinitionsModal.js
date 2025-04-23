@@ -1,4 +1,4 @@
-// @version: 6
+// @version: 7
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
 
 import {
@@ -83,7 +83,6 @@ import {
     bodyWrap.style.flex = "1 1 auto";
     bodyWrap.style.minHeight = 0;
   
-    // 🟢 FIX: Append listContainer before initializing listApi
     bodyWrap.appendChild(listContainer);
   
     const listApi = createDefinitionListManager({
@@ -133,6 +132,8 @@ import {
         const def = formApi.getCustom?.();
         if (def) previewApi.setFromDefinition(def);
         previewApi.show();
+  
+        formApi.initPickrs(); // 🔧 Ensures pickrs are initialized once form is rendered
       },
       refresh: refreshDefinitions
     };

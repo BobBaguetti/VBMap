@@ -1,8 +1,8 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../pickrManager.js";
-import { getPickrHexColor } from "../../utils/colorUtils.js"; 
+import { getPickrHexColor } from "../../utils/colorUtils.js";
 import { createItemFormLayout } from "./itemFormBuilder.js";
 
 /**
@@ -11,33 +11,32 @@ import { createItemFormLayout } from "./itemFormBuilder.js";
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
+  const pickrs = {};
 
-  // Setup Pickr instances for all static fields at init time
-  const pickrs = {
-    name: createPickr(`#${fields.colorName.id}`),
-    itemType: createPickr(`#${fields.colorType.id}`),
-    rarity: createPickr(`#${fields.colorRarity.id}`),
-    description: createPickr(`#${fields.colorDesc.id}`),
-    value: createPickr(`#${fields.colorValue.id}`),
-    quantity: createPickr(`#${fields.colorQty.id}`)
-  };
+  function initPickrs() {
+    requestAnimationFrame(() => {
+      pickrs.name        = createPickr(`#${fields.colorName.id}`);
+      pickrs.itemType    = createPickr(`#${fields.colorType.id}`);
+      pickrs.rarity      = createPickr(`#${fields.colorRarity.id}`);
+      pickrs.description = createPickr(`#${fields.colorDesc.id}`);
+      pickrs.value       = createPickr(`#${fields.colorValue.id}`);
+      pickrs.quantity    = createPickr(`#${fields.colorQty.id}`);
+    });
+  }
 
   function reset() {
-    fields.fldName.value = "";
-    fields.fldType.value = "";
+    fields.fldName.value   = "";
+    fields.fldType.value   = "";
     fields.fldRarity.value = "";
-    fields.fldDesc.value = "";
-    fields.fldValue.value = "";
-    fields.fldQty.value = "";
-    fields.fldImgS.value = "";
-    fields.fldImgL.value = "";
-    fields.fldVid.value = "";
+    fields.fldDesc.value   = "";
+    fields.fldValue.value  = "";
+    fields.fldQty.value    = "";
+    fields.fldImgS.value   = "";
+    fields.fldImgL.value   = "";
+    fields.fldVid.value    = "";
     fields.extraInfo.setLines([]);
     _id = null;
     _subheading.textContent = "Add Item";
-
-    // Reset pickr colors
-    Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
 
   function populate(def) {
@@ -53,13 +52,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
-
-    pickrs.name.setColor(def.nameColor || "#E5E6E8");
-    pickrs.itemType.setColor(def.itemTypeColor || "#E5E6E8");
-    pickrs.rarity.setColor(def.rarityColor || "#E5E6E8");
-    pickrs.description.setColor(def.descColor || "#E5E6E8");
-    pickrs.value.setColor(def.valueColor || "#E5E6E8");
-    pickrs.quantity.setColor(def.quantityColor || "#E5E6E8");
   }
 
   function getCustom() {
@@ -85,9 +77,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   }
 
   function setFieldColor(field, color) {
-    if (pickrs[field]) {
-      pickrs[field].setColor(color);
-    }
+    const target = pickrs[field];
+    if (target && color) target.setColor(color);
   }
 
   const _subheading = document.createElement("h3");
@@ -133,6 +124,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     reset,
     populate,
     getCustom,
-    setFieldColor
+    setFieldColor,
+    initPickrs
   };
 }
