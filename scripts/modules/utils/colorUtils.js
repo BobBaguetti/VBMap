@@ -1,4 +1,4 @@
-// @version: 1
+// @version: 2
 // @file: /scripts/modules/utils/colorUtils.js
 
 import { rarityColors, itemTypeColors } from "./colorPresets.js";
@@ -22,4 +22,20 @@ export function applyColorPresets(def) {
   }
 
   return def;
+}
+
+/**
+ * Safely retrieves the HEXA color from a Pickr instance.
+ * Falls back to a default value if unavailable.
+ *
+ * @param {Object} pickr – Pickr instance
+ * @param {string} [fallback="#E5E6E8"] – Fallback color
+ * @returns {string} HEXA color string (e.g. "#abcdefcc")
+ */
+export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
+  try {
+    return pickr?.getColor()?.toHEXA()?.toString() || fallback;
+  } catch {
+    return fallback;
+  }
 }
