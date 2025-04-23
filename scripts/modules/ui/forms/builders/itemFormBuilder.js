@@ -10,10 +10,9 @@ import {
   createExtraInfoField,
   createValueField,
   createQuantityField,
-  createImageField
+  createImageField // ✅ Only imported once, from universalForm
 } from "../universalForm.js";
 
-import { createImageField } from "../../ui/uiKit.js";
 
 
 /**
