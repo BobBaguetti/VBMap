@@ -2,15 +2,15 @@
 // @file: /scripts/modules/forms/itemFormBuilder.js
 
 import {
-    createNameField,
-    createItemTypeField,
-    createRarityField,
-    createDescriptionField,
-    createValueField,
-    createQuantityField,
-    createImageFieldSet,
-    createExtraInfoField
-  } from "./universalForm.js";
+  createNameField,
+  createItemTypeField,
+  createRarityField,
+  createDescriptionField,
+  createValueField,
+  createQuantityField,
+  createImageFieldSet,
+  createExtraInfoField
+} from "../universalForm.js";
   
   export function createItemForm() {
     const form = document.createElement("form");
