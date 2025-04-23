@@ -1,10 +1,11 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.2
+// @version: 4.3
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
 import { createItemForm } from "../builders/itemFormBuilder.js";
+import { createIcon } from "../../../utils/iconUtils.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
@@ -15,6 +16,15 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const pickrs = {};
 
   // Create top-right aligned buttons
+  const subheadingWrap = document.createElement("div");
+  subheadingWrap.style.display = "flex";
+  subheadingWrap.style.justifyContent = "space-between";
+  subheadingWrap.style.alignItems = "center";
+
+  const subheading = document.createElement("h3");
+  subheading.textContent = "Add Item";
+  subheadingWrap.appendChild(subheading);
+
   const buttonRow = document.createElement("div");
   buttonRow.className = "floating-buttons";
 
@@ -23,33 +33,24 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnSave.className = "ui-button";
   btnSave.textContent = "Save";
 
-  const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "ui-button";
-  btnCancel.textContent = "Clear";
-  btnCancel.onclick = onCancel;
+  const btnClear = document.createElement("button");
+  btnClear.type = "button";
+  btnClear.className = "ui-button";
+  btnClear.textContent = "Clear";
+  btnClear.onclick = onCancel;
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
-  btnDelete.className = "ui-button-delete entry-delete";
+  btnDelete.className = "ui-button-delete";
   btnDelete.title = "Delete this item";
-  btnDelete.innerHTML = "🗑️";
+  btnDelete.style.width = "28px";
+  btnDelete.style.height = "28px";
+  btnDelete.appendChild(createIcon("trash"));
   btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
 
-  buttonRow.append(btnSave, btnCancel, btnDelete);
-
-  // Insert heading + buttons into top of form
-  const topRow = document.createElement("div");
-  topRow.style.display = "flex";
-  topRow.style.justifyContent = "space-between";
-  topRow.style.alignItems = "center";
-
-  const _subheading = document.createElement("h3");
-  _subheading.textContent = "Add Item";
-
-  topRow.appendChild(_subheading);
-  topRow.appendChild(buttonRow);
-  form.prepend(topRow);
+  buttonRow.append(btnSave, btnClear, btnDelete);
+  subheadingWrap.appendChild(buttonRow);
+  form.prepend(subheadingWrap);
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
@@ -90,7 +91,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgL.value   = "";
     fields.extraInfo.setLines([]);
     _id = null;
-    _subheading.textContent = "Add Item";
+    subheading.textContent = "Add Item";
   }
 
   function populate(def) {
@@ -104,7 +105,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgL.value   = def.imageLarge || "";
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
-    _subheading.textContent = "Edit Item";
+    subheading.textContent = "Edit Item";
   }
 
   function getCustom() {
@@ -142,6 +143,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     getCustom,
     setFieldColor,
     initPickrs,
-    buttonRow // ✅ Expose DOM node if needed elsewhere
+    buttonRow
   };
 }
