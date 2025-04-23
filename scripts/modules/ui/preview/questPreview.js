@@ -1,8 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/preview/questPreview.js
-// @version: 6
-
-import { renderPopup } from "../../components/popupRenderer.js";
+// @version: 4
 
 export function createQuestPreviewPanel(container) {
   const wrap = document.createElement("div");
@@ -23,8 +21,13 @@ export function createQuestPreviewPanel(container) {
     current = def || { name: "unnamed quest" };
 
     subheading.textContent = `Preview for: ${current.name || "unnamed quest"}`;
-    content.innerHTML = "";
-    content.appendChild(renderPopup(current));
+    content.innerHTML = `
+      <div class="preview-box">
+        <p><strong>Type:</strong> ${current.type || "N/A"}</p>
+        <p><strong>Objectives:</strong> ${current.objectives || "None listed"}</p>
+        <p><strong>Description:</strong> ${current.description || "No description"}</p>
+      </div>
+    `;
   }
 
   function show() {

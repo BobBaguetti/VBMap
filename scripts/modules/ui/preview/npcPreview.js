@@ -1,8 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/preview/npcPreview.js
-// @version: 5
-
-import { renderPopup } from "../../components/popupRenderer.js";
+// @version: 3
 
 export function createNpcPreviewPanel(container) {
   const wrap = document.createElement("div");
@@ -23,8 +21,13 @@ export function createNpcPreviewPanel(container) {
     current = def || { name: "unnamed npc" };
 
     subheading.textContent = `Preview for: ${current.name || "unnamed npc"}`;
-    content.innerHTML = "";
-    content.appendChild(renderPopup(current));
+    content.innerHTML = `
+      <div class="preview-box">
+        <p><strong>Role:</strong> ${current.role || "Unknown"}</p>
+        <p><strong>Faction:</strong> ${current.faction || "Neutral"}</p>
+        <p><strong>Description:</strong> ${current.description || "No description"}</p>
+      </div>
+    `;
   }
 
   function show() {
