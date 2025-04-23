@@ -105,21 +105,20 @@ export function initNpcDefinitionsModal(db) {
 
   return {
     open: async () => {
-        open: async () => {
-            formApi.reset();
-            await refreshDefinitions();
-            open();
-          
-            requestAnimationFrame(() => {
-              positionPreviewPanel();
-              previewApi.show();
-            });
-          
-            const def = formApi.getCustom?.();
-            if (def) previewApi.setFromDefinition(def);
-          
-            formApi.initPickrs?.();
-          },
+      formApi.reset();
+      await refreshDefinitions();
+      open();
+  
+      requestAnimationFrame(() => {
+        positionPreviewPanel();
+        previewApi.show();
+      });
+  
+      const def = formApi.getCustom?.();
+      if (def) previewApi.setFromDefinition(def);
+  
+      formApi.initPickrs?.();
+    },
     refresh: refreshDefinitions
   };
 }
