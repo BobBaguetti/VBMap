@@ -89,14 +89,9 @@ export function initTestItemDefinitionsModal(db) {
     container: listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
-      requestAnimationFrame(() => {
-        formApi.initPickrs();
-        requestAnimationFrame(() => {
-          formApi.populate(def);
-          previewApi.setFromDefinition(def);
-          previewApi.show();
-        });
-      });
+      formApi.populate(def);
+      previewApi.setFromDefinition(def);
+      previewApi.show();
     },
     onDelete: async id => {
       await deleteItemDefinition(db, id);
@@ -106,7 +101,7 @@ export function initTestItemDefinitionsModal(db) {
 
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
-  content.appendChild(bodyWrap);
+  content.appendChild(bodyWrap); // ✅ Append to DOM before Pickr init
 
   let definitions = [];
 
@@ -126,6 +121,9 @@ export function initTestItemDefinitionsModal(db) {
       await refreshDefinitions();
       openModal(modal);
 
+      // ✅ Safe to init Pickrs after form is in the DOM
+      formApi.initPickrs();
+
       const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
       const previewRect = previewPanel.getBoundingClientRect();
       if (modalRect) {
@@ -135,15 +133,8 @@ export function initTestItemDefinitionsModal(db) {
       }
 
       const def = formApi.getCustom?.();
-      previewApi.setFromDefinition(def);
+      if (def) previewApi.setFromDefinition(def);
       previewApi.show();
-
-      requestAnimationFrame(() => {
-        formApi.initPickrs();
-        requestAnimationFrame(() => {
-          formApi.reset(); // ensures fresh state
-        });
-      });
     },
     refresh: refreshDefinitions
   };
