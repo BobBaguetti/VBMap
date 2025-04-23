@@ -57,8 +57,6 @@ export function initTestItemDefinitionsModal(db) {
     },
     onSubmit: async (payload) => {
       applyColorPresets(payload);
-      formApi.applyVisualColors(payload); // ✅ NEW: Syncs form fields to preset colors
-
       if (payload.id) {
         await updateItemDefinition(db, payload.id, payload);
       } else {
@@ -91,9 +89,14 @@ export function initTestItemDefinitionsModal(db) {
     container: listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
-      formApi.populate(def);
-      previewApi.setFromDefinition(def);
-      previewApi.show();
+      requestAnimationFrame(() => {
+        formApi.initPickrs();
+        requestAnimationFrame(() => {
+          formApi.populate(def);
+          previewApi.setFromDefinition(def);
+          previewApi.show();
+        });
+      });
     },
     onDelete: async id => {
       await deleteItemDefinition(db, id);
@@ -132,10 +135,15 @@ export function initTestItemDefinitionsModal(db) {
       }
 
       const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
+      previewApi.setFromDefinition(def);
       previewApi.show();
 
-      formApi.initPickrs(); // ✅ Ensure Pickrs are initialized after rendering
+      requestAnimationFrame(() => {
+        formApi.initPickrs();
+        requestAnimationFrame(() => {
+          formApi.reset(); // ensures fresh state
+        });
+      });
     },
     refresh: refreshDefinitions
   };
