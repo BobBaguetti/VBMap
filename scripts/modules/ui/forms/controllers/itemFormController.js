@@ -36,6 +36,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const btnClear = document.createElement("button");
   btnClear.type = "button";
   btnClear.className = "ui-button";
+  btnClear.textContent = "Clear"; // will change to "Cancel" in edit mode
+  btnClear.onclick = onCancel;("button");
+  btnClear.type = "button";
+  btnClear.className = "ui-button";
   btnClear.textContent = "Clear";
   btnClear.onclick = onCancel;
 
@@ -85,6 +89,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = null;
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
+    btnClear.textContent = "Clear"; // reset label
 
     initPickrs();
     // reset all pickers to default grey
@@ -110,6 +115,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
     subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
+    btnClear.textContent = "Cancel"; // change label in edit mode
+
 
     initPickrs();
     // reapply saved colors
