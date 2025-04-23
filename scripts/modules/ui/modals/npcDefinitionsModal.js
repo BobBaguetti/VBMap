@@ -1,4 +1,4 @@
-// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
+// Updated NPC modal file with button alignment and layout changes
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
 // @version: 4
 
@@ -12,6 +12,7 @@ import { createDefinitionListManager } from "../components/definitionListManager
 import { createNpcFormController } from "../forms/controllers/npcFormController.js";
 import { renderNpcEntry } from "../entries/npcEntryRenderer.js";
 
+// Modifications for top-right button placement in modal subheader
 export function initNpcDefinitionsModal(db) {
   const {
     modal,
@@ -29,6 +30,43 @@ export function initNpcDefinitionsModal(db) {
     layoutOptions: ["row", "stacked", "gallery"],
     onClose: () => previewApi?.hide()
   });
+
+  // Top-right button alignment
+  const subheadingWrap = document.createElement("div");
+  subheadingWrap.style.display = "flex";
+  subheadingWrap.style.justifyContent = "space-between";
+  subheadingWrap.style.alignItems = "center";
+
+  const subheading = document.createElement("h3");
+  subheading.textContent = "Add NPC";
+  subheadingWrap.appendChild(subheading);
+
+  const buttonRow = document.createElement("div");
+  buttonRow.className = "floating-buttons";
+
+  const btnSave = document.createElement("button");
+  btnSave.type = "submit";
+  btnSave.className = "ui-button";
+  btnSave.textContent = "Save";
+
+  const btnClear = document.createElement("button");
+  btnClear.type = "button";
+  btnClear.className = "ui-button";
+  btnClear.textContent = "Clear";
+  btnClear.onclick = () => { /* Clear action */ };
+
+  const btnDelete = document.createElement("button");
+  btnDelete.type = "button";
+  btnDelete.className = "ui-button-delete";
+  btnDelete.title = "Delete this NPC";
+  btnDelete.style.width = "28px";
+  btnDelete.style.height = "28px";
+  btnDelete.appendChild(createIcon("trash"));
+  btnDelete.onclick = () => { /* Delete action */ };
+
+  buttonRow.append(btnSave, btnClear, btnDelete);
+  subheadingWrap.appendChild(buttonRow);
+  formApi.form.prepend(subheadingWrap);
 
   const listContainer = createDefListContainer("npc-def-list");
   bodyWrap.appendChild(listContainer);
