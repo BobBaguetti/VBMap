@@ -3,7 +3,7 @@
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
-import { createDefinitionListManager } from "../../utils/definitionListManager.js";
+import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createQuestFormController } from "../forms/controllers/questFormController.js";
 import { renderQuestEntry } from "../entries/questEntryRenderer.js";
 import {

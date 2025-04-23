@@ -7,7 +7,7 @@ import {
   loadItemDefinitions, saveItemDefinition, updateItemDefinition,
   deleteItemDefinition, subscribeItemDefinitions
 } from "../../services/itemDefinitionsService.js";
-import { createDefinitionListManager } from "../../utils/definitionListManager.js";
+import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
 import { renderItemEntry } from "../entries/itemEntryRenderer.js";

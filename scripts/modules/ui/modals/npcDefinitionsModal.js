@@ -3,7 +3,7 @@
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
-import { createDefinitionListManager } from "../../utils/definitionListManager.js";
+import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createNpcFormController } from "../forms/controllers/npcFormController.js";
 import { renderNpcEntry } from "../entries/npcEntryRenderer.js";
 import {
