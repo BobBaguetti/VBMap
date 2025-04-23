@@ -1,14 +1,11 @@
-// @version: 5
+// @version: 6
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../pickrManager.js";
 import { getPickrHexColor } from "../../utils/colorUtils.js";
 import { createItemFormLayout } from "./itemFormBuilder.js";
 
-/**
- * Creates a controller around a form layout for item definitions.
- */
-export function createItemFormController({ onCancel, onSubmit, onDelete }) {
+export function createItemFormController({ onCancel, onSubmit, onDelete, onChange }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
 
@@ -33,8 +30,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
       for (const [key, el] of Object.entries(colorTargets)) {
         const btn = document.getElementById(el.id);
-        if (btn) btn.innerHTML = ""; // Clean up any lingering Pickr DOM
-        pickrs[key] = createPickr(`#${el.id}`);
+        if (btn) btn.innerHTML = "";
+
+        const pickr = createPickr(`#${el.id}`);
+        pickrs[key] = pickr;
+
+        if (onChange) {
+          pickr.on("change", () => {
+            const def = getCustom();
+            onChange(def);
+          });
+        }
       }
     });
   }
@@ -71,7 +77,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
-    applyVisualColors(def);
+
+    // Defer color application until after Pickrs are ready
+    setTimeout(() => applyVisualColors(def), 50);
   }
 
   function getCustom() {
