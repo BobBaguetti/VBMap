@@ -66,7 +66,6 @@ export function initTestItemDefinitionsModal(db) {
   });
 
   formApi.form.classList.add("ui-scroll-float");
-
   formApi.form.addEventListener("input", () => {
     const live = formApi.getCustom?.();
     if (live) {
@@ -97,11 +96,13 @@ export function initTestItemDefinitionsModal(db) {
   });
 
   bodyWrap.appendChild(document.createElement("hr"));
-  bodyWrap.appendChild(formApi.form);
+
+  const formSection = document.createElement("div");
+  formSection.appendChild(formApi.buttonRow); // ✅ Top-right aligned buttons
+  formSection.appendChild(formApi.form);
+  bodyWrap.appendChild(formSection);
+
   content.appendChild(bodyWrap);
-  if (formApi.buttonRow) {
-    content.appendChild(formApi.buttonRow);
-  } // Attach Save/Cancel/Delete buttons
 
   let definitions = [];
 
@@ -122,11 +123,10 @@ export function initTestItemDefinitionsModal(db) {
     previewEl.style.position = "absolute";
     previewEl.style.left = `${modalRect.right + 30}px`;
 
-    // Delay to ensure preview content is rendered before measuring
     requestAnimationFrame(() => {
       const previewHeight = previewEl.offsetHeight;
-      const previewTop = modalRect.top + (modalRect.height / 2) - (previewHeight / 2);
-      previewEl.style.top = `${previewTop}px`;
+      const modalCenterY = modalRect.top + (modalRect.height / 2);
+      previewEl.style.top = `${modalCenterY - (previewHeight / 2)}px`;
     });
   }
 
