@@ -1,6 +1,5 @@
-// UI Kit utility functions
-// @file: /scripts/modules/ui/uiKit.js
 // @version: 26
+// @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
 

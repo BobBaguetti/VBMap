@@ -1,5 +1,4 @@
 // @file: /scripts/modules/ui/components/definitionModalShell.js
-// @version: 3
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher } from "../uiKit.js";
@@ -57,6 +56,7 @@ export function createDefinitionModalShell({
       if (modalRect) {
         previewPanel.style.left = `${modalRect.right + 30}px`;
         previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
+        previewPanel.style.position = "absolute";
       }
     };
 

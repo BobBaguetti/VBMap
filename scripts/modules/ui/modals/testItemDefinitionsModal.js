@@ -1,4 +1,4 @@
-// Updated test modal file with button alignment and layout changes
+// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
 // @version: 13
 
@@ -17,9 +17,7 @@ import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
-import { createIcon } from "../../utils/iconUtils.js"; 
 
-// Modifications for top-right button placement in modal subheader
 export function initTestItemDefinitionsModal(db) {
   const { modal, content, header } = createModal({
     id: "test-item-definitions-modal",
@@ -34,42 +32,22 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  // Top-right button alignment
-  const subheadingWrap = document.createElement("div");
-  subheadingWrap.style.display = "flex";
-  subheadingWrap.style.justifyContent = "space-between";
-  subheadingWrap.style.alignItems = "center";
+  // Layout switcher aligned to top-right
+  const layoutSwitcher = createLayoutSwitcher({
+    available: ["row", "stacked", "gallery"],
+    defaultView: "row",
+    onChange: layout => listApi.setLayout(layout)
+  });
+  header.appendChild(layoutSwitcher);
 
-  const subheading = document.createElement("h3");
-  subheading.textContent = "Add Item";
-  subheadingWrap.appendChild(subheading);
-
-  const buttonRow = document.createElement("div");
-  buttonRow.className = "floating-buttons";
-
-  const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = "Save";
-
-  const btnClear = document.createElement("button");
-  btnClear.type = "button";
-  btnClear.className = "ui-button";
-  btnClear.textContent = "Clear";
-  btnClear.onclick = () => { /* Clear action */ };
-
-  const btnDelete = document.createElement("button");
-  btnDelete.type = "button";
-  btnDelete.className = "ui-button-delete";
-  btnDelete.title = "Delete this item";
-  btnDelete.style.width = "28px";
-  btnDelete.style.height = "28px";
-  btnDelete.appendChild(createIcon("trash"));
-  btnDelete.onclick = () => { /* Delete action */ };
-
-  buttonRow.append(btnSave, btnClear, btnDelete);
-  subheadingWrap.appendChild(buttonRow);
-  formApi.form.prepend(subheadingWrap);
+  const searchWrap = document.createElement("div");
+  searchWrap.className = "def-search-wrap";
+  const searchInput = document.createElement("input");
+  searchInput.type = "text";
+  searchInput.placeholder = "Search items…";
+  searchInput.className = "def-search-input";
+  searchWrap.appendChild(searchInput);
+  header.appendChild(searchWrap);
 
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi = createPreviewPanel("item");
@@ -131,7 +109,7 @@ export function initTestItemDefinitionsModal(db) {
       previewApi.setFromDefinition(def);
       previewApi.show();
     },
-    onDelete: async (id) => {
+    onDelete: async id => {
       await deleteItemDefinition(db, id);
       await refreshDefinitions();
     }

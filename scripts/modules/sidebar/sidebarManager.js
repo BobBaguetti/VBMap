@@ -1,4 +1,4 @@
-// @keep: Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
 // @version: 3   The current file version is 3. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/sidebar/sidebarManager.js
 

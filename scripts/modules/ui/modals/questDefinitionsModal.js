@@ -1,4 +1,4 @@
-// Updated quest modal file with button alignment and layout changes
+// @version: 4
 // @file: /scripts/modules/ui/modals/questDefinitionsModal.js
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
@@ -10,9 +10,7 @@ import {
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createQuestFormController } from "../forms/controllers/questFormController.js";
 import { renderQuestEntry } from "../entries/questEntryRenderer.js";
-import { createIcon } from "../../utils/iconUtils.js"; 
 
-// Modifications for top-right button placement in modal subheader
 export function initQuestDefinitionsModal(db) {
   const {
     modal,
@@ -30,43 +28,6 @@ export function initQuestDefinitionsModal(db) {
     layoutOptions: ["row", "stacked", "gallery"],
     onClose: () => previewApi?.hide()
   });
-
-  // Top-right button alignment
-  const subheadingWrap = document.createElement("div");
-  subheadingWrap.style.display = "flex";
-  subheadingWrap.style.justifyContent = "space-between";
-  subheadingWrap.style.alignItems = "center";
-
-  const subheading = document.createElement("h3");
-  subheading.textContent = "Add Quest";
-  subheadingWrap.appendChild(subheading);
-
-  const buttonRow = document.createElement("div");
-  buttonRow.className = "floating-buttons";
-
-  const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = "Save";
-
-  const btnClear = document.createElement("button");
-  btnClear.type = "button";
-  btnClear.className = "ui-button";
-  btnClear.textContent = "Clear";
-  btnClear.onclick = () => { /* Clear action */ };
-
-  const btnDelete = document.createElement("button");
-  btnDelete.type = "button";
-  btnDelete.className = "ui-button-delete";
-  btnDelete.title = "Delete this quest";
-  btnDelete.style.width = "28px";
-  btnDelete.style.height = "28px";
-  btnDelete.appendChild(createIcon("trash"));
-  btnDelete.onclick = () => { /* Delete action */ };
-
-  buttonRow.append(btnSave, btnClear, btnDelete);
-  subheadingWrap.appendChild(buttonRow);
-  formApi.form.prepend(subheadingWrap);
 
   const listContainer = createDefListContainer("quest-def-list");
   bodyWrap.appendChild(listContainer);

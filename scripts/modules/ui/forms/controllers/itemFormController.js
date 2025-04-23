@@ -1,4 +1,4 @@
-// Updated item form controller file with button alignment and form handling changes
+// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
 // @version: 4.3
 
