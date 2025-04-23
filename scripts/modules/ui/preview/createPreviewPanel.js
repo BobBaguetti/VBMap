@@ -10,14 +10,22 @@ export function createPreviewPanel(type, mountTo = null) {
   container.style.zIndex = 1101;
   document.body.appendChild(container);
 
+  let api;
+
   switch (type) {
     case "item":
-      return createItemPreviewPanel(container);
+      api = createItemPreviewPanel(container);
+      break;
     case "quest":
-      return createQuestPreviewPanel(container);
+      api = createQuestPreviewPanel(container);
+      break;
     case "npc":
-      return createNpcPreviewPanel(container);
+      api = createNpcPreviewPanel(container);
+      break;
     default:
       throw new Error(`Unknown preview panel type: ${type}`);
   }
+
+  api.container = container; // 🔧 Attach container so modals can position it
+  return api;
 }

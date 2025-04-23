@@ -91,9 +91,12 @@ export function initNpcDefinitionsModal(db) {
   }
 
   function positionPreviewPanel() {
+    if (!modal || !previewApi?.container) return; // ⛑ Prevent errors if layout isn't ready
+  
     const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
     const previewEl = previewApi.container;
     const previewRect = previewEl.getBoundingClientRect();
+  
     if (modalRect) {
       previewEl.style.position = "absolute";
       previewEl.style.left = `${modalRect.right + 30}px`;
