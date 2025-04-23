@@ -10,7 +10,7 @@ import {
   createQuantityField,
   createImageFieldSet,
   createExtraInfoField
-} from "./universalForm.js";
+} from "../universalForm.js";
 
 export function createItemForm() {
   const form = document.createElement("form");
