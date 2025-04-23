@@ -1,17 +1,21 @@
-// @version: 6
+// @version: 7
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
 import { createItemForm } from "../builders/itemFormBuilder.js";
 
+/**
+ * Creates a controller around a form layout for item definitions.
+ * Handles wiring, reset, populate, and getCustom logic.
+ */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemForm();
   const pickrs = {};
 
-  function initPickrs() {
+  function initPickrs(retryCount = 0) {
     requestAnimationFrame(() => {
-      console.log("🔍 Checking Pickr targets...");
+      let allReady = true;
       Object.entries({
         name:        fields.colorName,
         itemType:    fields.colorType,
@@ -24,9 +28,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
         if (btn && btn.id && el && document.body.contains(el)) {
           pickrs[key] = createPickr(`#${btn.id}`);
         } else {
-          console.warn(`⚠️ Skipping Pickr init: #${btn?.id} not attached to DOM`);
+          allReady = false;
         }
       });
+
+      if (!allReady && retryCount < 5) {
+        initPickrs(retryCount + 1);
+      }
     });
   }
 
