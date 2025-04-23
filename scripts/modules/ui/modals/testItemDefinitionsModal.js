@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 15
+// @version: 16
 
 import {
   createModal, closeModal, openModal
@@ -8,7 +8,7 @@ import {
 import { createDefListContainer } from "../../utils/listUtils.js";
 import {
   loadItemDefinitions, saveItemDefinition, updateItemDefinition,
-  deleteItemDefinition, subscribeItemDefinitions
+  deleteItemDefinition
 } from "../../services/itemDefinitionsService.js";
 
 import { createLayoutSwitcher } from "../uiKit.js";
@@ -43,19 +43,19 @@ export function initTestItemDefinitionsModal(db) {
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi = createPreviewPanel("item");
 
-  // form (includes its own Add-Item header + Save/Clear/Delete)
+  // form (includes its own header+buttons)
   const formApi = createItemFormController({
     onCancel: () => {
       formApi.reset();
-      const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
+      previewApi.hide();
     },
-    onDelete: async (id) => {
+    onDelete: async id => {
       await deleteItemDefinition(db, id);
       await refreshDefinitions();
       formApi.reset();
+      previewApi.hide();
     },
-    onSubmit: async (payload) => {
+    onSubmit: async payload => {
       applyColorPresets(payload);
       if (payload.id) {
         await updateItemDefinition(db, payload.id, payload);
@@ -64,6 +64,7 @@ export function initTestItemDefinitionsModal(db) {
       }
       await refreshDefinitions();
       formApi.reset();
+      previewApi.hide();
     }
   });
 
@@ -85,15 +86,12 @@ export function initTestItemDefinitionsModal(db) {
     minHeight: "0"
   });
 
-  // append list container (manager will insert its dark search above it)
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
-
-  // now append the form itself (with its own header+buttons)
   bodyWrap.appendChild(formApi.form);
   content.appendChild(bodyWrap);
 
-  // wire up list manager
+  // list manager wiring
   let definitions = [];
   const listApi = createDefinitionListManager({
     container: listContainer,
@@ -114,15 +112,14 @@ export function initTestItemDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
-  // **Move the dark search-bar into the modal header**
-  // (list-manager inserted it just above listContainer)
+  // move dark search-bar into header
   const listHeaderEl = listContainer.previousElementSibling;
   if (listHeaderEl?.classList.contains("list-header")) {
     listHeaderEl.remove();
     header.appendChild(listHeaderEl);
   }
 
-  // preview positioning (unchanged)
+  // preview positioning
   function positionPreviewPanel() {
     const mc = modal.querySelector(".modal-content");
     if (!mc || !previewApi?.container) return;
@@ -141,11 +138,11 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       openModal(modal);
+      formApi.initPickrs();
       requestAnimationFrame(() => {
         positionPreviewPanel();
         previewApi.show();
       });
-      formApi.initPickrs?.();
     },
     refresh: refreshDefinitions
   };
