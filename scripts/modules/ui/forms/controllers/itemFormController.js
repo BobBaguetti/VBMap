@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.3
+// @version: 4.4
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -12,19 +12,10 @@ import { createIcon } from "../../../utils/iconUtils.js";
  * Handles wiring, reset, populate, and getCustom logic.
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
-  const { form, fields } = createItemForm();
+  const { form, fields, subheadingWrap, subheading } = createItemForm();
   const pickrs = {};
 
   // Create top-right aligned buttons
-  const subheadingWrap = document.createElement("div");
-  subheadingWrap.style.display = "flex";
-  subheadingWrap.style.justifyContent = "space-between";
-  subheadingWrap.style.alignItems = "center";
-
-  const subheading = document.createElement("h3");
-  subheading.textContent = "Add Item";
-  subheadingWrap.appendChild(subheading);
-
   const buttonRow = document.createElement("div");
   buttonRow.className = "floating-buttons";
 
@@ -143,6 +134,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     getCustom,
     setFieldColor,
     initPickrs,
-    buttonRow
+    subheadingWrap // ✅ exposed instead of custom buttonRow
   };
 }
