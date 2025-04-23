@@ -17,6 +17,7 @@ import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
+import { createIcon } from "../../utils/iconUtils.js"; 
 
 // Modifications for top-right button placement in modal subheader
 export function initTestItemDefinitionsModal(db) {

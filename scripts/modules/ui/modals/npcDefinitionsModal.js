@@ -11,6 +11,7 @@ import {
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createNpcFormController } from "../forms/controllers/npcFormController.js";
 import { renderNpcEntry } from "../entries/npcEntryRenderer.js";
+import { createIcon } from "../../utils/iconUtils.js"; 
 
 // Modifications for top-right button placement in modal subheader
 export function initNpcDefinitionsModal(db) {

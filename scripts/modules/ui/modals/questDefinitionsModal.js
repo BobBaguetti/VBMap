@@ -10,6 +10,7 @@ import {
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createQuestFormController } from "../forms/controllers/questFormController.js";
 import { renderQuestEntry } from "../entries/questEntryRenderer.js";
+import { createIcon } from "../../utils/iconUtils.js"; 
 
 // Modifications for top-right button placement in modal subheader
 export function initQuestDefinitionsModal(db) {
