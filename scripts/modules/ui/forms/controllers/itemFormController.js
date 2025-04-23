@@ -1,5 +1,6 @@
-// @version: 7
-// @file: /scripts/modules/ui/forms/itemFormController.js
+// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
+// @file: /scripts/modules/ui/forms/controllers/itemFormController.js
+// @version: 4.1
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -13,9 +14,40 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemForm();
   const pickrs = {};
 
-  function initPickrs(retryCount = 0) {
+  // Create top-right aligned buttons
+  const buttonRow = document.createElement("div");
+  buttonRow.className = "floating-buttons";
+
+  const btnSave = document.createElement("button");
+  btnSave.type = "submit";
+  btnSave.className = "ui-button";
+  btnSave.textContent = "Save";
+
+  const btnCancel = document.createElement("button");
+  btnCancel.type = "button";
+  btnCancel.className = "ui-button";
+  btnCancel.textContent = "Clear";
+  btnCancel.onclick = onCancel;
+
+  const btnDelete = document.createElement("button");
+  btnDelete.type = "button";
+  btnDelete.className = "ui-button-delete entry-delete";
+  btnDelete.title = "Delete this item";
+  btnDelete.innerHTML = "🗑️";
+  btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
+
+  buttonRow.append(btnSave, btnCancel, btnDelete);
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    if (onSubmit) {
+      const payload = getCustom();
+      await onSubmit(payload);
+    }
+  });
+
+  function initPickrs() {
     requestAnimationFrame(() => {
-      let allReady = true;
       Object.entries({
         name:        fields.colorName,
         itemType:    fields.colorType,
@@ -28,13 +60,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
         if (btn && btn.id && el && document.body.contains(el)) {
           pickrs[key] = createPickr(`#${btn.id}`);
         } else {
-          allReady = false;
+          console.warn(`⚠️ Skipping Pickr init: #${btn?.id} not attached to DOM`);
         }
       });
-
-      if (!allReady && retryCount < 5) {
-        initPickrs(retryCount + 1);
-      }
     });
   }
 
@@ -95,38 +123,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const _subheading = document.createElement("h3");
   _subheading.textContent = "Add Item";
   form.prepend(_subheading);
-
-  const buttonRow = document.createElement("div");
-  buttonRow.className = "floating-buttons";
-
-  const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = "Save";
-
-  const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "ui-button";
-  btnCancel.textContent = "Cancel";
-  btnCancel.onclick = onCancel;
-
-  const btnDelete = document.createElement("button");
-  btnDelete.type = "button";
-  btnDelete.className = "ui-button-delete entry-delete";
-  btnDelete.title = "Delete this item";
-  btnDelete.innerHTML = "🗑️";
-  btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
-
-  buttonRow.append(btnSave, btnCancel, btnDelete);
   _subheading.appendChild(buttonRow);
-
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    if (onSubmit) {
-      const payload = getCustom();
-      await onSubmit(payload);
-    }
-  });
 
   let _id = null;
 
@@ -136,6 +133,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     populate,
     getCustom,
     setFieldColor,
-    initPickrs
+    initPickrs,
+    buttonRow // ✅ Expose DOM node instead of raw buttons
   };
 }
