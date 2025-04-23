@@ -8,10 +8,12 @@ import {
   createDescriptionField,
   createExtraInfoField
 } from "./universalForm.js";
+
 import {
   createImageField,
   createVideoField
 } from "../../ui/uiKit.js";
+
 import { createPickr } from "../../ui/pickrManager.js";
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
@@ -28,7 +30,10 @@ export function createMarkerForm() {
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
   const { row: rowVid, input: fldVid } = createVideoField("Video:", "fld-vid");
 
-  [ rowRarity, rowItemType, rowDesc ].forEach(r => r.classList.add("item-gap"));
+  // spacing tweaks
+  rowRarity.classList.add("item-gap");
+  rowItemType.classList.add("item-gap");
+  rowDesc.classList.add("item-gap");
 
   form.append(
     rowName,
@@ -41,30 +46,34 @@ export function createMarkerForm() {
     rowVid
   );
 
+  // Map from button element → Pickr instance
   const pickrs = new Map();
   const pickrTargets = [colorName, colorRarity, colorItemType, colorDesc];
 
+  // Initialize Pickr on any uninitialized target
   function initPickrs() {
     pickrTargets.forEach(el => {
-      if (pickrs.has(el)) {
-        // already initialized
-        return;
+      if (!pickrs.has(el)) {
+        const p = createPickr(`#${el.id}`);
+        pickrs.set(el, p);
       }
-      const p = createPickr(`#${el.id}`);
-      pickrs.set(el, p);
     });
   }
 
+  // Utility
   function safe(val, fallback = "") {
     return val ?? fallback;
   }
 
+  // Read hex from a Pickr instance
   function getPickrHexColor(el, fallback = "#E5E6E8") {
     return pickrs.get(el)?.getColor()?.toHEXA()?.toString() || fallback;
   }
 
+  // Populate form from an item definition
   function setFromDefinition(def = {}) {
     initPickrs();
+
     // Name
     fldName.value = safe(def.name);
     pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
@@ -85,17 +94,19 @@ export function createMarkerForm() {
     fldDesc.value = safe(def.description);
     pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
 
-    // Extra info
+    // Extra Info lines
     extraInfo.setLines(safe(def.extraLines, []), false);
 
-    // Media fields
+    // Media
     fldImgS.value = safe(def.imageSmall);
     fldImgL.value = safe(def.imageBig);
     fldVid.value = safe(def.video);
   }
 
+  // Populate form for non-item data (e.g. teleport, spawn point)
   function setFromNonItem(data = {}) {
     initPickrs();
+
     fldName.value = safe(data.name);
     pickrs.get(colorName)?.setColor(data.nameColor || "#E5E6E8");
 
@@ -109,38 +120,23 @@ export function createMarkerForm() {
     fldVid.value = safe(data.video);
   }
 
+  // Harvest form values into a JS object
   function getCustom() {
     return {
-      name: fldName.value.trim(),
-      nameColor: getPickrHexColor(colorName),
-      rarity: fldRarity.value,
-      rarityColor: getPickrHexColor(colorRarity),
-      itemType: fldItemType.value,
-      itemTypeColor: getPickrHexColor(colorItemType),
-      description: fldDesc.value.trim(),
-      descriptionColor: getPickrHexColor(colorDesc),
-      extraLines: extraInfo.getLines(),
-      imageSmall: fldImgS.value.trim(),
-      imageBig: fldImgL.value.trim(),
-      video: fldVid.value.trim()
+      name:            fldName.value.trim(),
+      nameColor:       getPickrHexColor(colorName),
+      rarity:          fldRarity.value,
+      rarityColor:     getPickrHexColor(colorRarity),
+      itemType:        fldItemType.value,
+      itemTypeColor:   getPickrHexColor(colorItemType),
+      description:     fldDesc.value.trim(),
+      descriptionColor:getPickrHexColor(colorDesc),
+      extraLines:      extraInfo.getLines(),
+      imageSmall:      fldImgS.value.trim(),
+      imageBig:        fldImgL.value.trim(),
+      video:           fldVid.value.trim()
     };
   }
-
-  function getNonItem() {
-    return {
-      name: fldName.value.trim(),
-      nameColor: getPickrHexColor(colorName),
-      description: fldDesc.value.trim(),
-      descriptionColor: getPickrHexColor(colorDesc),
-      extraLines: extraInfo.getLines(),
-      imageSmall: fldImgS.value.trim(),
-      imageBig: fldImgL.value.trim(),
-      video: fldVid.value.trim()
-    };
-  }
-
-  // initialize once
-  initPickrs();
 
   return {
     form,
@@ -158,7 +154,6 @@ export function createMarkerForm() {
     initPickrs,
     setFromDefinition,
     setFromNonItem,
-    getCustom,
-    getNonItem
+    getCustom
   };
 }
