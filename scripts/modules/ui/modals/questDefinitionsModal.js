@@ -1,4 +1,4 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/modals/questDefinitionsModal.js
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
@@ -108,10 +108,15 @@ export function initQuestDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       open();
-      positionPreviewPanel();
+    
+      requestAnimationFrame(() => {
+        positionPreviewPanel();
+        previewApi.show();
+      });
+    
       const def = formApi.getCustom?.();
       if (def) previewApi.setFromDefinition(def);
-      previewApi.show();
+    
       formApi.initPickrs?.();
     },
     refresh: refreshDefinitions

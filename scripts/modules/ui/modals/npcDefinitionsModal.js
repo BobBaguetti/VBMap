@@ -1,4 +1,4 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
@@ -105,15 +105,21 @@ export function initNpcDefinitionsModal(db) {
 
   return {
     open: async () => {
-      formApi.reset();
-      await refreshDefinitions();
-      open();
-      positionPreviewPanel();
-      const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
-      previewApi.show();
-      formApi.initPickrs?.();
-    },
+        open: async () => {
+            formApi.reset();
+            await refreshDefinitions();
+            open();
+          
+            requestAnimationFrame(() => {
+              positionPreviewPanel();
+              previewApi.show();
+            });
+          
+            const def = formApi.getCustom?.();
+            if (def) previewApi.setFromDefinition(def);
+          
+            formApi.initPickrs?.();
+          },
     refresh: refreshDefinitions
   };
 }
