@@ -13,7 +13,7 @@ import {
   makeColorTextField,
   makeColorTextarea,
   makeColorDropdown
-} from "../../utils/formFieldFactory.js";
+} from "./formFieldFactory.js";
 
 /**
  * Builds a basic name field with color.
