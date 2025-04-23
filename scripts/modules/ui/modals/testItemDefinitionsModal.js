@@ -64,7 +64,9 @@ export function initTestItemDefinitionsModal(db) {
       }
       await refreshDefinitions();
       formApi.reset();
-      previewApi.hide();
+      // reset preview to blank
+      previewApi.setFromDefinition({});
+      previewApi.show();
     }
   });
 
