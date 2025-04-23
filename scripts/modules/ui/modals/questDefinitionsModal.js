@@ -17,9 +17,10 @@ import {
 import {
   createTextField,
   createTextareaFieldWithColor,
-  createExtraInfoBlock,
   createFormButtonRow
 } from "../uiKit.js";
+
+import { createExtraInfoFieldBlock } from "../forms/extraInfoField.js";
 
 export function initQuestDefinitionsModal(db) {
   // 1) Modal
