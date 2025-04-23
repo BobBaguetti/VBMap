@@ -1,51 +1,37 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 4.1
+// @version: 4
 
-import { createModal, closeModal, openModal } from "../uiKit.js";
+import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
 import {
   loadNpcDefinitions, saveNpcDefinition, updateNpcDefinition,
-  deleteNpcDefinition, subscribeNpcDefinitions
+  deleteNpcDefinition
 } from "../../services/npcDefinitionsService.js";
-
-import { createLayoutSwitcher } from "../uiKit.js";
-import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createNpcFormController } from "../forms/controllers/npcFormController.js";
+import { renderNpcEntry } from "../entries/npcEntryRenderer.js";
 
 export function initNpcDefinitionsModal(db) {
-  const { modal, content, header } = createModal({
+  const {
+    modal,
+    header,
+    bodyWrap,
+    layoutSwitcher,
+    previewApi,
+    open: openModal,
+    close
+  } = createDefinitionModalShell({
     id: "npc-definitions-modal",
     title: "Manage NPCs",
-    size: "large",
-    backdrop: true,
-    draggable: false,
-    withDivider: true,
-    onClose: () => {
-      closeModal(modal);
-      previewApi.hide();
-    }
+    withPreview: true,
+    previewType: "npc",
+    layoutOptions: ["row", "stacked", "gallery"],
+    onClose: () => previewApi?.hide()
   });
-
-  const layoutSwitcher = createLayoutSwitcher({
-    available: ["row", "stacked", "gallery"],
-    defaultView: "row",
-    onChange: layout => listApi.setLayout(layout)
-  });
-  header.appendChild(layoutSwitcher);
-
-  const searchWrap = document.createElement("div");
-  searchWrap.className = "def-search-wrap";
-  const searchInput = document.createElement("input");
-  searchInput.type = "text";
-  searchInput.placeholder = "Search NPCs…";
-  searchInput.className = "def-search-input";
-  searchWrap.appendChild(searchInput);
-  header.appendChild(searchWrap);
 
   const listContainer = createDefListContainer("npc-def-list");
-  const previewApi = createPreviewPanel("npc");
+  bodyWrap.appendChild(listContainer);
 
   const formApi = createNpcFormController({
     onCancel: () => {
@@ -70,6 +56,7 @@ export function initNpcDefinitionsModal(db) {
   });
 
   formApi.form.classList.add("ui-scroll-float");
+
   formApi.form.addEventListener("input", () => {
     const live = formApi.getCustom?.();
     if (live) {
@@ -78,38 +65,26 @@ export function initNpcDefinitionsModal(db) {
     }
   });
 
-  const bodyWrap = document.createElement("div");
-  bodyWrap.style.display = "flex";
-  bodyWrap.style.flexDirection = "column";
-  bodyWrap.style.flex = "1 1 auto";
-  bodyWrap.style.minHeight = 0;
-
-  bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
+  bodyWrap.appendChild(formApi.form);
 
-  // ✅ Subheading and buttons above the form
-  const formWrap = document.createElement("div");
-  formWrap.appendChild(formApi.subheadingWrap);
-  formWrap.appendChild(formApi.form);
-  bodyWrap.appendChild(formWrap);
-
-  content.appendChild(bodyWrap);
+  let definitions = [];
 
   const listApi = createDefinitionListManager({
     container: listContainer,
     getDefinitions: () => definitions,
-    onEntryClick: def => {
-      formApi.populate(def);
-      previewApi.setFromDefinition(def);
-      previewApi.show();
-    },
-    onDelete: async id => {
-      await deleteNpcDefinition(db, id);
-      await refreshDefinitions();
-    }
+    renderEntry: (def, layout) => renderNpcEntry(def, layout, {
+      onClick: (d) => {
+        formApi.populate(d);
+        previewApi.setFromDefinition(d);
+        previewApi.show();
+      },
+      onDelete: async (id) => {
+        await deleteNpcDefinition(db, id);
+        await refreshDefinitions();
+      }
+    })
   });
-
-  let definitions = [];
 
   async function refreshDefinitions() {
     definitions = await loadNpcDefinitions(db);
@@ -122,26 +97,22 @@ export function initNpcDefinitionsModal(db) {
     const modalContent = modal.querySelector(".modal-content");
     if (!modalContent) return;
 
-    const previewEl = previewApi.container;
     const modalRect = modalContent.getBoundingClientRect();
+    const previewEl = previewApi.container;
+    const previewRect = previewEl.getBoundingClientRect();
 
     previewEl.style.position = "absolute";
     previewEl.style.left = `${modalRect.right + 30}px`;
-
-    requestAnimationFrame(() => {
-      const previewHeight = previewEl.offsetHeight;
-      const modalCenterY = modalRect.top + (modalRect.height / 2);
-      previewEl.style.top = `${modalCenterY - (previewHeight / 2)}px`;
-    });
+    previewEl.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
   }
 
-  previewApi.hide();
+  previewApi.hide(); // Prevent showing preview on page load
 
   return {
     open: async () => {
       formApi.reset();
       await refreshDefinitions();
-      openModal(modal);
+      openModal();
 
       requestAnimationFrame(() => {
         positionPreviewPanel();

@@ -1,6 +1,5 @@
-// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
+// @version: 3
 // @file: /scripts/modules/ui/forms/universalForm.js
-// @version: 4
 
 import {
   createTextField,

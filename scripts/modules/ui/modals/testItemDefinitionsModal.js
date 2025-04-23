@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 14
+// @version: 13
 
 import {
   createModal, closeModal, openModal
@@ -32,6 +32,7 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
+  // Layout switcher aligned to top-right
   const layoutSwitcher = createLayoutSwitcher({
     available: ["row", "stacked", "gallery"],
     defaultView: "row",
@@ -92,9 +93,9 @@ export function initTestItemDefinitionsModal(db) {
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
 
-  // ✅ Insert subheading and buttons via shared controller field
+  // Append form with button row at top
   const formWrap = document.createElement("div");
-  formWrap.appendChild(formApi.subheadingWrap);
+  formWrap.appendChild(formApi.buttonRow);
   formWrap.appendChild(formApi.form);
   bodyWrap.appendChild(formWrap);
 
