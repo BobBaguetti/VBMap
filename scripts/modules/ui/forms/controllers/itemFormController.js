@@ -1,17 +1,21 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.5
+// @version: 4.6
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
 import { createItemForm } from "../builders/itemFormBuilder.js";
 import { createIcon } from "../../../utils/iconUtils.js";
 
+/**
+ * Creates a controller around a form layout for item definitions.
+ * Handles wiring, reset, populate, and getCustom logic.
+ */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemForm();
   const pickrs = {};
 
-  // Header + buttons
+  // ─── Header + Buttons ───────────────────────────────────────────────
   const subheadingWrap = document.createElement("div");
   subheadingWrap.style.display = "flex";
   subheadingWrap.style.justifyContent = "space-between";
@@ -49,7 +53,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   subheadingWrap.appendChild(buttonRow);
   form.prepend(subheadingWrap);
 
-  // Initialize Pickr instances once
+  // ─── Pickr Initialization ──────────────────────────────────────────
   function initPickrs() {
     Object.entries({
       name:        fields.colorName,
@@ -59,13 +63,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       value:       fields.colorValue,
       quantity:    fields.colorQty
     }).forEach(([key, btn]) => {
-      if (!pickrs[key]) {
+      if (!pickrs[key] && document.body.contains(btn)) {
         pickrs[key] = createPickr(`#${btn.id}`);
       }
     });
   }
 
-  // Reset to Add mode (clear fields + pickers)
+  // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
     fields.fldName.value   = "";
     fields.fldType.value   = "";
@@ -81,16 +85,11 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
 
     initPickrs();
-    // reset all pickers to defaults
-    pickrs.name.setColor("#E5E6E8");
-    pickrs.itemType.setColor("#E5E6E8");
-    pickrs.rarity.setColor("#E5E6E8");
-    pickrs.description.setColor("#E5E6E8");
-    pickrs.value.setColor("#E5E6E8");
-    pickrs.quantity.setColor("#E5E6E8");
+    // reset pickers to default grey
+    Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
 
-  // Populate for Edit mode (fill fields + reapply saved colors)
+  // ─── Populate for Edit mode ────────────────────────────────────────
   function populate(def) {
     fields.fldName.value      = def.name || "";
     fields.fldType.value      = def.itemType || "";
@@ -106,46 +105,42 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "";
 
     initPickrs();
-    // reapply
-    pickrs.name.setColor(def.nameColor  || "#E5E6E8");
+    // reapply saved colors
+    pickrs.name.setColor(def.nameColor      || "#E5E6E8");
     pickrs.itemType.setColor(def.itemTypeColor || "#E5E6E8");
-    pickrs.rarity.setColor(def.rarityColor || "#E5E6E8");
-    pickrs.description.setColor(def.descColor || "#E5E6E8");
-    pickrs.value.setColor(def.valueColor || "#E5E6E8");
+    pickrs.rarity.setColor(def.rarityColor    || "#E5E6E8");
+    pickrs.description.setColor(def.descColor  || "#E5E6E8");
+    pickrs.value.setColor(def.valueColor     || "#E5E6E8");
     pickrs.quantity.setColor(def.quantityColor || "#E5E6E8");
   }
 
-  // Gather data
+  // ─── Gather form data ──────────────────────────────────────────────
   function getCustom() {
     return {
-      id:         _id,
-      name:       fields.fldName.value.trim(),
-      nameColor:  getPickrHexColor(pickrs.name),
-      itemType:   fields.fldType.value,
-      itemTypeColor: getPickrHexColor(pickrs.itemType),
-      rarity:     fields.fldRarity.value,
-      rarityColor: getPickrHexColor(pickrs.rarity),
-      description: fields.fldDesc.value.trim(),
-      descColor:  getPickrHexColor(pickrs.description),
-      value:      fields.fldValue.value.trim(),
-      valueColor: getPickrHexColor(pickrs.value),
-      quantity:   fields.fldQty.value.trim(),
-      quantityColor: getPickrHexColor(pickrs.quantity),
-      imageSmall: fields.fldImgS.value.trim(),
-      imageLarge: fields.fldImgL.value.trim(),
-      extraInfo:  fields.extraInfo.getLines()
+      id:             _id,
+      name:           fields.fldName.value.trim(),
+      nameColor:      getPickrHexColor(pickrs.name),
+      itemType:       fields.fldType.value,
+      itemTypeColor:  getPickrHexColor(pickrs.itemType),
+      rarity:         fields.fldRarity.value,
+      rarityColor:    getPickrHexColor(pickrs.rarity),
+      description:    fields.fldDesc.value.trim(),
+      descColor:      getPickrHexColor(pickrs.description),
+      value:          fields.fldValue.value.trim(),
+      valueColor:     getPickrHexColor(pickrs.value),
+      quantity:       fields.fldQty.value.trim(),
+      quantityColor:  getPickrHexColor(pickrs.quantity),
+      imageSmall:     fields.fldImgS.value.trim(),
+      imageLarge:     fields.fldImgL.value.trim(),
+      extraInfo:      fields.extraInfo.getLines()
     };
   }
 
-  // Submit handler
   form.addEventListener("submit", async e => {
     e.preventDefault();
     if (onSubmit) await onSubmit(getCustom());
   });
 
   let _id = null;
-  initPickrs();
-  reset();
-
   return { form, reset, populate, getCustom, initPickrs, buttonRow };
 }
