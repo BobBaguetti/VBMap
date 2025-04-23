@@ -1,5 +1,6 @@
-// @version: 26
+// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/uiKit.js
+// @version: 27
 
 import { createPickr } from "./pickrManager.js";
 
@@ -22,7 +23,7 @@ function attachModalLifecycle(modal) {
 
 // ─── Modal Helpers ───────────────────────────────────────────────────────────
 
-export function createModal({
+function createModal({
   id, title, onClose,
   size = "small",
   backdrop = true,
@@ -114,12 +115,12 @@ function makeModalDraggable(modalEl, handle) {
   };
 }
 
-export function closeModal(modal) {
+function closeModal(modal) {
   modal.style.display = "none";
   modal.dispatchEvent(new Event("close"));
 }
 
-export function openModal(modal) {
+function openModal(modal) {
   modal.style.display = "block";
   requestAnimationFrame(() => {
     modal.style.backgroundColor = modal.classList.contains("modal-large")
@@ -132,7 +133,7 @@ export function openModal(modal) {
   }
 }
 
-export function openModalAt(modal, evt) {
+function openModalAt(modal, evt) {
   openModal(modal);
   const content = modal.querySelector(".modal-content");
   const rect = content.getBoundingClientRect();
@@ -142,7 +143,7 @@ export function openModalAt(modal, evt) {
 
 // ─── Field Builders ───────────────────────────────────────────────────────────
 
-export function createFieldRow(labelText, inputEl) {
+function createFieldRow(labelText, inputEl) {
   const row = document.createElement("div");
   row.classList.add("field-row");
   const label = document.createElement("label");
@@ -151,14 +152,14 @@ export function createFieldRow(labelText, inputEl) {
   return row;
 }
 
-export function createColorButton(id) {
+function createColorButton(id) {
   const btn = document.createElement("div");
   btn.className = "color-btn";
   btn.id = id;
   return btn;
 }
 
-export function createColorFieldRow(labelText, inputEl, colorId) {
+function createColorFieldRow(labelText, inputEl, colorId) {
   const row = document.createElement("div");
   row.classList.add("field-row");
   const label = document.createElement("label");
@@ -168,7 +169,7 @@ export function createColorFieldRow(labelText, inputEl, colorId) {
   return { row, colorBtn };
 }
 
-export function createDropdownField(label, id, options = [], { showColor = true } = {}) {
+function createDropdownField(label, id, options = [], { showColor = true } = {}) {
   const select = document.createElement("select");
   select.id = id;
   options.forEach(opt => {
@@ -182,7 +183,7 @@ export function createDropdownField(label, id, options = [], { showColor = true 
   return { row, select, colorBtn };
 }
 
-export function createTextField(label, id) {
+function createTextField(label, id) {
   const input = document.createElement("input");
   input.id = id;
   input.className = "ui-input";
@@ -190,28 +191,28 @@ export function createTextField(label, id) {
   return { row, input, colorBtn };
 }
 
-export function createTextareaFieldWithColor(label, id) {
+function createTextareaFieldWithColor(label, id) {
   const textarea = document.createElement("textarea");
   textarea.id = id;
   const { row, colorBtn } = createColorFieldRow(label, textarea, `${id}-color`);
-  return { row, textarea, colorBtn };
+  return { row, colorBtn, textarea };
 }
 
-export function createImageField(label, id) {
+function createImageField(label, id) {
   const input = document.createElement("input");
   input.id = id;
   input.type = "text";
   return { row: createFieldRow(label, input), input };
 }
 
-export function createVideoField(label, id) {
+function createVideoField(label, id) {
   const input = document.createElement("input");
   input.id = id;
   input.type = "text";
   return { row: createFieldRow(label, input), input };
 }
 
-export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
+function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
   const row = document.createElement("div");
   row.className = "field-row";
   row.style.justifyContent = "center";
@@ -229,9 +230,7 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
   return row;
 }
 
-export function createExtraInfoBlock(options = {}) {
-  const { defaultColor = "#E5E6E8", readonly = false } = options;
-
+function createExtraInfoBlock() {
   const wrap = document.createElement("div");
   wrap.className = "extra-info-block";
 
@@ -256,7 +255,6 @@ export function createExtraInfoBlock(options = {}) {
       const input = document.createElement("input");
       input.className = "ui-input";
       input.value = line.text;
-      input.readOnly = readonly;
       input.oninput = () => (line.text = input.value);
 
       const color = document.createElement("div");
@@ -274,15 +272,14 @@ export function createExtraInfoBlock(options = {}) {
         render();
       };
 
-      row.append(input, color);
-      if (!readonly) row.appendChild(btnRemove);
+      row.append(input, color, btnRemove);
       lineWrap.appendChild(row);
 
       const pickr = createPickr(`#${color.id}`);
       line._pickr = pickr;
 
       setTimeout(() => {
-        pickr.setColor(line.color || defaultColor);
+        pickr.setColor(line.color || "#E5E6E8");
       }, 0);
 
       pickr.on("change", (colorObj) => {
@@ -292,24 +289,23 @@ export function createExtraInfoBlock(options = {}) {
   }
 
   btnAdd.onclick = () => {
-    lines.push({ text: "", color: defaultColor });
+    lines.push({ text: "", color: "#E5E6E8" });
     render();
   };
 
   function getLines() {
     return lines.map(l => ({
       text: l.text,
-      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
+      color: l._pickr?.getColor()?.toHEXA()?.toString() || "#E5E6E8"
     }));
   }
 
-  function setLines(newLines, isReadonly = false) {
+  function setLines(newLines) {
     lines = newLines.map(l => ({
       text: l.text || "",
-      color: l.color || defaultColor
+      color: l.color || "#E5E6E8"
     }));
     render();
-    if (isReadonly) btnAdd.style.display = "none";
   }
 
   return { block: wrap, getLines, setLines };
@@ -317,7 +313,7 @@ export function createExtraInfoBlock(options = {}) {
 
 // ─── Layout Switcher Control ─────────────────────────────────────────────────
 
-export function createLayoutSwitcher({ available = ["row", "stacked", "gallery"], onChange, defaultView = "row" } = {}) {
+function createLayoutSwitcher({ available = ["row", "stacked", "gallery"], onChange, defaultView = "row" } = {}) {
   const wrap = document.createElement("div");
   wrap.className = "layout-switcher";
   wrap.style.display = "flex";
@@ -349,3 +345,13 @@ export function createLayoutSwitcher({ available = ["row", "stacked", "gallery"]
 
   return wrap;
 }
+
+// ✅ FINAL EXPORTS — ADDING createImageField
+export {
+  createModal, closeModal, openModal, openModalAt,
+  createFieldRow, createColorButton, createColorFieldRow,
+  createDropdownField, createTextField, createTextareaFieldWithColor,
+  createImageField, createVideoField,
+  createFormButtonRow, createExtraInfoBlock,
+  createLayoutSwitcher
+};
