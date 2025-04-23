@@ -12,7 +12,7 @@ import { createIcon } from "../../utils/iconUtils.js";
  * @param {(id: string) => void} onDelete
  * @returns {HTMLElement}
  */
-export function createItemEntry(def, layout = "row", onClick, onDelete) {
+export function renderItemEntry(def, layout = "row", onClick, onDelete) {
   const entry = document.createElement("div");
   entry.className = `item-def-entry layout-${layout}`;
 
