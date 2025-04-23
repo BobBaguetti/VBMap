@@ -1,5 +1,6 @@
-// @version: 11
+// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
+// @version: 12
 
 import {
   createModal, closeModal, openModal
@@ -40,6 +41,7 @@ export function initTestItemDefinitionsModal(db) {
 
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi = createPreviewPanel("item");
+
   const formApi = createItemFormController({
     onCancel: () => {
       formApi.reset();
@@ -64,6 +66,7 @@ export function initTestItemDefinitionsModal(db) {
   });
 
   formApi.form.classList.add("ui-scroll-float");
+
   formApi.form.addEventListener("input", () => {
     const live = formApi.getCustom?.();
     if (live) {
@@ -106,24 +109,23 @@ export function initTestItemDefinitionsModal(db) {
 
   function positionPreviewPanel() {
     if (!modal || !previewApi?.container) return;
-  
+
     const modalContent = modal.querySelector(".modal-content");
     if (!modalContent) return;
-  
+
     const previewEl = previewApi.container;
     const modalRect = modalContent.getBoundingClientRect();
-  
+
     previewEl.style.position = "absolute";
     previewEl.style.left = `${modalRect.right + 30}px`;
-  
-    // Wait for the preview content to render before measuring its height
+
+    // Delay to ensure preview content is rendered before measuring
     requestAnimationFrame(() => {
       const previewHeight = previewEl.offsetHeight;
-      const modalCenterY = modalRect.top + (modalRect.height / 2);
-      previewEl.style.top = `${modalCenterY - (previewHeight / 2)}px`;
+      const previewTop = modalRect.top + (modalRect.height / 2) - (previewHeight / 2);
+      previewEl.style.top = `${previewTop}px`;
     });
   }
-  
 
   previewApi.hide();
 
