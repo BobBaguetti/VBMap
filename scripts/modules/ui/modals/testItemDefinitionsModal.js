@@ -99,6 +99,7 @@ export function initTestItemDefinitionsModal(db) {
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
   content.appendChild(bodyWrap);
+  content.appendChild(formApi.buttons); // Attach Save/Cancel/Delete buttons
 
   let definitions = [];
 
