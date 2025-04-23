@@ -17,17 +17,29 @@ export function createQuestPreviewPanel(container) {
 
   let current = null;
 
-  function setFromDefinition(def) {
-    current = def || { name: "unnamed quest" };
+  function renderQuestPreview(def) {
+    const box = document.createElement("div");
+    box.className = "popup-wrapper";
 
-    subheading.textContent = `Preview for: ${current.name || "unnamed quest"}`;
-    content.innerHTML = `
-      <div class="preview-box">
-        <p><strong>Type:</strong> ${current.type || "N/A"}</p>
-        <p><strong>Objectives:</strong> ${current.objectives || "None listed"}</p>
-        <p><strong>Description:</strong> ${current.description || "No description"}</p>
-      </div>
-    `;
+    const title = document.createElement("div");
+    title.className = "popup-name";
+    title.textContent = def.name || "Unnamed Quest";
+    box.appendChild(title);
+
+    const desc = document.createElement("div");
+    desc.className = "popup-description";
+    desc.textContent = def.description || "No description.";
+    box.appendChild(desc);
+
+    return box;
+  }
+
+  function setFromDefinition(def) {
+    current = def || { name: "Unnamed Quest" };
+
+    subheading.textContent = `Preview for: ${current.name || "Unnamed Quest"}`;
+    content.innerHTML = "";
+    content.appendChild(renderQuestPreview(current));
   }
 
   function show() {

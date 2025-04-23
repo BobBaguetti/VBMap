@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/preview/npcPreview.js
-// @version: 3
+// @version: 4
 
 export function createNpcPreviewPanel(container) {
   const wrap = document.createElement("div");
@@ -17,17 +17,34 @@ export function createNpcPreviewPanel(container) {
 
   let current = null;
 
-  function setFromDefinition(def) {
-    current = def || { name: "unnamed npc" };
+  function renderNpcPreview(def) {
+    const box = document.createElement("div");
+    box.className = "popup-wrapper";
 
-    subheading.textContent = `Preview for: ${current.name || "unnamed npc"}`;
-    content.innerHTML = `
-      <div class="preview-box">
-        <p><strong>Role:</strong> ${current.role || "Unknown"}</p>
-        <p><strong>Faction:</strong> ${current.faction || "Neutral"}</p>
-        <p><strong>Description:</strong> ${current.description || "No description"}</p>
-      </div>
-    `;
+    const name = document.createElement("div");
+    name.className = "popup-name";
+    name.textContent = def.name || "Unnamed NPC";
+    box.appendChild(name);
+
+    const role = document.createElement("div");
+    role.className = "popup-type";
+    role.textContent = def.role || "No role specified.";
+    box.appendChild(role);
+
+    const desc = document.createElement("div");
+    desc.className = "popup-description";
+    desc.textContent = def.description || "No description.";
+    box.appendChild(desc);
+
+    return box;
+  }
+
+  function setFromDefinition(def) {
+    current = def || { name: "Unnamed NPC" };
+
+    subheading.textContent = `Preview for: ${current.name || "Unnamed NPC"}`;
+    content.innerHTML = "";
+    content.appendChild(renderNpcPreview(current));
   }
 
   function show() {
