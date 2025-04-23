@@ -3,14 +3,13 @@
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
+import {
+  loadNpcDefinitions, saveNpcDefinition, updateNpcDefinition,
+  deleteNpcDefinition, subscribeNpcDefinitions
+} from "../../services/npcDefinitionsService.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createNpcFormController } from "../forms/controllers/npcFormController.js";
 import { renderNpcEntry } from "../entries/npcEntryRenderer.js";
-import {
-  loadNpcDefinitions,
-  deleteNpcDefinition,
-  subscribeNpcDefinitions
-} from "../../services/npcDefinitionsService.js";
 
 export function initNpcDefinitionsModal(db) {
   const {
@@ -26,7 +25,7 @@ export function initNpcDefinitionsModal(db) {
     title: "Manage NPCs",
     withPreview: true,
     previewType: "npc",
-    layoutOptions: ["row", "stacked"],
+    layoutOptions: ["row", "stacked", "gallery"],
     onClose: () => previewApi?.hide()
   });
 
@@ -34,15 +33,34 @@ export function initNpcDefinitionsModal(db) {
   bodyWrap.appendChild(listContainer);
 
   const formApi = createNpcFormController({
-    onCancel: () => formApi.reset(),
-    onDelete: async (id) => {
-      await deleteNpcDefinition(db, id);
+    onCancel: () => {
+      formApi.reset();
+      const def = formApi.getCustom?.();
+      if (def) previewApi.setFromDefinition(def);
+    },
+    onDelete: async (idToDelete) => {
+      await deleteNpcDefinition(db, idToDelete);
       await refreshDefinitions();
       formApi.reset();
     },
     onSubmit: async (payload) => {
+      if (payload.id) {
+        await updateNpcDefinition(db, payload.id, payload);
+      } else {
+        await saveNpcDefinition(db, null, payload);
+      }
       await refreshDefinitions();
       formApi.reset();
+    }
+  });
+
+  formApi.form.classList.add("ui-scroll-float");
+
+  formApi.form.addEventListener("input", () => {
+    const live = formApi.getCustom?.();
+    if (live) {
+      previewApi.setFromDefinition(live);
+      previewApi.show();
     }
   });
 
@@ -72,16 +90,28 @@ export function initNpcDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
-  subscribeNpcDefinitions(db, defs => {
-    definitions = defs;
-    listApi.refresh(defs);
-  });
+  function positionPreviewPanel() {
+    const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
+    const previewEl = previewApi.container;
+    const previewRect = previewEl.getBoundingClientRect();
+    if (modalRect) {
+      previewEl.style.position = "absolute";
+      previewEl.style.left = `${modalRect.right + 30}px`;
+      previewEl.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
+    }
+  }
+
+  previewApi.hide(); // Prevent showing preview on page load
 
   return {
     open: async () => {
       formApi.reset();
       await refreshDefinitions();
       open();
+      positionPreviewPanel();
+      const def = formApi.getCustom?.();
+      if (def) previewApi.setFromDefinition(def);
+      previewApi.show();
       formApi.initPickrs?.();
     },
     refresh: refreshDefinitions

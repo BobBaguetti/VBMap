@@ -3,14 +3,13 @@
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
+import {
+  loadQuestDefinitions, saveQuestDefinition, updateQuestDefinition,
+  deleteQuestDefinition, subscribeQuestDefinitions
+} from "../../services/questDefinitionsService.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createQuestFormController } from "../forms/controllers/questFormController.js";
 import { renderQuestEntry } from "../entries/questEntryRenderer.js";
-import {
-  loadQuestDefinitions,
-  deleteQuestDefinition,
-  subscribeQuestDefinitions
-} from "../../services/questDefinitionsService.js";
 
 export function initQuestDefinitionsModal(db) {
   const {
@@ -26,7 +25,7 @@ export function initQuestDefinitionsModal(db) {
     title: "Manage Quests",
     withPreview: true,
     previewType: "quest",
-    layoutOptions: ["row", "stacked"],
+    layoutOptions: ["row", "stacked", "gallery"],
     onClose: () => previewApi?.hide()
   });
 
@@ -34,15 +33,34 @@ export function initQuestDefinitionsModal(db) {
   bodyWrap.appendChild(listContainer);
 
   const formApi = createQuestFormController({
-    onCancel: () => formApi.reset(),
-    onDelete: async (id) => {
-      await deleteQuestDefinition(db, id);
+    onCancel: () => {
+      formApi.reset();
+      const def = formApi.getCustom?.();
+      if (def) previewApi.setFromDefinition(def);
+    },
+    onDelete: async (idToDelete) => {
+      await deleteQuestDefinition(db, idToDelete);
       await refreshDefinitions();
       formApi.reset();
     },
     onSubmit: async (payload) => {
+      if (payload.id) {
+        await updateQuestDefinition(db, payload.id, payload);
+      } else {
+        await saveQuestDefinition(db, null, payload);
+      }
       await refreshDefinitions();
       formApi.reset();
+    }
+  });
+
+  formApi.form.classList.add("ui-scroll-float");
+
+  formApi.form.addEventListener("input", () => {
+    const live = formApi.getCustom?.();
+    if (live) {
+      previewApi.setFromDefinition(live);
+      previewApi.show();
     }
   });
 
@@ -72,16 +90,28 @@ export function initQuestDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
-  subscribeQuestDefinitions(db, defs => {
-    definitions = defs;
-    listApi.refresh(defs);
-  });
+  function positionPreviewPanel() {
+    const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
+    const previewEl = previewApi.container;
+    const previewRect = previewEl.getBoundingClientRect();
+    if (modalRect) {
+      previewEl.style.position = "absolute";
+      previewEl.style.left = `${modalRect.right + 30}px`;
+      previewEl.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
+    }
+  }
+
+  previewApi.hide(); // Prevent showing preview on page load
 
   return {
     open: async () => {
       formApi.reset();
       await refreshDefinitions();
       open();
+      positionPreviewPanel();
+      const def = formApi.getCustom?.();
+      if (def) previewApi.setFromDefinition(def);
+      previewApi.show();
       formApi.initPickrs?.();
     },
     refresh: refreshDefinitions
