@@ -1,16 +1,15 @@
-// @version: 6
+// @version: 7
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../pickrManager.js";
 import { getPickrHexColor } from "../../utils/colorUtils.js";
 import { createItemFormLayout } from "./itemFormBuilder.js";
 
-/**
- * Creates a controller around a form layout for item definitions.
- */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
+  let _id = null;
+  let _pendingDef = null;
 
   function destroyPickrs() {
     for (const key in pickrs) {
@@ -21,20 +20,30 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   function initPickrs() {
     destroyPickrs();
-    requestAnimationFrame(() => {
-      const colorTargets = {
-        name: fields.colorName,
-        itemType: fields.colorType,
-        rarity: fields.colorRarity,
-        description: fields.colorDesc,
-        value: fields.colorValue,
-        quantity: fields.colorQty
-      };
+    const colorTargets = {
+      name: fields.colorName,
+      itemType: fields.colorType,
+      rarity: fields.colorRarity,
+      description: fields.colorDesc,
+      value: fields.colorValue,
+      quantity: fields.colorQty
+    };
 
+    // Replace button DOMs before creating Pickrs
+    for (const el of Object.values(colorTargets)) {
+      const btn = document.getElementById(el.id);
+      if (btn) btn.innerHTML = "";
+    }
+
+    requestAnimationFrame(() => {
       for (const [key, el] of Object.entries(colorTargets)) {
-        const btn = document.getElementById(el.id);
-        if (btn) btn.innerHTML = ""; // Clean up any lingering Pickr DOM
         pickrs[key] = createPickr(`#${el.id}`);
+      }
+
+      // After init, apply any pending def colors
+      if (_pendingDef) {
+        applyVisualColors(_pendingDef);
+        _pendingDef = null;
       }
     });
   }
@@ -72,28 +81,31 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
+
+    // Delay color application until Pickrs are initialized
+    _pendingDef = def;
     applyVisualColors(def);
   }
 
   function getCustom() {
     const payload = {
-      id:         _id,
-      name:       fields.fldName.value.trim(),
-      nameColor:  getPickrHexColor(pickrs.name),
-      itemType:   fields.fldType.value,
+      id: _id,
+      name: fields.fldName.value.trim(),
+      nameColor: getPickrHexColor(pickrs.name),
+      itemType: fields.fldType.value,
       itemTypeColor: getPickrHexColor(pickrs.itemType),
-      rarity:     fields.fldRarity.value,
+      rarity: fields.fldRarity.value,
       rarityColor: getPickrHexColor(pickrs.rarity),
       description: fields.fldDesc.value.trim(),
-      descColor:  getPickrHexColor(pickrs.description),
-      value:      fields.fldValue.value.trim(),
+      descColor: getPickrHexColor(pickrs.description),
+      value: fields.fldValue.value.trim(),
       valueColor: getPickrHexColor(pickrs.value),
-      quantity:   fields.fldQty.value.trim(),
+      quantity: fields.fldQty.value.trim(),
       quantityColor: getPickrHexColor(pickrs.quantity),
       imageSmall: fields.fldImgS.value.trim(),
       imageLarge: fields.fldImgL.value.trim(),
-      video:      fields.fldVid.value.trim(),
-      extraInfo:  fields.extraInfo.getLines()
+      video: fields.fldVid.value.trim(),
+      extraInfo: fields.extraInfo.getLines()
     };
     console.log("[getCustom] Returning:", payload);
     return payload;
@@ -104,11 +116,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     if (target && color) {
       console.log(`[setFieldColor] Setting ${field} to`, color, target);
       target.setColor(color);
-      target.applyColor(true); // 🔧 Force UI update
+      target.applyColor(true);
     }
   }
 
   function applyVisualColors(def) {
+    if (!pickrs.name) return; // ⏳ Wait for pickrs to be initialized
     console.log("[applyVisualColors] Applying:", def);
     if (def.nameColor)     setFieldColor("name", def.nameColor);
     if (def.itemTypeColor) setFieldColor("itemType", def.itemTypeColor);
@@ -154,8 +167,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       await onSubmit(payload);
     }
   });
-
-  let _id = null;
 
   return {
     form,
