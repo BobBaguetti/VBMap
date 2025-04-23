@@ -1,10 +1,10 @@
-
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 2   The current file version is 2. Increase by 1 every time you update anything.
+// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/sidebar/sidebarManager.js
 
 import { loadItemDefinitions } from "../services/itemDefinitionsService.js";
 import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js";
+import { initNpcDefinitionsModal } from "../ui/modals/npcDefinitionsModal.js";
 
 export async function setupSidebar(map, layers, allMarkers, db) {
   const searchBar     = document.getElementById("search-bar");
@@ -103,7 +103,5 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   testItemBtn.onclick = () => testItemModal.open();
   sidebar.appendChild(testItemBtn);
 
-  return { filterMarkers, loadItemFilters };
-}
-
-// @version: 2
+  // Add NPC modal button
+  const npcModal = initNpcDefinitionsModal(db);
