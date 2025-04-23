@@ -1,5 +1,5 @@
-// @version: 4
 // @file: /scripts/modules/ui/modals/questDefinitionsModal.js
+// @version: 5
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
@@ -13,116 +13,50 @@ import { renderQuestEntry } from "../entries/questEntryRenderer.js";
 
 export function initQuestDefinitionsModal(db) {
   const {
-    modal,
-    header,
-    bodyWrap,
-    layoutSwitcher,
-    previewApi,
-    open: openModal,
-    close
+    modal, header, bodyWrap, previewApi, open: openModal
   } = createDefinitionModalShell({
     id: "quest-definitions-modal",
     title: "Manage Quests",
     withPreview: true,
     previewType: "quest",
-    layoutOptions: ["row", "stacked", "gallery"],
-    onClose: () => previewApi?.hide()
+    layoutOptions: ["row","stacked","gallery"],
+    onClose: () => previewApi.hide()
   });
 
   const listContainer = createDefListContainer("quest-def-list");
   bodyWrap.appendChild(listContainer);
 
   const formApi = createQuestFormController({
-    onCancel: () => {
-      formApi.reset();
-      const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
-    },
-    onDelete: async (idToDelete) => {
-      await deleteQuestDefinition(db, idToDelete);
-      await refreshDefinitions();
-      formApi.reset();
-    },
-    onSubmit: async (payload) => {
-      if (payload.id) {
-        await updateQuestDefinition(db, payload.id, payload);
-      } else {
-        await saveQuestDefinition(db, null, payload);
-      }
-      await refreshDefinitions();
-      formApi.reset();
+    onCancel: () => { formApi.reset(); },
+    onDelete: async id => { await deleteQuestDefinition(db,id); formApi.reset(); refresh(); },
+    onSubmit: async payload => {
+      if (payload.id) await updateQuestDefinition(db,payload.id,payload);
+      else await saveQuestDefinition(db,null,payload);
+      formApi.reset(); refresh();
     }
   });
-
   formApi.form.classList.add("ui-scroll-float");
-
-  formApi.form.addEventListener("input", () => {
-    const live = formApi.getCustom?.();
-    if (live) {
-      previewApi.setFromDefinition(live);
-      previewApi.show();
-    }
-  });
-
   bodyWrap.appendChild(document.createElement("hr"));
+  // only append the form (includes its own header+buttons)
   bodyWrap.appendChild(formApi.form);
 
   let definitions = [];
-
   const listApi = createDefinitionListManager({
     container: listContainer,
     getDefinitions: () => definitions,
-    renderEntry: (def, layout) => renderQuestEntry(def, layout, {
-      onClick: (d) => {
-        formApi.populate(d);
-        previewApi.setFromDefinition(d);
-        previewApi.show();
-      },
-      onDelete: async (id) => {
-        await deleteQuestDefinition(db, id);
-        await refreshDefinitions();
-      }
+    renderEntry: (d,layout) => renderQuestEntry(d,layout,{
+      onClick:def=>{ formApi.populate(def); previewApi.setFromDefinition(def); previewApi.show(); },
+      onDelete:id=>{ deleteQuestDefinition(db,id).then(refresh); }
     })
   });
 
-  async function refreshDefinitions() {
+  async function refresh() {
     definitions = await loadQuestDefinitions(db);
     listApi.refresh(definitions);
   }
 
-  function positionPreviewPanel() {
-    if (!modal || !previewApi?.container) return;
-
-    const modalContent = modal.querySelector(".modal-content");
-    if (!modalContent) return;
-
-    const modalRect = modalContent.getBoundingClientRect();
-    const previewEl = previewApi.container;
-    const previewRect = previewEl.getBoundingClientRect();
-
-    previewEl.style.position = "absolute";
-    previewEl.style.left = `${modalRect.right + 30}px`;
-    previewEl.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
-  }
-
-  previewApi.hide(); // Prevent showing preview on page load
-
   return {
-    open: async () => {
-      formApi.reset();
-      await refreshDefinitions();
-      openModal();
-
-      requestAnimationFrame(() => {
-        positionPreviewPanel();
-        previewApi.show();
-      });
-
-      const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
-
-      formApi.initPickrs?.();
-    },
-    refresh: refreshDefinitions
+    open: async () => { formApi.reset(); await refresh(); openModal(); },
+    refresh
   };
 }

@@ -1,6 +1,6 @@
-// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
+// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 13
+// @version: 14
 
 import {
   createModal, closeModal, openModal
@@ -40,6 +40,7 @@ export function initTestItemDefinitionsModal(db) {
   });
   header.appendChild(layoutSwitcher);
 
+  // Search input
   const searchWrap = document.createElement("div");
   searchWrap.className = "def-search-wrap";
   const searchInput = document.createElement("input");
@@ -49,9 +50,11 @@ export function initTestItemDefinitionsModal(db) {
   searchWrap.appendChild(searchInput);
   header.appendChild(searchWrap);
 
+  // List container and preview
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi = createPreviewPanel("item");
 
+  // Form controller (creates subheading + buttons inside form)
   const formApi = createItemFormController({
     onCancel: () => {
       formApi.reset();
@@ -84,6 +87,7 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
+  // Build modal body
   const bodyWrap = document.createElement("div");
   bodyWrap.style.display = "flex";
   bodyWrap.style.flexDirection = "column";
@@ -93,14 +97,12 @@ export function initTestItemDefinitionsModal(db) {
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
 
-  // Append form with button row at top
-  const formWrap = document.createElement("div");
-  formWrap.appendChild(formApi.buttonRow);
-  formWrap.appendChild(formApi.form);
-  bodyWrap.appendChild(formWrap);
+  // **Only append the form** (it already includes its own header + buttons)
+  bodyWrap.appendChild(formApi.form);
 
   content.appendChild(bodyWrap);
 
+  // List manager
   const listApi = createDefinitionListManager({
     container: listContainer,
     getDefinitions: () => definitions,
@@ -116,7 +118,6 @@ export function initTestItemDefinitionsModal(db) {
   });
 
   let definitions = [];
-
   async function refreshDefinitions() {
     definitions = await loadItemDefinitions(db);
     listApi.refresh(definitions);
@@ -124,16 +125,12 @@ export function initTestItemDefinitionsModal(db) {
 
   function positionPreviewPanel() {
     if (!modal || !previewApi?.container) return;
-
     const modalContent = modal.querySelector(".modal-content");
     if (!modalContent) return;
-
     const previewEl = previewApi.container;
     const modalRect = modalContent.getBoundingClientRect();
-
     previewEl.style.position = "absolute";
     previewEl.style.left = `${modalRect.right + 30}px`;
-
     requestAnimationFrame(() => {
       const previewHeight = previewEl.offsetHeight;
       const modalCenterY = modalRect.top + (modalRect.height / 2);
@@ -148,15 +145,12 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       openModal(modal);
-
       requestAnimationFrame(() => {
         positionPreviewPanel();
         previewApi.show();
       });
-
       const def = formApi.getCustom?.();
       if (def) previewApi.setFromDefinition(def);
-
       formApi.initPickrs?.();
     },
     refresh: refreshDefinitions

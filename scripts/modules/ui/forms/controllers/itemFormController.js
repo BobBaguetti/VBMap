@@ -1,6 +1,6 @@
-// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
+// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.3
+// @version: 4.4
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -47,6 +47,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.height = "28px";
   btnDelete.appendChild(createIcon("trash"));
   btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
+  btnDelete.style.display = "none";               // hide in Add mode
 
   buttonRow.append(btnSave, btnClear, btnDelete);
   subheadingWrap.appendChild(buttonRow);
@@ -92,6 +93,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([]);
     _id = null;
     subheading.textContent = "Add Item";
+    btnDelete.style.display = "none";             // keep hidden
   }
 
   function populate(def) {
@@ -106,6 +108,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     subheading.textContent = "Edit Item";
+    btnDelete.style.display = "";                 // show in Edit mode
   }
 
   function getCustom() {
