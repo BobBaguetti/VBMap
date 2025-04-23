@@ -2,13 +2,14 @@
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher } from "../uiKit.js";
-import { createItemPreviewPanel } from "../preview/itemPreview.js"; // TEMP – will replace with dynamic import
+import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 
 export function createDefinitionModalShell({
   id,
   title,
   size = "large",
   withPreview = false,
+  previewType = null,
   layoutOptions = ["row", "stacked", "gallery"],
   onClose = () => {}
 }) {
@@ -31,7 +32,6 @@ export function createDefinitionModalShell({
     defaultView: layoutOptions[0],
     onChange: () => {}
   });
-
   header.appendChild(layoutSwitcher);
 
   const bodyWrap = document.createElement("div");
@@ -39,20 +39,17 @@ export function createDefinitionModalShell({
   bodyWrap.style.flexDirection = "column";
   bodyWrap.style.flex = "1 1 auto";
   bodyWrap.style.minHeight = 0;
-
   content.appendChild(bodyWrap);
 
   let previewApi = null;
 
-  if (withPreview) {
+  if (withPreview && previewType) {
     const previewPanel = document.createElement("div");
     previewPanel.style.zIndex = 1101;
     document.body.appendChild(previewPanel);
 
-    // 🔧 Replace this with a dynamic import later based on type
-    previewApi = createItemPreviewPanel(previewPanel);
+    previewApi = createPreviewPanel(previewType, previewPanel);
 
-    // Position the preview panel relative to modal
     const positionPreview = () => {
       const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
       const previewRect = previewPanel.getBoundingClientRect();
@@ -68,7 +65,6 @@ export function createDefinitionModalShell({
       previewApi?.show();
     };
 
-    // Recalculate on open
     setTimeout(showPreview, 0);
   }
 

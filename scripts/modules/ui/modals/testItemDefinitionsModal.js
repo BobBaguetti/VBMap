@@ -3,15 +3,10 @@
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
-
 import {
-  loadItemDefinitions,
-  saveItemDefinition,
-  updateItemDefinition,
-  deleteItemDefinition,
-  subscribeItemDefinitions
+  loadItemDefinitions, saveItemDefinition, updateItemDefinition,
+  deleteItemDefinition, subscribeItemDefinitions
 } from "../../services/itemDefinitionsService.js";
-
 import { createDefinitionListManager } from "../../utils/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
 import { createItemFormController } from "../forms/itemFormController.js";
@@ -29,6 +24,7 @@ export function initTestItemDefinitionsModal(db) {
     id: "test-item-definitions-modal",
     title: "Manage Items (Test)",
     withPreview: true,
+    previewType: "item",
     layoutOptions: ["row", "stacked", "gallery"],
     onClose: () => previewApi?.hide()
   });
@@ -102,12 +98,10 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       open();
-
       const def = formApi.getCustom?.();
       if (def) previewApi.setFromDefinition(def);
       previewApi.show();
-
-      formApi.initPickrs?.(); // init color pickrs if defined
+      formApi.initPickrs?.();
     },
     refresh: refreshDefinitions
   };
