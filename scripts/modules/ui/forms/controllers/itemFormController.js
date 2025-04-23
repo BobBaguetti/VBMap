@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.1
+// @version: 4.2
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -37,6 +37,19 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
 
   buttonRow.append(btnSave, btnCancel, btnDelete);
+
+  // Insert heading + buttons into top of form
+  const topRow = document.createElement("div");
+  topRow.style.display = "flex";
+  topRow.style.justifyContent = "space-between";
+  topRow.style.alignItems = "center";
+
+  const _subheading = document.createElement("h3");
+  _subheading.textContent = "Add Item";
+
+  topRow.appendChild(_subheading);
+  topRow.appendChild(buttonRow);
+  form.prepend(topRow);
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
@@ -120,11 +133,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     if (target && color) target.setColor(color);
   }
 
-  const _subheading = document.createElement("h3");
-  _subheading.textContent = "Add Item";
-  form.prepend(_subheading);
-  _subheading.appendChild(buttonRow);
-
   let _id = null;
 
   return {
@@ -134,6 +142,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     getCustom,
     setFieldColor,
     initPickrs,
-    buttonRow // ✅ Expose DOM node instead of raw buttons
+    buttonRow // ✅ Expose DOM node if needed elsewhere
   };
 }
