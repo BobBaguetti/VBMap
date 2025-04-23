@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.6
+// @version: 4.7
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -79,13 +79,15 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = "";
     fields.fldImgS.value   = "";
     fields.fldImgL.value   = "";
-    fields.extraInfo.setLines([]);
+    // Clear extra-info rows
+    fields.extraInfo.setLines([], false);
+
     _id = null;
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
 
     initPickrs();
-    // reset pickers to default grey
+    // reset all pickers to default grey
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
 
@@ -99,7 +101,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value       = def.quantity || "";
     fields.fldImgS.value      = def.imageSmall || "";
     fields.fldImgL.value      = def.imageLarge || "";
-    fields.extraInfo.setLines(def.extraInfo || []);
+    // **Populate extra-info, editable**
+    fields.extraInfo.setLines(def.extraInfo || [], false);
+
     _id = def.id || null;
     subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
