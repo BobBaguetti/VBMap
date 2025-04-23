@@ -101,8 +101,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value       = def.quantity || "";
     fields.fldImgS.value      = def.imageSmall || "";
     fields.fldImgL.value      = def.imageLarge || "";
-    // Populate extra-info, editable (supports either field name)
+
+    // Populate extra-info rows (clear old, then set new)
     const extras = def.extraInfo ?? def.extraLines ?? [];
+    fields.extraInfo.setLines([], false);
     fields.extraInfo.setLines(extras, false);
 
     _id = def.id || null;
