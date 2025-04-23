@@ -1,6 +1,5 @@
-// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 14
+// @version: 15
 
 import {
   createModal, closeModal, openModal
@@ -32,7 +31,7 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  // Layout switcher aligned to top-right
+  // layout switcher in header
   const layoutSwitcher = createLayoutSwitcher({
     available: ["row", "stacked", "gallery"],
     defaultView: "row",
@@ -40,29 +39,19 @@ export function initTestItemDefinitionsModal(db) {
   });
   header.appendChild(layoutSwitcher);
 
-  // Search input
-  const searchWrap = document.createElement("div");
-  searchWrap.className = "def-search-wrap";
-  const searchInput = document.createElement("input");
-  searchInput.type = "text";
-  searchInput.placeholder = "Search items…";
-  searchInput.className = "def-search-input";
-  searchWrap.appendChild(searchInput);
-  header.appendChild(searchWrap);
-
-  // List container and preview
+  // list + preview
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi = createPreviewPanel("item");
 
-  // Form controller (creates subheading + buttons inside form)
+  // form (includes its own Add-Item header + Save/Clear/Delete)
   const formApi = createItemFormController({
     onCancel: () => {
       formApi.reset();
       const def = formApi.getCustom?.();
       if (def) previewApi.setFromDefinition(def);
     },
-    onDelete: async (idToDelete) => {
-      await deleteItemDefinition(db, idToDelete);
+    onDelete: async (id) => {
+      await deleteItemDefinition(db, id);
       await refreshDefinitions();
       formApi.reset();
     },
@@ -87,22 +76,25 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  // Build modal body
+  // build the body
   const bodyWrap = document.createElement("div");
-  bodyWrap.style.display = "flex";
-  bodyWrap.style.flexDirection = "column";
-  bodyWrap.style.flex = "1 1 auto";
-  bodyWrap.style.minHeight = 0;
+  Object.assign(bodyWrap.style, {
+    display: "flex",
+    flexDirection: "column",
+    flex: "1 1 auto",
+    minHeight: "0"
+  });
 
+  // append list container (manager will insert its dark search above it)
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
 
-  // **Only append the form** (it already includes its own header + buttons)
+  // now append the form itself (with its own header+buttons)
   bodyWrap.appendChild(formApi.form);
-
   content.appendChild(bodyWrap);
 
-  // List manager
+  // wire up list manager
+  let definitions = [];
   const listApi = createDefinitionListManager({
     container: listContainer,
     getDefinitions: () => definitions,
@@ -117,27 +109,31 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  let definitions = [];
   async function refreshDefinitions() {
     definitions = await loadItemDefinitions(db);
     listApi.refresh(definitions);
   }
 
-  function positionPreviewPanel() {
-    if (!modal || !previewApi?.container) return;
-    const modalContent = modal.querySelector(".modal-content");
-    if (!modalContent) return;
-    const previewEl = previewApi.container;
-    const modalRect = modalContent.getBoundingClientRect();
-    previewEl.style.position = "absolute";
-    previewEl.style.left = `${modalRect.right + 30}px`;
-    requestAnimationFrame(() => {
-      const previewHeight = previewEl.offsetHeight;
-      const modalCenterY = modalRect.top + (modalRect.height / 2);
-      previewEl.style.top = `${modalCenterY - (previewHeight / 2)}px`;
-    });
+  // **Move the dark search-bar into the modal header**
+  // (list-manager inserted it just above listContainer)
+  const listHeaderEl = listContainer.previousElementSibling;
+  if (listHeaderEl?.classList.contains("list-header")) {
+    listHeaderEl.remove();
+    header.appendChild(listHeaderEl);
   }
 
+  // preview positioning (unchanged)
+  function positionPreviewPanel() {
+    const mc = modal.querySelector(".modal-content");
+    if (!mc || !previewApi?.container) return;
+    const pr = previewApi.container;
+    const r = mc.getBoundingClientRect();
+    pr.style.position = "absolute";
+    pr.style.left = `${r.right + 30}px`;
+    requestAnimationFrame(() => {
+      pr.style.top = `${r.top + (r.height/2) - (pr.offsetHeight/2)}px`;
+    });
+  }
   previewApi.hide();
 
   return {
@@ -149,8 +145,6 @@ export function initTestItemDefinitionsModal(db) {
         positionPreviewPanel();
         previewApi.show();
       });
-      const def = formApi.getCustom?.();
-      if (def) previewApi.setFromDefinition(def);
       formApi.initPickrs?.();
     },
     refresh: refreshDefinitions
