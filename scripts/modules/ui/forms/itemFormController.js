@@ -12,36 +12,9 @@ import { createItemFormLayout } from "./itemFormBuilder.js";
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
-
-  const _subheading = document.createElement("h3");
-  _subheading.textContent = "Add Item";
-  form.prepend(_subheading);
-
-  const buttonRow = document.createElement("div");
-  buttonRow.className = "floating-buttons";
-
-  const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = "Save";
-
-  const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "ui-button";
-  btnCancel.textContent = "Cancel";
-  btnCancel.onclick = onCancel;
-
-  const btnDelete = document.createElement("button");
-  btnDelete.type = "button";
-  btnDelete.className = "ui-button-delete entry-delete";
-  btnDelete.title = "Delete this item";
-  btnDelete.innerHTML = "🗑️";
-  btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
-
-  buttonRow.append(btnSave, btnCancel, btnDelete);
-  _subheading.appendChild(buttonRow);
-
   let _id = null;
+  let _pendingDef = null;
+  let pickrsInitialized = false;
 
   function initPickrs() {
     requestAnimationFrame(() => {
@@ -51,6 +24,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       pickrs.description = createPickr(`#${fields.colorDesc.id}`);
       pickrs.value    = createPickr(`#${fields.colorValue.id}`);
       pickrs.quantity = createPickr(`#${fields.colorQty.id}`);
+
+      pickrsInitialized = true;
+      if (_pendingDef) {
+        applyVisualColors(_pendingDef);
+        _pendingDef = null;
+      }
     });
   }
 
@@ -67,12 +46,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([]);
     _id = null;
     _subheading.textContent = "Add Item";
-
-    // Reset pickr colors
-    Object.values(pickrs).forEach(p => p?.setColor?.("#E5E6E8"));
-
-    // Hide Delete button
-    btnDelete.style.display = "none";
   }
 
   function populate(def) {
@@ -88,10 +61,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
-    applyVisualColors(def);
 
-    // Show Delete button
-    btnDelete.style.display = _id ? "inline-block" : "none";
+    if (pickrsInitialized) {
+      applyVisualColors(def);
+    } else {
+      _pendingDef = def;
+    }
   }
 
   function getCustom() {
@@ -122,6 +97,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   }
 
   function applyVisualColors(def) {
+    if (!pickrsInitialized) {
+      _pendingDef = def;
+      return;
+    }
     if (def.nameColor)     setFieldColor("name", def.nameColor);
     if (def.itemTypeColor) setFieldColor("itemType", def.itemTypeColor);
     if (def.rarityColor)   setFieldColor("rarity", def.rarityColor);
@@ -129,6 +108,34 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     if (def.valueColor)    setFieldColor("value", def.valueColor);
     if (def.quantityColor) setFieldColor("quantity", def.quantityColor);
   }
+
+  const _subheading = document.createElement("h3");
+  _subheading.textContent = "Add Item";
+  form.prepend(_subheading);
+
+  const buttonRow = document.createElement("div");
+  buttonRow.className = "floating-buttons";
+
+  const btnSave = document.createElement("button");
+  btnSave.type = "submit";
+  btnSave.className = "ui-button";
+  btnSave.textContent = "Save";
+
+  const btnCancel = document.createElement("button");
+  btnCancel.type = "button";
+  btnCancel.className = "ui-button";
+  btnCancel.textContent = "Cancel";
+  btnCancel.onclick = onCancel;
+
+  const btnDelete = document.createElement("button");
+  btnDelete.type = "button";
+  btnDelete.className = "ui-button-delete entry-delete";
+  btnDelete.title = "Delete this item";
+  btnDelete.innerHTML = "🗑️";
+  btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
+
+  buttonRow.append(btnSave, btnCancel, btnDelete);
+  _subheading.appendChild(buttonRow);
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
