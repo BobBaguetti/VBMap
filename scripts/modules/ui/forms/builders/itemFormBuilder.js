@@ -1,4 +1,4 @@
-// @version: 3
+// @version: 4
 // @file: /scripts/modules/forms/builders/itemFormBuilder.js
 
 import {
@@ -28,7 +28,7 @@ export function createItemForm() {
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField();
   colorDesc.id = "fld-desc-item-color";
 
-  const { row: rowExtras, extraInfo } = createExtraInfoField();
+  const { row: rowExtras, extraInfo } = createExtraInfoField({ withDividers: true });
 
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField();
   colorValue.id = "fld-value-color";
@@ -41,18 +41,12 @@ export function createItemForm() {
     rowImgL, fldImgL
   } = createImageFieldSet();
 
-  // Insert <hr> elements
-  const hrAboveExtras = document.createElement("hr");
-  const hrBelowExtras = document.createElement("hr");
-
   form.append(
     rowName,
     rowType,
     rowRarity,
     rowDesc,
-    hrAboveExtras,
     rowExtras,
-    hrBelowExtras,
     rowValue,
     rowQty,
     rowImgS,
@@ -71,7 +65,8 @@ export function createItemForm() {
       fldImgS, fldImgL,
       extraInfo,
       rowExtras,
-      rowValue
+      rowValue,
+      rowQty
     }
   };
 }

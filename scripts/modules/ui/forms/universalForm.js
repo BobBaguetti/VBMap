@@ -111,4 +111,74 @@ export function createRarityField(id = "fld-rarity") {
       { value: "legendary", label: "Legendary" }
     ]);
   }
+  import {
+    createTextField,
+    createDropdownField,
+    createTextareaFieldWithColor,
+    createImageField,
+    createExtraInfoBlock
+  } from "../../ui/uiKit.js";
+  
+  import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
+  
+  export function createNameField(id = "fld-name") {
+    return createTextField("Name:", id);
+  }
+  
+  export function createItemTypeField(id = "fld-item-type") {
+    return createDropdownField("Item Type:", id, [
+      { value: "Crafting Material", label: "Crafting Material" },
+      { value: "Special", label: "Special" },
+      { value: "Consumable", label: "Consumable" },
+      { value: "Quest", label: "Quest" }
+    ]);
+  }
+  
+  export function createRarityField(id = "fld-rarity") {
+    return createDropdownField("Rarity:", id, [
+      { value: "", label: "Select Rarity" },
+      { value: "common", label: "Common" },
+      { value: "uncommon", label: "Uncommon" },
+      { value: "rare", label: "Rare" },
+      { value: "epic", label: "Epic" },
+      { value: "legendary", label: "Legendary" }
+    ]);
+  }
+  
+  export function createDescriptionField(id = "fld-desc-item") {
+    return createTextareaFieldWithColor("Description:", id);
+  }
+  
+  export function createExtraInfoField({ withDividers = false } = {}) {
+    const extra = createExtraInfoBlock();
+    const row = createTopAlignedFieldRow("Extra Info:", extra.block);
+  
+    if (!withDividers) {
+      return { row, extraInfo: extra };
+    }
+  
+    const container = document.createElement("div");
+    const hrAbove = document.createElement("hr");
+    const hrBelow = document.createElement("hr");
+    container.append(hrAbove, row, hrBelow);
+  
+    return { row: container, extraInfo: extra };
+  }
+  
+  export function createValueField(id = "fld-value") {
+    return createTextField("Value:", id);
+  }
+  
+  export function createQuantityField(id = "fld-quantity") {
+    return createTextField("Quantity:", id);
+  }
+  
+  export function createImageFieldSet() {
+    const imgS = createImageField("Image S:", "fld-img-s");
+    const imgL = createImageField("Image L:", "fld-img-l");
+    return {
+      rowImgS: imgS.row, fldImgS: imgS.input,
+      rowImgL: imgL.row, fldImgL: imgL.input
+    };
+  }
   

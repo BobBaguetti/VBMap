@@ -1,4 +1,4 @@
-// @version: 5
+// @version: 6
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../../pickrManager.js";
@@ -15,22 +15,22 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   function initPickrs() {
     requestAnimationFrame(() => {
-      const tryInit = (key, id) => {
-        const el = document.querySelector(id);
-        if (el) {
-          pickrs[key] = createPickr(id);
+      console.log("🔍 Checking Pickr targets...");
+      Object.entries({
+        name:        fields.colorName,
+        itemType:    fields.colorType,
+        rarity:      fields.colorRarity,
+        description: fields.colorDesc,
+        value:       fields.colorValue,
+        quantity:    fields.colorQty
+      }).forEach(([key, btn]) => {
+        const el = btn?.id ? document.getElementById(btn.id) : null;
+        if (btn && btn.id && el && document.body.contains(el)) {
+          pickrs[key] = createPickr(`#${btn.id}`);
         } else {
-          console.warn(`⚠️ Skipping Pickr init: ${id} not found`);
+          console.warn(`⚠️ Skipping Pickr init: #${btn?.id} not attached to DOM`);
         }
-      };
-  
-      console.log("🧪 Checking Pickr targets...");
-      tryInit("name", "#fld-name-color");
-      tryInit("itemType", "#fld-item-type-color");
-      tryInit("rarity", "#fld-rarity-color");
-      tryInit("description", "#fld-desc-item-color");
-      tryInit("value", "#fld-value-color");
-      tryInit("quantity", "#fld-quantity-color");
+      });
     });
   }
 
