@@ -1,14 +1,16 @@
-// @version: 6
+// @version: 7
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../pickrManager.js";
 import { getPickrHexColor } from "../../utils/colorUtils.js";
 import { createItemFormLayout } from "./itemFormBuilder.js";
 
+/**
+ * Creates a controller around a form layout for item definitions.
+ */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
-  let _id = null;
   let _pendingDef = null;
 
   function destroyPickrs() {
@@ -31,10 +33,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
         quantity: fields.colorQty
       };
 
-      for (const [key, el] of Object.entries(targets)) {
-        const btn = document.getElementById(el.id);
-        if (btn) btn.innerHTML = "";
-        pickrs[key] = createPickr(`#${el.id}`);
+      for (const [key, oldEl] of Object.entries(targets)) {
+        const oldBtn = document.getElementById(oldEl.id);
+        if (!oldBtn) continue;
+
+        // Replace the button element to wipe all Pickr DOM
+        const newBtn = document.createElement("div");
+        newBtn.className = "color-btn";
+        newBtn.id = oldEl.id;
+        oldBtn.replaceWith(newBtn);
+
+        pickrs[key] = createPickr(`#${newBtn.id}`);
       }
 
       if (_pendingDef) {
@@ -77,7 +86,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
 
-    _pendingDef = def; // defer color application until Pickrs are ready
+    _pendingDef = def;
+    applyVisualColors(def);
   }
 
   function getCustom() {
@@ -108,6 +118,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   }
 
   function applyVisualColors(def) {
+    if (!Object.keys(pickrs).length) return;
+
     if (def.nameColor)     setFieldColor("name", def.nameColor);
     if (def.itemTypeColor) setFieldColor("itemType", def.itemTypeColor);
     if (def.rarityColor)   setFieldColor("rarity", def.rarityColor);
@@ -151,6 +163,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       await onSubmit(payload);
     }
   });
+
+  let _id = null;
 
   return {
     form,
