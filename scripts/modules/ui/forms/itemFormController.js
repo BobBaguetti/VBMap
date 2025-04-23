@@ -1,4 +1,4 @@
-// @version: 1
+// @version: 2
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../pickrManager.js";
@@ -11,6 +11,16 @@ import { createItemFormLayout } from "./itemFormBuilder.js";
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
+
+  // Setup Pickr instances for all static fields at init time
+  const pickrs = {
+    name: createPickr(`#${fields.colorName.id}`),
+    itemType: createPickr(`#${fields.colorType.id}`),
+    rarity: createPickr(`#${fields.colorRarity.id}`),
+    description: createPickr(`#${fields.colorDesc.id}`),
+    value: createPickr(`#${fields.colorValue.id}`),
+    quantity: createPickr(`#${fields.colorQty.id}`)
+  };
 
   function reset() {
     fields.fldName.value = "";
@@ -25,6 +35,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([]);
     _id = null;
     _subheading.textContent = "Add Item";
+
+    // Reset pickr colors
+    Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
 
   function populate(def) {
@@ -40,23 +53,30 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
+
+    pickrs.name.setColor(def.nameColor || "#E5E6E8");
+    pickrs.itemType.setColor(def.itemTypeColor || "#E5E6E8");
+    pickrs.rarity.setColor(def.rarityColor || "#E5E6E8");
+    pickrs.description.setColor(def.descColor || "#E5E6E8");
+    pickrs.value.setColor(def.valueColor || "#E5E6E8");
+    pickrs.quantity.setColor(def.quantityColor || "#E5E6E8");
   }
 
   function getCustom() {
     return {
       id:         _id,
       name:       fields.fldName.value.trim(),
-      nameColor:  getPickrHexColor(fields.colorName),
+      nameColor:  getPickrHexColor(pickrs.name),
       itemType:   fields.fldType.value,
-      itemTypeColor: getPickrHexColor(fields.colorType),
+      itemTypeColor: getPickrHexColor(pickrs.itemType),
       rarity:     fields.fldRarity.value,
-      rarityColor: getPickrHexColor(fields.colorRarity),
+      rarityColor: getPickrHexColor(pickrs.rarity),
       description: fields.fldDesc.value.trim(),
-      descColor:  getPickrHexColor(fields.colorDesc),
+      descColor:  getPickrHexColor(pickrs.description),
       value:      fields.fldValue.value.trim(),
-      valueColor: getPickrHexColor(fields.colorValue),
+      valueColor: getPickrHexColor(pickrs.value),
       quantity:   fields.fldQty.value.trim(),
-      quantityColor: getPickrHexColor(fields.colorQty),
+      quantityColor: getPickrHexColor(pickrs.quantity),
       imageSmall: fields.fldImgS.value.trim(),
       imageLarge: fields.fldImgL.value.trim(),
       video:      fields.fldVid.value.trim(),
@@ -65,17 +85,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   }
 
   function setFieldColor(field, color) {
-    const map = {
-      name: fields.colorName,
-      itemType: fields.colorType,
-      rarity: fields.colorRarity,
-      description: fields.colorDesc,
-      value: fields.colorValue,
-      quantity: fields.colorQty
-    };
-    if (map[field]) {
-      const pickr = createPickr(`#${map[field].id}`);
-      pickr.setColor(color);
+    if (pickrs[field]) {
+      pickrs[field].setColor(color);
     }
   }
 
