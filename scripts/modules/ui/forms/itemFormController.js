@@ -1,7 +1,14 @@
+
+// @version: 6
+// @file: /scripts/modules/ui/forms/itemFormController.js
+
 import { createPickr } from "../pickrManager.js";
 import { getPickrHexColor } from "../../utils/colorUtils.js";
 import { createItemFormLayout } from "./itemFormBuilder.js";
 
+/**
+ * Creates a controller around a form layout for item definitions.
+ */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
@@ -13,8 +20,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     }
   }
 
-  function initPickrs() {
+  function initPickrs(callback) {
     destroyPickrs();
+
     requestAnimationFrame(() => {
       const colorTargets = {
         name: fields.colorName,
@@ -25,10 +33,22 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
         quantity: fields.colorQty
       };
 
-      for (const [key, el] of Object.entries(colorTargets)) {
-        const btn = document.getElementById(el.id);
-        if (btn) btn.innerHTML = ""; // Clear old Pickr buttons
-        pickrs[key] = createPickr(`#${el.id}`);
+      let initializedCount = 0;
+      const keys = Object.keys(colorTargets);
+      const total = keys.length;
+
+      for (const key of keys) {
+        const el = document.getElementById(colorTargets[key].id);
+        if (el) el.innerHTML = "";
+        const pickr = createPickr(`#${colorTargets[key].id}`);
+        pickrs[key] = pickr;
+
+        pickr.on("init", () => {
+          initializedCount++;
+          if (initializedCount === total && typeof callback === "function") {
+            callback();
+          }
+        });
       }
     });
   }
@@ -66,8 +86,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
 
-    // Defer color application until Pickrs are fully mounted
-    requestAnimationFrame(() => applyVisualColors(def));
+    // Defer visual color updates until pickrs are ready
+    initPickrs(() => applyVisualColors(def));
   }
 
   function getCustom() {
