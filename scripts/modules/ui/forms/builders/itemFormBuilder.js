@@ -1,4 +1,4 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/forms/builders/itemFormBuilder.js
 
 import {
@@ -17,12 +17,25 @@ export function createItemForm() {
   form.id = "item-form";
 
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField();
+  colorName.id = "fld-name-color";
+
   const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField();
+  colorType.id = "fld-item-type-color";
+
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField();
+  colorRarity.id = "fld-rarity-color";
+
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField();
+  colorDesc.id = "fld-desc-item-color";
+
   const { row: rowExtras, extraInfo } = createExtraInfoField();
+
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField();
+  colorValue.id = "fld-value-color";
+
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField();
+  colorQty.id = "fld-quantity-color";
+
   const {
     rowImgS, fldImgS,
     rowImgL, fldImgL
@@ -56,7 +69,9 @@ export function createItemForm() {
       fldValue, colorValue,
       fldQty, colorQty,
       fldImgS, fldImgL,
-      extraInfo
+      extraInfo,
+      rowExtras,
+      rowValue
     }
   };
 }
