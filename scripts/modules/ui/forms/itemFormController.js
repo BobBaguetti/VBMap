@@ -12,9 +12,6 @@ import { createItemFormLayout } from "./itemFormBuilder.js";
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
-  let _id = null;
-  let _pendingColorDef = null;
-  let _pickrsInitialized = false;
 
   function initPickrs() {
     requestAnimationFrame(() => {
@@ -24,11 +21,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       pickrs.description = createPickr(`#${fields.colorDesc.id}`);
       pickrs.value    = createPickr(`#${fields.colorValue.id}`);
       pickrs.quantity = createPickr(`#${fields.colorQty.id}`);
-      _pickrsInitialized = true;
-      if (_pendingColorDef) {
-        applyVisualColors(_pendingColorDef);
-        _pendingColorDef = null;
-      }
     });
   }
 
@@ -45,6 +37,11 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([]);
     _id = null;
     _subheading.textContent = "Add Item";
+
+    // Clear pickr colors
+    for (const key in pickrs) {
+      pickrs[key]?.setColor(null);
+    }
   }
 
   function populate(def) {
@@ -60,12 +57,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
-
-    if (_pickrsInitialized) {
-      applyVisualColors(def);
-    } else {
-      _pendingColorDef = def;
-    }
+    applyVisualColors(def);
   }
 
   function getCustom() {
@@ -96,10 +88,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   }
 
   function applyVisualColors(def) {
-    if (!_pickrsInitialized) {
-      _pendingColorDef = def;
-      return;
-    }
     if (def.nameColor)     setFieldColor("name", def.nameColor);
     if (def.itemTypeColor) setFieldColor("itemType", def.itemTypeColor);
     if (def.rarityColor)   setFieldColor("rarity", def.rarityColor);
@@ -143,6 +131,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       await onSubmit(payload);
     }
   });
+
+  let _id = null;
 
   return {
     form,
