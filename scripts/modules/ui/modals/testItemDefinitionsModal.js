@@ -105,18 +105,20 @@ export function initTestItemDefinitionsModal(db) {
   }
 
   function positionPreviewPanel() {
-    if (!modal || !previewApi?.container) return; // ⛑ Prevent errors if layout isn't ready
+    if (!modal || !previewApi?.container) return; // ✅ Guard first
   
-    const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
+    const modalContent = modal.querySelector(".modal-content");
+    if (!modalContent) return;
+  
+    const modalRect = modalContent.getBoundingClientRect();
     const previewEl = previewApi.container;
     const previewRect = previewEl.getBoundingClientRect();
   
-    if (modalRect) {
-      previewEl.style.position = "absolute";
-      previewEl.style.left = `${modalRect.right + 30}px`;
-      previewEl.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
-    }
+    previewEl.style.position = "absolute";
+    previewEl.style.left = `${modalRect.right + 30}px`;
+    previewEl.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
   }
+  
 
   previewApi.hide();
 
