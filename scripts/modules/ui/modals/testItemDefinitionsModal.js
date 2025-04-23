@@ -1,4 +1,4 @@
-// @version: 9
+// @version: 10
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
@@ -57,6 +57,7 @@ export function initTestItemDefinitionsModal(db) {
   });
 
   formApi.form.classList.add("ui-scroll-float");
+
   formApi.form.addEventListener("input", () => {
     const live = formApi.getCustom?.();
     if (live) {
@@ -91,16 +92,26 @@ export function initTestItemDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
-  subscribeItemDefinitions(db, defs => {
-    definitions = defs;
-    listApi.refresh(defs);
-  });
+  function positionPreviewPanel() {
+    const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
+    const previewEl = previewApi.container;
+    const previewRect = previewEl.getBoundingClientRect();
+    if (modalRect) {
+      previewEl.style.position = "absolute";
+      previewEl.style.left = `${modalRect.right + 30}px`;
+      previewEl.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
+    }
+  }
+
+  previewApi.hide(); // Hide at startup before modal opens
 
   return {
     open: async () => {
       formApi.reset();
       await refreshDefinitions();
       open();
+      positionPreviewPanel();
+
       const def = formApi.getCustom?.();
       if (def) previewApi.setFromDefinition(def);
       previewApi.show();
