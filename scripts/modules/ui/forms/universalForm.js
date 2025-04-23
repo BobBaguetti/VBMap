@@ -1,11 +1,9 @@
-
-// @version: 4
+// @version: 5
 // @file: /scripts/modules/ui/forms/universalForm.js
 
 import {
   createImageField,
-  createVideoField,
-  createExtraInfoBlock
+  createVideoField
 } from "../../ui/uiKit.js";
 
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
@@ -14,6 +12,8 @@ import {
   makeColorTextarea,
   makeColorDropdown
 } from "./formFieldFactory.js";
+
+import { createExtraInfoFieldBlock } from "./extraInfoField.js";
 
 /**
  * Builds a basic name field with color.
@@ -58,7 +58,7 @@ export function createDescriptionField(id = "fld-desc-item") {
  * Creates extra info section with label + block layout
  */
 export function createExtraInfoField({ withDividers = false } = {}) {
-  const extra = createExtraInfoBlock();
+  const extra = createExtraInfoFieldBlock();
   const row = createTopAlignedFieldRow("Extra Info:", extra.block);
 
   if (!withDividers) {
