@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 12
+// @version: 13
 
 import {
   createModal, closeModal, openModal
@@ -32,12 +32,22 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
+  // Layout switcher aligned to top-right
   const layoutSwitcher = createLayoutSwitcher({
     available: ["row", "stacked", "gallery"],
     defaultView: "row",
     onChange: layout => listApi.setLayout(layout)
   });
   header.appendChild(layoutSwitcher);
+
+  const searchWrap = document.createElement("div");
+  searchWrap.className = "def-search-wrap";
+  const searchInput = document.createElement("input");
+  searchInput.type = "text";
+  searchInput.placeholder = "Search items…";
+  searchInput.className = "def-search-input";
+  searchWrap.appendChild(searchInput);
+  header.appendChild(searchWrap);
 
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi = createPreviewPanel("item");
@@ -79,7 +89,17 @@ export function initTestItemDefinitionsModal(db) {
   bodyWrap.style.flexDirection = "column";
   bodyWrap.style.flex = "1 1 auto";
   bodyWrap.style.minHeight = 0;
+
   bodyWrap.appendChild(listContainer);
+  bodyWrap.appendChild(document.createElement("hr"));
+
+  // Append form with button row at top
+  const formWrap = document.createElement("div");
+  formWrap.appendChild(formApi.buttonRow);
+  formWrap.appendChild(formApi.form);
+  bodyWrap.appendChild(formWrap);
+
+  content.appendChild(bodyWrap);
 
   const listApi = createDefinitionListManager({
     container: listContainer,
@@ -94,15 +114,6 @@ export function initTestItemDefinitionsModal(db) {
       await refreshDefinitions();
     }
   });
-
-  bodyWrap.appendChild(document.createElement("hr"));
-
-  const formSection = document.createElement("div");
-  formSection.appendChild(formApi.buttonRow); // ✅ Top-right aligned buttons
-  formSection.appendChild(formApi.form);
-  bodyWrap.appendChild(formSection);
-
-  content.appendChild(bodyWrap);
 
   let definitions = [];
 
