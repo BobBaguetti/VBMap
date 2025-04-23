@@ -105,3 +105,11 @@ export async function setupSidebar(map, layers, allMarkers, db) {
 
   // Add NPC modal button
   const npcModal = initNpcDefinitionsModal(db);
+  const npcBtn = document.createElement("button");
+  npcBtn.className = "ui-button";
+  npcBtn.textContent = "Manage NPCs";
+  npcBtn.onclick = () => npcModal.open();
+  sidebar.appendChild(npcBtn);
+
+  return { filterMarkers, loadItemFilters };
+}
