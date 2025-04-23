@@ -1,7 +1,7 @@
 // @version: 4
 // @file: /scripts/modules/utils/definitionListManager.js
 
-import { createItemEntry } from "./itemEntryRenderer.js";
+import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 
 /**
  * Creates and manages a sortable, searchable definition list.

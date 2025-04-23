@@ -1,7 +1,7 @@
 // @version: 1
 // @file: /scripts/modules/utils/itemEntryRenderer.js
 
-import { createIcon } from "./iconUtils.js";
+import { createIcon } from "../../utils/iconUtils.js";
 
 /**
  * Builds an item entry DOM element.

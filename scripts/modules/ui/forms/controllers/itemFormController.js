@@ -1,16 +1,16 @@
 // @version: 3
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
-import { createPickr } from "../pickrManager.js";
-import { getPickrHexColor } from "../../utils/colorUtils.js";
-import { createItemFormLayout } from "./itemFormBuilder.js";
+import { createPickr } from "../../pickrManager.js";
+import { getPickrHexColor } from "../../../utils/colorUtils.js";
+import { createItemForm } from "../builders/itemFormBuilder.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
  * Handles wiring, reset, populate, and getCustom logic.
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
-  const { form, fields } = createItemFormLayout();
+  const { form, fields } = createItemForm();
   const pickrs = {};
 
   function initPickrs() {

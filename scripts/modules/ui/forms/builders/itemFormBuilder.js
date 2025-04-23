@@ -12,7 +12,7 @@ import {
     createExtraInfoField
   } from "./universalForm.js";
   
-  export function createItemFormLayout() {
+  export function createItemForm() {
     const form = document.createElement("form");
     form.id = "item-form";
   
