@@ -1,4 +1,4 @@
-// @version: 4
+// @version: 5
 // @file: /scripts/modules/utils/definitionListManager.js
 
 import { renderItemEntry } from "../entries/itemEntryRenderer.js";
@@ -6,13 +6,12 @@ import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 /**
  * Creates and manages a sortable, searchable definition list.
  *
- * @param {{
- *   container: HTMLElement,
- *   getDefinitions: () => Array,
- *   onEntryClick: (def: Object) => void,
- *   onDelete: (id: string) => Promise<void>,
- *   getCurrentLayout?: () => string
- * }} options
+ * @param {Object} options
+ * @param {HTMLElement} options.container
+ * @param {() => Array} options.getDefinitions
+ * @param {(def: Object) => void} options.onEntryClick
+ * @param {(id: string) => Promise<void>} options.onDelete
+ * @param {() => string} [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
   container,
@@ -35,7 +34,7 @@ export function createDefinitionListManager({
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
     filtered.forEach(def => {
-      const entry = createItemEntry(def, layout, onEntryClick, onDelete);
+      const entry = renderItemEntry(def, layout, onEntryClick, onDelete);
       container.appendChild(entry);
     });
   }
