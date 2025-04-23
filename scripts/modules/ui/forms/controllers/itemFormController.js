@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.4
+// @version: 4.5
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -8,14 +8,13 @@ import { createItemForm } from "../builders/itemFormBuilder.js";
 import { createIcon } from "../../../utils/iconUtils.js";
 
 /**
- * Creates a controller around a form layout for item definitions.
- * Handles wiring, reset, populate, and getCustom logic.
+ * Controls form behavior, wiring reset, populate, Pickr init, and layout buttons.
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields, subheadingWrap, subheading } = createItemForm();
   const pickrs = {};
+  let _id = null;
 
-  // Create top-right aligned buttons
   const buttonRow = document.createElement("div");
   buttonRow.className = "floating-buttons";
 
@@ -28,7 +27,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnClear.type = "button";
   btnClear.className = "ui-button";
   btnClear.textContent = "Clear";
-  btnClear.onclick = onCancel;
+  btnClear.onclick = () => {
+    reset();
+    onCancel?.();
+  };
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
@@ -37,18 +39,18 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height = "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
+  btnDelete.onclick = () => { if (_id && confirm("Delete this item?")) onDelete?.(_id); };
 
   buttonRow.append(btnSave, btnClear, btnDelete);
   subheadingWrap.appendChild(buttonRow);
+
   form.prepend(subheadingWrap);
 
-  form.addEventListener("submit", async e => {
+  form.addEventListener("submit", e => {
     e.preventDefault();
-    if (onSubmit) {
-      const payload = getCustom();
-      await onSubmit(payload);
-    }
+    const payload = getCustom();
+    payload.id = _id;
+    onSubmit?.(payload);
   });
 
   function initPickrs() {
@@ -61,7 +63,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
         value:       fields.colorValue,
         quantity:    fields.colorQty
       }).forEach(([key, btn]) => {
-        const el = btn?.id ? document.getElementById(btn.id) : null;
+        const el = document.getElementById(btn.id);
         if (btn && btn.id && el && document.body.contains(el)) {
           pickrs[key] = createPickr(`#${btn.id}`);
         } else {
@@ -96,7 +98,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgL.value   = def.imageLarge || "";
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
-    subheading.textContent = "Edit Item";
+    subheading.textContent = _id ? "Edit Item" : "Add Item";
   }
 
   function getCustom() {
@@ -121,11 +123,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   }
 
   function setFieldColor(field, color) {
-    const target = pickrs[field];
-    if (target && color) target.setColor(color);
+    if (pickrs[field]) pickrs[field].setColor(color);
   }
-
-  let _id = null;
 
   return {
     form,
@@ -134,6 +133,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     getCustom,
     setFieldColor,
     initPickrs,
-    subheadingWrap // ✅ exposed instead of custom buttonRow
+    buttonRow,
+    subheadingWrap
   };
 }

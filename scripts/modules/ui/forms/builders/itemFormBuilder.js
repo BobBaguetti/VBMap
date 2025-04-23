@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
-// @version: 2.1
+// @version: 1.2
 
 import {
   createNameField,
@@ -10,18 +10,16 @@ import {
   createExtraInfoField,
   createValueField,
   createQuantityField,
-  createImageFieldSet
+  createImageField
 } from "../universalForm.js";
 
 /**
- * Builds the item form layout and returns the form element and its fields.
- * Includes a subheading and a container for top-aligned buttons.
+ * Creates the item definition form layout with all labeled fields.
  */
 export function createItemForm() {
   const form = document.createElement("form");
   form.id = "item-definition-form";
 
-  // Top section with subheading and placeholder for floating buttons
   const subheadingWrap = document.createElement("div");
   subheadingWrap.style.display = "flex";
   subheadingWrap.style.justifyContent = "space-between";
@@ -30,19 +28,17 @@ export function createItemForm() {
   const subheading = document.createElement("h3");
   subheading.id = "def-form-subheading";
   subheading.textContent = "Add Item";
-
   subheadingWrap.appendChild(subheading);
-  form.appendChild(subheadingWrap);
 
-  // Generate form field rows
-  const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("def-name");
-  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("def-type");
-  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("def-rarity");
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("def-description");
+  const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("fld-name");
+  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField("fld-item-type");
+  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("fld-rarity");
+  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("fld-desc-item");
   const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true });
-  const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField("def-value");
-  const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField("def-quantity");
-  const { rowImgS, fldImgS, rowImgL, fldImgL } = createImageFieldSet();
+  const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField("fld-value");
+  const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField("fld-quantity");
+  const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
+  const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
 
   form.append(
     rowName,
@@ -59,10 +55,21 @@ export function createItemForm() {
   return {
     form,
     fields: {
-      fldName, fldType, fldRarity, fldDesc, fldValue, fldQty,
-      fldImgS, fldImgL,
-      colorName, colorType, colorRarity, colorDesc, colorValue, colorQty,
-      extraInfo
+      fldName,
+      fldType,
+      fldRarity,
+      fldDesc,
+      extraInfo,
+      fldValue,
+      fldQty,
+      fldImgS,
+      fldImgL,
+      colorName,
+      colorType,
+      colorRarity,
+      colorDesc,
+      colorValue,
+      colorQty
     },
     subheadingWrap,
     subheading
