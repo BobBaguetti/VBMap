@@ -1,4 +1,3 @@
-
 // @version: 6
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
@@ -6,12 +5,11 @@ import { createPickr } from "../pickrManager.js";
 import { getPickrHexColor } from "../../utils/colorUtils.js";
 import { createItemFormLayout } from "./itemFormBuilder.js";
 
-/**
- * Creates a controller around a form layout for item definitions.
- */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
+  let _id = null;
+  let _pendingDef = null;
 
   function destroyPickrs() {
     for (const key in pickrs) {
@@ -20,11 +18,11 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     }
   }
 
-  function initPickrs(callback) {
+  function initPickrs() {
     destroyPickrs();
 
     requestAnimationFrame(() => {
-      const colorTargets = {
+      const targets = {
         name: fields.colorName,
         itemType: fields.colorType,
         rarity: fields.colorRarity,
@@ -33,22 +31,15 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
         quantity: fields.colorQty
       };
 
-      let initializedCount = 0;
-      const keys = Object.keys(colorTargets);
-      const total = keys.length;
+      for (const [key, el] of Object.entries(targets)) {
+        const btn = document.getElementById(el.id);
+        if (btn) btn.innerHTML = "";
+        pickrs[key] = createPickr(`#${el.id}`);
+      }
 
-      for (const key of keys) {
-        const el = document.getElementById(colorTargets[key].id);
-        if (el) el.innerHTML = "";
-        const pickr = createPickr(`#${colorTargets[key].id}`);
-        pickrs[key] = pickr;
-
-        pickr.on("init", () => {
-          initializedCount++;
-          if (initializedCount === total && typeof callback === "function") {
-            callback();
-          }
-        });
+      if (_pendingDef) {
+        applyVisualColors(_pendingDef);
+        _pendingDef = null;
       }
     });
   }
@@ -86,8 +77,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
 
-    // Defer visual color updates until pickrs are ready
-    initPickrs(() => applyVisualColors(def));
+    _pendingDef = def; // defer color application until Pickrs are ready
   }
 
   function getCustom() {
@@ -161,8 +151,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       await onSubmit(payload);
     }
   });
-
-  let _id = null;
 
   return {
     form,
