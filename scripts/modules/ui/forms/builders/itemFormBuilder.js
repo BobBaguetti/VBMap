@@ -52,7 +52,8 @@ import {
         fldValue, colorValue,
         fldQty, colorQty,
         fldImgS, fldImgL, fldVid,
-        extraInfo
+        extraInfo,
+        rowExtras 
       }
     };
   }
