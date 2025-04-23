@@ -1,11 +1,11 @@
-// @version: 3
+// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/forms/universalForm.js
+// @version: 4
 
 import {
   createTextField,
   createDropdownField,
   createTextareaFieldWithColor,
-  createImageField,
   createVideoField,
   createExtraInfoBlock
 } from "../../ui/uiKit.js";
@@ -56,6 +56,7 @@ export function createExtraInfoField({ withDividers = false } = {}) {
 }
 
 export function createImageFieldSet() {
+  const { createImageField } = await import("../../ui/uiKit.js"); // lazy import
   const imgS = createImageField("Image S:", "fld-img-s");
   const imgL = createImageField("Image L:", "fld-img-l");
   const vid = createVideoField("Video:", "fld-vid");

@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
-// @version: 1.2
+// @version: 1.3
 
 import {
   createNameField,
@@ -9,12 +9,10 @@ import {
   createDescriptionField,
   createExtraInfoField,
   createValueField,
-  createQuantityField,
-  createImageFieldSet
+  createQuantityField
 } from "../universalForm.js";
 
-
-
+import { createImageField } from "../../ui/uiKit.js";
 
 /**
  * Creates the item definition form layout with all labeled fields.
