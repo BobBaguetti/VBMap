@@ -110,16 +110,18 @@ export function initTestItemDefinitionsModal(db) {
     const modalContent = modal.querySelector(".modal-content");
     if (!modalContent) return;
   
-    const modalRect = modalContent.getBoundingClientRect();
     const previewEl = previewApi.container;
-  
-    // Use offsetHeight instead of getBoundingClientRect() for consistent layout reads
-    const previewHeight = previewEl.offsetHeight;
-    const modalCenterY = modalRect.top + (modalRect.height / 2);
+    const modalRect = modalContent.getBoundingClientRect();
   
     previewEl.style.position = "absolute";
     previewEl.style.left = `${modalRect.right + 30}px`;
-    previewEl.style.top = `${modalCenterY - (previewHeight / 2)}px`;
+  
+    // Wait for the preview content to render before measuring its height
+    requestAnimationFrame(() => {
+      const previewHeight = previewEl.offsetHeight;
+      const modalCenterY = modalRect.top + (modalRect.height / 2);
+      previewEl.style.top = `${modalCenterY - (previewHeight / 2)}px`;
+    });
   }
   
 
