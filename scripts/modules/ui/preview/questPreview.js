@@ -1,8 +1,8 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed. Functions should include sufficient inline comments.
 // @file: /scripts/modules/ui/preview/questPreview.js
-// @version: 5
+// @version: 6
 
-import { renderPopup } from "../components/popupRenderer.js";
+import { renderPopup } from "../../components/popupRenderer.js";
 
 export function createQuestPreviewPanel(container) {
   const wrap = document.createElement("div");
