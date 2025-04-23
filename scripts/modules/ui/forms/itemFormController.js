@@ -13,8 +13,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
   let _id = null;
-  let _pendingDef = null;
-  let pickrsInitialized = false;
+  let _pendingColorDef = null;
+  let _pickrsInitialized = false;
 
   function initPickrs() {
     requestAnimationFrame(() => {
@@ -24,11 +24,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       pickrs.description = createPickr(`#${fields.colorDesc.id}`);
       pickrs.value    = createPickr(`#${fields.colorValue.id}`);
       pickrs.quantity = createPickr(`#${fields.colorQty.id}`);
-
-      pickrsInitialized = true;
-      if (_pendingDef) {
-        applyVisualColors(_pendingDef);
-        _pendingDef = null;
+      _pickrsInitialized = true;
+      if (_pendingColorDef) {
+        applyVisualColors(_pendingColorDef);
+        _pendingColorDef = null;
       }
     });
   }
@@ -62,10 +61,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
 
-    if (pickrsInitialized) {
+    if (_pickrsInitialized) {
       applyVisualColors(def);
     } else {
-      _pendingDef = def;
+      _pendingColorDef = def;
     }
   }
 
@@ -97,8 +96,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   }
 
   function applyVisualColors(def) {
-    if (!pickrsInitialized) {
-      _pendingDef = def;
+    if (!_pickrsInitialized) {
+      _pendingColorDef = def;
       return;
     }
     if (def.nameColor)     setFieldColor("name", def.nameColor);
