@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.7
+// @version: 4.6
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -101,8 +101,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value       = def.quantity || "";
     fields.fldImgS.value      = def.imageSmall || "";
     fields.fldImgL.value      = def.imageLarge || "";
-    // **Populate extra-info, editable**
-    fields.extraInfo.setLines(def.extraInfo || [], false);
+    // Populate extra-info, editable (supports either field name)
+    const extras = def.extraInfo ?? def.extraLines ?? [];
+    fields.extraInfo.setLines(extras, false);
 
     _id = def.id || null;
     subheading.textContent = "Edit Item";
