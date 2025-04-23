@@ -1,4 +1,4 @@
-// @version: 7
+// @version: 6-diagnostic
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../pickrManager.js";
@@ -7,13 +7,14 @@ import { createItemFormLayout } from "./itemFormBuilder.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
+ * Diagnostic version with logging and dynamic DOM replacement for color buttons.
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
-  let _pendingDef = null;
 
   function destroyPickrs() {
+    console.log("[destroyPickrs] Removing all Pickrs");
     for (const key in pickrs) {
       pickrs[key]?.destroy?.();
       delete pickrs[key];
@@ -22,9 +23,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   function initPickrs() {
     destroyPickrs();
-
     requestAnimationFrame(() => {
-      const targets = {
+      const colorTargets = {
         name: fields.colorName,
         itemType: fields.colorType,
         rarity: fields.colorRarity,
@@ -33,22 +33,16 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
         quantity: fields.colorQty
       };
 
-      for (const [key, oldEl] of Object.entries(targets)) {
-        const oldBtn = document.getElementById(oldEl.id);
-        if (!oldBtn) continue;
-
-        // Replace the button element to wipe all Pickr DOM
-        const newBtn = document.createElement("div");
-        newBtn.className = "color-btn";
-        newBtn.id = oldEl.id;
-        oldBtn.replaceWith(newBtn);
-
-        pickrs[key] = createPickr(`#${newBtn.id}`);
-      }
-
-      if (_pendingDef) {
-        applyVisualColors(_pendingDef);
-        _pendingDef = null;
+      for (const [key, el] of Object.entries(colorTargets)) {
+        const existingBtn = document.getElementById(el.id);
+        if (existingBtn) {
+          const freshBtn = document.createElement("div");
+          freshBtn.className = "color-btn";
+          freshBtn.id = el.id;
+          console.log(`[initPickrs] Replacing button for ${key}`);
+          existingBtn.replaceWith(freshBtn);
+        }
+        pickrs[key] = createPickr(`#${el.id}`);
       }
     });
   }
@@ -73,6 +67,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   }
 
   function populate(def) {
+    console.log("[populate] Populating with:", def);
     fields.fldName.value   = def.name || "";
     fields.fldType.value   = def.itemType || "";
     fields.fldRarity.value = def.rarity || "";
@@ -85,13 +80,11 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
-
-    _pendingDef = def;
     applyVisualColors(def);
   }
 
   function getCustom() {
-    return {
+    const result = {
       id:         _id,
       name:       fields.fldName.value.trim(),
       nameColor:  getPickrHexColor(pickrs.name),
@@ -110,22 +103,25 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       video:      fields.fldVid.value.trim(),
       extraInfo:  fields.extraInfo.getLines()
     };
+    console.log("[getCustom] Returning:", result);
+    return result;
   }
 
   function setFieldColor(field, color) {
-    const target = pickrs[field];
-    if (target && color) target.setColor(color);
+    const pickr = pickrs[field];
+    console.log(`[setFieldColor] Setting ${field} to ${color}`, pickr);
+    if (pickr && color) pickr.setColor(color);
   }
 
   function applyVisualColors(def) {
-    if (!Object.keys(pickrs).length) return;
-
+    console.log("[applyVisualColors] Applying:", def);
     if (def.nameColor)     setFieldColor("name", def.nameColor);
     if (def.itemTypeColor) setFieldColor("itemType", def.itemTypeColor);
     if (def.rarityColor)   setFieldColor("rarity", def.rarityColor);
     if (def.descColor)     setFieldColor("description", def.descColor);
     if (def.valueColor)    setFieldColor("value", def.valueColor);
     if (def.quantityColor) setFieldColor("quantity", def.quantityColor);
+    console.log("[applyVisualColors] After apply:", pickrs);
   }
 
   const _subheading = document.createElement("h3");
