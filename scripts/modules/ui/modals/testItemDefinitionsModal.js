@@ -1,4 +1,4 @@
-// @version: 8
+// @version: 9
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
@@ -9,7 +9,8 @@ import {
 } from "../../services/itemDefinitionsService.js";
 import { createDefinitionListManager } from "../../utils/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
-import { createItemFormController } from "../forms/itemFormController.js";
+import { createItemFormController } from "../forms/controllers/itemFormController.js";
+import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 
 export function initTestItemDefinitionsModal(db) {
   const {
@@ -72,15 +73,17 @@ export function initTestItemDefinitionsModal(db) {
   const listApi = createDefinitionListManager({
     container: listContainer,
     getDefinitions: () => definitions,
-    onEntryClick: def => {
-      formApi.populate(def);
-      previewApi.setFromDefinition(def);
-      previewApi.show();
-    },
-    onDelete: async id => {
-      await deleteItemDefinition(db, id);
-      await refreshDefinitions();
-    }
+    renderEntry: (def, layout) => renderItemEntry(def, layout, {
+      onClick: (d) => {
+        formApi.populate(d);
+        previewApi.setFromDefinition(d);
+        previewApi.show();
+      },
+      onDelete: async (id) => {
+        await deleteItemDefinition(db, id);
+        await refreshDefinitions();
+      }
+    })
   });
 
   async function refreshDefinitions() {
