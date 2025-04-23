@@ -1,4 +1,4 @@
-// @version: 5
+// @version: 6
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
 
 import {
@@ -77,6 +77,15 @@ import {
       }
     });
   
+    const bodyWrap = document.createElement("div");
+    bodyWrap.style.display = "flex";
+    bodyWrap.style.flexDirection = "column";
+    bodyWrap.style.flex = "1 1 auto";
+    bodyWrap.style.minHeight = 0;
+  
+    // 🟢 FIX: Append listContainer before initializing listApi
+    bodyWrap.appendChild(listContainer);
+  
     const listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => definitions,
@@ -91,13 +100,6 @@ import {
       }
     });
   
-    const bodyWrap = document.createElement("div");
-    bodyWrap.style.display = "flex";
-    bodyWrap.style.flexDirection = "column";
-    bodyWrap.style.flex = "1 1 auto";
-    bodyWrap.style.minHeight = 0;
-  
-    bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
     bodyWrap.appendChild(formApi.form);
     content.appendChild(bodyWrap);
