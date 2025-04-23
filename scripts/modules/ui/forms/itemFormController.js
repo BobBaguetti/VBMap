@@ -1,4 +1,4 @@
-// @version: 6-diagnostic
+// @version: 6
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../pickrManager.js";
@@ -7,14 +7,12 @@ import { createItemFormLayout } from "./itemFormBuilder.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
- * Diagnostic version with logging and dynamic DOM replacement for color buttons.
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
 
   function destroyPickrs() {
-    console.log("[destroyPickrs] Removing all Pickrs");
     for (const key in pickrs) {
       pickrs[key]?.destroy?.();
       delete pickrs[key];
@@ -34,14 +32,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       };
 
       for (const [key, el] of Object.entries(colorTargets)) {
-        const existingBtn = document.getElementById(el.id);
-        if (existingBtn) {
-          const freshBtn = document.createElement("div");
-          freshBtn.className = "color-btn";
-          freshBtn.id = el.id;
-          console.log(`[initPickrs] Replacing button for ${key}`);
-          existingBtn.replaceWith(freshBtn);
-        }
+        const btn = document.getElementById(el.id);
+        if (btn) btn.innerHTML = ""; // Clean up any lingering Pickr DOM
         pickrs[key] = createPickr(`#${el.id}`);
       }
     });
@@ -84,7 +76,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   }
 
   function getCustom() {
-    const result = {
+    const payload = {
       id:         _id,
       name:       fields.fldName.value.trim(),
       nameColor:  getPickrHexColor(pickrs.name),
@@ -103,14 +95,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       video:      fields.fldVid.value.trim(),
       extraInfo:  fields.extraInfo.getLines()
     };
-    console.log("[getCustom] Returning:", result);
-    return result;
+    console.log("[getCustom] Returning:", payload);
+    return payload;
   }
 
   function setFieldColor(field, color) {
-    const pickr = pickrs[field];
-    console.log(`[setFieldColor] Setting ${field} to ${color}`, pickr);
-    if (pickr && color) pickr.setColor(color);
+    const target = pickrs[field];
+    if (target && color) {
+      console.log(`[setFieldColor] Setting ${field} to`, color, target);
+      target.setColor(color);
+      target.applyColor(true); // 🔧 Force UI update
+    }
   }
 
   function applyVisualColors(def) {
