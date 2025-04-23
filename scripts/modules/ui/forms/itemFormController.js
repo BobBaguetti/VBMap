@@ -1,7 +1,7 @@
 // @version: 1
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
-import { createPickr } from "../ui/pickrManager.js";
+import { createPickr } from "../pickrManager.js";
 import { getPickrHexColor } from "../../utils/colorUtils.js"; 
 import { createItemFormLayout } from "./itemFormBuilder.js";
 
