@@ -1,10 +1,16 @@
+// @version: 2
 // @file: /scripts/modules/ui/modals/questDefinitionsModal.js
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "../../utils/definitionListManager.js";
-import { createQuestFormController } from "../forms/questFormController.js";
-import { loadQuestDefinitions, deleteQuestDefinition, subscribeQuestDefinitions } from "../../services/questDefinitionsService.js";
+import { createQuestFormController } from "../forms/controllers/questFormController.js";
+import { renderQuestEntry } from "../entries/questEntryRenderer.js";
+import {
+  loadQuestDefinitions,
+  deleteQuestDefinition,
+  subscribeQuestDefinitions
+} from "../../services/questDefinitionsService.js";
 
 export function initQuestDefinitionsModal(db) {
   const {
@@ -35,7 +41,6 @@ export function initQuestDefinitionsModal(db) {
       formApi.reset();
     },
     onSubmit: async (payload) => {
-      // Add your save/update logic here
       await refreshDefinitions();
       formApi.reset();
     }
@@ -49,15 +54,17 @@ export function initQuestDefinitionsModal(db) {
   const listApi = createDefinitionListManager({
     container: listContainer,
     getDefinitions: () => definitions,
-    onEntryClick: def => {
-      formApi.populate(def);
-      previewApi.setFromDefinition(def);
-      previewApi.show();
-    },
-    onDelete: async id => {
-      await deleteQuestDefinition(db, id);
-      await refreshDefinitions();
-    }
+    renderEntry: (def, layout) => renderQuestEntry(def, layout, {
+      onClick: (d) => {
+        formApi.populate(d);
+        previewApi.setFromDefinition(d);
+        previewApi.show();
+      },
+      onDelete: async (id) => {
+        await deleteQuestDefinition(db, id);
+        await refreshDefinitions();
+      }
+    })
   });
 
   async function refreshDefinitions() {

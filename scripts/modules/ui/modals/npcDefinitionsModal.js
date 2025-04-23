@@ -1,10 +1,16 @@
+// @version: 2
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "../../utils/definitionListManager.js";
-import { createNpcFormController } from "../forms/npcFormController.js";
-import { loadNpcDefinitions, deleteNpcDefinition, subscribeNpcDefinitions } from "../../services/npcDefinitionsService.js";
+import { createNpcFormController } from "../forms/controllers/npcFormController.js";
+import { renderNpcEntry } from "../entries/npcEntryRenderer.js";
+import {
+  loadNpcDefinitions,
+  deleteNpcDefinition,
+  subscribeNpcDefinitions
+} from "../../services/npcDefinitionsService.js";
 
 export function initNpcDefinitionsModal(db) {
   const {
@@ -35,7 +41,6 @@ export function initNpcDefinitionsModal(db) {
       formApi.reset();
     },
     onSubmit: async (payload) => {
-      // Add your save/update logic here
       await refreshDefinitions();
       formApi.reset();
     }
@@ -49,15 +54,17 @@ export function initNpcDefinitionsModal(db) {
   const listApi = createDefinitionListManager({
     container: listContainer,
     getDefinitions: () => definitions,
-    onEntryClick: def => {
-      formApi.populate(def);
-      previewApi.setFromDefinition(def);
-      previewApi.show();
-    },
-    onDelete: async id => {
-      await deleteNpcDefinition(db, id);
-      await refreshDefinitions();
-    }
+    renderEntry: (def, layout) => renderNpcEntry(def, layout, {
+      onClick: (d) => {
+        formApi.populate(d);
+        previewApi.setFromDefinition(d);
+        previewApi.show();
+      },
+      onDelete: async (id) => {
+        await deleteNpcDefinition(db, id);
+        await refreshDefinitions();
+      }
+    })
   });
 
   async function refreshDefinitions() {
