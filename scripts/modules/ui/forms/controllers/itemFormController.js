@@ -1,4 +1,4 @@
-// @version: 4
+// @version: 5
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../../pickrManager.js";
@@ -33,7 +33,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = "";
     fields.fldImgS.value   = "";
     fields.fldImgL.value   = "";
-    fields.fldVid.value    = "";
     fields.extraInfo.setLines([]);
     _id = null;
     _subheading.textContent = "Add Item";
@@ -48,7 +47,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = def.quantity || "";
     fields.fldImgS.value   = def.imageSmall || "";
     fields.fldImgL.value   = def.imageLarge || "";
-    fields.fldVid.value    = def.video || "";
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     _subheading.textContent = "Edit Item";
@@ -71,7 +69,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       quantityColor: getPickrHexColor(pickrs.quantity),
       imageSmall: fields.fldImgS.value.trim(),
       imageLarge: fields.fldImgL.value.trim(),
-      video:      fields.fldVid.value.trim(),
       extraInfo:  fields.extraInfo.getLines()
     };
   }
@@ -108,13 +105,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   buttonRow.append(btnSave, btnCancel, btnDelete);
   _subheading.appendChild(buttonRow);
-
-  // Reorder form: move extra info above value/quantity, insert dividers
-  const hrAboveExtras = document.createElement("hr");
-  const hrBelowExtras = document.createElement("hr");
-  form.insertBefore(hrAboveExtras, fields.rowExtras);
-  form.insertBefore(hrBelowExtras, fields.rowValue);
-  form.insertBefore(fields.rowExtras, fields.rowValue);
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
