@@ -1,12 +1,12 @@
-// @file: /scripts/modules/ui/modals/questDefinitionsModal.js
+// @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "../../utils/definitionListManager.js";
-import { createQuestFormController } from "../forms/questFormController.js";
-import { loadQuestDefinitions, deleteQuestDefinition, subscribeQuestDefinitions } from "../../services/questDefinitionsService.js";
+import { createNpcFormController } from "../forms/npcFormController.js";
+import { loadNpcDefinitions, deleteNpcDefinition, subscribeNpcDefinitions } from "../../services/npcDefinitionsService.js";
 
-export function initQuestDefinitionsModal(db) {
+export function initNpcDefinitionsModal(db) {
   const {
     modal,
     header,
@@ -16,21 +16,21 @@ export function initQuestDefinitionsModal(db) {
     open,
     close
   } = createDefinitionModalShell({
-    id: "quest-definitions-modal",
-    title: "Manage Quests",
+    id: "npc-definitions-modal",
+    title: "Manage NPCs",
     withPreview: true,
-    previewType: "quest",
+    previewType: "npc",
     layoutOptions: ["row", "stacked"],
     onClose: () => previewApi?.hide()
   });
 
-  const listContainer = createDefListContainer("quest-def-list");
+  const listContainer = createDefListContainer("npc-def-list");
   bodyWrap.appendChild(listContainer);
 
-  const formApi = createQuestFormController({
+  const formApi = createNpcFormController({
     onCancel: () => formApi.reset(),
     onDelete: async (id) => {
-      await deleteQuestDefinition(db, id);
+      await deleteNpcDefinition(db, id);
       await refreshDefinitions();
       formApi.reset();
     },
@@ -55,17 +55,17 @@ export function initQuestDefinitionsModal(db) {
       previewApi.show();
     },
     onDelete: async id => {
-      await deleteQuestDefinition(db, id);
+      await deleteNpcDefinition(db, id);
       await refreshDefinitions();
     }
   });
 
   async function refreshDefinitions() {
-    definitions = await loadQuestDefinitions(db);
+    definitions = await loadNpcDefinitions(db);
     listApi.refresh(definitions);
   }
 
-  subscribeQuestDefinitions(db, defs => {
+  subscribeNpcDefinitions(db, defs => {
     definitions = defs;
     listApi.refresh(defs);
   });
