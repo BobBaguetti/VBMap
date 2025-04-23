@@ -6,6 +6,7 @@ import {
   createTextField,
   createDropdownField,
   createTextareaFieldWithColor,
+  createImageField,
   createVideoField,
   createExtraInfoBlock
 } from "../../ui/uiKit.js";
@@ -56,7 +57,6 @@ export function createExtraInfoField({ withDividers = false } = {}) {
 }
 
 export function createImageFieldSet() {
-  const { createImageField } = await import("../../ui/uiKit.js"); // lazy import
   const imgS = createImageField("Image S:", "fld-img-s");
   const imgL = createImageField("Image L:", "fld-img-l");
   const vid = createVideoField("Video:", "fld-vid");
