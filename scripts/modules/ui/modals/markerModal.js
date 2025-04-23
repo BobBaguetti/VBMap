@@ -1,4 +1,4 @@
-// @version: 9
+// @version: 10
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
@@ -77,6 +77,7 @@ export function initMarkerModal(db) {
       formApi.setFromDefinition({});
       customMode = true;
     }
+    formApi.initPickrs();
   };
 
   async function refreshPredefinedItems() {
@@ -93,6 +94,7 @@ export function initMarkerModal(db) {
 
   function openEdit(markerObj, data, evt, onSave) {
     populate(data);
+    formApi.initPickrs();
     openModalAt(modal, evt);
     form.onsubmit = e => {
       e.preventDefault();
@@ -104,6 +106,7 @@ export function initMarkerModal(db) {
 
   function openCreate(coords, type, evt, onCreate) {
     populate({ type });
+    formApi.initPickrs();
     openModalAt(modal, evt);
     form.onsubmit = e => {
       e.preventDefault();
@@ -124,7 +127,7 @@ export function initMarkerModal(db) {
         customMode = false;
       } else {
         ddPredef.value = "";
-        formApi.setFromDefinition(null);
+        formApi.setFromDefinition({});
         customMode = true;
       }
     } else {
@@ -135,7 +138,6 @@ export function initMarkerModal(db) {
   function harvest(coords) {
     const type = fldType.value;
     const selectedId = ddPredef.value;
-
     if (type === "Item" && selectedId && defs[selectedId]) {
       const def = defs[selectedId];
       return {
@@ -158,7 +160,6 @@ export function initMarkerModal(db) {
         quantity: def.quantity || ""
       };
     }
-
     return { type, coords, ...formApi.getCustom() };
   }
 

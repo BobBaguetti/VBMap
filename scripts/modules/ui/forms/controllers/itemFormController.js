@@ -47,12 +47,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.height = "28px";
   btnDelete.appendChild(createIcon("trash"));
   btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
-  btnDelete.style.display = "none";               // hide in Add mode
+  btnDelete.style.display = "none"; // hidden in Add mode
 
   buttonRow.append(btnSave, btnClear, btnDelete);
   subheadingWrap.appendChild(buttonRow);
   form.prepend(subheadingWrap);
 
+  // Form submission
   form.addEventListener("submit", async e => {
     e.preventDefault();
     if (onSubmit) {
@@ -61,6 +62,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     }
   });
 
+  // Initialize Pickr instances
   function initPickrs() {
     requestAnimationFrame(() => {
       Object.entries({
@@ -74,13 +76,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
         const el = btn?.id ? document.getElementById(btn.id) : null;
         if (btn && btn.id && el && document.body.contains(el)) {
           pickrs[key] = createPickr(`#${btn.id}`);
-        } else {
-          console.warn(`⚠️ Skipping Pickr init: #${btn?.id} not attached to DOM`);
         }
       });
     });
   }
 
+  // Reset to Add mode
   function reset() {
     fields.fldName.value   = "";
     fields.fldType.value   = "";
@@ -93,51 +94,66 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([]);
     _id = null;
     subheading.textContent = "Add Item";
-    btnDelete.style.display = "none";             // keep hidden
+    btnDelete.style.display = "none";
   }
 
+  // Populate form in Edit mode and reapply colors
   function populate(def) {
-    fields.fldName.value   = def.name || "";
-    fields.fldType.value   = def.itemType || "";
-    fields.fldRarity.value = def.rarity || "";
-    fields.fldDesc.value   = def.description || "";
-    fields.fldValue.value  = def.value || "";
-    fields.fldQty.value    = def.quantity || "";
-    fields.fldImgS.value   = def.imageSmall || "";
-    fields.fldImgL.value   = def.imageLarge || "";
+    // Fill in fields
+    fields.fldName.value      = def.name || "";
+    fields.fldType.value      = def.itemType || "";
+    fields.fldRarity.value    = def.rarity || "";
+    fields.fldDesc.value      = def.description || "";
+    fields.fldValue.value     = def.value || "";
+    fields.fldQty.value       = def.quantity || "";
+    fields.fldImgS.value      = def.imageSmall || "";
+    fields.fldImgL.value      = def.imageLarge || "";
     fields.extraInfo.setLines(def.extraInfo || []);
     _id = def.id || null;
     subheading.textContent = "Edit Item";
-    btnDelete.style.display = "";                 // show in Edit mode
+    btnDelete.style.display = ""; // show in Edit mode
+
+    // Re-initialize pickers & reapply saved colors
+    initPickrs();
+    if (def.nameColor)      setFieldColor("name", def.nameColor);
+    if (def.itemTypeColor)  setFieldColor("itemType", def.itemTypeColor);
+    if (def.rarityColor)    setFieldColor("rarity", def.rarityColor);
+    if (def.descColor)      setFieldColor("description", def.descColor);
+    if (def.valueColor)     setFieldColor("value", def.valueColor);
+    if (def.quantityColor)  setFieldColor("quantity", def.quantityColor);
   }
 
+  // Gather form data
   function getCustom() {
     return {
-      id:         _id,
-      name:       fields.fldName.value.trim(),
-      nameColor:  getPickrHexColor(pickrs.name),
-      itemType:   fields.fldType.value,
-      itemTypeColor: getPickrHexColor(pickrs.itemType),
-      rarity:     fields.fldRarity.value,
-      rarityColor: getPickrHexColor(pickrs.rarity),
-      description: fields.fldDesc.value.trim(),
-      descColor:  getPickrHexColor(pickrs.description),
-      value:      fields.fldValue.value.trim(),
-      valueColor: getPickrHexColor(pickrs.value),
-      quantity:   fields.fldQty.value.trim(),
-      quantityColor: getPickrHexColor(pickrs.quantity),
-      imageSmall: fields.fldImgS.value.trim(),
-      imageLarge: fields.fldImgL.value.trim(),
-      extraInfo:  fields.extraInfo.getLines()
+      id:             _id,
+      name:           fields.fldName.value.trim(),
+      nameColor:      getPickrHexColor(pickrs.name),
+      itemType:       fields.fldType.value,
+      itemTypeColor:  getPickrHexColor(pickrs.itemType),
+      rarity:         fields.fldRarity.value,
+      rarityColor:    getPickrHexColor(pickrs.rarity),
+      description:    fields.fldDesc.value.trim(),
+      descColor:      getPickrHexColor(pickrs.description),
+      value:          fields.fldValue.value.trim(),
+      valueColor:     getPickrHexColor(pickrs.value),
+      quantity:       fields.fldQty.value.trim(),
+      quantityColor:  getPickrHexColor(pickrs.quantity),
+      imageSmall:     fields.fldImgS.value.trim(),
+      imageLarge:     fields.fldImgL.value.trim(),
+      extraInfo:      fields.extraInfo.getLines()
     };
   }
 
+  // Apply a color to a specific picker
   function setFieldColor(field, color) {
-    const target = pickrs[field];
-    if (target && color) target.setColor(color);
+    const p = pickrs[field];
+    if (p && color) p.setColor(color);
   }
 
+  // Ensure pickers are ready on initial load
   let _id = null;
+  initPickrs();
 
   return {
     form,
