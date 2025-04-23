@@ -1,4 +1,4 @@
-// @version: 3
+// @version: 4
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../../pickrManager.js";
@@ -108,6 +108,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   buttonRow.append(btnSave, btnCancel, btnDelete);
   _subheading.appendChild(buttonRow);
+
+  // Reorder form: move extra info above value/quantity, insert dividers
+  const hrAboveExtras = document.createElement("hr");
+  const hrBelowExtras = document.createElement("hr");
+  form.insertBefore(hrAboveExtras, fields.rowExtras);
+  form.insertBefore(hrBelowExtras, fields.rowValue);
+  form.insertBefore(fields.rowExtras, fields.rowValue);
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
