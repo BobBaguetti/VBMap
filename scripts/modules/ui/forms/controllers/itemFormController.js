@@ -15,12 +15,22 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   function initPickrs() {
     requestAnimationFrame(() => {
-      pickrs.name        = createPickr(`#${fields.colorName.id}`);
-      pickrs.itemType    = createPickr(`#${fields.colorType.id}`);
-      pickrs.rarity      = createPickr(`#${fields.colorRarity.id}`);
-      pickrs.description = createPickr(`#${fields.colorDesc.id}`);
-      pickrs.value       = createPickr(`#${fields.colorValue.id}`);
-      pickrs.quantity    = createPickr(`#${fields.colorQty.id}`);
+      const tryInit = (key, id) => {
+        const el = document.querySelector(id);
+        if (el) {
+          pickrs[key] = createPickr(id);
+        } else {
+          console.warn(`⚠️ Skipping Pickr init: ${id} not found`);
+        }
+      };
+  
+      console.log("🧪 Checking Pickr targets...");
+      tryInit("name", "#fld-name-color");
+      tryInit("itemType", "#fld-item-type-color");
+      tryInit("rarity", "#fld-rarity-color");
+      tryInit("description", "#fld-desc-item-color");
+      tryInit("value", "#fld-value-color");
+      tryInit("quantity", "#fld-quantity-color");
     });
   }
 
