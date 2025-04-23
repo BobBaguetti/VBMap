@@ -105,13 +105,19 @@ export function initTestItemDefinitionsModal(db) {
   }
 
   function positionPreviewPanel() {
-    if (!modal || !modalContent || !previewApi?.container) return;
+    if (!modal || !previewApi?.container) return; // ✅ Guard first
   
-    const rect = modalContent.getBoundingClientRect();
-    previewApi.container.style.top = `${rect.top}px`;
-    previewApi.container.style.left = `${rect.right + 30}px`;
+    const modalContent = modal.querySelector(".modal-content");
+    if (!modalContent) return;
+  
+    const modalRect = modalContent.getBoundingClientRect();
+    const previewEl = previewApi.container;
+    const previewRect = previewEl.getBoundingClientRect();
+  
+    previewEl.style.position = "absolute";
+    previewEl.style.left = `${modalRect.right + 30}px`;
+    previewEl.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
   }
-  
   
 
   previewApi.hide();

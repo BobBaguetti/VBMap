@@ -1,11 +1,11 @@
-// @version: 3
+// @version: 4
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer } from "../../utils/listUtils.js";
 import {
   loadNpcDefinitions, saveNpcDefinition, updateNpcDefinition,
-  deleteNpcDefinition, subscribeNpcDefinitions
+  deleteNpcDefinition
 } from "../../services/npcDefinitionsService.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createNpcFormController } from "../forms/controllers/npcFormController.js";
@@ -18,7 +18,7 @@ export function initNpcDefinitionsModal(db) {
     bodyWrap,
     layoutSwitcher,
     previewApi,
-    open,
+    open: openModal,
     close
   } = createDefinitionModalShell({
     id: "npc-definitions-modal",
@@ -91,20 +91,19 @@ export function initNpcDefinitionsModal(db) {
   }
 
   function positionPreviewPanel() {
-    if (!modal || !previewApi?.container) return; // ✅ Guard first
-  
+    if (!modal || !previewApi?.container) return;
+
     const modalContent = modal.querySelector(".modal-content");
     if (!modalContent) return;
-  
+
     const modalRect = modalContent.getBoundingClientRect();
     const previewEl = previewApi.container;
     const previewRect = previewEl.getBoundingClientRect();
-  
+
     previewEl.style.position = "absolute";
     previewEl.style.left = `${modalRect.right + 30}px`;
     previewEl.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
   }
-  
 
   previewApi.hide(); // Prevent showing preview on page load
 
@@ -112,16 +111,16 @@ export function initNpcDefinitionsModal(db) {
     open: async () => {
       formApi.reset();
       await refreshDefinitions();
-      open();
-  
+      openModal();
+
       requestAnimationFrame(() => {
         positionPreviewPanel();
         previewApi.show();
       });
-  
+
       const def = formApi.getCustom?.();
       if (def) previewApi.setFromDefinition(def);
-  
+
       formApi.initPickrs?.();
     },
     refresh: refreshDefinitions
