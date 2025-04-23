@@ -1,4 +1,4 @@
-// @version: 4
+// @version: 5
 // @file: /scripts/modules/ui/forms/itemFormController.js
 
 import { createPickr } from "../pickrManager.js";
@@ -7,20 +7,35 @@ import { createItemFormLayout } from "./itemFormBuilder.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
- * Handles wiring, reset, populate, getCustom, and color sync logic.
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemFormLayout();
   const pickrs = {};
 
+  function destroyPickrs() {
+    for (const key in pickrs) {
+      pickrs[key]?.destroy?.();
+      delete pickrs[key];
+    }
+  }
+
   function initPickrs() {
+    destroyPickrs();
     requestAnimationFrame(() => {
-      pickrs.name     = createPickr(`#${fields.colorName.id}`);
-      pickrs.itemType = createPickr(`#${fields.colorType.id}`);
-      pickrs.rarity   = createPickr(`#${fields.colorRarity.id}`);
-      pickrs.description = createPickr(`#${fields.colorDesc.id}`);
-      pickrs.value    = createPickr(`#${fields.colorValue.id}`);
-      pickrs.quantity = createPickr(`#${fields.colorQty.id}`);
+      const colorTargets = {
+        name: fields.colorName,
+        itemType: fields.colorType,
+        rarity: fields.colorRarity,
+        description: fields.colorDesc,
+        value: fields.colorValue,
+        quantity: fields.colorQty
+      };
+
+      for (const [key, el] of Object.entries(colorTargets)) {
+        const btn = document.getElementById(el.id);
+        if (btn) btn.innerHTML = ""; // Clean up any lingering Pickr DOM
+        pickrs[key] = createPickr(`#${el.id}`);
+      }
     });
   }
 
@@ -38,7 +53,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = null;
     _subheading.textContent = "Add Item";
 
-    // Clear pickr colors
     for (const key in pickrs) {
       pickrs[key]?.setColor(null);
     }
