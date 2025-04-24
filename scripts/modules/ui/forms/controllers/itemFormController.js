@@ -1,12 +1,12 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.10
+// @version: 4.11
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
 import { createItemForm } from "../builders/itemFormBuilder.js";
 import { createIcon } from "../../../utils/iconUtils.js";
-import { rarityColors } from "../../../utils/colorPresets.js";  // ← new import
+import { rarityColors, itemTypeColors } from "../../../utils/colorPresets.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
@@ -15,6 +15,7 @@ import { rarityColors } from "../../../utils/colorPresets.js";  // ← new impor
 export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createItemForm();
   const pickrs = {};
+  let listenersAttached = false;
 
   // ─── Header + Buttons ───────────────────────────────────────────────
   const subheadingWrap = document.createElement("div");
@@ -77,13 +78,23 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       }
     });
 
-    // wire up rarity → color sync
-    fields.fldRarity.addEventListener("change", () => {
-      const c = rarityColors[fields.fldRarity.value] || "#E5E6E8";
-      // update both the rarity swatch and the name swatch
-      pickrs.rarity?.setColor(c);
-      pickrs.name?.setColor(c);
-    });
+    // only attach dropdown listeners one time
+    if (!listenersAttached) {
+      listenersAttached = true;
+
+      // when rarity is changed, recolor both rarity & name swatches
+      fields.fldRarity.addEventListener("change", () => {
+        const c = rarityColors[fields.fldRarity.value] || "#E5E6E8";
+        pickrs.rarity?.setColor(c);
+        pickrs.name?.setColor(c);
+      });
+
+      // when item-type changes, recolor its swatch
+      fields.fldType.addEventListener("change", () => {
+        const c = itemTypeColors[fields.fldType.value] || "#E5E6E8";
+        pickrs.itemType?.setColor(c);
+      });
+    }
   }
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
@@ -96,7 +107,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = "";
     fields.fldImgS.value   = "";
     fields.fldImgL.value   = "";
-    // Clear extra-info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
@@ -104,7 +114,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
 
     initPickrs();
-    // reset all pickers to default grey
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
 
@@ -118,7 +127,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value       = def.quantity || "";
     fields.fldImgS.value      = def.imageSmall || "";
     fields.fldImgL.value      = def.imageLarge || "";
-    // Populate extra-info, editable
     fields.extraInfo.setLines(def.extraInfo || [], false);
 
     _id = def.id || null;
@@ -126,7 +134,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "";
 
     initPickrs();
-    // reapply saved colors (this will also sync name→rarity below, but setColor is idempotent)
+    // reapply saved colors
     pickrs.name?.setColor(def.nameColor      || "#E5E6E8");
     pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
     pickrs.rarity?.setColor(def.rarityColor    || "#E5E6E8");
