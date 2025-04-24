@@ -1,7 +1,7 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted;
 //           edits to comments only when code changes.
 // @file:    /scripts/script.js
-// @version: 5.5
+// @version: 5.6
 
 import { initializeMap } from "./modules/map/map.js";
 import { showContextMenu } from "./modules/ui/uiManager.js";
@@ -43,22 +43,23 @@ const { map } = initializeMap();
 const clusterItemLayer = L.markerClusterGroup();
 const flatItemLayer    = L.layerGroup();
 
+// world layers, initially point Item to flat (grouping OFF)
 const layers = {
   Door:               L.layerGroup(),
   "Extraction Portal":L.layerGroup(),
-  Item:               clusterItemLayer,
+  Item:               flatItemLayer,
   Teleport:           L.layerGroup(),
   "Spawn Point":      L.layerGroup()
 };
 
 // add all non-Item layers
-Object.values(layers).forEach(layer => layer.addTo(map));
-
-// prepare flat layer (but do not display it)
+Object.entries(layers).forEach(([key, layer]) => {
+  if (key !== "Item") layer.addTo(map);
+});
+// show flat layer by default
 flatItemLayer.addTo(map);
-map.removeLayer(flatItemLayer);
 
-let groupingOn = false; // start with grouping OFF
+let groupingOn = false;
 
 /* ------------------------------------------------------------------ *
  *  Sidebar Setup
@@ -68,6 +69,7 @@ const allMarkers = [];
 // callbacks for sidebar to flip grouping
 const groupingCallbacks = {
   enableGrouping: () => {
+    // move from flat → cluster
     flatItemLayer.eachLayer(m => {
       flatItemLayer.removeLayer(m);
       clusterItemLayer.addLayer(m);
@@ -78,6 +80,7 @@ const groupingCallbacks = {
     groupingOn = true;
   },
   disableGrouping: () => {
+    // move from cluster → flat
     clusterItemLayer.eachLayer(m => {
       clusterItemLayer.removeLayer(m);
       flatItemLayer.addLayer(m);
@@ -88,9 +91,6 @@ const groupingCallbacks = {
     groupingOn = false;
   }
 };
-
-// ensure clustering is off on load
-groupingCallbacks.disableGrouping();
 
 const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db,

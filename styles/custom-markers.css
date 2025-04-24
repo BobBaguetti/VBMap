@@ -1,6 +1,7 @@
-/* @keep:    Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
+/* @keep:    Comments must NOT be deleted unless their associated code is also deleted;
+            comments may only be edited when editing their code. */
 /* @file:    /styles/custom-markers.css */
-/* @version: 2 */
+/* @version: 3 */
 
 /* Custom Marker Style */
 .custom-marker-container {
@@ -32,6 +33,12 @@
   object-fit: contain;
 }
 
+/* When the map has .small-markers, shrink the inner marker only */
+#map.small-markers .custom-marker {
+  transform: scale(0.5);
+  transform-origin: center bottom;
+}
+
 /* Popup Content Elements */
 .popup-header {
   display: flex;
@@ -52,11 +59,4 @@
 .popup-description,
 .popup-extra-line {
   color: #e5e6e8;
-}
-
-/* ——— Small-Markers Toggle ———
-   When the map has the .small-markers class, shrink all markers */
-#map.small-markers .custom-marker-container {
-  transform: scale(0.5);
-  transform-origin: center bottom;
 }
