@@ -1,8 +1,9 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
 
 import { createNameField, createExtraInfoField } from "../universalForm.js";
-import { createDropdownField, createTextField }  from "../../ui/uiKit.js";
+// ← fixed path: up two levels into /scripts/modules/ui, then uiKit.js
+import { createDropdownField, createTextField }  from "../../uiKit.js";
 
 /**
  * Builds the NPC form with fields:
