@@ -1,11 +1,12 @@
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted;
+//           edits to comments only when code changes.
 // @file:    /scripts/modules/sidebar/sidebarManager.js
-// @version: 9.2
+// @version: 9.3
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
-import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";        // old modal
-import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js"; // test modal
+import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
+import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js";
 import { initQuestDefinitionsModal } from "../ui/modals/questDefinitionsModal.js";
 import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
 
@@ -48,17 +49,17 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   // clear any static labels
   settingsSect.querySelectorAll("label").forEach(l => l.remove());
 
-  // — Marker Grouping —
+  // — Marker Grouping — (off by default; clustering disabled on load)
   const groupingLabel = document.createElement("label");
   groupingLabel.innerHTML = `<input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span>`;
   settingsSect.appendChild(groupingLabel);
   const groupingCb = document.getElementById("enable-grouping");
-  groupingCb.checked = false; // default off
+  groupingCb.checked = false;
   groupingCb.addEventListener("change", () => {
     console.log("[sidebar] marker grouping:", groupingCb.checked);
-    if (layers.Item) {
-      groupingCb.checked ? map.addLayer(layers.Item)
-                         : map.removeLayer(layers.Item);
+    if (layers.Item && typeof layers.Item.enableClustering === "function") {
+      groupingCb.checked ? layers.Item.enableClustering()
+                         : layers.Item.disableClustering();
     }
   });
 
@@ -181,16 +182,16 @@ export async function setupSidebar(map, layers, allMarkers, db) {
      Admin Tools
   ---------------------------------------------------------------- */
   console.log("[sidebar] Admin tools injected");
-  const existing = sidebar.querySelector("#sidebar-admin-tools");
-  if (existing) existing.remove();
-
-  // create and inject Admin Tools header
+  // inject admin header
+  const existingHeader = sidebar.querySelector(".admin-header");
+  if (existingHeader) existingHeader.remove();
   const adminHeader = document.createElement("h2");
   adminHeader.className = "admin-header";
   adminHeader.innerHTML = `<i class="fas fa-tools"></i> Admin Tools`;
   sidebar.appendChild(adminHeader);
 
-  // create and inject button container
+  const existingWrap = sidebar.querySelector("#sidebar-admin-tools");
+  if (existingWrap) existingWrap.remove();
   const adminWrap = document.createElement("div");
   adminWrap.id = "sidebar-admin-tools";
   [

@@ -1,6 +1,7 @@
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted.
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted;
+//           edits to comments only when code changes.
 // @file:    /scripts/script.js
-// @version: 5.1
+// @version: 5.2
 
 import { initializeMap } from "./modules/map/map.js";
 import { showContextMenu } from "./modules/ui/uiManager.js";
@@ -45,7 +46,12 @@ const layers = {
   Teleport:           L.layerGroup(),
   "Spawn Point":      L.layerGroup()
 };
+
+// add *all* layers to the map
 Object.values(layers).forEach(layerGroup => layerGroup.addTo(map));
+
+// disable clustering by default
+itemLayer.disableClustering();
 
 /* ------------------------------------------------------------------ *
  *  Sidebar Setup
@@ -62,17 +68,11 @@ const markerForm = initMarkerModal(db);
  *  Old Item-Definitions Modal
  * ------------------------------------------------------------------ */
 const itemModal = initItemDefinitionsModal(db);
-//  -- removed:
-// document.getElementById("manage-item-definitions")
-//   .addEventListener("click", () => itemModal.open());
 
 /* ------------------------------------------------------------------ *
  *  Quest-Definitions Modal
  * ------------------------------------------------------------------ */
 const questModal = initQuestDefinitionsModal(db);
-//  -- removed:
-// document.getElementById("manage-quest-definitions")
-//   .addEventListener("click", () => questModal.open());
 
 /* ------------------------------------------------------------------ *
  *  Subscriptions for Item Definition Changes
@@ -192,7 +192,11 @@ map.on("contextmenu", evt => {
 // Hide context menu on click outside
 document.addEventListener("click", e => {
   const contextMenu = document.getElementById("context-menu");
-  if (contextMenu && contextMenu.style.display === "block" && !contextMenu.contains(e.target)) {
+  if (
+       contextMenu &&
+       contextMenu.style.display === "block" &&
+      !contextMenu.contains(e.target)
+     ) {
     contextMenu.style.display = "none";
   }
 });
