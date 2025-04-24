@@ -1,6 +1,6 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
 // @file:    /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 21
+// @version: 22
 
 import {
   createModal, closeModal, openModal
@@ -44,13 +44,13 @@ export function initTestItemDefinitionsModal(db) {
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi    = createPreviewPanel("item");
 
-  // form (with its own header + color-btns)
+  // form (includes its own header+buttons)
   const formApi = createItemFormController({
     onCancel: () => {
       formApi.reset();
       previewApi.setFromDefinition({});
       previewApi.show();
-      // double-rAF to ensure all wrappers are in
+      // re-init any pickrs on cancel
       requestAnimationFrame(() =>
         requestAnimationFrame(() => formApi.initPickrs())
       );
@@ -88,7 +88,10 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  // assemble modal body
+  // **PRIME the pickr instances right away** so they exist before the first open
+  setTimeout(() => formApi.initPickrs(), 0);
+
+  // build the body
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
     display:      "flex",
@@ -96,6 +99,7 @@ export function initTestItemDefinitionsModal(db) {
     flex:         "1 1 auto",
     minHeight:    "0"
   });
+
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
@@ -108,7 +112,6 @@ export function initTestItemDefinitionsModal(db) {
     getDefinitions: () => definitions,
     onEntryClick: def => {
       formApi.populate(def);
-      // double-rAF for populate too
       requestAnimationFrame(() =>
         requestAnimationFrame(() => formApi.initPickrs())
       );
@@ -153,7 +156,7 @@ export function initTestItemDefinitionsModal(db) {
       await refreshDefinitions();
       openModal(modal);
 
-      // double-rAF on open
+      // ensure pickrs and preview are all set after the modal slides in
       requestAnimationFrame(() =>
         requestAnimationFrame(() => {
           formApi.initPickrs();
