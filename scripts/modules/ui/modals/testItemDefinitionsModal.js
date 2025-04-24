@@ -1,5 +1,6 @@
-// @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 18
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
+// @file:    /scripts/modules/ui/modals/testItemDefinitionsModal.js
+// @version: 19
 
 import {
   createModal, closeModal, openModal
@@ -59,11 +60,8 @@ export function initTestItemDefinitionsModal(db) {
     },
     onSubmit: async (payload) => {
       applyColorPresets(payload);
-      if (payload.id) {
-        await updateItemDefinition(db, payload.id, payload);
-      } else {
-        await saveItemDefinition(db, null, payload);
-      }
+      if (payload.id) await updateItemDefinition(db, payload.id, payload);
+      else             await saveItemDefinition(db, null, payload);
       await refreshDefinitions();
       formApi.reset();
       previewApi.setFromDefinition({});
@@ -101,6 +99,8 @@ export function initTestItemDefinitionsModal(db) {
     getDefinitions: () => definitions,
     onEntryClick: def => {
       formApi.populate(def);
+      // ← re-attach Pickr instances for this newly populated form
+      formApi.initPickrs();
       previewApi.setFromDefinition(def);
       previewApi.show();
     },
@@ -142,6 +142,7 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
       openModal(modal);
+      // initialize Pickr on the empty form
       formApi.initPickrs();
       // reset preview blank on open
       previewApi.setFromDefinition({});
