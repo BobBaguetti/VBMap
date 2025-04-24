@@ -1,6 +1,6 @@
 /* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
-/* @version: 22 */
+/* @version: 23 */
 
 import {
   createModal, closeModal, openModal
@@ -9,7 +9,7 @@ import {
 import { createDefListContainer } from "../../utils/listUtils.js";
 import {
   loadItemDefinitions, saveItemDefinition, updateItemDefinition,
-  deleteItemDefinition, subscribeItemDefinitions
+  deleteItemDefinition
 } from "../../services/itemDefinitionsService.js";
 
 import { createLayoutSwitcher } from "../uiKit.js";
@@ -33,7 +33,6 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  // layout switcher in header
   const layoutSwitcher = createLayoutSwitcher({
     available: ["row", "stacked", "gallery"],
     defaultView: "row",
@@ -41,7 +40,6 @@ export function initTestItemDefinitionsModal(db) {
   });
   header.appendChild(layoutSwitcher);
 
-  // list + preview + form
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi    = createPreviewPanel("item");
   const formApi       = createItemFormController({
@@ -70,10 +68,8 @@ export function initTestItemDefinitionsModal(db) {
 
   formApi.form.classList.add("ui-scroll-float");
 
-  // Track the definition we’re editing
+  // Track current definition and live-update preview
   let currentDef = null;
-
-  // Re-render preview on any form change, preserving original image if not explicitly cleared
   formApi.form.addEventListener("input",  updatePreview);
   formApi.form.addEventListener("change", updatePreview);
 
@@ -87,34 +83,29 @@ export function initTestItemDefinitionsModal(db) {
     previewApi.show();
   }
 
-  // build the body
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
-    display: "flex",
+    display:       "flex",
     flexDirection: "column",
-    flex: "1 1 auto",
-    minHeight: "0"
+    flex:          "1 1 auto",
+    minHeight:     "0"
   });
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
   content.appendChild(bodyWrap);
 
-  // ← Initialize pickrs immediately on DOM insert
+  // Prime Pickr on first insert
   formApi.initPickrs();
 
-  // list manager wiring
   let definitions = [];
   const listApi = createDefinitionListManager({
-    container: listContainer,
+    container:    listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
       currentDef = def;
-
-      // ensure pickrs exist before populate
       formApi.initPickrs();
       formApi.populate(def);
-
       previewApi.setFromDefinition(def);
       previewApi.show();
     },
@@ -129,14 +120,12 @@ export function initTestItemDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
-  // move dark search-bar into header
   const listHeaderEl = listContainer.previousElementSibling;
   if (listHeaderEl?.classList.contains("list-header")) {
     listHeaderEl.remove();
     header.appendChild(listHeaderEl);
   }
 
-  // preview positioning helper
   function positionPreviewPanel() {
     const mc = modal.querySelector(".modal-content");
     if (!mc || !previewApi.container) return;
@@ -155,16 +144,9 @@ export function initTestItemDefinitionsModal(db) {
     open: async () => {
       formApi.reset();
       await refreshDefinitions();
-
-      // clear any leftover Pickr instances
       destroyAllPickrs();
-
       openModal(modal);
-
-      // now that modal is visible, create fresh pickrs
       formApi.initPickrs();
-
-      // blank preview
       previewApi.setFromDefinition({});
       requestAnimationFrame(() => {
         positionPreviewPanel();

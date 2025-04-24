@@ -1,11 +1,11 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.11
+// @version: 4.12
 
-import { createPickr, destroyAllPickrs } from "../../pickrManager.js";
+import { createPickr, destroyAllPickrs }    from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
-import { createItemForm } from "../builders/itemFormBuilder.js";
-import { createIcon } from "../../../utils/iconUtils.js";
+import { createItemForm }                    from "../builders/itemFormBuilder.js";
+import { createIcon }                        from "../../../utils/iconUtils.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
@@ -17,9 +17,11 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   // ─── Header + Buttons ───────────────────────────────────────────────
   const subheadingWrap = document.createElement("div");
-  subheadingWrap.style.display = "flex";
-  subheadingWrap.style.justifyContent = "space-between";
-  subheadingWrap.style.alignItems = "center";
+  Object.assign(subheadingWrap.style, {
+    display:       "flex",
+    justifyContent:"space-between",
+    alignItems:    "center"
+  });
 
   const subheading = document.createElement("h3");
   subheading.textContent = "Add Item";
@@ -29,24 +31,24 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   buttonRow.className = "floating-buttons";
 
   const btnSave = document.createElement("button");
-  btnSave.type = "submit";
+  btnSave.type      = "submit";
   btnSave.className = "ui-button";
   btnSave.textContent = "Save";
 
   const btnClear = document.createElement("button");
-  btnClear.type = "button";
+  btnClear.type      = "button";
   btnClear.className = "ui-button";
   btnClear.textContent = "Clear";
-  btnClear.onclick = onCancel;
+  btnClear.onclick   = onCancel;
 
   const btnDelete = document.createElement("button");
-  btnDelete.type = "button";
+  btnDelete.type      = "button";
   btnDelete.className = "ui-button-delete";
-  btnDelete.title = "Delete this item";
-  btnDelete.style.width = "28px";
+  btnDelete.title     = "Delete this item";
+  btnDelete.style.width  = "28px";
   btnDelete.style.height = "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.style.display = "none"; // hidden in Add mode
+  btnDelete.style.display = "none";
   btnDelete.onclick = () => {
     if (_id != null) {
       const name = fields.fldName.value || "this item";
@@ -70,27 +72,29 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       value:       fields.colorValue,
       quantity:    fields.colorQty
     }).forEach(([key, btn]) => {
-      // only initialize if element is in DOM
       if (!pickrs[key] && document.body.contains(btn)) {
         pickrs[key] = createPickr(`#${btn.id}`);
       }
     });
   }
 
-  // ─── Keep name swatch in sync with rarity presets ──────────────────
-  fields.fldRarity.addEventListener("change", () => {
+  // ─── Sync Presets on Rarity or Type Change ─────────────────────────
+  function applyPresetsAndRefresh(keyChanged) {
     initPickrs();
-
-    // compute and apply the preset colors
     const tmp = {
       itemType: fields.fldType.value,
       rarity:   fields.fldRarity.value
     };
     applyColorPresets(tmp);
 
+    // update all three swatches
     pickrs.name?.setColor(tmp.nameColor);
+    pickrs.itemType?.setColor(tmp.itemTypeColor);
     pickrs.rarity?.setColor(tmp.rarityColor);
-  });
+  }
+
+  fields.fldRarity.addEventListener("change", () => applyPresetsAndRefresh("rarity"));
+  fields.fldType  .addEventListener("change", () => applyPresetsAndRefresh("itemType"));
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
@@ -102,16 +106,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = "";
     fields.fldImgS.value   = "";
     fields.fldImgL.value   = "";
-    // Clear extra-info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
 
-    // tear down any existing Pickr instances now that the form is reset
     destroyAllPickrs();
-    // clear our local map of pickr instances
     Object.keys(pickrs).forEach(key => delete pickrs[key]);
   }
 
@@ -125,16 +126,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value       = def.quantity || "";
     fields.fldImgS.value      = def.imageSmall || "";
     fields.fldImgL.value      = def.imageLarge || "";
-    // Populate extra-info, editable
     fields.extraInfo.setLines(def.extraInfo || [], false);
 
     _id = def.id || null;
     subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
 
-    // Now initialize pickrs and reapply saved colors
     initPickrs();
-
     pickrs.name?.setColor(def.nameColor       || "#E5E6E8");
     pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
     pickrs.rarity?.setColor(def.rarityColor     || "#E5E6E8");
