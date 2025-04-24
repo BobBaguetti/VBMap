@@ -24,7 +24,16 @@ import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js";
 /* ------------------------------------------------------------------ *
  *  Firebase Initialization
  * ------------------------------------------------------------------ */
-const db = initializeFirebase({ /* … */ });
+const db = initializeFirebase({
+  apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
+  authDomain: "vbmap-cc834.firebaseapp.com",
+  projectId: "vbmap-cc834",
+  storageBucket: "vbmap-cc834.firebasestorage.app",
+  messagingSenderId: "244112699360",
+  appId: "1:244112699360:web:95f50adb6e10b438238585",
+  measurementId: "G-7FDNWLRM95"
+});
+
 
 /* ------------------------------------------------------------------ *
  *  Map & Layers Setup
