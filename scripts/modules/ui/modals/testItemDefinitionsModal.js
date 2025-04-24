@@ -1,6 +1,6 @@
 /* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
-/* @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
-/* @version: 23 */
+/* @keep: Comments must NOT be deleted unless their associated code is also deleted. */
+/* @version: 24 */
 
 import {
   createModal, closeModal, openModal
@@ -9,7 +9,7 @@ import {
 import { createDefListContainer } from "../../utils/listUtils.js";
 import {
   loadItemDefinitions, saveItemDefinition, updateItemDefinition,
-  deleteItemDefinition, subscribeItemDefinitions
+  deleteItemDefinition
 } from "../../services/itemDefinitionsService.js";
 
 import { createLayoutSwitcher } from "../uiKit.js";
@@ -17,8 +17,7 @@ import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
-// Pull in both cleanup and init:
-import { destroyAllPickrs, initModalPickrs } from "../pickrManager.js";
+import { destroyAllPickrs } from "../pickrManager.js";
 
 export function initTestItemDefinitionsModal(db) {
   const { modal, content, header } = createModal({
@@ -34,7 +33,7 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  // layout switcher in header
+  // Layout switcher in header
   const layoutSwitcher = createLayoutSwitcher({
     available: ["row", "stacked", "gallery"],
     defaultView: "row",
@@ -42,7 +41,7 @@ export function initTestItemDefinitionsModal(db) {
   });
   header.appendChild(layoutSwitcher);
 
-  // list + preview + form
+  // List + Preview + Form
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi    = createPreviewPanel("item");
   const formApi       = createItemFormController({
@@ -78,7 +77,7 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  // build the body
+  // Build the modal body
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
     display: "flex",
@@ -91,16 +90,16 @@ export function initTestItemDefinitionsModal(db) {
   bodyWrap.appendChild(formApi.form);
   content.appendChild(bodyWrap);
 
-  // list manager wiring
+  // List‐manager wiring
   let definitions = [];
   const listApi = createDefinitionListManager({
     container: listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
-      // 1) populate inputs
+      // 1) populate the form (this also calls initPickrs internally)
       formApi.populate(def);
-      // 2) wait a frame, then wire up the pickers on the form
-      requestAnimationFrame(() => initModalPickrs(formApi.form));
+      // 2) explicitly re-init, in case any new swatches appeared
+      formApi.initPickrs();
       previewApi.setFromDefinition(def);
       previewApi.show();
     },
@@ -115,14 +114,14 @@ export function initTestItemDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
-  // move dark search-bar into header
+  // Move the search‐bar into the header
   const listHeaderEl = listContainer.previousElementSibling;
   if (listHeaderEl?.classList.contains("list-header")) {
     listHeaderEl.remove();
     header.appendChild(listHeaderEl);
   }
 
-  // preview positioning helper
+  // Position the preview panel
   function positionPreviewPanel() {
     const mc = modal.querySelector(".modal-content");
     if (!mc || !previewApi.container) return;
@@ -142,15 +141,16 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
 
-      // tear down any leftover Pickr instances
+      // Tear down any leftover Pickr instances
       destroyAllPickrs();
 
+      // Show modal
       openModal(modal);
 
-      // wait a frame, then wire pickers on the form
-      requestAnimationFrame(() => initModalPickrs(formApi.form));
+      // Initialize Pickr on the fresh form
+      formApi.initPickrs();
 
-      // blank preview
+      // Blank preview
       previewApi.setFromDefinition({});
       requestAnimationFrame(() => {
         positionPreviewPanel();
