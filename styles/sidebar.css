@@ -1,6 +1,6 @@
-/* @keep: Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
-/* @file: /styles/sidebar.css */
-/* @version: 9.0 */
+/* @keep:    Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
+/* @file:     /styles/sidebar.css */
+/* @version: 8.1 */
 
 /* Slightly wider, more compact filter rows */
 #sidebar {
@@ -46,49 +46,45 @@
   color: #e5e6e8;
 }
 
-/* ========== Multi-column filter grid ========== */
+/* Flex-layout labels (for settings & filters) */
+#sidebar label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  cursor: pointer;
+}
+
+/* Filters: multi-column grid */
 .filter-group .toggle-group {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 4px 8px;
 }
+.filter-group .toggle-group span {
+  /* make the span clickable and styleable */
+}
 
-/* Hide native checkbox but keep it focusable/clickable */
+/* Hide native checkbox but keep in document flow */
 .filter-group .toggle-group input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
-
-/* Turn the label into a toggle button */
-.filter-group .toggle-group label {
-  position: relative;
-  padding: 4px 8px;
-  border-radius: 4px;
-  transition: background 0.2s, color 0.2s, text-decoration 0.2s;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-}
-.filter-group .toggle-group label:hover {
-  background: rgba(255,255,255,0.1);
-}
-
-/* Style the name span when checked */
+/* Checked state */
 .filter-group .toggle-group input:checked + span {
   color: #e5e6e8;
   text-decoration: none;
   font-weight: 500;
 }
-
-/* Style the name span when unchecked */
+/* Unchecked state */
 .filter-group .toggle-group input:not(:checked) + span {
   color: #555;
   text-decoration: line-through;
   font-weight: 400;
 }
 
-/* Dark inputs in sidebar */
+/* Inputs in sidebar (search, etc) */
 #sidebar input,
 #sidebar select,
 #sidebar textarea {
@@ -133,10 +129,4 @@
 }
 .filter-group.collapsed .toggle-group {
   display: none;
-}
-
-/* ── Small-Markers scaling ── */
-#map.small-markers .custom-marker-container {
-  transform: scale(0.5);
-  transform-origin: center center;
 }

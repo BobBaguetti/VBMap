@@ -1,6 +1,6 @@
-<!-- @keep: Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. -->
-<!-- @file: /index.html -->
-<!-- @version: 13.0 -->
+<!-- @keep:    Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. -->
+<!-- @file:     /index.html -->
+<!-- @version: 12.1 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,7 +56,7 @@
           <label><input type="checkbox" checked data-layer="Item" /><span>Item</span></label>
           <label><input type="checkbox" checked data-layer="Teleport" /><span>Teleport</span></label>
           <label><input type="checkbox" checked data-layer="Spawn Point" /><span>Spawn points</span></label>
-          <!-- PvE toggle injected via JS -->
+          <!-- PvE toggle will be injected by JS -->
         </div>
       </div>
 
@@ -67,20 +67,15 @@
           <!-- dynamically populated -->
         </div>
       </div>
-      <!-- Enemy Filters injected via JS below Items -->
+      <!-- Enemy Filters will be injected here -->
+
     </div>
 
     <!-- Settings Section -->
-    <div class="sidebar-section">
+    <div class="sidebar-section" id="settings-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
-      <label>
-        <input type="checkbox" id="enable-grouping" />
-        <span>Enable Marker Grouping</span>
-      </label>
-      <label>
-        <input type="checkbox" id="enable-small-markers" />
-        <span>Small Markers (50%)</span>
-      </label>
+      <label><input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span></label>
+      <label><input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span></label>
     </div>
 
     <!-- Search Section -->
@@ -89,7 +84,7 @@
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
     </div>
 
-    <!-- Admin Tools container is injected/overwritten in JS -->
+    <!-- Admin Tools will be injected by JS -->
   </div>
 
   <!-- Map Container -->

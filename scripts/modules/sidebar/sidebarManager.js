@@ -1,11 +1,11 @@
-// @keep: Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 10.0
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes.
+// @file:    /scripts/modules/sidebar/sidebarManager.js
+// @version: 9.1
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
-import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";        // old modal
-import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js"; // test modal
+import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
+import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js";
 import { initQuestDefinitionsModal } from "../ui/modals/questDefinitionsModal.js";
 import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
 
@@ -14,14 +14,14 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   const searchBar     = document.getElementById("search-bar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebar       = document.getElementById("sidebar");
-  const mapContainer  = document.getElementById("map");
+  const settingsSect  = document.getElementById("settings-section");
 
-  if (!searchBar || !sidebarToggle || !sidebar || !mapContainer) {
+  if (!searchBar || !sidebarToggle || !sidebar) {
     console.warn("[sidebar] Missing elements");
     return { filterMarkers() {} };
   }
 
-  // style searchbar
+  // Dark-style the search input
   searchBar.classList.add("ui-input");
 
   // Sidebar toggle
@@ -33,37 +33,48 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     map.invalidateSize();
   });
 
-  // Accordion behavior
+  // Accordion behavior for filters
   document.querySelectorAll(".filter-group").forEach(group => {
     const header = group.querySelector("h3");
     header.addEventListener("click", () => {
       group.classList.toggle("collapsed");
-      console.log(`[sidebar] toggled ${group.id}`);
+      console.log(`[sidebar] toggled ${group.id || header.textContent}`);
     });
   });
 
-  // PvE master toggle
-  const mainToggleGroup = document.querySelector("#main-filters .toggle-group");
-  const pveLabel        = document.createElement("label");
-  pveLabel.innerHTML    = `<input type="checkbox" id="toggle-pve" checked /><span>PvE</span>`;
-  mainToggleGroup.appendChild(pveLabel);
-  console.log("[sidebar] PvE toggle appended");
+  /* ----------------------------------------------------------------
+     Settings toggles
+  ---------------------------------------------------------------- */
+  // Marker grouping (off by default)
+  const groupingCb = document.getElementById("enable-grouping");
+  groupingCb.checked = false;
+  groupingCb.addEventListener("change", () => {
+    console.log("[sidebar] marker grouping:", groupingCb.checked);
+    // toggle the cluster layer on/off
+    if (layers.Item) {
+      if (groupingCb.checked) map.addLayer(layers.Item);
+      else map.removeLayer(layers.Item);
+    }
+  });
 
-  // Small-Markers toggle
-  const settingsGroup = sidebar.querySelector(".sidebar-section:nth-of-type(2) .sidebar-section, .sidebar-section:nth-of-type(2)"); 
-  // (the “Settings” section is 2nd .sidebar-section)
-  const smallLabel    = document.createElement("label");
-  smallLabel.innerHTML = `<input type="checkbox" id="enable-small-markers" /><span>Small Markers (50%)</span>`;
-  settingsGroup.appendChild(smallLabel);
-  document.getElementById("enable-small-markers")
-    .addEventListener("change", e => {
-      mapContainer.classList.toggle("small-markers", e.target.checked);
+  // Small-markers scale toggle (off by default)
+  const smallCb = document.getElementById("toggle-small-markers");
+  smallCb.checked = false;
+  smallCb.addEventListener("change", () => {
+    console.log("[sidebar] small markers:", smallCb.checked);
+    const scale = smallCb.checked ? 0.5 : 1;
+    allMarkers.forEach(({ markerObj }) => {
+      const el = markerObj.getElement();
+      if (el) el.style.transform = `scale(${scale})`;
     });
+  });
 
-  // Core filtering
+  /* ----------------------------------------------------------------
+     Core filtering logic
+  ---------------------------------------------------------------- */
   function filterMarkers() {
     const nameQuery = (searchBar.value || "").toLowerCase();
-    const pveOn     = document.getElementById("toggle-pve").checked;
+    const pveOn     = document.getElementById("toggle-pve")?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
       const isNpc       = data.type === "npc";
@@ -103,14 +114,16 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     });
   }
 
-  // Wire up the master inputs
+  // Wire up search + toggles
   searchBar.addEventListener("input", filterMarkers);
   document
     .querySelectorAll("#main-filters .toggle-group input")
     .forEach(cb => cb.addEventListener("change", filterMarkers));
-  document.getElementById("toggle-pve").addEventListener("change", filterMarkers);
+  document.getElementById("toggle-pve")?.addEventListener("change", filterMarkers);
 
-  // — Items — dynamically populate with span-wrapped labels
+  /* ----------------------------------------------------------------
+     Populate Item & Enemy filters
+  ---------------------------------------------------------------- */
   console.log("[sidebar] loadItemFilters()");
   const itemFilterList = document.getElementById("item-filter-list");
   async function loadItemFilters() {
@@ -131,12 +144,11 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   }
   await loadItemFilters();
 
-  // — Enemies — dynamically populate same way
   console.log("[sidebar] loadEnemyFilters()");
-  const enemyGroupWrap  = document.createElement("div");
-  enemyGroupWrap.className = "filter-group";
-  enemyGroupWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
-  document.getElementById("item-filters").after(enemyGroupWrap);
+  const enemyWrap = document.createElement("div");
+  enemyWrap.className = "filter-group";
+  enemyWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
+  document.getElementById("item-filters").after(enemyWrap);
 
   const enemyFilterList = document.getElementById("enemy-filter-list");
   async function loadEnemyFilters() {
@@ -157,7 +169,9 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   }
   await loadEnemyFilters();
 
-  // — Admin Tools —
+  /* ----------------------------------------------------------------
+     Admin Tools
+  ---------------------------------------------------------------- */
   console.log("[sidebar] Admin tools injected");
   const existing = sidebar.querySelector("#sidebar-admin-tools");
   if (existing) existing.remove();
@@ -184,7 +198,7 @@ export async function setupSidebar(map, layers, allMarkers, db) {
 
   sidebar.appendChild(adminWrap);
 
-  // Finally, do an initial draw
+  // initial draw
   filterMarkers();
 
   return { filterMarkers, loadItemFilters, loadEnemyFilters };
