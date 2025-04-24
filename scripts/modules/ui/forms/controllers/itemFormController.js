@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.9
+// @version: 4.10
 
 import { createPickr, destroyAllPickrs } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -119,12 +119,14 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
     // Now initialize pickrs and reapply saved colors
     initPickrs();
-    pickrs.name.setColor(def.nameColor      || "#E5E6E8");
-    pickrs.itemType.setColor(def.itemTypeColor || "#E5E6E8");
-    pickrs.rarity.setColor(def.rarityColor    || "#E5E6E8");
-    pickrs.description.setColor(def.descColor  || "#E5E6E8");
-    pickrs.value.setColor(def.valueColor     || "#E5E6E8");
-    pickrs.quantity.setColor(def.quantityColor || "#E5E6E8");
+
+    // Guard each pickr in case it didn't initialize
+    pickrs.name?.setColor(def.nameColor       || "#E5E6E8");
+    pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
+    pickrs.rarity?.setColor(def.rarityColor     || "#E5E6E8");
+    pickrs.description?.setColor(def.descColor   || "#E5E6E8");
+    pickrs.value?.setColor(def.valueColor      || "#E5E6E8");
+    pickrs.quantity?.setColor(def.quantityColor  || "#E5E6E8");
   }
 
   // ─── Gather form data ──────────────────────────────────────────────
