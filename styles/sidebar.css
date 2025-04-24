@@ -1,7 +1,9 @@
-/* @keep: Comments must NOT be deleted unless code is deleted; edits only with code changes. */
-/* @file: styles/sidebar.css */
-/* @version: 9 */
+/* @keep:    Comments must NOT be deleted unless their associated code is also deleted;
+            comments may only be edited when editing their code. */
+/* @file:    /styles/sidebar.css */
+/* @version: 9.1  */
 
+/* Slightly wider, more compact filter rows */
 #sidebar {
   font-family: 'Satoshi', sans-serif;
   width: 350px;
@@ -19,9 +21,12 @@
 #sidebar.hidden {
   transform: translateX(-100%);
 }
+
+/* Sidebar toggle control */
 #sidebar-toggle {
   position: absolute;
-  top: 10px; left: 350px;
+  top: 10px; 
+  left: 350px;
   z-index: 1100;
   font-family: 'Satoshi', sans-serif;
   width: 30px; height: 30px;
@@ -35,26 +40,28 @@
   background: #444;
 }
 
-/* Section headings */
+/* Headings */
 #sidebar h2, #sidebar h3 {
   margin: 0 0 6px;
   font-size: 18px;
   color: #e5e6e8;
 }
 
-/* Filter grid */
+/* ========== Multi-column filter grid ========== */
 .filter-group .toggle-group {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 4px 8px;
 }
-/* Hide the native checkbox but keep it focusable */
+
+/* Hide native checkbox but keep it focusable/clickable */
 .filter-group .toggle-group input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
-/* Style the label as a toggle pill */
+
+/* Style the label/span combos in filter-group */
 .filter-group .toggle-group label {
   position: relative;
   padding: 4px 8px;
@@ -78,21 +85,8 @@
   font-weight: 400;
 }
 
-/* Sidebar-section generic labels (settings, etc) */
-.sidebar-section label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
-  cursor: pointer;
-}
-.sidebar-section input[type="checkbox"] {
-  margin: 0;
-  transform: scale(1);
-}
-
-/* Dark inputs in sidebar */
-#sidebar input,
+/* Dark inputs in sidebar (exclude checkboxes) */
+#sidebar input:not([type="checkbox"]),
 #sidebar select,
 #sidebar textarea {
   background: #303030;
@@ -105,6 +99,23 @@
   font-size: 14px;
   box-sizing: border-box;
   margin-bottom: 6px;
+}
+
+/* ————————— Settings Section: flex-align labels ————————— */
+.sidebar-section label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+.sidebar-section label input[type="checkbox"] {
+  /* restore natural sizing */
+  opacity: 1;
+  pointer-events: auto;
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
 }
 
 /* Uniform buttons */
@@ -125,7 +136,7 @@
   background: #444;
 }
 
-/* Accordion arrows */
+/* Accordion arrow */
 .filter-group h3::after {
   content: '▾';
   float: right;
