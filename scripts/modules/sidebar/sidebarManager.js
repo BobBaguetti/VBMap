@@ -1,5 +1,6 @@
-// @version: 9
-// @file: /scripts/modules/sidebar/sidebarManager.js
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted.
+// @version: 9   Increase by 1 every time you update anything.
+// @file:    /scripts/modules/sidebar/sidebarManager.js
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
@@ -10,14 +11,13 @@ import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
 
 export async function setupSidebar(map, layers, allMarkers, db) {
   console.log("[sidebar] setupSidebar() running");
-
   const searchBar     = document.getElementById("search-bar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebar       = document.getElementById("sidebar");
   const mapContainer  = document.getElementById("map");
 
   if (!searchBar || !sidebarToggle || !sidebar || !mapContainer) {
-    console.warn("[sidebar] Missing elements, aborting");
+    console.warn("[sidebar] Missing elements");
     return { filterMarkers() {} };
   }
 
@@ -31,39 +31,37 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     sidebarToggle.style.left  = hidden ? "0px" : "350px";
     sidebarToggle.textContent = hidden ? "▶︎" : "◀︎";
     map.invalidateSize();
-    console.log("[sidebar] toggled visibility:", hidden);
   });
 
-  // Accordion behavior
-  document.querySelectorAll(".filter-group").forEach(group => {
-    const header = group.querySelector("h3");
-    header.addEventListener("click", () => {
-      group.classList.toggle("collapsed");
-      console.log("[sidebar] accordion toggled:", header.textContent.trim());
-    });
+  // Collapse/expand via delegation
+  sidebar.addEventListener("click", e => {
+    if (e.target.matches(".filter-group > h3")) {
+      e.target.parentElement.classList.toggle("collapsed");
+    }
   });
 
-  // PvE master toggle
-  const mainTG = document.querySelector("#main-filters .toggle-group");
+  // PvE master toggle under Main
+  const mainToggleGroup = document.querySelector("#main-filters .toggle-group");
   const pveLabel = document.createElement("label");
   pveLabel.innerHTML = `<input type="checkbox" id="toggle-pve" checked> PvE`;
-  mainTG.appendChild(pveLabel);
+  mainToggleGroup.appendChild(pveLabel);
   const pveToggle = document.getElementById("toggle-pve");
 
-  // Core filter logic
+  // Core filtering
   function filterMarkers() {
-    console.log("[sidebar] filterMarkers()");
     const nameQuery = (searchBar.value || "").toLowerCase();
     const pveOn     = pveToggle.checked;
+
     allMarkers.forEach(({ markerObj, data }) => {
       const isNpc       = data.type === "npc";
       const matchesPvE  = pveOn || !isNpc;
       const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
       let mainVisible = true;
-      document.querySelectorAll("#main-filters .toggle-group input").forEach(cb => {
-        if (data.type === cb.dataset.layer && !cb.checked) mainVisible = false;
-      });
+      document.querySelectorAll("#main-filters .toggle-group input")
+        .forEach(cb => {
+          if (data.type === cb.dataset.layer && !cb.checked) mainVisible = false;
+        });
 
       let itemVisible = true;
       if (data.predefinedItemId) {
@@ -81,7 +79,10 @@ export async function setupSidebar(map, layers, allMarkers, db) {
         if (enemyCb && !enemyCb.checked) enemyVisible = false;
       }
 
-      const shouldShow = matchesPvE && matchesName && mainVisible && (isNpc ? enemyVisible : itemVisible);
+      const shouldShow = matchesPvE
+                       && matchesName
+                       && mainVisible
+                       && (isNpc ? enemyVisible : itemVisible);
       const layerGroup = layers[data.type];
       if (!layerGroup) return;
 
@@ -90,16 +91,16 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     });
   }
 
-  // Wire up filter events
   searchBar.addEventListener("input", filterMarkers);
-  document.querySelectorAll("#main-filters .toggle-group input")
+  document
+    .querySelectorAll("#main-filters .toggle-group input")
     .forEach(cb => cb.addEventListener("change", filterMarkers));
   pveToggle.addEventListener("change", filterMarkers);
 
   // — Items —
+  console.log("[sidebar] loadItemFilters()");
   const itemFilterList = document.getElementById("item-filter-list");
   async function loadItemFilters() {
-    console.log("[sidebar] loadItemFilters()");
     itemFilterList.innerHTML = "";
     const defs = await loadItemDefinitions(db);
     defs.filter(d => d.showInFilters).forEach(d => {
@@ -116,18 +117,15 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   await loadItemFilters();
 
   // — Enemies —
-  const itemGroup = itemFilterList.closest(".filter-group");
-  const enemyGroup = document.createElement("div");
-  enemyGroup.className = "filter-group";
-  enemyGroup.innerHTML = `
-    <h3>Enemies</h3>
-    <div class="toggle-group" id="enemy-filter-list"></div>
-  `;
-  itemGroup.after(enemyGroup);
+  console.log("[sidebar] loadEnemyFilters()");
+  const itemGroup       = document.querySelector("#item-filter-list").closest(".filter-group");
+  const enemyGroupWrap  = document.createElement("div");
+  enemyGroupWrap.className = "filter-group collapsed";
+  enemyGroupWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
+  itemGroup.after(enemyGroupWrap);
 
   const enemyFilterList = document.getElementById("enemy-filter-list");
   async function loadEnemyFilters() {
-    console.log("[sidebar] loadEnemyFilters()");
     enemyFilterList.innerHTML = "";
     const npcs = await loadNpcDefinitions(db);
     npcs.forEach(d => {
@@ -144,20 +142,21 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   await loadEnemyFilters();
 
   // — Admin Tools —
+  console.log("[sidebar] Admin tools injected");
   const existing = sidebar.querySelector("#sidebar-admin-tools");
   if (existing) existing.remove();
 
-  const oldModal   = initItemDefinitionsModal(db);
-  const testModal  = initTestItemDefinitionsModal(db);
-  const questModal = initQuestDefinitionsModal(db);
-  const npcModal   = initNpcDefinitionsModal(db);
+  const oldItemModal  = initItemDefinitionsModal(db);
+  const testItemModal = initTestItemDefinitionsModal(db);
+  const questModal    = initQuestDefinitionsModal(db);
+  const npcModal      = initNpcDefinitionsModal(db);
 
   const adminWrap = document.createElement("div");
   adminWrap.id = "sidebar-admin-tools";
 
   [
-    ["Manage Items",    () => oldModal.open()],
-    ["Test Item Modal", () => testModal.open()],
+    ["Manage Items",    () => oldItemModal.open()],
+    ["Test Item Modal", () => testItemModal.open()],
     ["Manage Quests",   () => questModal.open()],
     ["Manage NPCs",     () => npcModal.open()]
   ].forEach(([txt, fn]) => {
@@ -168,7 +167,6 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   });
 
   sidebar.appendChild(adminWrap);
-  console.log("[sidebar] Admin tools injected");
 
   return { filterMarkers, loadItemFilters, loadEnemyFilters };
 }
