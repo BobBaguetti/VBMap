@@ -14,7 +14,7 @@
   box-sizing: border-box;
   overflow: auto;
   transition: transform 0.3s ease;
-  z-index: 1000; /* 🆕 ensure it’s above the map */
+  z-index: 1000;
 }
 #sidebar.hidden {
   transform: translateX(-100%);
@@ -25,7 +25,7 @@
   position: absolute;
   top: 10px; 
   left: 350px;
-  z-index: 1100; /* 🆕 above sidebar */
+  z-index: 1100;
   font-family: 'Satoshi', sans-serif;
   width: 30px; height: 30px;
   background: #333;
@@ -47,18 +47,20 @@
 
 /* Each filter group slightly tightened */
 .filter-group {
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 .filter-group .toggle-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;      /* tighter gap */
+  padding-left: 8px; /* indent sub-items */
 }
 .filter-group .toggle-group label {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-size: 14px;
+  gap: 6px;
+  font-size: 13px;
+  white-space: nowrap;
 }
 
 /* Dark inputs in sidebar */
