@@ -1,11 +1,12 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.9
+// @version: 4.10
 
-import { createPickr, destroyAllPickrs } from "../../pickrManager.js";
+import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
 import { createItemForm } from "../builders/itemFormBuilder.js";
 import { createIcon } from "../../../utils/iconUtils.js";
+import { rarityColors } from "../../../utils/colorPresets.js";  // ← new import
 
 /**
  * Creates a controller around a form layout for item definitions.
@@ -62,6 +63,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   // ─── Pickr Initialization ──────────────────────────────────────────
   function initPickrs() {
+    // instantiate each pickr once
     Object.entries({
       name:        fields.colorName,
       itemType:    fields.colorType,
@@ -70,10 +72,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       value:       fields.colorValue,
       quantity:    fields.colorQty
     }).forEach(([key, btn]) => {
-      // only initialize if element is in DOM
       if (!pickrs[key] && document.body.contains(btn)) {
         pickrs[key] = createPickr(`#${btn.id}`);
       }
+    });
+
+    // wire up rarity → color sync
+    fields.fldRarity.addEventListener("change", () => {
+      const c = rarityColors[fields.fldRarity.value] || "#E5E6E8";
+      // update both the rarity swatch and the name swatch
+      pickrs.rarity?.setColor(c);
+      pickrs.name?.setColor(c);
     });
   }
 
@@ -94,10 +103,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
 
-    // tear down any existing Pickr instances now that the form is reset
-    destroyAllPickrs();
-    // clear our local map of pickr instances
-    Object.keys(pickrs).forEach(key => delete pickrs[key]);
+    initPickrs();
+    // reset all pickers to default grey
+    Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
@@ -117,14 +125,14 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
 
-    // Now initialize pickrs and reapply saved colors
     initPickrs();
-    pickrs.name.setColor(def.nameColor      || "#E5E6E8");
-    pickrs.itemType.setColor(def.itemTypeColor || "#E5E6E8");
-    pickrs.rarity.setColor(def.rarityColor    || "#E5E6E8");
-    pickrs.description.setColor(def.descColor  || "#E5E6E8");
-    pickrs.value.setColor(def.valueColor     || "#E5E6E8");
-    pickrs.quantity.setColor(def.quantityColor || "#E5E6E8");
+    // reapply saved colors (this will also sync name→rarity below, but setColor is idempotent)
+    pickrs.name?.setColor(def.nameColor      || "#E5E6E8");
+    pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
+    pickrs.rarity?.setColor(def.rarityColor    || "#E5E6E8");
+    pickrs.description?.setColor(def.descriptionColor  || "#E5E6E8");
+    pickrs.value?.setColor(def.valueColor     || "#E5E6E8");
+    pickrs.quantity?.setColor(def.quantityColor || "#E5E6E8");
   }
 
   // ─── Gather form data ──────────────────────────────────────────────
