@@ -1,6 +1,6 @@
 /* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
-/* @version: 21 */
+/* @version: 22 */
 
 import {
   createModal, closeModal, openModal
@@ -69,13 +69,23 @@ export function initTestItemDefinitionsModal(db) {
   });
 
   formApi.form.classList.add("ui-scroll-float");
-  formApi.form.addEventListener("input", () => {
-    const live = formApi.getCustom?.();
-    if (live) {
-      previewApi.setFromDefinition(live);
-      previewApi.show();
+
+  // Track the definition we’re editing
+  let currentDef = null;
+
+  // Re-render preview on any form change, preserving original image if not explicitly cleared
+  formApi.form.addEventListener("input",  updatePreview);
+  formApi.form.addEventListener("change", updatePreview);
+
+  function updatePreview() {
+    const live = formApi.getCustom?.() || {};
+    if (currentDef) {
+      live.imageSmall = live.imageSmall || currentDef.imageSmall;
+      live.imageLarge = live.imageLarge || currentDef.imageLarge;
     }
-  });
+    previewApi.setFromDefinition(live);
+    previewApi.show();
+  }
 
   // build the body
   const bodyWrap = document.createElement("div");
@@ -90,7 +100,7 @@ export function initTestItemDefinitionsModal(db) {
   bodyWrap.appendChild(formApi.form);
   content.appendChild(bodyWrap);
 
-  // ← NEW: initialize Pickr on every swatch right after form is in the DOM
+  // ← Initialize pickrs immediately on DOM insert
   formApi.initPickrs();
 
   // list manager wiring
@@ -99,9 +109,12 @@ export function initTestItemDefinitionsModal(db) {
     container: listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
+      currentDef = def;
+
       // ensure pickrs exist before populate
       formApi.initPickrs();
       formApi.populate(def);
+
       previewApi.setFromDefinition(def);
       previewApi.show();
     },

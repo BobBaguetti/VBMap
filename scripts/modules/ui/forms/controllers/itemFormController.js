@@ -1,9 +1,9 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.10
+// @version: 4.11
 
 import { createPickr, destroyAllPickrs } from "../../pickrManager.js";
-import { getPickrHexColor } from "../../../utils/colorUtils.js";
+import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
 import { createItemForm } from "../builders/itemFormBuilder.js";
 import { createIcon } from "../../../utils/iconUtils.js";
 
@@ -77,6 +77,21 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     });
   }
 
+  // ─── Keep name swatch in sync with rarity presets ──────────────────
+  fields.fldRarity.addEventListener("change", () => {
+    initPickrs();
+
+    // compute and apply the preset colors
+    const tmp = {
+      itemType: fields.fldType.value,
+      rarity:   fields.fldRarity.value
+    };
+    applyColorPresets(tmp);
+
+    pickrs.name?.setColor(tmp.nameColor);
+    pickrs.rarity?.setColor(tmp.rarityColor);
+  });
+
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
     fields.fldName.value   = "";
@@ -120,7 +135,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     // Now initialize pickrs and reapply saved colors
     initPickrs();
 
-    // Guard each pickr in case it didn't initialize
     pickrs.name?.setColor(def.nameColor       || "#E5E6E8");
     pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
     pickrs.rarity?.setColor(def.rarityColor     || "#E5E6E8");
