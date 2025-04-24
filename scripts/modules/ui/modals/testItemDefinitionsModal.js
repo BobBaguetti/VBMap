@@ -1,6 +1,6 @@
 /* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
-/* @version: 20 */
+/* @version: 21 */
 
 import {
   createModal, closeModal, openModal
@@ -89,6 +89,9 @@ export function initTestItemDefinitionsModal(db) {
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
   content.appendChild(bodyWrap);
+
+  // ← NEW: initialize Pickr on every swatch right after form is in the DOM
+  formApi.initPickrs();
 
   // list manager wiring
   let definitions = [];
