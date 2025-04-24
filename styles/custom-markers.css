@@ -1,3 +1,7 @@
+/* @keep:    Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
+/* @file:    /styles/custom-markers.css */
+/* @version: 2 */
+
 /* Custom Marker Style */
 .custom-marker-container {
   background: transparent !important;
@@ -48,4 +52,11 @@
 .popup-description,
 .popup-extra-line {
   color: #e5e6e8;
+}
+
+/* ——— Small-Markers Toggle ———
+   When the map has the .small-markers class, shrink all markers */
+#map.small-markers .custom-marker-container {
+  transform: scale(0.5);
+  transform-origin: center bottom;
 }

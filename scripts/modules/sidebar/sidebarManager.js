@@ -1,5 +1,4 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted;
-//           edits to comments only when code changes.
 // @file:    /scripts/modules/sidebar/sidebarManager.js
 // @version: 9.5
 
@@ -14,8 +13,7 @@ export async function setupSidebar(
   map, layers, allMarkers, db,
   { enableGrouping, disableGrouping }
 ) {
-  console.log("[sidebar] setupSidebar()");
-
+  console.log("[sidebar] setupSidebar() running");
   const searchBar     = document.getElementById("search-bar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebar       = document.getElementById("sidebar");
@@ -26,10 +24,10 @@ export async function setupSidebar(
     return { filterMarkers() {} };
   }
 
-  // Dark‐style the search input
+  // Dark-style the search input
   searchBar.classList.add("ui-input");
 
-  // Sidebar show/hide
+  // Sidebar toggle
   sidebarToggle.textContent = "◀︎";
   sidebarToggle.addEventListener("click", () => {
     const hidden = sidebar.classList.toggle("hidden");
@@ -38,136 +36,138 @@ export async function setupSidebar(
     map.invalidateSize();
   });
 
-  // Accordion for filters
-  document.querySelectorAll(".filter-group").forEach(gr => {
-    const h = gr.querySelector("h3");
-    h.addEventListener("click", () => {
-      gr.classList.toggle("collapsed");
-      console.log(`[sidebar] toggled ${gr.id || h.textContent}`);
+  // Accordion behavior for filters
+  document.querySelectorAll(".filter-group").forEach(group => {
+    const header = group.querySelector("h3");
+    header.addEventListener("click", () => {
+      group.classList.toggle("collapsed");
+      console.log(`[sidebar] toggled ${group.id || header.textContent}`);
     });
   });
 
   /* ----------------------------------------------------------------
-     Settings section
+     Settings toggles (injected here)
   ---------------------------------------------------------------- */
-  // remove any static labels
   settingsSect.querySelectorAll("label").forEach(l => l.remove());
 
   // — Marker Grouping —
-  const gLab = document.createElement("label");
-  gLab.innerHTML = `<input type="checkbox" id="enable-grouping"/><span>Enable Marker Grouping</span>`;
-  settingsSect.appendChild(gLab);
-  const gCb = document.getElementById("enable-grouping");
-  gCb.checked = true;  // default ON
-  gCb.addEventListener("change", () => {
-    console.log("[sidebar] marker grouping:", gCb.checked);
-    gCb.checked ? enableGrouping() : disableGrouping();
+  const groupingLabel = document.createElement("label");
+  groupingLabel.innerHTML = `<input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span>`;
+  settingsSect.appendChild(groupingLabel);
+  const groupingCb = document.getElementById("enable-grouping");
+  groupingCb.checked = false; // default OFF
+  groupingCb.addEventListener("change", () => {
+    console.log("[sidebar] marker grouping:", groupingCb.checked);
+    groupingCb.checked ? enableGrouping() : disableGrouping();
   });
 
   // — Small Markers (50%) —
-  const sLab = document.createElement("label");
-  sLab.innerHTML = `<input type="checkbox" id="toggle-small-markers"/><span>Small Markers (50%)</span>`;
-  settingsSect.appendChild(sLab);
-  const sCb = document.getElementById("toggle-small-markers");
-  sCb.checked = false;
-  sCb.addEventListener("change", () => {
-    console.log("[sidebar] small markers:", sCb.checked);
-    const scale = sCb.checked ? 0.5 : 1;
-    allMarkers.forEach(({ markerObj }) => {
-      const el = markerObj.getElement();
-      if (el) el.style.transform = `scale(${scale})`;
-    });
+  const smallLabel = document.createElement("label");
+  smallLabel.innerHTML = `<input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span>`;
+  settingsSect.appendChild(smallLabel);
+  const smallCb = document.getElementById("toggle-small-markers");
+  smallCb.checked = false;
+  smallCb.addEventListener("change", () => {
+    console.log("[sidebar] small markers:", smallCb.checked);
+    document.getElementById("map")
+      .classList.toggle("small-markers", smallCb.checked);
   });
 
   /* ----------------------------------------------------------------
      Core filtering logic
   ---------------------------------------------------------------- */
   function filterMarkers() {
-    const q     = (searchBar.value || "").toLowerCase();
-    const pveOn = document.getElementById("toggle-pve")?.checked ?? true;
+    const nameQuery = (searchBar.value || "").toLowerCase();
+    const pveOn     = document.getElementById("toggle-pve")?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      const isNpc      = data.type === "npc";
-      const showPvE    = pveOn || !isNpc;
-      const matchName  = data.name?.toLowerCase().includes(q);
+      const isNpc       = data.type === "npc";
+      const matchesPvE  = pveOn || !isNpc;
+      const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
-      let mainOK = true;
+      let mainVisible = true;
       document.querySelectorAll("#main-filters .toggle-group input")
-        .forEach(cb => { if (data.type === cb.dataset.layer && !cb.checked) mainOK = false; });
+        .forEach(cb => {
+          if (data.type === cb.dataset.layer && !cb.checked)
+            mainVisible = false;
+        });
 
-      let itemOK = true;
+      let itemVisible = true;
       if (data.predefinedItemId) {
-        const cb = document.querySelector(
+        const itemCb = document.querySelector(
           `#item-filter-list input[data-item-id="${data.predefinedItemId}"]`
         );
-        if (cb && !cb.checked) itemOK = false;
+        if (itemCb && !itemCb.checked) itemVisible = false;
       }
 
-      let enemyOK = true;
+      let enemyVisible = true;
       if (isNpc) {
-        const cb = document.querySelector(
+        const enemyCb = document.querySelector(
           `#enemy-filter-list input[data-enemy-id="${data.id}"]`
         );
-        if (cb && !cb.checked) enemyOK = false;
+        if (enemyCb && !enemyCb.checked) enemyVisible = false;
       }
 
-      const should = showPvE && matchName && mainOK && (isNpc ? enemyOK : itemOK);
-      const grp    = layers[data.type];
-      if (!grp) return;
+      const shouldShow = matchesPvE
+                       && matchesName
+                       && mainVisible
+                       && (isNpc ? enemyVisible : itemVisible);
+      const layerGroup = layers[data.type];
+      if (!layerGroup) return;
 
-      should ? grp.addLayer(markerObj) : grp.removeLayer(markerObj);
+      shouldShow ? layerGroup.addLayer(markerObj)
+                 : layerGroup.removeLayer(markerObj);
     });
   }
 
-  // Wire up filters
+  // Wire up search + main toggles
   searchBar.addEventListener("input", filterMarkers);
-  document.querySelectorAll("#main-filters .toggle-group input")
+  document
+    .querySelectorAll("#main-filters .toggle-group input")
     .forEach(cb => cb.addEventListener("change", filterMarkers));
   document.getElementById("toggle-pve")?.addEventListener("change", filterMarkers);
 
   /* ----------------------------------------------------------------
      Populate Item & Enemy filters
   ---------------------------------------------------------------- */
-  console.log("[sidebar] loadItemFilters()");
-  const itemList = document.getElementById("item-filter-list");
+  const itemFilterList = document.getElementById("item-filter-list");
   async function loadItemFilters() {
-    itemList.innerHTML = "";
+    itemFilterList.innerHTML = "";
     const defs = await loadItemDefinitions(db);
     defs.filter(d => d.showInFilters).forEach(d => {
-      const lab = document.createElement("label");
-      const cb  = document.createElement("input");
+      const label = document.createElement("label");
+      const cb    = document.createElement("input");
       cb.type           = "checkbox";
       cb.checked        = true;
       cb.dataset.itemId = d.id;
-      const sp = document.createElement("span");
-      sp.textContent = d.name;
-      lab.append(cb, sp);
-      itemList.appendChild(lab);
+      const span = document.createElement("span");
+      span.textContent = d.name;
+      label.append(cb, span);
+      itemFilterList.append(label);
       cb.addEventListener("change", filterMarkers);
     });
   }
   await loadItemFilters();
 
-  console.log("[sidebar] loadEnemyFilters()");
-  const eWrap = document.createElement("div");
-  eWrap.className = "filter-group";
-  eWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
-  document.getElementById("item-filters").after(eWrap);
+  const enemyWrap = document.createElement("div");
+  enemyWrap.className = "filter-group";
+  enemyWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
+  document.getElementById("item-filters").after(enemyWrap);
 
-  const eList = document.getElementById("enemy-filter-list");
+  const enemyFilterList = document.getElementById("enemy-filter-list");
   async function loadEnemyFilters() {
-    eList.innerHTML = "";
+    enemyFilterList.innerHTML = "";
     const npcs = await loadNpcDefinitions(db);
     npcs.forEach(d => {
-      const lab = document.createElement("label");
-      const cb  = document.createElement("input");
+      const label = document.createElement("label");
+      const cb    = document.createElement("input");
       cb.type            = "checkbox";
       cb.checked         = true;
       cb.dataset.enemyId = d.id;
-      const sp = document.createElement("span");
-      sp.textContent = d.name;
-      lab.append(cb, sp);
-      eList.appendChild(lab);
+      const span = document.createElement("span");
+      span.textContent = d.name;
+      label.append(cb, span);
+      enemyFilterList.append(label);
       cb.addEventListener("change", filterMarkers);
     });
   }
@@ -176,16 +176,15 @@ export async function setupSidebar(
   /* ----------------------------------------------------------------
      Admin Tools
   ---------------------------------------------------------------- */
-  console.log("[sidebar] Admin tools injected");
   sidebar.querySelector(".admin-header")?.remove();
-  const ah = document.createElement("h2");
-  ah.className = "admin-header";
-  ah.innerHTML = `<i class="fas fa-tools"></i> Admin Tools`;
-  sidebar.appendChild(ah);
+  const adminHeader = document.createElement("h2");
+  adminHeader.className = "admin-header";
+  adminHeader.innerHTML = `<i class="fas fa-tools"></i> Admin Tools`;
+  sidebar.appendChild(adminHeader);
 
   sidebar.querySelector("#sidebar-admin-tools")?.remove();
-  const aw = document.createElement("div");
-  aw.id = "sidebar-admin-tools";
+  const adminWrap = document.createElement("div");
+  adminWrap.id = "sidebar-admin-tools";
   [
     ["Manage Items",    () => initItemDefinitionsModal(db).open()],
     ["Test Item Modal", () => initTestItemDefinitionsModal(db).open()],
@@ -195,12 +194,12 @@ export async function setupSidebar(
     const btn = document.createElement("button");
     btn.textContent = txt;
     btn.onclick     = fn;
-    aw.append(btn);
+    adminWrap.appendChild(btn);
   });
-  sidebar.appendChild(aw);
+  sidebar.appendChild(adminWrap);
 
   // initial draw
   filterMarkers();
 
-  return { filterMarkers, loadItemFilters, loadEnemyFilters };
+  return { filterMarkers, loadItemFilters };
 }

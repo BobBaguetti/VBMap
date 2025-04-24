@@ -1,7 +1,7 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted;
 //           edits to comments only when code changes.
 // @file:    /scripts/script.js
-// @version: 5.4
+// @version: 5.5
 
 import { initializeMap } from "./modules/map/map.js";
 import { showContextMenu } from "./modules/ui/uiManager.js";
@@ -46,7 +46,7 @@ const flatItemLayer    = L.layerGroup();
 const layers = {
   Door:               L.layerGroup(),
   "Extraction Portal":L.layerGroup(),
-  Item:               clusterItemLayer,   // grouping ON by default
+  Item:               clusterItemLayer,
   Teleport:           L.layerGroup(),
   "Spawn Point":      L.layerGroup()
 };
@@ -58,7 +58,7 @@ Object.values(layers).forEach(layer => layer.addTo(map));
 flatItemLayer.addTo(map);
 map.removeLayer(flatItemLayer);
 
-let groupingOn = true;  // track current state
+let groupingOn = false; // start with grouping OFF
 
 /* ------------------------------------------------------------------ *
  *  Sidebar Setup
@@ -68,7 +68,6 @@ const allMarkers = [];
 // callbacks for sidebar to flip grouping
 const groupingCallbacks = {
   enableGrouping: () => {
-    // move from flat → cluster
     flatItemLayer.eachLayer(m => {
       flatItemLayer.removeLayer(m);
       clusterItemLayer.addLayer(m);
@@ -79,7 +78,6 @@ const groupingCallbacks = {
     groupingOn = true;
   },
   disableGrouping: () => {
-    // move from cluster → flat
     clusterItemLayer.eachLayer(m => {
       clusterItemLayer.removeLayer(m);
       flatItemLayer.addLayer(m);
@@ -90,6 +88,9 @@ const groupingCallbacks = {
     groupingOn = false;
   }
 };
+
+// ensure clustering is off on load
+groupingCallbacks.disableGrouping();
 
 const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db,
@@ -175,13 +176,13 @@ function addMarker(data, cbs = {}) {
 }
 
 const callbacks = {
-  onEdit: (markerObj, data, ev) => {
+  onEdit:   (markerObj, data, ev) => {
     markerForm.openEdit(markerObj, data, ev, updated => {
       markerObj.setPopupContent(renderPopup(updated));
       firebaseUpdateMarker(db, updated);
     });
   },
-  onCopy: (_, data) => copyMgr.startCopy(data),
+  onCopy:   (_, data) => copyMgr.startCopy(data),
   onDragEnd: (_, data) => firebaseUpdateMarker(db, data),
   onDelete: (markerObj, data) => {
     layers[data.type].removeLayer(markerObj);
