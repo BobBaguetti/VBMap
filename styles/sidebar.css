@@ -1,4 +1,4 @@
-/* @version: 5 */
+/* @version: 6 */
 /* @file: /styles/sidebar.css */
 
 /* Slightly wider, more compact filter rows */
@@ -14,9 +14,28 @@
   box-sizing: border-box;
   overflow: auto;
   transition: transform 0.3s ease;
+  z-index: 1000; /* 🆕 ensure it’s above the map */
 }
 #sidebar.hidden {
   transform: translateX(-100%);
+}
+
+/* Sidebar toggle control */
+#sidebar-toggle {
+  position: absolute;
+  top: 10px; 
+  left: 350px;
+  z-index: 1100; /* 🆕 above sidebar */
+  font-family: 'Satoshi', sans-serif;
+  width: 30px; height: 30px;
+  background: #333;
+  border: none;
+  color: #e0e0e0;
+  cursor: pointer;
+  transition: left 0.3s ease, background 0.2s ease;
+}
+#sidebar-toggle:hover {
+  background: #444;
 }
 
 /* Headings */
@@ -74,12 +93,6 @@
 }
 #sidebar button:hover {
   background: #444;
-}
-
-/* Sidebar toggle control */
-#sidebar-toggle {
-  top: 10px;
-  left: 350px;
 }
 
 /* Accordion arrow */
