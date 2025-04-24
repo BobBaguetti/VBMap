@@ -31,7 +31,7 @@ export function createItemTypeField(id = "fld-item-type") {
     { value: "Crafting Material", label: "Crafting Material" },
     { value: "Special", label: "Special" },
     { value: "Consumable", label: "Consumable" },
-    { value: "Quest", label: "Quest" }
+    { value: "Quest", label: "Quest" } 
   ]);
 }
 
