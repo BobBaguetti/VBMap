@@ -1,11 +1,16 @@
-/* Sidebar */
+/* @version: 2 */
+/* @file: /styles/sidebar.css */
+
+/* Sidebar uses Satoshi + dark theme */
 #sidebar {
+  font-family: 'Satoshi', sans-serif;
   width: 300px;
   height: 100vh;
   position: absolute;
   top: 0;
   left: 0;
   background-color: #222;
+  color: #e5e6e8;
   padding: 15px;
   box-sizing: border-box;
   z-index: 1000;
@@ -17,7 +22,33 @@
   transform: translateX(-100%);
 }
 
+/* Ensure inputs & selects inside sidebar get dark styling */
+#sidebar input,
+#sidebar select,
+#sidebar textarea {
+  background: #303030;
+  color: #e5e6e8;
+  border: 1px solid #555;
+  border-radius: 2px;
+  padding: 4px 6px;
+  font-family: 'Satoshi', sans-serif;
+  font-size: 14px;
+  margin-bottom: 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Sidebar headings */
+#sidebar h3,
+#sidebar h2 {
+  font-family: 'Satoshi', sans-serif;
+  color: #e5e6e8;
+  margin: 0 0 8px 0;
+}
+
+/* Toggle button */
 #sidebar-toggle {
+  font-family: 'Satoshi', sans-serif;
   position: absolute;
   top: 10px;
   left: 300px;

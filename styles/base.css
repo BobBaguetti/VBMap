@@ -1,35 +1,36 @@
-/* @version: 7 */
+/* @version: 8 */
 /* @file: /styles/base.css */
 
-/* Base Dark Mode UI Utilities + Global Resets & Map Container */
+/* 0) Import Satoshi globally */
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
 
-/* 1) Box‑sizing */
+/* 1) Box-sizing */
 *,
 *::before,
 *::after {
   box-sizing: border-box;
 }
 
-/* 2) Global reset & dark‑mode background */
+/* 2) Global reset & dark-mode background */
 body,
 html {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-family: 'Satoshi', sans-serif;
   background-color: #1a1a1a;
-  color: #e5e6e8; /* ✅ Updated default white */
+  color: #e5e6e8;
   overflow: hidden;
 }
 
-/* 3) Map container full‑screen */
+/* 3) Map container full-screen */
 #map {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
   background-color: #1a1a1a;
 }
 
-/* 4) Dark form controls & buttons */
+/* 4) Dark form controls & buttons (moved here from ui.css for global scope) */
 .ui-input {
   background: #303030 !important;
   color: #e5e6e8 !important;
@@ -66,7 +67,7 @@ html {
   background: #777;
 }
 
-/* 6) Hide off‑canvas tooltips/popups */
+/* 6) Hide off-canvas tooltips/popups */
 #video-popup,
 #paste-tooltip {
   display: none !important;
