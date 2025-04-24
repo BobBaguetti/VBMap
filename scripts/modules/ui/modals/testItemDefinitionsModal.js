@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 17
+// @version: 18
 
 import {
   createModal, closeModal, openModal
@@ -8,7 +8,7 @@ import {
 import { createDefListContainer } from "../../utils/listUtils.js";
 import {
   loadItemDefinitions, saveItemDefinition, updateItemDefinition,
-  deleteItemDefinition
+  deleteItemDefinition, subscribeItemDefinitions
 } from "../../services/itemDefinitionsService.js";
 
 import { createLayoutSwitcher } from "../uiKit.js";
@@ -47,19 +47,17 @@ export function initTestItemDefinitionsModal(db) {
   const formApi = createItemFormController({
     onCancel: () => {
       formApi.reset();
-      // reset preview to default blank
       previewApi.setFromDefinition({});
       previewApi.show();
     },
-    onDelete: async id => {
+    onDelete: async (id) => {
       await deleteItemDefinition(db, id);
       await refreshDefinitions();
       formApi.reset();
-      // reset preview to default blank
       previewApi.setFromDefinition({});
       previewApi.show();
     },
-    onSubmit: async payload => {
+    onSubmit: async (payload) => {
       applyColorPresets(payload);
       if (payload.id) {
         await updateItemDefinition(db, payload.id, payload);
@@ -68,7 +66,6 @@ export function initTestItemDefinitionsModal(db) {
       }
       await refreshDefinitions();
       formApi.reset();
-      // reset preview to default blank
       previewApi.setFromDefinition({});
       previewApi.show();
     }
@@ -137,6 +134,7 @@ export function initTestItemDefinitionsModal(db) {
       pr.style.top = `${r.top + (r.height/2) - (pr.offsetHeight/2)}px`;
     });
   }
+
   previewApi.hide();
 
   return {
@@ -145,6 +143,8 @@ export function initTestItemDefinitionsModal(db) {
       await refreshDefinitions();
       openModal(modal);
       formApi.initPickrs();
+      // reset preview blank on open
+      previewApi.setFromDefinition({});
       requestAnimationFrame(() => {
         positionPreviewPanel();
         previewApi.show();
