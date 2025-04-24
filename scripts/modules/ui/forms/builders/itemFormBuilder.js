@@ -1,4 +1,4 @@
-// @version: 4
+// @version: 5
 // @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
 
 import {
@@ -16,26 +16,40 @@ export function createItemForm() {
   const form = document.createElement("form");
   form.id = "item-form";
 
+  // Name
   const { row: rowName, input: fldName, colorBtn: colorName } = createNameField();
   colorName.id = "fld-name-color";
+  colorName.classList.add("color-swatch");
 
+  // Item Type
   const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField();
   colorType.id = "fld-item-type-color";
+  colorType.classList.add("color-swatch");
 
+  // Rarity
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField();
   colorRarity.id = "fld-rarity-color";
+  colorRarity.classList.add("color-swatch");
 
+  // Description
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField();
   colorDesc.id = "fld-desc-item-color";
+  colorDesc.classList.add("color-swatch");
 
+  // Extra Info (no color swatch here)
   const { row: rowExtras, extraInfo } = createExtraInfoField({ withDividers: true });
 
+  // Value
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField();
   colorValue.id = "fld-value-color";
+  colorValue.classList.add("color-swatch");
 
+  // Quantity
   const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField();
   colorQty.id = "fld-quantity-color";
+  colorQty.classList.add("color-swatch");
 
+  // Images
   const {
     rowImgS, fldImgS,
     rowImgL, fldImgL

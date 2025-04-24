@@ -1,6 +1,5 @@
 /* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
-/* @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
-/* @version: 25 */
+/* @version: 26 */
 
 import {
   createModal, closeModal, openModal
@@ -17,7 +16,9 @@ import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
-import { destroyAllPickrs } from "../../ui/pickrManager.js";
+
+// ← NEW: import our scoped initializer
+import { initModalPickrs } from "../pickrManager.js";
 
 export function initTestItemDefinitionsModal(db) {
   const { modal, content, header } = createModal({
@@ -33,7 +34,7 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  // layout switcher in header
+  // Header: layout switcher + (moved) search bar
   const layoutSwitcher = createLayoutSwitcher({
     available: ["row", "stacked", "gallery"],
     defaultView: "row",
@@ -41,13 +42,12 @@ export function initTestItemDefinitionsModal(db) {
   });
   header.appendChild(layoutSwitcher);
 
-  // build list + preview + form
+  // Body: list + divider + form
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi    = createPreviewPanel("item");
   const formApi       = createItemFormController({
     onCancel: () => {
       formApi.reset();
-      formApi.initPickrs();             // rebuild swatches after Clear
       previewApi.setFromDefinition({});
       previewApi.show();
     },
@@ -55,7 +55,6 @@ export function initTestItemDefinitionsModal(db) {
       await deleteItemDefinition(db, id);
       await refreshDefinitions();
       formApi.reset();
-      formApi.initPickrs();
       previewApi.setFromDefinition({});
       previewApi.show();
     },
@@ -65,7 +64,6 @@ export function initTestItemDefinitionsModal(db) {
       else            await saveItemDefinition(db, null, payload);
       await refreshDefinitions();
       formApi.reset();
-      formApi.initPickrs();
       previewApi.setFromDefinition({});
       previewApi.show();
     }
@@ -73,7 +71,7 @@ export function initTestItemDefinitionsModal(db) {
 
   formApi.form.classList.add("ui-scroll-float");
 
-  // live-preview on any form update
+  // Live‐preview on any input/change
   let currentDef = null;
   formApi.form.addEventListener("input",  updatePreview);
   formApi.form.addEventListener("change", updatePreview);
@@ -87,7 +85,7 @@ export function initTestItemDefinitionsModal(db) {
     previewApi.show();
   }
 
-  // assemble modal body
+  // Build the modal content area
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
     display:       "flex",
@@ -100,17 +98,13 @@ export function initTestItemDefinitionsModal(db) {
   bodyWrap.appendChild(formApi.form);
   content.appendChild(bodyWrap);
 
-  // initial swatches
-  formApi.initPickrs();
-
-  // definition list wiring
+  // Definition‐list wiring
   let definitions = [];
   const listApi = createDefinitionListManager({
     container:      listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
       currentDef = def;
-      formApi.initPickrs();
       formApi.populate(def);
       previewApi.setFromDefinition(def);
       previewApi.show();
@@ -126,14 +120,14 @@ export function initTestItemDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
-  // move search-bar up
+  // Move the search bar up under the header
   const listHeaderEl = listContainer.previousElementSibling;
   if (listHeaderEl?.classList.contains("list-header")) {
     listHeaderEl.remove();
     header.appendChild(listHeaderEl);
   }
 
-  // preview panel positioning
+  // Position preview panel beside modal
   function positionPreviewPanel() {
     const mc = modal.querySelector(".modal-content");
     if (!mc || !previewApi.container) return;
@@ -150,15 +144,15 @@ export function initTestItemDefinitionsModal(db) {
 
   return {
     open: async () => {
-      // Clear out any old form state & pickrs
-      formApi.reset();      // calls destroyAllPickrs() internally
-      // load latest defs
+      // 1) reset form state
+      formApi.reset();
+      // 2) load latest definitions
       await refreshDefinitions();
-      // show modal
+      // 3) show the modal
       openModal(modal);
-      // wire fresh swatches now that form is rendered
-      formApi.initPickrs();
-      // blank preview
+      // 4) wire up all pickers in this modal (scoped)
+      initModalPickrs(content);
+      // 5) blank preview + position it
       previewApi.setFromDefinition({});
       requestAnimationFrame(() => {
         positionPreviewPanel();

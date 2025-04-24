@@ -1,20 +1,25 @@
-// @file: /scripts/modules/ui/forms/controllers/questFormController.js
 // @version: 2
+// @file: /scripts/modules/ui/forms/controllers/questFormController.js
 
 import { createQuestForm } from "../builders/questFormBuilder.js";
-import { createIcon } from "../../../utils/iconUtils.js";
+import { createIcon }      from "../../../utils/iconUtils.js";
+import { getPickrHexColor } from "../../ui/pickrManager.js";
 
 /**
- * Creates a controller around a form layout for quest definitions.
- * Handles wiring, reset, populate, and getCustom logic.
+ * Controller for the Quest form.
+ * Handles Add/Edit state, reset, populate, and data harvesting.
  */
 export function createQuestFormController({ onCancel, onSubmit, onDelete }) {
-  const form = createQuestForm();
-  // Build header + buttons
+  const { form, fields, rows } = createQuestForm();
+  let _id = null;
+
+  // ─── Header + Action Buttons ────────────────────────────────────────
   const headerWrap = document.createElement("div");
-  headerWrap.style.display = "flex";
-  headerWrap.style.justifyContent = "space-between";
-  headerWrap.style.alignItems = "center";
+  Object.assign(headerWrap.style, {
+    display:        "flex",
+    justifyContent: "space-between",
+    alignItems:     "center"
+  });
 
   const titleEl = document.createElement("h3");
   titleEl.textContent = "Add Quest";
@@ -32,49 +37,71 @@ export function createQuestFormController({ onCancel, onSubmit, onDelete }) {
   btnClear.type = "button";
   btnClear.className = "ui-button";
   btnClear.textContent = "Clear";
-  btnClear.onclick = onCancel;
+  btnClear.onclick = () => {
+    reset();
+    onCancel?.();
+  };
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
   btnDelete.className = "ui-button-delete";
-  btnDelete.title = "Delete this quest";
-  btnDelete.appendChild(createIcon("trash", { inline: true }));
-  btnDelete.style.display = "none"; // hidden in Add mode
-  btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
+  btnDelete.title = "Delete this Quest";
+  btnDelete.appendChild(createIcon("trash"));
+  btnDelete.style.display = "none";
+  btnDelete.onclick = () => {
+    if (_id) onDelete?.(_id);
+  };
 
   btnRow.append(btnSave, btnClear, btnDelete);
   headerWrap.appendChild(btnRow);
   form.prepend(headerWrap);
 
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    if (onSubmit) {
-      const payload = getCustom();
-      await onSubmit(payload);
-    }
-  });
-
-  let _id = null;
+  // ─── Reset to Add Mode ──────────────────────────────────────────────
   function reset() {
     form.reset();
     _id = null;
     titleEl.textContent = "Add Quest";
     btnDelete.style.display = "none";
+    // clear any dynamic rows
+    fields.objectives.setLines([], false);
+    fields.rewards.setLines([], false);
   }
-  function populate(def) {
-    _id = def.id;
-    titleEl.textContent = "Edit Quest";
-    btnDelete.style.display = "";
-    // populate other fields...
+
+  // ─── Populate for Edit Mode ─────────────────────────────────────────
+  function populate(def = {}) {
+    _id = def.id || null;
+    titleEl.textContent = _id ? "Edit Quest" : "Add Quest";
+    btnDelete.style.display = _id ? "" : "none";
+
+    fields.fldName.value = def.name || "";
+    fields.fldDesc.value = def.description || "";
+
+    // Objectives (array of {text, color})
+    fields.objectives.setLines(def.objectives || [], false);
+
+    // Rewards (array of {text, color})
+    fields.rewards.setLines(def.rewards || [], false);
   }
+
+  // ─── Gather data for submission ─────────────────────────────────────
   function getCustom() {
     return {
-      id: _id,
-      name: form.elements.name.value.trim(),
-      description: form.elements.description.value.trim(),
-      reward: form.elements.reward.value.trim()
+      id:           _id,
+      name:         fields.fldName.value.trim(),
+      nameColor:    getPickrHexColor(fields.colorName._pickr),
+      description:  fields.fldDesc.value.trim(),
+      descColor:    getPickrHexColor(fields.colorDesc._pickr),
+      objectives:   fields.objectives.getLines(),
+      rewards:      fields.rewards.getLines()
     };
   }
+
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    const payload = getCustom();
+    await onSubmit?.(payload);
+    reset();
+  });
 
   return { form, reset, populate, getCustom };
 }

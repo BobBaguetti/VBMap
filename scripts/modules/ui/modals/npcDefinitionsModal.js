@@ -1,15 +1,18 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 6
+// @version: 7
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
-import { createDefListContainer } from "../../utils/listUtils.js";
+import { createDefListContainer }     from "../../utils/listUtils.js";
 import {
   loadNpcDefinitions, saveNpcDefinition, updateNpcDefinition,
   deleteNpcDefinition
-} from "../../services/npcDefinitionsService.js";
+}                                     from "../../services/npcDefinitionsService.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
-import { createNpcFormController } from "../forms/controllers/npcFormController.js";
-import { renderNpcEntry } from "../entries/npcEntryRenderer.js";
+import { createNpcFormController }     from "../forms/controllers/npcFormController.js";
+import { renderNpcEntry }              from "../entries/npcEntryRenderer.js";
+
+// ← NEW: import our scoped initializer
+import { initModalPickrs }            from "../pickrManager.js";
 
 export function initNpcDefinitionsModal(db) {
   const {
@@ -41,7 +44,7 @@ export function initNpcDefinitionsModal(db) {
     },
     onSubmit: async payload => {
       if (payload.id) await updateNpcDefinition(db, payload.id, payload);
-      else await saveNpcDefinition(db, null, payload);
+      else             await saveNpcDefinition(db, null, payload);
       formApi.reset();
       await refresh();
     }
@@ -54,9 +57,9 @@ export function initNpcDefinitionsModal(db) {
   // list manager wiring
   let definitions = [];
   const listApi = createDefinitionListManager({
-    container: listContainer,
+    container:     listContainer,
     getDefinitions: () => definitions,
-    renderEntry: (def, layout) => renderNpcEntry(def, layout, {
+    renderEntry:   (def, layout) => renderNpcEntry(def, layout, {
       onClick: d => {
         formApi.populate(d);
         previewApi.setFromDefinition(d);
@@ -85,6 +88,8 @@ export function initNpcDefinitionsModal(db) {
       formApi.reset();
       await refresh();
       openModal();
+      // ← NEW: wire up all color-swatch buttons in this modal
+      initModalPickrs(bodyWrap);
       previewApi.show();
     },
     refresh

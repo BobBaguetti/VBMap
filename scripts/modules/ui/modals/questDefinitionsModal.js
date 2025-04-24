@@ -1,15 +1,20 @@
 // @file: /scripts/modules/ui/modals/questDefinitionsModal.js
-// @version: 6
+// @version: 7
 
-import { createDefinitionModalShell } from "../components/definitionModalShell.js";
-import { createDefListContainer } from "../../utils/listUtils.js";
+import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
+import { createDefListContainer }       from "../../utils/listUtils.js";
 import {
-  loadQuestDefinitions, saveQuestDefinition, updateQuestDefinition,
+  loadQuestDefinitions,
+  saveQuestDefinition,
+  updateQuestDefinition,
   deleteQuestDefinition
-} from "../../services/questDefinitionsService.js";
-import { createDefinitionListManager } from "../components/definitionListManager.js";
-import { createQuestFormController } from "../forms/controllers/questFormController.js";
-import { renderQuestEntry } from "../entries/questEntryRenderer.js";
+}                                       from "../../services/questDefinitionsService.js";
+import { createDefinitionListManager }   from "../components/definitionListManager.js";
+import { createQuestFormController }     from "../forms/controllers/questFormController.js";
+import { renderQuestEntry }              from "../entries/questEntryRenderer.js";
+
+// ← NEW: import the scoped initializer
+import { initModalPickrs }              from "../pickrManager.js";
 
 export function initQuestDefinitionsModal(db) {
   const {
@@ -41,7 +46,7 @@ export function initQuestDefinitionsModal(db) {
     },
     onSubmit: async payload => {
       if (payload.id) await updateQuestDefinition(db, payload.id, payload);
-      else await saveQuestDefinition(db, null, payload);
+      else             await saveQuestDefinition(db, null, payload);
       formApi.reset();
       await refresh();
     }
@@ -54,9 +59,9 @@ export function initQuestDefinitionsModal(db) {
   // list manager wiring
   let definitions = [];
   const listApi = createDefinitionListManager({
-    container: listContainer,
+    container:     listContainer,
     getDefinitions: () => definitions,
-    renderEntry: (def, layout) => renderQuestEntry(def, layout, {
+    renderEntry:   (def, layout) => renderQuestEntry(def, layout, {
       onClick: d => {
         formApi.populate(d);
         previewApi.setFromDefinition(d);
@@ -85,6 +90,10 @@ export function initQuestDefinitionsModal(db) {
       formApi.reset();
       await refresh();
       openModal();
+
+      // ← NEW: wire up all color‐swatch buttons in this modal
+      initModalPickrs(bodyWrap);
+
       previewApi.show();
     },
     refresh
