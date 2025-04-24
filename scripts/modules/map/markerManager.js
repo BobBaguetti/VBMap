@@ -40,8 +40,22 @@ export function renderPopup(m) {
     ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
     : "";
 
+  // custom close button markup
+  const closeBtnHTML = `
+    <span class="popup-close-btn" 
+          style="
+            position:absolute;
+            top:8px;
+            right:8px;
+            cursor:pointer;
+            padding:4px;
+          ">
+      ${createIcon("x", { inline: true }).outerHTML}
+    </span>`;
+
   return `
-    <div class="custom-popup">
+    <div class="custom-popup" style="position:relative;">
+      ${closeBtnHTML}
       <div class="popup-header">
         <div class="popup-header-left">
           ${bigImg}
@@ -71,7 +85,7 @@ export function createCustomIcon(m) {
     html: `<div class="custom-marker"><div class="marker-border"></div>${imgHTML}</div>`,
     className: "custom-marker-container",
     iconSize: [32, 32],
-    iconAnchor: [16, 32]     // anchor the icon tip at the marker's lat/lng
+    iconAnchor: [16, 32]
   });
 }
 
@@ -81,7 +95,6 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
     draggable: false
   });
 
-  // offset Y by 20px upward so popup doesn't cover the pin
   markerObj.bindPopup(renderPopup(m), {
     className: "custom-popup-wrapper",
     maxWidth: 350,
@@ -90,6 +103,7 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   });
 
   markerObj.on("popupopen", () => {
+    // wire up our custom close button
     const popupEl = document.querySelector(".custom-popup");
     const closeBtn = popupEl?.querySelector(".popup-close-btn");
     if (closeBtn) {
