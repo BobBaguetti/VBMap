@@ -1,11 +1,11 @@
-// @comment: Comments should not be deleted unless they need updating due to specific commented code changing or code removal.
+// @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.16
+// @version: 4.17
 
-import { createPickr, destroyAllPickrs }        from "../../pickrManager.js";
-import { getPickrHexColor, applyColorPresets }  from "../../../utils/colorUtils.js";
-import { createItemForm }                       from "../builders/itemFormBuilder.js";
-import { createIcon }                           from "../../../utils/iconUtils.js";
+import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
+import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
+import { createItemForm }                      from "../builders/itemFormBuilder.js";
+import { createIcon }                          from "../../../utils/iconUtils.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
@@ -18,9 +18,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   // ─── Header + Buttons ───────────────────────────────────────────────
   const subheadingWrap = document.createElement("div");
   Object.assign(subheadingWrap.style, {
-    display:       "flex",
-    justifyContent:"space-between",
-    alignItems:    "center"
+    display:        "flex",
+    justifyContent: "space-between",
+    alignItems:     "center"
   });
 
   const subheading = document.createElement("h3");
@@ -50,11 +50,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.appendChild(createIcon("trash"));
   btnDelete.style.display = "none"; // hidden in Add mode
   btnDelete.onclick = () => {
-    if (_id != null) {
-      const name = fields.fldName.value || "this item";
-      if (confirm(`Are you sure you want to delete "${name}"?`)) {
-        onDelete?.(_id);
-      }
+    if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
+      onDelete?.(_id);
     }
   };
 
@@ -64,20 +61,27 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   // ─── Pickr Initialization ──────────────────────────────────────────
   function initPickrs() {
-    Object.entries({
+    const map = {
       name:        fields.colorName,
       itemType:    fields.colorType,
       rarity:      fields.colorRarity,
       description: fields.colorDesc,
       value:       fields.colorValue,
       quantity:    fields.colorQty
-    }).forEach(([key, btn]) => {
+    };
+
+    Object.entries(map).forEach(([key, btn]) => {
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
-        // whenever user changes or saves a color, fire form input to update preview
-        p.on('change', () => form.dispatchEvent(new Event('input', { bubbles: true })));
-        p.on('save',   () => form.dispatchEvent(new Event('input', { bubbles: true })));
+        p.on("change", color => {
+          console.log(`[pickr:${key}] change →`, color.toHEXA().toString());
+          form.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        p.on("save", () => {
+          console.log(`[pickr:${key}] save →`, p.getColor().toHEXA().toString());
+          form.dispatchEvent(new Event("input", { bubbles: true }));
+        });
       }
     });
   }
@@ -85,34 +89,30 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
     initPickrs();
+
     const tmp = {
       itemType: fields.fldType.value,
       rarity:   fields.fldRarity.value
     };
     applyColorPresets(tmp);
 
-    const DEFAULT = "#E5E6E8";
-    pickrs.name?.setColor(tmp.nameColor        ?? DEFAULT);
-    pickrs.itemType?.setColor(tmp.itemTypeColor ?? DEFAULT);
-    pickrs.rarity?.setColor(tmp.rarityColor     ?? DEFAULT);
+    console.log("[applyPresets] tmp →", tmp);
 
-    // re-trigger live-preview
+    const D = "#E5E6E8";
+    pickrs.name?.setColor(tmp.nameColor        ?? D);
+    pickrs.itemType?.setColor(tmp.itemTypeColor ?? D);
+    pickrs.rarity?.setColor(tmp.rarityColor     ?? D);
+
     form.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
-  fields.fldRarity.addEventListener("change", () => applyPresetsAndRefresh());
-  fields.fldType  .addEventListener("change", () => applyPresetsAndRefresh());
+  fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
+  fields.fldType  .addEventListener("change", applyPresetsAndRefresh);
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
-    fields.fldName.value   = "";
-    fields.fldType.value   = "";
-    fields.fldRarity.value = "";
-    fields.fldDesc.value   = "";
-    fields.fldValue.value  = "";
-    fields.fldQty.value    = "";
-    fields.fldImgS.value   = "";
-    fields.fldImgL.value   = "";
+    ["fldName","fldType","fldRarity","fldDesc","fldValue","fldQty","fldImgS","fldImgL"]
+      .forEach(k => fields[k].value = "");
     fields.extraInfo.setLines([], false);
 
     _id = null;
@@ -120,19 +120,19 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
 
     destroyAllPickrs();
-    Object.keys(pickrs).forEach(key => delete pickrs[key]);
+    Object.keys(pickrs).forEach(k => delete pickrs[k]);
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
   function populate(def) {
-    fields.fldName.value      = def.name || "";
-    fields.fldType.value      = def.itemType || "";
-    fields.fldRarity.value    = def.rarity || "";
-    fields.fldDesc.value      = def.description || "";
-    fields.fldValue.value     = def.value || "";
-    fields.fldQty.value       = def.quantity || "";
-    fields.fldImgS.value      = def.imageSmall || "";
-    fields.fldImgL.value      = def.imageLarge || "";
+    fields.fldName.value   = def.name         || "";
+    fields.fldType.value   = def.itemType     || "";
+    fields.fldRarity.value = def.rarity       || "";
+    fields.fldDesc.value   = def.description  || "";
+    fields.fldValue.value  = def.value        || "";
+    fields.fldQty.value    = def.quantity     || "";
+    fields.fldImgS.value   = def.imageSmall   || "";
+    fields.fldImgL.value   = def.imageLarge   || "";
     fields.extraInfo.setLines(def.extraInfo || [], false);
 
     _id = def.id || null;
@@ -140,41 +140,43 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "";
 
     initPickrs();
-    pickrs.name?.setColor(def.nameColor        || "#E5E6E8");
+    pickrs.name?.setColor(def.nameColor         || "#E5E6E8");
     pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
     pickrs.rarity?.setColor(def.rarityColor     || "#E5E6E8");
-    pickrs.description?.setColor(def.descColor   || "#E5E6E8");
+    // ⬇ fix here:
+    pickrs.description?.setColor(def.descriptionColor || "#E5E6E8");
     pickrs.value?.setColor(def.valueColor       || "#E5E6E8");
     pickrs.quantity?.setColor(def.quantityColor || "#E5E6E8");
   }
 
   // ─── Gather form data ──────────────────────────────────────────────
   function getCustom() {
-    return {
-      id:             _id,
-      name:           fields.fldName.value.trim(),
-      nameColor:      getPickrHexColor(pickrs.name),
-      itemType:       fields.fldType.value,
-      itemTypeColor:  getPickrHexColor(pickrs.itemType),
-      rarity:         fields.fldRarity.value,
-      rarityColor:    getPickrHexColor(pickrs.rarity),
-      description:    fields.fldDesc.value.trim(),
-      descColor:      getPickrHexColor(pickrs.description),
-      value:          fields.fldValue.value.trim(),
-      valueColor:     getPickrHexColor(pickrs.value),
-      quantity:       fields.fldQty.value.trim(),
-      quantityColor:  getPickrHexColor(pickrs.quantity),
-      imageSmall:     fields.fldImgS.value.trim(),
-      imageLarge:     fields.fldImgL.value.trim(),
-      extraInfo:      fields.extraInfo.getLines()
+    const result = {
+      id:                _id,
+      name:              fields.fldName.value.trim(),
+      nameColor:         getPickrHexColor(pickrs.name),
+      itemType:          fields.fldType.value,
+      itemTypeColor:     getPickrHexColor(pickrs.itemType),
+      rarity:            fields.fldRarity.value,
+      rarityColor:       getPickrHexColor(pickrs.rarity),
+      description:       fields.fldDesc.value.trim(),
+      // ⬇ fix here:
+      descriptionColor:  getPickrHexColor(pickrs.description),
+      value:             fields.fldValue.value.trim(),
+      valueColor:        getPickrHexColor(pickrs.value),
+      quantity:          fields.fldQty.value.trim(),
+      quantityColor:     getPickrHexColor(pickrs.quantity),
+      imageSmall:        fields.fldImgS.value.trim(),
+      imageLarge:        fields.fldImgL.value.trim(),
+      extraInfo:         fields.extraInfo.getLines()
     };
+    console.log("[getCustom] live data →", result);
+    return result;
   }
 
   // ─── Live‐preview event hookup ──────────────────────────────────────
   form.addEventListener("input", () => {
-    const live = getCustom();
-    // the modal’s code listens on form input to update its preview
-    // so we just fire the event; no further action here
+    // modal code listens for form 'input' → previewApi.setFromDefinition(...)
   });
 
   form.addEventListener("submit", async e => {
