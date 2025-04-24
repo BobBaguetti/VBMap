@@ -1,6 +1,6 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
 // @file:    /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 20
+// @version: 21
 
 import {
   createModal, closeModal, openModal
@@ -50,8 +50,10 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       previewApi.setFromDefinition({});
       previewApi.show();
-      // re-init pickrs on a fresh form
-      requestAnimationFrame(() => formApi.initPickrs());
+      // double-rAF to ensure all wrappers are in
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => formApi.initPickrs())
+      );
     },
     onDelete: async id => {
       await deleteItemDefinition(db, id);
@@ -59,7 +61,9 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       previewApi.setFromDefinition({});
       previewApi.show();
-      requestAnimationFrame(() => formApi.initPickrs());
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => formApi.initPickrs())
+      );
     },
     onSubmit: async payload => {
       applyColorPresets(payload);
@@ -69,7 +73,9 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       previewApi.setFromDefinition({});
       previewApi.show();
-      requestAnimationFrame(() => formApi.initPickrs());
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => formApi.initPickrs())
+      );
     }
   });
 
@@ -102,8 +108,10 @@ export function initTestItemDefinitionsModal(db) {
     getDefinitions: () => definitions,
     onEntryClick: def => {
       formApi.populate(def);
-      // defer pickr init so all fields are present
-      requestAnimationFrame(() => formApi.initPickrs());
+      // double-rAF for populate too
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => formApi.initPickrs())
+      );
       previewApi.setFromDefinition(def);
       previewApi.show();
     },
@@ -145,13 +153,15 @@ export function initTestItemDefinitionsModal(db) {
       await refreshDefinitions();
       openModal(modal);
 
-      // ensure pickrs attach after the form is rendered
-      requestAnimationFrame(() => {
-        formApi.initPickrs();
-        previewApi.setFromDefinition({});
-        positionPreviewPanel();
-        previewApi.show();
-      });
+      // double-rAF on open
+      requestAnimationFrame(() =>
+        requestAnimationFrame(() => {
+          formApi.initPickrs();
+          previewApi.setFromDefinition({});
+          positionPreviewPanel();
+          previewApi.show();
+        })
+      );
     },
     refresh: refreshDefinitions
   };
