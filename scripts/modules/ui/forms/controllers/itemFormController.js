@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or code removal.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.14
+// @version: 4.15
 
 import { createPickr, destroyAllPickrs }        from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets }  from "../../../utils/colorUtils.js";
@@ -89,9 +89,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     applyColorPresets(tmp);
 
     const DEFAULT = "#E5E6E8";
-    pickrs.name?.setColor(tmp.nameColor     ?? DEFAULT);
+    pickrs.name?.setColor(tmp.nameColor        ?? DEFAULT);
     pickrs.itemType?.setColor(tmp.itemTypeColor ?? DEFAULT);
-    pickrs.rarity?.setColor(tmp.rarityColor   ?? DEFAULT);
+    pickrs.rarity?.setColor(tmp.rarityColor     ?? DEFAULT);
+
+    // >>> Re-fire the form’s input event so your preview listener runs <<<
+    form.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
   fields.fldRarity.addEventListener("change", () => applyPresetsAndRefresh());
@@ -164,6 +167,22 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       extraInfo:      fields.extraInfo.getLines()
     };
   }
+
+  // ─── Listen for both input & change so preview updates on select too ─
+  ["input","change"].forEach(evt =>
+    form.addEventListener(evt, async e => {
+      // Let any other handlers run first
+      await Promise.resolve();
+      if (onSubmit == null) {
+        // No onSubmit here—this is our live‐preview hook in the modal
+        const live = getCustom();
+        // The modal code listens for form input/change and does:
+        //    previewApi.setFromDefinition(live);
+        //    previewApi.show();
+        // We just dispatch the event—modal’s listener will pick it up.
+      }
+    })
+  );
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
