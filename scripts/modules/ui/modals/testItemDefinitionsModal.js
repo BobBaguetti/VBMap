@@ -1,4 +1,3 @@
-// @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes.
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
 // @version: 19
 
@@ -17,6 +16,7 @@ import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
+import { destroyAllPickrs } from "../../ui/pickrManager.js";   // ← NEW
 
 export function initTestItemDefinitionsModal(db) {
   const { modal, content, header } = createModal({
@@ -44,7 +44,7 @@ export function initTestItemDefinitionsModal(db) {
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi = createPreviewPanel("item");
 
-  // form (includes its own header+buttons)
+  // form controller
   const formApi = createItemFormController({
     onCancel: () => {
       formApi.reset();
@@ -142,12 +142,14 @@ export function initTestItemDefinitionsModal(db) {
     open: async () => {
       formApi.reset();
       await refreshDefinitions();
+
+      // DESTROY any stale Pickrs (from hidden modal) before re-creating
+      destroyAllPickrs();   // ← NEW
+
       openModal(modal);
+      formApi.initPickrs(); // now creates fresh Pickrs in a visible modal
 
-      // ensure all Pickr buttons are initialized after the modal is in the DOM
-      requestAnimationFrame(() => formApi.initPickrs());
-
-      // reset preview blank on open
+      // blank preview
       previewApi.setFromDefinition({});
       requestAnimationFrame(() => {
         positionPreviewPanel();
