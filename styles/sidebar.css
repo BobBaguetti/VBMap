@@ -1,7 +1,7 @@
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted;
             comments may only be edited when editing their code. */
 /* @file:    /styles/sidebar.css */
-/* @version: 9.1  */
+/* @version: 9.2  */
 
 /* Slightly wider, more compact filter rows */
 #sidebar {
@@ -25,7 +25,7 @@
 /* Sidebar toggle control */
 #sidebar-toggle {
   position: absolute;
-  top: 10px; 
+  top: 10px;
   left: 350px;
   z-index: 1100;
   font-family: 'Satoshi', sans-serif;
@@ -101,14 +101,15 @@
   margin-bottom: 6px;
 }
 
-/* ————————— Settings Section: flex-align labels ————————— */
-.sidebar-section label {
+/* ————————— Settings Section: flex-align only these labels ————————— */
+#settings-section label {
   display: flex;
   align-items: center;
   gap: 8px;
   margin-bottom: 6px;
+  font-size: 14px;
 }
-.sidebar-section label input[type="checkbox"] {
+#settings-section label input[type="checkbox"] {
   /* restore natural sizing */
   opacity: 1;
   pointer-events: auto;

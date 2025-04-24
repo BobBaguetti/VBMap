@@ -1,11 +1,11 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes.
 // @file:    /scripts/modules/sidebar/sidebarManager.js
-// @version: 9.1
+// @version: 9.2
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
-import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
-import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js";
+import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";        // old modal
+import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js"; // test modal
 import { initQuestDefinitionsModal } from "../ui/modals/questDefinitionsModal.js";
 import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
 
@@ -16,7 +16,7 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   const sidebar       = document.getElementById("sidebar");
   const settingsSect  = document.getElementById("settings-section");
 
-  if (!searchBar || !sidebarToggle || !sidebar) {
+  if (!searchBar || !sidebarToggle || !sidebar || !settingsSect) {
     console.warn("[sidebar] Missing elements");
     return { filterMarkers() {} };
   }
@@ -43,21 +43,29 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   });
 
   /* ----------------------------------------------------------------
-     Settings toggles
+     Settings toggles (injected here)
   ---------------------------------------------------------------- */
-  // Marker grouping (off by default)
+  // clear any static labels
+  settingsSect.querySelectorAll("label").forEach(l => l.remove());
+
+  // — Marker Grouping —
+  const groupingLabel = document.createElement("label");
+  groupingLabel.innerHTML = `<input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span>`;
+  settingsSect.appendChild(groupingLabel);
   const groupingCb = document.getElementById("enable-grouping");
-  groupingCb.checked = false;
+  groupingCb.checked = false; // default off
   groupingCb.addEventListener("change", () => {
     console.log("[sidebar] marker grouping:", groupingCb.checked);
-    // toggle the cluster layer on/off
     if (layers.Item) {
-      if (groupingCb.checked) map.addLayer(layers.Item);
-      else map.removeLayer(layers.Item);
+      groupingCb.checked ? map.addLayer(layers.Item)
+                         : map.removeLayer(layers.Item);
     }
   });
 
-  // Small-markers scale toggle (off by default)
+  // — Small Markers (50%) —
+  const smallLabel = document.createElement("label");
+  smallLabel.innerHTML = `<input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span>`;
+  settingsSect.appendChild(smallLabel);
   const smallCb = document.getElementById("toggle-small-markers");
   smallCb.checked = false;
   smallCb.addEventListener("change", () => {
@@ -114,7 +122,7 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     });
   }
 
-  // Wire up search + toggles
+  // Wire up search + main toggles
   searchBar.addEventListener("input", filterMarkers);
   document
     .querySelectorAll("#main-filters .toggle-group input")
@@ -176,26 +184,26 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   const existing = sidebar.querySelector("#sidebar-admin-tools");
   if (existing) existing.remove();
 
-  const oldItemModal  = initItemDefinitionsModal(db);
-  const testItemModal = initTestItemDefinitionsModal(db);
-  const questModal    = initQuestDefinitionsModal(db);
-  const npcModal      = initNpcDefinitionsModal(db);
+  // create and inject Admin Tools header
+  const adminHeader = document.createElement("h2");
+  adminHeader.className = "admin-header";
+  adminHeader.innerHTML = `<i class="fas fa-tools"></i> Admin Tools`;
+  sidebar.appendChild(adminHeader);
 
+  // create and inject button container
   const adminWrap = document.createElement("div");
   adminWrap.id = "sidebar-admin-tools";
-
   [
-    ["Manage Items",    () => oldItemModal.open()],
-    ["Test Item Modal", () => testItemModal.open()],
-    ["Manage Quests",   () => questModal.open()],
-    ["Manage NPCs",     () => npcModal.open()]
+    ["Manage Items",    () => initItemDefinitionsModal(db).open()],
+    ["Test Item Modal", () => initTestItemDefinitionsModal(db).open()],
+    ["Manage Quests",   () => initQuestDefinitionsModal(db).open()],
+    ["Manage NPCs",     () => initNpcDefinitionsModal(db).open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;
     btn.onclick     = fn;
     adminWrap.appendChild(btn);
   });
-
   sidebar.appendChild(adminWrap);
 
   // initial draw
