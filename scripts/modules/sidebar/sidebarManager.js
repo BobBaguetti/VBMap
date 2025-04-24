@@ -1,12 +1,13 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted.
-// @version: 6   Increase by 1 every time you update anything.
+// @version: 7   The current file version is 7. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/sidebar/sidebarManager.js
 
-import { loadItemDefinitions }    from "../services/itemDefinitionsService.js";
-import { loadNpcDefinitions }     from "../services/npcDefinitionsService.js";
-import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js";
-import { initQuestDefinitionsModal }    from "../ui/modals/questDefinitionsModal.js";
-import { initNpcDefinitionsModal }      from "../ui/modals/npcDefinitionsModal.js";
+import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
+import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
+import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";        // old modal
+import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js"; // test modal
+import { initQuestDefinitionsModal } from "../ui/modals/questDefinitionsModal.js";
+import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
 
 export async function setupSidebar(map, layers, allMarkers, db) {
   const searchBar     = document.getElementById("search-bar");
@@ -34,9 +35,7 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   // Accordion behavior
   document.querySelectorAll(".filter-group").forEach(group => {
     const header = group.querySelector("h3");
-    header.addEventListener("click", () => {
-      group.classList.toggle("collapsed");
-    });
+    header.addEventListener("click", () => group.classList.toggle("collapsed"));
   });
 
   // PvE master toggle
@@ -52,8 +51,8 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     const pveOn     = pveToggle.checked;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      const isNpc      = data.type === "npc";
-      const matchesPvE = pveOn || !isNpc;
+      const isNpc       = data.type === "npc";
+      const matchesPvE  = pveOn || !isNpc;
       const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
       let mainVisible = true;
@@ -77,7 +76,10 @@ export async function setupSidebar(map, layers, allMarkers, db) {
         if (enemyCb && !enemyCb.checked) enemyVisible = false;
       }
 
-      const shouldShow = matchesPvE && matchesName && mainVisible && (isNpc ? enemyVisible : itemVisible);
+      const shouldShow = matchesPvE
+                       && matchesName
+                       && mainVisible
+                       && (isNpc ? enemyVisible : itemVisible);
       const layerGroup = layers[data.type];
       if (!layerGroup) return;
 
@@ -92,7 +94,7 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     .forEach(cb => cb.addEventListener("change", filterMarkers));
   pveToggle.addEventListener("change", filterMarkers);
 
-  // Item filters
+  // — Items —
   const itemFilterList = document.getElementById("item-filter-list");
   async function loadItemFilters() {
     itemFilterList.innerHTML = "";
@@ -110,9 +112,9 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   }
   await loadItemFilters();
 
-  // Enemy filters section
-  const itemGroup = document.querySelector("#item-filter-list").closest(".filter-group");
-  const enemyGroupWrap = document.createElement("div");
+  // — Enemies —
+  const itemGroup       = document.querySelector("#item-filter-list").closest(".filter-group");
+  const enemyGroupWrap  = document.createElement("div");
   enemyGroupWrap.className = "filter-group";
   enemyGroupWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
   itemGroup.after(enemyGroupWrap);
@@ -124,9 +126,9 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     npcs.forEach(d => {
       const label = document.createElement("label");
       const cb    = document.createElement("input");
-      cb.type             = "checkbox";
-      cb.checked          = true;
-      cb.dataset.enemyId  = d.id;
+      cb.type            = "checkbox";
+      cb.checked         = true;
+      cb.dataset.enemyId = d.id;
       label.append(cb, ` ${d.name}`);
       enemyFilterList.append(label);
       cb.addEventListener("change", filterMarkers);
@@ -134,23 +136,27 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   }
   await loadEnemyFilters();
 
-  // Admin Tools
-  const testModal  = initTestItemDefinitionsModal(db);
-  const questModal = initQuestDefinitionsModal(db);
-  const npcModal   = initNpcDefinitionsModal(db);
+  // — Admin Tools —
+  const oldItemModal  = initItemDefinitionsModal(db);
+  const testItemModal = initTestItemDefinitionsModal(db);
+  const questModal    = initQuestDefinitionsModal(db);
+  const npcModal      = initNpcDefinitionsModal(db);
 
   const adminWrap = document.createElement("div");
   adminWrap.id = "sidebar-admin-tools";
+
   [
-    ["Manage Items",  () => testModal.open()],
-    ["Manage Quests", () => questModal.open()],
-    ["Manage NPCs",   () => npcModal.open()]
+    ["Manage Items",       () => oldItemModal.open()],
+    ["Test Item Modal",    () => testItemModal.open()],
+    ["Manage Quests",      () => questModal.open()],
+    ["Manage NPCs",        () => npcModal.open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;
     btn.onclick     = fn;
     adminWrap.appendChild(btn);
   });
+
   sidebar.appendChild(adminWrap);
 
   return { filterMarkers, loadItemFilters, loadEnemyFilters };
