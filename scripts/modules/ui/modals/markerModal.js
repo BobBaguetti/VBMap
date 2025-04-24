@@ -18,28 +18,29 @@ export function initMarkerModal(db) {
     onClose:    () => closeModal(modal)
   });
 
-  // Build form skeleton
+  // Build the form container
   const form = document.createElement("form");
   form.id = "edit-form";
 
-  // Type selector & predef selector
-  const { row: rowType,   select: fldType   } =
-          createDropdownField("Type:", "fld-type", [
-            { value: "Door", label: "Door" },
-            { value: "Extraction Portal", label: "Extraction Portal" },
-            { value: "Item", label: "Item" },
-            { value: "Teleport", label: "Teleport" },
-            { value: "Spawn Point", label: "Spawn Point" }
-          ], { showColor: false });
+  // Type selector
+  const { row: rowType, select: fldType } =
+    createDropdownField("Type:", "fld-type", [
+      { value: "Door", label: "Door" },
+      { value: "Extraction Portal", label: "Extraction Portal" },
+      { value: "Item", label: "Item" },
+      { value: "Teleport", label: "Teleport" },
+      { value: "Spawn Point", label: "Spawn Point" }
+    ], { showColor: false });
 
-  const { row: rowPredef, select: ddPredef  } =
-          createDropdownField("Item:", "fld-predef", [], { showColor: false });
+  // Predefined item selector
+  const { row: rowPredef, select: ddPredef } =
+    createDropdownField("Item:", "fld-predef", [], { showColor: false });
 
-  // Our item‐form bits
+  // Our item‐fields form API
   const formApi    = createMarkerForm();
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // group those item‐only fields
+  // Group the item‐specific rows
   const blockItem = document.createElement("div");
   blockItem.classList.add("item-gap");
   blockItem.append(
@@ -48,7 +49,7 @@ export function initMarkerModal(db) {
     formApi.fields.fldDesc.closest(".field-row")
   );
 
-  // Assemble
+  // Assemble everything
   form.append(
     formApi.fields.fldName.closest(".field-row"),
     rowType,
@@ -62,41 +63,39 @@ export function initMarkerModal(db) {
   );
   content.appendChild(form);
 
+  // Predefined‐definitions store
   let defs = {};
 
-  // show/hide item sections
+  // Show/hide item block
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
     rowPredef.style.display = isItem ? "flex"  : "none";
   }
   fldType.onchange = () => toggleSections(fldType.value === "Item");
 
+  // When user picks a predefined item
   ddPredef.onchange = () => {
     const def = defs[ddPredef.value];
-    if (def) {
-      formApi.setFromDefinition(def);
-    } else {
-      formApi.setFromDefinition({});  // clears out the form
-    }
+    if (def) formApi.setFromDefinition(def);
+    else     formApi.setFromDefinition({});
     formApi.initPickrs();
   };
 
-  // load item defs into the dropdown
+  // Load item definitions into the dropdown
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
-    defs = Object.fromEntries(list.map(d => [d.id,d]));
+    defs = Object.fromEntries(list.map(d => [d.id, d]));
     ddPredef.innerHTML = `<option value="">None (custom)</option>`;
-    list.forEach(d => {
+    for (const d of list) {
       const o = document.createElement("option");
       o.value = d.id;
       o.textContent = d.name;
       ddPredef.appendChild(o);
-    });
+    }
   }
-  // immediately populate defs
-  refreshPredefinedItems();
+  refreshPredefinedItems(); // kick it off immediately
 
-  // Edit existing marker
+  // Open existing‐marker editor
   function openEdit(markerObj, data, evt, onSave) {
     populate(data);
     formApi.initPickrs();
@@ -110,7 +109,7 @@ export function initMarkerModal(db) {
     };
   }
 
-  // Create new marker
+  // Open create‐new‐marker editor
   function openCreate(coords, type, evt, onCreate) {
     populate({ type });
     formApi.initPickrs();
@@ -123,7 +122,7 @@ export function initMarkerModal(db) {
     };
   }
 
-  // Populate fields
+  // Fill in fields from an existing marker or custom data
   function populate(data = { type: "Item" }) {
     fldType.value = data.type;
     toggleSections(data.type === "Item");
@@ -142,43 +141,47 @@ export function initMarkerModal(db) {
     }
   }
 
-  // **HARVEST** → always emits `imageBig` (never undefined)
+  // Harvest the form data into a marker‐save object,
+  // making sure imageBig is always a string (never undefined).
   function harvest(coords) {
     const type = fldType.value;
-    const selectedId = ddPredef.value;
-
-    if (type === "Item" && selectedId && defs[selectedId]) {
-      const def = defs[selectedId];
+    const sel  = ddPredef.value;
+    if (type === "Item" && sel && defs[sel]) {
+      const d = defs[sel];
       return {
         type,
         coords,
-        predefinedItemId: selectedId,
-        name:             def.name,
-        nameColor:        def.nameColor  || "#E5E6E8",
-        itemType:         def.itemType   || "",
-        itemTypeColor:    def.itemTypeColor || "#E5E6E8",
-        rarity:           def.rarity     || "",
-        rarityColor:      def.rarityColor  || "#E5E6E8",
-        description:      def.description || "",
-        descriptionColor: def.descriptionColor || "#E5E6E8",
-        extraLines:       def.extraLines || [],
-        imageSmall:       def.imageSmall || "",
-        // **fall back to def.imageLarge if def.imageBig is missing**
-        imageBig:         (def.imageBig   ?? def.imageLarge)  || "",
-        video:            def.video      || ""
+        predefinedItemId: sel,
+        name:             d.name,
+        nameColor:        d.nameColor  || "#E5E6E8",
+        itemType:         d.itemType   || "",
+        itemTypeColor:    d.itemTypeColor || "#E5E6E8",
+        rarity:           d.rarity     || "",
+        rarityColor:      d.rarityColor  || "#E5E6E8",
+        description:      d.description || "",
+        descriptionColor: d.descriptionColor || "#E5E6E8",
+        extraLines:       d.extraLines || [],
+        imageSmall:       d.imageSmall || "",
+        // <— fallback to d.imageLarge if d.imageBig is missing:
+        imageBig:         (d.imageBig ?? d.imageLarge) || "",
+        video:            d.video || ""
       };
     }
 
-    // custom‐filled
-    const custom = formApi.getCustom();
+    // custom‐entered: ensure imageBig is at least an empty string
+    const c = formApi.getCustom();
     return {
       type,
       coords,
-      ...custom,
-      // ensure we never send `undefined` on this path either
-      imageBig: custom.imageBig || ""
+      ...c,
+      imageBig: c.imageBig || ""
     };
   }
 
-  return { openEdit, openCreate, refreshPredefinedItems };
+  // Public API for scripts to wire up
+  return {
+    openEdit,
+    openCreate,
+    refreshPredefinedItems
+  };
 }
