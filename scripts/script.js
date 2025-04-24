@@ -1,5 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 5
+// @version: 6
 // @file:    /scripts/script.js
 
 import { initializeMap } from "./modules/map/map.js";
@@ -60,13 +60,10 @@ const { filterMarkers, loadItemFilters } = await setupSidebar(map, layers, allMa
 const markerForm = initMarkerModal(db);
 
 /* ------------------------------------------------------------------ *
- *  Modals
+ *  Modals: remove static wiring—handled by sidebarManager.js now
  * ------------------------------------------------------------------ */
 const itemModal = initItemDefinitionsModal(db);
-document.getElementById("manage-item-definitions").addEventListener("click", () => itemModal.open());
-
 const questModal = initQuestDefinitionsModal(db);
-document.getElementById("manage-quest-definitions").addEventListener("click", () => questModal.open());
 
 /* ------------------------------------------------------------------ *
  *  Subscriptions for Item Definition Changes
@@ -123,7 +120,7 @@ function addAndPersist(data) {
 }
 
 /* ------------------------------------------------------------------ *
- *  Copy‑Paste Manager
+ *  Copy-Paste Manager
  * ------------------------------------------------------------------ */
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
@@ -167,7 +164,7 @@ const callbacks = {
 })();
 
 /* ------------------------------------------------------------------ *
- *  Map Context‑Menu for Creating New Markers
+ *  Map Context-Menu for Creating New Markers
  * ------------------------------------------------------------------ */
 map.on("contextmenu", evt => {
   showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{

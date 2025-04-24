@@ -1,4 +1,4 @@
-/* @version: 8 */
+/* @version: 9 */
 /* @file: /styles/sidebar.css */
 
 #sidebar {
@@ -42,23 +42,23 @@
   margin-bottom: 6px;
 }
 
-/* Tight, one-line checkbox+label rows */
-.filter-group .toggle-group {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding-left: 0;
+/* FORCE-TIGHT FILTER ROWS */
+#sidebar .filter-group .toggle-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 4px !important;
+  padding-left: 0 !important;
 }
-.filter-group .toggle-group label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  margin: 0;
+#sidebar .filter-group .toggle-group label {
+  display: flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+  font-size: 14px !important;
+  margin: 0 !important;
 }
-.filter-group .toggle-group input[type="checkbox"] {
-  margin: 0;
-  transform: scale(0.9);
+#sidebar .filter-group .toggle-group input[type="checkbox"] {
+  margin: 0 !important;
+  transform: scale(0.9) !important;
 }
 
 #sidebar input,
@@ -100,5 +100,5 @@
   transform: rotate(-90deg);
 }
 .filter-group.collapsed .toggle-group {
-  display: none;
+  display: none !important;
 }
