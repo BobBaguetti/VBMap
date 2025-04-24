@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.6
+// @version: 4.8
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -36,10 +36,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const btnClear = document.createElement("button");
   btnClear.type = "button";
   btnClear.className = "ui-button";
-  btnClear.textContent = "Clear"; // will change to "Cancel" in edit mode
-  btnClear.onclick = onCancel;("button");
-  btnClear.type = "button";
-  btnClear.className = "ui-button";
   btnClear.textContent = "Clear";
   btnClear.onclick = onCancel;
 
@@ -50,8 +46,15 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height = "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
   btnDelete.style.display = "none"; // hidden in Add mode
+  btnDelete.onclick = () => {
+    if (_id != null) {
+      const name = fields.fldName.value || "this item";
+      if (confirm(`Are you sure you want to delete "${name}"?`)) {
+        onDelete?.(_id);
+      }
+    }
+  };
 
   buttonRow.append(btnSave, btnClear, btnDelete);
   subheadingWrap.appendChild(buttonRow);
@@ -89,7 +92,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = null;
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
-    btnClear.textContent = "Clear"; // reset label
 
     initPickrs();
     // reset all pickers to default grey
@@ -106,17 +108,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value       = def.quantity || "";
     fields.fldImgS.value      = def.imageSmall || "";
     fields.fldImgL.value      = def.imageLarge || "";
-
-    // Populate extra-info rows (clear old, then set new)
-    const extras = def.extraInfo ?? def.extraLines ?? [];
-    fields.extraInfo.setLines([], false);
-    fields.extraInfo.setLines(extras, false);
+    // Populate extra-info, editable
+    fields.extraInfo.setLines(def.extraInfo || [], false);
 
     _id = def.id || null;
     subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
-    btnClear.textContent = "Cancel"; // change label in edit mode
-
 
     initPickrs();
     // reapply saved colors
