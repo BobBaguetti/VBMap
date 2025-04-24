@@ -1,6 +1,6 @@
 /* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
-/* @version: 22 */
+/* @version: 23 */
 
 import {
   createModal, closeModal, openModal
@@ -17,7 +17,7 @@ import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
-// Pull in both cleanup and init functions
+// Pull in both cleanup and init:
 import { destroyAllPickrs, initModalPickrs } from "../pickrManager.js";
 
 export function initTestItemDefinitionsModal(db) {
@@ -97,9 +97,10 @@ export function initTestItemDefinitionsModal(db) {
     container: listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
-      // Populate form, then wire pickers on the form itself
+      // 1) populate inputs
       formApi.populate(def);
-      initModalPickrs(formApi.form);
+      // 2) wait a frame, then wire up the pickers on the form
+      requestAnimationFrame(() => initModalPickrs(formApi.form));
       previewApi.setFromDefinition(def);
       previewApi.show();
     },
@@ -146,8 +147,8 @@ export function initTestItemDefinitionsModal(db) {
 
       openModal(modal);
 
-      // wire pickers on the form
-      initModalPickrs(formApi.form);
+      // wait a frame, then wire pickers on the form
+      requestAnimationFrame(() => initModalPickrs(formApi.form));
 
       // blank preview
       previewApi.setFromDefinition({});
