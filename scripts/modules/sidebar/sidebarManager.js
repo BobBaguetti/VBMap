@@ -4,8 +4,8 @@
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
-import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
-import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js";
+import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";        // old modal
+import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js"; // test modal
 import { initQuestDefinitionsModal } from "../ui/modals/questDefinitionsModal.js";
 import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
 
@@ -33,14 +33,20 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     map.invalidateSize();
   });
 
-  // Collapse/expand via delegation
-  sidebar.addEventListener("click", e => {
-    if (e.target.matches(".filter-group > h3")) {
-      e.target.parentElement.classList.toggle("collapsed");
-    }
+  // Accordion behavior: collapse / expand
+  document.querySelectorAll(".filter-group").forEach(group => {
+    const header = group.querySelector("h3");
+    header.style.cursor = "pointer";
+    header.addEventListener("click", () => {
+      const nowCollapsed = group.classList.toggle("collapsed");
+      console.log(
+        `[sidebar] toggled '${header.textContent.trim()}', collapsed=${nowCollapsed}`
+      );
+      filterMarkers();
+    });
   });
 
-  // PvE master toggle under Main
+  // PvE master toggle
   const mainToggleGroup = document.querySelector("#main-filters .toggle-group");
   const pveLabel = document.createElement("label");
   pveLabel.innerHTML = `<input type="checkbox" id="toggle-pve" checked> PvE`;
@@ -58,10 +64,9 @@ export async function setupSidebar(map, layers, allMarkers, db) {
       const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
       let mainVisible = true;
-      document.querySelectorAll("#main-filters .toggle-group input")
-        .forEach(cb => {
-          if (data.type === cb.dataset.layer && !cb.checked) mainVisible = false;
-        });
+      document.querySelectorAll("#main-filters .toggle-group input").forEach(cb => {
+        if (data.type === cb.dataset.layer && !cb.checked) mainVisible = false;
+      });
 
       let itemVisible = true;
       if (data.predefinedItemId) {
@@ -120,7 +125,7 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   console.log("[sidebar] loadEnemyFilters()");
   const itemGroup       = document.querySelector("#item-filter-list").closest(".filter-group");
   const enemyGroupWrap  = document.createElement("div");
-  enemyGroupWrap.className = "filter-group collapsed";
+  enemyGroupWrap.className = "filter-group";
   enemyGroupWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
   itemGroup.after(enemyGroupWrap);
 
