@@ -1,10 +1,9 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/forms/builders/questFormBuilder.js
 
 import {
-  createTextField,
-  createDropdownField,
-  createTextareaFieldWithColor,
+  createNameField,
+  createDescriptionField,
   createExtraInfoField
 } from "../universalForm.js";
 
@@ -13,34 +12,44 @@ import {
  * - Name (text + color)
  * - Description (textarea + color)
  * - Objectives (extra‐info block, can add multiple)
- * - Rewards (extra‐info block: item ID & quantity)
+ * - Rewards (extra‐info block: text + color)
  */
 export function createQuestForm() {
   const form = document.createElement("form");
   form.id = "quest-form";
 
   // Name
-  const { row: rowName, input: fldName, colorBtn: colorName } =
-    createTextField("Name:", "quest-fld-name");
+  const {
+    row: rowName,
+    input: fldName,
+    colorBtn: colorName
+  } = createNameField("quest-fld-name");
   colorName.id = "quest-fld-name-color";
+  colorName.classList.add("color-swatch");
 
   // Description
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
-    createTextareaFieldWithColor("Description:", "quest-fld-desc");
+  const {
+    row: rowDesc,
+    textarea: fldDesc,
+    colorBtn: colorDesc
+  } = createDescriptionField("quest-fld-desc");
   colorDesc.id = "quest-fld-desc-color";
+  colorDesc.classList.add("color-swatch");
 
-  // Objectives (freeform list of text+color)
+  // Objectives (list of text + color swatch)
   const objBlock = createExtraInfoField({ withDividers: true });
   const rowObj = objBlock.row;
-  // relabel it
   rowObj.querySelector("label").textContent = "Objectives:";
-  
-  // Rewards (list of item-quantity text + color)
+  objBlock.extraInfo // will render its own color swatches
+
+  // Rewards (list of text + color swatch)
   const rewBlock = createExtraInfoField({ withDividers: true });
   const rowRew = rewBlock.row;
   rowRew.querySelector("label").textContent = "Rewards:";
+  rewBlock.extraInfo
 
   form.append(rowName, rowDesc, rowObj, rowRew);
+
   return {
     form,
     fields: {
@@ -49,9 +58,6 @@ export function createQuestForm() {
       objectives: objBlock.extraInfo,
       rewards:    rewBlock.extraInfo
     },
-    rows: {
-      rowObj,
-      rowRew
-    }
+    rows: { rowObj, rowRew }
   };
 }
