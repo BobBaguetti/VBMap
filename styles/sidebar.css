@@ -1,6 +1,6 @@
 /* @keep:    Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
 /* @file:     /styles/sidebar.css */
-/* @version: 8.1 */
+/* @version: 8.2 */
 
 /* Slightly wider, more compact filter rows */
 #sidebar {
@@ -61,9 +61,6 @@
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 4px 8px;
 }
-.filter-group .toggle-group span {
-  /* make the span clickable and styleable */
-}
 
 /* Hide native checkbox but keep in document flow */
 .filter-group .toggle-group input {
@@ -71,12 +68,14 @@
   opacity: 0;
   pointer-events: none;
 }
+
 /* Checked state */
 .filter-group .toggle-group input:checked + span {
   color: #e5e6e8;
   text-decoration: none;
   font-weight: 500;
 }
+
 /* Unchecked state */
 .filter-group .toggle-group input:not(:checked) + span {
   color: #555;
