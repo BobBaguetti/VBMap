@@ -1,4 +1,4 @@
-<!-- @version: 11  -->
+<!-- @version: 12 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -41,6 +41,7 @@
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
 
+    <!-- Filters Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
 
@@ -48,11 +49,26 @@
       <div class="filter-group" id="main-filters">
         <h3>Main</h3>
         <div class="toggle-group">
-          <label><input type="checkbox" checked data-layer="Door" /> Door</label>
-          <label><input type="checkbox" checked data-layer="Extraction Portal" /> Extraction Portal</label>
-          <label><input type="checkbox" checked data-layer="Item" /> Item</label>
-          <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
-          <label><input type="checkbox" checked data-layer="Spawn Point" /> Spawn points</label>
+          <label>
+            <input type="checkbox" checked data-layer="Door" />
+            <span>Door</span>
+          </label>
+          <label>
+            <input type="checkbox" checked data-layer="Extraction Portal" />
+            <span>Extraction Portal</span>
+          </label>
+          <label>
+            <input type="checkbox" checked data-layer="Item" />
+            <span>Item</span>
+          </label>
+          <label>
+            <input type="checkbox" checked data-layer="Teleport" />
+            <span>Teleport</span>
+          </label>
+          <label>
+            <input type="checkbox" checked data-layer="Spawn Point" />
+            <span>Spawn points</span>
+          </label>
           <!-- PvE toggle injected via JS -->
         </div>
       </div>
@@ -60,11 +76,14 @@
       <!-- Item Filters -->
       <div class="filter-group" id="item-filters">
         <h3>Items</h3>
-        <div class="toggle-group" id="item-filter-list"></div>
+        <div class="toggle-group" id="item-filter-list">
+          <!-- dynamically populated -->
+        </div>
       </div>
       <!-- Enemy Filters injected via JS below Items -->
     </div>
 
+    <!-- Settings Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -73,6 +92,7 @@
       </label>
     </div>
 
+    <!-- Search Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />

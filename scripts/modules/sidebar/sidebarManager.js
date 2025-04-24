@@ -21,7 +21,7 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     return { filterMarkers() {} };
   }
 
-  // Dark-style the search input
+  // style searchbar
   searchBar.classList.add("ui-input");
 
   // Sidebar toggle
@@ -33,30 +33,26 @@ export async function setupSidebar(map, layers, allMarkers, db) {
     map.invalidateSize();
   });
 
-  // Accordion behavior: collapse / expand
+  // Accordion behavior
   document.querySelectorAll(".filter-group").forEach(group => {
     const header = group.querySelector("h3");
-    header.style.cursor = "pointer";
     header.addEventListener("click", () => {
-      const nowCollapsed = group.classList.toggle("collapsed");
-      console.log(
-        `[sidebar] toggled '${header.textContent.trim()}', collapsed=${nowCollapsed}`
-      );
-      filterMarkers();
+      group.classList.toggle("collapsed");
+      console.log(`[sidebar] toggled ${group.id}`);
     });
   });
 
   // PvE master toggle
   const mainToggleGroup = document.querySelector("#main-filters .toggle-group");
-  const pveLabel = document.createElement("label");
-  pveLabel.innerHTML = `<input type="checkbox" id="toggle-pve" checked> PvE`;
+  const pveLabel        = document.createElement("label");
+  pveLabel.innerHTML    = `<input type="checkbox" id="toggle-pve" checked /><span>PvE</span>`;
   mainToggleGroup.appendChild(pveLabel);
-  const pveToggle = document.getElementById("toggle-pve");
+  console.log("[sidebar] PvE toggle appended");
 
   // Core filtering
   function filterMarkers() {
     const nameQuery = (searchBar.value || "").toLowerCase();
-    const pveOn     = pveToggle.checked;
+    const pveOn     = document.getElementById("toggle-pve").checked;
 
     allMarkers.forEach(({ markerObj, data }) => {
       const isNpc       = data.type === "npc";
@@ -91,18 +87,19 @@ export async function setupSidebar(map, layers, allMarkers, db) {
       const layerGroup = layers[data.type];
       if (!layerGroup) return;
 
-      if (shouldShow) layerGroup.addLayer(markerObj);
-      else            layerGroup.removeLayer(markerObj);
+      shouldShow ? layerGroup.addLayer(markerObj)
+                 : layerGroup.removeLayer(markerObj);
     });
   }
 
+  // Wire up the master inputs
   searchBar.addEventListener("input", filterMarkers);
   document
     .querySelectorAll("#main-filters .toggle-group input")
     .forEach(cb => cb.addEventListener("change", filterMarkers));
-  pveToggle.addEventListener("change", filterMarkers);
+  document.getElementById("toggle-pve").addEventListener("change", filterMarkers);
 
-  // — Items —
+  // — Items — dynamically populate with span-wrapped labels
   console.log("[sidebar] loadItemFilters()");
   const itemFilterList = document.getElementById("item-filter-list");
   async function loadItemFilters() {
@@ -114,20 +111,21 @@ export async function setupSidebar(map, layers, allMarkers, db) {
       cb.type           = "checkbox";
       cb.checked        = true;
       cb.dataset.itemId = d.id;
-      label.append(cb, ` ${d.name}`);
+      const span = document.createElement("span");
+      span.textContent = d.name;
+      label.append(cb, span);
       itemFilterList.append(label);
       cb.addEventListener("change", filterMarkers);
     });
   }
   await loadItemFilters();
 
-  // — Enemies —
+  // — Enemies — dynamically populate same way
   console.log("[sidebar] loadEnemyFilters()");
-  const itemGroup       = document.querySelector("#item-filter-list").closest(".filter-group");
   const enemyGroupWrap  = document.createElement("div");
   enemyGroupWrap.className = "filter-group";
   enemyGroupWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
-  itemGroup.after(enemyGroupWrap);
+  document.getElementById("item-filters").after(enemyGroupWrap);
 
   const enemyFilterList = document.getElementById("enemy-filter-list");
   async function loadEnemyFilters() {
@@ -139,7 +137,9 @@ export async function setupSidebar(map, layers, allMarkers, db) {
       cb.type            = "checkbox";
       cb.checked         = true;
       cb.dataset.enemyId = d.id;
-      label.append(cb, ` ${d.name}`);
+      const span = document.createElement("span");
+      span.textContent = d.name;
+      label.append(cb, span);
       enemyFilterList.append(label);
       cb.addEventListener("change", filterMarkers);
     });
@@ -172,6 +172,9 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   });
 
   sidebar.appendChild(adminWrap);
+
+  // Finally, do an initial draw
+  filterMarkers();
 
   return { filterMarkers, loadItemFilters, loadEnemyFilters };
 }

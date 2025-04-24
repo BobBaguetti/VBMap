@@ -1,4 +1,4 @@
-/* @version: 7 */
+/* @version: 8 */
 /* @file: /styles/sidebar.css */
 
 /* Slightly wider, more compact filter rows */
@@ -23,7 +23,7 @@
 /* Sidebar toggle control */
 #sidebar-toggle {
   position: absolute;
-  top: 10px;
+  top: 10px; 
   left: 350px;
   z-index: 1100;
   font-family: 'Satoshi', sans-serif;
@@ -45,33 +45,50 @@
   color: #e5e6e8;
 }
 
-/* Each filter group slightly tightened */
-.filter-group {
-  margin-bottom: 6px;
-}
+/* ========== Multi-column filter grid ========== */
 .filter-group .toggle-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding-left: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 4px 8px;
 }
 
-/* Collapse rule */
-.filter-group.collapsed .toggle-group {
-  display: none;
+/* Hide native checkbox but keep it focusable/clickable */
+.filter-group .toggle-group input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
-/* Labels for checkboxes */
+/* Turn the label into a toggle button */
 .filter-group .toggle-group label {
+  position: relative;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s, text-decoration 0.2s;
+  cursor: pointer;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  margin: 0;
+}
+.filter-group .toggle-group label:hover {
+  background: rgba(255,255,255,0.1);
 }
 
-/* Text inputs only get full-width style */
-#sidebar input[type="text"],
+/* Style the name span when checked */
+.filter-group .toggle-group input:checked + span {
+  color: #e5e6e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+/* Style the name span when unchecked */
+.filter-group .toggle-group input:not(:checked) + span {
+  color: #555;
+  text-decoration: line-through;
+  font-weight: 400;
+}
+
+/* Dark inputs in sidebar */
+#sidebar input,
 #sidebar select,
 #sidebar textarea {
   background: #303030;
@@ -84,14 +101,6 @@
   font-size: 14px;
   box-sizing: border-box;
   margin-bottom: 6px;
-}
-
-/* Checkbox inputs stay auto-width */
-#sidebar input[type="checkbox"] {
-  width: auto;
-  margin: 0;
-  transform: scale(0.9);
-  margin-right: 6px;
 }
 
 /* Uniform buttons */
@@ -120,4 +129,7 @@
 }
 .filter-group.collapsed h3::after {
   transform: rotate(-90deg);
+}
+.filter-group.collapsed .toggle-group {
+  display: none;
 }
