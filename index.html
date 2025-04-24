@@ -1,6 +1,4 @@
-<!-- @version: 9 -->
-<!-- @file: /index.html -->
-
+<!-- @version: 11  -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +28,7 @@
   <!-- Preview styles -->
   <link rel="stylesheet" href="styles/preview/itemPreview.css" />
 
-  <!-- Third‑party assets -->
+  <!-- Third-party assets -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
@@ -43,7 +41,6 @@
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
 
-    <!-- Filters Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
 
@@ -56,19 +53,18 @@
           <label><input type="checkbox" checked data-layer="Item" /> Item</label>
           <label><input type="checkbox" checked data-layer="Teleport" /> Teleport</label>
           <label><input type="checkbox" checked data-layer="Spawn Point" /> Spawn points</label>
+          <!-- PvE toggle injected via JS -->
         </div>
       </div>
 
       <!-- Item Filters -->
       <div class="filter-group" id="item-filters">
         <h3>Items</h3>
-        <div class="toggle-group" id="item-filter-list">
-          <!-- dynamically populated -->
-        </div>
+        <div class="toggle-group" id="item-filter-list"></div>
       </div>
+      <!-- Enemy Filters injected via JS below Items -->
     </div>
 
-    <!-- Settings Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
       <label>
@@ -77,18 +73,12 @@
       </label>
     </div>
 
-    <!-- Search Section -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
     </div>
 
-    <!-- Admin Tools Section -->
-    <div class="sidebar-section">
-      <h2><i class="fas fa-tools"></i> Admin Tools</h2>
-      <button id="manage-item-definitions">Manage Items</button>
-      <button id="manage-quest-definitions">Manage Quests</button>
-    </div>
+    <!-- Admin Tools container is injected/overwritten in JS -->
   </div>
 
   <!-- Map Container -->
@@ -108,87 +98,10 @@
     Paste Mode ON
   </div>
 
-  <!-- Item Definitions Modal -->
+  <!-- Item Definitions Modal (old) -->
   <div id="item-definitions-modal" class="modal modal-large">
     <div class="modal-content">
-      <div class="modal-header">
-        <div class="modal-header-left">
-          <h2 id="def-form-heading">Manage Items</h2>
-          <div class="filter-buttons">
-            <button class="filter-btn" id="filter-name">N</button>
-            <button class="filter-btn" id="filter-type">T</button>
-            <button class="filter-btn" id="filter-rarity">R</button>
-            <button class="filter-btn" id="filter-description">D</button>
-            <button class="filter-btn" id="filter-quantity">Qt</button>
-            <button class="filter-btn" id="filter-price">P</button>
-          </div>
-        </div>
-        <div class="modal-header-right">
-          <input type="text" id="def-search" placeholder="Search..." />
-          <span class="close" id="close-item-definitions">&times;</span>
-        </div>
-      </div>
-
-      <!-- Scrollable List -->
-      <div id="item-definitions-list" class="def-list ui-scroll-float">
-        <!-- Definitions will be populated here -->
-      </div>
-
-      <hr />
-
-      <!-- Scrollable Form -->
-      <form id="item-definition-form" class="ui-scroll-float">
-        <h3 id="def-form-subheading">Add Item</h3>
-        <div class="field-row">
-          <label>Name:</label>
-          <input type="text" id="def-name" required />
-          <div class="color-btn" id="pickr-def-name"></div>
-        </div>
-        <div class="field-row">
-          <label>Item Type:</label>
-          <select id="def-type">
-            <option value="Crafting Material">Crafting Material</option>
-            <option value="Special">Special</option>
-            <option value="Consumable">Consumable</option>
-            <option value="Quest">Quest</option>
-          </select>
-          <div class="color-btn" id="pickr-def-type"></div>
-        </div>
-        <div class="field-row">
-          <label>Rarity:</label>
-          <select id="def-rarity">
-            <option value="">Select Rarity</option>
-            <option value="common">Common</option>
-            <option value="uncommon">Uncommon</option>
-            <option value="rare">Rare</option>
-            <option value="epic">Epic</option>
-            <option value="legendary">Legendary</option>
-          </select>
-          <div class="color-btn" id="pickr-def-rarity"></div>
-        </div>
-        <div class="field-row">
-          <label>Description:</label>
-          <textarea id="def-description" rows="2"></textarea>
-          <div class="color-btn" id="pickr-def-description"></div>
-        </div>
-        <div class="field-row">
-          <label>Extra Info:</label>
-          <button type="button" id="add-def-extra-line" style="margin-left:10px;">+</button>
-        </div>
-        <div id="def-extra-lines"></div>
-        <div class="field-row">
-          <label>Image S:</label>
-          <input type="text" id="def-image-small" />
-        </div>
-        <div class="field-row">
-          <label>Image L:</label>
-          <input type="text" id="def-image-big" />
-        </div>
-        <div class="field-row" style="justify-content:center; margin-top:10px;">
-          <button type="submit" style="margin-right:10px;">Save</button>
-          <button type="button" id="def-cancel">Cancel</button>
-        </div>
-      </form>
+      <!-- Modal content… -->
     </div>
   </div>
 

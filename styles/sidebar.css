@@ -1,17 +1,15 @@
 /* @version: 8 */
 /* @file: /styles/sidebar.css */
 
-/* Slightly wider, more compact filter rows */
 #sidebar {
   font-family: 'Satoshi', sans-serif;
   width: 350px;
   height: 100vh;
   position: absolute;
   top: 0; left: 0;
-  background-color: #222;
+  background: #222;
   color: #e5e6e8;
   padding: 12px;
-  box-sizing: border-box;
   overflow: auto;
   transition: transform 0.3s ease;
   z-index: 1000;
@@ -20,13 +18,9 @@
   transform: translateX(-100%);
 }
 
-/* Sidebar toggle control */
 #sidebar-toggle {
   position: absolute;
-  top: 10px; 
-  left: 350px;
-  z-index: 1100;
-  font-family: 'Satoshi', sans-serif;
+  top: 10px; left: 350px;
   width: 30px; height: 30px;
   background: #333;
   border: none;
@@ -38,40 +32,35 @@
   background: #444;
 }
 
-/* Headings */
 #sidebar h2, #sidebar h3 {
   margin: 0 0 6px;
   font-size: 18px;
   color: #e5e6e8;
 }
 
-/* Each filter group slightly tightened */
 .filter-group {
   margin-bottom: 6px;
 }
 
-/* 👉 Force our single-column, inline-flex layout on all toggle-groups 👇 */
-#sidebar .filter-group .toggle-group {
-  display: flex !important;
-  flex-direction: column !important;
-  gap: 2px;        /* very tight vertical gap */
-  padding-left: 0; /* remove indent */
+/* Tight, one-line checkbox+label rows */
+.filter-group .toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding-left: 0;
 }
-
-#sidebar .filter-group .toggle-group label {
-  display: flex !important;       /* inline row */
-  align-items: center !important;
-  gap: 6px !important;            /* checkbox + text */
+.filter-group .toggle-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
-  margin: 0 !important;           /* remove any stray margins */
+  margin: 0;
+}
+.filter-group .toggle-group input[type="checkbox"] {
+  margin: 0;
+  transform: scale(0.9);
 }
 
-#sidebar .filter-group .toggle-group input[type="checkbox"] {
-  margin: 0 !important;
-  transform: scale(0.9) !important;
-}
-
-/* Dark inputs in sidebar */
 #sidebar input,
 #sidebar select,
 #sidebar textarea {
@@ -81,13 +70,10 @@
   border-radius: 2px;
   padding: 4px 6px;
   width: 100%;
-  font-family: 'Satoshi', sans-serif;
-  font-size: 14px;
   box-sizing: border-box;
   margin-bottom: 6px;
 }
 
-/* Uniform buttons */
 #sidebar button {
   background: #333;
   color: #e5e6e8;
@@ -105,7 +91,6 @@
   background: #444;
 }
 
-/* Accordion arrow */
 .filter-group h3::after {
   content: '▾';
   float: right;
@@ -115,5 +100,5 @@
   transform: rotate(-90deg);
 }
 .filter-group.collapsed .toggle-group {
-  display: none !important;
+  display: none;
 }
