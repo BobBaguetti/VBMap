@@ -1,17 +1,15 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
 // @file:    /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 22
+// @version: 23
 
 import {
   createModal, closeModal, openModal
 } from "../uiKit.js";
-
 import { createDefListContainer } from "../../utils/listUtils.js";
 import {
   loadItemDefinitions, saveItemDefinition,
   updateItemDefinition, deleteItemDefinition
 } from "../../services/itemDefinitionsService.js";
-
 import { createLayoutSwitcher } from "../uiKit.js";
 import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
@@ -50,10 +48,7 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       previewApi.setFromDefinition({});
       previewApi.show();
-      // re-init any pickrs on cancel
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => formApi.initPickrs())
-      );
+      formApi.initPickrs();
     },
     onDelete: async id => {
       await deleteItemDefinition(db, id);
@@ -61,9 +56,7 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       previewApi.setFromDefinition({});
       previewApi.show();
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => formApi.initPickrs())
-      );
+      formApi.initPickrs();
     },
     onSubmit: async payload => {
       applyColorPresets(payload);
@@ -73,9 +66,7 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       previewApi.setFromDefinition({});
       previewApi.show();
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => formApi.initPickrs())
-      );
+      formApi.initPickrs();
     }
   });
 
@@ -88,9 +79,6 @@ export function initTestItemDefinitionsModal(db) {
     }
   });
 
-  // **PRIME the pickr instances right away** so they exist before the first open
-  setTimeout(() => formApi.initPickrs(), 0);
-
   // build the body
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
@@ -99,7 +87,6 @@ export function initTestItemDefinitionsModal(db) {
     flex:         "1 1 auto",
     minHeight:    "0"
   });
-
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
@@ -112,15 +99,14 @@ export function initTestItemDefinitionsModal(db) {
     getDefinitions: () => definitions,
     onEntryClick: def => {
       formApi.populate(def);
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => formApi.initPickrs())
-      );
       previewApi.setFromDefinition(def);
       previewApi.show();
+      formApi.initPickrs();
     },
     onDelete: async id => {
       await deleteItemDefinition(db, id);
       await refreshDefinitions();
+      formApi.initPickrs();
     }
   });
 
@@ -154,17 +140,16 @@ export function initTestItemDefinitionsModal(db) {
     open: async () => {
       formApi.reset();
       await refreshDefinitions();
+      // initialize all pickrs before showing
+      formApi.initPickrs();
       openModal(modal);
-
-      // ensure pickrs and preview are all set after the modal slides in
-      requestAnimationFrame(() =>
-        requestAnimationFrame(() => {
-          formApi.initPickrs();
-          previewApi.setFromDefinition({});
-          positionPreviewPanel();
-          previewApi.show();
-        })
-      );
+      requestAnimationFrame(() => {
+        // ensure layout, pickrs, preview all finalize after open
+        formApi.initPickrs();
+        previewApi.setFromDefinition({});
+        positionPreviewPanel();
+        previewApi.show();
+      });
     },
     refresh: refreshDefinitions
   };
