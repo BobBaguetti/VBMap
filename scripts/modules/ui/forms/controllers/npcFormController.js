@@ -1,19 +1,19 @@
 // @version: 3
 // @file: /scripts/modules/ui/forms/controllers/npcFormController.js
 
-import { createNpcForm }   from "../builders/npcFormBuilder.js";
-import { createIcon }      from "../../../utils/iconUtils.js";
-import { getPickrHexColor } from "../../ui/pickrManager.js"; 
+import { createNpcForm }     from "../builders/npcFormBuilder.js";
+import { createIcon }        from "../../../utils/iconUtils.js";
+// ← fixed path: up two to ui then pickrManager.js
+import { getPickrHexColor }  from "../../pickrManager.js"; 
 
 /**
- * Controller for the NPC form.
- * Handles Add/Edit state, reset, populate, and data harvesting.
+ * Creates a controller around a form layout for NPC definitions.
+ * Handles wiring, reset, populate, and getCustom logic.
  */
 export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createNpcForm();
   let _id = null;
 
-  // ─── Header + Action Buttons ────────────────────────────────────────
   const headerWrap = document.createElement("div");
   Object.assign(headerWrap.style, {
     display:        "flex",
@@ -37,10 +37,7 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
   btnClear.type = "button";
   btnClear.className = "ui-button";
   btnClear.textContent = "Clear";
-  btnClear.onclick = () => {
-    reset();
-    onCancel?.();
-  };
+  btnClear.onclick = () => { reset(); onCancel?.(); };
 
   const btnDelete = document.createElement("button");
   btnDelete.type = "button";
@@ -48,17 +45,12 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.title = "Delete this NPC";
   btnDelete.appendChild(createIcon("trash"));
   btnDelete.style.display = "none";
-  btnDelete.onclick = () => {
-    if (_id) {
-      onDelete?.(_id);
-    }
-  };
+  btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
 
   btnRow.append(btnSave, btnClear, btnDelete);
   headerWrap.appendChild(btnRow);
   form.prepend(headerWrap);
 
-  // ─── Reset to Add Mode ──────────────────────────────────────────────
   function reset() {
     form.reset();
     _id = null;
@@ -66,7 +58,6 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
   }
 
-  // ─── Populate for Edit Mode ─────────────────────────────────────────
   function populate(def = {}) {
     _id = def.id || null;
     titleEl.textContent = _id ? "Edit NPC" : "Add NPC";
@@ -75,20 +66,17 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldName.value = def.name || "";
     fields.fldType.value = def.type || "";
     fields.fldHp.value   = def.hp   || "";
-
-    // (Color swatches themselves get wired by initModalPickrs in the modal)
   }
 
-  // ─── Gather data for submission ─────────────────────────────────────
   function getCustom() {
     return {
-      id:   _id,
-      name: fields.fldName.value.trim(),
-      nameColor:    getPickrHexColor(fields.colorName._pickr),
-      type: fields.fldType.value,
-      typeColor:    getPickrHexColor(fields.colorType._pickr),
-      hp:   fields.fldHp.value.trim(),
-      hpColor:      getPickrHexColor(fields.colorHp._pickr)
+      id:         _id,
+      name:       fields.fldName.value.trim(),
+      nameColor:  getPickrHexColor(fields.colorName._pickr),
+      type:       fields.fldType.value,
+      typeColor:  getPickrHexColor(fields.colorType._pickr),
+      hp:         fields.fldHp.value.trim(),
+      hpColor:    getPickrHexColor(fields.colorHp._pickr)
     };
   }
 

@@ -1,9 +1,10 @@
-// @version: 2
+// @version: 3
 // @file: /scripts/modules/ui/forms/controllers/questFormController.js
 
-import { createQuestForm } from "../builders/questFormBuilder.js";
-import { createIcon }      from "../../../utils/iconUtils.js";
-import { getPickrHexColor } from "../../ui/pickrManager.js";
+import { createQuestForm }   from "../builders/questFormBuilder.js";
+import { createIcon }        from "../../../utils/iconUtils.js";
+// ← fixed path: up two to ui then pickrManager.js
+import { getPickrHexColor }  from "../../pickrManager.js";
 
 /**
  * Controller for the Quest form.
@@ -62,7 +63,6 @@ export function createQuestFormController({ onCancel, onSubmit, onDelete }) {
     _id = null;
     titleEl.textContent = "Add Quest";
     btnDelete.style.display = "none";
-    // clear any dynamic rows
     fields.objectives.setLines([], false);
     fields.rewards.setLines([], false);
   }
@@ -75,11 +75,7 @@ export function createQuestFormController({ onCancel, onSubmit, onDelete }) {
 
     fields.fldName.value = def.name || "";
     fields.fldDesc.value = def.description || "";
-
-    // Objectives (array of {text, color})
     fields.objectives.setLines(def.objectives || [], false);
-
-    // Rewards (array of {text, color})
     fields.rewards.setLines(def.rewards || [], false);
   }
 

@@ -1,189 +1,147 @@
 // @version: 11
-// @file: /scripts/modules/ui/modals/markerModal.js
+// @file: /scripts/modules/ui/forms/markerForm.js
 
-import { createModal, closeModal, openModalAt } from "../uiKit.js";
-import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
-import { createFormButtonRow } from "../uiKit.js";
-import { createDropdownField } from "../uiKit.js";
-import { createMarkerForm } from "../forms/markerForm.js";
+import {
+  createNameField,
+  createRarityField,
+  createItemTypeField,
+  createDescriptionField,
+  createExtraInfoField
+} from "./universalForm.js";
 
-// ← NEW: import the scoped initializer
-import { initModalPickrs } from "../pickrManager.js";
+import {
+  createImageField,
+  createVideoField
+} from "../../ui/uiKit.js";
 
-export function initMarkerModal(db) {
-  const { modal, content } = createModal({
-    id: "edit-marker-modal",
-    title: "Edit Marker",
-    size: "small",
-    backdrop: false,
-    draggable: true,
-    withDivider: true,
-    onClose: () => closeModal(modal)
-  });
+// ← fixed path: from forms folder up to ui then pickrManager.js
+import { createPickr }      from "../pickrManager.js"; 
+import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
-  // Build the form
+export function createMarkerForm() {
   const form = document.createElement("form");
-  form.id = "edit-form";
+  form.id = "marker-form";
 
-  // Type dropdown
-  const { row: rowType, select: fldType } =
-    createDropdownField("Type:", "fld-type", [
-      { value: "Door", label: "Door" },
-      { value: "Extraction Portal", label: "Extraction Portal" },
-      { value: "Item", label: "Item" },
-      { value: "Teleport", label: "Teleport" },
-      { value: "Spawn Point", label: "Spawn Point" }
-    ], { showColor: false });
+  const {
+    row:   rowName,
+    input: fldName,
+    colorBtn: colorName
+  } = createNameField("marker-fld-name");
+  colorName.classList.add("color-swatch");
 
-  // Predefined item dropdown
-  const { row: rowPredef, select: ddPredef } =
-    createDropdownField("Item:", "fld-predef", [], { showColor: false });
+  const {
+    row:    rowRarity,
+    select: fldRarity,
+    colorBtn: colorRarity
+  } = createRarityField("marker-fld-rarity");
+  colorRarity.classList.add("color-swatch");
 
-  // Marker form fields
-  const formApi = createMarkerForm();
-  const rowButtons = createFormButtonRow(() => closeModal(modal));
+  const {
+    row:        rowItemType,
+    select:     fldItemType,
+    colorBtn:   colorItemType
+  } = createItemTypeField("marker-fld-item-type");
+  colorItemType.classList.add("color-swatch");
 
-  // Group item-specific rows
-  const blockItem = document.createElement("div");
-  blockItem.classList.add("item-gap");
-  blockItem.append(
-    formApi.fields.fldRarity.closest(".field-row"),
-    formApi.fields.fldItemType.closest(".field-row"),
-    formApi.fields.fldDesc.closest(".field-row")
-  );
+  const {
+    row:         rowDesc,
+    textarea:    fldDesc,
+    colorBtn:    colorDesc
+  } = createDescriptionField("marker-fld-desc-item");
+  colorDesc.classList.add("color-swatch");
 
-  // Assemble form
+  const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true });
+
+  const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "marker-fld-img-s");
+  const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "marker-fld-img-l");
+  const { row: rowVid, input: fldVid }   = createVideoField("Video:", "marker-fld-vid");
+
   form.append(
-    formApi.fields.fldName.closest(".field-row"),
-    rowType,
-    rowPredef,
-    blockItem,
-    formApi.fields.extraRow,
-    formApi.fields.fldImgS.closest(".field-row"),
-    formApi.fields.fldImgL.closest(".field-row"),
-    formApi.fields.fldVid.closest(".field-row"),
-    rowButtons
+    rowName,
+    rowRarity,
+    rowItemType,
+    rowDesc,
+    rowExtra,
+    rowImgS,
+    rowImgL,
+    rowVid
   );
 
-  content.appendChild(form);
+  const pickrs = new Map();
+  const targets = [colorName, colorRarity, colorItemType, colorDesc];
 
-  // Data holders
-  let defs = {};
-
-  // Toggle item-specific UI
-  function toggleSections(isItem) {
-    blockItem.style.display = isItem ? "block" : "none";
-    rowPredef.style.display = isItem ? "flex" : "none";
-  }
-
-  fldType.onchange = () => toggleSections(fldType.value === "Item");
-
-  ddPredef.onchange = () => {
-    const def = defs[ddPredef.value];
-    if (def) {
-      formApi.setFromDefinition(def);
-    } else {
-      formApi.setFromDefinition({});
-    }
-  };
-
-  // Load definitions into dropdown
-  async function refreshPredefinedItems() {
-    const list = await loadItemDefinitions(db);
-    defs = Object.fromEntries(list.map(d => [d.id, d]));
-    ddPredef.innerHTML = `<option value="">None (custom)</option>`;
-    list.forEach(d => {
-      const o = document.createElement("option");
-      o.value = d.id;
-      o.textContent = d.name;
-      ddPredef.appendChild(o);
+  function initPickrs() {
+    targets.forEach(el => {
+      if (!pickrs.has(el)) {
+        pickrs.set(el, createPickr(el));
+      }
     });
   }
 
-  // Edit existing marker
-  function openEdit(markerObj, data, evt, onSave) {
-    populate(data);
+  function safe(val, fallback = "") { return val ?? fallback; }
+  function getColor(el, fb = "#E5E6E8") {
+    return pickrs.get(el)?.getColor()?.toHEXA()?.toString() || fb;
+  }
 
-    openModalAt(modal, evt);
+  function setFromDefinition(def = {}) {
+    initPickrs();
+    fldName.value      = safe(def.name);
+    pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
+    fldRarity.value    = safe(def.rarity);
+    pickrs.get(colorRarity)?.setColor(rarityColors[fldRarity.value] || def.rarityColor || "#E5E6E8");
+    fldItemType.value  = safe(def.itemType);
+    pickrs.get(colorItemType)?.setColor(itemTypeColors[fldItemType.value] || def.itemTypeColor || "#E5E6E8");
+    fldDesc.value      = safe(def.description);
+    pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
+    extraInfo.setLines(safe(def.extraLines, []), false);
+    fldImgS.value      = safe(def.imageSmall);
+    fldImgL.value      = safe(def.imageBig);
+    fldVid.value       = safe(def.video);
+  }
 
-    // ← NEW: wire pickers for this modal
-    initModalPickrs(content);
+  function setFromNonItem(data = {}) {
+    initPickrs();
+    fldName.value = safe(data.name);
+    pickrs.get(colorName)?.setColor(data.nameColor || "#E5E6E8");
+    fldDesc.value = safe(data.description);
+    pickrs.get(colorDesc)?.setColor(data.descriptionColor || "#E5E6E8");
+    extraInfo.setLines(safe(data.extraLines, []), false);
+    fldImgS.value = safe(data.imageSmall);
+    fldImgL.value = safe(data.imageBig);
+    fldVid.value  = safe(data.video);
+  }
 
-    form.onsubmit = e => {
-      e.preventDefault();
-      Object.assign(data, harvest(data.coords));
-      onSave(data);
-      closeModal(modal);
+  function getCustom() {
+    return {
+      name:            fldName.value.trim(),
+      nameColor:       getColor(colorName),
+      rarity:          fldRarity.value,
+      rarityColor:     getColor(colorRarity),
+      itemType:        fldItemType.value,
+      itemTypeColor:   getColor(colorItemType),
+      description:     fldDesc.value.trim(),
+      descriptionColor:getColor(colorDesc),
+      extraLines:      extraInfo.getLines(),
+      imageSmall:      fldImgS.value.trim(),
+      imageBig:        fldImgL.value.trim(),
+      video:           fldVid.value.trim()
     };
-  }
-
-  // Create new marker
-  function openCreate(coords, type, evt, onCreate) {
-    populate({ type });
-
-    openModalAt(modal, evt);
-
-    // ← NEW: wire pickers for this modal
-    initModalPickrs(content);
-
-    form.onsubmit = e => {
-      e.preventDefault();
-      onCreate(harvest(coords));
-      closeModal(modal);
-    };
-  }
-
-  // Populate form fields
-  function populate(data = { type: "Item" }) {
-    fldType.value = data.type;
-    toggleSections(data.type === "Item");
-
-    if (data.type === "Item") {
-      if (data.predefinedItemId && defs[data.predefinedItemId]) {
-        const def = defs[data.predefinedItemId];
-        ddPredef.value = def.id;
-        formApi.setFromDefinition(def);
-      } else {
-        ddPredef.value = "";
-        formApi.setFromDefinition({});
-      }
-    } else {
-      formApi.setFromNonItem(data);
-    }
-  }
-
-  // Gather form data
-  function harvest(coords) {
-    const type = fldType.value;
-    const selectedId = ddPredef.value;
-
-    if (type === "Item" && selectedId && defs[selectedId]) {
-      const def = defs[selectedId];
-      return {
-        type,
-        coords,
-        predefinedItemId: selectedId,
-        name: def.name,
-        nameColor: def.nameColor || "#E5E6E8",
-        itemType: def.itemType || "",
-        itemTypeColor: def.itemTypeColor || "#E5E6E8",
-        rarity: def.rarity || "",
-        rarityColor: def.rarityColor || "#E5E6E8",
-        description: def.description || "",
-        descriptionColor: def.descriptionColor || "#E5E6E8",
-        extraLines: def.extraLines || [],
-        imageSmall: def.imageSmall || "",
-        imageBig: def.imageBig || "",
-        video: def.video || ""
-      };
-    }
-
-    return { type, coords, ...formApi.getCustom() };
   }
 
   return {
-    openEdit,
-    openCreate,
-    refreshPredefinedItems
+    form,
+    fields: {
+      fldName, colorName,
+      fldRarity, colorRarity,
+      fldItemType, colorItemType,
+      fldDesc, colorDesc,
+      extraInfo,
+      extraRow: rowExtra,
+      fldImgS, fldImgL, fldVid
+    },
+    initPickrs,
+    setFromDefinition,
+    setFromNonItem,
+    getCustom
   };
 }
