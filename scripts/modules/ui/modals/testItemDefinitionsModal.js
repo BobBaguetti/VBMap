@@ -1,6 +1,6 @@
 /* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
-/* @version: 24 */
+/* @version: 25 */
 
 import {
   createModal, closeModal, openModal
@@ -41,14 +41,13 @@ export function initTestItemDefinitionsModal(db) {
   });
   header.appendChild(layoutSwitcher);
 
-  // list + preview + form
+  // build list + preview + form
   const listContainer = createDefListContainer("test-item-def-list");
   const previewApi    = createPreviewPanel("item");
   const formApi       = createItemFormController({
     onCancel: () => {
-      // Reset fields, re-init pickers, and clear preview
       formApi.reset();
-      formApi.initPickrs();             // ← ensure the swatches come back
+      formApi.initPickrs();             // rebuild swatches after Clear
       previewApi.setFromDefinition({});
       previewApi.show();
     },
@@ -74,11 +73,10 @@ export function initTestItemDefinitionsModal(db) {
 
   formApi.form.classList.add("ui-scroll-float");
 
-  // Track current definition and live-update preview
+  // live-preview on any form update
   let currentDef = null;
   formApi.form.addEventListener("input",  updatePreview);
   formApi.form.addEventListener("change", updatePreview);
-
   function updatePreview() {
     const live = formApi.getCustom?.() || {};
     if (currentDef) {
@@ -89,7 +87,7 @@ export function initTestItemDefinitionsModal(db) {
     previewApi.show();
   }
 
-  // build the body
+  // assemble modal body
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
     display:       "flex",
@@ -102,10 +100,10 @@ export function initTestItemDefinitionsModal(db) {
   bodyWrap.appendChild(formApi.form);
   content.appendChild(bodyWrap);
 
-  // Prime fresh pickers now that the form is in the DOM
+  // initial swatches
   formApi.initPickrs();
 
-  // list manager wiring
+  // definition list wiring
   let definitions = [];
   const listApi = createDefinitionListManager({
     container:      listContainer,
@@ -128,14 +126,14 @@ export function initTestItemDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
-  // move dark search-bar into header
+  // move search-bar up
   const listHeaderEl = listContainer.previousElementSibling;
   if (listHeaderEl?.classList.contains("list-header")) {
     listHeaderEl.remove();
     header.appendChild(listHeaderEl);
   }
 
-  // preview positioning helper
+  // preview panel positioning
   function positionPreviewPanel() {
     const mc = modal.querySelector(".modal-content");
     if (!mc || !previewApi.container) return;
@@ -152,12 +150,15 @@ export function initTestItemDefinitionsModal(db) {
 
   return {
     open: async () => {
-      formApi.reset();
-      formApi.initPickrs();           // ensure Add‐mode swatches show
+      // Clear out any old form state & pickrs
+      formApi.reset();      // calls destroyAllPickrs() internally
+      // load latest defs
       await refreshDefinitions();
-      destroyAllPickrs();
+      // show modal
       openModal(modal);
+      // wire fresh swatches now that form is rendered
       formApi.initPickrs();
+      // blank preview
       previewApi.setFromDefinition({});
       requestAnimationFrame(() => {
         positionPreviewPanel();
