@@ -1,4 +1,4 @@
-/* @version: 6 */
+/* @version: 7 */
 /* @file: /styles/sidebar.css */
 
 /* Slightly wider, more compact filter rows */
@@ -52,15 +52,19 @@
 .filter-group .toggle-group {
   display: flex;
   flex-direction: column;
-  gap: 2px;      /* tighter gap */
-  padding-left: 8px; /* indent sub-items */
+  gap: 2px;       /* very tight vertical gap */
+  padding-left: 0; /* remove indent */
 }
 .filter-group .toggle-group label {
-  display: inline-flex;
+  display: flex;       /* single line */
   align-items: center;
-  gap: 6px;
-  font-size: 13px;
-  white-space: nowrap;
+  gap: 6px;            /* checkbox + text */
+  font-size: 14px;
+  margin: 0;           /* remove extra margins */
+}
+.filter-group .toggle-group input {
+  margin: 0;
+  transform: scale(0.9);
 }
 
 /* Dark inputs in sidebar */

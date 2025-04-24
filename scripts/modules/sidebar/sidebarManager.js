@@ -1,5 +1,5 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted.
-// @version: 7   The current file version is 7. Increase by 1 every time you update anything.
+// @version: 8   Increase by 1 every time you update anything.
 // @file:    /scripts/modules/sidebar/sidebarManager.js
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
@@ -137,6 +137,10 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   await loadEnemyFilters();
 
   // — Admin Tools —
+  // remove any previous admin tools container
+  const existing = sidebar.querySelector("#sidebar-admin-tools");
+  if (existing) existing.remove();
+
   const oldItemModal  = initItemDefinitionsModal(db);
   const testItemModal = initTestItemDefinitionsModal(db);
   const questModal    = initQuestDefinitionsModal(db);
@@ -146,10 +150,10 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   adminWrap.id = "sidebar-admin-tools";
 
   [
-    ["Manage Items",       () => oldItemModal.open()],
-    ["Test Item Modal",    () => testItemModal.open()],
-    ["Manage Quests",      () => questModal.open()],
-    ["Manage NPCs",        () => npcModal.open()]
+    ["Manage Items",    () => oldItemModal.open()],
+    ["Test Item Modal", () => testItemModal.open()],
+    ["Manage Quests",   () => questModal.open()],
+    ["Manage NPCs",     () => npcModal.open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;
