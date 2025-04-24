@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.9
+// @version: 4.10
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -61,7 +61,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   form.prepend(subheadingWrap);
 
   // ─── Pickr Initialization ──────────────────────────────────────────
-  // Always (re)create Pickr instances when called
   function initPickrs() {
     Object.entries({
       name:        fields.colorName,
@@ -71,10 +70,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       value:       fields.colorValue,
       quantity:    fields.colorQty
     }).forEach(([key, btn]) => {
-      // destroy any existing instance
-      if (pickrs[key]?.destroy) {
-        pickrs[key].destroy();
-      }
+      // destroy existing instance if any
+      if (pickrs[key]?.destroy) pickrs[key].destroy();
       // create fresh
       pickrs[key] = createPickr(`#${btn.id}`);
     });
@@ -90,14 +87,11 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = "";
     fields.fldImgS.value   = "";
     fields.fldImgL.value   = "";
-    // Clear extra-info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
-
-    // defer pickr creation until after modal is shown via formApi.initPickrs()
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
@@ -110,14 +104,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value       = def.quantity || "";
     fields.fldImgS.value      = def.imageSmall || "";
     fields.fldImgL.value      = def.imageLarge || "";
-    // Populate extra-info, editable
     fields.extraInfo.setLines(def.extraInfo || [], false);
 
     _id = def.id || null;
     subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
 
-    // colors will be reapplied after initPickrs() is called
+    // reapply saved colors
     pickrs.name?.setColor(def.nameColor      || "#E5E6E8");
     pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
     pickrs.rarity?.setColor(def.rarityColor    || "#E5E6E8");
@@ -154,5 +147,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   });
 
   let _id = null;
+
+  // eagerly initialize Pickrs on next tick so buttons render correctly
+  setTimeout(initPickrs, 0);
+
   return { form, reset, populate, getCustom, initPickrs, buttonRow };
 }
