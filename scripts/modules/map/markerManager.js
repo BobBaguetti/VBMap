@@ -86,7 +86,7 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
     className: "custom-popup-wrapper",
     maxWidth: 350,
     closeButton: false,
-    offset: [0, -20]
+    offset: [0, -35]
   });
 
   markerObj.on("popupopen", () => {
