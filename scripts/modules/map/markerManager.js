@@ -1,4 +1,3 @@
-// @version: 11
 // @file: /scripts/modules/map/markerManager.js
 
 import { formatRarity } from "../utils/utils.js";
@@ -71,7 +70,8 @@ export function createCustomIcon(m) {
   return L.divIcon({
     html: `<div class="custom-marker"><div class="marker-border"></div>${imgHTML}</div>`,
     className: "custom-marker-container",
-    iconSize: [32, 32]
+    iconSize: [32, 32],
+    iconAnchor: [16, 32]     // anchor the icon tip at the marker's lat/lng
   });
 }
 
@@ -81,10 +81,12 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
     draggable: false
   });
 
+  // offset Y by 20px upward so popup doesn't cover the pin
   markerObj.bindPopup(renderPopup(m), {
     className: "custom-popup-wrapper",
     maxWidth: 350,
-    closeButton: false
+    closeButton: false,
+    offset: [0, -20]
   });
 
   markerObj.on("popupopen", () => {
