@@ -1,4 +1,4 @@
-// @version: 6
+// @version: 7
 // @file: /scripts/modules/ui/pickrManager.js
 
 const activePickrs = [];
@@ -36,8 +36,14 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
     }
   }).on("save", (_, instance) => instance.hide());
 
-  // ← NEW: Force the swatch button to show the default color immediately
+  // immediately paint the swatch
   p.setColor(defaultColor);
+
+  // ensure the pop-up floats above your modal
+  const root = p.getRoot();
+  if (root && root.style) {
+    root.style.zIndex = "10002";
+  }
 
   activePickrs.push(p);
   return p;
