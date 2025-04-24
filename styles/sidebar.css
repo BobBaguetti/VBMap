@@ -1,19 +1,17 @@
-/* @version: 4 */
+/* @version: 5 */
 /* @file: /styles/sidebar.css */
 
-/* Widened to 350px, compact entries */
+/* Slightly wider, more compact filter rows */
 #sidebar {
   font-family: 'Satoshi', sans-serif;
   width: 350px;
   height: 100vh;
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0; left: 0;
   background-color: #222;
   color: #e5e6e8;
-  padding: 12px;      /* slightly tighter */
+  padding: 12px;
   box-sizing: border-box;
-  z-index: 1000;
   overflow: auto;
   transition: transform 0.3s ease;
 }
@@ -21,27 +19,30 @@
   transform: translateX(-100%);
 }
 
-/* Compact text, smaller gaps */
+/* Headings */
 #sidebar h2, #sidebar h3 {
-  margin: 0 0 6px 0;
+  margin: 0 0 6px;
   font-size: 18px;
   color: #e5e6e8;
 }
+
+/* Each filter group slightly tightened */
 .filter-group {
   margin-bottom: 8px;
 }
-.filter-group .toggle-group label {
+.filter-group .toggle-group {
   display: flex;
-  align-items: center;
-  font-size: 14px;
-  margin: 2px 0;
+  flex-direction: column;
+  gap: 4px;
 }
-.filter-group .toggle-group input {
-  margin-right: 6px;
-  transform: scale(0.9);
+.filter-group .toggle-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
 }
 
-/* Dark‐mode sidebar inputs */
+/* Dark inputs in sidebar */
 #sidebar input,
 #sidebar select,
 #sidebar textarea {
@@ -50,14 +51,14 @@
   border: 1px solid #555;
   border-radius: 2px;
   padding: 4px 6px;
+  width: 100%;
   font-family: 'Satoshi', sans-serif;
   font-size: 14px;
-  width: 100%;
   box-sizing: border-box;
   margin-bottom: 6px;
 }
 
-/* Style all sidebar buttons */
+/* Uniform buttons */
 #sidebar button {
   background: #333;
   color: #e5e6e8;
@@ -77,7 +78,19 @@
 
 /* Sidebar toggle control */
 #sidebar-toggle {
-  font-family: 'Satoshi', sans-serif;
   top: 10px;
   left: 350px;
+}
+
+/* Accordion arrow */
+.filter-group h3::after {
+  content: '▾';
+  float: right;
+  transition: transform 0.2s ease;
+}
+.filter-group.collapsed h3::after {
+  transform: rotate(-90deg);
+}
+.filter-group.collapsed .toggle-group {
+  display: none;
 }
