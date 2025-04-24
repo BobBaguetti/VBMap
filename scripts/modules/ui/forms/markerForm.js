@@ -1,4 +1,4 @@
-// @version: 9
+// @version: 10
 // @file: /scripts/modules/ui/forms/markerForm.js
 
 import {
@@ -21,14 +21,36 @@ export function createMarkerForm() {
   const form = document.createElement("form");
   form.id = "marker-form";
 
-  const { row: rowName, input: fldName, colorBtn: colorName } = createNameField("fld-name");
-  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField("fld-rarity");
-  const { row: rowItemType, select: fldItemType, colorBtn: colorItemType } = createItemTypeField("fld-item-type");
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField("fld-desc-item");
+  // **Use unique base IDs** so these never clash with your item‐definitions modals
+  const {
+    row:   rowName,
+    input: fldName,
+    colorBtn: colorName
+  } = createNameField("marker-fld-name");
+
+  const {
+    row:    rowRarity,
+    select: fldRarity,
+    colorBtn: colorRarity
+  } = createRarityField("marker-fld-rarity");
+
+  const {
+    row:        rowItemType,
+    select:     fldItemType,
+    colorBtn:   colorItemType
+  } = createItemTypeField("marker-fld-item-type");
+
+  const {
+    row:         rowDesc,
+    textarea:    fldDesc,
+    colorBtn:    colorDesc
+  } = createDescriptionField("marker-fld-desc-item");
+
   const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true });
-  const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "fld-img-s");
-  const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "fld-img-l");
-  const { row: rowVid, input: fldVid } = createVideoField("Video:", "fld-vid");
+
+  const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "marker-fld-img-s");
+  const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "marker-fld-img-l");
+  const { row: rowVid, input: fldVid }   = createVideoField("Video:", "marker-fld-vid");
 
   // spacing tweaks
   rowRarity.classList.add("item-gap");
@@ -46,7 +68,7 @@ export function createMarkerForm() {
     rowVid
   );
 
-  // Map from button element → Pickr instance
+  // Map button element → Pickr instance
   const pickrs = new Map();
   const pickrTargets = [colorName, colorRarity, colorItemType, colorDesc];
 
@@ -60,15 +82,10 @@ export function createMarkerForm() {
     });
   }
 
-  // Utility
-  function safe(val, fallback = "") {
-    return val ?? fallback;
-  }
-
-  // Read hex from a Pickr instance
-  function getPickrHexColor(el, fallback = "#E5E6E8") {
-    return pickrs.get(el)?.getColor()?.toHEXA()?.toString() || fallback;
-  }
+  // Helpers
+  const safe = (val, fallback = "") => val ?? fallback;
+  const getPickrHexColor = (el, fallback = "#E5E6E8") =>
+    pickrs.get(el)?.getColor()?.toHEXA()?.toString() || fallback;
 
   // Populate form from an item definition
   function setFromDefinition(def = {}) {
@@ -94,16 +111,15 @@ export function createMarkerForm() {
     fldDesc.value = safe(def.description);
     pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
 
-    // Extra Info lines
     extraInfo.setLines(safe(def.extraLines, []), false);
 
     // Media
     fldImgS.value = safe(def.imageSmall);
     fldImgL.value = safe(def.imageBig);
-    fldVid.value = safe(def.video);
+    fldVid.value  = safe(def.video);
   }
 
-  // Populate form for non-item data (e.g. teleport, spawn point)
+  // Populate form for non-item data (teleports, etc.)
   function setFromNonItem(data = {}) {
     initPickrs();
 
@@ -117,10 +133,10 @@ export function createMarkerForm() {
 
     fldImgS.value = safe(data.imageSmall);
     fldImgL.value = safe(data.imageBig);
-    fldVid.value = safe(data.video);
+    fldVid.value  = safe(data.video);
   }
 
-  // Harvest form values into a JS object
+  // Harvest form values
   function getCustom() {
     return {
       name:            fldName.value.trim(),
@@ -147,9 +163,7 @@ export function createMarkerForm() {
       fldDesc, colorDesc,
       extraInfo,
       extraRow: rowExtra,
-      fldImgS,
-      fldImgL,
-      fldVid
+      fldImgS, fldImgL, fldVid
     },
     initPickrs,
     setFromDefinition,
