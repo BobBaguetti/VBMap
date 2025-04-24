@@ -1,8 +1,8 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.10
+// @version: 4.9
 
-import { createPickr } from "../../pickrManager.js";
+import { createPickr, destroyAllPickrs } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
 import { createItemForm } from "../builders/itemFormBuilder.js";
 import { createIcon } from "../../../utils/iconUtils.js";
@@ -70,10 +70,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       value:       fields.colorValue,
       quantity:    fields.colorQty
     }).forEach(([key, btn]) => {
-      // destroy existing instance if any
-      if (pickrs[key]?.destroy) pickrs[key].destroy();
-      // create fresh
-      pickrs[key] = createPickr(`#${btn.id}`);
+      // only initialize if element is in DOM
+      if (!pickrs[key] && document.body.contains(btn)) {
+        pickrs[key] = createPickr(`#${btn.id}`);
+      }
     });
   }
 
@@ -87,11 +87,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = "";
     fields.fldImgS.value   = "";
     fields.fldImgL.value   = "";
+    // Clear extra-info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
+
+    // tear down any existing Pickr instances now that the form is reset
+    destroyAllPickrs();
+    // clear our local map of pickr instances
+    Object.keys(pickrs).forEach(key => delete pickrs[key]);
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
@@ -104,19 +110,21 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value       = def.quantity || "";
     fields.fldImgS.value      = def.imageSmall || "";
     fields.fldImgL.value      = def.imageLarge || "";
+    // Populate extra-info, editable
     fields.extraInfo.setLines(def.extraInfo || [], false);
 
     _id = def.id || null;
     subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
 
-    // reapply saved colors
-    pickrs.name?.setColor(def.nameColor      || "#E5E6E8");
-    pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
-    pickrs.rarity?.setColor(def.rarityColor    || "#E5E6E8");
-    pickrs.description?.setColor(def.descColor  || "#E5E6E8");
-    pickrs.value?.setColor(def.valueColor     || "#E5E6E8");
-    pickrs.quantity?.setColor(def.quantityColor || "#E5E6E8");
+    // Now initialize pickrs and reapply saved colors
+    initPickrs();
+    pickrs.name.setColor(def.nameColor      || "#E5E6E8");
+    pickrs.itemType.setColor(def.itemTypeColor || "#E5E6E8");
+    pickrs.rarity.setColor(def.rarityColor    || "#E5E6E8");
+    pickrs.description.setColor(def.descColor  || "#E5E6E8");
+    pickrs.value.setColor(def.valueColor     || "#E5E6E8");
+    pickrs.quantity.setColor(def.quantityColor || "#E5E6E8");
   }
 
   // ─── Gather form data ──────────────────────────────────────────────
@@ -147,9 +155,5 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   });
 
   let _id = null;
-
-  // eagerly initialize Pickrs on next tick so buttons render correctly
-  setTimeout(initPickrs, 0);
-
   return { form, reset, populate, getCustom, initPickrs, buttonRow };
 }
