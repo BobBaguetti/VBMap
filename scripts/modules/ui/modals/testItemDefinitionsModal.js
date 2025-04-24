@@ -1,5 +1,6 @@
-// @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 19
+/* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
+/* @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
+/* @version: 20 */
 
 import {
   createModal, closeModal, openModal
@@ -16,7 +17,7 @@ import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { applyColorPresets } from "../../utils/colorUtils.js";
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
-import { destroyAllPickrs } from "../../ui/pickrManager.js";   // ← NEW
+import { destroyAllPickrs } from "../../ui/pickrManager.js";
 
 export function initTestItemDefinitionsModal(db) {
   const { modal, content, header } = createModal({
@@ -40,31 +41,26 @@ export function initTestItemDefinitionsModal(db) {
   });
   header.appendChild(layoutSwitcher);
 
-  // list + preview
+  // list + preview + form
   const listContainer = createDefListContainer("test-item-def-list");
-  const previewApi = createPreviewPanel("item");
-
-  // form controller
-  const formApi = createItemFormController({
+  const previewApi    = createPreviewPanel("item");
+  const formApi       = createItemFormController({
     onCancel: () => {
       formApi.reset();
       previewApi.setFromDefinition({});
       previewApi.show();
     },
-    onDelete: async (id) => {
+    onDelete: async id => {
       await deleteItemDefinition(db, id);
       await refreshDefinitions();
       formApi.reset();
       previewApi.setFromDefinition({});
       previewApi.show();
     },
-    onSubmit: async (payload) => {
+    onSubmit: async payload => {
       applyColorPresets(payload);
-      if (payload.id) {
-        await updateItemDefinition(db, payload.id, payload);
-      } else {
-        await saveItemDefinition(db, null, payload);
-      }
+      if (payload.id) await updateItemDefinition(db, payload.id, payload);
+      else            await saveItemDefinition(db, null, payload);
       await refreshDefinitions();
       formApi.reset();
       previewApi.setFromDefinition({});
@@ -89,7 +85,6 @@ export function initTestItemDefinitionsModal(db) {
     flex: "1 1 auto",
     minHeight: "0"
   });
-
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
@@ -101,6 +96,8 @@ export function initTestItemDefinitionsModal(db) {
     container: listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
+      // ensure pickrs exist before populate
+      formApi.initPickrs();
       formApi.populate(def);
       previewApi.setFromDefinition(def);
       previewApi.show();
@@ -123,14 +120,14 @@ export function initTestItemDefinitionsModal(db) {
     header.appendChild(listHeaderEl);
   }
 
-  // preview positioning
+  // preview positioning helper
   function positionPreviewPanel() {
     const mc = modal.querySelector(".modal-content");
-    if (!mc || !previewApi?.container) return;
+    if (!mc || !previewApi.container) return;
     const pr = previewApi.container;
-    const r = mc.getBoundingClientRect();
+    const r  = mc.getBoundingClientRect();
     pr.style.position = "absolute";
-    pr.style.left = `${r.right + 30}px`;
+    pr.style.left     = `${r.right + 30}px`;
     requestAnimationFrame(() => {
       pr.style.top = `${r.top + (r.height/2) - (pr.offsetHeight/2)}px`;
     });
@@ -143,11 +140,13 @@ export function initTestItemDefinitionsModal(db) {
       formApi.reset();
       await refreshDefinitions();
 
-      // DESTROY any stale Pickrs (from hidden modal) before re-creating
-      destroyAllPickrs();   // ← NEW
+      // clear any leftover Pickr instances
+      destroyAllPickrs();
 
       openModal(modal);
-      formApi.initPickrs(); // now creates fresh Pickrs in a visible modal
+
+      // now that modal is visible, create fresh pickrs
+      formApi.initPickrs();
 
       // blank preview
       previewApi.setFromDefinition({});
