@@ -1,6 +1,6 @@
-// @keep: Comments must NOT be deleted unless code is deleted.
-// @file: scripts/script.js
-// @version: 6
+// @keep:    Comments must NOT be deleted unless their associated code is also deleted.
+// @file:    /scripts/script.js
+// @version: 5.1
 
 import { initializeMap } from "./modules/map/map.js";
 import { showContextMenu } from "./modules/ui/uiManager.js";
@@ -20,7 +20,6 @@ import { subscribeItemDefinitions } from "./modules/services/itemDefinitionsServ
 import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
 import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js"; 
 
-
 /* ------------------------------------------------------------------ *
  *  Firebase Initialization
  * ------------------------------------------------------------------ */
@@ -34,28 +33,25 @@ const db = initializeFirebase({
   measurementId: "G-7FDNWLRM95"
 });
 
-
 /* ------------------------------------------------------------------ *
  *  Map & Layers Setup
  * ------------------------------------------------------------------ */
 const { map } = initializeMap();
-const itemLayer   = L.markerClusterGroup();
-const nonCluster  = L.layerGroup();           // for un-clustered markers
+const itemLayer = L.markerClusterGroup();
 const layers = {
-  Door:                L.layerGroup(),
-  "Extraction Portal": L.layerGroup(),
-  Item:                itemLayer,
-  Teleport:            L.layerGroup(),
-  "Spawn Point":       L.layerGroup()
+  Door:               L.layerGroup(),
+  "Extraction Portal":L.layerGroup(),
+  Item:               itemLayer,
+  Teleport:           L.layerGroup(),
+  "Spawn Point":      L.layerGroup()
 };
-Object.values(layers).forEach(g => g.addTo(map));
+Object.values(layers).forEach(layerGroup => layerGroup.addTo(map));
 
 /* ------------------------------------------------------------------ *
  *  Sidebar Setup
  * ------------------------------------------------------------------ */
 const allMarkers = [];
-const { filterMarkers, loadItemFilters, loadEnemyFilters } =
-  await setupSidebar(map, layers, allMarkers, db);
+const { filterMarkers, loadItemFilters } = await setupSidebar(map, layers, allMarkers, db);
 
 /* ------------------------------------------------------------------ *
  *  Marker Modal
@@ -63,28 +59,36 @@ const { filterMarkers, loadItemFilters, loadEnemyFilters } =
 const markerForm = initMarkerModal(db);
 
 /* ------------------------------------------------------------------ *
- *  Modals (old + test + quest)
+ *  Old Item-Definitions Modal
  * ------------------------------------------------------------------ */
-const itemModal  = initItemDefinitionsModal(db);
-document.getElementById("manage-item-definitions")
-        .addEventListener("click", () => itemModal.open());
+const itemModal = initItemDefinitionsModal(db);
+//  -- removed:
+// document.getElementById("manage-item-definitions")
+//   .addEventListener("click", () => itemModal.open());
+
+/* ------------------------------------------------------------------ *
+ *  Quest-Definitions Modal
+ * ------------------------------------------------------------------ */
 const questModal = initQuestDefinitionsModal(db);
-document.getElementById("manage-quest-definitions")
-        .addEventListener("click", () => questModal.open());
+//  -- removed:
+// document.getElementById("manage-quest-definitions")
+//   .addEventListener("click", () => questModal.open());
 
 /* ------------------------------------------------------------------ *
  *  Subscriptions for Item Definition Changes
  * ------------------------------------------------------------------ */
 subscribeItemDefinitions(db, async () => {
   await markerForm.refreshPredefinedItems();
+
   const { loadItemDefinitions } = await import("./modules/services/itemDefinitionsService.js");
   const defsList = await loadItemDefinitions(db);
-  const defMap   = Object.fromEntries(defsList.map(d=>[d.id,d]));
+  const defMap = Object.fromEntries(defsList.map(d => [d.id, d]));
 
   allMarkers.forEach(({ markerObj, data }) => {
     if (!data.predefinedItemId) return;
     const def = defMap[data.predefinedItemId];
     if (!def) return;
+
     Object.assign(data, {
       name:             def.name,
       nameColor:        def.nameColor    || "#E5E6E8",
@@ -92,119 +96,110 @@ subscribeItemDefinitions(db, async () => {
       rarityColor:      def.rarityColor  || "#E5E6E8",
       description:      def.description,
       descriptionColor: def.descriptionColor || "#E5E6E8",
-      extraLines:       JSON.parse(JSON.stringify(def.extraLines||[])),
+      extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
       imageSmall:       def.imageSmall,
       imageBig:         def.imageBig,
       value:            def.value ?? null,
       quantity:         def.quantity ?? null
     });
+
     if (def.itemType) {
-      data.itemType      = def.itemType;
+      data.itemType = def.itemType;
       data.itemTypeColor = def.itemTypeColor || "#E5E6E8";
+    } else {
+      delete data.itemType;
+      delete data.itemTypeColor;
     }
+
     markerObj.setPopupContent(renderPopup(data));
     firebaseUpdateMarker(db, data);
   });
 
   await loadItemFilters();
-  await loadEnemyFilters();
   filterMarkers();
 });
 
 /* ------------------------------------------------------------------ *
- *  Copy-Paste Manager
+ *  Add & Persist Marker
  * ------------------------------------------------------------------ */
 function addAndPersist(data) {
   const markerObj = addMarker(data, callbacks);
   firebaseAddMarker(db, data);
   return markerObj;
 }
+
+/* ------------------------------------------------------------------ *
+ *  Copy-Paste Manager
+ * ------------------------------------------------------------------ */
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 /* ------------------------------------------------------------------ *
- *  Marker Management Helpers
+ *  Marker Management
  * ------------------------------------------------------------------ */
 function addMarker(data, cbs = {}) {
   const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
   allMarkers.push({ markerObj, data });
   return markerObj;
 }
+
 const callbacks = {
-  onEdit:   (markerObj,data,ev) => {
-    markerForm.openEdit(markerObj,data,ev,updated => {
+  onEdit:   (markerObj, data, ev) => {
+    markerForm.openEdit(markerObj, data, ev, updated => {
       markerObj.setPopupContent(renderPopup(updated));
       firebaseUpdateMarker(db, updated);
     });
   },
-  onCopy:   (_,data) => copyMgr.startCopy(data),
-  onDragEnd:(_,data) => firebaseUpdateMarker(db, data),
-  onDelete: (markerObj,data) => {
+  onCopy:   (_, data) => copyMgr.startCopy(data),
+  onDragEnd: (_, data) => firebaseUpdateMarker(db, data),
+  onDelete: (markerObj, data) => {
     layers[data.type].removeLayer(markerObj);
-    const idx = allMarkers.findIndex(o => o.data.id===data.id);
-    if (idx!==-1) allMarkers.splice(idx,1);
+    const idx = allMarkers.findIndex(o => o.data.id === data.id);
+    if (idx !== -1) allMarkers.splice(idx, 1);
     if (data.id) firebaseDeleteMarker(db, data.id);
   }
 };
 
 /* ------------------------------------------------------------------ *
- *  Load all Markers from Firestore
+ *  Load Markers from Firestore
  * ------------------------------------------------------------------ */
-(async()=>{
+(async () => {
   const markers = await loadMarkers(db);
-  markers.forEach(m=>{
-    if (!m.type||!layers[m.type]) return;
-    if (!m.coords) m.coords=[1500,1500];
+  markers.forEach(m => {
+    if (!m.type || !layers[m.type]) return;
+    if (!m.coords) m.coords = [1500, 1500];
     addMarker(m, callbacks);
   });
   filterMarkers();
 })();
 
 /* ------------------------------------------------------------------ *
- *  Context-menu “Create New Marker”
+ *  Map Context-Menu for Creating New Markers
  * ------------------------------------------------------------------ */
 map.on("contextmenu", evt => {
   showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
     text: "Create New Marker",
-    action: () => markerForm.openCreate(
-      [evt.latlng.lat,evt.latlng.lng],
-      "Item", evt.originalEvent,
-      newData => addAndPersist(newData)
-    )
+    action: () => {
+      markerForm.openCreate(
+        [evt.latlng.lat, evt.latlng.lng],
+        "Item",
+        evt.originalEvent,
+        newData => addAndPersist(newData)
+      );
+    }
   }]);
 });
+
+// Hide context menu on click outside
 document.addEventListener("click", e => {
-  const cm = document.getElementById("context-menu");
-  if (cm?.style.display==="block" && !cm.contains(e.target)) {
-    cm.style.display="none";
+  const contextMenu = document.getElementById("context-menu");
+  if (contextMenu && contextMenu.style.display === "block" && !contextMenu.contains(e.target)) {
+    contextMenu.style.display = "none";
   }
 });
 
 /* ------------------------------------------------------------------ *
- *  Sidebar toggles: grouping & small-markers
+ *  Global Floating Scrollbar Activation
  * ------------------------------------------------------------------ */
-document.getElementById("enable-grouping").checked = false;
-document.getElementById("enable-grouping")
-  .addEventListener("change", e => {
-    const on = e.target.checked;
-    if (on) {
-      map.removeLayer(nonCluster);
-      layers.Item.addTo(map);
-    } else {
-      map.removeLayer(layers.Item);
-      nonCluster.clearLayers();
-      allMarkers.forEach(({markerObj}) => nonCluster.addLayer(markerObj));
-      nonCluster.addTo(map);
-    }
-    filterMarkers();
-  });
-
-document.getElementById("toggle-small-markers")
-  .addEventListener("change", e => {
-    document.getElementById("map")
-      .classList.toggle("small-markers", e.target.checked);
-  });
-
-/* ------------------------------------------------------------------ *
- *  Activate floating scrollbars in modals on DOM ready
- * ------------------------------------------------------------------ */
-document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
+document.addEventListener("DOMContentLoaded", () => {
+  activateFloatingScrollbars();
+});
