@@ -1,31 +1,24 @@
-// @version: 8
 // @file: /scripts/modules/ui/pickrManager.js
+// @version: 2
 
+// Holds all active Pickr instances so destroyAllPickrs can clean them up
 const activePickrs = [];
 
 /**
- * Create a Pickr instance on the given selector or element.
+ * Create a Pickr instance on the given selector.
  * Falls back to a stub if the element doesn't exist.
- * Returns the Pickr instance.
  */
-export function createPickr(target, defaultColor = "#E5E6E8") {
-  // allow passing either a selector string or the element itself
-  const el = typeof target === "string"
-    ? document.querySelector(target)
-    : target;
-
+export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
+  const el = document.querySelector(targetSelector);
   if (!el) {
-    console.warn(`Pickr target ${target} not found`);
+    console.warn(`Pickr target ${targetSelector} not found`);
     return {
       on: () => {},
       setColor: () => {},
-      getColor: () => ({ toHEXA: () => ({ toString: () => defaultColor }) }),
+      getColor: () => defaultColor,
       getRoot: () => null
     };
   }
-
-  // ensure every swatch has our “color-swatch” class for scoping
-  el.classList.add("color-swatch");
 
   const p = window.Pickr.create({
     el,
@@ -44,25 +37,19 @@ export function createPickr(target, defaultColor = "#E5E6E8") {
     }
   }).on("save", (_, instance) => instance.hide());
 
-  // paint the swatch immediately
-  p.setColor(defaultColor);
-
   activePickrs.push(p);
   return p;
 }
 
 /**
- * Initialize all Pickr instances inside a given container element.
- * Only new swatches (with class "color-swatch") will get pickr-attached.
+ * Disable or enable a Pickr instance visually and interactively.
  */
-export function initModalPickrs(container, defaultColor = "#E5E6E8") {
-  if (!container || !container.querySelectorAll) return;
-  container.querySelectorAll(".color-swatch").forEach(el => {
-    // attach a Pickr once, store on element for reuse
-    if (!el._pickr) {
-      el._pickr = createPickr(el, defaultColor);
-    }
-  });
+export function disablePickr(pickr, disabled = true) {
+  const root = pickr?.getRoot?.();
+  if (root && root.style) {
+    root.style.pointerEvents = disabled ? "none" : "auto";
+    root.style.opacity = disabled ? 0.5 : 1;
+  }
 }
 
 /**
@@ -76,10 +63,23 @@ export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
 }
 
 /**
- * Destroy all Pickrs created via this module.
- * (You may not need to call this if you simply reset colors on Clear.)
+ * Clean up all Pickrs created via this module.
  */
 export function destroyAllPickrs() {
   activePickrs.forEach(p => p?.destroy?.());
   activePickrs.length = 0;
+}
+
+/**
+ * Scan the given root element for any color‐swatch buttons,
+ * log what we find, and attach Pickr to each one.
+ */
+export function initModalPickrs(root) {
+  const swatches = root.querySelectorAll(".color-swatch");
+  console.log("🔍 initModalPickrs: found", swatches.length, "swatches");
+  swatches.forEach((el, i) => {
+    console.log(`  [${i}] → id="${el.id}"`, el);
+    const pickr = createPickr(`#${el.id}`);
+    console.log("     ↳ created Pickr instance:", pickr);
+  });
 }
