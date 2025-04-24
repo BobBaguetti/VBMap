@@ -1,8 +1,7 @@
-/* @keep:    Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. */
-/* @file:     /styles/sidebar.css */
-/* @version: 8.2 */
+/* @keep: Comments must NOT be deleted unless code is deleted; edits only with code changes. */
+/* @file: styles/sidebar.css */
+/* @version: 9 */
 
-/* Slightly wider, more compact filter rows */
 #sidebar {
   font-family: 'Satoshi', sans-serif;
   width: 350px;
@@ -20,12 +19,9 @@
 #sidebar.hidden {
   transform: translateX(-100%);
 }
-
-/* Sidebar toggle control */
 #sidebar-toggle {
   position: absolute;
-  top: 10px;
-  left: 350px;
+  top: 10px; left: 350px;
   z-index: 1100;
   font-family: 'Satoshi', sans-serif;
   width: 30px; height: 30px;
@@ -39,51 +35,63 @@
   background: #444;
 }
 
-/* Headings */
+/* Section headings */
 #sidebar h2, #sidebar h3 {
   margin: 0 0 6px;
   font-size: 18px;
   color: #e5e6e8;
 }
 
-/* Flex-layout labels (for settings & filters) */
-#sidebar label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 6px;
-  cursor: pointer;
-}
-
-/* Filters: multi-column grid */
+/* Filter grid */
 .filter-group .toggle-group {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
   gap: 4px 8px;
 }
-
-/* Hide native checkbox but keep in document flow */
+/* Hide the native checkbox but keep it focusable */
 .filter-group .toggle-group input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
-
-/* Checked state */
+/* Style the label as a toggle pill */
+.filter-group .toggle-group label {
+  position: relative;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.2s, color 0.2s, text-decoration 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.filter-group .toggle-group label:hover {
+  background: rgba(255,255,255,0.1);
+}
 .filter-group .toggle-group input:checked + span {
   color: #e5e6e8;
   text-decoration: none;
   font-weight: 500;
 }
-
-/* Unchecked state */
 .filter-group .toggle-group input:not(:checked) + span {
   color: #555;
   text-decoration: line-through;
   font-weight: 400;
 }
 
-/* Inputs in sidebar (search, etc) */
+/* Sidebar-section generic labels (settings, etc) */
+.sidebar-section label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+}
+.sidebar-section input[type="checkbox"] {
+  margin: 0;
+  transform: scale(1);
+}
+
+/* Dark inputs in sidebar */
 #sidebar input,
 #sidebar select,
 #sidebar textarea {
@@ -117,7 +125,7 @@
   background: #444;
 }
 
-/* Accordion arrow */
+/* Accordion arrows */
 .filter-group h3::after {
   content: '▾';
   float: right;

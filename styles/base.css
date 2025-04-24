@@ -1,74 +1,54 @@
-/* @version: 8 */
-/* @file: /styles/base.css */
+/* @keep:  Comments must NOT be deleted unless code is deleted; edits only with code changes. */
+/* @file: styles/base.css */
+/* @version: 9 */
 
 /* 0) Import Satoshi globally */
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
 
 /* 1) Box-sizing */
-*,
-*::before,
-*::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 /* 2) Global reset & dark-mode background */
-body,
-html {
-  margin: 0;
-  padding: 0;
-  height: 100%;
+html, body {
+  margin: 0; padding: 0; height: 100%;
   font-family: 'Satoshi', sans-serif;
-  background-color: #1a1a1a;
-  color: #e5e6e8;
+  background-color: #1a1a1a; color: #e5e6e8;
   overflow: hidden;
 }
 
 /* 3) Map container full-screen */
 #map {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
+  position: absolute; top: 0; left: 0; right: 0; bottom: 0;
   background-color: #1a1a1a;
 }
 
-/* 4) Dark form controls & buttons (moved here from ui.css for global scope) */
+/* 4) Dark form controls & buttons */
 .ui-input {
-  background: #303030 !important;
-  color: #e5e6e8 !important;
-  border: 1px solid #555 !important;
-  padding: 4px 6px;
-  font-size: 14px;
-  box-sizing: border-box;
+  background: #303030!important; color: #e5e6e8!important;
+  border: 1px solid #555!important; padding: 4px 6px;
+  font-size: 14px; box-sizing: border-box;
 }
-
 .ui-button {
-  background: #333 !important;
-  color: #e5e6e8 !important;
-  border: 1px solid #555 !important;
-  border-radius: 3px !important;
+  background: #333!important; color: #e5e6e8!important;
+  border: 1px solid #555!important; border-radius: 3px!important;
   cursor: pointer;
 }
-
-.ui-button:hover {
-  background: #444 !important;
-}
+.ui-button:hover { background: #444!important; }
 
 /* 5) Dark scrollbars for .ui-scrollbar */
-.ui-scrollbar::-webkit-scrollbar {
-  width: 8px;
-}
-.ui-scrollbar::-webkit-scrollbar-track {
-  background: #2a2a2a;
-}
+.ui-scrollbar::-webkit-scrollbar { width: 8px; }
+.ui-scrollbar::-webkit-scrollbar-track { background: #2a2a2a; }
 .ui-scrollbar::-webkit-scrollbar-thumb {
-  background: #555;
-  border-radius: 4px;
+  background: #555; border-radius: 4px;
 }
-.ui-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #777;
-}
+.ui-scrollbar::-webkit-scrollbar-thumb:hover { background: #777; }
 
 /* 6) Hide off-canvas tooltips/popups */
-#video-popup,
-#paste-tooltip {
-  display: none !important;
+#video-popup, #paste-tooltip { display: none!important; }
+
+/* 7) Small-markers styling */
+#map.small-markers .leaflet-marker-icon,
+#map.small-markers .custom-marker-container {
+  transform: scale(0.5);
+  transform-origin: center center;
 }
