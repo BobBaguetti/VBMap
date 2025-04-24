@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or code removal.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.15
+// @version: 4.16
 
 import { createPickr, destroyAllPickrs }        from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets }  from "../../../utils/colorUtils.js";
@@ -72,9 +72,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       value:       fields.colorValue,
       quantity:    fields.colorQty
     }).forEach(([key, btn]) => {
-      // only initialize if element is in DOM
       if (!pickrs[key] && document.body.contains(btn)) {
-        pickrs[key] = createPickr(`#${btn.id}`);
+        const p = createPickr(`#${btn.id}`);
+        pickrs[key] = p;
+        // whenever user changes or saves a color, fire form input to update preview
+        p.on('change', () => form.dispatchEvent(new Event('input', { bubbles: true })));
+        p.on('save',   () => form.dispatchEvent(new Event('input', { bubbles: true })));
       }
     });
   }
@@ -93,7 +96,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     pickrs.itemType?.setColor(tmp.itemTypeColor ?? DEFAULT);
     pickrs.rarity?.setColor(tmp.rarityColor     ?? DEFAULT);
 
-    // >>> Re-fire the form’s input event so your preview listener runs <<<
+    // re-trigger live-preview
     form.dispatchEvent(new Event("input", { bubbles: true }));
   }
 
@@ -116,7 +119,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
 
-    // Clean up any existing Pickr instances
     destroyAllPickrs();
     Object.keys(pickrs).forEach(key => delete pickrs[key]);
   }
@@ -168,21 +170,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
   }
 
-  // ─── Listen for both input & change so preview updates on select too ─
-  ["input","change"].forEach(evt =>
-    form.addEventListener(evt, async e => {
-      // Let any other handlers run first
-      await Promise.resolve();
-      if (onSubmit == null) {
-        // No onSubmit here—this is our live‐preview hook in the modal
-        const live = getCustom();
-        // The modal code listens for form input/change and does:
-        //    previewApi.setFromDefinition(live);
-        //    previewApi.show();
-        // We just dispatch the event—modal’s listener will pick it up.
-      }
-    })
-  );
+  // ─── Live‐preview event hookup ──────────────────────────────────────
+  form.addEventListener("input", () => {
+    const live = getCustom();
+    // the modal’s code listens on form input to update its preview
+    // so we just fire the event; no further action here
+  });
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
