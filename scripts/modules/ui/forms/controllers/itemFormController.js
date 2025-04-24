@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.19
+// @version: 4.20
 
 import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -74,7 +74,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
-        // re-render preview whenever user changes/saves a swatch
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
@@ -91,16 +90,19 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
     applyColorPresets(tmp);
 
-    // if any preset was missing, log it
+    // **Ensure nameColor always falls back to rarityColor** (or itemTypeColor)
+    tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
+
+    // Log any missing preset keys
     ["nameColor","itemTypeColor","rarityColor"].forEach(k => {
       if (!tmp[k]) console.warn(`[presets] missing ${k} for`, tmp);
     });
 
-    // only call setColor when we have a value
+    // Apply to swatches
     setTimeout(() => {
-      if (tmp.nameColor)      pickrs.name?.setColor(tmp.nameColor);
-      if (tmp.itemTypeColor)  pickrs.itemType?.setColor(tmp.itemTypeColor);
-      if (tmp.rarityColor)    pickrs.rarity?.setColor(tmp.rarityColor);
+      tmp.nameColor       && pickrs.name?.setColor(tmp.nameColor);
+      tmp.itemTypeColor   && pickrs.itemType?.setColor(tmp.itemTypeColor);
+      tmp.rarityColor     && pickrs.rarity?.setColor(tmp.rarityColor);
       form.dispatchEvent(new Event("input", { bubbles: true }));
     }, 0);
   }
@@ -128,15 +130,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
     destroyAllPickrs();
     Object.keys(pickrs).forEach(k => delete pickrs[k]);
-
-    // clear any leftover swatch styling
-    Object.values(fields)
-      .filter(el => el.classList?.contains("color-btn"))
-      .forEach(btn => {
-        btn.style.backgroundColor = "";
-        btn.style.opacity         = "";
-        btn.style.pointerEvents   = "";
-      });
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
