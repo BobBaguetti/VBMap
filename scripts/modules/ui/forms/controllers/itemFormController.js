@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.8
+// @version: 4.9
 
 import { createPickr } from "../../pickrManager.js";
 import { getPickrHexColor } from "../../../utils/colorUtils.js";
@@ -61,6 +61,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   form.prepend(subheadingWrap);
 
   // ─── Pickr Initialization ──────────────────────────────────────────
+  // Always (re)create Pickr instances when called
   function initPickrs() {
     Object.entries({
       name:        fields.colorName,
@@ -70,9 +71,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       value:       fields.colorValue,
       quantity:    fields.colorQty
     }).forEach(([key, btn]) => {
-      if (!pickrs[key] && document.body.contains(btn)) {
-        pickrs[key] = createPickr(`#${btn.id}`);
+      // destroy any existing instance
+      if (pickrs[key]?.destroy) {
+        pickrs[key].destroy();
       }
+      // create fresh
+      pickrs[key] = createPickr(`#${btn.id}`);
     });
   }
 
@@ -93,9 +97,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
 
-    initPickrs();
-    // reset all pickers to default grey
-    Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
+    // defer pickr creation until after modal is shown via formApi.initPickrs()
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
@@ -115,14 +117,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
 
-    initPickrs();
-    // reapply saved colors
-    pickrs.name.setColor(def.nameColor      || "#E5E6E8");
-    pickrs.itemType.setColor(def.itemTypeColor || "#E5E6E8");
-    pickrs.rarity.setColor(def.rarityColor    || "#E5E6E8");
-    pickrs.description.setColor(def.descColor  || "#E5E6E8");
-    pickrs.value.setColor(def.valueColor     || "#E5E6E8");
-    pickrs.quantity.setColor(def.quantityColor || "#E5E6E8");
+    // colors will be reapplied after initPickrs() is called
+    pickrs.name?.setColor(def.nameColor      || "#E5E6E8");
+    pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
+    pickrs.rarity?.setColor(def.rarityColor    || "#E5E6E8");
+    pickrs.description?.setColor(def.descColor  || "#E5E6E8");
+    pickrs.value?.setColor(def.valueColor     || "#E5E6E8");
+    pickrs.quantity?.setColor(def.quantityColor || "#E5E6E8");
   }
 
   // ─── Gather form data ──────────────────────────────────────────────
