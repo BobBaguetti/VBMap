@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js
-// @version: 16
+// @version: 17
 
 import {
   createModal, closeModal, openModal
@@ -47,13 +47,17 @@ export function initTestItemDefinitionsModal(db) {
   const formApi = createItemFormController({
     onCancel: () => {
       formApi.reset();
-      previewApi.hide();
+      // reset preview to default blank
+      previewApi.setFromDefinition({});
+      previewApi.show();
     },
     onDelete: async id => {
       await deleteItemDefinition(db, id);
       await refreshDefinitions();
       formApi.reset();
-      previewApi.hide();
+      // reset preview to default blank
+      previewApi.setFromDefinition({});
+      previewApi.show();
     },
     onSubmit: async payload => {
       applyColorPresets(payload);
@@ -64,7 +68,7 @@ export function initTestItemDefinitionsModal(db) {
       }
       await refreshDefinitions();
       formApi.reset();
-      // reset preview to blank
+      // reset preview to default blank
       previewApi.setFromDefinition({});
       previewApi.show();
     }
