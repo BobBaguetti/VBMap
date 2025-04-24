@@ -1,46 +1,45 @@
-// @version: 10
+// @version: 11
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 import { createFormButtonRow } from "../uiKit.js";
-import { createDropdownField } from "../uiKit.js";
-import { createMarkerForm } from "../forms/markerForm.js";
+import { createDropdownField }    from "../uiKit.js";
+import { createMarkerForm }       from "../forms/markerForm.js";
 
 export function initMarkerModal(db) {
   const { modal, content } = createModal({
-    id: "edit-marker-modal",
-    title: "Edit Marker",
-    size: "small",
-    backdrop: false,
-    draggable: true,
-    withDivider: true,
-    onClose: () => closeModal(modal)
+    id:         "edit-marker-modal",
+    title:      "Edit Marker",
+    size:       "small",
+    backdrop:   false,
+    draggable:  true,
+    withDivider:true,
+    onClose:    () => closeModal(modal)
   });
 
-  // Build the form
+  // Build form skeleton
   const form = document.createElement("form");
   form.id = "edit-form";
 
-  // Type dropdown
-  const { row: rowType, select: fldType } =
-    createDropdownField("Type:", "fld-type", [
-      { value: "Door", label: "Door" },
-      { value: "Extraction Portal", label: "Extraction Portal" },
-      { value: "Item", label: "Item" },
-      { value: "Teleport", label: "Teleport" },
-      { value: "Spawn Point", label: "Spawn Point" }
-    ], { showColor: false });
+  // Type selector & predef selector
+  const { row: rowType,   select: fldType   } =
+          createDropdownField("Type:", "fld-type", [
+            { value: "Door", label: "Door" },
+            { value: "Extraction Portal", label: "Extraction Portal" },
+            { value: "Item", label: "Item" },
+            { value: "Teleport", label: "Teleport" },
+            { value: "Spawn Point", label: "Spawn Point" }
+          ], { showColor: false });
 
-  // Predefined item dropdown
-  const { row: rowPredef, select: ddPredef } =
-    createDropdownField("Item:", "fld-predef", [], { showColor: false });
+  const { row: rowPredef, select: ddPredef  } =
+          createDropdownField("Item:", "fld-predef", [], { showColor: false });
 
-  // Marker form fields
-  const formApi = createMarkerForm();
+  // Our item‐form bits
+  const formApi    = createMarkerForm();
   const rowButtons = createFormButtonRow(() => closeModal(modal));
 
-  // Group item-specific rows
+  // group those item‐only fields
   const blockItem = document.createElement("div");
   blockItem.classList.add("item-gap");
   blockItem.append(
@@ -49,7 +48,7 @@ export function initMarkerModal(db) {
     formApi.fields.fldDesc.closest(".field-row")
   );
 
-  // Assemble form
+  // Assemble
   form.append(
     formApi.fields.fldName.closest(".field-row"),
     rowType,
@@ -61,36 +60,31 @@ export function initMarkerModal(db) {
     formApi.fields.fldVid.closest(".field-row"),
     rowButtons
   );
-
   content.appendChild(form);
 
-  // Data holders
   let defs = {};
-  let customMode = false;
 
-  // Toggle item-specific UI
+  // show/hide item sections
   function toggleSections(isItem) {
     blockItem.style.display = isItem ? "block" : "none";
-    rowPredef.style.display = isItem ? "flex" : "none";
+    rowPredef.style.display = isItem ? "flex"  : "none";
   }
-
   fldType.onchange = () => toggleSections(fldType.value === "Item");
+
   ddPredef.onchange = () => {
     const def = defs[ddPredef.value];
     if (def) {
       formApi.setFromDefinition(def);
-      customMode = false;
     } else {
-      formApi.setFromDefinition({});
-      customMode = true;
+      formApi.setFromDefinition({});  // clears out the form
     }
-    formApi.initPickrs();  // ensure pickers show correct colors
+    formApi.initPickrs();
   };
 
-  // Load definitions into dropdown
+  // load item defs into the dropdown
   async function refreshPredefinedItems() {
     const list = await loadItemDefinitions(db);
-    defs = Object.fromEntries(list.map(d => [d.id, d]));
+    defs = Object.fromEntries(list.map(d => [d.id,d]));
     ddPredef.innerHTML = `<option value="">None (custom)</option>`;
     list.forEach(d => {
       const o = document.createElement("option");
@@ -99,6 +93,8 @@ export function initMarkerModal(db) {
       ddPredef.appendChild(o);
     });
   }
+  // immediately populate defs
+  refreshPredefinedItems();
 
   // Edit existing marker
   function openEdit(markerObj, data, evt, onSave) {
@@ -127,7 +123,7 @@ export function initMarkerModal(db) {
     };
   }
 
-  // Populate form fields
+  // Populate fields
   function populate(data = { type: "Item" }) {
     fldType.value = data.type;
     toggleSections(data.type === "Item");
@@ -146,7 +142,7 @@ export function initMarkerModal(db) {
     }
   }
 
-  // Gather form data
+  // **HARVEST** → always emits `imageBig` (never undefined)
   function harvest(coords) {
     const type = fldType.value;
     const selectedId = ddPredef.value;
@@ -157,27 +153,32 @@ export function initMarkerModal(db) {
         type,
         coords,
         predefinedItemId: selectedId,
-        name: def.name,
-        nameColor: def.nameColor || "#E5E6E8",
-        itemType: def.itemType || "",
-        itemTypeColor: def.itemTypeColor || "#E5E6E8",
-        rarity: def.rarity || "",
-        rarityColor: def.rarityColor || "#E5E6E8",
-        description: def.description || "",
+        name:             def.name,
+        nameColor:        def.nameColor  || "#E5E6E8",
+        itemType:         def.itemType   || "",
+        itemTypeColor:    def.itemTypeColor || "#E5E6E8",
+        rarity:           def.rarity     || "",
+        rarityColor:      def.rarityColor  || "#E5E6E8",
+        description:      def.description || "",
         descriptionColor: def.descriptionColor || "#E5E6E8",
-        extraLines: def.extraLines || [],
-        imageSmall: def.imageSmall || "",
-        imageBig: def.imageBig || "",
-        video: def.video || ""
+        extraLines:       def.extraLines || [],
+        imageSmall:       def.imageSmall || "",
+        // **fall back to def.imageLarge if def.imageBig is missing**
+        imageBig:         (def.imageBig   ?? def.imageLarge)  || "",
+        video:            def.video      || ""
       };
     }
 
-    return { type, coords, ...formApi.getCustom() };
+    // custom‐filled
+    const custom = formApi.getCustom();
+    return {
+      type,
+      coords,
+      ...custom,
+      // ensure we never send `undefined` on this path either
+      imageBig: custom.imageBig || ""
+    };
   }
 
-  return {
-    openEdit,
-    openCreate,
-    refreshPredefinedItems
-  };
+  return { openEdit, openCreate, refreshPredefinedItems };
 }
