@@ -1,7 +1,7 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted;
 //           edits to comments only when code changes.
 // @file:    /scripts/script.js
-// @version: 5.3
+// @version: 5.4
 
 import { initializeMap } from "./modules/map/map.js";
 import { showContextMenu } from "./modules/ui/uiManager.js";
@@ -46,44 +46,54 @@ const flatItemLayer    = L.layerGroup();
 const layers = {
   Door:               L.layerGroup(),
   "Extraction Portal":L.layerGroup(),
-  Item:               clusterItemLayer,   // initial grouping = ON
+  Item:               clusterItemLayer,   // grouping ON by default
   Teleport:           L.layerGroup(),
   "Spawn Point":      L.layerGroup()
 };
 
 // add all non-Item layers
-Object.entries(layers).forEach(([k, grp]) => grp.addTo(map));
-// also add flatItemLayer (but immediately remove so it’s ready)
+Object.values(layers).forEach(layer => layer.addTo(map));
+
+// prepare flat layer (but do not display it)
 flatItemLayer.addTo(map);
 map.removeLayer(flatItemLayer);
+
+let groupingOn = true;  // track current state
 
 /* ------------------------------------------------------------------ *
  *  Sidebar Setup
  * ------------------------------------------------------------------ */
 const allMarkers = [];
-let groupingOn = true;  // tracks which Item layer is active
+
+// callbacks for sidebar to flip grouping
+const groupingCallbacks = {
+  enableGrouping: () => {
+    // move from flat → cluster
+    flatItemLayer.eachLayer(m => {
+      flatItemLayer.removeLayer(m);
+      clusterItemLayer.addLayer(m);
+    });
+    map.removeLayer(flatItemLayer);
+    map.addLayer(clusterItemLayer);
+    layers.Item = clusterItemLayer;
+    groupingOn = true;
+  },
+  disableGrouping: () => {
+    // move from cluster → flat
+    clusterItemLayer.eachLayer(m => {
+      clusterItemLayer.removeLayer(m);
+      flatItemLayer.addLayer(m);
+    });
+    map.removeLayer(clusterItemLayer);
+    map.addLayer(flatItemLayer);
+    layers.Item = flatItemLayer;
+    groupingOn = false;
+  }
+};
 
 const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db,
-  // pass us callbacks so sidebar can flip layers
-  {
-    enableGrouping: () => {
-      if (!groupingOn) {
-        map.removeLayer(flatItemLayer);
-        map.addLayer(clusterItemLayer);
-        layers.Item = clusterItemLayer;
-        groupingOn = true;
-      }
-    },
-    disableGrouping: () => {
-      if (groupingOn) {
-        map.removeLayer(clusterItemLayer);
-        map.addLayer(flatItemLayer);
-        layers.Item = flatItemLayer;
-        groupingOn = false;
-      }
-    }
-  }
+  groupingCallbacks
 );
 
 /* ------------------------------------------------------------------ *
@@ -102,33 +112,37 @@ const questModal = initQuestDefinitionsModal(db);
  * ------------------------------------------------------------------ */
 subscribeItemDefinitions(db, async () => {
   await markerForm.refreshPredefinedItems();
-  const { loadItemDefinitions } = await import("./modules/services/itemDefinitionsService.js");
-  const list = await loadItemDefinitions(db);
-  const defMap = Object.fromEntries(list.map(d => [d.id,d]));
 
-  allMarkers.forEach(({ markerObj,data })=> {
+  const { loadItemDefinitions } = await import("./modules/services/itemDefinitionsService.js");
+  const defsList = await loadItemDefinitions(db);
+  const defMap = Object.fromEntries(defsList.map(d => [d.id, d]));
+
+  allMarkers.forEach(({ markerObj, data }) => {
     if (!data.predefinedItemId) return;
     const def = defMap[data.predefinedItemId];
     if (!def) return;
-    Object.assign(data,{
-      name:      def.name,
-      nameColor: def.nameColor||"#E5E6E8",
-      rarity:    def.rarity,
-      rarityColor: def.rarityColor||"#E5E6E8",
-      description: def.description,
-      descriptionColor: def.descriptionColor||"#E5E6E8",
-      extraLines: JSON.parse(JSON.stringify(def.extraLines||[])),
-      imageSmall: def.imageSmall,
-      imageBig:   def.imageBig,
-      value:      def.value ?? null,
-      quantity:   def.quantity ?? null
+
+    Object.assign(data, {
+      name:             def.name,
+      nameColor:        def.nameColor    || "#E5E6E8",
+      rarity:           def.rarity,
+      rarityColor:      def.rarityColor  || "#E5E6E8",
+      description:      def.description,
+      descriptionColor: def.descriptionColor || "#E5E6E8",
+      extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
+      imageSmall:       def.imageSmall,
+      imageBig:         def.imageBig,
+      value:            def.value ?? null,
+      quantity:         def.quantity ?? null
     });
+
     if (def.itemType) {
-      data.itemType      = def.itemType;
-      data.itemTypeColor = def.itemTypeColor||"#E5E6E8";
+      data.itemType = def.itemType;
+      data.itemTypeColor = def.itemTypeColor || "#E5E6E8";
     }
+
     markerObj.setPopupContent(renderPopup(data));
-    firebaseUpdateMarker(db,data);
+    firebaseUpdateMarker(db, data);
   });
 
   await loadItemFilters();
@@ -140,7 +154,7 @@ subscribeItemDefinitions(db, async () => {
  * ------------------------------------------------------------------ */
 function addAndPersist(data) {
   const markerObj = addMarker(data, callbacks);
-  firebaseAddMarker(db,data);
+  firebaseAddMarker(db, data);
   return markerObj;
 }
 
@@ -150,70 +164,74 @@ function addAndPersist(data) {
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 /* ------------------------------------------------------------------ *
- *  Marker Management Helpers
+ *  Marker Management
  * ------------------------------------------------------------------ */
 function addMarker(data, cbs = {}) {
-  const markerObj = createMarker(data,map,layers,showContextMenu,cbs);
-  // add into whichever layer is current
+  const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
   if (groupingOn) clusterItemLayer.addLayer(markerObj);
   else            flatItemLayer.addLayer(markerObj);
-
-  allMarkers.push({markerObj,data});
+  allMarkers.push({ markerObj, data });
   return markerObj;
 }
 
 const callbacks = {
-  onEdit:   (m,d,ev) => markerForm.openEdit(m,d,ev,upd=>{
-                m.setPopupContent(renderPopup(upd));
-                firebaseUpdateMarker(db,upd);
-              }),
-  onCopy:   (_,d)   => copyMgr.startCopy(d),
-  onDragEnd:(_,d)   => firebaseUpdateMarker(db,d),
-  onDelete:(m,d)    => {
-    layers[d.type].removeLayer(m);
-    const idx = allMarkers.findIndex(o=>o.data.id===d.id);
-    if (idx!==-1) allMarkers.splice(idx,1);
-    if (d.id) firebaseDeleteMarker(db,d.id);
+  onEdit: (markerObj, data, ev) => {
+    markerForm.openEdit(markerObj, data, ev, updated => {
+      markerObj.setPopupContent(renderPopup(updated));
+      firebaseUpdateMarker(db, updated);
+    });
+  },
+  onCopy: (_, data) => copyMgr.startCopy(data),
+  onDragEnd: (_, data) => firebaseUpdateMarker(db, data),
+  onDelete: (markerObj, data) => {
+    layers[data.type].removeLayer(markerObj);
+    const idx = allMarkers.findIndex(o => o.data.id === data.id);
+    if (idx !== -1) allMarkers.splice(idx, 1);
+    if (data.id) firebaseDeleteMarker(db, data.id);
   }
 };
 
 /* ------------------------------------------------------------------ *
  *  Load Markers from Firestore
  * ------------------------------------------------------------------ */
-(async()=>{
+(async () => {
   const markers = await loadMarkers(db);
-  markers.forEach(m=>{
-    if (!m.type||!layers[m.type]) return;
-    if (!m.coords) m.coords=[1500,1500];
-    addMarker(m,callbacks);
+  markers.forEach(m => {
+    if (!m.type || !layers[m.type]) return;
+    if (!m.coords) m.coords = [1500, 1500];
+    addMarker(m, callbacks);
   });
   filterMarkers();
 })();
 
 /* ------------------------------------------------------------------ *
- *  Create New on Right-click
+ *  Map Context-Menu for Creating New Markers
  * ------------------------------------------------------------------ */
-map.on("contextmenu",evt=>{
-  showContextMenu(evt.originalEvent.pageX,evt.originalEvent.pageY,[{
-    text:"Create New Marker",
-    action:()=> markerForm.openCreate(
-      [evt.latlng.lat,evt.latlng.lng],
-      "Item",
-      evt.originalEvent,
-      newData=>addAndPersist(newData)
-    )
+map.on("contextmenu", evt => {
+  showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
+    text: "Create New Marker",
+    action: () => {
+      markerForm.openCreate(
+        [evt.latlng.lat, evt.latlng.lng],
+        "Item",
+        evt.originalEvent,
+        newData => addAndPersist(newData)
+      );
+    }
   }]);
 });
 
-// Hide context menu on outside click
-document.addEventListener("click",e=>{
+// Hide context menu on click outside
+document.addEventListener("click", e => {
   const cm = document.getElementById("context-menu");
-  if (cm && cm.style.display==="block" && !cm.contains(e.target)) {
-    cm.style.display="none";
+  if (cm && cm.style.display === "block" && !cm.contains(e.target)) {
+    cm.style.display = "none";
   }
 });
 
 /* ------------------------------------------------------------------ *
- *  Floating Scrollbars
+ *  Floating Scrollbar Activation
  * ------------------------------------------------------------------ */
-document.addEventListener("DOMContentLoaded",activateFloatingScrollbars);
+document.addEventListener("DOMContentLoaded", () => {
+  activateFloatingScrollbars();
+});
