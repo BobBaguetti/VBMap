@@ -1,6 +1,6 @@
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted.
-// @version: 9   Increase by 1 every time you update anything.
-// @file:    /scripts/modules/sidebar/sidebarManager.js
+// @keep: Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
+// @file: /scripts/modules/sidebar/sidebarManager.js
+// @version: 10.0
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
@@ -48,6 +48,17 @@ export async function setupSidebar(map, layers, allMarkers, db) {
   pveLabel.innerHTML    = `<input type="checkbox" id="toggle-pve" checked /><span>PvE</span>`;
   mainToggleGroup.appendChild(pveLabel);
   console.log("[sidebar] PvE toggle appended");
+
+  // Small-Markers toggle
+  const settingsGroup = sidebar.querySelector(".sidebar-section:nth-of-type(2) .sidebar-section, .sidebar-section:nth-of-type(2)"); 
+  // (the “Settings” section is 2nd .sidebar-section)
+  const smallLabel    = document.createElement("label");
+  smallLabel.innerHTML = `<input type="checkbox" id="enable-small-markers" /><span>Small Markers (50%)</span>`;
+  settingsGroup.appendChild(smallLabel);
+  document.getElementById("enable-small-markers")
+    .addEventListener("change", e => {
+      mapContainer.classList.toggle("small-markers", e.target.checked);
+    });
 
   // Core filtering
   function filterMarkers() {

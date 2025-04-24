@@ -1,5 +1,6 @@
-/* @version: 8 */
+/* @keep: Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
 /* @file: /styles/sidebar.css */
+/* @version: 9.0 */
 
 /* Slightly wider, more compact filter rows */
 #sidebar {
@@ -23,7 +24,7 @@
 /* Sidebar toggle control */
 #sidebar-toggle {
   position: absolute;
-  top: 10px; 
+  top: 10px;
   left: 350px;
   z-index: 1100;
   font-family: 'Satoshi', sans-serif;
@@ -132,4 +133,10 @@
 }
 .filter-group.collapsed .toggle-group {
   display: none;
+}
+
+/* ── Small-Markers scaling ── */
+#map.small-markers .custom-marker-container {
+  transform: scale(0.5);
+  transform-origin: center center;
 }
