@@ -1,4 +1,4 @@
-/* @version: 7 */
+/* @version: 8 */
 /* @file: /styles/sidebar.css */
 
 /* Slightly wider, more compact filter rows */
@@ -49,22 +49,26 @@
 .filter-group {
   margin-bottom: 6px;
 }
-.filter-group .toggle-group {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;       /* very tight vertical gap */
+
+/* 👉 Force our single-column, inline-flex layout on all toggle-groups 👇 */
+#sidebar .filter-group .toggle-group {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 2px;        /* very tight vertical gap */
   padding-left: 0; /* remove indent */
 }
-.filter-group .toggle-group label {
-  display: flex;       /* single line */
-  align-items: center;
-  gap: 6px;            /* checkbox + text */
+
+#sidebar .filter-group .toggle-group label {
+  display: flex !important;       /* inline row */
+  align-items: center !important;
+  gap: 6px !important;            /* checkbox + text */
   font-size: 14px;
-  margin: 0;           /* remove extra margins */
+  margin: 0 !important;           /* remove any stray margins */
 }
-.filter-group .toggle-group input {
-  margin: 0;
-  transform: scale(0.9);
+
+#sidebar .filter-group .toggle-group input[type="checkbox"] {
+  margin: 0 !important;
+  transform: scale(0.9) !important;
 }
 
 /* Dark inputs in sidebar */
@@ -111,5 +115,5 @@
   transform: rotate(-90deg);
 }
 .filter-group.collapsed .toggle-group {
-  display: none;
+  display: none !important;
 }
