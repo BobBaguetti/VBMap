@@ -1,6 +1,5 @@
-// @comment: Comments should not be deleted unless they need updating or code is removed.
+// @version: 5.3
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.26
 
 import { createPickr }                        from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -75,6 +74,11 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
+
+        // manually open the picker UI when its swatch is clicked
+        btn.addEventListener("click", () => p.show());
+
+        // re-fire form input for live preview
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
@@ -107,14 +111,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     }, 0);
   }
 
-  fields.fldType .addEventListener("change", applyPresetsAndRefresh);
+  fields.fldType  .addEventListener("change", applyPresetsAndRefresh);
   fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
     // reset standard inputs & selects to placeholder ("" value)
     form.reset();
-    // ensure dropdowns go back to the unselectable placeholder
     fields.fldType.value   = "";
     fields.fldRarity.value = "";
 
