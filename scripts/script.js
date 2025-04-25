@@ -1,6 +1,6 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted;
 // @file:    /scripts/script.js
-// @version: 5.7
+// @version: 5.8
 
 import { initializeMap } from "./modules/map/map.js";
 import { showContextMenu } from "./modules/ui/uiManager.js";
@@ -20,7 +20,7 @@ import { subscribeItemDefinitions } from "./modules/services/itemDefinitionsServ
 import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
 import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js";
 
-// ← New import for admin‐auth
+// for admin login UI
 import { initAdminAuth } from "./authSetup.js";
 
 /* ------------------------------------------------------------------ *
@@ -35,9 +35,6 @@ const db = initializeFirebase({
   appId: "1:244112699360:web:95f50adb6e10b438238585",
   measurementId: "G-7FDNWLRM95"
 });
-
-// ← Initialize the auth toggle & admin‐only UI hiding
-initAdminAuth();
 
 /* ------------------------------------------------------------------ *
  *  Map & Layers Setup
@@ -71,7 +68,6 @@ let groupingOn = false;
  * ------------------------------------------------------------------ */
 const allMarkers = [];
 
-// callbacks for sidebar to flip grouping
 const groupingCallbacks = {
   enableGrouping: () => {
     flatItemLayer.eachLayer(m => {
@@ -95,10 +91,14 @@ const groupingCallbacks = {
   }
 };
 
+// build the sidebar (renders #settings-section, filter groups, etc.)
 const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db,
   groupingCallbacks
 );
+
+// ← Now that the sidebar (and its #settings-section) exists, wire up auth UI
+initAdminAuth();
 
 /* ------------------------------------------------------------------ *
  *  Marker Modal
