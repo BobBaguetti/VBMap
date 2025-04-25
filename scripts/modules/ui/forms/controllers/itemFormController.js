@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.27
+// @version: 4.22
 
 import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -113,7 +113,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
-    // clear all text fields
+    // clear all fields
     fields.fldName.value   =
     fields.fldType.value   =
     fields.fldRarity.value =
@@ -131,14 +131,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
     btnClear.textContent    = "Clear";
 
-    // destroy all Pickr instances
     destroyAllPickrs();
-
-    // fully reset every color-swatch by replacing it with a fresh clone
-    form.querySelectorAll(".color-btn").forEach(btn => {
-      const clean = btn.cloneNode(false);
-      btn.parentNode.replaceChild(clean, btn);
-    });
+    Object.keys(pickrs).forEach(k => delete pickrs[k]);
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
@@ -152,7 +146,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgS.value   = def.imageSmall  || "";
     fields.fldImgL.value   = def.imageLarge  || "";
 
-    // read from def.extraLines
+    // **read from def.extraLines** instead of def.extraInfo
     fields.extraInfo.setLines(def.extraLines || [], false);
 
     _id = def.id || null;
@@ -187,6 +181,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       quantityColor:    getPickrHexColor(pickrs.quantity),
       imageSmall:       fields.fldImgS.value.trim(),
       imageLarge:       fields.fldImgL.value.trim(),
+      // **output as extraLines** instead of extraInfo
       extraLines:       fields.extraInfo.getLines()
     };
   }
