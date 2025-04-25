@@ -1,8 +1,8 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 3
+// @version: 4
 
 import { formatRarity } from "../utils/utils.js";
-import { createIcon } from "../utils/iconUtils.js";
+import { createIcon }   from "../utils/iconUtils.js";
 
 /**
  * Checks whether a string is a valid image URL.
@@ -26,7 +26,6 @@ function getBestImageUrl(m, ...keys) {
  * Renders the HTML for a marker popup.
  */
 export function renderPopup(m) {
-  // Try imageBig, then imageLarge, then imageSmall
   const imgUrl = getBestImageUrl(m, "imageBig", "imageLarge", "imageSmall");
   const bigImg = imgUrl
     ? `<img src="${imgUrl}" class="popup-image" style="border-color:${m.rarityColor || "#777"};" onerror="this.style.display='none'">`
@@ -91,20 +90,57 @@ export function renderPopup(m) {
 }
 
 /**
- * Creates a custom Leaflet icon for the marker.
+ * Creates a custom Leaflet icon for the marker, clipping any image into a circle.
  */
 export function createCustomIcon(m) {
-  // Try imageSmall, then imageBig, then imageLarge
   const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
-  const imgHTML = imgUrl
-    ? `<img src="${imgUrl}" class="marker-icon" onerror="this.style.display='none'">`
-    : "";
+  const size   = 32; // diameter in pixels
 
+  // Build the wrapper DIV with circular mask and border
+  const wrapper = document.createElement('div');
+  wrapper.className = 'custom-marker';
+  Object.assign(wrapper.style, {
+    width:        `${size}px`,      
+    height:       `${size}px`,      
+    borderRadius: '50%',            
+    overflow:     'hidden',         
+    position:     'relative',       
+  });
+
+  // Add an inner border circle if desired
+  const border = document.createElement('div');
+  border.className = 'marker-border';
+  Object.assign(border.style, {
+    position: 'absolute',
+    top:      0,
+    left:     0,
+    width:    '100%',
+    height:   '100%',
+    boxSizing:'border-box',
+    border:   `2px solid ${m.rarityColor || '#777'}`
+  });
+  wrapper.appendChild(border);
+
+  // Add the image, if present, filling the circle
+  if (imgUrl) {
+    const img = document.createElement('img');
+    img.src = imgUrl;
+    Object.assign(img.style, {
+      width:     '100%',
+      height:    '100%',
+      objectFit: 'cover',
+      display:   'block'
+    });
+    img.onerror = () => { img.style.display = 'none'; };
+    wrapper.appendChild(img);
+  }
+
+  // Return the Leaflet divIcon
   return L.divIcon({
-    html: `<div class="custom-marker"><div class="marker-border"></div>${imgHTML}</div>`,
-    className: "custom-marker-container",
-    iconSize: [32, 32],
-    iconAnchor: [16, 32]
+    html:        wrapper.outerHTML,
+    className:   'custom-marker-container',
+    iconSize:    [size, size],
+    iconAnchor:  [size/2, size/2]
   });
 }
 
@@ -118,33 +154,32 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   });
 
   markerObj.bindPopup(renderPopup(m), {
-    className: "custom-popup-wrapper",
-    maxWidth: 350,
+    className:   'custom-popup-wrapper',
+    maxWidth:    350,
     closeButton: false,
-    offset: [0, -35]
+    offset:      [0, -35]
   });
 
-  markerObj.on("popupopen", () => {
-    const popupEl = document.querySelector(".custom-popup");
-    const closeBtn = popupEl?.querySelector(".popup-close-btn");
-    if (closeBtn) closeBtn.addEventListener("click", () => markerObj.closePopup());
+  markerObj.on('popupopen', () => {
+    const popupEl = document.querySelector('.custom-popup');
+    const closeBtn = popupEl?.querySelector('.popup-close-btn');
+    if (closeBtn) closeBtn.addEventListener('click', () => markerObj.closePopup());
   });
 
   layers[m.type].addLayer(markerObj);
 
-  markerObj.on("contextmenu", evt => {
+  markerObj.on('contextmenu', evt => {
     evt.originalEvent.preventDefault();
     const options = [
-      { text: "Edit Marker",   action: () => callbacks.onEdit?.(markerObj, m, evt.originalEvent) },
-      { text: "Copy Marker",   action: () => callbacks.onCopy?.(markerObj, m, evt.originalEvent) },
+      { text: 'Edit Marker', action: () => callbacks.onEdit?.(markerObj, m, evt.originalEvent) },
+      { text: 'Copy Marker', action: () => callbacks.onCopy?.(markerObj, m, evt.originalEvent) },
       {
-        text: markerObj.dragging?.enabled() ? "Disable Drag" : "Enable Drag",
+        text: markerObj.dragging?.enabled() ? 'Disable Drag' : 'Enable Drag',
         action: () => {
-          if (markerObj.dragging?.enabled()) {
-            markerObj.dragging.disable();
-          } else {
+          if (markerObj.dragging?.enabled()) markerObj.dragging.disable();
+          else {
             markerObj.dragging.enable();
-            markerObj.once("dragend", () => {
+            markerObj.once('dragend', () => {
               const ll = markerObj.getLatLng();
               m.coords = [ll.lat, ll.lng];
               callbacks.onDragEnd?.(markerObj, m);
@@ -152,7 +187,7 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
           }
         }
       },
-      { text: "Delete Marker", action: () => callbacks.onDelete?.(markerObj, m) }
+      { text: 'Delete Marker', action: () => callbacks.onDelete?.(markerObj, m) }
     ];
     ctxMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
   });
