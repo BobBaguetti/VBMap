@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.28
+// @version: 4.29
 
 import { createPickr }                        from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -86,6 +86,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     });
   }
 
+  // wire up *all* swatches right away
+  initPickrs();
+
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
     // only run once both selects have real values
@@ -120,7 +123,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     form.reset();
     fields.fldType.value   = "";
     fields.fldRarity.value = "";
-
     fields.extraInfo.setLines([], false);
 
     _id = null;
