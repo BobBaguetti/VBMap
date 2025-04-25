@@ -1,5 +1,4 @@
-// @fullfile
-// @version: 4
+// @version: 5.8
 // @file: /scripts/modules/services/firebaseService.js
 
 import { initializeApp } from "firebase/app";
@@ -53,14 +52,25 @@ export async function addMarker(db, markerData) {
 
 /**
  * Update an existing marker in Firestore.
- * This takes the full marker object (including its `id`) and merges only the other fields.
+ * This will merge only the defined fields of the provided marker object.
  * @param {import('firebase/firestore').Firestore} db Firestore instance.
- * @param {Object} markerData The full marker object, must include `id`.
+ * @param {Object} markerData The full marker object, including its `id`.
+ *                            Only keys with non‐undefined values will be sent.
  * @returns {Promise<void>}
  */
 export async function updateMarker(db, markerData) {
-  const { id, ...data } = markerData;
+  const { id, ...raw } = markerData;
   const docRef = doc(db, "markers", id);
+
+  // Build a new object excluding any undefined values
+  const data = Object.entries(raw).reduce((acc, [key, value]) => {
+    if (value !== undefined) {
+      acc[key] = value;
+    }
+    return acc;
+  }, {});
+
+  // Merge in only the defined fields
   await setDoc(docRef, data, { merge: true });
 }
 
