@@ -1,4 +1,4 @@
-/* @version: 2
+/* @version: 3
    @file: /styles/ui.css */
 
 /* ============================
@@ -217,5 +217,13 @@
   
   .entry-delete svg {
     transform: none !important;
+  }
+  
+  /* ============================
+     Hide admin-only controls
+     ============================ */
+  
+  .admin-only {
+    display: none !important;
   }
   
