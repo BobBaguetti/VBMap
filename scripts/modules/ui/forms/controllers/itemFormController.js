@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.23
+// @version: 4.24
 
 import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -74,7 +74,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
-        // re-fire form input for live preview
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
@@ -91,15 +90,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
     applyColorPresets(tmp);
 
-    // ensure nameColor always falls back to rarityColor or itemTypeColor
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
-    // log any missing preset keys
     ["nameColor","itemTypeColor","rarityColor"].forEach(k => {
       if (!tmp[k]) console.warn(`[presets] missing ${k} for`, tmp);
     });
 
-    // apply to swatches (delay to avoid race)
     setTimeout(() => {
       tmp.nameColor     && pickrs.name?.setColor(tmp.nameColor);
       tmp.itemTypeColor && pickrs.itemType?.setColor(tmp.itemTypeColor);
@@ -123,7 +119,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgS.value   =
     fields.fldImgL.value   = "";
 
-    // clear extra-info rows
+    // clear extra‐info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
@@ -131,24 +127,15 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
     btnClear.textContent    = "Clear";
 
-    // destroy pickr instances
+    // destroy Pickr instances and clear our map
     destroyAllPickrs();
-    // clear pickr map
     Object.keys(pickrs).forEach(k => delete pickrs[k]);
 
-    // clear swatch button backgrounds
-    [
-      fields.colorName,
-      fields.colorType,
-      fields.colorRarity,
-      fields.colorDesc,
-      fields.colorValue,
-      fields.colorQty
-    ].forEach(btn => {
-      if (btn) {
-        btn.style.backgroundColor = "";
-        btn.style.boxShadow       = "";
-      }
+    // clear inline styles on all swatch buttons
+    form.querySelectorAll(".color-btn").forEach(btn => {
+      btn.style.background = "";
+      btn.style.backgroundColor = "";
+      btn.style.boxShadow = "";
     });
   }
 
@@ -162,8 +149,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = def.quantity    || "";
     fields.fldImgS.value   = def.imageSmall  || "";
     fields.fldImgL.value   = def.imageLarge  || "";
-
-    // read from def.extraLines instead of def.extraInfo
     fields.extraInfo.setLines(def.extraLines || [], false);
 
     _id = def.id || null;
@@ -198,7 +183,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       quantityColor:    getPickrHexColor(pickrs.quantity),
       imageSmall:       fields.fldImgS.value.trim(),
       imageLarge:       fields.fldImgL.value.trim(),
-      // output as extraLines instead of extraInfo
       extraLines:       fields.extraInfo.getLines()
     };
   }
