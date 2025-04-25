@@ -1,4 +1,4 @@
-// @version: 5.3
+// @version: 5.4
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
 
 import { createPickr }                        from "../../pickrManager.js";
@@ -85,6 +85,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     });
   }
 
+  // Wire up initial pickr instances so swatches are responsive
+  initPickrs();
+
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
     // only run once both selects have actual values
@@ -129,7 +132,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
     btnClear.textContent    = "Clear";
 
-    // init pickrs if needed, then wipe swatches back to blank
+    // ensure pickrs exist, then wipe swatches back to blank
     initPickrs();
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
