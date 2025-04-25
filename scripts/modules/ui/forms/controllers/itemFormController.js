@@ -1,6 +1,6 @@
-// @comment: Comments should not be deleted unless they need updating or code is removed.
+// @comment: Comments must NOT be deleted unless their associated code is also deleted.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.24
+// @version: 4.25
 
 import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -89,7 +89,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
 
     applyColorPresets(tmp);
-
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
     ["nameColor","itemTypeColor","rarityColor"].forEach(k => {
@@ -131,11 +130,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     destroyAllPickrs();
     Object.keys(pickrs).forEach(k => delete pickrs[k]);
 
-    // clear inline styles on all swatch buttons
+    // remove all inline styles from swatch buttons
     form.querySelectorAll(".color-btn").forEach(btn => {
-      btn.style.background = "";
-      btn.style.backgroundColor = "";
-      btn.style.boxShadow = "";
+      btn.removeAttribute("style");
     });
   }
 
