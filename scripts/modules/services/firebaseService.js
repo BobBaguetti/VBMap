@@ -1,5 +1,5 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 3
+// @fullfile
+// @version: 4
 // @file: /scripts/modules/services/firebaseService.js
 
 import { initializeApp } from "firebase/app";
@@ -53,15 +53,14 @@ export async function addMarker(db, markerData) {
 
 /**
  * Update an existing marker in Firestore.
- * This will overwrite only the fields you pass (merge behavior).
+ * This takes the full marker object (including its `id`) and merges only the other fields.
  * @param {import('firebase/firestore').Firestore} db Firestore instance.
- * @param {string} id The document ID of the marker.
- * @param {Object} data The fields to update.
+ * @param {Object} markerData The full marker object, must include `id`.
  * @returns {Promise<void>}
  */
-export async function updateMarker(db, id, data) {
+export async function updateMarker(db, markerData) {
+  const { id, ...data } = markerData;
   const docRef = doc(db, "markers", id);
-  // setDoc with merge true would be:
   await setDoc(docRef, data, { merge: true });
 }
 
