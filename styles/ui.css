@@ -1,3 +1,6 @@
+/* @version: 2
+   @file: /styles/ui.css */
+
 /* ============================
    Base Dark Mode UI Utilities
    ============================ */
@@ -73,14 +76,15 @@
      ============================ */
   
   .ui-button-delete {
-    background-color: #551111 !important;
-    color: #eee !important;
+    background-color: #b92f2f !important;
+    color: #fff !important;
     border: none !important;
-    padding: 6px 12px;
-    height: auto;
-    display: inline-flex;
+    padding: 6px !important;
+    display: inline-flex !important;
     align-items: center;
     justify-content: center;
+    width: auto;
+    height: auto;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s, color 0.3s;
@@ -89,7 +93,7 @@
   
   .ui-button-delete:hover {
     background-color: #772222 !important;
-    color: white !important;
+    color: #fff !important;
   }
   
   .ui-button-delete svg {
@@ -201,5 +205,17 @@
     display: flex;
     align-items: center;
     gap: 6px;
+  }
+  
+  /* ─── Trash-can fixes: force delete-buttons vertical ───────────────────── */
+  .entry-delete {
+    display: inline-flex !important;
+    flex-direction: column !important;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .entry-delete svg {
+    transform: none !important;
   }
   
