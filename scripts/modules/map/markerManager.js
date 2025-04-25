@@ -1,48 +1,64 @@
 // @file: /scripts/modules/map/markerManager.js
+// @version: 2
 
+import L from "leaflet";
 import { formatRarity } from "../utils/utils.js";
 import { createIcon } from "../utils/iconUtils.js";
 
+/**
+ * Checks whether a string is a valid image URL.
+ */
 function isImgUrl(str) {
-  return /^https?:\/\/.+|^\/.+\.(png|jpe?g|gif|webp)$/i.test(str || "");
+  return /^https?:\/\/.+\.(png|jpe?g|gif|webp)(\?.*)?$/i.test(str || "");
 }
 
+/**
+ * Returns the first valid image URL from the given candidate properties.
+ */
+function getBestImageUrl(m, ...keys) {
+  for (const key of keys) {
+    const url = m[key];
+    if (url && isImgUrl(url)) return url;
+  }
+  return "";
+}
+
+/**
+ * Renders the HTML for a marker popup.
+ */
 export function renderPopup(m) {
-  const nameHTML = `<div class="popup-name" style="color:${m.nameColor || "#E5E6E8"};">${m.name || "Unnamed Item"}</div>`;
-  const bigImg = isImgUrl(m.imageBig)
-    ? `<img src="${m.imageBig}" class="popup-image" style="border-color:${m.rarityColor || "#777"};" onerror="this.style.display='none'">`
+  // Try big, then large, then small
+  const imgUrl = getBestImageUrl(m, "imageBig", "imageLarge", "imageSmall");
+  const bigImg = imgUrl
+    ? `<img src="${imgUrl}" class="popup-image" style="border-color:${m.rarityColor || "#777"};" onerror="this.style.display='none'">`
     : "";
 
-  const itemTypeHTML = m.itemType
-    ? `<div class="popup-type" style="color:${m.itemTypeColor || "#E5E6E8"};">${m.itemType}</div>`
-    : "";
-
-  const rarityHTML = m.rarity
-    ? `<div class="popup-rarity" style="color:${m.rarityColor || "#E5E6E8"};">${formatRarity(m.rarity)}</div>`
-    : "";
-
-  const valueHTML = m.value
-    ? `<div class="popup-value-icon" title="Value">
-         <span class="popup-value-number">${m.value}</span>
-         ${createIcon("coins", { inline: true }).outerHTML}
-       </div>`
-    : "";
-
-  const descHTML = m.description
-    ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
-    : "";
-
-  const extraHTML = (m.extraLines || []).map(line => `
-    <p class="popup-extra-line" style="color:${line.color || "#E5E6E8"};">${line.text}</p>
-  `).join("");
-
+  const nameHTML    = `<div class="popup-name"    style="color:${m.nameColor        || "#E5E6E8"};">${m.name        || "Unnamed Item"}</div>`;
+  const typeHTML    = m.itemType
+                       ? `<div class="popup-type" style="color:${m.itemTypeColor    || "#E5E6E8"};">${m.itemType}</div>`
+                       : "";
+  const rarityHTML  = m.rarity
+                       ? `<div class="popup-rarity" style="color:${m.rarityColor    || "#E5E6E8"};">${formatRarity(m.rarity)}</div>`
+                       : "";
+  const valueHTML   = m.value
+                       ? `<div class="popup-value-icon" title="Value">
+                            <span class="popup-value-number">${m.value}</span>
+                            ${createIcon("coins", { inline: true }).outerHTML}
+                          </div>`
+                       : "";
+  const descHTML    = m.description
+                       ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
+                       : "";
+  const extraHTML   = (m.extraLines || []).map(line =>
+                       `<p class="popup-extra-line" style="color:${line.color || "#E5E6E8"};">${line.text}</p>`
+                     ).join("");
   const quantityHTML = m.quantity && m.quantity > 1
-    ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
-    : "";
+                       ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
+                       : "";
 
-  // custom close button markup
+  // custom close button
   const closeBtnHTML = `
-    <span class="popup-close-btn" 
+    <span class="popup-close-btn"
           style="
             position:absolute;
             top:8px;
@@ -61,7 +77,7 @@ export function renderPopup(m) {
           ${bigImg}
           <div class="popup-info">
             ${nameHTML}
-            ${itemTypeHTML}
+            ${typeHTML}
             ${rarityHTML}
           </div>
         </div>
@@ -76,9 +92,14 @@ export function renderPopup(m) {
     </div>`;
 }
 
+/**
+ * Creates a custom Leaflet icon for the marker.
+ */
 export function createCustomIcon(m) {
-  const imgHTML = isImgUrl(m.imageSmall)
-    ? `<img src="${m.imageSmall}" class="marker-icon" onerror="this.style.display='none'">`
+  // Try small, then big, then large
+  const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
+  const imgHTML = imgUrl
+    ? `<img src="${imgUrl}" class="marker-icon" onerror="this.style.display='none'">`
     : "";
 
   return L.divIcon({
@@ -89,6 +110,9 @@ export function createCustomIcon(m) {
   });
 }
 
+/**
+ * Creates and returns a Leaflet marker with popup and context menu.
+ */
 export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   const markerObj = L.marker(m.coords, {
     icon: createCustomIcon(m),
@@ -103,14 +127,9 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   });
 
   markerObj.on("popupopen", () => {
-    // wire up our custom close button
     const popupEl = document.querySelector(".custom-popup");
     const closeBtn = popupEl?.querySelector(".popup-close-btn");
-    if (closeBtn) {
-      closeBtn.addEventListener("click", () => {
-        markerObj.closePopup();
-      });
-    }
+    if (closeBtn) closeBtn.addEventListener("click", () => markerObj.closePopup());
   });
 
   layers[m.type].addLayer(markerObj);
@@ -118,14 +137,8 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
   markerObj.on("contextmenu", evt => {
     evt.originalEvent.preventDefault();
     const options = [
-      {
-        text: "Edit Marker",
-        action: () => callbacks.onEdit?.(markerObj, m, evt.originalEvent)
-      },
-      {
-        text: "Copy Marker",
-        action: () => callbacks.onCopy?.(markerObj, m, evt.originalEvent)
-      },
+      { text: "Edit Marker",   action: () => callbacks.onEdit?.(markerObj, m, evt.originalEvent) },
+      { text: "Copy Marker",   action: () => callbacks.onCopy?.(markerObj, m, evt.originalEvent) },
       {
         text: markerObj.dragging?.enabled() ? "Disable Drag" : "Enable Drag",
         action: () => {
@@ -134,16 +147,14 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
           } else {
             markerObj.dragging.enable();
             markerObj.once("dragend", () => {
-              m.coords = [markerObj.getLatLng().lat, markerObj.getLatLng().lng];
+              const ll = markerObj.getLatLng();
+              m.coords = [ll.lat, ll.lng];
               callbacks.onDragEnd?.(markerObj, m);
             });
           }
         }
       },
-      {
-        text: "Delete Marker",
-        action: () => callbacks.onDelete?.(markerObj, m)
-      }
+      { text: "Delete Marker", action: () => callbacks.onDelete?.(markerObj, m) }
     ];
     ctxMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
   });
