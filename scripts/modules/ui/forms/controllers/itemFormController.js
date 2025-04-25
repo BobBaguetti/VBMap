@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.29
+// @version: 4.30
 
 import { createPickr }                        from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -72,22 +72,19 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
 
     Object.entries(map).forEach(([key, btn]) => {
-      if (!pickrs[key]) {
+      if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
 
-        // force-open on swatch click
+        // open picker on swatch click
         btn.addEventListener("click", () => p.show());
 
-        // re-fire input for live preview
+        // propagate change events for live preview
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
     });
   }
-
-  // wire up *all* swatches right away
-  initPickrs();
 
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
@@ -103,8 +100,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       rarity:   fields.fldRarity.value
     };
     applyColorPresets(tmp);
-
-    // ensure nameColor always falls back
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
     setTimeout(() => {
@@ -114,7 +109,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       form.dispatchEvent(new Event("input", { bubbles: true }));
     }, 0);
   }
-
   fields.fldType .addEventListener("change", applyPresetsAndRefresh);
   fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
 
@@ -189,5 +183,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     if (onSubmit) await onSubmit(getCustom());
   });
 
+  // Expose public API
   return { form, reset, populate, getCustom, initPickrs, buttonRow };
 }
