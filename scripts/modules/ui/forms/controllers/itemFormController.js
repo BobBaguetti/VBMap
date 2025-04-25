@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.22
+// @version: 4.23
 
 import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -131,8 +131,25 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
     btnClear.textContent    = "Clear";
 
+    // destroy pickr instances
     destroyAllPickrs();
+    // clear pickr map
     Object.keys(pickrs).forEach(k => delete pickrs[k]);
+
+    // clear swatch button backgrounds
+    [
+      fields.colorName,
+      fields.colorType,
+      fields.colorRarity,
+      fields.colorDesc,
+      fields.colorValue,
+      fields.colorQty
+    ].forEach(btn => {
+      if (btn) {
+        btn.style.backgroundColor = "";
+        btn.style.boxShadow       = "";
+      }
+    });
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
@@ -146,7 +163,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgS.value   = def.imageSmall  || "";
     fields.fldImgL.value   = def.imageLarge  || "";
 
-    // **read from def.extraLines** instead of def.extraInfo
+    // read from def.extraLines instead of def.extraInfo
     fields.extraInfo.setLines(def.extraLines || [], false);
 
     _id = def.id || null;
@@ -181,7 +198,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       quantityColor:    getPickrHexColor(pickrs.quantity),
       imageSmall:       fields.fldImgS.value.trim(),
       imageLarge:       fields.fldImgL.value.trim(),
-      // **output as extraLines** instead of extraInfo
+      // output as extraLines instead of extraInfo
       extraLines:       fields.extraInfo.getLines()
     };
   }
