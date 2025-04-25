@@ -30,6 +30,9 @@ export function initNpcDefinitionsModal(db) {
     onClose: () => previewApi.hide()
   });
 
+  // ─── hide entire modal for non-admins ──────────────────────────────
+  modal.classList.add("admin-only");
+
   // list + search (dark) injected by definitionListManager
   const listContainer = createDefListContainer("npc-def-list");
   bodyWrap.appendChild(listContainer);
@@ -57,10 +60,10 @@ export function initNpcDefinitionsModal(db) {
   // list manager wiring
   let definitions = [];
   const listApi = createDefinitionListManager({
-    container:     listContainer,
+    container:      listContainer,
     getDefinitions: () => definitions,
-    renderEntry:   (def, layout) => renderNpcEntry(def, layout, {
-      onClick: d => {
+    renderEntry:    (def, layout) => renderNpcEntry(def, layout, {
+      onClick:  d => {
         formApi.populate(d);
         previewApi.setFromDefinition(d);
         previewApi.show();
@@ -88,7 +91,7 @@ export function initNpcDefinitionsModal(db) {
       formApi.reset();
       await refresh();
       openModal();
-      // ← NEW: wire up all color-swatch buttons in this modal
+      // ← NEW: wire up all color‐swatch buttons in this modal
       initModalPickrs(bodyWrap);
       previewApi.show();
     },

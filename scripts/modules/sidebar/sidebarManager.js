@@ -1,6 +1,6 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted;
 // @file:    /scripts/modules/sidebar/sidebarManager.js
-// @version: 9.5
+// @version: 9.6
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
@@ -24,10 +24,8 @@ export async function setupSidebar(
     return { filterMarkers() {} };
   }
 
-  // Dark-style the search input
   searchBar.classList.add("ui-input");
 
-  // Sidebar toggle
   sidebarToggle.textContent = "◀︎";
   sidebarToggle.addEventListener("click", () => {
     const hidden = sidebar.classList.toggle("hidden");
@@ -36,7 +34,6 @@ export async function setupSidebar(
     map.invalidateSize();
   });
 
-  // Accordion behavior for filters
   document.querySelectorAll(".filter-group").forEach(group => {
     const header = group.querySelector("h3");
     header.addEventListener("click", () => {
@@ -45,23 +42,21 @@ export async function setupSidebar(
     });
   });
 
-  /* ----------------------------------------------------------------
+  /* ────────────────────────────────────────────────────────────────
      Settings toggles (injected here)
-  ---------------------------------------------------------------- */
+  ─────────────────────────────────────────────────────────────────*/
   settingsSect.querySelectorAll("label").forEach(l => l.remove());
 
-  // — Marker Grouping —
   const groupingLabel = document.createElement("label");
   groupingLabel.innerHTML = `<input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span>`;
   settingsSect.appendChild(groupingLabel);
   const groupingCb = document.getElementById("enable-grouping");
-  groupingCb.checked = false; // default OFF
+  groupingCb.checked = false;
   groupingCb.addEventListener("change", () => {
     console.log("[sidebar] marker grouping:", groupingCb.checked);
     groupingCb.checked ? enableGrouping() : disableGrouping();
   });
 
-  // — Small Markers (50%) —
   const smallLabel = document.createElement("label");
   smallLabel.innerHTML = `<input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span>`;
   settingsSect.appendChild(smallLabel);
@@ -73,9 +68,9 @@ export async function setupSidebar(
       .classList.toggle("small-markers", smallCb.checked);
   });
 
-  /* ----------------------------------------------------------------
+  /* ────────────────────────────────────────────────────────────────
      Core filtering logic
-  ---------------------------------------------------------------- */
+  ─────────────────────────────────────────────────────────────────*/
   function filterMarkers() {
     const nameQuery = (searchBar.value || "").toLowerCase();
     const pveOn     = document.getElementById("toggle-pve")?.checked ?? true;
@@ -120,16 +115,15 @@ export async function setupSidebar(
     });
   }
 
-  // Wire up search + main toggles
   searchBar.addEventListener("input", filterMarkers);
   document
     .querySelectorAll("#main-filters .toggle-group input")
     .forEach(cb => cb.addEventListener("change", filterMarkers));
   document.getElementById("toggle-pve")?.addEventListener("change", filterMarkers);
 
-  /* ----------------------------------------------------------------
+  /* ────────────────────────────────────────────────────────────────
      Populate Item & Enemy filters
-  ---------------------------------------------------------------- */
+  ─────────────────────────────────────────────────────────────────*/
   const itemFilterList = document.getElementById("item-filter-list");
   async function loadItemFilters() {
     itemFilterList.innerHTML = "";
@@ -173,18 +167,24 @@ export async function setupSidebar(
   }
   await loadEnemyFilters();
 
-  /* ----------------------------------------------------------------
-     Admin Tools
-  ---------------------------------------------------------------- */
+  /* ────────────────────────────────────────────────────────────────
+     Admin Tools (initially hidden, shown later via auth listener)
+  ─────────────────────────────────────────────────────────────────*/
+  // remove any existing
   sidebar.querySelector(".admin-header")?.remove();
+  sidebar.querySelector("#sidebar-admin-tools")?.remove();
+
+  // header
   const adminHeader = document.createElement("h2");
   adminHeader.className = "admin-header";
-  adminHeader.innerHTML = `<i class="fas fa-tools"></i> Admin Tools`;
+  adminHeader.textContent = "🛠 Admin Tools";
+  adminHeader.style.display = "none";          // ← hide by default
   sidebar.appendChild(adminHeader);
 
-  sidebar.querySelector("#sidebar-admin-tools")?.remove();
+  // buttons
   const adminWrap = document.createElement("div");
   adminWrap.id = "sidebar-admin-tools";
+  adminWrap.style.display = "none";            // ← hide by default
   [
     ["Manage Items",    () => initItemDefinitionsModal(db).open()],
     ["Test Item Modal", () => initTestItemDefinitionsModal(db).open()],

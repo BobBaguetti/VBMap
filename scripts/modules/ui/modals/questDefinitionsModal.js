@@ -32,6 +32,9 @@ export function initQuestDefinitionsModal(db) {
     onClose: () => previewApi.hide()
   });
 
+  // ─── hide entire modal for non-admins ──────────────────────────────
+  modal.classList.add("admin-only");
+
   // list + search (dark) will be inserted by list-manager
   const listContainer = createDefListContainer("quest-def-list");
   bodyWrap.appendChild(listContainer);
@@ -59,10 +62,10 @@ export function initQuestDefinitionsModal(db) {
   // list manager wiring
   let definitions = [];
   const listApi = createDefinitionListManager({
-    container:     listContainer,
+    container:      listContainer,
     getDefinitions: () => definitions,
-    renderEntry:   (def, layout) => renderQuestEntry(def, layout, {
-      onClick: d => {
+    renderEntry:    (def, layout) => renderQuestEntry(def, layout, {
+      onClick:  d => {
         formApi.populate(d);
         previewApi.setFromDefinition(d);
         previewApi.show();
@@ -90,10 +93,8 @@ export function initQuestDefinitionsModal(db) {
       formApi.reset();
       await refresh();
       openModal();
-
       // ← NEW: wire up all color‐swatch buttons in this modal
       initModalPickrs(bodyWrap);
-
       previewApi.show();
     },
     refresh

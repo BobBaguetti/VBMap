@@ -29,18 +29,19 @@ import { createItemPreviewPanel } from "../preview/itemPreview.js";
 
 export function initItemDefinitionsModal(db) {
   const { modal, content } = createModal({
-    id: "item-definitions-modal",
-    title: "Manage Items",
-    size: "large",
-    backdrop: true,
-    draggable: false,
-    withDivider: true,
-    onClose: () => {
+    id:         "item-definitions-modal",
+    title:      "Manage Items",
+    size:       "large",
+    backdrop:   true,
+    draggable:  false,
+    withDivider:true,
+    onClose:    () => {
       closeModal(modal);
       previewApi.hide(); // Hide preview when modal closes
     }
   });
 
+  // ─── build header tools ───────────────────────────────────────────
   const header = content.querySelector(".modal-header");
 
   const rarityOrder = {
@@ -75,7 +76,7 @@ export function initItemDefinitionsModal(db) {
     ],
     (btnId, isToggled) => {
       if (isToggled) activeSorts.add(btnId);
-      else activeSorts.delete(btnId);
+      else           activeSorts.delete(btnId);
       renderFilteredList();
     }
   );
@@ -95,15 +96,15 @@ export function initItemDefinitionsModal(db) {
   header.appendChild(searchRow);
   searchInput.addEventListener("input", () => renderFilteredList());
 
+  // ─── list container & preview ────────────────────────────────────
   const listContainer = createDefListContainer("item-definitions-list");
-
-  let definitions = [];
 
   const previewPanel = document.createElement("div");
   previewPanel.style.zIndex = 1101; // ensure above backdrop
   document.body.appendChild(previewPanel);
   const previewApi = createItemPreviewPanel(previewPanel);
 
+  // ─── form API ────────────────────────────────────────────────────
   const formApi = createItemDefinitionForm({
     onCancel: () => {
       formApi.reset();
@@ -148,7 +149,6 @@ export function initItemDefinitionsModal(db) {
       }, 0);
     }
   });
-
   formApi.form.classList.add("ui-scroll-float");
 
   // Always visible preview, real-time updates
@@ -160,17 +160,22 @@ export function initItemDefinitionsModal(db) {
     }
   });
 
+  // ─── assemble modal body ─────────────────────────────────────────
   const bodyWrap = document.createElement("div");
-  bodyWrap.style.display = "flex";
-  bodyWrap.style.flexDirection = "column";
-  bodyWrap.style.flex = "1 1 auto";
-  bodyWrap.style.minHeight = 0;
+  Object.assign(bodyWrap.style, {
+    display: "flex",
+    flexDirection: "column",
+    flex: "1 1 auto",
+    minHeight: 0
+  });
 
   bodyWrap.appendChild(listContainer);
   bodyWrap.appendChild(document.createElement("hr"));
   bodyWrap.appendChild(formApi.form);
-
   content.appendChild(bodyWrap);
+
+  // ─── filter & render logic ───────────────────────────────────────
+  let definitions = [];
 
   function renderFilteredList() {
     listContainer.innerHTML = "";

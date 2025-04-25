@@ -1,8 +1,12 @@
 // @file: /scripts/script.js
-// @version: 5.10
+// @version: 5.11
 
-import { initializeApp } from "firebase/app";
-import { getAuth }          from "firebase/auth";
+import { initializeApp }   from "firebase/app";
+import {
+  getAuth,
+  onAuthStateChanged,
+  getIdTokenResult
+}                          from "firebase/auth";
 import { getFirestore }     from "firebase/firestore";
 
 import { initializeMap }    from "./modules/map/map.js";
@@ -32,10 +36,10 @@ import { initAdminAuth } from "./authSetup.js";
  *  Firebase Configuration & Initialization
  * ------------------------------------------------------------------ */
 const firebaseConfig = {
-  apiKey:            "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",       // ← replace with your actual Web API key
+  apiKey:            "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
   authDomain:        "vbmap-cc834.firebaseapp.com",
   projectId:         "vbmap-cc834",
-  storageBucket:     "vbmap-cc834.appspot.com",     // ← note the “.appspot.com”
+  storageBucket:     "vbmap-cc834.appspot.com",
   messagingSenderId: "244112699360",
   appId:             "1:244112699360:web:95f50adb6e10b438238585",
   measurementId:     "G-7FDNWLRM95"
@@ -51,11 +55,9 @@ const db   = getFirestore(app);
  * ------------------------------------------------------------------ */
 const { map } = initializeMap();
 
-// two item layers: one clustered, one flat
 const clusterItemLayer = L.markerClusterGroup();
 const flatItemLayer    = L.layerGroup();
 
-// world layers, initially point Item to flat (grouping OFF)
 const layers = {
   Door:               L.layerGroup(),
   "Extraction Portal":L.layerGroup(),
@@ -64,11 +66,9 @@ const layers = {
   "Spawn Point":      L.layerGroup()
 };
 
-// add all non-Item layers
 Object.entries(layers).forEach(([key, layer]) => {
   if (key !== "Item") layer.addTo(map);
 });
-// show flat layer by default
 flatItemLayer.addTo(map);
 
 let groupingOn = false;
@@ -102,13 +102,22 @@ const groupingCallbacks = {
   }
 };
 
-// build the sidebar (renders #settings-section, filters, etc.)
 const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db, groupingCallbacks
 );
 
-// ← Now that the sidebar exists, wire up admin-auth
+// ← initialise your admin‐login UI
 initAdminAuth(auth);
+
+// ← watch for auth changes and toggle the Admin panel
+onAuthStateChanged(auth, async user => {
+  const isAdmin = Boolean(
+    user &&
+    (await getIdTokenResult(user)).claims.admin
+  );
+  document.querySelectorAll(".admin-header, #sidebar-admin-tools")
+    .forEach(el => el.style.display = isAdmin ? "" : "none");
+});
 
 
 /* ------------------------------------------------------------------ *
@@ -125,8 +134,9 @@ const questModal = initQuestDefinitionsModal(db);
 
 subscribeItemDefinitions(db, async () => {
   await markerForm.refreshPredefinedItems();
-
-  const { loadItemDefinitions } = await import("./modules/services/itemDefinitionsService.js");
+  const { loadItemDefinitions } = await import(
+    "./modules/services/itemDefinitionsService.js"
+  );
   const defsList = await loadItemDefinitions(db);
   const defMap   = Object.fromEntries(defsList.map(d => [d.id, d]));
 
@@ -167,9 +177,7 @@ subscribeItemDefinitions(db, async () => {
  *  Add & Persist Marker
  * ------------------------------------------------------------------ */
 async function addAndPersist(data) {
-  // render immediately
   const markerObj = addMarker(data, callbacks);
-  // persist and capture the returned id
   const saved     = await firebaseAddMarker(db, data);
   data.id         = saved.id;
   return markerObj;

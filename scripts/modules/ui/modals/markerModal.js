@@ -2,10 +2,10 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
-import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
-import { createFormButtonRow } from "../uiKit.js";
-import { createDropdownField }    from "../uiKit.js";
-import { createMarkerForm }       from "../forms/markerForm.js";
+import { loadItemDefinitions }                 from "../../services/itemDefinitionsService.js";
+import { createFormButtonRow }                 from "../uiKit.js";
+import { createDropdownField }                 from "../uiKit.js";
+import { createMarkerForm }                    from "../forms/markerForm.js";
 
 export function initMarkerModal(db) {
   const { modal, content } = createModal({
@@ -75,9 +75,8 @@ export function initMarkerModal(db) {
 
   // When user picks a predefined item
   ddPredef.onchange = () => {
-    const def = defs[ddPredef.value];
-    if (def) formApi.setFromDefinition(def);
-    else     formApi.setFromDefinition({});
+    const def = defs[ddPredef.value] || {};
+    formApi.setFromDefinition(def);
     formApi.initPickrs();
   };
 
@@ -93,7 +92,7 @@ export function initMarkerModal(db) {
       ddPredef.appendChild(o);
     }
   }
-  refreshPredefinedItems(); // kick it off immediately
+  refreshPredefinedItems(); // load immediately
 
   // Open existing‐marker editor
   function openEdit(markerObj, data, evt, onSave) {
@@ -127,22 +126,17 @@ export function initMarkerModal(db) {
     fldType.value = data.type;
     toggleSections(data.type === "Item");
 
-    if (data.type === "Item") {
-      if (data.predefinedItemId && defs[data.predefinedItemId]) {
-        const def = defs[data.predefinedItemId];
-        ddPredef.value = def.id;
-        formApi.setFromDefinition(def);
-      } else {
-        ddPredef.value = "";
-        formApi.setFromDefinition({});
-      }
+    if (data.type === "Item" && data.predefinedItemId && defs[data.predefinedItemId]) {
+      const def = defs[data.predefinedItemId];
+      ddPredef.value = def.id;
+      formApi.setFromDefinition(def);
     } else {
-      formApi.setFromNonItem(data);
+      ddPredef.value = "";
+      formApi.setFromDefinition(data.type === "Item" ? {} : data);
     }
   }
 
-  // Harvest the form data into a marker‐save object,
-  // making sure imageBig is always a string (never undefined).
+  // Harvest form data into a save‐object
   function harvest(coords) {
     const type = fldType.value;
     const sel  = ddPredef.value;
@@ -162,13 +156,11 @@ export function initMarkerModal(db) {
         descriptionColor: d.descriptionColor || "#E5E6E8",
         extraLines:       d.extraLines || [],
         imageSmall:       d.imageSmall || "",
-        // <— fallback to d.imageLarge if d.imageBig is missing:
         imageBig:         (d.imageBig ?? d.imageLarge) || "",
         video:            d.video || ""
       };
     }
 
-    // custom‐entered: ensure imageBig is at least an empty string
     const c = formApi.getCustom();
     return {
       type,
@@ -178,7 +170,7 @@ export function initMarkerModal(db) {
     };
   }
 
-  // Public API for scripts to wire up
+  // Public API for wiring up from script.js
   return {
     openEdit,
     openCreate,
