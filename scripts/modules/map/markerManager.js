@@ -1,7 +1,6 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 2
+// @version: 3
 
-import L from "leaflet";
 import { formatRarity } from "../utils/utils.js";
 import { createIcon } from "../utils/iconUtils.js";
 
@@ -27,36 +26,35 @@ function getBestImageUrl(m, ...keys) {
  * Renders the HTML for a marker popup.
  */
 export function renderPopup(m) {
-  // Try big, then large, then small
+  // Try imageBig, then imageLarge, then imageSmall
   const imgUrl = getBestImageUrl(m, "imageBig", "imageLarge", "imageSmall");
   const bigImg = imgUrl
     ? `<img src="${imgUrl}" class="popup-image" style="border-color:${m.rarityColor || "#777"};" onerror="this.style.display='none'">`
     : "";
 
-  const nameHTML    = `<div class="popup-name"    style="color:${m.nameColor        || "#E5E6E8"};">${m.name        || "Unnamed Item"}</div>`;
-  const typeHTML    = m.itemType
-                       ? `<div class="popup-type" style="color:${m.itemTypeColor    || "#E5E6E8"};">${m.itemType}</div>`
-                       : "";
-  const rarityHTML  = m.rarity
-                       ? `<div class="popup-rarity" style="color:${m.rarityColor    || "#E5E6E8"};">${formatRarity(m.rarity)}</div>`
-                       : "";
-  const valueHTML   = m.value
-                       ? `<div class="popup-value-icon" title="Value">
-                            <span class="popup-value-number">${m.value}</span>
-                            ${createIcon("coins", { inline: true }).outerHTML}
-                          </div>`
-                       : "";
-  const descHTML    = m.description
-                       ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
-                       : "";
-  const extraHTML   = (m.extraLines || []).map(line =>
-                       `<p class="popup-extra-line" style="color:${line.color || "#E5E6E8"};">${line.text}</p>`
-                     ).join("");
+  const nameHTML     = `<div class="popup-name"    style="color:${m.nameColor        || "#E5E6E8"};">${m.name        || "Unnamed Item"}</div>`;
+  const typeHTML     = m.itemType
+                        ? `<div class="popup-type"  style="color:${m.itemTypeColor    || "#E5E6E8"};">${m.itemType}</div>`
+                        : "";
+  const rarityHTML   = m.rarity
+                        ? `<div class="popup-rarity" style="color:${m.rarityColor    || "#E5E6E8"};">${formatRarity(m.rarity)}</div>`
+                        : "";
+  const valueHTML    = m.value
+                        ? `<div class="popup-value-icon" title="Value">
+                             <span class="popup-value-number">${m.value}</span>
+                             ${createIcon("coins", { inline: true }).outerHTML}
+                           </div>`
+                        : "";
+  const descHTML     = m.description
+                        ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
+                        : "";
+  const extraHTML    = (m.extraLines || []).map(line =>
+                        `<p class="popup-extra-line" style="color:${line.color || "#E5E6E8"};">${line.text}</p>`
+                      ).join("");
   const quantityHTML = m.quantity && m.quantity > 1
-                       ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
-                       : "";
+                        ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
+                        : "";
 
-  // custom close button
   const closeBtnHTML = `
     <span class="popup-close-btn"
           style="
@@ -96,7 +94,7 @@ export function renderPopup(m) {
  * Creates a custom Leaflet icon for the marker.
  */
 export function createCustomIcon(m) {
-  // Try small, then big, then large
+  // Try imageSmall, then imageBig, then imageLarge
   const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
   const imgHTML = imgUrl
     ? `<img src="${imgUrl}" class="marker-icon" onerror="this.style.display='none'">`
