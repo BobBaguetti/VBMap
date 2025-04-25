@@ -1,4 +1,4 @@
-// @version: 5.8
+// @version: 5.9
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
 
 import { createPickr }                        from "../../pickrManager.js";
@@ -22,7 +22,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     justifyContent: "space-between",
     alignItems:     "center"
   });
-
   const subheading = document.createElement("h3");
   subheading.textContent = "Add Item";
   subheadingWrap.appendChild(subheading);
@@ -71,22 +70,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
 
     Object.entries(map).forEach(([key, btn]) => {
-      if (!pickrs[key] && form.contains(btn)) {
+      // only initialize once it's in the actual document
+      if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
 
-        // open the picker when its swatch is clicked
         btn.addEventListener("click", () => p.show());
-
-        // propagate changes back to the form
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
     });
   } // end initPickrs
-
-  // wire up pickrs immediately
-  initPickrs();
 
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
@@ -104,14 +98,14 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
     setTimeout(() => {
-      if (tmp.nameColor)        pickrs.name?.setColor(tmp.nameColor);
-      if (tmp.itemTypeColor)    pickrs.itemType?.setColor(tmp.itemTypeColor);
-      if (tmp.rarityColor)      pickrs.rarity?.setColor(tmp.rarityColor);
+      if (tmp.nameColor)     pickrs.name?.setColor(tmp.nameColor);
+      if (tmp.itemTypeColor) pickrs.itemType?.setColor(tmp.itemTypeColor);
+      if (tmp.rarityColor)   pickrs.rarity?.setColor(tmp.rarityColor);
       form.dispatchEvent(new Event("input", { bubbles: true }));
     }, 0);
   }
 
-  fields.fldType.addEventListener("change", applyPresetsAndRefresh);
+  fields.fldType  .addEventListener("change", applyPresetsAndRefresh);
   fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
@@ -185,6 +179,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     if (onSubmit) await onSubmit(getCustom());
   });
 
+  // Expose
   return {
     form,
     reset,
