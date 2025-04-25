@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.24
+// @version: 4.25
 
 import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -74,7 +74,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
-        // re‐fire form input for live preview
+        // re-fire form input for live preview
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
@@ -119,7 +119,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgS.value   =
     fields.fldImgL.value   = "";
 
-    // clear extra‐info rows
+    // clear extra-info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
@@ -131,9 +131,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     destroyAllPickrs();
     Object.keys(pickrs).forEach(k => delete pickrs[k]);
 
-    // strip every inline style from all swatches (main + extra‐info)
+    // clear all swatch backgrounds and shadows
     form.querySelectorAll(".color-btn").forEach(btn => {
-      btn.removeAttribute("style");
+      btn.style.backgroundColor = "";
+      btn.style.boxShadow       = "";
     });
   }
 
@@ -147,6 +148,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = def.quantity    || "";
     fields.fldImgS.value   = def.imageSmall  || "";
     fields.fldImgL.value   = def.imageLarge  || "";
+
     // read from def.extraLines instead of def.extraInfo
     fields.extraInfo.setLines(def.extraLines || [], false);
 
