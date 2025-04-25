@@ -36,7 +36,7 @@ import { initAdminAuth } from "./authSetup.js";
  *  Firebase Configuration & Initialization
  * ------------------------------------------------------------------ */
 const firebaseConfig = {
-  apiKey:            "AIzaSyDwEdPN8YAuM_jb0K1iXfQ-tGQ",
+  apiKey:            "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
   authDomain:        "vbmap-cc834.firebaseapp.com",
   projectId:         "vbmap-cc834",
   storageBucket:     "vbmap-cc834.appspot.com",
@@ -106,20 +106,20 @@ const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db, groupingCallbacks
 );
 
-
 // ← initialise your admin‐login UI
 initAdminAuth(auth);
 
-// ← keep a local admin flag
-let isAdmin = false;
-
-// ← watch for auth changes, toggle body class & flag
+// ← watch for auth changes and toggle the “is-admin” class on <body>
 onAuthStateChanged(auth, async user => {
-  isAdmin = Boolean(
+  const isAdmin = Boolean(
     user &&
     (await getIdTokenResult(user)).claims.admin
   );
-  document.body.classList.toggle("is-admin", isAdmin);
+  if (isAdmin) {
+    document.body.classList.add("is-admin");
+  } else {
+    document.body.classList.remove("is-admin");
+  }
 });
 
 
@@ -167,8 +167,16 @@ subscribeItemDefinitions(db, async () => {
       data.itemTypeColor = def.itemTypeColor || "#E5E6E8";
     }
 
+    // update popup content for everyone
     markerObj.setPopupContent(renderPopup(data));
-    firebaseUpdateMarker(db, data);
+
+    // only persist back to Firestore for admins
+    if (document.body.classList.contains("is-admin")) {
+      firebaseUpdateMarker(db, data)
+        .catch(err => {
+          if (err.code !== "permission-denied") console.error(err);
+        });
+    }
   });
 
   await loadItemFilters();
@@ -193,14 +201,9 @@ async function addAndPersist(data) {
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 function addMarker(data, cbs = {}) {
-  // pass isAdmin through to createMarker
-  const markerObj = createMarker(
-    data, map, layers, showContextMenu, cbs, isAdmin
-  );
-
+  const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
   if (groupingOn) clusterItemLayer.addLayer(markerObj);
   else            flatItemLayer.addLayer(markerObj);
-
   allMarkers.push({ markerObj, data });
   return markerObj;
 }
@@ -241,17 +244,21 @@ const callbacks = {
  *  Map Context-Menu & Floating Scrollbars
  * ------------------------------------------------------------------ */
 map.on("contextmenu", evt => {
-  showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
-    text:   "Create New Marker",
-    action: () => {
-      markerForm.openCreate(
-        [evt.latlng.lat, evt.latlng.lng],
-        "Item",
-        evt.originalEvent,
-        newData => addAndPersist(newData)
-      );
-    }
-  }]);
+  const items = [];
+  if (document.body.classList.contains("is-admin")) {
+    items.push({
+      text: "Create New Marker",
+      action: () => {
+        markerForm.openCreate(
+          [evt.latlng.lat, evt.latlng.lng],
+          "Item",
+          evt.originalEvent,
+          newData => addAndPersist(newData)
+        );
+      }
+    });
+  }
+  showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, items);
 });
 
 document.addEventListener("click", e => {
