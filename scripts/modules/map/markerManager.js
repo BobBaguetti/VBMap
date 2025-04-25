@@ -1,5 +1,5 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 4
+// @version: 5
 
 import { formatRarity } from "../utils/utils.js";
 import { createIcon }   from "../utils/iconUtils.js";
@@ -94,9 +94,9 @@ export function renderPopup(m) {
  */
 export function createCustomIcon(m) {
   const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
-  const size   = 32; // diameter in pixels
+  const size   = 32;
 
-  // Build the wrapper DIV with circular mask and border
+  // Wrapper with circular mask
   const wrapper = document.createElement('div');
   wrapper.className = 'custom-marker';
   Object.assign(wrapper.style, {
@@ -107,7 +107,7 @@ export function createCustomIcon(m) {
     position:     'relative',       
   });
 
-  // Add an inner border circle if desired
+  // Inner border circle
   const border = document.createElement('div');
   border.className = 'marker-border';
   Object.assign(border.style, {
@@ -121,7 +121,7 @@ export function createCustomIcon(m) {
   });
   wrapper.appendChild(border);
 
-  // Add the image, if present, filling the circle
+  // Add the image, filling the circle
   if (imgUrl) {
     const img = document.createElement('img');
     img.src = imgUrl;
@@ -129,13 +129,14 @@ export function createCustomIcon(m) {
       width:     '100%',
       height:    '100%',
       objectFit: 'cover',
-      display:   'block'
+      display:   'block',
+      opacity:   '1',       // ensure full brightness
+      filter:    'none'     // remove any dimming filters
     });
     img.onerror = () => { img.style.display = 'none'; };
     wrapper.appendChild(img);
   }
 
-  // Return the Leaflet divIcon
   return L.divIcon({
     html:        wrapper.outerHTML,
     className:   'custom-marker-container',
