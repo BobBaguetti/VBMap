@@ -1,7 +1,7 @@
-/* @keep:    Comments must NOT be deleted unless their associated code is also deleted;
-            comments may only be edited when editing their code. */
-/* @file:    /styles/custom-markers.css */
-/* @version: 3 */
+/* @file: /styles/custom-markers.css */
+/* @version: 4 */
+/* @keep: Comments must NOT be deleted unless their associated code is also deleted;
+         comments may only be edited when editing their code. */
 
 /* Custom Marker Style */
 .custom-marker-container {
@@ -21,7 +21,7 @@
   height: 100%;
   border: 3px solid #777;
   border-radius: 50%;
-  background: rgba(0,0,0,0.5);
+  background: transparent !important;  /* removed the dark overlay */
 }
 
 .marker-icon {
@@ -30,7 +30,11 @@
   height: 24px;
   top: 4px;
   left: 4px;
-  object-fit: contain;
+  object-fit: cover;   /* ensure the image fills the circle */
+  display: block;
+  background: transparent !important;
+  opacity: 1 !important;
+  filter: none !important;
 }
 
 /* When the map has .small-markers, shrink the inner marker only */
