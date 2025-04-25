@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.26
+// @version: 4.27
 
 import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -88,13 +88,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       itemType: fields.fldType.value,
       rarity:   fields.fldRarity.value
     };
+
     applyColorPresets(tmp);
+
     // ensure nameColor always falls back to rarityColor or itemTypeColor
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
+
     // log any missing preset keys
     ["nameColor","itemTypeColor","rarityColor"].forEach(k => {
       if (!tmp[k]) console.warn(`[presets] missing ${k} for`, tmp);
     });
+
     // apply to swatches (delay to avoid race)
     setTimeout(() => {
       tmp.nameColor     && pickrs.name?.setColor(tmp.nameColor);
@@ -109,7 +113,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
-    // clear all fields
+    // clear all text fields
     fields.fldName.value   =
     fields.fldType.value   =
     fields.fldRarity.value =
@@ -127,13 +131,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
     btnClear.textContent    = "Clear";
 
-    // destroy pickr instances and clear our map
+    // destroy all Pickr instances
     destroyAllPickrs();
-    Object.keys(pickrs).forEach(k => delete pickrs[k]);
 
-    // remove all inline styles from swatch buttons
+    // fully reset every color-swatch by replacing it with a fresh clone
     form.querySelectorAll(".color-btn").forEach(btn => {
-      btn.removeAttribute("style");
+      const clean = btn.cloneNode(false);
+      btn.parentNode.replaceChild(clean, btn);
     });
   }
 
@@ -148,7 +152,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgS.value   = def.imageSmall  || "";
     fields.fldImgL.value   = def.imageLarge  || "";
 
-    // read from def.extraLines instead of def.extraInfo
+    // read from def.extraLines
     fields.extraInfo.setLines(def.extraLines || [], false);
 
     _id = def.id || null;
