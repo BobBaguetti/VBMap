@@ -1,6 +1,6 @@
 <!-- @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. -->
 <!-- @file: index.html -->
-<!-- @version: 14 -->
+<!-- @version: 15 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,6 +34,19 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
+
+  <!-- ─── Import map for Firebase v9 modular SDK ──────────────────── -->
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app":       "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js",
+      "firebase/auth":      "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"
+    }
+  }
+  </script>
+  <!-- Polyfill to support import maps in all browsers -->
+  <script async src="https://ga.jspm.io/npm:es-module-shims@1.5.10/dist/es-module-shims.js"></script>
 </head>
 <body>
   <!-- Sidebar Toggle Button -->
@@ -73,7 +86,7 @@
     <!-- Settings Section -->
     <div class="sidebar-section" id="settings-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
-      <!-- JS will inject both toggles here -->
+      <!-- JS will inject toggles and auth button here -->
     </div>
 
     <!-- Search Section -->
@@ -92,7 +105,7 @@
   <div id="video-popup">
     <button id="video-close">X</button>
     <video id="video-player" width="320" controls style="display:block;">
-      <source id="video-source" src="" type="video/mp4">
+      <source id="video-source" src="" type="video/mp4" />
       Your browser does not support the video tag.
     </video>
   </div>
@@ -109,12 +122,12 @@
     </div>
   </div>
 
-  <!-- Load JS Libraries & App Script -->
+  <!-- Scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
+  <!-- Your app entrypoint must be a module now that you’re using import maps -->
   <script type="module" src="scripts/script.js"></script>
 </body>
 </html>
