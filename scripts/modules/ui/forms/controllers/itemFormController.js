@@ -1,8 +1,8 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.23
+// @version: 4.25
 
-import { createPickr }                       from "../../pickrManager.js";
+import { createPickr }                        from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
 import { createItemForm }                      from "../builders/itemFormBuilder.js";
 import { createIcon }                          from "../../../utils/iconUtils.js";
@@ -91,15 +91,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
     applyColorPresets(tmp);
 
-    // ensure nameColor always falls back to rarityColor or itemTypeColor
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
-    // log any missing preset keys
     ["nameColor","itemTypeColor","rarityColor"].forEach(k => {
       if (!tmp[k]) console.warn(`[presets] missing ${k} for`, tmp);
     });
 
-    // apply to swatches (delay to avoid race)
     setTimeout(() => {
       tmp.nameColor     && pickrs.name?.setColor(tmp.nameColor);
       tmp.itemTypeColor && pickrs.itemType?.setColor(tmp.itemTypeColor);
@@ -127,8 +124,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     // ensure pickrs exist
     initPickrs();
 
-    // reset each Pickr back to its default blank state
-    Object.values(pickrs).forEach(p => p.clear());
+    // reset each Pickr back to your default blank swatch
+    Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
 
     // re-sync any presets (so type/rarity defaults take effect)
     applyPresetsAndRefresh();
