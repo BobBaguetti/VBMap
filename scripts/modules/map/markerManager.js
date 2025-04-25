@@ -1,8 +1,21 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 6
+// @version: 7
 
 import { formatRarity } from "../utils/utils.js";
 import { createIcon }   from "../utils/iconUtils.js";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+
+let isAdmin = false;
+const auth = getAuth();
+onAuthStateChanged(auth, user => {
+  if (user) {
+    user.getIdTokenResult().then(idTokenResult => {
+      isAdmin = idTokenResult.claims.admin === true;
+    });
+  } else {
+    isAdmin = false;
+  }
+});
 
 /**
  * Checks whether a string is a valid image URL.
@@ -100,11 +113,11 @@ export function createCustomIcon(m) {
   const wrapper = document.createElement('div');
   wrapper.className = 'custom-marker';
   Object.assign(wrapper.style, {
-    width:        `${size}px`,      
-    height:       `${size}px`,      
-    borderRadius: '50%',            
-    overflow:     'hidden',         
-    position:     'relative',       
+    width:        `${size}px`,
+    height:       `${size}px`,
+    borderRadius: '50%',
+    overflow:     'hidden',
+    position:     'relative',
     filter:       'none'
   });
   wrapper.style.setProperty('filter','none','important');
@@ -174,25 +187,30 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
 
   markerObj.on('contextmenu', evt => {
     evt.originalEvent.preventDefault();
-    const options = [
-      { text: 'Edit Marker', action: () => callbacks.onEdit?.(markerObj, m, evt.originalEvent) },
-      { text: 'Copy Marker', action: () => callbacks.onCopy?.(markerObj, m, evt.originalEvent) },
-      {
-        text: markerObj.dragging?.enabled() ? 'Disable Drag' : 'Enable Drag',
-        action: () => {
-          if (markerObj.dragging?.enabled()) markerObj.dragging.disable();
-          else {
-            markerObj.dragging.enable();
-            markerObj.once('dragend', () => {
-              const ll = markerObj.getLatLng();
-              m.coords = [ll.lat, ll.lng];
-              callbacks.onDragEnd?.(markerObj, m);
-            });
+    // Only build editing options if user is admin
+    const options = [];
+    if (isAdmin) {
+      options.push(
+        { text: 'Edit Marker',  action: () => callbacks.onEdit?.(markerObj, m, evt.originalEvent) },
+        { text: 'Copy Marker',  action: () => callbacks.onCopy?.(markerObj, m, evt.originalEvent) },
+        {
+          text: markerObj.dragging?.enabled() ? 'Disable Drag' : 'Enable Drag',
+          action: () => {
+            if (markerObj.dragging?.enabled()) {
+              markerObj.dragging.disable();
+            } else {
+              markerObj.dragging.enable();
+              markerObj.once('dragend', () => {
+                const ll = markerObj.getLatLng();
+                m.coords = [ll.lat, ll.lng];
+                callbacks.onDragEnd?.(markerObj, m);
+              });
+            }
           }
-        }
-      },
-      { text: 'Delete Marker', action: () => callbacks.onDelete?.(markerObj, m) }
-    ];
+        },
+        { text: 'Delete Marker', action: () => callbacks.onDelete?.(markerObj, m) }
+      );
+    }
     ctxMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
   });
 

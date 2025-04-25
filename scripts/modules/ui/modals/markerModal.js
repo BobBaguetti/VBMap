@@ -17,7 +17,8 @@ export function initMarkerModal(db) {
     withDivider:true,
     onClose:    () => closeModal(modal)
   });
-
+  // ─── hide for non-admins ─────────────────────────────────────────
+  modal.classList.add("admin-only");
   // Build the form container
   const form = document.createElement("form");
   form.id = "edit-form";

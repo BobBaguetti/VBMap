@@ -40,7 +40,8 @@ export function initItemDefinitionsModal(db) {
       previewApi.hide(); // Hide preview when modal closes
     }
   });
-
+  // ─── hide for non-admins ─────────────────────────────────────────
+  modal.classList.add("admin-only");
   // ─── build header tools ───────────────────────────────────────────
   const header = content.querySelector(".modal-header");
 

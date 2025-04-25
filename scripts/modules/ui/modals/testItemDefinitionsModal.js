@@ -34,7 +34,8 @@ export function initTestItemDefinitionsModal(db) {
       previewApi.hide();
     }
   });
-
+  // ─── hide for non-admins ─────────────────────────────────────────
+  modal.classList.add("admin-only");
   // Layout switcher in header
   const layoutSwitcher = createLayoutSwitcher({
     available: ["row", "stacked", "gallery"],
