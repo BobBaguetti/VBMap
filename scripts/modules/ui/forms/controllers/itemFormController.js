@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.27
+// @version: 4.28
 
 import { createPickr }                        from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -72,8 +72,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
 
     Object.entries(map).forEach(([key, btn]) => {
-      // only init once it's actually in our form
-      if (!pickrs[key] && form.contains(btn)) {
+      if (!pickrs[key]) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
 
@@ -113,7 +112,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     }, 0);
   }
 
-  fields.fldType.addEventListener("change", applyPresetsAndRefresh);
+  fields.fldType .addEventListener("change", applyPresetsAndRefresh);
   fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
