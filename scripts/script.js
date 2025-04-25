@@ -1,7 +1,6 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted;
-//           edits to comments only when code changes.
 // @file:    /scripts/script.js
-// @version: 5.6
+// @version: 5.7
 
 import { initializeMap } from "./modules/map/map.js";
 import { showContextMenu } from "./modules/ui/uiManager.js";
@@ -19,7 +18,10 @@ import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
 import { setupSidebar } from "./modules/sidebar/sidebarManager.js";
 import { subscribeItemDefinitions } from "./modules/services/itemDefinitionsService.js";
 import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
-import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js"; 
+import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js";
+
+// ← New import for admin‐auth
+import { initAdminAuth } from "./authSetup.js";
 
 /* ------------------------------------------------------------------ *
  *  Firebase Initialization
@@ -33,6 +35,9 @@ const db = initializeFirebase({
   appId: "1:244112699360:web:95f50adb6e10b438238585",
   measurementId: "G-7FDNWLRM95"
 });
+
+// ← Initialize the auth toggle & admin‐only UI hiding
+initAdminAuth();
 
 /* ------------------------------------------------------------------ *
  *  Map & Layers Setup
@@ -69,7 +74,6 @@ const allMarkers = [];
 // callbacks for sidebar to flip grouping
 const groupingCallbacks = {
   enableGrouping: () => {
-    // move from flat → cluster
     flatItemLayer.eachLayer(m => {
       flatItemLayer.removeLayer(m);
       clusterItemLayer.addLayer(m);
@@ -80,7 +84,6 @@ const groupingCallbacks = {
     groupingOn = true;
   },
   disableGrouping: () => {
-    // move from cluster → flat
     clusterItemLayer.eachLayer(m => {
       clusterItemLayer.removeLayer(m);
       flatItemLayer.addLayer(m);
