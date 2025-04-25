@@ -227,3 +227,8 @@
     display: none !important;
   }
   
+  /* Show them once <body> has .is-admin */
+  body.is-admin .admin-only {
+    display: block !important;
+  }
+  

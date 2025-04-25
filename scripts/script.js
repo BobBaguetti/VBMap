@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.11
+// @version: 5.12
 
 import { initializeApp }   from "firebase/app";
 import {
@@ -106,17 +106,20 @@ const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db, groupingCallbacks
 );
 
-// ← initialise your admin‐login UI
+// ← initialise your admin-login UI
 initAdminAuth(auth);
 
-// ← watch for auth changes and toggle the Admin panel
+// ← watch for auth changes and toggle the “is-admin” class on <body>
 onAuthStateChanged(auth, async user => {
   const isAdmin = Boolean(
     user &&
     (await getIdTokenResult(user)).claims.admin
   );
-  document.querySelectorAll(".admin-header, #sidebar-admin-tools")
-    .forEach(el => el.style.display = isAdmin ? "" : "none");
+  if (isAdmin) {
+    document.body.classList.add("is-admin");
+  } else {
+    document.body.classList.remove("is-admin");
+  }
 });
 
 
