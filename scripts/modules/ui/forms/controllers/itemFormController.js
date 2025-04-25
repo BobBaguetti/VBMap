@@ -1,5 +1,6 @@
-// @version: 5.9
+// @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
+// @version: 4.26
 
 import { createPickr }                        from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -22,6 +23,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     justifyContent: "space-between",
     alignItems:     "center"
   });
+
   const subheading = document.createElement("h3");
   subheading.textContent = "Add Item";
   subheadingWrap.appendChild(subheading);
@@ -47,9 +49,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.style.display = "none";
+  btnDelete.style.display = "none"; // hidden in Add mode
   btnDelete.onclick = () => {
-    if (_id !== null && confirm(`Delete "${fields.fldName.value}"?`)) {
+    if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
       onDelete?.(_id);
     }
   };
@@ -70,20 +72,18 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
 
     Object.entries(map).forEach(([key, btn]) => {
-      // only initialize once it's in the actual document
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
-
-        btn.addEventListener("click", () => p.show());
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
     });
-  } // end initPickrs
+  }
 
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
+    // only run once both selects have actual values
     if (!fields.fldType.value || !fields.fldRarity.value) {
       return;
     }
@@ -95,31 +95,38 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       rarity:   fields.fldRarity.value
     };
     applyColorPresets(tmp);
+
+    // ensure nameColor falls back sensibly
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
     setTimeout(() => {
-      if (tmp.nameColor)     pickrs.name?.setColor(tmp.nameColor);
-      if (tmp.itemTypeColor) pickrs.itemType?.setColor(tmp.itemTypeColor);
-      if (tmp.rarityColor)   pickrs.rarity?.setColor(tmp.rarityColor);
+      tmp.nameColor     && pickrs.name?.setColor(tmp.nameColor);
+      tmp.itemTypeColor && pickrs.itemType?.setColor(tmp.itemTypeColor);
+      tmp.rarityColor   && pickrs.rarity?.setColor(tmp.rarityColor);
       form.dispatchEvent(new Event("input", { bubbles: true }));
     }, 0);
   }
 
-  fields.fldType  .addEventListener("change", applyPresetsAndRefresh);
+  fields.fldType .addEventListener("change", applyPresetsAndRefresh);
   fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
+    // reset standard inputs & selects to placeholder ("" value)
     form.reset();
+    // ensure dropdowns go back to the unselectable placeholder
     fields.fldType.value   = "";
     fields.fldRarity.value = "";
+
+    // clear extra-info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
-    subheading.textContent  = "Add Item";
+    subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
-    btnClear.textContent     = "Clear";
+    btnClear.textContent    = "Clear";
 
+    // init pickrs if needed, then wipe swatches back to blank
     initPickrs();
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
@@ -139,17 +146,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines(def.extraLines || [], false);
 
     _id = def.id || null;
-    subheading.textContent  = "Edit Item";
+    subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
-    btnClear.textContent     = "Cancel";
+    btnClear.textContent    = "Cancel";
 
     initPickrs();
-    if (def.nameColor)        pickrs.name?.setColor(def.nameColor);
-    if (def.itemTypeColor)    pickrs.itemType?.setColor(def.itemTypeColor);
-    if (def.rarityColor)      pickrs.rarity?.setColor(def.rarityColor);
-    if (def.descriptionColor) pickrs.description?.setColor(def.descriptionColor);
-    if (def.valueColor)       pickrs.value?.setColor(def.valueColor);
-    if (def.quantityColor)    pickrs.quantity?.setColor(def.quantityColor);
+    def.nameColor        && pickrs.name?.setColor(def.nameColor);
+    def.itemTypeColor    && pickrs.itemType?.setColor(def.itemTypeColor);
+    def.rarityColor      && pickrs.rarity?.setColor(def.rarityColor);
+    def.descriptionColor && pickrs.description?.setColor(def.descriptionColor);
+    def.valueColor       && pickrs.value?.setColor(def.valueColor);
+    def.quantityColor    && pickrs.quantity?.setColor(def.quantityColor);
   }
 
   // ─── Gather form data ──────────────────────────────────────────────
@@ -179,13 +186,5 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     if (onSubmit) await onSubmit(getCustom());
   });
 
-  // Expose
-  return {
-    form,
-    reset,
-    populate,
-    getCustom,
-    initPickrs,
-    buttonRow
-  };
-} // end createItemFormController
+  return { form, reset, populate, getCustom, initPickrs, buttonRow };
+}
