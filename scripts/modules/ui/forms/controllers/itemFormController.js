@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.21
+// @version: 4.22
 
 import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -129,6 +129,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = null;
     subheading.textContent = "Add Item";
     btnDelete.style.display = "none";
+    btnClear.textContent    = "Clear";
 
     destroyAllPickrs();
     Object.keys(pickrs).forEach(k => delete pickrs[k]);
@@ -151,6 +152,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
     subheading.textContent = "Edit Item";
     btnDelete.style.display = "";
+    btnClear.textContent    = "Cancel";
 
     initPickrs();
     def.nameColor        && pickrs.name?.setColor(def.nameColor);
