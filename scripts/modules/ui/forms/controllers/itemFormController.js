@@ -1,6 +1,6 @@
-// @comment: Comments should not be deleted unless they need updating or code is removed.
+// @comment: Comments should not be deleted unless their associated code is also deleted.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.29
+// @version: 4.30
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -16,28 +16,50 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const pickrs = {};
   let _id = null;
 
-  // ─── Header + Buttons ───────────────────────────────────────────────
+  // ─── Header + Buttons + "Add to filters" ─────────────────────────
   const subheadingWrap = document.createElement("div");
   Object.assign(subheadingWrap.style, {
     display:        "flex",
     justifyContent: "space-between",
     alignItems:     "center"
   });
+
+  // Title
   const subheading = document.createElement("h3");
   subheading.textContent = "Add Item";
   subheadingWrap.appendChild(subheading);
 
+  // "Add to filters" checkbox inline
+  const chkAddFilter = document.createElement("input");
+  chkAddFilter.type = "checkbox";
+  chkAddFilter.id   = "fld-add-to-filters";
+  const lblAddFilter = document.createElement("label");
+  lblAddFilter.htmlFor = chkAddFilter.id;
+  lblAddFilter.textContent = "Add to filters";
+  const filterContainer = document.createElement("div");
+  Object.assign(filterContainer.style, {
+    display:    "flex",
+    alignItems: "center",
+    marginLeft: "1rem"
+  });
+  filterContainer.append(lblAddFilter, chkAddFilter);
+  subheadingWrap.appendChild(filterContainer);
+
+  // Button row
   const buttonRow = document.createElement("div");
   buttonRow.className = "floating-buttons";
+
   const btnSave = document.createElement("button");
   btnSave.type      = "submit";
   btnSave.className = "ui-button";
   btnSave.textContent = "Save";
+
   const btnClear = document.createElement("button");
   btnClear.type      = "button";
   btnClear.className = "ui-button";
   btnClear.textContent = "Clear";
   btnClear.onclick   = onCancel;
+
   const btnDelete = document.createElement("button");
   btnDelete.type        = "button";
   btnDelete.className   = "ui-button-delete";
@@ -45,33 +67,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.style.display = "none";
+  btnDelete.style.display = "none"; // hidden in Add mode
   btnDelete.onclick = () => {
     if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
       onDelete?.(_id);
     }
   };
+
   buttonRow.append(btnSave, btnClear, btnDelete);
   subheadingWrap.appendChild(buttonRow);
 
-  // prepend header
   form.prepend(subheadingWrap);
-
-  // ─── "Add to filters" checkbox ──────────────────────────────────────
-  const chkAddFilter = document.createElement("input");
-  chkAddFilter.type = "checkbox";
-  chkAddFilter.id   = "fld-add-to-filters";
-
-  const lblAddFilter = document.createElement("label");
-  lblAddFilter.htmlFor = chkAddFilter.id;
-  lblAddFilter.textContent = " Add to filters";
-
-  const rowAddFilter = document.createElement("div");
-  rowAddFilter.className = "form-row";
-  rowAddFilter.append(lblAddFilter, chkAddFilter);
-
-  // insert right after the header
-  form.insertBefore(rowAddFilter, form.children[1]);
 
   // ─── Pickr Initialization ──────────────────────────────────────────
   function initPickrs() {
@@ -83,21 +89,17 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       value:       fields.colorValue,
       quantity:    fields.colorQty
     };
-
     Object.entries(map).forEach(([key, btn]) => {
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
-        // preview events
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
-        // open on swatch click
         btn.addEventListener("click", () => p.show());
       }
     });
   }
 
-  // wire all pickers once up front
   initPickrs();
 
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
@@ -105,10 +107,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     if (!fields.fldType.value || !fields.fldRarity.value) return;
 
     initPickrs();
-    const tmp = {
-      itemType: fields.fldType.value,
-      rarity:   fields.fldRarity.value
-    };
+    const tmp = { itemType: fields.fldType.value, rarity: fields.fldRarity.value };
     applyColorPresets(tmp);
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
@@ -119,31 +118,27 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       form.dispatchEvent(new Event("input", { bubbles: true }));
     }, 0);
   }
-  fields.fldType.addEventListener("change", applyPresetsAndRefresh);
+  fields.fldType .addEventListener("change", applyPresetsAndRefresh);
   fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
     form.reset();
-    // uncheck the filter box
-    chkAddFilter.checked = false;
+    chkAddFilter.checked   = false;
     fields.fldType.value   = "";
     fields.fldRarity.value = "";
     fields.extraInfo.setLines([], false);
-
     _id = null;
     subheading.textContent  = "Add Item";
     btnDelete.style.display = "none";
-    btnClear.textContent     = "Clear";
-
-    // simply reset colors; no teardown
+    btnClear.textContent    = "Clear";
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
   function populate(def) {
     form.reset();
-    chkAddFilter.checked   = !!def.addToFilters;
+    chkAddFilter.checked   = !!def.showInFilters;
     fields.fldName.value   = def.name        || "";
     fields.fldType.value   = def.itemType    || "";
     fields.fldRarity.value = def.rarity      || "";
@@ -152,29 +147,27 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldQty.value    = def.quantity    || "";
     fields.fldImgS.value   = def.imageSmall  || "";
     fields.fldImgL.value   = def.imageLarge  || "";
-
     fields.extraInfo.setLines(def.extraLines || [], false);
-
     _id = def.id || null;
     subheading.textContent  = "Edit Item";
     btnDelete.style.display = "";
-    btnClear.textContent     = "Cancel";
+    btnClear.textContent    = "Cancel";
 
     initPickrs();
-    def.nameColor        && pickrs.name.setColor(def.nameColor);
-    def.itemTypeColor    && pickrs.itemType.setColor(def.itemTypeColor);
-    def.rarityColor      && pickrs.rarity.setColor(def.rarityColor);
-    def.descriptionColor && pickrs.description.setColor(def.descriptionColor);
-    def.valueColor       && pickrs.value.setColor(def.valueColor);
-    def.quantityColor    && pickrs.quantity.setColor(def.quantityColor);
+    pickrs.name       && def.nameColor        && pickrs.name.setColor(def.nameColor);
+    pickrs.itemType   && def.itemTypeColor    && pickrs.itemType.setColor(def.itemTypeColor);
+    pickrs.rarity     && def.rarityColor      && pickrs.rarity.setColor(def.rarityColor);
+    pickrs.description&& def.descriptionColor && pickrs.description.setColor(def.descriptionColor);
+    pickrs.value      && def.valueColor       && pickrs.value.setColor(def.valueColor);
+    pickrs.quantity   && def.quantityColor    && pickrs.quantity.setColor(def.quantityColor);
   }
 
   // ─── Gather form data ──────────────────────────────────────────────
   function getCustom() {
     return {
       id:               _id,
-      name:             fields.fldName.value.trim(),
       addToFilters:     chkAddFilter.checked,
+      name:             fields.fldName.value.trim(),
       nameColor:        getPickrHexColor(pickrs.name),
       itemType:         fields.fldType.value,
       itemTypeColor:    getPickrHexColor(pickrs.itemType),
@@ -197,6 +190,5 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     if (onSubmit) await onSubmit(getCustom());
   });
 
-  // Expose public API
   return { form, reset, populate, getCustom, initPickrs, buttonRow };
 }
