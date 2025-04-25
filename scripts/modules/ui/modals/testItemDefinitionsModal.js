@@ -1,6 +1,6 @@
 /* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted. */
-/* @version: 25 */
+/* @version: 26 */
 
 import {
   createModal, closeModal, openModal
@@ -77,7 +77,9 @@ export function initTestItemDefinitionsModal(db) {
   });
 
   formApi.form.classList.add("ui-scroll-float");
-  formApi.form.addEventListener("input", () => {
+  formApi.form.addEventListener("input", e => {
+    // ignore the "Add to filters" checkbox toggles
+    if (e.target.id === "fld-add-to-filters") return;
     const live = formApi.getCustom?.();
     if (live) {
       previewApi.setFromDefinition(live);
@@ -104,7 +106,6 @@ export function initTestItemDefinitionsModal(db) {
     container: listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
-      // ensure addToFilters reflects the stored flag
       formApi.populate({ ...def, addToFilters: def.showInFilters });
       formApi.initPickrs();
       previewApi.setFromDefinition({ ...def });
