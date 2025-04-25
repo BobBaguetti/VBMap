@@ -1,5 +1,5 @@
 // @fullfile
-// @version: 8
+// @version: 10
 // @file:    /scripts/modules/services/itemDefinitionsService.js
 
 /**
@@ -18,17 +18,28 @@
  *   - (All fields may also have corresponding color fields)
  */
 
+import {
+  collection,
+  getDocs,
+  addDoc,
+  doc,
+  updateDoc,
+  setDoc,
+  deleteDoc,
+  onSnapshot
+} from "firebase/firestore";
+
 //////////////////////////////
 // 🔹 Collection Reference
 //////////////////////////////
 
 /**
- * Get the Firestore collection for item definitions.
- * @param {object} db - Firestore instance
- * @returns {CollectionReference}
+ * Get the Firestore collection reference for item definitions.
+ * @param {import('firebase/firestore').Firestore} db
+ * @returns {import('firebase/firestore').CollectionReference}
  */
 export function getItemDefinitionsCollection(db) {
-  return db.collection("itemDefinitions");
+  return collection(db, "itemDefinitions");
 }
 
 //////////////////////////////
@@ -37,21 +48,20 @@ export function getItemDefinitionsCollection(db) {
 
 /**
  * Load all item definitions from Firestore.
- * @param {object} db - Firestore instance
- * @returns {Promise<Array>} Array of item definition objects
+ * @param {import('firebase/firestore').Firestore} db
+ * @returns {Promise<Array<Object>>} Array of item definition objects
  */
 export async function loadItemDefinitions(db) {
-  const definitions = [];
-  const snapshot = await getItemDefinitionsCollection(db).get();
-  snapshot.forEach(doc => {
-    const data = doc.data();
-    definitions.push({
-      id: doc.id,
+  const colRef = getItemDefinitionsCollection(db);
+  const snapshot = await getDocs(colRef);
+  return snapshot.docs.map(docSnap => {
+    const data = docSnap.data();
+    return {
+      id: docSnap.id,
       ...data,
       showInFilters: data.showInFilters ?? true
-    });
+    };
   });
-  return definitions;
 }
 
 //////////////////////////////
@@ -62,29 +72,23 @@ export async function loadItemDefinitions(db) {
  * Save an item definition (add or update).
  * Returns the saved object with a valid `id`.
  *
- * @param {object} db - Firestore instance
- * @param {string|null} id - If null, creates a new entry
- * @param {object} data - Item definition fields
- * @returns {Promise<object>} The saved item (with `id`)
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string|null} id If null, creates a new entry
+ * @param {Object} data Item definition fields
+ * @returns {Promise<Object>} The saved item (with `id`)
  */
 export async function saveItemDefinition(db, id, data) {
-  const col = getItemDefinitionsCollection(db);
-  // Strip `id` to prevent null from being saved to Firestore
+  const colRef = getItemDefinitionsCollection(db);
   const { id: ignoredId, ...cleanData } = data;
-  // Ensure showInFilters is present
   cleanData.showInFilters = data.showInFilters ?? true;
 
   if (id) {
-    // Update existing document
-    await col.doc(id).update(cleanData);
+    const docRef = doc(db, "itemDefinitions", id);
+    await updateDoc(docRef, cleanData);
     return { id, ...cleanData };
   } else {
-    // Add new document and fetch it back to ensure ID and saved fields are valid
-    const docRef = await col.add(cleanData);
-    const savedDoc = await docRef.get();
-    const saved = { id: docRef.id, ...savedDoc.data() };
-    console.log("[saveItemDefinition] Saved new item with ID:", saved.id, saved);
-    return saved;
+    const docRef = await addDoc(colRef, cleanData);
+    return { id: docRef.id, ...cleanData };
   }
 }
 
@@ -94,20 +98,15 @@ export async function saveItemDefinition(db, id, data) {
 
 /**
  * Overwrite or merge an item definition by ID.
- * @param {object} db - Firestore instance
- * @param {string} id - Document ID
- * @param {object} data - Updated fields
- * @returns {Promise<object>} The updated item (with `id`)
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string} id Document ID
+ * @param {Object} data Updated fields
+ * @returns {Promise<Object>} The updated item (with `id`)
  */
 export async function updateItemDefinition(db, id, data) {
-  if (typeof id !== "string") {
-    throw new Error("Invalid ID passed to updateItemDefinition");
-  }
-  // Ensure showInFilters is present
   const payload = { ...data, showInFilters: data.showInFilters ?? true };
-  await getItemDefinitionsCollection(db)
-    .doc(id)
-    .set(payload, { merge: true });
+  const docRef = doc(db, "itemDefinitions", id);
+  await setDoc(docRef, payload, { merge: true });
   return { id, ...payload };
 }
 
@@ -117,11 +116,13 @@ export async function updateItemDefinition(db, id, data) {
 
 /**
  * Delete an item definition by ID.
- * @param {object} db - Firestore instance
- * @param {string} id - Document ID
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string} id Document ID
+ * @returns {Promise<void>}
  */
 export async function deleteItemDefinition(db, id) {
-  await getItemDefinitionsCollection(db).doc(id).delete();
+  const docRef = doc(db, "itemDefinitions", id);
+  await deleteDoc(docRef);
 }
 
 //////////////////////////////
@@ -130,26 +131,30 @@ export async function deleteItemDefinition(db, id) {
 
 /**
  * Subscribe to real-time updates on the item definitions collection.
- * @param {object} db - Firestore instance
- * @param {function} onUpdate - Callback receiving array of items
- * @returns {function} unsubscribe
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {function(Array<Object>)} onUpdate Callback receiving array of items
+ * @returns {function()} unsubscribe
  */
 export function subscribeItemDefinitions(db, onUpdate) {
-  const col = getItemDefinitionsCollection(db);
-  const unsubscribe = col.onSnapshot(snapshot => {
-    const defs = snapshot.docs
-      .map(doc => {
-        const data = doc.data();
-        return {
-          id: doc.id,
-          ...data,
-          showInFilters: data.showInFilters ?? true
-        };
-      })
-      .filter(def => !!def.id);
-    onUpdate(defs);
-  }, err => {
-    console.error("ItemDefinitions subscription error:", err);
-  });
+  const colRef = getItemDefinitionsCollection(db);
+  const unsubscribe = onSnapshot(
+    colRef,
+    snapshot => {
+      const defs = snapshot.docs
+        .map(docSnap => {
+          const data = docSnap.data();
+          return {
+            id: docSnap.id,
+            ...data,
+            showInFilters: data.showInFilters ?? true
+          };
+        })
+        .filter(def => !!def.id);
+      onUpdate(defs);
+    },
+    err => {
+      console.error("ItemDefinitions subscription error:", err);
+    }
+  );
   return unsubscribe;
 }
