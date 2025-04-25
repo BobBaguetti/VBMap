@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.26
+// @version: 4.27
 
 import { createPickr }                        from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -72,9 +72,15 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
 
     Object.entries(map).forEach(([key, btn]) => {
-      if (!pickrs[key] && document.body.contains(btn)) {
+      // only init once it's actually in our form
+      if (!pickrs[key] && form.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
+
+        // force-open on swatch click
+        btn.addEventListener("click", () => p.show());
+
+        // re-fire input for live preview
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
@@ -83,7 +89,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
-    // only run once both selects have actual values
+    // only run once both selects have real values
     if (!fields.fldType.value || !fields.fldRarity.value) {
       return;
     }
@@ -96,29 +102,26 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
     applyColorPresets(tmp);
 
-    // ensure nameColor falls back sensibly
+    // ensure nameColor always falls back
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
     setTimeout(() => {
-      tmp.nameColor     && pickrs.name?.setColor(tmp.nameColor);
-      tmp.itemTypeColor && pickrs.itemType?.setColor(tmp.itemTypeColor);
-      tmp.rarityColor   && pickrs.rarity?.setColor(tmp.rarityColor);
+      if (tmp.nameColor)     pickrs.name.setColor(tmp.nameColor);
+      if (tmp.itemTypeColor) pickrs.itemType.setColor(tmp.itemTypeColor);
+      if (tmp.rarityColor)   pickrs.rarity.setColor(tmp.rarityColor);
       form.dispatchEvent(new Event("input", { bubbles: true }));
     }, 0);
   }
 
-  fields.fldType .addEventListener("change", applyPresetsAndRefresh);
+  fields.fldType.addEventListener("change", applyPresetsAndRefresh);
   fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
-    // reset standard inputs & selects to placeholder ("" value)
     form.reset();
-    // ensure dropdowns go back to the unselectable placeholder
     fields.fldType.value   = "";
     fields.fldRarity.value = "";
 
-    // clear extra-info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
@@ -126,7 +129,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
     btnClear.textContent    = "Clear";
 
-    // init pickrs if needed, then wipe swatches back to blank
     initPickrs();
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
@@ -151,12 +153,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnClear.textContent    = "Cancel";
 
     initPickrs();
-    def.nameColor        && pickrs.name?.setColor(def.nameColor);
-    def.itemTypeColor    && pickrs.itemType?.setColor(def.itemTypeColor);
-    def.rarityColor      && pickrs.rarity?.setColor(def.rarityColor);
-    def.descriptionColor && pickrs.description?.setColor(def.descriptionColor);
-    def.valueColor       && pickrs.value?.setColor(def.valueColor);
-    def.quantityColor    && pickrs.quantity?.setColor(def.quantityColor);
+    if (def.nameColor)        pickrs.name.setColor(def.nameColor);
+    if (def.itemTypeColor)    pickrs.itemType.setColor(def.itemTypeColor);
+    if (def.rarityColor)      pickrs.rarity.setColor(def.rarityColor);
+    if (def.descriptionColor) pickrs.description.setColor(def.descriptionColor);
+    if (def.valueColor)       pickrs.value.setColor(def.valueColor);
+    if (def.quantityColor)    pickrs.quantity.setColor(def.quantityColor);
   }
 
   // ─── Gather form data ──────────────────────────────────────────────
