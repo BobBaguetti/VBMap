@@ -1,6 +1,6 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted;
 // @file:    /scripts/script.js
-// @version: 5.8
+// @version: 5.9
 
 import { initializeMap } from "./modules/map/map.js";
 import { showContextMenu } from "./modules/ui/uiManager.js";
@@ -156,9 +156,12 @@ subscribeItemDefinitions(db, async () => {
 /* ------------------------------------------------------------------ *
  *  Add & Persist Marker
  * ------------------------------------------------------------------ */
-function addAndPersist(data) {
+async function addAndPersist(data) {
+  // render immediately
   const markerObj = addMarker(data, callbacks);
-  firebaseAddMarker(db, data);
+  // persist and capture the returned id
+  const saved = await firebaseAddMarker(db, data);
+  data.id = saved.id;
   return markerObj;
 }
 
