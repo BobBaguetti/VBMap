@@ -1,5 +1,5 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 5
+// @version: 6
 
 import { formatRarity } from "../utils/utils.js";
 import { createIcon }   from "../utils/iconUtils.js";
@@ -31,12 +31,12 @@ export function renderPopup(m) {
     ? `<img src="${imgUrl}" class="popup-image" style="border-color:${m.rarityColor || "#777"};" onerror="this.style.display='none'">`
     : "";
 
-  const nameHTML     = `<div class="popup-name"    style="color:${m.nameColor        || "#E5E6E8"};">${m.name        || "Unnamed Item"}</div>`;
+  const nameHTML     = `<div class="popup-name"    style="color:${m.nameColor        || "#E5E8"};">${m.name        || "Unnamed Item"}</div>`;
   const typeHTML     = m.itemType
-                        ? `<div class="popup-type"  style="color:${m.itemTypeColor    || "#E5E6E8"};">${m.itemType}</div>`
+                        ? `<div class="popup-type"  style="color:${m.itemTypeColor    || "#E5E8"};">${m.itemType}</div>`
                         : "";
   const rarityHTML   = m.rarity
-                        ? `<div class="popup-rarity" style="color:${m.rarityColor    || "#E5E6E8"};">${formatRarity(m.rarity)}</div>`
+                        ? `<div class="popup-rarity" style="color:${m.rarityColor    || "#E5E8"};">${formatRarity(m.rarity)}</div>`
                         : "";
   const valueHTML    = m.value
                         ? `<div class="popup-value-icon" title="Value">
@@ -45,10 +45,10 @@ export function renderPopup(m) {
                            </div>`
                         : "";
   const descHTML     = m.description
-                        ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E6E8"};">${m.description}</p>`
+                        ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E8"};">${m.description}</p>`
                         : "";
   const extraHTML    = (m.extraLines || []).map(line =>
-                        `<p class="popup-extra-line" style="color:${line.color || "#E5E6E8"};">${line.text}</p>`
+                        `<p class="popup-extra-line" style="color:${line.color || "#E5E8"};">${line.text}</p>`
                       ).join("");
   const quantityHTML = m.quantity && m.quantity > 1
                         ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
@@ -105,7 +105,10 @@ export function createCustomIcon(m) {
     borderRadius: '50%',            
     overflow:     'hidden',         
     position:     'relative',       
+    filter:       'none'
   });
+  wrapper.style.setProperty('filter','none','important');
+  wrapper.style.setProperty('opacity','1','important');
 
   // Inner border circle
   const border = document.createElement('div');
@@ -129,17 +132,17 @@ export function createCustomIcon(m) {
       width:     '100%',
       height:    '100%',
       objectFit: 'cover',
-      display:   'block',
-      opacity:   '1',       // ensure full brightness
-      filter:    'none'     // remove any dimming filters
+      display:   'block'
     });
+    img.style.setProperty('filter','none','important');
+    img.style.setProperty('opacity','1','important');
     img.onerror = () => { img.style.display = 'none'; };
     wrapper.appendChild(img);
   }
 
   return L.divIcon({
     html:        wrapper.outerHTML,
-    className:   'custom-marker-container',
+    className: '',
     iconSize:    [size, size],
     iconAnchor:  [size/2, size/2]
   });
