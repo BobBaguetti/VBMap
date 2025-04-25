@@ -1,4 +1,4 @@
-// @version: 5.5
+// @version: 5.6
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
 
 import { createPickr }                        from "../../pickrManager.js";
@@ -48,7 +48,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.style.display = "none"; // hidden in Add mode
+  btnDelete.style.display = "none";
   btnDelete.onclick = () => {
     if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
       onDelete?.(_id);
@@ -71,19 +71,16 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
 
     Object.entries(map).forEach(([key, btn]) => {
-      // use form.contains so we bind even before dom-attachment
       if (!pickrs[key] && form.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
 
-        // open picker on swatch click
         btn.addEventListener("click", () => p.show());
-
-        // propagate changes
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
     });
+    // ← no comma here
   }
 
   // wire up immediately so all swatches get their listeners
@@ -100,6 +97,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       rarity:   fields.fldRarity.value
     };
     applyColorPresets(tmp);
+
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
     setTimeout(() => {
@@ -118,7 +116,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     form.reset();
     fields.fldType.value   = "";
     fields.fldRarity.value = "";
-
     fields.extraInfo.setLines([], false);
 
     _id = null;
