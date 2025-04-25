@@ -1,6 +1,6 @@
 /* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted. */
-/* @version: 24 */
+/* @version: 25 */
 
 import {
   createModal, closeModal, openModal
@@ -8,16 +8,18 @@ import {
 
 import { createDefListContainer } from "../../utils/listUtils.js";
 import {
-  loadItemDefinitions, saveItemDefinition, updateItemDefinition,
+  loadItemDefinitions,
+  saveItemDefinition,
+  updateItemDefinition,
   deleteItemDefinition
 } from "../../services/itemDefinitionsService.js";
 
-import { createLayoutSwitcher } from "../uiKit.js";
-import { createPreviewPanel } from "../preview/createPreviewPanel.js";
-import { createDefinitionListManager } from "../components/definitionListManager.js";
-import { applyColorPresets } from "../../utils/colorUtils.js";
-import { createItemFormController } from "../forms/controllers/itemFormController.js";
-import { destroyAllPickrs } from "../pickrManager.js";
+import { createLayoutSwitcher }           from "../uiKit.js";
+import { createPreviewPanel }             from "../preview/createPreviewPanel.js";
+import { createDefinitionListManager }    from "../components/definitionListManager.js";
+import { applyColorPresets }              from "../../utils/colorUtils.js";
+import { createItemFormController }       from "../forms/controllers/itemFormController.js";
+import { destroyAllPickrs }               from "../pickrManager.js";
 
 export function initTestItemDefinitionsModal(db) {
   const { modal, content, header } = createModal({
@@ -58,9 +60,15 @@ export function initTestItemDefinitionsModal(db) {
       previewApi.show();
     },
     onSubmit: async payload => {
+      // map our form’s addToFilters → showInFilters
+      payload.showInFilters = payload.addToFilters;
+
       applyColorPresets(payload);
-      if (payload.id) await updateItemDefinition(db, payload.id, payload);
-      else            await saveItemDefinition(db, null, payload);
+      if (payload.id) {
+        await updateItemDefinition(db, payload.id, payload);
+      } else {
+        await saveItemDefinition(db, null, payload);
+      }
       await refreshDefinitions();
       formApi.reset();
       previewApi.setFromDefinition({});
@@ -96,11 +104,10 @@ export function initTestItemDefinitionsModal(db) {
     container: listContainer,
     getDefinitions: () => definitions,
     onEntryClick: def => {
-      // 1) populate the form (this also calls initPickrs internally)
-      formApi.populate(def);
-      // 2) explicitly re-init, in case any new swatches appeared
+      // ensure addToFilters reflects the stored flag
+      formApi.populate({ ...def, addToFilters: def.showInFilters });
       formApi.initPickrs();
-      previewApi.setFromDefinition(def);
+      previewApi.setFromDefinition({ ...def });
       previewApi.show();
     },
     onDelete: async id => {

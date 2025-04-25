@@ -1,5 +1,5 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 7   The current file version is 7. Increase by 1 every time you update anything.
+// @fullfile
+// @version: 8
 // @file:    /scripts/modules/services/itemDefinitionsService.js
 
 /**
@@ -14,6 +14,7 @@
  *   - imageBig: string
  *   - value: string           // sell price
  *   - quantity: string
+ *   - showInFilters: boolean  // whether this item appears in the sidebar filters
  *   - (All fields may also have corresponding color fields)
  */
 
@@ -43,7 +44,12 @@ export async function loadItemDefinitions(db) {
   const definitions = [];
   const snapshot = await getItemDefinitionsCollection(db).get();
   snapshot.forEach(doc => {
-    definitions.push({ id: doc.id, ...doc.data() });
+    const data = doc.data();
+    definitions.push({
+      id: doc.id,
+      ...data,
+      showInFilters: data.showInFilters ?? true
+    });
   });
   return definitions;
 }
@@ -63,9 +69,10 @@ export async function loadItemDefinitions(db) {
  */
 export async function saveItemDefinition(db, id, data) {
   const col = getItemDefinitionsCollection(db);
-
   // Strip `id` to prevent null from being saved to Firestore
   const { id: ignoredId, ...cleanData } = data;
+  // Ensure showInFilters is present
+  cleanData.showInFilters = data.showInFilters ?? true;
 
   if (id) {
     // Update existing document
@@ -74,7 +81,7 @@ export async function saveItemDefinition(db, id, data) {
   } else {
     // Add new document and fetch it back to ensure ID and saved fields are valid
     const docRef = await col.add(cleanData);
-    const savedDoc = await docRef.get(); // ✅ Ensure correct fields are returned
+    const savedDoc = await docRef.get();
     const saved = { id: docRef.id, ...savedDoc.data() };
     console.log("[saveItemDefinition] Saved new item with ID:", saved.id, saved);
     return saved;
@@ -96,12 +103,12 @@ export async function updateItemDefinition(db, id, data) {
   if (typeof id !== "string") {
     throw new Error("Invalid ID passed to updateItemDefinition");
   }
-
+  // Ensure showInFilters is present
+  const payload = { ...data, showInFilters: data.showInFilters ?? true };
   await getItemDefinitionsCollection(db)
     .doc(id)
-    .set(data, { merge: true });
-
-  return { id, ...data };
+    .set(payload, { merge: true });
+  return { id, ...payload };
 }
 
 //////////////////////////////
@@ -129,16 +136,20 @@ export async function deleteItemDefinition(db, id) {
  */
 export function subscribeItemDefinitions(db, onUpdate) {
   const col = getItemDefinitionsCollection(db);
-
   const unsubscribe = col.onSnapshot(snapshot => {
     const defs = snapshot.docs
-      .map(doc => ({ id: doc.id, ...doc.data() }))
-      .filter(def => !!def.id); // ✅ Filter out entries with invalid/null ID
-
+      .map(doc => {
+        const data = doc.data();
+        return {
+          id: doc.id,
+          ...data,
+          showInFilters: data.showInFilters ?? true
+        };
+      })
+      .filter(def => !!def.id);
     onUpdate(defs);
   }, err => {
     console.error("ItemDefinitions subscription error:", err);
   });
-
   return unsubscribe;
 }
