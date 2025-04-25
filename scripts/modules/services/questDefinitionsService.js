@@ -1,5 +1,6 @@
-// @version: 2
-// @file: /scripts/modules/services/questDefinitionsService.js
+// @fullfile: Send the entire file, no omissions or abridgments.
+// @version: 3
+// @file:    /scripts/modules/services/questDefinitionsService.js
 
 /**
  * Firestore service for quest definitions.
@@ -11,50 +12,132 @@
  *   - rewardQuantity: string
  */
 
+import {
+  collection,
+  getDocs,
+  addDoc,
+  doc,
+  updateDoc,
+  setDoc,
+  deleteDoc,
+  onSnapshot
+} from "firebase/firestore";
+
+//////////////////////////////
+// 🔹 Collection Reference
+//////////////////////////////
+
+/**
+ * Get the Firestore collection reference for quest definitions.
+ * @param {import('firebase/firestore').Firestore} db
+ * @returns {import('firebase/firestore').CollectionReference}
+ */
 export function getQuestDefinitionsCollection(db) {
-  return db.collection("questDefinitions");
+  return collection(db, "questDefinitions");
 }
 
+//////////////////////////////
+// 🔹 Load Quests
+//////////////////////////////
+
+/**
+ * Load all quest definitions from Firestore.
+ * @param {import('firebase/firestore').Firestore} db
+ * @returns {Promise<Array<Object>>} Array of quest definition objects
+ */
 export async function loadQuestDefinitions(db) {
-  const defs = [];
-  const snap = await getQuestDefinitionsCollection(db).get();
-  snap.forEach(doc => {
-    defs.push({ id: doc.id, ...doc.data() });
-  });
-  return defs;
+  const colRef = getQuestDefinitionsCollection(db);
+  const snapshot = await getDocs(colRef);
+  return snapshot.docs.map(docSnap => ({
+    id: docSnap.id,
+    ...docSnap.data()
+  }));
 }
 
+//////////////////////////////
+// 🔹 Save or Add New Quest
+//////////////////////////////
+
+/**
+ * Save a quest definition (add or update).
+ * Returns the saved object with a valid `id`.
+ *
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string|null} id If null, creates a new entry
+ * @param {Object} data Quest definition fields
+ * @returns {Promise<Object>} The saved quest (with `id`)
+ */
 export async function saveQuestDefinition(db, id, data) {
-  const col = getQuestDefinitionsCollection(db);
-  const { id: _id, ...clean } = data;
+  const colRef = getQuestDefinitionsCollection(db);
+  const { id: ignoredId, ...cleanData } = data;
 
   if (id) {
-    await col.doc(id).update(clean);
-    return { id, ...clean };
+    const docRef = doc(db, "questDefinitions", id);
+    await updateDoc(docRef, cleanData);
+    return { id, ...cleanData };
   } else {
-    const ref = await col.add(clean);
-    const saved = await ref.get();
-    return { id: ref.id, ...saved.data() };
+    const docRef = await addDoc(colRef, cleanData);
+    return { id: docRef.id, ...cleanData };
   }
 }
 
+//////////////////////////////
+// 🔹 Forceful Update (Merge)
+//////////////////////////////
+
+/**
+ * Overwrite or merge a quest definition by ID.
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string} id Document ID
+ * @param {Object} data Updated fields
+ * @returns {Promise<Object>} The updated quest (with `id`)
+ */
 export async function updateQuestDefinition(db, id, data) {
-  if (!id || typeof id !== "string") throw new Error("Invalid ID for quest update");
-  await getQuestDefinitionsCollection(db).doc(id).set(data, { merge: true });
-  return { id, ...data };
+  const payload = { ...data };
+  const docRef = doc(db, "questDefinitions", id);
+  await setDoc(docRef, payload, { merge: true });
+  return { id, ...payload };
 }
 
+//////////////////////////////
+// 🔹 Delete Quest
+//////////////////////////////
+
+/**
+ * Delete a quest definition by ID.
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string} id Document ID
+ * @returns {Promise<void>}
+ */
 export async function deleteQuestDefinition(db, id) {
-  await getQuestDefinitionsCollection(db).doc(id).delete();
+  const docRef = doc(db, "questDefinitions", id);
+  await deleteDoc(docRef);
 }
 
+//////////////////////////////
+// 🔹 Real-Time Subscription
+//////////////////////////////
+
+/**
+ * Subscribe to real-time updates on the quest definitions collection.
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {function(Array<Object>)} onUpdate Callback receiving array of quests
+ * @returns {function()} unsubscribe
+ */
 export function subscribeQuestDefinitions(db, onUpdate) {
-  const col = getQuestDefinitionsCollection(db);
-  return col.onSnapshot(
-    snap => {
-      const results = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  const colRef = getQuestDefinitionsCollection(db);
+  const unsubscribe = onSnapshot(
+    colRef,
+    snapshot => {
+      const results = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
       onUpdate(results);
     },
-    err => console.error("QuestDefs subscription error:", err)
+    err => {
+      console.error("QuestDefs subscription error:", err);
+    }
   );
+  return unsubscribe;
 }
