@@ -1,8 +1,8 @@
 // @comment: Comments should not be deleted unless they need updating or code is removed.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.22
+// @version: 4.23
 
-import { createPickr, destroyAllPickrs }       from "../../pickrManager.js";
+import { createPickr }                       from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
 import { createItemForm }                      from "../builders/itemFormBuilder.js";
 import { createIcon }                          from "../../../utils/iconUtils.js";
@@ -113,15 +113,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
-    // clear all fields
-    fields.fldName.value   =
-    fields.fldType.value   =
-    fields.fldRarity.value =
-    fields.fldDesc.value   =
-    fields.fldValue.value  =
-    fields.fldQty.value    =
-    fields.fldImgS.value   =
-    fields.fldImgL.value   = "";
+    // reset all standard inputs at once
+    form.reset();
 
     // clear extra-info rows
     fields.extraInfo.setLines([], false);
@@ -131,8 +124,14 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
     btnClear.textContent    = "Clear";
 
-    destroyAllPickrs();
-    Object.keys(pickrs).forEach(k => delete pickrs[k]);
+    // ensure pickrs exist
+    initPickrs();
+
+    // reset each Pickr back to its default blank state
+    Object.values(pickrs).forEach(p => p.clear());
+
+    // re-sync any presets (so type/rarity defaults take effect)
+    applyPresetsAndRefresh();
   }
 
   // ─── Populate for Edit mode ────────────────────────────────────────
@@ -146,7 +145,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgS.value   = def.imageSmall  || "";
     fields.fldImgL.value   = def.imageLarge  || "";
 
-    // **read from def.extraLines** instead of def.extraInfo
     fields.extraInfo.setLines(def.extraLines || [], false);
 
     _id = def.id || null;
@@ -181,7 +179,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       quantityColor:    getPickrHexColor(pickrs.quantity),
       imageSmall:       fields.fldImgS.value.trim(),
       imageLarge:       fields.fldImgL.value.trim(),
-      // **output as extraLines** instead of extraInfo
       extraLines:       fields.extraInfo.getLines()
     };
   }
