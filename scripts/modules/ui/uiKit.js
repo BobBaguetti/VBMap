@@ -1,4 +1,4 @@
-// @version: 26
+// @version: 27
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -229,6 +229,8 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
   return row;
 }
 
+// ─── Extra-Info Block ─────────────────────────────────────────────────────────
+
 export function createExtraInfoBlock(options = {}) {
   const { defaultColor = "#E5E6E8", readonly = false } = options;
 
@@ -257,7 +259,11 @@ export function createExtraInfoBlock(options = {}) {
       input.className = "ui-input";
       input.value = line.text;
       input.readOnly = readonly;
-      input.oninput = () => (line.text = input.value);
+      input.oninput = () => {
+        line.text = input.value;
+        // fire form input so live preview updates
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      };
 
       const color = document.createElement("div");
       color.className = "color-btn";
@@ -272,6 +278,7 @@ export function createExtraInfoBlock(options = {}) {
       btnRemove.onclick = () => {
         lines.splice(i, 1);
         render();
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       };
 
       row.append(input, color);
@@ -285,8 +292,14 @@ export function createExtraInfoBlock(options = {}) {
         pickr.setColor(line.color || defaultColor);
       }, 0);
 
-      pickr.on("change", (colorObj) => {
+      // on color change/save, update line.color and fire form input
+      pickr.on("change", colorObj => {
         line.color = colorObj.toHEXA().toString();
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      pickr.on("save", colorObj => {
+        line.color = colorObj.toHEXA().toString();
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       });
     });
   }
@@ -294,18 +307,19 @@ export function createExtraInfoBlock(options = {}) {
   btnAdd.onclick = () => {
     lines.push({ text: "", color: defaultColor });
     render();
+    wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
   };
 
   function getLines() {
     return lines.map(l => ({
-      text: l.text,
+      text:  l.text,
       color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
     }));
   }
 
   function setLines(newLines, isReadonly = false) {
     lines = newLines.map(l => ({
-      text: l.text || "",
+      text:  l.text || "",
       color: l.color || defaultColor
     }));
     render();
@@ -324,7 +338,7 @@ export function createLayoutSwitcher({ available = ["row", "stacked", "gallery"]
   wrap.style.gap = "4px";
 
   const layouts = {
-    row: { icon: "📄", label: "Row View" },
+    row:     { icon: "📄", label: "Row View" },
     stacked: { icon: "🧾", label: "Stacked View" },
     gallery: { icon: "🖼️", label: "Gallery View" }
   };
@@ -337,8 +351,7 @@ export function createLayoutSwitcher({ available = ["row", "stacked", "gallery"]
     btn.dataset.layout = layout;
 
     btn.onclick = () => {
-      const all = wrap.querySelectorAll(".layout-button");
-      all.forEach(b => b.classList.remove("active"));
+      wrap.querySelectorAll(".layout-button").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       if (onChange) onChange(layout);
     };
