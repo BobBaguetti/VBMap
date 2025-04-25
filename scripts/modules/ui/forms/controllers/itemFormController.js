@@ -74,7 +74,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
-        // re-fire form input for live preview
+        // re‐fire form input for live preview
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
@@ -119,7 +119,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgS.value   =
     fields.fldImgL.value   = "";
 
-    // clear extra-info rows
+    // clear extra‐info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
@@ -131,10 +131,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     destroyAllPickrs();
     Object.keys(pickrs).forEach(k => delete pickrs[k]);
 
-    // clear every swatch button (main + extra-info)
+    // strip every inline style from all swatches (main + extra‐info)
     form.querySelectorAll(".color-btn").forEach(btn => {
-      btn.style.backgroundColor = "";
-      btn.style.boxShadow       = "";
+      btn.removeAttribute("style");
     });
   }
 
