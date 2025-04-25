@@ -1,40 +1,50 @@
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted;
-// @file:    /scripts/script.js
-// @version: 5.9
+// @file: /scripts/script.js
+// @version: 5.10
 
-import { initializeMap } from "./modules/map/map.js";
-import { showContextMenu } from "./modules/ui/uiManager.js";
+import { initializeApp } from "firebase/app";
+import { getAuth }          from "firebase/auth";
+import { getFirestore }     from "firebase/firestore";
+
+import { initializeMap }    from "./modules/map/map.js";
+import { showContextMenu }  from "./modules/ui/uiManager.js";
+
 import {
-  initializeFirebase,
   loadMarkers,
-  addMarker as firebaseAddMarker,
+  addMarker    as firebaseAddMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
-import { createMarker, renderPopup } from "./modules/map/markerManager.js";
-import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initMarkerModal } from "./modules/ui/modals/markerModal.js";
-import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
-import { setupSidebar } from "./modules/sidebar/sidebarManager.js";
-import { subscribeItemDefinitions } from "./modules/services/itemDefinitionsService.js";
-import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
-import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js";
+
+import { createMarker, renderPopup }            from "./modules/map/markerManager.js";
+import { initItemDefinitionsModal }             from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initMarkerModal }                      from "./modules/ui/modals/markerModal.js";
+import { initCopyPasteManager }                 from "./modules/map/copyPasteManager.js";
+import { setupSidebar }                         from "./modules/sidebar/sidebarManager.js";
+import { subscribeItemDefinitions }             from "./modules/services/itemDefinitionsService.js";
+import { initQuestDefinitionsModal }            from "./modules/ui/modals/questDefinitionsModal.js";
+import { activateFloatingScrollbars }           from "./modules/utils/scrollUtils.js";
 
 // for admin login UI
 import { initAdminAuth } from "./authSetup.js";
 
+
 /* ------------------------------------------------------------------ *
- *  Firebase Initialization
+ *  Firebase Configuration & Initialization
  * ------------------------------------------------------------------ */
-const db = initializeFirebase({
-  apiKey: "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
-  authDomain: "vbmap-cc834.firebaseapp.com",
-  projectId: "vbmap-cc834",
-  storageBucket: "vbmap-cc834.firebasestorage.app",
+const firebaseConfig = {
+  apiKey:            "YOUR_WEB_API_KEY_HERE",       // ← replace with your actual Web API key
+  authDomain:        "vbmap-cc834.firebaseapp.com",
+  projectId:         "vbmap-cc834",
+  storageBucket:     "vbmap-cc834.appspot.com",     // ← note the “.appspot.com”
   messagingSenderId: "244112699360",
-  appId: "1:244112699360:web:95f50adb6e10b438238585",
-  measurementId: "G-7FDNWLRM95"
-});
+  appId:             "1:244112699360:web:95f50adb6e10b438238585",
+  measurementId:     "G-7FDNWLRM95"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
 
 /* ------------------------------------------------------------------ *
  *  Map & Layers Setup
@@ -62,6 +72,7 @@ Object.entries(layers).forEach(([key, layer]) => {
 flatItemLayer.addTo(map);
 
 let groupingOn = false;
+
 
 /* ------------------------------------------------------------------ *
  *  Sidebar Setup
@@ -91,35 +102,33 @@ const groupingCallbacks = {
   }
 };
 
-// build the sidebar (renders #settings-section, filter groups, etc.)
+// build the sidebar (renders #settings-section, filters, etc.)
 const { filterMarkers, loadItemFilters } = await setupSidebar(
-  map, layers, allMarkers, db,
-  groupingCallbacks
+  map, layers, allMarkers, db, groupingCallbacks
 );
 
-// ← Now that the sidebar (and its #settings-section) exists, wire up auth UI
-initAdminAuth();
+// ← Now that the sidebar exists, wire up admin-auth
+initAdminAuth(auth);
+
 
 /* ------------------------------------------------------------------ *
  *  Marker Modal
  * ------------------------------------------------------------------ */
 const markerForm = initMarkerModal(db);
 
+
 /* ------------------------------------------------------------------ *
- *  Definitions Modals
+ *  Definitions Modals & Subscriptions
  * ------------------------------------------------------------------ */
 const itemModal  = initItemDefinitionsModal(db);
 const questModal = initQuestDefinitionsModal(db);
 
-/* ------------------------------------------------------------------ *
- *  Subscriptions for Item Definition Changes
- * ------------------------------------------------------------------ */
 subscribeItemDefinitions(db, async () => {
   await markerForm.refreshPredefinedItems();
 
   const { loadItemDefinitions } = await import("./modules/services/itemDefinitionsService.js");
   const defsList = await loadItemDefinitions(db);
-  const defMap = Object.fromEntries(defsList.map(d => [d.id, d]));
+  const defMap   = Object.fromEntries(defsList.map(d => [d.id, d]));
 
   allMarkers.forEach(({ markerObj, data }) => {
     if (!data.predefinedItemId) return;
@@ -141,7 +150,7 @@ subscribeItemDefinitions(db, async () => {
     });
 
     if (def.itemType) {
-      data.itemType = def.itemType;
+      data.itemType      = def.itemType;
       data.itemTypeColor = def.itemTypeColor || "#E5E6E8";
     }
 
@@ -153,6 +162,7 @@ subscribeItemDefinitions(db, async () => {
   filterMarkers();
 });
 
+
 /* ------------------------------------------------------------------ *
  *  Add & Persist Marker
  * ------------------------------------------------------------------ */
@@ -160,19 +170,17 @@ async function addAndPersist(data) {
   // render immediately
   const markerObj = addMarker(data, callbacks);
   // persist and capture the returned id
-  const saved = await firebaseAddMarker(db, data);
-  data.id = saved.id;
+  const saved     = await firebaseAddMarker(db, data);
+  data.id         = saved.id;
   return markerObj;
 }
 
+
 /* ------------------------------------------------------------------ *
- *  Copy-Paste Manager
+ *  Copy-Paste Manager & Marker Management
  * ------------------------------------------------------------------ */
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
-/* ------------------------------------------------------------------ *
- *  Marker Management
- * ------------------------------------------------------------------ */
 function addMarker(data, cbs = {}) {
   const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
   if (groupingOn) clusterItemLayer.addLayer(markerObj);
@@ -189,14 +197,15 @@ const callbacks = {
     });
   },
   onCopy:   (_, data) => copyMgr.startCopy(data),
-  onDragEnd: (_, data) => firebaseUpdateMarker(db, data),
-  onDelete: (markerObj, data) => {
+  onDragEnd:(_, data) => firebaseUpdateMarker(db, data),
+  onDelete:(markerObj, data) => {
     layers[data.type].removeLayer(markerObj);
     const idx = allMarkers.findIndex(o => o.data.id === data.id);
     if (idx !== -1) allMarkers.splice(idx, 1);
     if (data.id) firebaseDeleteMarker(db, data.id);
   }
 };
+
 
 /* ------------------------------------------------------------------ *
  *  Load Markers from Firestore
@@ -211,12 +220,13 @@ const callbacks = {
   filterMarkers();
 })();
 
+
 /* ------------------------------------------------------------------ *
- *  Map Context-Menu for Creating New Markers
+ *  Map Context-Menu & Floating Scrollbars
  * ------------------------------------------------------------------ */
 map.on("contextmenu", evt => {
   showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
-    text: "Create New Marker",
+    text:   "Create New Marker",
     action: () => {
       markerForm.openCreate(
         [evt.latlng.lat, evt.latlng.lng],
@@ -228,7 +238,6 @@ map.on("contextmenu", evt => {
   }]);
 });
 
-// Hide context menu on click outside
 document.addEventListener("click", e => {
   const cm = document.getElementById("context-menu");
   if (cm && cm.style.display === "block" && !cm.contains(e.target)) {
@@ -236,9 +245,6 @@ document.addEventListener("click", e => {
   }
 });
 
-/* ------------------------------------------------------------------ *
- *  Floating Scrollbar Activation
- * ------------------------------------------------------------------ */
 document.addEventListener("DOMContentLoaded", () => {
   activateFloatingScrollbars();
 });
