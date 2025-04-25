@@ -1,4 +1,4 @@
-// @version: 5
+// @version: 5.1
 // @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
 
 import {
@@ -23,11 +23,27 @@ export function createItemForm() {
 
   // Item Type
   const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField();
+  // insert placeholder
+  const placeholderType = document.createElement("option");
+  placeholderType.value = "";
+  placeholderType.disabled = true;
+  placeholderType.selected = true;
+  placeholderType.textContent = "Select Item Type";
+  fldType.insertBefore(placeholderType, fldType.firstChild);
+
   colorType.id = "fld-item-type-color";
   colorType.classList.add("color-swatch");
 
   // Rarity
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField();
+  // insert placeholder
+  const placeholderRarity = document.createElement("option");
+  placeholderRarity.value = "";
+  placeholderRarity.disabled = true;
+  placeholderRarity.selected = true;
+  placeholderRarity.textContent = "Select Rarity";
+  fldRarity.insertBefore(placeholderRarity, fldRarity.firstChild);
+
   colorRarity.id = "fld-rarity-color";
   colorRarity.classList.add("color-swatch");
 
