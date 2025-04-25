@@ -36,7 +36,7 @@ import { initAdminAuth } from "./authSetup.js";
  *  Firebase Configuration & Initialization
  * ------------------------------------------------------------------ */
 const firebaseConfig = {
-  apiKey:            "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
+  apiKey:            "AIzaSyDwEdPK3UdPN5MB8YAuM_jb0K1iXfQ-tGQ",
   authDomain:        "vbmap-cc834.firebaseapp.com",
   projectId:         "vbmap-cc834",
   storageBucket:     "vbmap-cc834.appspot.com",
