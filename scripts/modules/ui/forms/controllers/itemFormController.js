@@ -1,4 +1,4 @@
-// @version: 5.4
+// @version: 5.5
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
 
 import { createPickr }                        from "../../pickrManager.js";
@@ -71,29 +71,27 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
 
     Object.entries(map).forEach(([key, btn]) => {
-      if (!pickrs[key] && document.body.contains(btn)) {
+      // use form.contains so we bind even before dom-attachment
+      if (!pickrs[key] && form.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
 
-        // manually open the picker UI when its swatch is clicked
+        // open picker on swatch click
         btn.addEventListener("click", () => p.show());
 
-        // re-fire form input for live preview
+        // propagate changes
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
       }
     });
   }
 
-  // Wire up initial pickr instances so swatches are responsive
+  // wire up immediately so all swatches get their listeners
   initPickrs();
 
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
-    // only run once both selects have actual values
-    if (!fields.fldType.value || !fields.fldRarity.value) {
-      return;
-    }
+    if (!fields.fldType.value || !fields.fldRarity.value) return;
 
     initPickrs();
 
@@ -102,8 +100,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       rarity:   fields.fldRarity.value
     };
     applyColorPresets(tmp);
-
-    // ensure nameColor falls back sensibly
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
 
     setTimeout(() => {
@@ -119,12 +115,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   // ─── Reset to Add mode ─────────────────────────────────────────────
   function reset() {
-    // reset standard inputs & selects to placeholder ("" value)
     form.reset();
     fields.fldType.value   = "";
     fields.fldRarity.value = "";
 
-    // clear extra-info rows
     fields.extraInfo.setLines([], false);
 
     _id = null;
@@ -132,7 +126,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
     btnClear.textContent    = "Clear";
 
-    // ensure pickrs exist, then wipe swatches back to blank
     initPickrs();
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
