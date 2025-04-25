@@ -1,21 +1,8 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 7
+// @version: 8
 
 import { formatRarity } from "../utils/utils.js";
 import { createIcon }   from "../utils/iconUtils.js";
-import { getAuth, onAuthStateChanged } from "firebase/auth";
-
-let isAdmin = false;
-const auth = getAuth();
-onAuthStateChanged(auth, user => {
-  if (user) {
-    user.getIdTokenResult().then(idTokenResult => {
-      isAdmin = idTokenResult.claims.admin === true;
-    });
-  } else {
-    isAdmin = false;
-  }
-});
 
 /**
  * Checks whether a string is a valid image URL.
@@ -41,43 +28,51 @@ function getBestImageUrl(m, ...keys) {
 export function renderPopup(m) {
   const imgUrl = getBestImageUrl(m, "imageBig", "imageLarge", "imageSmall");
   const bigImg = imgUrl
-    ? `<img src="${imgUrl}" class="popup-image" style="border-color:${m.rarityColor || "#777"};" onerror="this.style.display='none'">`
+    ? `<img src="${imgUrl}" class="popup-image"
+             style="border-color:${m.rarityColor||"#777"}"
+             onerror="this.style.display='none'">`
     : "";
 
-  const nameHTML     = `<div class="popup-name"    style="color:${m.nameColor        || "#E5E8"};">${m.name        || "Unnamed Item"}</div>`;
+  const nameHTML     =
+    `<div class="popup-name" style="color:${m.nameColor||"#E5E8"};">
+       ${m.name||"Unnamed Item"}
+     </div>`;
   const typeHTML     = m.itemType
-                        ? `<div class="popup-type"  style="color:${m.itemTypeColor    || "#E5E8"};">${m.itemType}</div>`
-                        : "";
+    ? `<div class="popup-type" style="color:${m.itemTypeColor||"#E5E8"};">
+         ${m.itemType}
+       </div>`
+    : "";
   const rarityHTML   = m.rarity
-                        ? `<div class="popup-rarity" style="color:${m.rarityColor    || "#E5E8"};">${formatRarity(m.rarity)}</div>`
-                        : "";
+    ? `<div class="popup-rarity" style="color:${m.rarityColor||"#E5E8"};">
+         ${formatRarity(m.rarity)}
+       </div>`
+    : "";
   const valueHTML    = m.value
-                        ? `<div class="popup-value-icon" title="Value">
-                             <span class="popup-value-number">${m.value}</span>
-                             ${createIcon("coins", { inline: true }).outerHTML}
-                           </div>`
-                        : "";
+    ? `<div class="popup-value-icon" title="Value">
+         <span class="popup-value-number">${m.value}</span>
+         ${createIcon("coins",{inline:true}).outerHTML}
+       </div>`
+    : "";
   const descHTML     = m.description
-                        ? `<p class="popup-desc" style="color:${m.descriptionColor || "#E5E8"};">${m.description}</p>`
-                        : "";
-  const extraHTML    = (m.extraLines || []).map(line =>
-                        `<p class="popup-extra-line" style="color:${line.color || "#E5E8"};">${line.text}</p>`
-                      ).join("");
-  const quantityHTML = m.quantity && m.quantity > 1
-                        ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
-                        : "";
+    ? `<p class="popup-desc" style="color:${m.descriptionColor||"#E5E8"};">
+         ${m.description}
+       </p>`
+    : "";
+  const extraHTML    = (m.extraLines||[]).map(line =>
+       `<p class="popup-extra-line" style="color:${line.color||"#E5E8"};">
+          ${line.text}
+        </p>`
+     ).join("");
+  const quantityHTML = m.quantity>1
+    ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
+    : "";
 
-  const closeBtnHTML = `
-    <span class="popup-close-btn"
-          style="
-            position:absolute;
-            top:8px;
-            right:8px;
-            cursor:pointer;
-            padding:4px;
-          ">
-      ${createIcon("x", { inline: true }).outerHTML}
-    </span>`;
+  const closeBtnHTML =
+    `<span class="popup-close-btn" style="
+       position:absolute; top:8px; right:8px;
+       cursor:pointer; padding:4px;">
+       ${createIcon("x",{inline:true}).outerHTML}
+     </span>`;
 
   return `
     <div class="custom-popup" style="position:relative;">
@@ -103,96 +98,86 @@ export function renderPopup(m) {
 }
 
 /**
- * Creates a custom Leaflet icon for the marker, clipping any image into a circle.
+ * Creates a circular Leaflet icon for the marker.
  */
 export function createCustomIcon(m) {
-  const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
+  const imgUrl = getBestImageUrl(m, "imageSmall","imageBig","imageLarge");
   const size   = 32;
 
-  // Wrapper with circular mask
-  const wrapper = document.createElement('div');
+  const wrapper = document.createElement("div");
   wrapper.className = 'custom-marker';
   Object.assign(wrapper.style, {
-    width:        `${size}px`,
-    height:       `${size}px`,
-    borderRadius: '50%',
-    overflow:     'hidden',
-    position:     'relative',
-    filter:       'none'
+    width:`${size}px`, height:`${size}px`,
+    borderRadius:'50%', overflow:'hidden', position:'relative'
   });
-  wrapper.style.setProperty('filter','none','important');
-  wrapper.style.setProperty('opacity','1','important');
 
-  // Inner border circle
-  const border = document.createElement('div');
+  const border = document.createElement("div");
   border.className = 'marker-border';
   Object.assign(border.style, {
-    position: 'absolute',
-    top:      0,
-    left:     0,
-    width:    '100%',
-    height:   '100%',
-    boxSizing:'border-box',
-    border:   `2px solid ${m.rarityColor || '#777'}`
+    position: 'absolute', top:0, left:0,
+    width:'100%', height:'100%', boxSizing:'border-box',
+    border:`2px solid ${m.rarityColor||'#777'}`
   });
   wrapper.appendChild(border);
 
-  // Add the image, filling the circle
   if (imgUrl) {
-    const img = document.createElement('img');
+    const img = document.createElement("img");
     img.src = imgUrl;
     Object.assign(img.style, {
-      width:     '100%',
-      height:    '100%',
-      objectFit: 'cover',
-      display:   'block'
+      width:'100%', height:'100%',
+      objectFit:'cover', display:'block'
     });
-    img.style.setProperty('filter','none','important');
-    img.style.setProperty('opacity','1','important');
     img.onerror = () => { img.style.display = 'none'; };
     wrapper.appendChild(img);
   }
 
   return L.divIcon({
-    html:        wrapper.outerHTML,
+    html: wrapper.outerHTML,
     className: '',
-    iconSize:    [size, size],
-    iconAnchor:  [size/2, size/2]
+    iconSize:  [size, size],
+    iconAnchor:[size/2, size/2]
   });
 }
 
 /**
- * Creates and returns a Leaflet marker with popup and context menu.
+ * Creates and returns a Leaflet marker with popup + context menu.
+ *
+ * @param {Object} m           Marker data object
+ * @param {L.Map} map
+ * @param {Object<L.Layer>} layers  Map of type→layerGroup
+ * @param {Function} ctxMenu  (x,y,options)=>void
+ * @param {Object} callbacks { onEdit,onCopy,onDragEnd,onDelete }
+ * @param {boolean} isAdmin  whether to show edit tools
  */
-export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
+export function createMarker(
+  m, map, layers, ctxMenu, callbacks={}, isAdmin=false
+) {
   const markerObj = L.marker(m.coords, {
     icon: createCustomIcon(m),
-    draggable: false
+    draggable:false
   });
 
   markerObj.bindPopup(renderPopup(m), {
-    className:   'custom-popup-wrapper',
-    maxWidth:    350,
-    closeButton: false,
-    offset:      [0, -35]
+    className:'custom-popup-wrapper', maxWidth:350,
+    closeButton:false, offset:[0,-35]
   });
 
   markerObj.on('popupopen', () => {
-    const popupEl = document.querySelector('.custom-popup');
+    const popupEl  = document.querySelector('.custom-popup');
     const closeBtn = popupEl?.querySelector('.popup-close-btn');
-    if (closeBtn) closeBtn.addEventListener('click', () => markerObj.closePopup());
+    if (closeBtn) closeBtn.addEventListener('click', ()=> markerObj.closePopup());
   });
 
-  layers[m.type].addLayer(markerObj);
+  layers[m.type]?.addLayer(markerObj);
 
   markerObj.on('contextmenu', evt => {
     evt.originalEvent.preventDefault();
-    // Only build editing options if user is admin
-    const options = [];
+    const opts = [];
+
     if (isAdmin) {
-      options.push(
-        { text: 'Edit Marker',  action: () => callbacks.onEdit?.(markerObj, m, evt.originalEvent) },
-        { text: 'Copy Marker',  action: () => callbacks.onCopy?.(markerObj, m, evt.originalEvent) },
+      opts.push(
+        { text:'Edit Marker',  action:()=>callbacks.onEdit?.(markerObj,m,evt.originalEvent) },
+        { text:'Copy Marker',  action:()=>callbacks.onCopy?.(markerObj,m,evt.originalEvent) },
         {
           text: markerObj.dragging?.enabled() ? 'Disable Drag' : 'Enable Drag',
           action: () => {
@@ -203,15 +188,16 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}) {
               markerObj.once('dragend', () => {
                 const ll = markerObj.getLatLng();
                 m.coords = [ll.lat, ll.lng];
-                callbacks.onDragEnd?.(markerObj, m);
+                callbacks.onDragEnd?.(markerObj,m);
               });
             }
           }
         },
-        { text: 'Delete Marker', action: () => callbacks.onDelete?.(markerObj, m) }
+        { text:'Delete Marker', action:()=>callbacks.onDelete?.(markerObj,m) }
       );
     }
-    ctxMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, options);
+
+    ctxMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, opts);
   });
 
   return markerObj;

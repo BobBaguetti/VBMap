@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.12
+// @version: 5.13
 
 import { initializeApp }   from "firebase/app";
 import {
@@ -36,7 +36,7 @@ import { initAdminAuth } from "./authSetup.js";
  *  Firebase Configuration & Initialization
  * ------------------------------------------------------------------ */
 const firebaseConfig = {
-  apiKey:            "AIzaSyDwEdPN5MB8YAuM_jb0K1iXfQ-tGQ",
+  apiKey:            "AIzaSyDwEdPN8YAuM_jb0K1iXfQ-tGQ",
   authDomain:        "vbmap-cc834.firebaseapp.com",
   projectId:         "vbmap-cc834",
   storageBucket:     "vbmap-cc834.appspot.com",
@@ -106,20 +106,20 @@ const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db, groupingCallbacks
 );
 
-// ← initialise your admin-login UI
+
+// ← initialise your admin‐login UI
 initAdminAuth(auth);
 
-// ← watch for auth changes and toggle the “is-admin” class on <body>
+// ← keep a local admin flag
+let isAdmin = false;
+
+// ← watch for auth changes, toggle body class & flag
 onAuthStateChanged(auth, async user => {
-  const isAdmin = Boolean(
+  isAdmin = Boolean(
     user &&
     (await getIdTokenResult(user)).claims.admin
   );
-  if (isAdmin) {
-    document.body.classList.add("is-admin");
-  } else {
-    document.body.classList.remove("is-admin");
-  }
+  document.body.classList.toggle("is-admin", isAdmin);
 });
 
 
@@ -193,9 +193,14 @@ async function addAndPersist(data) {
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 function addMarker(data, cbs = {}) {
-  const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
+  // pass isAdmin through to createMarker
+  const markerObj = createMarker(
+    data, map, layers, showContextMenu, cbs, isAdmin
+  );
+
   if (groupingOn) clusterItemLayer.addLayer(markerObj);
   else            flatItemLayer.addLayer(markerObj);
+
   allMarkers.push({ markerObj, data });
   return markerObj;
 }
