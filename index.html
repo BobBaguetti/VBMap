@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 16 -->
+<!-- @version: 18 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,9 +8,18 @@
   <title>Vaultbreakers Interactive Map</title>
 
   <!-- Leaflet & MarkerCluster CSS -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
-  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
+  />
 
   <!-- Core UI styles -->
   <link rel="stylesheet" href="styles/base.css" />
@@ -30,9 +39,31 @@
   <link rel="stylesheet" href="styles/preview/itemPreview.css" />
 
   <!-- Third-party assets -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
-  <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"
+  />
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css"
+  />
+
+  <!-- ─── Import map ─────────────────────────────────────────────────── -->
+  <script type="importmap">
+  {
+    "imports": {
+      "firebase/app":       "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js",
+      "firebase/auth":      "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js",
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"
+    }
+  }
+  </script>
+  <!-- Load the shim immediately so the import map is applied to subsequent modules -->
+  <script src="https://ga.jspm.io/npm:es-module-shims@1.5.10/dist/es-module-shims.js"></script>
 </head>
 <body>
   <!-- Sidebar Toggle Button -->
@@ -42,11 +73,9 @@
   <div id="sidebar">
     <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
 
-    <!-- Filters Section -->
+    <!-- Filters -->
     <div class="sidebar-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
-
-      <!-- Main Filters -->
       <div class="filter-group" id="main-filters">
         <h3>Main</h3>
         <div class="toggle-group">
@@ -55,33 +84,24 @@
           <label><input type="checkbox" checked data-layer="Item" /><span>Item</span></label>
           <label><input type="checkbox" checked data-layer="Teleport" /><span>Teleport</span></label>
           <label><input type="checkbox" checked data-layer="Spawn Point" /><span>Spawn points</span></label>
-          <!-- PvE toggle injected via JS -->
         </div>
       </div>
-
-      <!-- Item Filters -->
       <div class="filter-group" id="item-filters">
         <h3>Items</h3>
-        <div class="toggle-group" id="item-filter-list">
-          <!-- dynamically populated -->
-        </div>
+        <div class="toggle-group" id="item-filter-list"><!-- dynamically populated --></div>
       </div>
-      <!-- Enemy Filters injected via JS below here -->
     </div>
 
-    <!-- Settings Section -->
+    <!-- Settings (auth button injected here) -->
     <div class="sidebar-section" id="settings-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
-      <!-- JS will inject toggles and auth button here -->
     </div>
 
-    <!-- Search Section -->
+    <!-- Search -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..." />
     </div>
-
-    <!-- Admin Tools container is injected/overwritten in JS -->
   </div>
 
   <!-- Map Container -->
@@ -90,9 +110,8 @@
   <!-- Video Popup -->
   <div id="video-popup">
     <button id="video-close">X</button>
-    <video id="video-player" width="320" controls style="display:block;">
+    <video id="video-player" width="320" controls>
       <source id="video-source" src="" type="video/mp4" />
-      Your browser does not support the video tag.
     </video>
   </div>
 
@@ -101,10 +120,9 @@
     Paste Mode ON
   </div>
 
-  <!-- Item Definitions Modal (old) -->
-  
+  <!-- Note: All modals are created/injected by your JS. No static <div class="modal"> remains here. -->
 
-  <!-- Leaflet & cluster scripts -->
+  <!-- Leaflet & MarkerCluster scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
