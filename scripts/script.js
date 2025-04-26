@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.13
+// @version: 5.14
 
 import { initializeApp }   from "firebase/app";
 import {
@@ -33,20 +33,10 @@ import { initAdminAuth } from "./authSetup.js";
 
 
 /* ------------------------------------------------------------------ *
- *  Firebase Configuration & Initialization
+ *  Firebase Initialization (config loaded from /__/firebase/init.json)
  * ------------------------------------------------------------------ */
-const firebaseConfig = {
-  apiKey:            "AIzaSyDwEdPK3UdPN5MB8YAuM_jb0K1iXfQ-tGQ",
-  authDomain:        "vbmap-cc834.firebaseapp.com",
-  projectId:         "vbmap-cc834",
-  storageBucket:     "vbmap-cc834.appspot.com",
-  messagingSenderId: "244112699360",
-  appId:             "1:244112699360:web:95f50adb6e10b438238585",
-  measurementId:     "G-7FDNWLRM95"
-};
-
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+const app  = initializeApp();
+const auth = getAuth();
 const db   = getFirestore(app);
 
 
@@ -107,7 +97,7 @@ const { filterMarkers, loadItemFilters } = await setupSidebar(
 );
 
 // ← initialise your admin‐login UI
-initAdminAuth(auth);
+initAdminAuth();
 
 // ← watch for auth changes and toggle the “is-admin” class on <body>
 onAuthStateChanged(auth, async user => {
@@ -115,11 +105,7 @@ onAuthStateChanged(auth, async user => {
     user &&
     (await getIdTokenResult(user)).claims.admin
   );
-  if (isAdmin) {
-    document.body.classList.add("is-admin");
-  } else {
-    document.body.classList.remove("is-admin");
-  }
+  document.body.classList.toggle("is-admin", isAdmin);
 });
 
 
@@ -196,7 +182,7 @@ async function addAndPersist(data) {
 
 
 /* ------------------------------------------------------------------ *
- *  Copy-Paste Manager & Marker Management
+ *  Copy-Paste & Marker Management
  * ------------------------------------------------------------------ */
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
