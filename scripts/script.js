@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.21
+// @version: 5.22
 
 import { initializeApp } from "firebase/app";
 import {
@@ -62,7 +62,7 @@ let groupingOn = false;
 
 
 /* ------------------------------------------------------------------ *
- *  Admin Auth → Sidebar → Marker Loading → Definitions Subscription
+ *  Admin Auth → Sidebar → Marker Load → Definitions
  * ------------------------------------------------------------------ */
 initAdminAuth();
 
@@ -98,13 +98,14 @@ onAuthStateChanged(auth, async user => {
   const isAdmin = Boolean(claims.admin);
   document.body.classList.toggle("is-admin", isAdmin);
 
-  if (!initialized) {
-    // 1) Sidebar
+  // Only initialize once, and only once user is known (null → actual)
+  if (!initialized && user !== null) {
+    // 1) Build the sidebar with correct admin state
     ({ filterMarkers, loadItemFilters } = await setupSidebar(
       map, layers, allMarkers, db, groupingCallbacks
     ));
 
-    // 2) Initial Marker Load
+    // 2) Load existing markers
     const markers = await loadMarkers(db);
     markers.forEach(m => {
       if (!m.type || !layers[m.type]) return;
@@ -112,7 +113,7 @@ onAuthStateChanged(auth, async user => {
       addMarker(m, callbacks);
     });
 
-    // 3) Definitions subscription
+    // 3) Subscribe definition updates
     subscribeItemDefinitions(db, async () => {
       await markerForm.refreshPredefinedItems();
       const { loadItemDefinitions } = await import(
@@ -155,13 +156,13 @@ onAuthStateChanged(auth, async user => {
       filterMarkers();
     });
 
-    // 4) initial filter
+    // 4) Initial filter pass
     await loadItemFilters();
     filterMarkers();
 
     initialized = true;
-  } else {
-    // on re-auth, just re-filter
+  } else if (initialized) {
+    // on subsequent auth-changes, just re-filter
     await loadItemFilters();
     filterMarkers();
   }
@@ -233,7 +234,7 @@ const callbacks = {
 
 
 /* ------------------------------------------------------------------ *
- *  Context-Menu & Floating Scrollbars
+ *  Context-Menu & Scrollbars
  * ------------------------------------------------------------------ */
 map.on("contextmenu", evt => {
   const items = [];
