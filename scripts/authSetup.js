@@ -9,7 +9,7 @@ import {
   getRedirectResult,
   onAuthStateChanged,
   getIdTokenResult
-} from "firebase/auth";
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
 
 export function initAdminAuth() {
   const auth = getAuth();
@@ -40,18 +40,18 @@ export function initAdminAuth() {
       const { claims } = await getIdTokenResult(user);
       if (claims.admin) {
         authBtn.textContent = "Sign out";
-        authBtn.onclick = () => auth.signOut();
+        authBtn.onclick     = () => auth.signOut();
         document.querySelectorAll(".admin-only")
                 .forEach(el => el.style.display = "");
         return;
       }
-      // Not an admin? Sign out and revert UI
+      // not an admin → force sign-out
       await auth.signOut();
     }
 
-    // No user (or just signed out)
+    // no user or just signed out
     authBtn.textContent = "Sign in";
-    authBtn.onclick = onSignInClick;
+    authBtn.onclick     = onSignInClick;
     document.querySelectorAll(".admin-only")
             .forEach(el => el.style.display = "none");
   });

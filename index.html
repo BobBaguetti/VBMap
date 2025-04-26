@@ -1,6 +1,5 @@
-<!-- @keep: Comments must NOT be deleted unless their associated code is also deleted; edits to comments only when code changes. -->
 <!-- @file: index.html -->
-<!-- @version: 15 -->
+<!-- @version: 16 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -34,18 +33,6 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
-
-  <!-- ─── Import map for Firebase v9 modular SDK (ESM-shims) ─────────── -->
-  <script type="importmap">
-  {
-    "imports": {
-      "firebase/app":       "https://esm.sh/firebase@9.22.2/app",
-      "firebase/auth":      "https://esm.sh/firebase@9.22.2/auth",
-      "firebase/firestore": "https://esm.sh/firebase@9.22.2/firestore"
-    }
-  }
-  </script>
-  <script async src="https://ga.jspm.io/npm:es-module-shims@1.5.10/dist/es-module-shims.js"></script>
 </head>
 <body>
   <!-- Sidebar Toggle Button -->
@@ -121,7 +108,7 @@
     </div>
   </div>
 
-  <!-- Scripts -->
+  <!-- Leaflet & cluster scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>

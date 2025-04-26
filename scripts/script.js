@@ -1,26 +1,26 @@
 // @file: /scripts/script.js
 // @version: 5.16
 
-import { initializeApp }   from "firebase/app";
+// ← Import app/auth/firestore directly from Firebase’s ESM builds:
+import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
 import {
   getAuth,
   onAuthStateChanged,
   getIdTokenResult
-}                          from "firebase/auth";
-import { getFirestore }     from "firebase/firestore";
+} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
 
-import { firebaseConfig }   from "../src/firebaseConfig.js";
+// ← Your manually‐created config file
+import { firebaseConfig } from "../src/firebaseConfig.js";
 
 import { initializeMap }    from "./modules/map/map.js";
 import { showContextMenu }  from "./modules/ui/uiManager.js";
-
 import {
   loadMarkers,
   addMarker    as firebaseAddMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
-
 import { createMarker, renderPopup }            from "./modules/map/markerManager.js";
 import { initItemDefinitionsModal }             from "./modules/ui/modals/itemDefinitionsModal.js";
 import { initMarkerModal }                      from "./modules/ui/modals/markerModal.js";
@@ -51,11 +51,11 @@ const clusterItemLayer = L.markerClusterGroup();
 const flatItemLayer    = L.layerGroup();
 
 const layers = {
-  Door:               L.layerGroup(),
-  "Extraction Portal":L.layerGroup(),
-  Item:               flatItemLayer,
-  Teleport:           L.layerGroup(),
-  "Spawn Point":      L.layerGroup()
+  Door:                L.layerGroup(),
+  "Extraction Portal": L.layerGroup(),
+  Item:                flatItemLayer,
+  Teleport:            L.layerGroup(),
+  "Spawn Point":       L.layerGroup()
 };
 
 Object.entries(layers).forEach(([key, layer]) => {
