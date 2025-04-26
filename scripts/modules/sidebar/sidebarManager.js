@@ -1,6 +1,6 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted;
 // @file:    /scripts/modules/sidebar/sidebarManager.js
-// @version: 9.6
+// @version: 9.7
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
@@ -21,9 +21,10 @@ export async function setupSidebar(
 
   if (!searchBar || !sidebarToggle || !sidebar || !settingsSect) {
     console.warn("[sidebar] Missing elements");
-    return { filterMarkers() {} };
+    return { filterMarkers() {}, loadItemFilters: async () => {} };
   }
 
+  // ─── Basic UI Setup ───────────────────────────────────────────────
   searchBar.classList.add("ui-input");
 
   sidebarToggle.textContent = "◀︎";
@@ -42,9 +43,7 @@ export async function setupSidebar(
     });
   });
 
-  /* ────────────────────────────────────────────────────────────────
-     Settings toggles (injected here)
-  ─────────────────────────────────────────────────────────────────*/
+  // ─── Settings Toggles ─────────────────────────────────────────────
   settingsSect.querySelectorAll("label").forEach(l => l.remove());
 
   const groupingLabel = document.createElement("label");
@@ -68,9 +67,7 @@ export async function setupSidebar(
       .classList.toggle("small-markers", smallCb.checked);
   });
 
-  /* ────────────────────────────────────────────────────────────────
-     Core filtering logic
-  ─────────────────────────────────────────────────────────────────*/
+  // ─── Core Filtering Logic ─────────────────────────────────────────
   function filterMarkers() {
     const nameQuery = (searchBar.value || "").toLowerCase();
     const pveOn     = document.getElementById("toggle-pve")?.checked ?? true;
@@ -121,9 +118,7 @@ export async function setupSidebar(
     .forEach(cb => cb.addEventListener("change", filterMarkers));
   document.getElementById("toggle-pve")?.addEventListener("change", filterMarkers);
 
-  /* ────────────────────────────────────────────────────────────────
-     Populate Item & Enemy filters
-  ─────────────────────────────────────────────────────────────────*/
+  // ─── Item Filters ─────────────────────────────────────────────────
   const itemFilterList = document.getElementById("item-filter-list");
   async function loadItemFilters() {
     itemFilterList.innerHTML = "";
@@ -143,6 +138,7 @@ export async function setupSidebar(
   }
   await loadItemFilters();
 
+  // ─── Enemy Filters ────────────────────────────────────────────────
   const enemyWrap = document.createElement("div");
   enemyWrap.className = "filter-group";
   enemyWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
@@ -167,24 +163,20 @@ export async function setupSidebar(
   }
   await loadEnemyFilters();
 
-  /* ────────────────────────────────────────────────────────────────
-     Admin Tools (initially hidden, shown later via auth listener)
-  ─────────────────────────────────────────────────────────────────*/
-  // remove any existing
+  // ─── Admin Tools ──────────────────────────────────────────────────
   sidebar.querySelector(".admin-header")?.remove();
   sidebar.querySelector("#sidebar-admin-tools")?.remove();
 
-  // header
   const adminHeader = document.createElement("h2");
-  adminHeader.className = "admin-header";
+  adminHeader.className   = "admin-header";
   adminHeader.textContent = "🛠 Admin Tools";
-  adminHeader.style.display = "none";          // ← hide by default
+  adminHeader.style.display = "none";
   sidebar.appendChild(adminHeader);
 
-  // buttons
   const adminWrap = document.createElement("div");
   adminWrap.id = "sidebar-admin-tools";
-  adminWrap.style.display = "none";            // ← hide by default
+  adminWrap.style.display = "none";
+
   [
     ["Manage Items",    () => initItemDefinitionsModal(db).open()],
     ["Test Item Modal", () => initTestItemDefinitionsModal(db).open()],
@@ -196,9 +188,16 @@ export async function setupSidebar(
     btn.onclick     = fn;
     adminWrap.appendChild(btn);
   });
+
   sidebar.appendChild(adminWrap);
 
-  // initial draw
+  // Show admin tools if body already has the class
+  if (document.body.classList.contains("is-admin")) {
+    adminHeader.style.display = "";
+    adminWrap.style.display   = "";
+  }
+
+  // Initial draw
   filterMarkers();
 
   return { filterMarkers, loadItemFilters };
