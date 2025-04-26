@@ -1,4 +1,4 @@
-// @version: 27
+// @version: 28
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -23,7 +23,9 @@ function attachModalLifecycle(modal) {
 // ─── Modal Helpers ───────────────────────────────────────────────────────────
 
 export function createModal({
-  id, title, onClose,
+  id,
+  title,
+  onClose,
   size = "small",
   backdrop = true,
   draggable = false,
@@ -33,14 +35,14 @@ export function createModal({
   const modal = document.createElement("div");
   modal.classList.add("modal", `modal-${size}`);
   modal.id = id;
-  // ── ensure modal backdrop sits above previews
+  // ensure modal backdrop sits above preview panels
   modal.style.zIndex = "2000";
   modal.style.backgroundColor = backdrop ? "rgba(0, 0, 0, 0.5)" : "transparent";
 
   // Inner content box
   const content = document.createElement("div");
   content.classList.add("modal-content");
-  // ── ensure modal content sits above the backdrop
+  // ensure modal content sits above its backdrop
   content.style.zIndex = "2001";
 
   if (size === "large") {
@@ -64,6 +66,7 @@ export function createModal({
     });
   }
 
+  // Header + close button
   const header = document.createElement("div");
   header.classList.add("modal-header");
   header.id = `${id}-handle`;
@@ -76,24 +79,27 @@ export function createModal({
   closeBtn.classList.add("close");
   closeBtn.innerHTML = "&times;";
   closeBtn.addEventListener("click", () => {
+    console.log("[uiKit] closeBtn clicked on modal:", modal.id);
     closeModal(modal);
     if (onClose) onClose();
   });
 
   header.append(titleEl, closeBtn);
+
   content.appendChild(header);
   if (withDivider) content.appendChild(document.createElement("hr"));
   modal.appendChild(content);
 
-  // Backdrop click → close
+  // Backdrop click closes
   modal.addEventListener("click", e => {
     if (e.target === modal) {
+      console.log("[uiKit] backdrop clicked on modal:", modal.id);
       closeModal(modal);
       if (onClose) onClose();
     }
   });
 
-  // Draggable for small modals
+  // Make small modals draggable
   if (draggable && size !== "large") {
     makeModalDraggable(content, header);
   }
@@ -103,7 +109,9 @@ export function createModal({
 }
 
 function makeModalDraggable(modalEl, handle) {
-  let offsetX = 0, offsetY = 0, dragging = false;
+  let offsetX = 0,
+    offsetY = 0,
+    dragging = false;
   handle.onmousedown = e => {
     dragging = true;
     offsetX = e.clientX - modalEl.offsetLeft;
@@ -123,11 +131,13 @@ function makeModalDraggable(modalEl, handle) {
 }
 
 export function closeModal(modal) {
+  console.log("[uiKit] closeModal called on modal:", modal.id);
   modal.style.display = "none";
   modal.dispatchEvent(new Event("close"));
 }
 
 export function openModal(modal) {
+  console.log("[uiKit] openModal called on modal:", modal.id);
   modal.style.display = "block";
   requestAnimationFrame(() => {
     modal.style.backgroundColor = modal.classList.contains("modal-large")
@@ -141,11 +151,12 @@ export function openModal(modal) {
 }
 
 export function openModalAt(modal, evt) {
+  console.log("[uiKit] openModalAt called on modal:", modal.id);
   openModal(modal);
   const content = modal.querySelector(".modal-content");
   const rect = content.getBoundingClientRect();
   content.style.left = `${evt.clientX - rect.width}px`;
-  content.style.top  = `${evt.clientY - rect.height / 2}px`;
+  content.style.top = `${evt.clientY - rect.height / 2}px`;
 }
 
 // ─── Field Builders ───────────────────────────────────────────────────────────
@@ -176,7 +187,12 @@ export function createColorFieldRow(labelText, inputEl, colorId) {
   return { row, colorBtn };
 }
 
-export function createDropdownField(label, id, options = [], { showColor = true } = {}) {
+export function createDropdownField(
+  label,
+  id,
+  options = [],
+  { showColor = true } = {}
+) {
   const select = document.createElement("select");
   select.id = id;
   options.forEach(opt => {
@@ -219,7 +235,11 @@ export function createVideoField(label, id) {
   return { row: createFieldRow(label, input), input };
 }
 
-export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
+export function createFormButtonRow(
+  onCancel,
+  saveText = "Save",
+  cancelText = "Cancel"
+) {
   const row = document.createElement("div");
   row.className = "field-row";
   row.style.justifyContent = "center";
@@ -269,8 +289,9 @@ export function createExtraInfoBlock(options = {}) {
       input.readOnly = readonly;
       input.oninput = () => {
         line.text = input.value;
-        // fire form input so live preview updates
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+        wrap
+          .closest("form")
+          ?.dispatchEvent(new Event("input", { bubbles: true }));
       };
 
       const color = document.createElement("div");
@@ -286,7 +307,9 @@ export function createExtraInfoBlock(options = {}) {
       btnRemove.onclick = () => {
         lines.splice(i, 1);
         render();
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+        wrap
+          .closest("form")
+          ?.dispatchEvent(new Event("input", { bubbles: true }));
       };
 
       row.append(input, color);
@@ -300,14 +323,17 @@ export function createExtraInfoBlock(options = {}) {
         pickr.setColor(line.color || defaultColor);
       }, 0);
 
-      // on color change/save, update line.color and fire form input
       pickr.on("change", colorObj => {
         line.color = colorObj.toHEXA().toString();
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+        wrap
+          .closest("form")
+          ?.dispatchEvent(new Event("input", { bubbles: true }));
       });
       pickr.on("save", colorObj => {
         line.color = colorObj.toHEXA().toString();
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+        wrap
+          .closest("form")
+          ?.dispatchEvent(new Event("input", { bubbles: true }));
       });
     });
   }
@@ -315,19 +341,21 @@ export function createExtraInfoBlock(options = {}) {
   btnAdd.onclick = () => {
     lines.push({ text: "", color: defaultColor });
     render();
-    wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+    wrap
+      .closest("form")
+      ?.dispatchEvent(new Event("input", { bubbles: true }));
   };
 
   function getLines() {
     return lines.map(l => ({
-      text:  l.text,
+      text: l.text,
       color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
     }));
   }
 
   function setLines(newLines, isReadonly = false) {
     lines = newLines.map(l => ({
-      text:  l.text || "",
+      text: l.text || "",
       color: l.color || defaultColor
     }));
     render();
@@ -339,14 +367,18 @@ export function createExtraInfoBlock(options = {}) {
 
 // ─── Layout Switcher Control ─────────────────────────────────────────────────
 
-export function createLayoutSwitcher({ available = ["row", "stacked", "gallery"], onChange, defaultView = "row" } = {}) {
+export function createLayoutSwitcher({
+  available = ["row", "stacked", "gallery"],
+  onChange,
+  defaultView = "row"
+} = {}) {
   const wrap = document.createElement("div");
   wrap.className = "layout-switcher";
   wrap.style.display = "flex";
   wrap.style.gap = "4px";
 
   const layouts = {
-    row:     { icon: "📄", label: "Row View" },
+    row: { icon: "📄", label: "Row View" },
     stacked: { icon: "🧾", label: "Stacked View" },
     gallery: { icon: "🖼️", label: "Gallery View" }
   };
@@ -359,7 +391,9 @@ export function createLayoutSwitcher({ available = ["row", "stacked", "gallery"]
     btn.dataset.layout = layout;
 
     btn.onclick = () => {
-      wrap.querySelectorAll(".layout-button").forEach(b => b.classList.remove("active"));
+      wrap
+        .querySelectorAll(".layout-button")
+        .forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       if (onChange) onChange(layout);
     };
