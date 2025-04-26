@@ -1,100 +1,113 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 7
+// @version: 8 — modal creation deferred until open()
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer }     from "../../utils/listUtils.js";
 import {
-  loadNpcDefinitions, saveNpcDefinition, updateNpcDefinition,
+  loadNpcDefinitions,
+  saveNpcDefinition,
+  updateNpcDefinition,
   deleteNpcDefinition
 }                                     from "../../services/npcDefinitionsService.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createNpcFormController }     from "../forms/controllers/npcFormController.js";
 import { renderNpcEntry }              from "../entries/npcEntryRenderer.js";
-
-// ← NEW: import our scoped initializer
-import { initModalPickrs }            from "../pickrManager.js";
+import { initModalPickrs }             from "../pickrManager.js";
 
 export function initNpcDefinitionsModal(db) {
-  const {
-    modal,
-    header,
-    bodyWrap,
-    previewApi,
-    open: openModal
-  } = createDefinitionModalShell({
-    id: "npc-definitions-modal",
-    title: "Manage NPCs",
-    withPreview: true,
-    previewType: "npc",
-    layoutOptions: ["row", "stacked", "gallery"],
-    onClose: () => previewApi.hide()
-  });
-
-  // ─── hide entire modal for non-admins ──────────────────────────────
-  modal.classList.add("admin-only");
-
-  // list + search (dark) injected by definitionListManager
-  const listContainer = createDefListContainer("npc-def-list");
-  bodyWrap.appendChild(listContainer);
-
-  // form (includes its own Add/Edit header + buttons)
-  const formApi = createNpcFormController({
-    onCancel: () => formApi.reset(),
-    onDelete: async id => {
-      await deleteNpcDefinition(db, id);
-      formApi.reset();
-      await refresh();
-    },
-    onSubmit: async payload => {
-      if (payload.id) await updateNpcDefinition(db, payload.id, payload);
-      else             await saveNpcDefinition(db, null, payload);
-      formApi.reset();
-      await refresh();
-    }
-  });
-  formApi.form.classList.add("ui-scroll-float");
-
-  bodyWrap.appendChild(document.createElement("hr"));
-  bodyWrap.appendChild(formApi.form);
-
-  // list manager wiring
+  // These will be set on first open()
+  let modal, header, bodyWrap, previewApi, openModal;
+  let formApi, listApi;
   let definitions = [];
-  const listApi = createDefinitionListManager({
-    container:      listContainer,
-    getDefinitions: () => definitions,
-    renderEntry:    (def, layout) => renderNpcEntry(def, layout, {
-      onClick:  d => {
-        formApi.populate(d);
-        previewApi.setFromDefinition(d);
-        previewApi.show();
-      },
-      onDelete: id => deleteNpcDefinition(db, id).then(refresh)
-    })
-  });
 
+  // Reload the definitions and refresh list
   async function refresh() {
     definitions = await loadNpcDefinitions(db);
     listApi.refresh(definitions);
   }
 
-  // move dark search bar into modal header
-  const hdr = listContainer.previousElementSibling;
-  if (hdr?.classList.contains("list-header")) {
-    hdr.remove();
-    header.appendChild(hdr);
+  async function open() {
+    // Build shell & wiring once
+    if (!modal) {
+      const shell = createDefinitionModalShell({
+        id:           "npc-definitions-modal",
+        title:        "Manage NPCs",
+        withPreview:  true,
+        previewType:  "npc",
+        layoutOptions:["row", "stacked", "gallery"],
+        onClose:      () => previewApi.hide()
+      });
+      modal      = shell.modal;
+      header     = shell.header;
+      bodyWrap   = shell.bodyWrap;
+      previewApi = shell.previewApi;
+      openModal  = shell.open;
+
+      // Only for admins
+      modal.classList.add("admin-only");
+
+      // 1) List container
+      const listContainer = createDefListContainer("npc-def-list");
+      bodyWrap.appendChild(listContainer);
+
+      // 2) Form controller
+      formApi = createNpcFormController({
+        onCancel: () => formApi.reset(),
+        onDelete: async (id) => {
+          await deleteNpcDefinition(db, id);
+          formApi.reset();
+          await refresh();
+        },
+        onSubmit: async (payload) => {
+          if (payload.id) {
+            await updateNpcDefinition(db, payload.id, payload);
+          } else {
+            await saveNpcDefinition(db, null, payload);
+          }
+          formApi.reset();
+          await refresh();
+        }
+      });
+      formApi.form.classList.add("ui-scroll-float");
+
+      // Divider + form
+      bodyWrap.appendChild(document.createElement("hr"));
+      bodyWrap.appendChild(formApi.form);
+
+      // 3) Definition list manager
+      listApi = createDefinitionListManager({
+        container:      listContainer,
+        getDefinitions: () => definitions,
+        renderEntry:    (def, layout) => renderNpcEntry(def, layout, {
+          onClick: (d) => {
+            formApi.populate(d);
+            previewApi.setFromDefinition(d);
+            previewApi.show();
+          },
+          onDelete: (id) => deleteNpcDefinition(db, id).then(refresh)
+        })
+      });
+
+      // Move the search-bar header
+      const hdr = listContainer.previousElementSibling;
+      if (hdr?.classList.contains("list-header")) {
+        hdr.remove();
+        header.appendChild(hdr);
+      }
+
+      // Hide preview initially
+      previewApi.hide();
+    }
+
+    // On every open: reset, reload, then show
+    formApi.reset();
+    await refresh();
+    openModal();
+
+    // Initialize pickrs and then show preview
+    initModalPickrs(bodyWrap);
+    previewApi.show();
   }
 
-  previewApi.hide();
-
-  return {
-    open: async () => {
-      formApi.reset();
-      await refresh();
-      openModal();
-      // ← NEW: wire up all color‐swatch buttons in this modal
-      initModalPickrs(bodyWrap);
-      previewApi.show();
-    },
-    refresh
-  };
+  return { open, refresh };
 }

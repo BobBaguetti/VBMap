@@ -1,107 +1,129 @@
-// @version: 11
 // @file: /scripts/modules/ui/modals/markerModal.js
+// @version: 12 — modal creation deferred until first open*
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
 import { loadItemDefinitions }                 from "../../services/itemDefinitionsService.js";
-import { createFormButtonRow }                 from "../uiKit.js";
-import { createDropdownField }                 from "../uiKit.js";
+import { createFormButtonRow, createDropdownField } from "../uiKit.js";
 import { createMarkerForm }                    from "../forms/markerForm.js";
 
 export function initMarkerModal(db) {
-  const { modal, content } = createModal({
-    id:         "edit-marker-modal",
-    title:      "Edit Marker",
-    size:       "small",
-    backdrop:   false,
-    draggable:  true,
-    withDivider:true,
-    onClose:    () => closeModal(modal)
-  });
-  // ─── hide for non-admins ─────────────────────────────────────────
-  modal.classList.add("admin-only");
-  // Build the form container
-  const form = document.createElement("form");
-  form.id = "edit-form";
-
-  // Type selector
-  const { row: rowType, select: fldType } =
-    createDropdownField("Type:", "fld-type", [
-      { value: "Door", label: "Door" },
-      { value: "Extraction Portal", label: "Extraction Portal" },
-      { value: "Item", label: "Item" },
-      { value: "Teleport", label: "Teleport" },
-      { value: "Spawn Point", label: "Spawn Point" }
-    ], { showColor: false });
-
-  // Predefined item selector
-  const { row: rowPredef, select: ddPredef } =
-    createDropdownField("Item:", "fld-predef", [], { showColor: false });
-
-  // Our item‐fields form API
-  const formApi    = createMarkerForm();
-  const rowButtons = createFormButtonRow(() => closeModal(modal));
-
-  // Group the item‐specific rows
-  const blockItem = document.createElement("div");
-  blockItem.classList.add("item-gap");
-  blockItem.append(
-    formApi.fields.fldRarity.closest(".field-row"),
-    formApi.fields.fldItemType.closest(".field-row"),
-    formApi.fields.fldDesc.closest(".field-row")
-  );
-
-  // Assemble everything
-  form.append(
-    formApi.fields.fldName.closest(".field-row"),
-    rowType,
-    rowPredef,
-    blockItem,
-    formApi.fields.extraRow,
-    formApi.fields.fldImgS.closest(".field-row"),
-    formApi.fields.fldImgL.closest(".field-row"),
-    formApi.fields.fldVid.closest(".field-row"),
-    rowButtons
-  );
-  content.appendChild(form);
-
-  // Predefined‐definitions store
+  // these will be set on first use
+  let modal, content, form;
+  let fldType, fldPredef, blockItem, formApi, rowButtons;
   let defs = {};
 
-  // Show/hide item block
-  function toggleSections(isItem) {
-    blockItem.style.display = isItem ? "block" : "none";
-    rowPredef.style.display = isItem ? "flex"  : "none";
-  }
-  fldType.onchange = () => toggleSections(fldType.value === "Item");
-
-  // When user picks a predefined item
-  ddPredef.onchange = () => {
-    const def = defs[ddPredef.value] || {};
-    formApi.setFromDefinition(def);
-    formApi.initPickrs();
-  };
-
-  // Load item definitions into the dropdown
+  // Load definitions into the dropdown
   async function refreshPredefinedItems() {
+    if (!fldPredef) return; // not initialized yet
     const list = await loadItemDefinitions(db);
     defs = Object.fromEntries(list.map(d => [d.id, d]));
-    ddPredef.innerHTML = `<option value="">None (custom)</option>`;
+    fldPredef.innerHTML = `<option value="">None (custom)</option>`;
     for (const d of list) {
       const o = document.createElement("option");
       o.value = d.id;
       o.textContent = d.name;
-      ddPredef.appendChild(o);
+      fldPredef.appendChild(o);
     }
   }
-  refreshPredefinedItems(); // load immediately
 
-  // Open existing‐marker editor
+  // Build the modal on first open
+  function ensureBuilt() {
+    if (modal) return;
+
+    // Create the modal shell
+    const created = createModal({
+      id:         "edit-marker-modal",
+      title:      "Edit Marker",
+      size:       "small",
+      backdrop:   false,
+      draggable:  true,
+      withDivider:true,
+      onClose:    () => closeModal(modal)
+    });
+    modal   = created.modal;
+    content = created.content;
+
+    // Only for admins
+    modal.classList.add("admin-only");
+
+    // Build form element
+    form = document.createElement("form");
+    form.id = "edit-form";
+
+    // Type selector
+    const { row: rowType, select: selectType } =
+      createDropdownField("Type:", "fld-type", [
+        { value: "Door", label: "Door" },
+        { value: "Extraction Portal", label: "Extraction Portal" },
+        { value: "Item", label: "Item" },
+        { value: "Teleport", label: "Teleport" },
+        { value: "Spawn Point", label: "Spawn Point" }
+      ], { showColor: false });
+    fldType = selectType;
+
+    // Predefined‐item selector
+    const { row: rowPredef, select: selectPredef } =
+      createDropdownField("Item:", "fld-predef", [], { showColor: false });
+    fldPredef = selectPredef;
+
+    // Marker form API
+    formApi    = createMarkerForm();
+    rowButtons = createFormButtonRow(() => closeModal(modal));
+
+    // Group item‐specific rows
+    blockItem = document.createElement("div");
+    blockItem.classList.add("item-gap");
+    blockItem.append(
+      formApi.fields.fldRarity.closest(".field-row"),
+      formApi.fields.fldItemType.closest(".field-row"),
+      formApi.fields.fldDesc.closest(".field-row")
+    );
+
+    // Assemble form DOM
+    form.append(
+      formApi.fields.fldName.closest(".field-row"),
+      rowType,
+      rowPredef,
+      blockItem,
+      formApi.fields.extraRow,
+      formApi.fields.fldImgS.closest(".field-row"),
+      formApi.fields.fldImgL.closest(".field-row"),
+      formApi.fields.fldVid.closest(".field-row"),
+      rowButtons
+    );
+    content.appendChild(form);
+
+    // Show/hide item block
+    const toggleSections = (isItem) => {
+      blockItem.style.display = isItem ? "block" : "none";
+      rowPredef.style.display = isItem ? "flex"  : "none";
+    };
+    fldType.onchange = () => toggleSections(fldType.value === "Item");
+
+    // Predef onchange
+    fldPredef.onchange = () => {
+      const def = defs[fldPredef.value] || {};
+      formApi.setFromDefinition(def);
+      formApi.initPickrs();
+    };
+
+    // Load defs now
+    refreshPredefinedItems();
+  }
+
+  // The openEdit API
   function openEdit(markerObj, data, evt, onSave) {
+    ensureBuilt();
+
+    // Populate form
     populate(data);
     formApi.initPickrs();
+
+    // Show modal
     openModalAt(modal, evt);
 
-    form.onsubmit = e => {
+    // Handle save
+    form.onsubmit = (e) => {
       e.preventDefault();
       Object.assign(data, harvest(data.coords));
       onSave(data);
@@ -109,38 +131,42 @@ export function initMarkerModal(db) {
     };
   }
 
-  // Open create‐new‐marker editor
+  // The openCreate API
   function openCreate(coords, type, evt, onCreate) {
+    ensureBuilt();
+
     populate({ type });
     formApi.initPickrs();
     openModalAt(modal, evt);
 
-    form.onsubmit = e => {
+    form.onsubmit = (e) => {
       e.preventDefault();
       onCreate(harvest(coords));
       closeModal(modal);
     };
   }
 
-  // Fill in fields from an existing marker or custom data
+  // Populate fields from data
   function populate(data = { type: "Item" }) {
     fldType.value = data.type;
-    toggleSections(data.type === "Item");
+    const isItem = data.type === "Item";
+    blockItem.style.display = isItem ? "block" : "none";
+    fldPredef.parentElement.style.display = isItem ? "flex" : "none";
 
-    if (data.type === "Item" && data.predefinedItemId && defs[data.predefinedItemId]) {
+    if (isItem && data.predefinedItemId && defs[data.predefinedItemId]) {
       const def = defs[data.predefinedItemId];
-      ddPredef.value = def.id;
+      fldPredef.value = def.id;
       formApi.setFromDefinition(def);
     } else {
-      ddPredef.value = "";
-      formApi.setFromDefinition(data.type === "Item" ? {} : data);
+      fldPredef.value = "";
+      formApi.setFromDefinition(isItem ? {} : data);
     }
   }
 
-  // Harvest form data into a save‐object
+  // Harvest the form back into a marker object
   function harvest(coords) {
     const type = fldType.value;
-    const sel  = ddPredef.value;
+    const sel  = fldPredef.value;
     if (type === "Item" && sel && defs[sel]) {
       const d = defs[sel];
       return {
@@ -161,7 +187,6 @@ export function initMarkerModal(db) {
         video:            d.video || ""
       };
     }
-
     const c = formApi.getCustom();
     return {
       type,
@@ -171,7 +196,6 @@ export function initMarkerModal(db) {
     };
   }
 
-  // Public API for wiring up from script.js
   return {
     openEdit,
     openCreate,
