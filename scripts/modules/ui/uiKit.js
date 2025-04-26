@@ -1,4 +1,4 @@
-// @version: 28
+// @version: 29
 // @file: /scripts/modules/ui/uiKit.js
 
 import { createPickr } from "./pickrManager.js";
@@ -85,7 +85,6 @@ export function createModal({
   });
 
   header.append(titleEl, closeBtn);
-
   content.appendChild(header);
   if (withDivider) content.appendChild(document.createElement("hr"));
   modal.appendChild(content);
@@ -110,8 +109,9 @@ export function createModal({
 
 function makeModalDraggable(modalEl, handle) {
   let offsetX = 0,
-    offsetY = 0,
-    dragging = false;
+      offsetY = 0,
+      dragging = false;
+
   handle.onmousedown = e => {
     dragging = true;
     offsetX = e.clientX - modalEl.offsetLeft;
@@ -119,7 +119,7 @@ function makeModalDraggable(modalEl, handle) {
     document.onmousemove = e2 => {
       if (!dragging) return;
       modalEl.style.left = `${e2.clientX - offsetX}px`;
-      modalEl.style.top = `${e2.clientY - offsetY}px`;
+      modalEl.style.top  = `${e2.clientY - offsetY}px`;
       modalEl.style.position = "absolute";
     };
     document.onmouseup = () => {
@@ -133,18 +133,19 @@ function makeModalDraggable(modalEl, handle) {
 export function closeModal(modal) {
   console.log("[uiKit] closeModal called on modal:", modal.id);
   modal.style.display = "none";
+  modal.style.zIndex = "-1";
   modal.dispatchEvent(new Event("close"));
 }
 
 export function openModal(modal) {
   console.log("[uiKit] openModal called on modal:", modal.id);
   modal.style.display = "block";
+  modal.style.zIndex = "2000";
   requestAnimationFrame(() => {
     modal.style.backgroundColor = modal.classList.contains("modal-large")
       ? "rgba(0, 0, 0, 0.5)"
       : "transparent";
   });
-
   if (!modal.dataset.lifecycleAttached) {
     attachModalLifecycle(modal);
   }
@@ -154,9 +155,9 @@ export function openModalAt(modal, evt) {
   console.log("[uiKit] openModalAt called on modal:", modal.id);
   openModal(modal);
   const content = modal.querySelector(".modal-content");
-  const rect = content.getBoundingClientRect();
+  const rect    = content.getBoundingClientRect();
   content.style.left = `${evt.clientX - rect.width}px`;
-  content.style.top = `${evt.clientY - rect.height / 2}px`;
+  content.style.top  = `${evt.clientY - rect.height / 2}px`;
 }
 
 // ─── Field Builders ───────────────────────────────────────────────────────────
@@ -244,29 +245,29 @@ export function createFormButtonRow(
   row.className = "field-row";
   row.style.justifyContent = "center";
   row.style.marginTop = "10px";
+
   const btnSave = document.createElement("button");
   btnSave.type = "submit";
   btnSave.className = "ui-button";
   btnSave.textContent = saveText;
+
   const btnCancel = document.createElement("button");
   btnCancel.type = "button";
   btnCancel.className = "ui-button";
   btnCancel.textContent = cancelText;
   btnCancel.onclick = onCancel;
+
   row.append(btnSave, btnCancel);
   return row;
 }
 
 // ─── Extra-Info Block ─────────────────────────────────────────────────────────
 
-export function createExtraInfoBlock(options = {}) {
-  const { defaultColor = "#E5E6E8", readonly = false } = options;
-
+export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = false } = {}) {
   const wrap = document.createElement("div");
   wrap.className = "extra-info-block";
 
   const lineWrap = document.createElement("div");
-
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
   btnAdd.textContent = "+";
@@ -289,9 +290,7 @@ export function createExtraInfoBlock(options = {}) {
       input.readOnly = readonly;
       input.oninput = () => {
         line.text = input.value;
-        wrap
-          .closest("form")
-          ?.dispatchEvent(new Event("input", { bubbles: true }));
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       };
 
       const color = document.createElement("div");
@@ -307,9 +306,7 @@ export function createExtraInfoBlock(options = {}) {
       btnRemove.onclick = () => {
         lines.splice(i, 1);
         render();
-        wrap
-          .closest("form")
-          ?.dispatchEvent(new Event("input", { bubbles: true }));
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       };
 
       row.append(input, color);
@@ -318,22 +315,15 @@ export function createExtraInfoBlock(options = {}) {
 
       const pickr = createPickr(`#${color.id}`);
       line._pickr = pickr;
-
-      setTimeout(() => {
-        pickr.setColor(line.color || defaultColor);
-      }, 0);
+      setTimeout(() => pickr.setColor(line.color || defaultColor), 0);
 
       pickr.on("change", colorObj => {
         line.color = colorObj.toHEXA().toString();
-        wrap
-          .closest("form")
-          ?.dispatchEvent(new Event("input", { bubbles: true }));
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       });
       pickr.on("save", colorObj => {
         line.color = colorObj.toHEXA().toString();
-        wrap
-          .closest("form")
-          ?.dispatchEvent(new Event("input", { bubbles: true }));
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       });
     });
   }
@@ -341,28 +331,21 @@ export function createExtraInfoBlock(options = {}) {
   btnAdd.onclick = () => {
     lines.push({ text: "", color: defaultColor });
     render();
-    wrap
-      .closest("form")
-      ?.dispatchEvent(new Event("input", { bubbles: true }));
+    wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
   };
 
-  function getLines() {
-    return lines.map(l => ({
+  return {
+    block: wrap,
+    getLines: () => lines.map(l => ({
       text: l.text,
       color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
-    }));
-  }
-
-  function setLines(newLines, isReadonly = false) {
-    lines = newLines.map(l => ({
-      text: l.text || "",
-      color: l.color || defaultColor
-    }));
-    render();
-    if (isReadonly) btnAdd.style.display = "none";
-  }
-
-  return { block: wrap, getLines, setLines };
+    })),
+    setLines: (newLines, isReadonly = false) => {
+      lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
+      render();
+      if (isReadonly) btnAdd.style.display = "none";
+    }
+  };
 }
 
 // ─── Layout Switcher Control ─────────────────────────────────────────────────
@@ -378,7 +361,7 @@ export function createLayoutSwitcher({
   wrap.style.gap = "4px";
 
   const layouts = {
-    row: { icon: "📄", label: "Row View" },
+    row:     { icon: "📄", label: "Row View" },
     stacked: { icon: "🧾", label: "Stacked View" },
     gallery: { icon: "🖼️", label: "Gallery View" }
   };
@@ -391,9 +374,7 @@ export function createLayoutSwitcher({
     btn.dataset.layout = layout;
 
     btn.onclick = () => {
-      wrap
-        .querySelectorAll(".layout-button")
-        .forEach(b => b.classList.remove("active"));
+      wrap.querySelectorAll(".layout-button").forEach(b => b.classList.remove("active"));
       btn.classList.add("active");
       if (onChange) onChange(layout);
     };
