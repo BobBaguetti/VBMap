@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.20
+// @version: 5.21
 
 import { initializeApp } from "firebase/app";
 import {
@@ -62,7 +62,7 @@ let groupingOn = false;
 
 
 /* ------------------------------------------------------------------ *
- *  Admin Auth → Sidebar → Initial Marker Load
+ *  Admin Auth → Sidebar → Marker Loading → Definitions Subscription
  * ------------------------------------------------------------------ */
 initAdminAuth();
 
@@ -99,12 +99,12 @@ onAuthStateChanged(auth, async user => {
   document.body.classList.toggle("is-admin", isAdmin);
 
   if (!initialized) {
-    // Setup sidebar now that .is-admin is set
+    // 1) Sidebar
     ({ filterMarkers, loadItemFilters } = await setupSidebar(
       map, layers, allMarkers, db, groupingCallbacks
     ));
 
-    // Load existing markers
+    // 2) Initial Marker Load
     const markers = await loadMarkers(db);
     markers.forEach(m => {
       if (!m.type || !layers[m.type]) return;
@@ -112,11 +112,56 @@ onAuthStateChanged(auth, async user => {
       addMarker(m, callbacks);
     });
 
+    // 3) Definitions subscription
+    subscribeItemDefinitions(db, async () => {
+      await markerForm.refreshPredefinedItems();
+      const { loadItemDefinitions } = await import(
+        "./modules/services/itemDefinitionsService.js"
+      );
+      const defsList = await loadItemDefinitions(db);
+      const defMap   = Object.fromEntries(defsList.map(d => [d.id, d]));
+
+      allMarkers.forEach(({ markerObj, data }) => {
+        if (!data.predefinedItemId) return;
+        const def = defMap[data.predefinedItemId];
+        if (!def) return;
+
+        Object.assign(data, {
+          name:             def.name,
+          nameColor:        def.nameColor    || "#E5E6E8",
+          rarity:           def.rarity,
+          rarityColor:      def.rarityColor  || "#E5E6E8",
+          description:      def.description,
+          descriptionColor: def.descriptionColor || "#E5E6E8",
+          extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
+          imageSmall:       def.imageSmall,
+          imageBig:         def.imageBig,
+          value:            def.value ?? null,
+          quantity:         def.quantity ?? null
+        });
+
+        markerObj.setPopupContent(renderPopup(data));
+
+        if (document.body.classList.contains("is-admin")) {
+          firebaseUpdateMarker(db, data)
+            .then(() => console.log("🔄 Propagated def to marker:", data.id, data))
+            .catch(err => {
+              if (err.code !== "permission-denied") console.error(err);
+            });
+        }
+      });
+
+      await loadItemFilters();
+      filterMarkers();
+    });
+
+    // 4) initial filter
     await loadItemFilters();
     filterMarkers();
+
     initialized = true;
   } else {
-    // On subsequent auth-changes, just re-filter
+    // on re-auth, just re-filter
     await loadItemFilters();
     filterMarkers();
   }
@@ -130,52 +175,9 @@ const markerForm = initMarkerModal(db);
 const itemModal  = initItemDefinitionsModal(db);
 const questModal = initQuestDefinitionsModal(db);
 
-subscribeItemDefinitions(db, async () => {
-  await markerForm.refreshPredefinedItems();
-  const { loadItemDefinitions } = await import(
-    "./modules/services/itemDefinitionsService.js"
-  );
-  const defsList = await loadItemDefinitions(db);
-  const defMap   = Object.fromEntries(defsList.map(d => [d.id, d]));
-
-  allMarkers.forEach(({ markerObj, data }) => {
-    if (!data.predefinedItemId) return;
-    const def = defMap[data.predefinedItemId];
-    if (!def) return;
-
-    Object.assign(data, {
-      name:             def.name,
-      nameColor:        def.nameColor    || "#E5E6E8",
-      rarity:           def.rarity,
-      rarityColor:      def.rarityColor  || "#E5E6E8",
-      description:      def.description,
-      descriptionColor: def.descriptionColor || "#E5E6E8",
-      extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
-      imageSmall:       def.imageSmall,
-      imageBig:         def.imageBig,
-      value:            def.value ?? null,
-      quantity:         def.quantity ?? null
-    });
-
-    markerObj.setPopupContent(renderPopup(data));
-
-    // Use body class instead of undefined `isAdmin`
-    if (document.body.classList.contains("is-admin")) {
-      firebaseUpdateMarker(db, data)
-        .then(() => console.log("🔄 Propagated def to marker:", data.id, data))
-        .catch(err => {
-          if (err.code !== "permission-denied") console.error(err);
-        });
-    }
-  });
-
-  await loadItemFilters();
-  filterMarkers();
-});
-
 
 /* ------------------------------------------------------------------ *
- *  Add & Persist Marker
+ *  Add & Persist Marker (with logging)
  * ------------------------------------------------------------------ */
 async function addAndPersist(data) {
   const markerObj = addMarker(data, callbacks);
@@ -231,7 +233,7 @@ const callbacks = {
 
 
 /* ------------------------------------------------------------------ *
- *  Context-Menu & Scrollbars
+ *  Context-Menu & Floating Scrollbars
  * ------------------------------------------------------------------ */
 map.on("contextmenu", evt => {
   const items = [];
