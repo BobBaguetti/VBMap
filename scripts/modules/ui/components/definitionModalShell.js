@@ -1,4 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionModalShell.js
+// @version: 3 — suppressed auto-show of preview, now shows only on open
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher } from "../uiKit.js";
@@ -27,6 +28,7 @@ export function createDefinitionModalShell({
     }
   });
 
+  // Header layout switcher
   const layoutSwitcher = createLayoutSwitcher({
     available: layoutOptions,
     defaultView: layoutOptions[0],
@@ -34,38 +36,40 @@ export function createDefinitionModalShell({
   });
   header.appendChild(layoutSwitcher);
 
+  // Body wrapper
   const bodyWrap = document.createElement("div");
-  bodyWrap.style.display = "flex";
-  bodyWrap.style.flexDirection = "column";
-  bodyWrap.style.flex = "1 1 auto";
-  bodyWrap.style.minHeight = 0;
+  Object.assign(bodyWrap.style, {
+    display: "flex",
+    flexDirection: "column",
+    flex: "1 1 auto",
+    minHeight: "0"
+  });
   content.appendChild(bodyWrap);
 
   let previewApi = null;
+  let showPreview = null;
 
   if (withPreview && previewType) {
     const previewPanel = document.createElement("div");
-    previewPanel.style.zIndex = 1101;
+    previewPanel.style.zIndex = "1101";
     document.body.appendChild(previewPanel);
 
     previewApi = createPreviewPanel(previewType, previewPanel);
 
     const positionPreview = () => {
-      const modalRect = modal.querySelector(".modal-content")?.getBoundingClientRect();
-      const previewRect = previewPanel.getBoundingClientRect();
-      if (modalRect) {
-        previewPanel.style.left = `${modalRect.right + 30}px`;
-        previewPanel.style.top = `${modalRect.top + (modalRect.height / 2) - (previewRect.height / 2)}px`;
+      const mc = modal.querySelector(".modal-content")?.getBoundingClientRect();
+      const pr = previewPanel.getBoundingClientRect();
+      if (mc) {
         previewPanel.style.position = "absolute";
+        previewPanel.style.left   = `${mc.right + 30}px`;
+        previewPanel.style.top    = `${mc.top + (mc.height/2) - (pr.height/2)}px`;
       }
     };
 
-    const showPreview = () => {
+    showPreview = () => {
       positionPreview();
-      previewApi?.show();
+      previewApi.show();
     };
-
-    setTimeout(showPreview, 0);
   }
 
   return {
@@ -75,7 +79,13 @@ export function createDefinitionModalShell({
     bodyWrap,
     layoutSwitcher,
     previewApi,
-    open: () => openModal(modal),
-    close: () => closeModal(modal)
+    open: () => {
+      openModal(modal);
+      if (withPreview && showPreview) showPreview();
+    },
+    close: () => {
+      if (withPreview && previewApi) previewApi.hide();
+      closeModal(modal);
+    }
   };
 }
