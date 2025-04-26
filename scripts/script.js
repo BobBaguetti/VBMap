@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.17
+// @version: 5.18
 
 import { initializeApp } from "firebase/app";
 import {
@@ -51,7 +51,6 @@ onAuthStateChanged(auth, async user => {
     (await getIdTokenResult(user)).claims.admin
   );
   document.body.classList.toggle("is-admin", isAdmin);
-  // (optional) you could re-run sidebar filters here if needed
 });
 
 
@@ -151,19 +150,16 @@ subscribeItemDefinitions(db, async () => {
       quantity:         def.quantity ?? null
     });
 
-    if (def.itemType) {
-      data.itemType      = def.itemType;
-      data.itemTypeColor = def.itemTypeColor || "#E5E6E8";
-    }
-
     // update popup content
     markerObj.setPopupContent(renderPopup(data));
 
     // persist updates for admins
     if (document.body.classList.contains("is-admin")) {
-      firebaseUpdateMarker(db, data).catch(err => {
-        if (err.code !== "permission-denied") console.error(err);
-      });
+      firebaseUpdateMarker(db, data)
+        .then(() => console.log("🔄 Propagated def to marker:", data.id, data))
+        .catch(err => {
+          if (err.code !== "permission-denied") console.error(err);
+        });
     }
   });
 
@@ -178,7 +174,7 @@ subscribeItemDefinitions(db, async () => {
 async function addAndPersist(data) {
   const markerObj = addMarker(data, callbacks);
   const saved     = await firebaseAddMarker(db, data);
-  console.log("✅ Marker saved with ID:", saved.id);
+  console.log("✅ Marker created in Firestore:", saved.id, data);
   data.id         = saved.id;
   return markerObj;
 }
@@ -206,19 +202,29 @@ function addMarker(data, cbs = {}) {
 }
 
 const callbacks = {
-  onEdit:   (markerObj, data, ev) => {
+  onEdit: (markerObj, data, ev) => {
     markerForm.openEdit(markerObj, data, ev, updated => {
       markerObj.setPopupContent(renderPopup(updated));
-      firebaseUpdateMarker(db, updated);
+      firebaseUpdateMarker(db, updated)
+        .then(() => console.log("✏️ Marker updated:", updated.id, updated))
+        .catch(err => console.error("❌ Update failed:", err));
     });
   },
   onCopy:   (_, data) => copyMgr.startCopy(data),
-  onDragEnd:(_, data) => firebaseUpdateMarker(db, data),
+  onDragEnd:(_, data) => {
+    firebaseUpdateMarker(db, data)
+      .then(() => console.log("🚚 Marker moved:", data.id, data.coords))
+      .catch(err => console.error("❌ Move failed:", err));
+  },
   onDelete:(markerObj, data) => {
     layers[data.type].removeLayer(markerObj);
     const idx = allMarkers.findIndex(o => o.data.id === data.id);
     if (idx !== -1) allMarkers.splice(idx, 1);
-    if (data.id) firebaseDeleteMarker(db, data.id);
+    if (data.id) {
+      firebaseDeleteMarker(db, data.id)
+        .then(() => console.log("🗑️ Marker deleted:", data.id))
+        .catch(err => console.error("❌ Delete failed:", err));
+    }
   }
 };
 
