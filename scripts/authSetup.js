@@ -1,5 +1,5 @@
 // @file: /scripts/authSetup.js
-// @version: 3
+// @version: 4
 
 import {
   getAuth,
@@ -20,41 +20,55 @@ export function initAdminAuth() {
     return;
   }
 
+  // Create the sign-in/out button
   const authBtn = document.createElement("button");
   authBtn.id        = "auth-btn";
   authBtn.className = "ui-button";
   settingsSect.prepend(authBtn);
 
-  async function updateUI(user) {
+  // Try to pick up a pending redirect result (so onAuthStateChanged fires correctly)
+  getRedirectResult(auth).catch(err => {
+    // ignore the "no auth event" error when there was no redirect to pick up
+    if (err.code !== "auth/no-auth-event") {
+      console.error("[authSetup] Redirect result error:", err);
+    }
+  });
+
+  // Update UI whenever auth state changes
+  onAuthStateChanged(auth, async user => {
     if (user) {
-      const idToken = await user.getIdTokenResult();
-      if (idToken.claims.admin) {
+      // If we’re signed in, check for the custom 'admin' claim
+      const { claims } = await user.getIdTokenResult();
+      if (claims.admin) {
         authBtn.textContent = "Sign out";
         authBtn.onclick     = () => auth.signOut();
         document.querySelectorAll(".admin-only")
                 .forEach(el => el.style.display = "");
         return;
       }
+      // if not admin, force sign-out to reset everything
       await auth.signOut();
     }
 
+    // No user or just signed out: show “Sign in” button
     authBtn.textContent = "Sign in";
     authBtn.onclick     = onSignInClick;
     document.querySelectorAll(".admin-only")
             .forEach(el => el.style.display = "none");
-  }
+  });
 
+  // Single click handler: popup → fallback to redirect (especially on GitHub Pages)
   async function onSignInClick() {
-    // force redirect on GitHub Pages (or any domain you choose)
     const host = window.location.host.toLowerCase();
+    // Force redirect on any *.github.io domain
     if (host.endsWith("github.io")) {
       return signInWithRedirect(auth, provider);
     }
-
-    // otherwise try popup → fallback to redirect
+    // Otherwise try popup first
     try {
       await signInWithPopup(auth, provider);
     } catch (e) {
+      // fallback on known popup/redirect errors
       if (
         e.code === "auth/operation-not-supported-in-this-environment" ||
         e.code === "auth/unauthorized-domain" ||
@@ -62,17 +76,8 @@ export function initAdminAuth() {
       ) {
         await signInWithRedirect(auth, provider);
       } else {
-        console.error("Sign-in error:", e);
+        console.error("[authSetup] Sign-in error:", e);
       }
     }
   }
-
-  // pick up a redirect result (so onAuthStateChanged still fires)
-  getRedirectResult(auth).catch(err => {
-    if (err.code !== "auth/no-auth-event") {
-      console.error("Redirect result error:", err);
-    }
-  });
-
-  onAuthStateChanged(auth, updateUI);
 }
