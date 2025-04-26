@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 18 -->
+<!-- @version: 19 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -52,7 +52,7 @@
     href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css"
   />
 
-  <!-- ─── Import map ─────────────────────────────────────────────────── -->
+  <!-- Import map for Firebase -->
   <script type="importmap">
   {
     "imports": {
@@ -62,11 +62,10 @@
     }
   }
   </script>
-  <!-- Load the shim immediately so the import map is applied to subsequent modules -->
   <script src="https://ga.jspm.io/npm:es-module-shims@1.5.10/dist/es-module-shims.js"></script>
 </head>
 <body>
-  <!-- Sidebar Toggle Button -->
+  <!-- Sidebar Toggle -->
   <button id="sidebar-toggle">◀︎</button>
 
   <!-- Sidebar -->
@@ -88,7 +87,9 @@
       </div>
       <div class="filter-group" id="item-filters">
         <h3>Items</h3>
-        <div class="toggle-group" id="item-filter-list"><!-- dynamically populated --></div>
+        <div class="toggle-group" id="item-filter-list">
+          <!-- dynamically populated -->
+        </div>
       </div>
     </div>
 
@@ -104,7 +105,7 @@
     </div>
   </div>
 
-  <!-- Map Container -->
+  <!-- Map -->
   <div id="map"></div>
 
   <!-- Video Popup -->
@@ -115,19 +116,20 @@
     </video>
   </div>
 
-  <!-- Paste Mode Tooltip -->
-  <div id="paste-tooltip" style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
+  <!-- Paste Tooltip -->
+  <div
+    id="paste-tooltip"
+    style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;"
+  >
     Paste Mode ON
   </div>
 
-  <!-- Note: All modals are created/injected by your JS. No static <div class="modal"> remains here. -->
-
-  <!-- Leaflet & MarkerCluster scripts -->
+  <!-- LEAFLET & PICKR SCRIPTS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
 
-  <!-- Your app entrypoint -->
+  <!-- YOUR APP ENTRYPOINT -->
   <script type="module" src="scripts/script.js"></script>
 </body>
 </html>
