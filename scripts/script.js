@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.14
+// @version: 5.15
 
 import { initializeApp }   from "firebase/app";
 import {
@@ -33,10 +33,15 @@ import { initAdminAuth } from "./authSetup.js";
 
 
 /* ------------------------------------------------------------------ *
- *  Firebase Initialization (config loaded from /__/firebase/init.json)
+ *  Firebase Configuration & Initialization
  * ------------------------------------------------------------------ */
-const app  = initializeApp();
-const auth = getAuth();
+// load the JSON you placed at /firebase/init.json
+const resp            = await fetch('/firebase/init.json');
+if (!resp.ok) throw new Error(`Could not load Firebase config: ${resp.status}`);
+const firebaseConfig  = await resp.json();
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 const db   = getFirestore(app);
 
 
