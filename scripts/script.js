@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.16.1
+// @version: 5.17
 
 import { initializeApp } from "firebase/app";
 import {
@@ -39,6 +39,20 @@ import { initAdminAuth } from "./authSetup.js";
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
+
+
+/* ------------------------------------------------------------------ *
+ *  Admin Auth Setup (must run before sidebar)
+ * ------------------------------------------------------------------ */
+initAdminAuth();
+onAuthStateChanged(auth, async user => {
+  const isAdmin = Boolean(
+    user &&
+    (await getIdTokenResult(user)).claims.admin
+  );
+  document.body.classList.toggle("is-admin", isAdmin);
+  // (optional) you could re-run sidebar filters here if needed
+});
 
 
 /* ------------------------------------------------------------------ *
@@ -96,18 +110,6 @@ const groupingCallbacks = {
 const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db, groupingCallbacks
 );
-
-// Initialize admin auth UI
-initAdminAuth();
-
-// Watch auth state and toggle admin UI
-onAuthStateChanged(auth, async user => {
-  const isAdmin = Boolean(
-    user &&
-    (await getIdTokenResult(user)).claims.admin
-  );
-  document.body.classList.toggle("is-admin", isAdmin);
-});
 
 
 /* ------------------------------------------------------------------ *
@@ -188,7 +190,6 @@ async function addAndPersist(data) {
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 function addMarker(data, cbs = {}) {
-  // Pass admin status so createMarker shows the correct menu
   const isAdmin = document.body.classList.contains("is-admin");
   const markerObj = createMarker(
     data,

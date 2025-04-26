@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 12 — modal creation deferred until first open*
+// @version: 12.1 — added Cancel‐button hook
 
 import { createModal, closeModal, openModalAt } from "../uiKit.js";
 import { loadItemDefinitions }                 from "../../services/itemDefinitionsService.js";
@@ -14,7 +14,7 @@ export function initMarkerModal(db) {
 
   // Load definitions into the dropdown
   async function refreshPredefinedItems() {
-    if (!fldPredef) return; // not initialized yet
+    if (!fldPredef) return;
     const list = await loadItemDefinitions(db);
     defs = Object.fromEntries(list.map(d => [d.id, d]));
     fldPredef.innerHTML = `<option value="">None (custom)</option>`;
@@ -30,7 +30,6 @@ export function initMarkerModal(db) {
   function ensureBuilt() {
     if (modal) return;
 
-    // Create the modal shell
     const created = createModal({
       id:         "edit-marker-modal",
       title:      "Edit Marker",
@@ -43,14 +42,13 @@ export function initMarkerModal(db) {
     modal   = created.modal;
     content = created.content;
 
-    // Only for admins
     modal.classList.add("admin-only");
 
-    // Build form element
+    // Form setup
     form = document.createElement("form");
     form.id = "edit-form";
 
-    // Type selector
+    // Type dropdown
     const { row: rowType, select: selectType } =
       createDropdownField("Type:", "fld-type", [
         { value: "Door", label: "Door" },
@@ -61,16 +59,20 @@ export function initMarkerModal(db) {
       ], { showColor: false });
     fldType = selectType;
 
-    // Predefined‐item selector
+    // Predefined dropdown
     const { row: rowPredef, select: selectPredef } =
       createDropdownField("Item:", "fld-predef", [], { showColor: false });
     fldPredef = selectPredef;
 
-    // Marker form API
+    // Marker form API + button row
     formApi    = createMarkerForm();
     rowButtons = createFormButtonRow(() => closeModal(modal));
 
-    // Group item‐specific rows
+    // Hook the Cancel button too
+    const cancelBtn = rowButtons.querySelector('button[type="button"]');
+    if (cancelBtn) cancelBtn.onclick = () => closeModal(modal);
+
+    // Group item-specific rows
     blockItem = document.createElement("div");
     blockItem.classList.add("item-gap");
     blockItem.append(
@@ -79,7 +81,7 @@ export function initMarkerModal(db) {
       formApi.fields.fldDesc.closest(".field-row")
     );
 
-    // Assemble form DOM
+    // Assemble form
     form.append(
       formApi.fields.fldName.closest(".field-row"),
       rowType,
@@ -93,37 +95,34 @@ export function initMarkerModal(db) {
     );
     content.appendChild(form);
 
-    // Show/hide item block
-    const toggleSections = (isItem) => {
+    // Toggle item fields
+    fldType.onchange = () => {
+      const isItem = fldType.value === "Item";
       blockItem.style.display = isItem ? "block" : "none";
       rowPredef.style.display = isItem ? "flex"  : "none";
     };
-    fldType.onchange = () => toggleSections(fldType.value === "Item");
 
-    // Predef onchange
     fldPredef.onchange = () => {
       const def = defs[fldPredef.value] || {};
       formApi.setFromDefinition(def);
       formApi.initPickrs();
     };
 
-    // Load defs now
+    // Initial data load
     refreshPredefinedItems();
   }
 
-  // The openEdit API
   function openEdit(markerObj, data, evt, onSave) {
     ensureBuilt();
 
-    // Populate form
-    populate(data);
+    // Populate & show
+    formApi.setFromDefinition(data);
     formApi.initPickrs();
-
-    // Show modal
     openModalAt(modal, evt);
 
-    // Handle save
-    form.onsubmit = (e) => {
+    // Clear old handler, then wire save
+    form.onsubmit = null;
+    form.onsubmit = e => {
       e.preventDefault();
       Object.assign(data, harvest(data.coords));
       onSave(data);
@@ -131,22 +130,21 @@ export function initMarkerModal(db) {
     };
   }
 
-  // The openCreate API
   function openCreate(coords, type, evt, onCreate) {
     ensureBuilt();
 
-    populate({ type });
+    formApi.setFromDefinition({ type });
     formApi.initPickrs();
     openModalAt(modal, evt);
 
-    form.onsubmit = (e) => {
+    form.onsubmit = null;
+    form.onsubmit = e => {
       e.preventDefault();
       onCreate(harvest(coords));
       closeModal(modal);
     };
   }
 
-  // Populate fields from data
   function populate(data = { type: "Item" }) {
     fldType.value = data.type;
     const isItem = data.type === "Item";
@@ -163,37 +161,30 @@ export function initMarkerModal(db) {
     }
   }
 
-  // Harvest the form back into a marker object
   function harvest(coords) {
     const type = fldType.value;
     const sel  = fldPredef.value;
     if (type === "Item" && sel && defs[sel]) {
       const d = defs[sel];
       return {
-        type,
-        coords,
+        type, coords,
         predefinedItemId: sel,
-        name:             d.name,
-        nameColor:        d.nameColor  || "#E5E6E8",
-        itemType:         d.itemType   || "",
-        itemTypeColor:    d.itemTypeColor || "#E5E6E8",
-        rarity:           d.rarity     || "",
-        rarityColor:      d.rarityColor  || "#E5E6E8",
-        description:      d.description || "",
+        name: d.name,
+        nameColor: d.nameColor  || "#E5E6E8",
+        itemType: d.itemType   || "",
+        itemTypeColor: d.itemTypeColor || "#E5E6E8",
+        rarity: d.rarity     || "",
+        rarityColor: d.rarityColor  || "#E5E6E8",
+        description: d.description || "",
         descriptionColor: d.descriptionColor || "#E5E6E8",
-        extraLines:       d.extraLines || [],
-        imageSmall:       d.imageSmall || "",
-        imageBig:         (d.imageBig ?? d.imageLarge) || "",
-        video:            d.video || ""
+        extraLines: d.extraLines || [],
+        imageSmall: d.imageSmall || "",
+        imageBig: (d.imageBig ?? d.imageLarge) || "",
+        video: d.video || ""
       };
     }
     const c = formApi.getCustom();
-    return {
-      type,
-      coords,
-      ...c,
-      imageBig: c.imageBig || ""
-    };
+    return { type, coords, ...c, imageBig: c.imageBig || "" };
   }
 
   return {
