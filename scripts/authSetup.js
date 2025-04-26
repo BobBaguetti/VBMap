@@ -9,7 +9,7 @@ import {
   getRedirectResult,
   onAuthStateChanged,
   getIdTokenResult
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
+} from "firebase/auth";
 
 export function initAdminAuth() {
   const auth = getAuth();
@@ -21,13 +21,13 @@ export function initAdminAuth() {
     return;
   }
 
-  // Create the sign-in/out button
+  // Create the Sign in/out button
   const authBtn = document.createElement("button");
   authBtn.id = "auth-btn";
   authBtn.className = "ui-button";
   settingsSect.prepend(authBtn);
 
-  // Handle any pending redirect result (non-fatal)
+  // Handle any pending redirect flow
   getRedirectResult(auth).catch(err => {
     if (err.code !== "auth/no-auth-event") {
       console.error("[authSetup] Redirect result error:", err);
@@ -45,11 +45,11 @@ export function initAdminAuth() {
                 .forEach(el => el.style.display = "");
         return;
       }
-      // not an admin → force sign-out
+      // Not an admin: sign out
       await auth.signOut();
     }
 
-    // no user or just signed out
+    // No user or signed out
     authBtn.textContent = "Sign in";
     authBtn.onclick     = onSignInClick;
     document.querySelectorAll(".admin-only")

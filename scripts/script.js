@@ -1,26 +1,26 @@
 // @file: /scripts/script.js
 // @version: 5.16
 
-// ← Import app/auth/firestore directly from Firebase’s ESM builds:
-import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+import { initializeApp } from "firebase/app";
 import {
   getAuth,
   onAuthStateChanged,
   getIdTokenResult
-} from "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+} from "firebase/auth";
+import { getFirestore } from "firebase/firestore";
 
-// ← Your manually‐created config file
 import { firebaseConfig } from "../src/firebaseConfig.js";
 
 import { initializeMap }    from "./modules/map/map.js";
 import { showContextMenu }  from "./modules/ui/uiManager.js";
+
 import {
   loadMarkers,
   addMarker    as firebaseAddMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
+
 import { createMarker, renderPopup }            from "./modules/map/markerManager.js";
 import { initItemDefinitionsModal }             from "./modules/ui/modals/itemDefinitionsModal.js";
 import { initMarkerModal }                      from "./modules/ui/modals/markerModal.js";
@@ -30,7 +30,6 @@ import { subscribeItemDefinitions }             from "./modules/services/itemDef
 import { initQuestDefinitionsModal }            from "./modules/ui/modals/questDefinitionsModal.js";
 import { activateFloatingScrollbars }           from "./modules/utils/scrollUtils.js";
 
-// for admin login UI
 import { initAdminAuth } from "./authSetup.js";
 
 
@@ -51,11 +50,11 @@ const clusterItemLayer = L.markerClusterGroup();
 const flatItemLayer    = L.layerGroup();
 
 const layers = {
-  Door:                L.layerGroup(),
-  "Extraction Portal": L.layerGroup(),
-  Item:                flatItemLayer,
-  Teleport:            L.layerGroup(),
-  "Spawn Point":       L.layerGroup()
+  Door:               L.layerGroup(),
+  "Extraction Portal":L.layerGroup(),
+  Item:               flatItemLayer,
+  Teleport:           L.layerGroup(),
+  "Spawn Point":      L.layerGroup()
 };
 
 Object.entries(layers).forEach(([key, layer]) => {
@@ -98,10 +97,10 @@ const { filterMarkers, loadItemFilters } = await setupSidebar(
   map, layers, allMarkers, db, groupingCallbacks
 );
 
-// ← initialise your admin‐login UI
+// Initialize admin auth UI
 initAdminAuth();
 
-// ← watch for auth changes and toggle the “is-admin” class on <body>
+// Watch auth state and toggle admin UI
 onAuthStateChanged(auth, async user => {
   const isAdmin = Boolean(
     user &&
@@ -155,15 +154,14 @@ subscribeItemDefinitions(db, async () => {
       data.itemTypeColor = def.itemTypeColor || "#E5E6E8";
     }
 
-    // update popup content for everyone
+    // update popup content
     markerObj.setPopupContent(renderPopup(data));
 
-    // only persist back to Firestore for admins
+    // persist updates for admins
     if (document.body.classList.contains("is-admin")) {
-      firebaseUpdateMarker(db, data)
-        .catch(err => {
-          if (err.code !== "permission-denied") console.error(err);
-        });
+      firebaseUpdateMarker(db, data).catch(err => {
+        if (err.code !== "permission-denied") console.error(err);
+      });
     }
   });
 
