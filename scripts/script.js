@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.19
+// @version: 5.20
 
 import { initializeApp } from "firebase/app";
 import {
@@ -53,8 +53,8 @@ const layers = {
   "Spawn Point":      L.layerGroup()
 };
 
-Object.entries(layers).forEach(([key, layer]) => {
-  if (key !== "Item") layer.addTo(map);
+Object.entries(layers).forEach(([type, layer]) => {
+  if (type !== "Item") layer.addTo(map);
 });
 flatItemLayer.addTo(map);
 
@@ -62,7 +62,7 @@ let groupingOn = false;
 
 
 /* ------------------------------------------------------------------ *
- *  Admin Auth & Sidebar (wait for auth to know is-admin)
+ *  Admin Auth → Sidebar → Initial Marker Load
  * ------------------------------------------------------------------ */
 initAdminAuth();
 
@@ -91,21 +91,32 @@ const groupingCallbacks = {
 };
 
 let filterMarkers, loadItemFilters;
+let initialized = false;
+
 onAuthStateChanged(auth, async user => {
-  const claims = user ? (await getIdTokenResult(user)).claims : {};
+  const claims  = user ? (await getIdTokenResult(user)).claims : {};
   const isAdmin = Boolean(claims.admin);
   document.body.classList.toggle("is-admin", isAdmin);
 
-  // Now that we know admin state, initialize sidebar once
-  if (!filterMarkers) {
+  if (!initialized) {
+    // Setup sidebar now that .is-admin is set
     ({ filterMarkers, loadItemFilters } = await setupSidebar(
       map, layers, allMarkers, db, groupingCallbacks
     ));
-    // initial filtering
+
+    // Load existing markers
+    const markers = await loadMarkers(db);
+    markers.forEach(m => {
+      if (!m.type || !layers[m.type]) return;
+      if (!m.coords) m.coords = [1500, 1500];
+      addMarker(m, callbacks);
+    });
+
     await loadItemFilters();
     filterMarkers();
+    initialized = true;
   } else {
-    // on subsequent auth toggles, re-filter
+    // On subsequent auth-changes, just re-filter
     await loadItemFilters();
     filterMarkers();
   }
@@ -113,7 +124,7 @@ onAuthStateChanged(auth, async user => {
 
 
 /* ------------------------------------------------------------------ *
- *  Marker Modal & Definition Modals
+ *  Marker & Definition Modals
  * ------------------------------------------------------------------ */
 const markerForm = initMarkerModal(db);
 const itemModal  = initItemDefinitionsModal(db);
@@ -148,7 +159,8 @@ subscribeItemDefinitions(db, async () => {
 
     markerObj.setPopupContent(renderPopup(data));
 
-    if (isAdmin) {
+    // Use body class instead of undefined `isAdmin`
+    if (document.body.classList.contains("is-admin")) {
       firebaseUpdateMarker(db, data)
         .then(() => console.log("🔄 Propagated def to marker:", data.id, data))
         .catch(err => {
@@ -163,7 +175,7 @@ subscribeItemDefinitions(db, async () => {
 
 
 /* ------------------------------------------------------------------ *
- *  Add & Persist Marker (with logging)
+ *  Add & Persist Marker
  * ------------------------------------------------------------------ */
 async function addAndPersist(data) {
   const markerObj = addMarker(data, callbacks);
@@ -175,7 +187,7 @@ async function addAndPersist(data) {
 
 
 /* ------------------------------------------------------------------ *
- *  Marker Management Callbacks
+ *  Copy-Paste & Marker Management
  * ------------------------------------------------------------------ */
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
@@ -191,7 +203,7 @@ function addMarker(data, cbs = {}) {
 }
 
 const callbacks = {
-  onEdit: (markerObj, data, ev) => {
+  onEdit:   (markerObj, data, ev) => {
     markerForm.openEdit(markerObj, data, ev, updated => {
       markerObj.setPopupContent(renderPopup(updated));
       firebaseUpdateMarker(db, updated)
@@ -199,13 +211,13 @@ const callbacks = {
         .catch(err => console.error("❌ Update failed:", err));
     });
   },
-  onCopy: (_, data) => copyMgr.startCopy(data),
-  onDragEnd: (_, data) => {
+  onCopy:   (_, data) => copyMgr.startCopy(data),
+  onDragEnd:(_, data) => {
     firebaseUpdateMarker(db, data)
       .then(() => console.log("🚚 Marker moved:", data.id, data.coords))
       .catch(err => console.error("❌ Move failed:", err));
   },
-  onDelete: (markerObj, data) => {
+  onDelete:(markerObj, data) => {
     layers[data.type].removeLayer(markerObj);
     const idx = allMarkers.findIndex(o => o.data.id === data.id);
     if (idx !== -1) allMarkers.splice(idx, 1);
@@ -216,20 +228,6 @@ const callbacks = {
     }
   }
 };
-
-
-/* ------------------------------------------------------------------ *
- *  Load Markers from Firestore
- * ------------------------------------------------------------------ */
-(async () => {
-  const markers = await loadMarkers(db);
-  markers.forEach(m => {
-    if (!m.type || !layers[m.type]) return;
-    if (!m.coords) m.coords = [1500, 1500];
-    addMarker(m, callbacks);
-  });
-  filterMarkers();
-})();
 
 
 /* ------------------------------------------------------------------ *
