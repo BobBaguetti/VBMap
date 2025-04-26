@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.18
+// @version: 5.19
 
 import { initializeApp } from "firebase/app";
 import {
@@ -34,29 +34,12 @@ import { initAdminAuth } from "./authSetup.js";
 
 
 /* ------------------------------------------------------------------ *
- *  Firebase Configuration & Initialization
+ *  Firebase & Map Setup
  * ------------------------------------------------------------------ */
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-
-/* ------------------------------------------------------------------ *
- *  Admin Auth Setup (must run before sidebar)
- * ------------------------------------------------------------------ */
-initAdminAuth();
-onAuthStateChanged(auth, async user => {
-  const isAdmin = Boolean(
-    user &&
-    (await getIdTokenResult(user)).claims.admin
-  );
-  document.body.classList.toggle("is-admin", isAdmin);
-});
-
-
-/* ------------------------------------------------------------------ *
- *  Map & Layers Setup
- * ------------------------------------------------------------------ */
 const { map } = initializeMap();
 
 const clusterItemLayer = L.markerClusterGroup();
@@ -79,10 +62,11 @@ let groupingOn = false;
 
 
 /* ------------------------------------------------------------------ *
- *  Sidebar Setup
+ *  Admin Auth & Sidebar (wait for auth to know is-admin)
  * ------------------------------------------------------------------ */
-const allMarkers = [];
+initAdminAuth();
 
+const allMarkers = [];
 const groupingCallbacks = {
   enableGrouping: () => {
     flatItemLayer.eachLayer(m => {
@@ -106,20 +90,32 @@ const groupingCallbacks = {
   }
 };
 
-const { filterMarkers, loadItemFilters } = await setupSidebar(
-  map, layers, allMarkers, db, groupingCallbacks
-);
+let filterMarkers, loadItemFilters;
+onAuthStateChanged(auth, async user => {
+  const claims = user ? (await getIdTokenResult(user)).claims : {};
+  const isAdmin = Boolean(claims.admin);
+  document.body.classList.toggle("is-admin", isAdmin);
+
+  // Now that we know admin state, initialize sidebar once
+  if (!filterMarkers) {
+    ({ filterMarkers, loadItemFilters } = await setupSidebar(
+      map, layers, allMarkers, db, groupingCallbacks
+    ));
+    // initial filtering
+    await loadItemFilters();
+    filterMarkers();
+  } else {
+    // on subsequent auth toggles, re-filter
+    await loadItemFilters();
+    filterMarkers();
+  }
+});
 
 
 /* ------------------------------------------------------------------ *
- *  Marker Modal
+ *  Marker Modal & Definition Modals
  * ------------------------------------------------------------------ */
 const markerForm = initMarkerModal(db);
-
-
-/* ------------------------------------------------------------------ *
- *  Definitions Modals & Subscriptions
- * ------------------------------------------------------------------ */
 const itemModal  = initItemDefinitionsModal(db);
 const questModal = initQuestDefinitionsModal(db);
 
@@ -150,11 +146,9 @@ subscribeItemDefinitions(db, async () => {
       quantity:         def.quantity ?? null
     });
 
-    // update popup content
     markerObj.setPopupContent(renderPopup(data));
 
-    // persist updates for admins
-    if (document.body.classList.contains("is-admin")) {
+    if (isAdmin) {
       firebaseUpdateMarker(db, data)
         .then(() => console.log("🔄 Propagated def to marker:", data.id, data))
         .catch(err => {
@@ -169,7 +163,7 @@ subscribeItemDefinitions(db, async () => {
 
 
 /* ------------------------------------------------------------------ *
- *  Add & Persist Marker
+ *  Add & Persist Marker (with logging)
  * ------------------------------------------------------------------ */
 async function addAndPersist(data) {
   const markerObj = addMarker(data, callbacks);
@@ -181,19 +175,14 @@ async function addAndPersist(data) {
 
 
 /* ------------------------------------------------------------------ *
- *  Copy-Paste & Marker Management
+ *  Marker Management Callbacks
  * ------------------------------------------------------------------ */
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 function addMarker(data, cbs = {}) {
   const isAdmin = document.body.classList.contains("is-admin");
   const markerObj = createMarker(
-    data,
-    map,
-    layers,
-    showContextMenu,
-    cbs,
-    isAdmin
+    data, map, layers, showContextMenu, cbs, isAdmin
   );
   if (groupingOn) clusterItemLayer.addLayer(markerObj);
   else            flatItemLayer.addLayer(markerObj);
@@ -210,13 +199,13 @@ const callbacks = {
         .catch(err => console.error("❌ Update failed:", err));
     });
   },
-  onCopy:   (_, data) => copyMgr.startCopy(data),
-  onDragEnd:(_, data) => {
+  onCopy: (_, data) => copyMgr.startCopy(data),
+  onDragEnd: (_, data) => {
     firebaseUpdateMarker(db, data)
       .then(() => console.log("🚚 Marker moved:", data.id, data.coords))
       .catch(err => console.error("❌ Move failed:", err));
   },
-  onDelete:(markerObj, data) => {
+  onDelete: (markerObj, data) => {
     layers[data.type].removeLayer(markerObj);
     const idx = allMarkers.findIndex(o => o.data.id === data.id);
     if (idx !== -1) allMarkers.splice(idx, 1);
@@ -244,7 +233,7 @@ const callbacks = {
 
 
 /* ------------------------------------------------------------------ *
- *  Map Context-Menu & Floating Scrollbars
+ *  Context-Menu & Scrollbars
  * ------------------------------------------------------------------ */
 map.on("contextmenu", evt => {
   const items = [];
