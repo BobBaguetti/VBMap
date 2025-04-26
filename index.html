@@ -3,54 +3,39 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Vaultbreakers Interactive Map</title>
 
   <!-- Leaflet & MarkerCluster CSS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"
-  />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css"/>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css"/>
 
   <!-- Core UI styles -->
-  <link rel="stylesheet" href="styles/base.css" />
-  <link rel="stylesheet" href="styles/ui.css" />
-  <link rel="stylesheet" href="styles/sidebar.css" />
-  <link rel="stylesheet" href="styles/popup.css" />
-  <link rel="stylesheet" href="styles/context-menu.css" />
-  <link rel="stylesheet" href="styles/custom-markers.css" />
-  <link rel="stylesheet" href="styles/form.css" />
+  <link rel="stylesheet" href="styles/base.css"/>
+  <link rel="stylesheet" href="styles/ui.css"/>
+  <link rel="stylesheet" href="styles/sidebar.css"/>
+  <link rel="stylesheet" href="styles/popup.css"/>
+  <link rel="stylesheet" href="styles/context-menu.css"/>
+  <link rel="stylesheet" href="styles/custom-markers.css"/>
+  <link rel="stylesheet" href="styles/form.css"/>
 
   <!-- Modal variants -->
-  <link rel="stylesheet" href="styles/modals/modal.base.css" />
-  <link rel="stylesheet" href="styles/modals/modal.small.css" />
-  <link rel="stylesheet" href="styles/modals/modal.large.css" />
+  <link rel="stylesheet" href="styles/modals/modal.base.css"/>
+  <link rel="stylesheet" href="styles/modals/modal.small.css"/>
+  <link rel="stylesheet" href="styles/modals/modal.large.css"/>
 
   <!-- Preview styles -->
-  <link rel="stylesheet" href="styles/preview/itemPreview.css" />
+  <link rel="stylesheet" href="styles/preview/itemPreview.css"/>
 
   <!-- Third-party assets -->
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"
-  />
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css"
-  />
+  <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css"/>
+  <link rel="stylesheet"
+        href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css"/>
 
   <!-- Import map for Firebase -->
   <script type="importmap">
@@ -64,6 +49,7 @@
   </script>
   <script src="https://ga.jspm.io/npm:es-module-shims@1.5.10/dist/es-module-shims.js"></script>
 </head>
+
 <body>
   <!-- Sidebar Toggle -->
   <button id="sidebar-toggle">◀︎</button>
@@ -78,18 +64,16 @@
       <div class="filter-group" id="main-filters">
         <h3>Main</h3>
         <div class="toggle-group">
-          <label><input type="checkbox" checked data-layer="Door" /><span>Door</span></label>
-          <label><input type="checkbox" checked data-layer="Extraction Portal" /><span>Extraction Portal</span></label>
-          <label><input type="checkbox" checked data-layer="Item" /><span>Item</span></label>
-          <label><input type="checkbox" checked data-layer="Teleport" /><span>Teleport</span></label>
-          <label><input type="checkbox" checked data-layer="Spawn Point" /><span>Spawn points</span></label>
+          <label><input type="checkbox" checked data-layer="Door"/><span>Door</span></label>
+          <label><input type="checkbox" checked data-layer="Extraction Portal"/><span>Extraction Portal</span></label>
+          <label><input type="checkbox" checked data-layer="Item"/><span>Item</span></label>
+          <label><input type="checkbox" checked data-layer="Teleport"/><span>Teleport</span></label>
+          <label><input type="checkbox" checked data-layer="Spawn Point"/><span>Spawn points</span></label>
         </div>
       </div>
       <div class="filter-group" id="item-filters">
         <h3>Items</h3>
-        <div class="toggle-group" id="item-filter-list">
-          <!-- dynamically populated -->
-        </div>
+        <div class="toggle-group" id="item-filter-list"><!-- dynamic --></div>
       </div>
     </div>
 
@@ -101,7 +85,7 @@
     <!-- Search -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
-      <input type="text" id="search-bar" placeholder="Search items/locations..." />
+      <input type="text" id="search-bar" placeholder="Search items/locations..."/>
     </div>
   </div>
 
@@ -112,24 +96,25 @@
   <div id="video-popup">
     <button id="video-close">X</button>
     <video id="video-player" width="320" controls>
-      <source id="video-source" src="" type="video/mp4" />
+      <source id="video-source" src="" type="video/mp4"/>
     </video>
   </div>
 
   <!-- Paste Tooltip -->
-  <div
-    id="paste-tooltip"
-    style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff; padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;"
-  >
+  <div id="paste-tooltip"
+       style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff;
+              padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
     Paste Mode ON
   </div>
 
-  <!-- LEAFLET & PICKR SCRIPTS -->
+  <!-- NOTE: NO STATIC MODAL DIVs HERE – your JS creates all modals dynamically -->
+
+  <!-- Leaflet & MarkerCluster scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
 
-  <!-- YOUR APP ENTRYPOINT -->
+  <!-- Your module entrypoint -->
   <script type="module" src="scripts/script.js"></script>
 </body>
 </html>
