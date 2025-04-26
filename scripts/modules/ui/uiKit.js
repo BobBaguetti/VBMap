@@ -29,13 +29,19 @@ export function createModal({
   draggable = false,
   withDivider = false
 }) {
+  // Backdrop container
   const modal = document.createElement("div");
   modal.classList.add("modal", `modal-${size}`);
   modal.id = id;
+  // ── ensure modal backdrop sits above previews
+  modal.style.zIndex = "2000";
   modal.style.backgroundColor = backdrop ? "rgba(0, 0, 0, 0.5)" : "transparent";
 
+  // Inner content box
   const content = document.createElement("div");
   content.classList.add("modal-content");
+  // ── ensure modal content sits above the backdrop
+  content.style.zIndex = "2001";
 
   if (size === "large") {
     Object.assign(content.style, {
@@ -79,6 +85,7 @@ export function createModal({
   if (withDivider) content.appendChild(document.createElement("hr"));
   modal.appendChild(content);
 
+  // Backdrop click → close
   modal.addEventListener("click", e => {
     if (e.target === modal) {
       closeModal(modal);
@@ -86,6 +93,7 @@ export function createModal({
     }
   });
 
+  // Draggable for small modals
   if (draggable && size !== "large") {
     makeModalDraggable(content, header);
   }
