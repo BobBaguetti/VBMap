@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.16
+// @version: 5.16.1
 
 import { initializeApp } from "firebase/app";
 import {
@@ -176,6 +176,7 @@ subscribeItemDefinitions(db, async () => {
 async function addAndPersist(data) {
   const markerObj = addMarker(data, callbacks);
   const saved     = await firebaseAddMarker(db, data);
+  console.log("✅ Marker saved with ID:", saved.id);
   data.id         = saved.id;
   return markerObj;
 }
@@ -187,7 +188,16 @@ async function addAndPersist(data) {
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 function addMarker(data, cbs = {}) {
-  const markerObj = createMarker(data, map, layers, showContextMenu, cbs);
+  // Pass admin status so createMarker shows the correct menu
+  const isAdmin = document.body.classList.contains("is-admin");
+  const markerObj = createMarker(
+    data,
+    map,
+    layers,
+    showContextMenu,
+    cbs,
+    isAdmin
+  );
   if (groupingOn) clusterItemLayer.addLayer(markerObj);
   else            flatItemLayer.addLayer(markerObj);
   allMarkers.push({ markerObj, data });
