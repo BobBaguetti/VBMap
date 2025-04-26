@@ -9,6 +9,8 @@ import {
 }                          from "firebase/auth";
 import { getFirestore }     from "firebase/firestore";
 
+import { firebaseConfig }   from "../src/firebaseConfig.js";
+
 import { initializeMap }    from "./modules/map/map.js";
 import { showContextMenu }  from "./modules/ui/uiManager.js";
 
@@ -35,11 +37,6 @@ import { initAdminAuth } from "./authSetup.js";
 /* ------------------------------------------------------------------ *
  *  Firebase Configuration & Initialization
  * ------------------------------------------------------------------ */
-// load the JSON you placed at /VBMap/firebase/init.json
-const resp           = await fetch('firebase/init.json');
-if (!resp.ok) throw new Error(`Could not load Firebase config: ${resp.status}`);
-const firebaseConfig = await resp.json();
-
 const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
