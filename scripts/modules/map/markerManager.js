@@ -1,9 +1,9 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 9.1
+// @version: 9.2
 
-import { formatRarity }    from "../utils/utils.js";
-import { createIcon }      from "../utils/iconUtils.js";
-import { defaultNameColor } from "../../utils/colorPresets.js";
+import { formatRarity }     from "../utils/utils.js";
+import { createIcon }       from "../utils/iconUtils.js";
+import { defaultNameColor } from "../utils/colorPresets.js";  // <-- path fixed
 
 /**
  * Checks whether a string is a valid image URL.
