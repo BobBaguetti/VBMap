@@ -35,17 +35,16 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css" />
   <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css" />
 
-  <!-- ─── Import map for Firebase v9 modular SDK ──────────────────── -->
+  <!-- ─── Import map for Firebase v9 modular SDK (ESM-shims) ─────────── -->
   <script type="importmap">
   {
     "imports": {
-      "firebase/app":       "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js",
-      "firebase/auth":      "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js",
-      "firebase/firestore": "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"
+      "firebase/app":       "https://esm.sh/firebase@9.22.2/app",
+      "firebase/auth":      "https://esm.sh/firebase@9.22.2/auth",
+      "firebase/firestore": "https://esm.sh/firebase@9.22.2/firestore"
     }
   }
   </script>
-  <!-- Polyfill to support import maps in all browsers -->
   <script async src="https://ga.jspm.io/npm:es-module-shims@1.5.10/dist/es-module-shims.js"></script>
 </head>
 <body>
@@ -127,7 +126,7 @@
   <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
 
-  <!-- Your app entrypoint must be a module now that you’re using import maps -->
+  <!-- Your app entrypoint -->
   <script type="module" src="scripts/script.js"></script>
 </body>
 </html>
