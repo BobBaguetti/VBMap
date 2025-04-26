@@ -1,8 +1,9 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 8
+// @version: 9
 
 import { formatRarity } from "../utils/utils.js";
 import { createIcon }   from "../utils/iconUtils.js";
+import { defaultNameColor } from "../../utils/colorPresets.js";
 
 /**
  * Checks whether a string is a valid image URL.
@@ -34,16 +35,16 @@ export function renderPopup(m) {
     : "";
 
   const nameHTML     =
-    `<div class="popup-name" style="color:${m.nameColor||"#E5E8"};">
+    `<div class="popup-name" style="color:${m.nameColor||defaultNameColor};">
        ${m.name||"Unnamed Item"}
      </div>`;
   const typeHTML     = m.itemType
-    ? `<div class="popup-type" style="color:${m.itemTypeColor||"#E5E8"};">
+    ? `<div class="popup-type" style="color:${m.itemTypeColor||defaultNameColor};">
          ${m.itemType}
        </div>`
     : "";
   const rarityHTML   = m.rarity
-    ? `<div class="popup-rarity" style="color:${m.rarityColor||"#E5E8"};">
+    ? `<div class="popup-rarity" style="color:${m.rarityColor||defaultNameColor};">
          ${formatRarity(m.rarity)}
        </div>`
     : "";
@@ -54,12 +55,12 @@ export function renderPopup(m) {
        </div>`
     : "";
   const descHTML     = m.description
-    ? `<p class="popup-desc" style="color:${m.descriptionColor||"#E5E8"};">
+    ? `<p class="popup-desc" style="color:${m.descriptionColor||defaultNameColor};">
          ${m.description}
        </p>`
     : "";
   const extraHTML    = (m.extraLines||[]).map(line =>
-       `<p class="popup-extra-line" style="color:${line.color||"#E5E8"};">
+       `<p class="popup-extra-line" style="color:${line.color||defaultNameColor};">
           ${line.text}
         </p>`
      ).join("");
@@ -107,7 +108,7 @@ export function createCustomIcon(m) {
   const wrapper = document.createElement("div");
   wrapper.className = 'custom-marker';
   Object.assign(wrapper.style, {
-    width:`${size}px`, height:`${size}px`,
+    width:`${size}px`, height:`${size}px}`,
     borderRadius:'50%', overflow:'hidden', position:'relative'
   });
 
@@ -141,13 +142,6 @@ export function createCustomIcon(m) {
 
 /**
  * Creates and returns a Leaflet marker with popup + context menu.
- *
- * @param {Object} m           Marker data object
- * @param {L.Map} map
- * @param {Object<L.Layer>} layers  Map of type→layerGroup
- * @param {Function} ctxMenu  (x,y,options)=>void
- * @param {Object} callbacks { onEdit,onCopy,onDragEnd,onDelete }
- * @param {boolean} isAdmin  whether to show edit tools
  */
 export function createMarker(
   m, map, layers, ctxMenu, callbacks={}, isAdmin=false
