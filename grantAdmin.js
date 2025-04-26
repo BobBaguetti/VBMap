@@ -12,8 +12,8 @@ admin.initializeApp({
   projectId:  "vbmap-cc834"    // ← your Firebase project ID
 });
 
-// Replace with the UID of the user you created in Authentication
-const uid = "VLWG0Z1amSWZK5jlrFhy1q5mt1N2";
+// **Use the UID that appears in your browser console on sign-in**
+const uid = "bjbZhQzEv0NceuLWSRfO4JKS9gY2";
 
 admin.auth()
   .setCustomUserClaims(uid, { admin: true })
