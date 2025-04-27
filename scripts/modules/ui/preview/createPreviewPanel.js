@@ -1,10 +1,11 @@
 // comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed
 // @file: /scripts/modules/ui/preview/createPreviewPanel.js
-// @version: 3
+// @version: 4
 
 import { createItemPreviewPanel } from "./itemPreview.js";
 import { createQuestPreviewPanel } from "./questPreview.js";
 import { createNpcPreviewPanel } from "./npcPreview.js";
+import { createChestPreviewPanel } from "./chestPreview.js";
 
 export function createPreviewPanel(type, mountTo = null) {
   const container = mountTo || document.createElement("div");
@@ -24,6 +25,10 @@ export function createPreviewPanel(type, mountTo = null) {
     case "npc":
       container.innerHTML = ""; // Remove any placeholder text
       api = createNpcPreviewPanel(container);
+      break;
+    case "chest":
+      container.innerHTML = "";
+      api = createChestPreviewPanel(container);
       break;
     default:
       throw new Error(`Unknown preview panel type: ${type}`);
