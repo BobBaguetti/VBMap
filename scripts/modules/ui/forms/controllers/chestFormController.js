@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 1.0
+// @version: 1.1
 
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 import { createChestForm }     from "../builders/chestFormBuilder.js";
@@ -10,8 +10,9 @@ import { createChestForm }     from "../builders/chestFormBuilder.js";
  *   - onCancel()
  *   - onSubmit(payload)
  *   - onDelete(id)
+ * @param {import('firebase/firestore').Firestore} db
  */
-export function createChestFormController({ onCancel, onSubmit, onDelete }) {
+export function createChestFormController({ onCancel, onSubmit, onDelete }, db) {
   const { form, fields } = createChestForm();
   let _id = null;
 
@@ -54,9 +55,10 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }) {
   headerWrap.appendChild(btnRow);
   form.prepend(headerWrap);
 
-  // Populate loot‐pool options
+  // ─── Populate loot‐pool options ──────────────────────────────────
   async function initLootOptions() {
-    const items = await loadItemDefinitions(form.db);
+    // Use the passed-in Firestore instance
+    const items = await loadItemDefinitions(db);
     fields.fldLootPool.innerHTML = "";
     items.forEach(item => {
       const opt = document.createElement("option");
@@ -67,7 +69,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }) {
   }
   initLootOptions();
 
-  // Reset to “Add” mode
+  // ─── Reset to “Add” mode ────────────────────────────────────────
   function reset() {
     form.reset();
     _id = null;
@@ -75,29 +77,29 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }) {
     btnDelete.style.display = "none";
   }
 
-  // Populate for “Edit” mode
+  // ─── Populate for “Edit” mode ──────────────────────────────────
   function populate(def) {
     form.reset();
-    fields.fldName.value       = def.name;
-    fields.fldIconUrl.value    = def.iconUrl;
-    fields.fldMaxDisplay.value = def.maxDisplay;
-    // lootPool is array of IDs
+    fields.fldName.value       = def.name || "";
+    fields.fldIconUrl.value    = def.iconUrl || "";
+    fields.fldMaxDisplay.value = def.maxDisplay || "";
     Array.from(fields.fldLootPool.options).forEach(opt => {
-      opt.selected = def.lootPool?.includes(opt.value) || false;
+      opt.selected = def.lootPool?.includes(opt.value);
     });
     _id = def.id;
     titleEl.textContent = "Edit Chest Type";
     btnDelete.style.display = "";
   }
 
-  // Gather payload
+  // ─── Gather payload ────────────────────────────────────────────
   function getCustom() {
     return {
       id:          _id,
       name:        fields.fldName.value.trim(),
       iconUrl:     fields.fldIconUrl.value.trim(),
       maxDisplay:  parseInt(fields.fldMaxDisplay.value, 10) || 1,
-      lootPool:    Array.from(fields.fldLootPool.selectedOptions).map(o => o.value)
+      lootPool:    Array.from(fields.fldLootPool.selectedOptions)
+                        .map(o => o.value)
     };
   }
 
