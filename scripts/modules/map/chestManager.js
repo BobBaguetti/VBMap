@@ -1,22 +1,22 @@
 // @file: /scripts/modules/map/chestManager.js
-// @version: 1.2 – reuse createMarker & tag icon element for CSS
+// @version: 1.2 – use resolved lootPool objects
 
 import { createMarker } from "./markerManager.js";
 
 /**
- * Create a Chest marker via the shared createMarker pipeline,
- * then tag its <img> so we can style it via CSS.
+ * Builds a Leaflet marker for a chest instance,
+ * but routes it through your shared createMarker pipeline.
  *
- * @param {Object} data    – { id, chestTypeId, coords }
- * @param {Object} typeDef – { id, name, iconUrl, lootPool, maxDisplay }
+ * @param {Object} data    — { id, chestTypeId, coords }
+ * @param {Object} typeDef — { id, name, iconUrl, lootPool: Array<{imageSmall,name}>, maxDisplay }
  * @param {L.Map} map
- * @param {Object} layers  – your layers object (must include layers.Chest)
- * @param {Function} ctxMenu  – showContextMenu
+ * @param {Object} layers  — must include layers.Chest
+ * @param {Function} ctxMenu — showContextMenu
  * @param {boolean} isAdmin
  */
 export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) {
-  // 1) Prepare a “markerData” payload matching your other markers
-  const markerData = {
+  // shape into the common marker data shape
+  const chestData = {
     id:         data.id,
     type:       "Chest",
     coords:     data.coords,
@@ -24,59 +24,48 @@ export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) 
     imageSmall: typeDef.iconUrl
   };
 
-  // 2) Delegate to the shared helper
   const markerObj = createMarker(
-    markerData,
+    chestData,
     map,
     layers,
     ctxMenu,
     {
       onEdit:    null,
       onCopy:    null,
-      onDragEnd: isAdmin ? (_, d) => {} : null,
-      onDelete:  isAdmin
-        ? (m, d) => { layers.Chest.removeLayer(m); }
-        : null
+      onDragEnd: null,
+      onDelete:  null
     },
     isAdmin
   );
 
-  // 3) Tag its icon element for CSS styling
-  markerObj.on("add", () => {
-    const el = markerObj.getElement(); 
-    if (el && el.tagName === "IMG") {
-      el.classList.add("chest-marker-icon");
-    }
-  });
-
-  // 4) Override its popup content
+  // override its popup
   markerObj.setPopupContent(buildChestPopupHTML(typeDef));
-
   return markerObj;
 }
 
-
 /**
- * Build the HTML for a chest’s popup.
- * @param {Object} typeDef
+ * Build the specific HTML for a chest’s popup.
+ * Assumes typeDef.lootPool is already an array of full item-defs.
  */
 export function buildChestPopupHTML(typeDef) {
+  const count = typeDef.maxDisplay || 4;
   let html = `
     <div class="chest-popup">
       <img src="${typeDef.iconUrl}" class="chest-icon">
       <strong>${typeDef.name}</strong><hr>
       <div class="chest-grid"
            style="display:grid; gap:4px;
-                  grid-template-columns:repeat(${typeDef.maxDisplay},1fr)">
+                  grid-template-columns:repeat(${count},1fr)">
   `;
-  (typeDef.lootPool || []).forEach(itemId => {
-    const def = itemDefMap?.[itemId] || {};
+
+  (typeDef.lootPool || []).slice(0, count).forEach(item => {
     html += `
-      <div class="chest-slot" title="${def.name || ""}">
-        <img src="${def.imageSmall || ""}" style="width:100%" />
+      <div class="chest-slot" title="${item.name || ""}">
+        <img src="${item.imageSmall || ""}" style="width:100%">
       </div>
     `;
   });
+
   html += `</div></div>`;
   return html;
 }
