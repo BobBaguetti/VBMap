@@ -1,4 +1,4 @@
-/* @version: 17 */
+/* @version: 18 */
 /* @file: /styles/modals/modal.large.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
@@ -76,7 +76,6 @@
   padding-right: 4px;
   min-height: 0;
   max-height: 240px;
-
   scrollbar-width: none;        /* Firefox */
   -ms-overflow-style: none;     /* IE/Edge */
 }
@@ -91,7 +90,6 @@
   min-height: 0;
   max-height: 100%;
   padding-right: 4px;
-
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -100,7 +98,9 @@
   height: 0;
 }
 
-/* Fields */
+/* ─── Fields ───────────────────────────────────────────────────────── */
+
+/* Container for each label+control row */
 .modal.modal-large .field-row {
   display: flex;
   align-items: center;
@@ -115,7 +115,7 @@
   flex-shrink: 0;
 }
 
-/* Text, select, textarea, and number inputs all styled uniformly */
+/* Uniform styling for text, number, select, textarea */
 .modal.modal-large .field-row input[type="text"],
 .modal.modal-large .field-row input[type="number"],
 .modal.modal-large .field-row textarea,
@@ -140,10 +140,12 @@
   -moz-appearance: textfield; /* Firefox */
 }
 
-.modal-large .field-row textarea {
+/* Allow textarea vertical resize */
+.modal.modal-large .field-row textarea {
   resize: vertical;
 }
 
+/* Color-picker & remove-line buttons */
 .modal.modal-large .field-row .color-btn {
   width: 24px;
   height: 24px;
@@ -153,7 +155,8 @@
   border-radius: 2px;
 }
 
-/* Buttons */
+/* ─── Buttons & Floating Controls ───────────────────────────────────── */
+
 .modal.modal-large .ui-button {
   background-color: #444;
   color: #e5e6e8;
@@ -169,54 +172,43 @@
   background-color: #666;
 }
 
-/* Extra Info '+' button and layout fixes */
 .modal.modal-large .field-row.extra-row {
   align-items: center;
 }
 
-.modal.modal-large .extra-info-block > button {
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-
-.modal.modal-large .extra-info-block > button svg {
-  width: 22px;
-  height: 22px;
-  fill: #e5e6e8;
-}
-
+.modal.modal-large .extra-info-block > button,
 .modal.modal-large .extra-info-line .remove-line-btn {
   width: 28px;
   height: 28px;
+  padding: 0;
   background: none;
   border: none;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  padding: 0;
 }
-
+.modal.modal-large .extra-info-block > button svg,
 .modal.modal-large .extra-info-line .remove-line-btn svg {
-  width: 20px;
-  height: 20px;
   fill: #e5e6e8;
 }
 
-/* Fix width alignment for Image fields */
+/* Fix alignment for image URL fields */
 .modal.modal-large .field-row input[id^="def-image"] {
   max-width: 100%;
   box-sizing: border-box;
 }
 
-/* ─── Styled Item Entry Layout ─────────────────────────────────────────────── */
+/* Floating button row (Save/Clear/Delete) */
+.modal-large .floating-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+/* ─── Definition List Entries ───────────────────────────────────────── */
+
+/* ─── Definition List Entries ───────────────────────────────────────── */
 
 .modal.modal-large .item-def-entry {
   padding: 6px 8px;
@@ -247,7 +239,6 @@
   margin-top: 2px;
 }
 
-/* Entry details: value + quantity row */
 .modal.modal-large .item-def-entry .entry-details {
   display: flex;
   gap: 12px;
@@ -257,7 +248,6 @@
   align-items: center;
 }
 
-/* Value field with coins icon */
 .modal.modal-large .item-def-entry .entry-value svg {
   width: 14px;
   height: 14px;
@@ -265,13 +255,11 @@
   margin-left: 4px;
 }
 
-/* Quantity */
 .modal.modal-large .item-def-entry .entry-quantity {
   font-style: italic;
   color: #aaa;
 }
 
-/* Delete button */
 .modal.modal-large .item-def-entry .entry-delete {
   margin-top: 6px;
   background-color: #551111;
@@ -297,19 +285,17 @@
   height: 16px;
 }
 
-/* Form header buttons: reduce horizontal spacing */
 .modal-large .floating-buttons {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
-/* Reduce top margin above delete button in item entry */
 .modal-large .item-def-entry .entry-delete.ui-button-delete {
   margin-top: 2px;
 }
 
-/* ─── Layout Mode: Row View (Default) ──────────────────────────────────────── */
+/* Layout Modes */
 .modal-large .layout-row .item-def-entry {
   display: flex;
   flex-direction: row;
@@ -337,7 +323,6 @@
   margin-left: auto;
 }
 
-/* ─── Layout Mode: Stacked View ───────────────────────────────────────────── */
 .modal-large .layout-stacked .item-def-entry {
   display: flex;
   flex-direction: column;
@@ -350,7 +335,6 @@
   margin-top: 4px;
 }
 
-/* ─── Layout Mode: Gallery View ───────────────────────────────────────────── */
 .modal-large .layout-gallery {
   display: flex;
   flex-wrap: wrap;
