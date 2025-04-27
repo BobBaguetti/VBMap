@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.0
+// @version: 1.1
 
 import {
     createModal,
@@ -51,8 +51,14 @@ import {
           // 2) List container + preview + form
           const listContainer = createDefListContainer("chest-def-list");
           previewApi  = createPreviewPanel("chest");
+  
+          // Pass `db` into the controller so it can loadItemDefinitions(db)
           formApi     = createChestFormController({
-            onCancel:  () => { formApi.reset(); previewApi.setFromDefinition({}); previewApi.show(); },
+            onCancel:  () => {
+              formApi.reset();
+              previewApi.setFromDefinition({});
+              previewApi.show();
+            },
             onDelete:  async id => {
               await deleteChestType(db, id);
               await refreshDefinitions();
@@ -68,7 +74,7 @@ import {
               previewApi.setFromDefinition({});
               previewApi.show();
             }
-          });
+          }, db);
   
           formApi.form.classList.add("ui-scroll-float");
           formApi.form.addEventListener("input", () => {
