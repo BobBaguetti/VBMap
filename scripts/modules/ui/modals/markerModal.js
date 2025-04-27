@@ -1,32 +1,53 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 14 — restored backdrop:false and lazy build
+// @version: 15 – unified Chest + Item support, and fixed initial UI state
 
-import { createModal, closeModal, openModalAt } from "../uiKit.js";
-import { loadItemDefinitions }                 from "../../services/itemDefinitionsService.js";
-import { createFormButtonRow, createDropdownField } from "../uiKit.js";
-import { createMarkerForm }                    from "../forms/markerForm.js";
+import {
+  createModal,
+  closeModal,
+  openModalAt,
+  createDropdownField,
+  createFormButtonRow
+} from "../uiKit.js";
+import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
+import { loadChestTypes }      from "../../services/chestTypesService.js";
+import { createMarkerForm }    from "../forms/markerForm.js";
 
 export function initMarkerModal(db) {
-  // these will be set on first use
   let modal, content, form;
-  let fldType, fldPredef, blockItem, formApi, rowButtons;
-  let defs = {};
+  let fldType, fldPredefItem, fldChestType;
+  let rowPredefItem, rowChestType, blockItem;
+  let formApi, rowButtons;
+  let itemDefs = {}, chestDefs = {};
 
-  // Load definitions into the dropdown
+  // — Load & cache item defs —
   async function refreshPredefinedItems() {
-    if (!fldPredef) return;
+    if (!fldPredefItem) return;
     const list = await loadItemDefinitions(db);
-    defs = Object.fromEntries(list.map(d => [d.id, d]));
-    fldPredef.innerHTML = `<option value="">None (custom)</option>`;
-    for (const d of list) {
+    itemDefs = Object.fromEntries(list.map(d => [d.id, d]));
+    fldPredefItem.innerHTML = `<option value="">None (custom)</option>`;
+    list.forEach(d => {
       const o = document.createElement("option");
       o.value = d.id;
       o.textContent = d.name;
-      fldPredef.appendChild(o);
-    }
+      fldPredefItem.appendChild(o);
+    });
   }
 
-  // Build the modal on first open
+  // — Load & cache chest‐type defs —
+  async function refreshChestTypes() {
+    if (!fldChestType) return;
+    const list = await loadChestTypes(db);
+    chestDefs = Object.fromEntries(list.map(d => [d.id, d]));
+    fldChestType.innerHTML = `<option value="">Select Chest Type</option>`;
+    list.forEach(d => {
+      const o = document.createElement("option");
+      o.value = d.id;
+      o.textContent = d.name;
+      fldChestType.appendChild(o);
+    });
+  }
+
+  // — Build the modal once —
   function ensureBuilt() {
     if (modal) return;
 
@@ -34,47 +55,50 @@ export function initMarkerModal(db) {
       id:         "edit-marker-modal",
       title:      "Edit Marker",
       size:       "small",
-      backdrop:   false,    // no overlay
+      backdrop:   false,
       draggable:  true,
       withDivider:true,
       onClose:    () => closeModal(modal)
     });
     modal   = created.modal;
     content = created.content;
-
     modal.classList.add("admin-only");
 
-    // Form setup
+    // form wrapper
     form = document.createElement("form");
     form.id = "edit-form";
 
-    // Type dropdown
-    const { row: rowType, select: selectType } =
-      createDropdownField("Type:", "fld-type", [
-        { value: "Door", label: "Door" },
+    // 1) Type selector (now includes Chest)
+    const { row: rowType, select: selectType } = createDropdownField(
+      "Type:", "fld-type",
+      [
+        { value: "Door",              label: "Door" },
         { value: "Extraction Portal", label: "Extraction Portal" },
-        { value: "Item", label: "Item" },
-        { value: "Teleport", label: "Teleport" },
-        { value: "Spawn Point", label: "Spawn Point" }
-      ], { showColor: false });
+        { value: "Item",              label: "Item" },
+        { value: "Chest",             label: "Chest" },
+        { value: "Teleport",          label: "Teleport" },
+        { value: "Spawn Point",       label: "Spawn Point" }
+      ],
+      { showColor: false }
+    );
     fldType = selectType;
 
-    // Predefined dropdown
-    const { row: rowPredef, select: selectPredef } =
-      createDropdownField("Item:", "fld-predef", [], { showColor: false });
-    fldPredef = selectPredef;
+    // 2) Predefined Item dropdown
+    const { row: rp, select: sp } = createDropdownField(
+      "Item:", "fld-predef-item", [], { showColor: false }
+    );
+    rowPredefItem = rp;
+    fldPredefItem = sp;
 
-    // Marker form API + button row
-    formApi    = createMarkerForm();
-    rowButtons = createFormButtonRow();
-    // Hook Cancel
-    const cancelBtn = rowButtons.querySelector('button[type="button"]');
-    if (cancelBtn) cancelBtn.onclick = e => {
-      e.preventDefault();
-      closeModal(modal);
-    };
+    // 3) Chest Type dropdown
+    const { row: rc, select: sc } = createDropdownField(
+      "Chest Type:", "fld-predef-chest", [], { showColor: false }
+    );
+    rowChestType = rc;
+    fldChestType = sc;
 
-    // Group item-specific rows
+    // 4) Item‐specific block (rarity, type, desc)
+    formApi = createMarkerForm();
     blockItem = document.createElement("div");
     blockItem.classList.add("item-gap");
     blockItem.append(
@@ -83,11 +107,17 @@ export function initMarkerModal(db) {
       formApi.fields.fldDesc.closest(".field-row")
     );
 
-    // Assemble form
+    // 5) Buttons row
+    rowButtons = createFormButtonRow();
+    rowButtons.querySelector('button[type="button"]')
+      .onclick = e => { e.preventDefault(); closeModal(modal); };
+
+    // assemble in order
     form.append(
       formApi.fields.fldName.closest(".field-row"),
       rowType,
-      rowPredef,
+      rowPredefItem,
+      rowChestType,
       blockItem,
       formApi.fields.extraRow,
       formApi.fields.fldImgS.closest(".field-row"),
@@ -97,77 +127,98 @@ export function initMarkerModal(db) {
     );
     content.appendChild(form);
 
-    // Toggle item-specific fields
+    // 6) Show/hide on type change
     fldType.onchange = () => {
-      const isItem = fldType.value === "Item";
-      blockItem.style.display = isItem ? "block" : "none";
-      rowPredef.style.display = isItem ? "flex"  : "none";
+      const t = fldType.value;
+      const isItem  = t === "Item";
+      const isChest = t === "Chest";
+      rowPredefItem.style.display = isItem  ? "flex" : "none";
+      blockItem.style.display     = isItem  ? "block": "none";
+      rowChestType.style.display  = isChest ? "flex" : "none";
     };
-    fldPredef.onchange = () => {
-      const def = defs[fldPredef.value] || {};
+
+    // 7) When choosing an item, populate the form
+    fldPredefItem.onchange = () => {
+      const def = itemDefs[fldPredefItem.value] || {};
       formApi.setFromDefinition(def);
       formApi.initPickrs();
     };
 
-    // Initial load
+    // initial load of dropdown data
     refreshPredefinedItems();
+    refreshChestTypes();
   }
 
-  // Open existing-marker editor
+  // — Open for editing existing marker —
   async function openEdit(markerObj, data, evt, onSave) {
     ensureBuilt();
-    await refreshPredefinedItems();
-    formApi.setFromDefinition(data);
-    formApi.initPickrs();
+    // load both sets
+    await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
+
+    // set type & trigger UI
+    fldType.value = data.type;
+    fldType.dispatchEvent(new Event("change"));
+
+    // item case
+    if (data.type === "Item" && data.predefinedItemId) {
+      fldPredefItem.value = data.predefinedItemId;
+      fldPredefItem.dispatchEvent(new Event("change"));
+    }
+    // chest case
+    if (data.type === "Chest" && data.chestTypeId) {
+      fldChestType.value = data.chestTypeId;
+    }
+    // clear item fields when not an Item
+    if (data.type !== "Item") {
+      formApi.setFromDefinition({});
+    }
+
     openModalAt(modal, evt);
+
     form.onsubmit = e => {
       e.preventDefault();
-      Object.assign(data, harvest(data.coords));
-      onSave(data);
+      const coords = data.coords;
+      let out;
+      if (fldType.value === "Item" && fldPredefItem.value) {
+        out = { type:"Item", coords, predefinedItemId: fldPredefItem.value };
+      } else if (fldType.value === "Chest" && fldChestType.value) {
+        out = { type:"Chest", coords, chestTypeId: fldChestType.value };
+      } else {
+        out = Object.assign({ coords, type: fldType.value }, formApi.getCustom());
+      }
+      onSave(markerObj, out, evt);
       closeModal(modal);
     };
   }
 
-  // Open create-new-marker editor
+  // — Open for creating a new marker —
   async function openCreate(coords, type, evt, onCreate) {
     ensureBuilt();
-    await refreshPredefinedItems();
-    formApi.setFromDefinition({ type });
-    formApi.initPickrs();
+    await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
+
+    fldType.value = type;
+    fldType.dispatchEvent(new Event("change"));
+
+    // clear selects
+    fldPredefItem.value = "";
+    fldChestType.value  = "";
+
     openModalAt(modal, evt);
+
     form.onsubmit = e => {
       e.preventDefault();
-      onCreate(harvest(coords));
+      let out;
+      if (type === "Item" && fldPredefItem.value) {
+        out = { type:"Item", coords, predefinedItemId: fldPredefItem.value };
+      } else if (type === "Chest" && fldChestType.value) {
+        out = { type:"Chest", coords, chestTypeId: fldChestType.value };
+      } else {
+        out = Object.assign({ coords, type }, formApi.getCustom());
+      }
+      onCreate(out);
       closeModal(modal);
     };
   }
 
-  // Harvest form data
-  function harvest(coords) {
-    const type = fldType.value;
-    const sel  = fldPredef.value;
-    if (type === "Item" && sel && defs[sel]) {
-      const d = defs[sel];
-      return {
-        type, coords,
-        predefinedItemId: sel,
-        name:             d.name,
-        nameColor:        d.nameColor  || "#E5E6E8",
-        itemType:         d.itemType   || "",
-        itemTypeColor:    d.itemTypeColor || "#E5E6E8",
-        rarity:           d.rarity     || "",
-        rarityColor:      d.rarityColor  || "#E5E6E8",
-        description:      d.description || "",
-        descriptionColor: d.descriptionColor || "#E5E6E8",
-        extraLines:       d.extraLines || [],
-        imageSmall:       d.imageSmall || "",
-        imageBig:         (d.imageBig ?? d.imageLarge) || "",
-        video:            d.video || ""
-      };
-    }
-    const c = formApi.getCustom();
-    return { type, coords, ...c, imageBig: c.imageBig || "" };
-  }
-
-  return { openEdit, openCreate, refreshPredefinedItems };
+  return { openEdit, openCreate };
 }
