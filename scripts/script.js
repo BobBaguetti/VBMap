@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.32
+// @version: 5.33
 
 import { initializeApp } from "firebase/app";
 import {
@@ -66,7 +66,7 @@ Object.entries(layers).forEach(([type, layer]) => {
 });
 flatItemLayer.addTo(map);
 
-// Real-time chest instances
+// Real-time chest instances via your chestController
 initChestLayer(db, map, layers, showContextMenu);
 
 let groupingOn = false;
@@ -122,7 +122,7 @@ onAuthStateChanged(auth, async user => {
       addMarker(m, callbacks);
     });
 
-    // 3) Live item-defs → re-populate the “Item:” dropdown in the modal
+    // 3) Live item-defs → refresh your “Item:” dropdown
     subscribeItemDefinitions(db, async () => {
       await markerForm.refreshPredefinedItems();
 
@@ -136,7 +136,7 @@ onAuthStateChanged(auth, async user => {
         if (!data.predefinedItemId) return;
         const def = defMap[data.predefinedItemId];
         if (!def) return;
-        // hydrate the data fields
+        // hydrate data
         Object.assign(data, {
           name:        def.name,
           nameColor:   def.nameColor    || "#E5E6E8",
@@ -149,7 +149,7 @@ onAuthStateChanged(auth, async user => {
           value:       def.value    ?? null,
           quantity:    def.quantity ?? null
         });
-        // update both icon & popup
+        // update icon + popup
         markerObj.setIcon(createCustomIcon(data));
         markerObj.setPopupContent(renderPopup(data));
         if (isAdmin) firebaseUpdateMarker(db, data).catch(() => {});
@@ -178,18 +178,30 @@ const itemModal  = initItemDefinitionsModal(db);
 const questModal = initQuestDefinitionsModal(db);
 
 /* ------------------------------------------------------------------ *
- *  Add & Persist Marker (with immediate icon & popup hydration)
+ *  Add & Persist Marker (handles BOTH Item & Chest)
  * ------------------------------------------------------------------ */
 async function addAndPersist(data) {
-  // 1) create marker in UI
+  // ─── CHEST ────────────────────────────────────────────────────────
+  if (data.type === "Chest") {
+    const saved = await saveChest(db, null, {
+      chestTypeId: data.chestTypeId,
+      coords:      data.coords
+    });
+    console.log("✅ Chest created:", saved.id);
+    // real-time chest subscription will add it to the map
+    return;
+  }
+
+  // ─── ITEM ─────────────────────────────────────────────────────────
+  // 1) render immediately in UI
   const markerObj = addMarker(data, callbacks);
 
-  // 2) save to Firestore
+  // 2) persist to Firestore
   const saved = await firebaseAddMarker(db, data);
   console.log("✅ Marker created in Firestore:", saved.id, data);
   data.id = saved.id;
 
-  // 3) for predefined-item markers hydrate and re-render icon + popup
+  // 3) hydrate & re-render icon + popup
   if (data.predefinedItemId) {
     const { loadItemDefinitions } = await import(
       "./modules/services/itemDefinitionsService.js"
@@ -223,7 +235,7 @@ async function addAndPersist(data) {
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 function addMarker(data, cbs = {}) {
-  const isAdmin  = document.body.classList.contains("is-admin");
+  const isAdmin   = document.body.classList.contains("is-admin");
   const markerObj = createMarker(
     data, map, layers, showContextMenu, cbs, isAdmin
   );
@@ -273,13 +285,7 @@ map.on("contextmenu", evt => {
           [evt.latlng.lat, evt.latlng.lng],
           "Chest",
           evt.originalEvent,
-          async out => {
-            const saved = await saveChest(db, null, {
-              chestTypeId: out.chestTypeId,
-              coords:      out.coords
-            });
-            console.log("✅ Chest created:", saved.id);
-          }
+          addAndPersist
         );
       }
     });
