@@ -1,5 +1,5 @@
 // @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 9.9
+// @version: 10.0
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
@@ -115,6 +115,14 @@ export async function setupSidebar(
     .querySelectorAll("#main-filters .toggle-group input")
     .forEach(cb => cb.addEventListener("change", filterMarkers));
   document.getElementById("toggle-pve")?.addEventListener("change", filterMarkers);
+
+  // ─── Add “Chests” Toggle ─────────────────────────────────────────
+  const mainGroup = document.querySelector("#main-filters .toggle-group");
+  const chestLabel = document.createElement("label");
+  chestLabel.innerHTML = `<input type="checkbox" checked data-layer="Chest"/><span>Chests</span>`;
+  mainGroup.append(chestLabel);
+  chestLabel.querySelector("input")
+    .addEventListener("change", filterMarkers);
 
   // ─── Item Filters ─────────────────────────────────────────────────
   const itemFilterList = document.getElementById("item-filter-list");

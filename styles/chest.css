@@ -1,0 +1,45 @@
+/* path: styles/chest.css */
+/* Styles for chest popups and grid layout */
+
+.chest-popup {
+    padding: 8px;
+    background: #222;
+    color: #eee;
+    border-radius: 4px;
+  }
+  
+  .chest-popup .chest-icon {
+    width: 32px;
+    height: 32px;
+    display: block;
+    margin-bottom: 4px;
+  }
+  
+  .chest-popup strong {
+    display: block;
+    margin-bottom: 4px;
+  }
+  
+  .chest-grid {
+    display: grid;
+    gap: 4px;
+    grid-auto-rows: auto;
+  }
+  
+  .chest-slot {
+    cursor: pointer;
+    border: 1px solid transparent;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+  
+  .chest-slot:hover {
+    border-color: #888;
+  }
+  
+  .chest-slot img {
+    width: 100%;
+    height: auto;
+    display: block;
+  }
+  
