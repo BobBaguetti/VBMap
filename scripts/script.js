@@ -21,7 +21,12 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
 
-import { createMarker, renderPopup }   from "./modules/map/markerManager.js";
+import {
+  createMarker,
+  renderPopup,
+  createCustomIcon
+} from "./modules/map/markerManager.js";
+
 import { saveChest }                   from "./modules/services/chestsService.js";
 import { initItemDefinitionsModal }    from "./modules/ui/modals/itemDefinitionsModal.js";
 import { initMarkerModal }             from "./modules/ui/modals/markerModal.js";
@@ -61,7 +66,7 @@ Object.entries(layers).forEach(([type, layer]) => {
 });
 flatItemLayer.addTo(map);
 
-// Real‐time chest instances
+// Real-time chest instances
 initChestLayer(db, map, layers, showContextMenu);
 
 let groupingOn = false;
@@ -117,9 +122,10 @@ onAuthStateChanged(auth, async user => {
       addMarker(m, callbacks);
     });
 
-    // 3) Live item‐defs
+    // 3) Live item-defs → re-populate the “Item:” dropdown in the modal
     subscribeItemDefinitions(db, async () => {
       await markerForm.refreshPredefinedItems();
+
       const { loadItemDefinitions } = await import(
         "./modules/services/itemDefinitionsService.js"
       );
@@ -130,6 +136,7 @@ onAuthStateChanged(auth, async user => {
         if (!data.predefinedItemId) return;
         const def = defMap[data.predefinedItemId];
         if (!def) return;
+        // hydrate the data fields
         Object.assign(data, {
           name:        def.name,
           nameColor:   def.nameColor    || "#E5E6E8",
@@ -142,6 +149,8 @@ onAuthStateChanged(auth, async user => {
           value:       def.value    ?? null,
           quantity:    def.quantity ?? null
         });
+        // update both icon & popup
+        markerObj.setIcon(createCustomIcon(data));
         markerObj.setPopupContent(renderPopup(data));
         if (isAdmin) firebaseUpdateMarker(db, data).catch(() => {});
       });
@@ -169,7 +178,7 @@ const itemModal  = initItemDefinitionsModal(db);
 const questModal = initQuestDefinitionsModal(db);
 
 /* ------------------------------------------------------------------ *
- *  Add & Persist Marker (with immediate popup hydration)
+ *  Add & Persist Marker (with immediate icon & popup hydration)
  * ------------------------------------------------------------------ */
 async function addAndPersist(data) {
   // 1) create marker in UI
@@ -180,7 +189,7 @@ async function addAndPersist(data) {
   console.log("✅ Marker created in Firestore:", saved.id, data);
   data.id = saved.id;
 
-  // 3) if it's a predefined‐item marker, immediately hydrate and re‐render its popup
+  // 3) for predefined-item markers hydrate and re-render icon + popup
   if (data.predefinedItemId) {
     const { loadItemDefinitions } = await import(
       "./modules/services/itemDefinitionsService.js"
@@ -200,6 +209,7 @@ async function addAndPersist(data) {
         value:       def.value    ?? null,
         quantity:    def.quantity ?? null
       });
+      markerObj.setIcon(createCustomIcon(data));
       markerObj.setPopupContent(renderPopup(data));
     }
   }
@@ -225,6 +235,7 @@ function addMarker(data, cbs = {}) {
 
 const callbacks = {
   onEdit:    (m, d, ev) => markerForm.openEdit(m, d, ev, updated => {
+                 m.setIcon(createCustomIcon(updated));
                  m.setPopupContent(renderPopup(updated));
                  firebaseUpdateMarker(db, updated).catch(() => {});
                }),
