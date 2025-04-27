@@ -1,5 +1,5 @@
 /* @file: /styles/custom-markers.css */
-/* @version: 4 */
+/* @version: 5 */
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted;
          comments may only be edited when editing their code. */
 
@@ -63,4 +63,11 @@
 .popup-description,
 .popup-extra-line {
   color: #e5e6e8;
+}
+
+/* Highlight chest markers the same way as items */
+.chest-marker-icon {
+  border: 2px solid #6cf;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #6cf;
 }

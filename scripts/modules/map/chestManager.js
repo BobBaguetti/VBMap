@@ -1,64 +1,64 @@
 // @file: /scripts/modules/map/chestManager.js
-// @version: 1.1 – now reusing createMarker for unified styling & behavior
+// @version: 1.2 – reuse createMarker & tag icon element for CSS
 
 import { createMarker } from "./markerManager.js";
 
 /**
- * Builds a Leaflet marker for a chest instance,
- * but routes it through your shared createMarker pipeline.
+ * Create a Chest marker via the shared createMarker pipeline,
+ * then tag its <img> so we can style it via CSS.
  *
- * @param {Object} data    — { id, chestTypeId, coords }
- * @param {Object} typeDef — { id, name, iconUrl, lootPool, maxDisplay }
+ * @param {Object} data    – { id, chestTypeId, coords }
+ * @param {Object} typeDef – { id, name, iconUrl, lootPool, maxDisplay }
  * @param {L.Map} map
- * @param {Object} layers  — your layers object (must have layers.Chest)
- * @param {Function} ctxMenu — showContextMenu
+ * @param {Object} layers  – your layers object (must include layers.Chest)
+ * @param {Function} ctxMenu  – showContextMenu
  * @param {boolean} isAdmin
  */
 export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) {
-  // 1) Shape it like any other marker’s data
-  const chestData = {
+  // 1) Prepare a “markerData” payload matching your other markers
+  const markerData = {
     id:         data.id,
     type:       "Chest",
     coords:     data.coords,
     name:       typeDef.name,
-    imageSmall: typeDef.iconUrl,
-    // you can include other fields if your renderPopup needs them
+    imageSmall: typeDef.iconUrl
   };
 
-  // 2) Create via your shared helper (will apply CSS classes, clustering, context menus, etc.)
+  // 2) Delegate to the shared helper
   const markerObj = createMarker(
-    chestData,
+    markerData,
     map,
     layers,
     ctxMenu,
     {
-      // optional callbacks:
-      onEdit:   null, // we don’t edit instances via this modal
-      onCopy:   null,
-      onDragEnd: isAdmin
-        ? (_, d) => {
-            // if you want drag saving, you can hook in here
-          }
-        : null,
-      onDelete: isAdmin
-        ? (m, d) => {
-            // remove from layer and let your delete-chest logic in chestController handle Firestore
-            layers.Chest.removeLayer(m);
-          }
+      onEdit:    null,
+      onCopy:    null,
+      onDragEnd: isAdmin ? (_, d) => {} : null,
+      onDelete:  isAdmin
+        ? (m, d) => { layers.Chest.removeLayer(m); }
         : null
     },
     isAdmin
   );
 
-  // 3) Override popup content with chest‐specific HTML
+  // 3) Tag its icon element for CSS styling
+  markerObj.on("add", () => {
+    const el = markerObj.getElement(); 
+    if (el && el.tagName === "IMG") {
+      el.classList.add("chest-marker-icon");
+    }
+  });
+
+  // 4) Override its popup content
   markerObj.setPopupContent(buildChestPopupHTML(typeDef));
 
   return markerObj;
 }
 
+
 /**
- * Build the specific HTML for a chest’s popup.
- * You can keep your existing markup here.
+ * Build the HTML for a chest’s popup.
+ * @param {Object} typeDef
  */
 export function buildChestPopupHTML(typeDef) {
   let html = `
@@ -69,12 +69,11 @@ export function buildChestPopupHTML(typeDef) {
            style="display:grid; gap:4px;
                   grid-template-columns:repeat(${typeDef.maxDisplay},1fr)">
   `;
-  typeDef.lootPool.forEach(itemId => {
-    // assuming you have a global itemDefMap loaded in chestController
-    const def = itemDefMap?.[itemId];
+  (typeDef.lootPool || []).forEach(itemId => {
+    const def = itemDefMap?.[itemId] || {};
     html += `
-      <div class="chest-slot" title="${def?.name || ""}">
-        <img src="${def?.imageSmall || ""}" style="width:100%" />
+      <div class="chest-slot" title="${def.name || ""}">
+        <img src="${def.imageSmall || ""}" style="width:100%" />
       </div>
     `;
   });

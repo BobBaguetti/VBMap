@@ -1,42 +1,36 @@
 // @file: /scripts/modules/map/chestController.js
-// @version: 1.1 – subscribeChests import and cleanup
+// @version: 1.2 – pass isAdmin, add edit/delete in contextmenu
 
-import { subscribeChestTypes } from "../services/chestTypesService.js";
-import { subscribeChests }     from "../services/chestsService.js";
-import {
-  createChestMarker,
-  buildChestPopupHTML
-} from "./chestManager.js";
+import { subscribeChestTypes }      from "../services/chestTypesService.js";
+import { subscribeChests, updateChest, deleteChest } from "../services/chestsService.js";
+import { initChestInstanceModal }   from "../ui/modals/chestInstanceModal.js";
+import { createChestMarker }        from "./chestManager.js";
 
 /**
- * Initialize real‐time chest markers on the map.
- * @param {import('firebase/firestore').Firestore} db
- * @param {L.Map} map
- * @param {Object} layers  — must include a `layers.Chest` layerGroup
- * @param {Function} showContextMenu
+ * Initialize the Chest layer: load types & instances,
+ * render markers, and wire up admin context‐menus.
  */
 export function initChestLayer(db, map, layers, showContextMenu) {
-  let chestTypeMap   = {};
+  let chestTypeMap = {};
   const chestMarkers = {};
+  const isAdmin = document.body.classList.contains("is-admin");
 
-  // 1) Load chest‐type definitions and cache
+  // 1) Keep chest-type definitions up to date
   subscribeChestTypes(db, types => {
     chestTypeMap = Object.fromEntries(types.map(t => [t.id, t]));
-    // Update existing markers’ popups
+    // Refresh all existing popups if the definition changed
     Object.values(chestMarkers).forEach(marker => {
       const data = marker.__chestData;
       const def  = chestTypeMap[data.chestTypeId];
-      if (def) {
-        marker.setPopupContent(buildChestPopupHTML(def));
-      }
+      if (def) marker.setPopupContent(def && buildChestPopupHTML(def));
     });
   });
 
-  // 2) Load chest instances
+  // 2) Subscribe chest instances
   subscribeChests(db, chests => {
     const newIds = new Set(chests.map(c => c.id));
 
-    // Remove deleted markers
+    // Remove any deleted instances
     Object.keys(chestMarkers).forEach(id => {
       if (!newIds.has(id)) {
         layers.Chest.removeLayer(chestMarkers[id]);
@@ -44,26 +38,48 @@ export function initChestLayer(db, map, layers, showContextMenu) {
       }
     });
 
-    // Add or update markers
+    // Add any new instances
     chests.forEach(data => {
-      // Skip if its type isn't loaded yet
-      const def = chestTypeMap[data.chestTypeId];
-      if (!def) return;
-
-      // If marker already exists, skip
+      if (!chestTypeMap[data.chestTypeId]) return;
       if (chestMarkers[data.id]) return;
 
-      // Create marker and store its data
       const marker = createChestMarker(
         data,
-        def,
+        chestTypeMap[data.chestTypeId],
         map,
         layers,
-        showContextMenu
+        showContextMenu,
+        isAdmin
       );
-      // Attach raw data for later popup-refresh
       marker.__chestData = data;
+
+      // Admins get an edit/delete context menu on the marker
+      if (isAdmin) {
+        marker.on("contextmenu", ev => {
+          showContextMenu(ev.originalEvent.pageX, ev.originalEvent.pageY, [
+            {
+              text: "Edit Chest…",
+              action: () => {
+                initChestInstanceModal(db, data.coords)
+                  .open(data.coords, async ({ chestTypeId, coords }) => {
+                    await updateChest(db, data.id, { chestTypeId, coords });
+                  });
+              }
+            },
+            {
+              text: "Delete Chest",
+              action: async () => {
+                await deleteChest(db, data.id);
+              }
+            }
+          ]);
+        });
+      }
+
       chestMarkers[data.id] = marker;
     });
   });
 }
+
+// re-export for popup refresh
+import { buildChestPopupHTML } from "./chestManager.js";
