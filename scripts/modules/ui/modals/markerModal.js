@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 19 – ensure Item flow hydrates colors & reorder Item Type above Rarity
+// @version: 20.1 – ensure Item flow hydrates colors & reorder Item Type above Rarity
 
 import {
   createModal,
@@ -9,7 +9,7 @@ import {
   createFormButtonRow
 } from "../uiKit.js";
 import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
-import { loadChestTypes }       from "../../services/chestsService.js";
+import { loadChestTypes }       from "../../services/chestTypesService.js";
 import { createMarkerForm }     from "../forms/markerForm.js";
 
 export function initMarkerModal(db) {
