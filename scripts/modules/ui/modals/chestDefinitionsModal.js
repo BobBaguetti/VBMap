@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.2 – now with search & layout switcher
+// @version: 1.3 – now with search & layout switcher reposition
 
 import {
   createModal,
@@ -35,12 +35,12 @@ export function initChestDefinitionsModal(db) {
       if (!modal) {
         // 1) Build the base modal
         const created = createModal({
-          id:        "chest-definitions-modal",
-          title:     "Manage Chest Types",
-          size:      "large",
-          backdrop:  true,
-          withDivider: true,
-          onClose:   () => {
+          id:           "chest-definitions-modal",
+          title:        "Manage Chest Types",
+          size:         "large",
+          backdrop:     true,
+          withDivider:  true,
+          onClose:      () => {
             closeModal(modal);
             previewApi.hide();
           }
@@ -50,40 +50,42 @@ export function initChestDefinitionsModal(db) {
         header  = created.header;
         modal.classList.add("admin-only");
 
-        // 2) Move the auto-generated search input (if any) into the header
-        const maybeSearch = document.querySelector("#chest-def-list ~ .list-header");
-        if (maybeSearch) {
-          maybeSearch.remove();
-          header.appendChild(maybeSearch);
-        }
-
-        // 3) Add layout‐switcher buttons
+        // 2) Add layout‐switcher buttons to header
         const layoutSwitcher = createLayoutSwitcher({
-          available:   ["row","stacked","gallery"],
+          available:   ["row", "stacked", "gallery"],
           defaultView: "row",
           onChange:    view => listApi.setLayout(view)
         });
         header.appendChild(layoutSwitcher);
 
-        // 4) Create your list container + preview + form
+        // 3) Create list container
         const listContainer = createDefListContainer("chest-def-list");
-        previewApi          = createPreviewPanel("chest");
-        formApi             = createChestFormController({
-          onCancel:  () => {
+
+        // 4) Move the auto-generated list search into the modal header
+        const maybeSearch = listContainer.previousElementSibling;
+        if (maybeSearch?.classList.contains("list-header")) {
+          maybeSearch.remove();
+          header.appendChild(maybeSearch);
+        }
+
+        // 5) Create preview and form controller (pass db)
+        previewApi = createPreviewPanel("chest");
+        formApi    = createChestFormController({
+          onCancel: async () => {
             formApi.reset();
             previewApi.setFromDefinition({});
             previewApi.show();
           },
-          onDelete:  async id => {
+          onDelete: async id => {
             await deleteChestType(db, id);
             await refreshDefinitions();
             formApi.reset();
             previewApi.setFromDefinition({});
             previewApi.show();
           },
-          onSubmit:  async payload => {
-            if (payload.id) await updateChestType(db, payload.id, payload);
-            else             await saveChestType(db, null, payload);
+          onSubmit: async payload => {
+            if (payload.id)      await updateChestType(db, payload.id, payload);
+            else                 await saveChestType(db, null, payload);
             await refreshDefinitions();
             formApi.reset();
             previewApi.setFromDefinition({});
@@ -91,7 +93,7 @@ export function initChestDefinitionsModal(db) {
           }
         }, db);
 
-        // wire up live-preview on form input
+        // 6) Wire up live-preview on form input
         formApi.form.classList.add("ui-scroll-float");
         formApi.form.addEventListener("input", () => {
           const live = formApi.getCustom();
@@ -101,7 +103,7 @@ export function initChestDefinitionsModal(db) {
           }
         });
 
-        // assemble the body
+        // 7) Assemble the body
         const bodyWrap = document.createElement("div");
         Object.assign(bodyWrap.style, {
           display:       "flex",
@@ -109,10 +111,11 @@ export function initChestDefinitionsModal(db) {
           flex:          "1 1 auto",
           minHeight:     "0"
         });
-        bodyWrap.append(listContainer, document.createElement("hr"), formApi.form);
+        const hr = document.createElement("hr");
+        bodyWrap.append(listContainer, hr, formApi.form);
         content.appendChild(bodyWrap);
 
-        // 5) Hook up the list manager
+        // 8) Hook up the list manager
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
