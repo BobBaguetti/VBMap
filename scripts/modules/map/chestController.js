@@ -1,9 +1,10 @@
 // @file: /scripts/modules/map/chestController.js
-// @version: 1.1
+// @version: 1.2
 
-import { subscribeChestTypes } from "../services/chestTypesService.js";
-import { subscribeChests }     from "../services/chestsService.js";
-import { createChestMarker }   from "./chestManager.js";
+import { loadItemDefinitions }    from "../services/itemDefinitionsService.js";
+import { subscribeChestTypes }    from "../services/chestTypesService.js";
+import { subscribeChests }        from "../services/chestsService.js";
+import { createChestMarker }      from "./chestManager.js";
 
 /**
  * Initialize the real-time chest layer on the map.
@@ -12,22 +13,35 @@ import { createChestMarker }   from "./chestManager.js";
  * @param {Object} layers  — your layers object (must include layers.Chest)
  * @param {Function} showContextMenu
  */
-export function initChestLayer(db, map, layers, showContextMenu) {
-  let chestTypeMap   = {};
+export async function initChestLayer(db, map, layers, showContextMenu) {
+  // 1) Preload all item definitions so we can resolve lootPool IDs → full objects
+  const items      = await loadItemDefinitions(db);
+  const itemMap    = Object.fromEntries(items.map(d => [d.id, d]));
+
+  let chestTypeMap = {};
   const chestMarkers = {};
 
-  // 1) Watch chest-type definitions
+  // 2) Subscribe to chest‐type definitions
   subscribeChestTypes(db, types => {
     chestTypeMap = Object.fromEntries(types.map(t => [t.id, t]));
-    // update any existing marker popups
+
+    // refresh any existing marker popups
     Object.values(chestMarkers).forEach(marker => {
       const data = marker.__chestData;
-      const def  = chestTypeMap[data.chestTypeId];
-      if (def) marker.setPopupContent(buildPopupHTML(def));
+      const raw  = chestTypeMap[data.chestTypeId];
+      if (!raw) return;
+
+      const resolved = {
+        ...raw,
+        lootPool: (raw.lootPool || [])
+          .map(id => itemMap[id])
+          .filter(Boolean)
+      };
+      marker.setPopupContent(createChestMarker.buildChestPopupHTML(resolved));
     });
   });
 
-  // 2) Watch chest instances
+  // 3) Subscribe to chest instances
   subscribeChests(db, chests => {
     const liveIds = new Set(chests.map(c => c.id));
 
@@ -41,46 +55,27 @@ export function initChestLayer(db, map, layers, showContextMenu) {
 
     // add new
     chests.forEach(data => {
-      if (!chestTypeMap[data.chestTypeId] || chestMarkers[data.id]) return;
+      if (chestMarkers[data.id]) return;
+      const raw = chestTypeMap[data.chestTypeId];
+      if (!raw) return;
+
+      const resolved = {
+        ...raw,
+        lootPool: (raw.lootPool || [])
+          .map(id => itemMap[id])
+          .filter(Boolean)
+      };
+
       const marker = createChestMarker(
         data,
-        chestTypeMap[data.chestTypeId],
+        resolved,
         map,
         layers,
         showContextMenu,
         document.body.classList.contains("is-admin")
       );
-      // store raw data for later popup refresh
       marker.__chestData = data;
       chestMarkers[data.id] = marker;
     });
   });
-}
-
-/**
- * Helper to build the popup HTML for a given chest type.
- * Extracted so both the controller and the marker helper can use it.
- */
-function buildPopupHTML(def) {
-  let html = `
-    <div class="chest-popup">
-      <img src="${def.iconUrl}" class="chest-icon">
-      <strong>${def.name}</strong><hr>
-      <div class="chest-grid"
-           style="display:grid; gap:4px;
-                  grid-template-columns:repeat(${def.maxDisplay},1fr)">
-  `;
-
-  def.lootPool.forEach(itemId => {
-    // assumes preload of item definitions into window.itemDefMap
-    const item = window.itemDefMap?.[itemId] || {};
-    html += `
-      <div class="chest-slot" title="${item.name || ""}">
-        <img src="${item.imageSmall || ""}" style="width:100%">
-      </div>
-    `;
-  });
-
-  html += `</div></div>`;
-  return html;
 }
