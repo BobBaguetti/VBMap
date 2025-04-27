@@ -1,5 +1,5 @@
-/* @file: /scripts/modules/ui/modals/itemDefinitionsModal.js */
-/* @version: 27 – modal creation deferred until open() */
+// @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
+// @version: 28 – modal creation deferred until open()
 
 import {
   createModal,
@@ -22,7 +22,7 @@ import { applyColorPresets }           from "../../utils/colorUtils.js";
 import { createItemFormController }    from "../forms/controllers/itemFormController.js";
 import { destroyAllPickrs }            from "../pickrManager.js";
 
-export function inititemDefinitionsModal(db) {
+export function initItemDefinitionsModal(db) {
   // These will be assigned on first open()
   let modal, content, header;
   let listApi, formApi, previewApi;
@@ -55,8 +55,8 @@ export function inititemDefinitionsModal(db) {
       // 1) On first open, build the modal DOM and wire everything
       if (!modal) {
         const created = createModal({
-          id:        "test-item-definitions-modal",
-          title:     "Manage Items (Test)",
+          id:        "item-definitions-modal",
+          title:     "Manage Items",
           size:      "large",
           backdrop:  true,
           draggable: false,
@@ -77,12 +77,12 @@ export function inititemDefinitionsModal(db) {
         const layoutSwitcher = createLayoutSwitcher({
           available:   ["row", "stacked", "gallery"],
           defaultView: "row",
-          onChange: (layout) => listApi.setLayout(layout)
+          onChange:    layout => listApi.setLayout(layout)
         });
         header.appendChild(layoutSwitcher);
 
         // Create list container, preview panel, and form controller
-        const listContainer = createDefListContainer("test-item-def-list");
+        const listContainer = createDefListContainer("item-def-list");
         previewApi = createPreviewPanel("item");
         formApi    = createItemFormController({
           onCancel: () => {
@@ -90,14 +90,14 @@ export function inititemDefinitionsModal(db) {
             previewApi.setFromDefinition({});
             previewApi.show();
           },
-          onDelete: async (id) => {
+          onDelete: async id => {
             await deleteItemDefinition(db, id);
             await refreshDefinitions();
             formApi.reset();
             previewApi.setFromDefinition({});
             previewApi.show();
           },
-          onSubmit: async (payload) => {
+          onSubmit: async payload => {
             payload.showInFilters = payload.addToFilters;
             applyColorPresets(payload);
             if (payload.id) {
@@ -114,7 +114,7 @@ export function inititemDefinitionsModal(db) {
 
         // Allow form to scroll
         formApi.form.classList.add("ui-scroll-float");
-        formApi.form.addEventListener("input", (e) => {
+        formApi.form.addEventListener("input", e => {
           if (e.target.id === "fld-add-to-filters") return;
           const live = formApi.getCustom?.();
           if (live) {
@@ -140,19 +140,19 @@ export function inititemDefinitionsModal(db) {
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
-          onEntryClick:   (def) => {
+          onEntryClick:   def => {
             formApi.populate({ ...def, addToFilters: def.showInFilters });
             formApi.initPickrs();
             previewApi.setFromDefinition(def);
             previewApi.show();
           },
-          onDelete: async (id) => {
+          onDelete: async id => {
             await deleteItemDefinition(db, id);
             await refreshDefinitions();
           }
         });
 
-        // Move any search‐bar header into the modal header
+        // Move search‐bar header into modal header if present
         const maybeHeader = listContainer.previousElementSibling;
         if (maybeHeader?.classList.contains("list-header")) {
           maybeHeader.remove();
