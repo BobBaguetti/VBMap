@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 17 – unified Chest + Item harvest
+// @version: 18 – ensure Item flow always hydrates colors on first pick
 
 import {
   createModal,
@@ -25,12 +25,12 @@ export function initMarkerModal(db) {
     const list = await loadItemDefinitions(db);
     itemDefs = Object.fromEntries(list.map(d => [d.id, d]));
     fldPredefItem.innerHTML = `<option value="">None (custom)</option>`;
-    for (const d of list) {
+    list.forEach(d => {
       const o = document.createElement("option");
       o.value = d.id;
       o.textContent = d.name;
       fldPredefItem.appendChild(o);
-    }
+    });
   }
 
   async function refreshChestTypes() {
@@ -38,12 +38,12 @@ export function initMarkerModal(db) {
     const list = await loadChestTypes(db);
     chestDefs = Object.fromEntries(list.map(d => [d.id, d]));
     fldChestType.innerHTML = `<option value="">Select Chest Type</option>`;
-    for (const d of list) {
+    list.forEach(d => {
       const o = document.createElement("option");
       o.value = d.id;
       o.textContent = d.name;
       fldChestType.appendChild(o);
-    }
+    });
   }
 
   // ─── Build the modal structure once ────────────────────────────
@@ -140,12 +140,20 @@ export function initMarkerModal(db) {
     // ─ initial loads ─────────────────────────────────────────────
     refreshPredefinedItems();
     refreshChestTypes();
+
+    // ── seed an empty state so pickrs exist before first pick ──
+    formApi.setFromDefinition({});
+    formApi.initPickrs();
   }
 
   // ─── Open for editing an existing marker ───────────────────────
   async function openEdit(markerObj, data, evt, onSave) {
     ensureBuilt();
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
+
+    // clear stale selections
+    fldPredefItem.value = "";
+    fldChestType.value  = "";
 
     // set type & trigger UI
     fldType.value = data.type;
@@ -170,8 +178,7 @@ export function initMarkerModal(db) {
 
     form.onsubmit = e => {
       e.preventDefault();
-      const coords = data.coords;
-      const out    = harvest(coords);
+      const out = harvest(data.coords);
       onSave(markerObj, out, evt);
       closeModal(modal);
     };
@@ -182,10 +189,15 @@ export function initMarkerModal(db) {
     ensureBuilt();
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
 
-    fldType.value = type;
-    fldType.dispatchEvent(new Event("change"));
+    // reset everything
     fldPredefItem.value = "";
     fldChestType.value  = "";
+    formApi.setFromDefinition({});
+    formApi.initPickrs();
+
+    // select the requested type, fire the change to show the right fields
+    fldType.value = type;
+    fldType.dispatchEvent(new Event("change"));
 
     openModalAt(modal, evt);
 
@@ -206,15 +218,15 @@ export function initMarkerModal(db) {
     }
     // 2) Item flow
     if (type === "Item" && fldPredefItem.value) {
-      const d = itemDefs[fldPredefItem.value];
       return {
-        type, coords,
+        type,
+        coords,
         predefinedItemId: fldPredefItem.value,
-        ...formApi.getCustom()      // name, colors, etc
+        ...formApi.getCustom()
       };
     }
     // 3) Generic “custom” flow
-    return Object.assign({ type, coords }, formApi.getCustom());
+    return { type, coords, ...formApi.getCustom() };
   }
 
   return { openEdit, openCreate };
