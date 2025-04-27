@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.26
+// @version: 5.27
 
 import { initializeApp } from "firebase/app";
 import {
@@ -21,6 +21,7 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
 
+import { saveChest }                           from "./modules/services/chestsService.js";
 import { createMarker, renderPopup }            from "./modules/map/markerManager.js";
 import { initItemDefinitionsModal }             from "./modules/ui/modals/itemDefinitionsModal.js";
 import { initMarkerModal }                      from "./modules/ui/modals/markerModal.js";
@@ -31,8 +32,8 @@ import { initQuestDefinitionsModal }            from "./modules/ui/modals/questD
 import { activateFloatingScrollbars }           from "./modules/utils/scrollUtils.js";
 import { initAdminAuth }                        from "./authSetup.js";
 
-import { initChestLayer } from "./modules/map/chestController.js";
-
+import { initChestLayer }                       from "./modules/map/chestController.js";
+import { initChestInstanceModal }               from "./modules/ui/modals/chestInstanceModal.js";
 
 /* ------------------------------------------------------------------ *
  *  Firebase & Map Setup
@@ -65,7 +66,6 @@ let groupingOn = false;
 
 // wire up real-time chest layer
 initChestLayer(db, map, layers, showContextMenu);
-
 
 /* ------------------------------------------------------------------ *
  *  Admin Auth → Sidebar → Marker Load → Definitions
@@ -162,14 +162,12 @@ onAuthStateChanged(auth, async user => {
   }
 });
 
-
 /* ------------------------------------------------------------------ *
  *  Marker & Definition Modals
  * ------------------------------------------------------------------ */
 const markerForm = initMarkerModal(db);
 const itemModal  = initItemDefinitionsModal(db);
 const questModal = initQuestDefinitionsModal(db);
-
 
 /* ------------------------------------------------------------------ *
  *  Add & Persist Marker (with logging)
@@ -181,7 +179,6 @@ async function addAndPersist(data) {
   data.id         = saved.id;
   return markerObj;
 }
-
 
 /* ------------------------------------------------------------------ *
  *  Copy-Paste & Marker Management
@@ -214,13 +211,13 @@ const callbacks = {
                }
 };
 
-
 /* ------------------------------------------------------------------ *
  *  Context-Menu & Scrollbars
  * ------------------------------------------------------------------ */
 map.on("contextmenu", evt => {
   const items = [];
   if (document.body.classList.contains("is-admin")) {
+    // Create New Marker
     items.push({
       text: "Create New Marker",
       action: () => {
@@ -230,6 +227,17 @@ map.on("contextmenu", evt => {
           evt.originalEvent,
           addAndPersist
         );
+      }
+    });
+    // Create New Chest
+    items.push({
+      text: "Create New Chest",
+      action: () => {
+        initChestInstanceModal(db, [evt.latlng.lat, evt.latlng.lng])
+          .open([evt.latlng.lat, evt.latlng.lng], async ({ chestTypeId, coords }) => {
+            const saved = await saveChest(db, null, { chestTypeId, coords });
+            console.log("✅ Chest created:", saved.id);
+          });
       }
     });
   }
