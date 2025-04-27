@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.30
+// @version: 5.31
 
 import { initializeApp } from "firebase/app";
 import {
@@ -169,13 +169,41 @@ const itemModal  = initItemDefinitionsModal(db);
 const questModal = initQuestDefinitionsModal(db);
 
 /* ------------------------------------------------------------------ *
- *  Add & Persist Marker (with logging)
+ *  Add & Persist Marker (with immediate popup hydration)
  * ------------------------------------------------------------------ */
 async function addAndPersist(data) {
+  // 1) create marker in UI
   const markerObj = addMarker(data, callbacks);
-  const saved     = await firebaseAddMarker(db, data);
+
+  // 2) save to Firestore
+  const saved = await firebaseAddMarker(db, data);
   console.log("✅ Marker created in Firestore:", saved.id, data);
-  data.id         = saved.id;
+  data.id = saved.id;
+
+  // 3) if it's a predefined‐item marker, immediately hydrate and re‐render its popup
+  if (data.predefinedItemId) {
+    const { loadItemDefinitions } = await import(
+      "./modules/services/itemDefinitionsService.js"
+    );
+    const defs = await loadItemDefinitions(db);
+    const def  = defs.find(d => d.id === data.predefinedItemId);
+    if (def) {
+      Object.assign(data, {
+        name:        def.name,
+        nameColor:   def.nameColor    || "#E5E6E8",
+        rarity:      def.rarity,
+        rarityColor: def.rarityColor  || "#E5E6E8",
+        description: def.description,
+        extraLines:  JSON.parse(JSON.stringify(def.extraLines || [])),
+        imageSmall:  def.imageSmall,
+        imageBig:    def.imageBig,
+        value:       def.value    ?? null,
+        quantity:    def.quantity ?? null
+      });
+      markerObj.setPopupContent(renderPopup(data));
+    }
+  }
+
   return markerObj;
 }
 
@@ -201,7 +229,7 @@ const callbacks = {
                  firebaseUpdateMarker(db, updated).catch(() => {});
                }),
   onCopy:    (_, d)    => copyMgr.startCopy(d),
-  onDragEnd: (_, d)    => firebaseUpdateMarker(db, d).catch(() =>{}),
+  onDragEnd: (_, d)    => firebaseUpdateMarker(db, d).catch(() => {}),
   onDelete:  (m, d)    => {
                  layers[d.type].removeLayer(m);
                  const idx = allMarkers.findIndex(o => o.data.id === d.id);
@@ -230,7 +258,6 @@ map.on("contextmenu", evt => {
     items.push({
       text: "Create New Chest",
       action: () => {
-        // reuse marker modal for chest placement
         markerForm.openCreate(
           [evt.latlng.lat, evt.latlng.lng],
           "Chest",
