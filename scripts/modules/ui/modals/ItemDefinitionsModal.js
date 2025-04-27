@@ -1,4 +1,4 @@
-/* @file: /scripts/modules/ui/modals/testItemDefinitionsModal.js */
+/* @file: /scripts/modules/ui/modals/itemDefinitionsModal.js */
 /* @version: 27 – modal creation deferred until open() */
 
 import {
@@ -22,7 +22,7 @@ import { applyColorPresets }           from "../../utils/colorUtils.js";
 import { createItemFormController }    from "../forms/controllers/itemFormController.js";
 import { destroyAllPickrs }            from "../pickrManager.js";
 
-export function initTestItemDefinitionsModal(db) {
+export function inititemDefinitionsModal(db) {
   // These will be assigned on first open()
   let modal, content, header;
   let listApi, formApi, previewApi;

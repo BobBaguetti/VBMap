@@ -1,11 +1,9 @@
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted;
-// @file:    /scripts/modules/sidebar/sidebarManager.js
-// @version: 9.7
+// @file: /scripts/modules/sidebar/sidebarManager.js
+// @version: 9.9
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
 import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
-import { initTestItemDefinitionsModal } from "../ui/modals/testItemDefinitionsModal.js";
 import { initQuestDefinitionsModal } from "../ui/modals/questDefinitionsModal.js";
 import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
 
@@ -179,7 +177,6 @@ export async function setupSidebar(
 
   [
     ["Manage Items",    () => initItemDefinitionsModal(db).open()],
-    ["Test Item Modal", () => initTestItemDefinitionsModal(db).open()],
     ["Manage Quests",   () => initQuestDefinitionsModal(db).open()],
     ["Manage NPCs",     () => initNpcDefinitionsModal(db).open()]
   ].forEach(([txt, fn]) => {

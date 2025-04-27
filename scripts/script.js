@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.22
+// @version: 5.24
 
 import { initializeApp } from "firebase/app";
 import {
