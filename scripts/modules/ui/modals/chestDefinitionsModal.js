@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.6 – loot-pool picker integrated & full item lookup
+// @version: 1.6 – add guard around getCustom in live-preview
 
 import {
   createModal,
@@ -25,17 +25,17 @@ export function initChestDefinitionsModal(db) {
   let modal, content, header;
   let listApi, formApi, previewApi;
   let definitions = [];
-  let itemMap     = {};
 
-  // Load & cache all item definitions once
+  // Cache all item defs for preview
+  let itemMap = {};
   async function ensureItemMap() {
-    if (Object.keys(itemMap).length === 0) {
+    if (!Object.keys(itemMap).length) {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
   }
 
-  // Reload chest-type list
+  // Refresh list items
   async function refreshDefinitions() {
     definitions = await loadChestTypes(db);
     listApi.refresh(definitions);
@@ -44,14 +44,14 @@ export function initChestDefinitionsModal(db) {
   return {
     open: async () => {
       if (!modal) {
-        // 1) Build the modal shell
+        // 1) Build modal structure
         const created = createModal({
-          id:          "chest-definitions-modal",
-          title:       "Manage Chest Types",
-          size:        "large",
-          backdrop:    true,
-          withDivider: true,
-          onClose:     () => {
+          id:           "chest-definitions-modal",
+          title:        "Manage Chest Types",
+          size:         "large",
+          backdrop:     true,
+          withDivider:  true,
+          onClose:      () => {
             closeModal(modal);
             previewApi.hide();
           }
@@ -63,18 +63,18 @@ export function initChestDefinitionsModal(db) {
 
         // 2) Layout switcher
         const layoutSwitcher = createLayoutSwitcher({
-          available:   ["row", "stacked", "gallery"],
+          available:   ["row","stacked","gallery"],
           defaultView: "row",
           onChange:    view => listApi.setLayout(view)
         });
         header.appendChild(layoutSwitcher);
 
-        // 3) Definition list container
+        // 3) List container
         const listContainer = createDefListContainer("chest-def-list");
 
         // 4) Preview panel & form controller
         previewApi = createPreviewPanel("chest");
-        formApi = createChestFormController({
+        formApi    = createChestFormController({
           onCancel: async () => {
             formApi.reset();
             previewApi.setFromDefinition({ lootPool: [] });
@@ -100,9 +100,11 @@ export function initChestDefinitionsModal(db) {
           }
         }, db);
 
-        // 5) Live preview as form changes
+        // 5) Live‐preview wiring with guard
         formApi.form.classList.add("ui-scroll-float");
         formApi.form.addEventListener("input", async () => {
+          // only attempt live‐preview if getCustom exists
+          if (typeof formApi.getCustom !== "function") return;
           const live = formApi.getCustom();
           await ensureItemMap();
           previewApi.setFromDefinition({
@@ -142,7 +144,7 @@ export function initChestDefinitionsModal(db) {
           onDelete: id => deleteChestType(db, id).then(refreshDefinitions)
         });
 
-        // 8) Move auto-generated search into header
+        // 8) Move search into header
         const maybeSearch = listContainer.previousElementSibling;
         if (maybeSearch?.classList.contains("list-header")) {
           maybeSearch.remove();
@@ -152,7 +154,7 @@ export function initChestDefinitionsModal(db) {
         previewApi.hide();
       }
 
-      // Each open: reset, preload items, refresh, show
+      // Reset & reload on every open
       formApi.reset();
       await ensureItemMap();
       await refreshDefinitions();
