@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.24
+// @version: 5.26
 
 import { initializeApp } from "firebase/app";
 import {
@@ -29,8 +29,9 @@ import { setupSidebar }                         from "./modules/sidebar/sidebarM
 import { subscribeItemDefinitions }             from "./modules/services/itemDefinitionsService.js";
 import { initQuestDefinitionsModal }            from "./modules/ui/modals/questDefinitionsModal.js";
 import { activateFloatingScrollbars }           from "./modules/utils/scrollUtils.js";
+import { initAdminAuth }                        from "./authSetup.js";
 
-import { initAdminAuth } from "./authSetup.js";
+import { initChestLayer } from "./modules/map/chestController.js";
 
 
 /* ------------------------------------------------------------------ *
@@ -50,15 +51,20 @@ const layers = {
   "Extraction Portal":L.layerGroup(),
   Item:               flatItemLayer,
   Teleport:           L.layerGroup(),
-  "Spawn Point":      L.layerGroup()
+  "Spawn Point":      L.layerGroup(),
+  Chest:              L.layerGroup()
 };
 
+// mount all non-Item layers immediately
 Object.entries(layers).forEach(([type, layer]) => {
   if (type !== "Item") layer.addTo(map);
 });
 flatItemLayer.addTo(map);
 
 let groupingOn = false;
+
+// wire up real-time chest layer
+initChestLayer(db, map, layers, showContextMenu);
 
 
 /* ------------------------------------------------------------------ *
@@ -98,14 +104,13 @@ onAuthStateChanged(auth, async user => {
   const isAdmin = Boolean(claims.admin);
   document.body.classList.toggle("is-admin", isAdmin);
 
-  // Only initialize once, and only once user is known (null → actual)
   if (!initialized && user !== null) {
-    // 1) Build the sidebar with correct admin state
+    // 1) Sidebar
     ({ filterMarkers, loadItemFilters } = await setupSidebar(
       map, layers, allMarkers, db, groupingCallbacks
     ));
 
-    // 2) Load existing markers
+    // 2) Existing markers
     const markers = await loadMarkers(db);
     markers.forEach(m => {
       if (!m.type || !layers[m.type]) return;
@@ -113,7 +118,7 @@ onAuthStateChanged(auth, async user => {
       addMarker(m, callbacks);
     });
 
-    // 3) Subscribe definition updates
+    // 3) Live item-defs
     subscribeItemDefinitions(db, async () => {
       await markerForm.refreshPredefinedItems();
       const { loadItemDefinitions } = await import(
@@ -126,43 +131,32 @@ onAuthStateChanged(auth, async user => {
         if (!data.predefinedItemId) return;
         const def = defMap[data.predefinedItemId];
         if (!def) return;
-
         Object.assign(data, {
-          name:             def.name,
-          nameColor:        def.nameColor    || "#E5E6E8",
-          rarity:           def.rarity,
-          rarityColor:      def.rarityColor  || "#E5E6E8",
-          description:      def.description,
-          descriptionColor: def.descriptionColor || "#E5E6E8",
-          extraLines:       JSON.parse(JSON.stringify(def.extraLines || [])),
-          imageSmall:       def.imageSmall,
-          imageBig:         def.imageBig,
-          value:            def.value ?? null,
-          quantity:         def.quantity ?? null
+          name:        def.name,
+          nameColor:   def.nameColor    || "#E5E6E8",
+          rarity:      def.rarity,
+          rarityColor: def.rarityColor  || "#E5E6E8",
+          description: def.description,
+          extraLines:  JSON.parse(JSON.stringify(def.extraLines || [])),
+          imageSmall:  def.imageSmall,
+          imageBig:    def.imageBig,
+          value:       def.value    ?? null,
+          quantity:    def.quantity ?? null
         });
-
         markerObj.setPopupContent(renderPopup(data));
-
-        if (document.body.classList.contains("is-admin")) {
-          firebaseUpdateMarker(db, data)
-            .then(() => console.log("🔄 Propagated def to marker:", data.id, data))
-            .catch(err => {
-              if (err.code !== "permission-denied") console.error(err);
-            });
-        }
+        if (isAdmin) firebaseUpdateMarker(db, data).catch(() => {});
       });
 
       await loadItemFilters();
       filterMarkers();
     });
 
-    // 4) Initial filter pass
+    // 4) Initial filter
     await loadItemFilters();
     filterMarkers();
 
     initialized = true;
   } else if (initialized) {
-    // on subsequent auth-changes, just re-filter
     await loadItemFilters();
     filterMarkers();
   }
@@ -195,7 +189,7 @@ async function addAndPersist(data) {
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 function addMarker(data, cbs = {}) {
-  const isAdmin = document.body.classList.contains("is-admin");
+  const isAdmin  = document.body.classList.contains("is-admin");
   const markerObj = createMarker(
     data, map, layers, showContextMenu, cbs, isAdmin
   );
@@ -206,30 +200,18 @@ function addMarker(data, cbs = {}) {
 }
 
 const callbacks = {
-  onEdit:   (markerObj, data, ev) => {
-    markerForm.openEdit(markerObj, data, ev, updated => {
-      markerObj.setPopupContent(renderPopup(updated));
-      firebaseUpdateMarker(db, updated)
-        .then(() => console.log("✏️ Marker updated:", updated.id, updated))
-        .catch(err => console.error("❌ Update failed:", err));
-    });
-  },
-  onCopy:   (_, data) => copyMgr.startCopy(data),
-  onDragEnd:(_, data) => {
-    firebaseUpdateMarker(db, data)
-      .then(() => console.log("🚚 Marker moved:", data.id, data.coords))
-      .catch(err => console.error("❌ Move failed:", err));
-  },
-  onDelete:(markerObj, data) => {
-    layers[data.type].removeLayer(markerObj);
-    const idx = allMarkers.findIndex(o => o.data.id === data.id);
-    if (idx !== -1) allMarkers.splice(idx, 1);
-    if (data.id) {
-      firebaseDeleteMarker(db, data.id)
-        .then(() => console.log("🗑️ Marker deleted:", data.id))
-        .catch(err => console.error("❌ Delete failed:", err));
-    }
-  }
+  onEdit:    (m, d, ev) => markerForm.openEdit(m, d, ev, updated => {
+                 m.setPopupContent(renderPopup(updated));
+                 firebaseUpdateMarker(db, updated).catch(() => {});
+               }),
+  onCopy:    (_, d)    => copyMgr.startCopy(d),
+  onDragEnd: (_, d)    => firebaseUpdateMarker(db, d).catch(() => {}),
+  onDelete:  (m, d)    => {
+                 layers[d.type].removeLayer(m);
+                 const idx = allMarkers.findIndex(o => o.data.id === d.id);
+                 if (idx !== -1) allMarkers.splice(idx, 1);
+                 if (d.id) firebaseDeleteMarker(db, d.id).catch(() => {});
+               }
 };
 
 
@@ -246,17 +228,21 @@ map.on("contextmenu", evt => {
           [evt.latlng.lat, evt.latlng.lng],
           "Item",
           evt.originalEvent,
-          newData => addAndPersist(newData)
+          addAndPersist
         );
       }
     });
   }
-  showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, items);
+  showContextMenu(
+    evt.originalEvent.pageX,
+    evt.originalEvent.pageY,
+    items
+  );
 });
 
 document.addEventListener("click", e => {
   const cm = document.getElementById("context-menu");
-  if (cm && cm.style.display === "block" && !cm.contains(e.target)) {
+  if (cm?.style.display === "block" && !cm.contains(e.target)) {
     cm.style.display = "none";
   }
 });
