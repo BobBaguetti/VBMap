@@ -1,4 +1,4 @@
-/* @version: 16 */
+/* @version: 17 */
 /* @file: /styles/modals/modal.large.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
@@ -115,7 +115,9 @@
   flex-shrink: 0;
 }
 
-.modal.modal-large .field-row input,
+/* Text, select, textarea, and number inputs all styled uniformly */
+.modal.modal-large .field-row input[type="text"],
+.modal.modal-large .field-row input[type="number"],
 .modal.modal-large .field-row textarea,
 .modal.modal-large .field-row select {
   flex: 1;
@@ -126,6 +128,16 @@
   border-radius: 3px;
   font-size: 14px;
   font-weight: 400;
+}
+
+/* Hide native number input spinners */
+.modal.modal-large .field-row input[type="number"]::-webkit-outer-spin-button,
+.modal.modal-large .field-row input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.modal.modal-large .field-row input[type="number"] {
+  -moz-appearance: textfield; /* Firefox */
 }
 
 .modal-large .field-row textarea {
@@ -296,7 +308,6 @@
 .modal-large .item-def-entry .entry-delete.ui-button-delete {
   margin-top: 2px;
 }
-
 
 /* ─── Layout Mode: Row View (Default) ──────────────────────────────────────── */
 .modal-large .layout-row .item-def-entry {
