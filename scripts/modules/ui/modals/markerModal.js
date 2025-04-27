@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 16 – unified Chest + Item in one modal
+// @version: 16.1 – expose refreshPredefinedItems()
 
 import {
   createModal,
@@ -223,5 +223,9 @@ export function initMarkerModal(db) {
     };
   }
 
-  return { openEdit, openCreate };
+  return {
+    openEdit,
+    openCreate,
+    refreshPredefinedItems
+  };
 }
