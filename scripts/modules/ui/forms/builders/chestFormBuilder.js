@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 1.2 – styled field‐rows without universalForm
+// @version: 1.3 – reordered fields
 
 /**
  * Builds the form layout for creating/editing a Chest Type.
@@ -19,17 +19,6 @@ export function createChestForm() {
   fldName.id   = "fld-chest-name";
   rowName.append(lblName, fldName);
 
-  // Icon URL
-  const rowIcon = document.createElement("div");
-  rowIcon.classList.add("field-row");
-  const lblIcon = document.createElement("label");
-  lblIcon.htmlFor = "fld-chest-icon";
-  lblIcon.textContent = "Icon URL";
-  const fldIcon = document.createElement("input");
-  fldIcon.type = "text";
-  fldIcon.id   = "fld-chest-icon";
-  rowIcon.append(lblIcon, fldIcon);
-
   // Loot Pool (multi-select)
   const rowLoot = document.createElement("div");
   rowLoot.classList.add("field-row");
@@ -39,7 +28,7 @@ export function createChestForm() {
   const fldLoot = document.createElement("select");
   fldLoot.id       = "fld-chest-loot";
   fldLoot.multiple = true;
-  fldLoot.style.minHeight = "80px";  // so you can see multiple options
+  fldLoot.style.minHeight = "80px";  // show multiple items at once
   rowLoot.append(lblLoot, fldLoot);
 
   // Max Display
@@ -54,15 +43,28 @@ export function createChestForm() {
   fldMax.min  = "1";
   rowMax.append(lblMax, fldMax);
 
-  form.append(rowName, rowIcon, rowLoot, rowMax);
+  // Icon URL
+  const rowIcon = document.createElement("div");
+  rowIcon.classList.add("field-row");
+  const lblIcon = document.createElement("label");
+  lblIcon.htmlFor = "fld-chest-icon";
+  lblIcon.textContent = "Icon URL";
+  const fldIcon = document.createElement("input");
+  fldIcon.type = "text";
+  fldIcon.id   = "fld-chest-icon";
+  rowIcon.append(lblIcon, fldIcon);
+
+  // Append in the correct order:
+  // Name, Loot Pool, Max Display, Icon URL
+  form.append(rowName, rowLoot, rowMax, rowIcon);
 
   return {
     form,
     fields: {
       fldName,
-      fldIconUrl: fldIcon,
-      fldLootPool: fldLoot,
-      fldMaxDisplay: fldMax
+      fldLootPool:   fldLoot,
+      fldMaxDisplay: fldMax,
+      fldIconUrl:    fldIcon
     }
   };
 }

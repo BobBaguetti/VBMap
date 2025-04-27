@@ -1,4 +1,4 @@
-/* @version: 14 */
+/* @version: 15 */
 /* @file: styles/modals/modal.base.css – base styles for all modals */
 
 /* 1) Global box-sizing */
@@ -88,14 +88,15 @@
   color: #eee;
 }
 
-/* 7) Hide default number-spinner arrows */
-.modal-content .field-row input[type="number"]::-webkit-outer-spin-button,
-.modal-content .field-row input[type="number"]::-webkit-inner-spin-button {
-  -webkit-appearance: none;
-  margin: 0;
-}
+/* 7) Hide default number-spinner arrows and standardize appearance */
 .modal-content .field-row input[type="number"] {
-  -moz-appearance: textfield; /* Firefox */
+  /* Chrome/Safari */
+  -webkit-appearance: none;
+  /* Firefox */
+  -moz-appearance: none;
+  /* Standard */
+  appearance: none;
+  margin: 0;
 }
 
 /* 8) Color-picker & remove-line buttons */

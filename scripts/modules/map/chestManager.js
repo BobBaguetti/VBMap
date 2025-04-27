@@ -1,25 +1,19 @@
-// path: scripts/modules/map/chestManager.js
-// version: 1.2
+// @file: /scripts/modules/map/chestManager.js
+// @version: 1.0 – initial implementation
 
-/**
- * Map manager for rendering chest markers on the map.
- */
 import { renderPopup as renderItemPopup } from "./markerManager.js";
 
 /**
- * Create and add a chest marker to the specified layer group.
- * @param {Object} data          — Chest instance data ({ id, chestTypeId, coords })
- * @param {Object} typeDef       — Chest type definition ({ id, name, iconUrl, lootPool, maxDisplay })
- * @param {L.Map}  map           — Leaflet map instance
- * @param {Object} layers        — Named layer groups; must include layers.Chest
- * @param {Function} showContextMenu — Function to show context menu (for admin actions)
+ * Create and render a chest marker on the map.
+ * @param {Object} data     — { id, chestTypeId, coords: [lat, lng] }
+ * @param {Object} typeDef  — { iconUrl, name, lootPool, maxDisplay }
+ * @param {L.Map} map
+ * @param {Object} layers   — must include layers.Chest (L.layerGroup)
+ * @param {Function} showContextMenu
  * @returns {L.Marker}
  */
 export function createChestMarker(data, typeDef, map, layers, showContextMenu) {
-  const icon = L.icon({
-    iconUrl: typeDef.iconUrl,
-    iconSize: [32, 32]
-  });
+  const icon = L.icon({ iconUrl: typeDef.iconUrl, iconSize: [32, 32] });
   const marker = L.marker(data.coords, { icon }).addTo(layers.Chest);
 
   marker.bindPopup(buildChestPopupHTML(typeDef), {
@@ -27,17 +21,18 @@ export function createChestMarker(data, typeDef, map, layers, showContextMenu) {
     maxWidth: 300
   });
 
-  // Admin-only context menu for deletion
+  // Right‐click context menu (admin only)
   marker.on("contextmenu", ev => {
     if (document.body.classList.contains("is-admin")) {
-      showContextMenu(
-        ev.originalEvent.pageX,
-        ev.originalEvent.pageY,
-        [{
+      showContextMenu(ev.originalEvent.pageX, ev.originalEvent.pageY, [
+        {
           text: "Delete Chest",
-          action: () => layers.Chest.removeLayer(marker)
-        }]
-      );
+          action: () => {
+            // let the instance subscription handle removal
+            marker.remove();
+          }
+        }
+      ]);
     }
   });
 
@@ -45,26 +40,28 @@ export function createChestMarker(data, typeDef, map, layers, showContextMenu) {
 }
 
 /**
- * Build the HTML content for a chest popup.
- * @param {Object} typeDef — Chest type definition
+ * Build the HTML content for a chest‐popup.
+ * Shows chest icon, title, and a grid of item thumbnails.
+ * @param {Object} typeDef  — { iconUrl, name, lootPool, maxDisplay }
  * @returns {string} HTML string
  */
 export function buildChestPopupHTML(typeDef) {
   let html = `
     <div class="chest-popup">
-      <img src="${typeDef.iconUrl}" class="chest-icon" />
+      <img src="${typeDef.iconUrl}" class="chest-icon">
       <strong>${typeDef.name}</strong>
       <hr>
       <div class="chest-grid" style="
-        display:grid;
-        gap:4px;
-        grid-template-columns:repeat(${typeDef.maxDisplay},1fr)">
+           display: grid;
+           gap: 4px;
+           grid-template-columns: repeat(${typeDef.maxDisplay},1fr);
+         ">
   `;
 
   typeDef.lootPool.forEach(itemDef => {
     html += `
-      <div class="chest-slot" title="${itemDef.name || ''}">
-        <img src="${itemDef.imageSmall || ''}" style="width:100%" />
+      <div class="chest-slot" title="${itemDef.name}">
+        <img src="${itemDef.imageSmall}" style="width:100%">
       </div>
     `;
   });

@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.27
+// @version: 5.28
 
 import { initializeApp } from "firebase/app";
 import {
@@ -21,19 +21,19 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
 
-import { saveChest }                           from "./modules/services/chestsService.js";
-import { createMarker, renderPopup }            from "./modules/map/markerManager.js";
-import { initItemDefinitionsModal }             from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initMarkerModal }                      from "./modules/ui/modals/markerModal.js";
-import { initCopyPasteManager }                 from "./modules/map/copyPasteManager.js";
-import { setupSidebar }                         from "./modules/sidebar/sidebarManager.js";
-import { subscribeItemDefinitions }             from "./modules/services/itemDefinitionsService.js";
-import { initQuestDefinitionsModal }            from "./modules/ui/modals/questDefinitionsModal.js";
-import { activateFloatingScrollbars }           from "./modules/utils/scrollUtils.js";
-import { initAdminAuth }                        from "./authSetup.js";
+import { createMarker, renderPopup }   from "./modules/map/markerManager.js";
+import { saveChest }                   from "./modules/services/chestsService.js";
+import { initItemDefinitionsModal }    from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initMarkerModal }             from "./modules/ui/modals/markerModal.js";
+import { initCopyPasteManager }        from "./modules/map/copyPasteManager.js";
+import { setupSidebar }                from "./modules/sidebar/sidebarManager.js";
+import { subscribeItemDefinitions }    from "./modules/services/itemDefinitionsService.js";
+import { initQuestDefinitionsModal }   from "./modules/ui/modals/questDefinitionsModal.js";
+import { activateFloatingScrollbars }  from "./modules/utils/scrollUtils.js";
+import { initAdminAuth }               from "./authSetup.js";
 
-import { initChestLayer }                       from "./modules/map/chestController.js";
-import { initChestInstanceModal }               from "./modules/ui/modals/chestInstanceModal.js";
+import { initChestLayer }              from "./modules/map/chestController.js";
+import { initChestInstanceModal }      from "./modules/ui/modals/chestInstanceModal.js";
 
 /* ------------------------------------------------------------------ *
  *  Firebase & Map Setup
@@ -62,10 +62,11 @@ Object.entries(layers).forEach(([type, layer]) => {
 });
 flatItemLayer.addTo(map);
 
-let groupingOn = false;
-
-// wire up real-time chest layer
+// Set up chest instance modal and real-time chest layer
+const chestInstanceModal = initChestInstanceModal(db);
 initChestLayer(db, map, layers, showContextMenu);
+
+let groupingOn = false;
 
 /* ------------------------------------------------------------------ *
  *  Admin Auth → Sidebar → Marker Load → Definitions
@@ -202,7 +203,7 @@ const callbacks = {
                  firebaseUpdateMarker(db, updated).catch(() => {});
                }),
   onCopy:    (_, d)    => copyMgr.startCopy(d),
-  onDragEnd: (_, d)    => firebaseUpdateMarker(db, d).catch(() => {}),
+  onDragEnd: (_, d)    => firebaseUpdateMarker(db, d).catch(() =>{}),
   onDelete:  (m, d)    => {
                  layers[d.type].removeLayer(m);
                  const idx = allMarkers.findIndex(o => o.data.id === d.id);
@@ -217,7 +218,6 @@ const callbacks = {
 map.on("contextmenu", evt => {
   const items = [];
   if (document.body.classList.contains("is-admin")) {
-    // Create New Marker
     items.push({
       text: "Create New Marker",
       action: () => {
@@ -229,15 +229,10 @@ map.on("contextmenu", evt => {
         );
       }
     });
-    // Create New Chest
     items.push({
       text: "Create New Chest",
       action: () => {
-        initChestInstanceModal(db, [evt.latlng.lat, evt.latlng.lng])
-          .open([evt.latlng.lat, evt.latlng.lng], async ({ chestTypeId, coords }) => {
-            const saved = await saveChest(db, null, { chestTypeId, coords });
-            console.log("✅ Chest created:", saved.id);
-          });
+        chestInstanceModal.open([evt.latlng.lat, evt.latlng.lng]);
       }
     });
   }

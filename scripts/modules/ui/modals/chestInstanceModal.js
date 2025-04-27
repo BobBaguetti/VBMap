@@ -1,17 +1,21 @@
 // @file: /scripts/modules/ui/modals/chestInstanceModal.js
-// @version: 1.0
+// @version: 1.1 – streamlined build and save integration
 
 import { createModal, openModal, closeModal } from "../uiKit.js";
 import { createChestInstanceFormController } from "../forms/controllers/chestInstanceFormController.js";
+import { saveChest }                         from "../../services/chestsService.js";
 
 /**
  * Admin modal to place a new chest on the map.
+ * Use .open(coords) when right‐clicking the map.
+ *
  * @param {import('firebase/firestore').Firestore} db
- * @param {[number,number]} coords The lat/lng where the user clicked
  */
-export function initChestInstanceModal(db, coords) {
+export function initChestInstanceModal(db) {
   let modal, content, header, formApi;
+  let coords;
 
+  // Build the modal shell once
   async function build() {
     const created = createModal({
       id:       "chest-instance-modal",
@@ -23,34 +27,38 @@ export function initChestInstanceModal(db, coords) {
     modal   = created.modal;
     content = created.content;
     header  = created.header;
+    // Only admins should see this
     modal.classList.add("admin-only");
-
-    formApi = await createChestInstanceFormController({
-      onCancel: () => closeModal(modal),
-      onSubmit: async payload => {
-        await payload.saveFn(payload); // we’ll override below
-        closeModal(modal);
-      }
-    }, db, coords);
-
-    formApi.form.classList.add("ui-scroll-float");
-    content.appendChild(formApi.form);
   }
 
   return {
-    open: async (_coords, saveFn) => {
-      coords = _coords;
+    /**
+     * Open the modal at the given coordinates.
+     * @param {[number,number]} latlng
+     */
+    open: async (latlng) => {
+      coords = latlng;
       if (!modal) await build();
-      // inject the save function
-      formApi.form.removeEventListener; // no-op
+
+      // If a previous form exists, remove it
+      if (formApi && content.contains(formApi.form)) {
+        content.removeChild(formApi.form);
+      }
+
+      // Create a fresh controller wired to saveChest
       formApi = await createChestInstanceFormController({
         onCancel: () => closeModal(modal),
-        onSubmit: async payload => {
-          payload.saveFn = saveFn;
-          await saveFn(payload);
+        onSubmit: async ({ chestTypeId }) => {
+          // Persist to Firestore; real-time subscription will render it
+          await saveChest(db, null, { chestTypeId, coords });
           closeModal(modal);
         }
       }, db, coords);
+
+      // Allow scroll within small modal
+      formApi.form.classList.add("ui-scroll-float");
+      content.appendChild(formApi.form);
+
       openModal(modal);
     }
   };

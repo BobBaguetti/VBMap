@@ -1,4 +1,4 @@
-/* @version: 18 */
+/* @version: 19 */
 /* @file: /styles/modals/modal.large.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
@@ -130,14 +130,18 @@
   font-weight: 400;
 }
 
-/* Hide native number input spinners */
+/* Hide native number input spinners and standardize appearance */
 .modal.modal-large .field-row input[type="number"]::-webkit-outer-spin-button,
 .modal.modal-large .field-row input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 .modal.modal-large .field-row input[type="number"] {
-  -moz-appearance: textfield; /* Firefox */
+  /* Remove spinner in Firefox/Edge, Safari/Chrome, and use standard */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  margin: 0;
 }
 
 /* Allow textarea vertical resize */
@@ -205,8 +209,6 @@
   gap: 6px;
   align-items: center;
 }
-
-/* ─── Definition List Entries ───────────────────────────────────────── */
 
 /* ─── Definition List Entries ───────────────────────────────────────── */
 
@@ -283,16 +285,6 @@
 .modal.modal-large .item-def-entry .entry-delete svg {
   width: 16px;
   height: 16px;
-}
-
-.modal-large .floating-buttons {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.modal-large .item-def-entry .entry-delete.ui-button-delete {
-  margin-top: 2px;
 }
 
 /* Layout Modes */

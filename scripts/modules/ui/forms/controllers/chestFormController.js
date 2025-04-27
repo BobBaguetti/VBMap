@@ -1,15 +1,12 @@
 // @file: /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 1.1
+// @version: 1.2 – adds dynamic loot-pool loading and proper reset/populate
 
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 import { createChestForm }     from "../builders/chestFormBuilder.js";
 
 /**
  * Controller to manage the Chest Type form.
- * @param {object} callbacks
- *   - onCancel()
- *   - onSubmit(payload)
- *   - onDelete(id)
+ * @param {{ onCancel():void, onSubmit(payload):Promise, onDelete(id):Promise }} callbacks
  * @param {import('firebase/firestore').Firestore} db
  */
 export function createChestFormController({ onCancel, onSubmit, onDelete }, db) {
@@ -33,15 +30,17 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   btnSave.type = "submit";
   btnSave.className = "ui-button";
   btnSave.textContent = "Save";
+  btnRow.appendChild(btnSave);
 
-  const btnClear = document.createElement("button");
-  btnClear.type = "button";
-  btnClear.className = "ui-button";
-  btnClear.textContent = "Clear";
-  btnClear.onclick = onCancel;
+  const btnCancel = document.createElement("button");
+  btnCancel.type = "button";
+  btnCancel.className = "ui-button";
+  btnCancel.textContent = "Cancel";
+  btnCancel.onclick = onCancel;
+  btnRow.appendChild(btnCancel);
 
   const btnDelete = document.createElement("button");
-  btnDelete.type      = "button";
+  btnDelete.type = "button";
   btnDelete.className = "ui-button-delete";
   btnDelete.textContent = "Delete";
   btnDelete.style.display = "none";
@@ -50,24 +49,24 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
       onDelete(_id);
     }
   };
+  btnRow.appendChild(btnDelete);
 
-  btnRow.append(btnSave, btnClear, btnDelete);
   headerWrap.appendChild(btnRow);
   form.prepend(headerWrap);
 
-  // ─── Populate loot‐pool options ──────────────────────────────────
-  async function initLootOptions() {
-    // Use the passed-in Firestore instance
+  // ─── Load and populate loot-pool options ─────────────────────────
+  async function initLootOptions(selected = []) {
     const items = await loadItemDefinitions(db);
     fields.fldLootPool.innerHTML = "";
     items.forEach(item => {
       const opt = document.createElement("option");
       opt.value = item.id;
       opt.textContent = item.name;
-      fields.fldLootPool.append(opt);
+      opt.selected = selected.includes(item.id);
+      fields.fldLootPool.appendChild(opt);
     });
   }
-  initLootOptions();
+  initLootOptions([]);
 
   // ─── Reset to “Add” mode ────────────────────────────────────────
   function reset() {
@@ -75,23 +74,22 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     _id = null;
     titleEl.textContent = "Add Chest Type";
     btnDelete.style.display = "none";
+    initLootOptions([]);
   }
 
   // ─── Populate for “Edit” mode ──────────────────────────────────
   function populate(def) {
     form.reset();
-    fields.fldName.value       = def.name || "";
-    fields.fldIconUrl.value    = def.iconUrl || "";
-    fields.fldMaxDisplay.value = def.maxDisplay || "";
-    Array.from(fields.fldLootPool.options).forEach(opt => {
-      opt.selected = def.lootPool?.includes(opt.value);
-    });
     _id = def.id;
     titleEl.textContent = "Edit Chest Type";
     btnDelete.style.display = "";
+    fields.fldName.value       = def.name || "";
+    fields.fldMaxDisplay.value = def.maxDisplay || "";
+    fields.fldIconUrl.value    = def.iconUrl || "";
+    initLootOptions(def.lootPool || []);
   }
 
-  // ─── Gather payload ────────────────────────────────────────────
+  // ─── Gather form data ─────────────────────────────────────────
   function getCustom() {
     return {
       id:          _id,
@@ -103,15 +101,11 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     };
   }
 
+  // ─── Form submit handler ───────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit(getCustom());
   });
 
-  return {
-    form,
-    reset,
-    populate,
-    getCustom
-  };
+  return { form, reset, populate, getCustom };
 }
