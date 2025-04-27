@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.29
+// @version: 5.30
 
 import { initializeApp } from "firebase/app";
 import {
@@ -230,13 +230,12 @@ map.on("contextmenu", evt => {
     items.push({
       text: "Create New Chest",
       action: () => {
-        // reuse the marker modal for chests
+        // reuse marker modal for chest placement
         markerForm.openCreate(
           [evt.latlng.lat, evt.latlng.lng],
           "Chest",
           evt.originalEvent,
           async out => {
-            // out={ type:"Chest", coords, chestTypeId }
             const saved = await saveChest(db, null, {
               chestTypeId: out.chestTypeId,
               coords:      out.coords
