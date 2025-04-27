@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 18 – ensure Item flow always hydrates colors on first pick
+// @version: 19 – ensure Item flow hydrates colors & reorder Item Type above Rarity
 
 import {
   createModal,
@@ -9,7 +9,7 @@ import {
   createFormButtonRow
 } from "../uiKit.js";
 import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
-import { loadChestTypes }       from "../../services/chestTypesService.js";
+import { loadChestTypes }       from "../../services/chestsService.js";
 import { createMarkerForm }     from "../forms/markerForm.js";
 
 export function initMarkerModal(db) {
@@ -92,13 +92,14 @@ export function initMarkerModal(db) {
       "Chest Type:", "fld-predef-chest", [], { showColor: false }
     ));
 
-    // ─ Item-specific fields (rarity, type, desc) ───────────────────
+    // ─ Item-specific fields ────────────────────────────────────────
     formApi = createMarkerForm();
     blockItem = document.createElement("div");
     blockItem.classList.add("item-gap");
+    // Reordered: Item Type first, then Rarity, then Description
     blockItem.append(
-      formApi.fields.fldRarity.closest(".field-row"),
       formApi.fields.fldItemType.closest(".field-row"),
+      formApi.fields.fldRarity.closest(".field-row"),
       formApi.fields.fldDesc.closest(".field-row")
     );
 
@@ -141,7 +142,7 @@ export function initMarkerModal(db) {
     refreshPredefinedItems();
     refreshChestTypes();
 
-    // ── seed an empty state so pickrs exist before first pick ──
+    // seed pickrs so first Item‐pick gets colors correctly
     formApi.setFromDefinition({});
     formApi.initPickrs();
   }
@@ -195,7 +196,7 @@ export function initMarkerModal(db) {
     formApi.setFromDefinition({});
     formApi.initPickrs();
 
-    // select the requested type, fire the change to show the right fields
+    // select the requested type & trigger UI
     fldType.value = type;
     fldType.dispatchEvent(new Event("change"));
 
