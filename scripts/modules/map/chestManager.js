@@ -1,5 +1,5 @@
 // @file: /scripts/modules/map/chestManager.js
-// @version: 1.2 – expect lootPool as Array<Object> rather than IDs
+// @version: 1.3 – add quantity badges and grid‐column control
 
 import { createMarker } from "./markerManager.js";
 
@@ -8,7 +8,7 @@ import { createMarker } from "./markerManager.js";
  * routed through the shared createMarker pipeline.
  *
  * @param {Object} data    — { id, chestTypeId, coords }
- * @param {Object} typeDef — { id, name, iconUrl, lootPool: Array<{name,imageSmall}>, maxDisplay }
+ * @param {Object} typeDef — { id, name, iconUrl, lootPool: Array<{name,imageSmall,quantity}>, maxDisplay }
  * @param {L.Map} map
  * @param {Object} layers  — must include layers.Chest
  * @param {Function} ctxMenu — showContextMenu
@@ -29,33 +29,35 @@ export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) 
     layers,
     ctxMenu,
     {
-      onEdit:   null,
-      onCopy:   null,
+      onEdit:    null,
+      onCopy:    null,
       onDragEnd: isAdmin ? (_, d) => { /* optional drag logic */ } : null,
-      onDelete: isAdmin
+      onDelete:  isAdmin
         ? (m, d) => layers.Chest.removeLayer(m)
         : null
     },
     isAdmin
   );
 
+  // Use our chest‐specific popup HTML
   markerObj.setPopupContent(buildChestPopupHTML(typeDef));
   return markerObj;
 }
 
 /**
  * Build the specific HTML for a chest’s popup.
- * Expects typeDef.lootPool to be full item-definition objects.
+ * Expects typeDef.lootPool to be full item-definition objects,
+ * each possibly carrying a .quantity property.
  */
 export function buildChestPopupHTML(typeDef) {
   const count = typeDef.maxDisplay || 4;
+
   let html = `
     <div class="chest-popup">
       <img src="${typeDef.iconUrl}" class="chest-icon">
-      <strong>${typeDef.name}</strong><hr>
-      <div class="chest-grid"
-           style="display:grid; gap:4px;
-                  grid-template-columns:repeat(${count},1fr)">
+      <strong class="chest-title">${typeDef.name}</strong>
+      <hr>
+      <div class="chest-grid" style="--cols: ${count};">
   `;
 
   (typeDef.lootPool || [])
@@ -63,11 +65,16 @@ export function buildChestPopupHTML(typeDef) {
     .forEach(itemDef => {
       html += `
         <div class="chest-slot" title="${itemDef.name || ""}">
-          <img src="${itemDef.imageSmall || ""}" style="width:100%">
-        </div>
-      `;
+          <img src="${itemDef.imageSmall || ""}" class="chest-slot-img">
+          ${itemDef.quantity > 1
+            ? `<span class="chest-slot-qty">${itemDef.quantity}</span>`
+            : ''}
+        </div>`;
     });
 
-  html += `</div></div>`;
+  html += `
+      </div>
+    </div>
+  `;
   return html;
 }
