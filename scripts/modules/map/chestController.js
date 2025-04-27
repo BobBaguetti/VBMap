@@ -1,10 +1,11 @@
 // @file: /scripts/modules/map/chestController.js
-// @version: 1.2
+// @version: 1.2 – enrich lootPool & unify popup builder
 
-import { loadItemDefinitions }    from "../services/itemDefinitionsService.js";
-import { subscribeChestTypes }    from "../services/chestTypesService.js";
-import { subscribeChests }        from "../services/chestsService.js";
-import { createChestMarker }      from "./chestManager.js";
+import { loadItemDefinitions }      from "../services/itemDefinitionsService.js";
+import { subscribeChestTypes }      from "../services/chestTypesService.js";
+import { subscribeChests }          from "../services/chestsService.js";
+import { createChestMarker,
+         buildChestPopupHTML }      from "./chestManager.js";
 
 /**
  * Initialize the real-time chest layer on the map.
@@ -13,39 +14,47 @@ import { createChestMarker }      from "./chestManager.js";
  * @param {Object} layers  — your layers object (must include layers.Chest)
  * @param {Function} showContextMenu
  */
-export async function initChestLayer(db, map, layers, showContextMenu) {
-  // 1) Preload all item definitions so we can resolve lootPool IDs → full objects
-  const items      = await loadItemDefinitions(db);
-  const itemMap    = Object.fromEntries(items.map(d => [d.id, d]));
-
-  let chestTypeMap = {};
+export function initChestLayer(db, map, layers, showContextMenu) {
+  let chestTypeMap   = {};
   const chestMarkers = {};
+  let itemDefMap     = {};
 
-  // 2) Subscribe to chest‐type definitions
-  subscribeChestTypes(db, types => {
+  // Load all item definitions once so we can look up names & images.
+  async function ensureItemDefs() {
+    if (Object.keys(itemDefMap).length) return;
+    const items = await loadItemDefinitions(db);
+    itemDefMap = Object.fromEntries(items.map(d => [d.id, d]));
+  }
+
+  // Whenever chest-type defs change, update popups on existing markers.
+  subscribeChestTypes(db, async types => {
     chestTypeMap = Object.fromEntries(types.map(t => [t.id, t]));
+    await ensureItemDefs();
 
-    // refresh any existing marker popups
     Object.values(chestMarkers).forEach(marker => {
       const data = marker.__chestData;
-      const raw  = chestTypeMap[data.chestTypeId];
-      if (!raw) return;
+      const def  = chestTypeMap[data.chestTypeId];
+      if (!def) return;
 
-      const resolved = {
-        ...raw,
-        lootPool: (raw.lootPool || [])
-          .map(id => itemMap[id])
+      // build an enriched version:
+      const enriched = {
+        ...def,
+        lootPool: (def.lootPool || [])
+          .map(id => itemDefMap[id])
           .filter(Boolean)
       };
-      marker.setPopupContent(createChestMarker.buildChestPopupHTML(resolved));
+
+      marker.setPopupContent(buildChestPopupHTML(enriched));
     });
   });
 
-  // 3) Subscribe to chest instances
-  subscribeChests(db, chests => {
+  // Watch for chest-instances (add / remove markers)
+  subscribeChests(db, async chests => {
+    await ensureItemDefs();
+
     const liveIds = new Set(chests.map(c => c.id));
 
-    // remove deleted
+    // 1) Remove deleted
     Object.keys(chestMarkers).forEach(id => {
       if (!liveIds.has(id)) {
         layers.Chest.removeLayer(chestMarkers[id]);
@@ -53,22 +62,21 @@ export async function initChestLayer(db, map, layers, showContextMenu) {
       }
     });
 
-    // add new
+    // 2) Add new
     chests.forEach(data => {
-      if (chestMarkers[data.id]) return;
-      const raw = chestTypeMap[data.chestTypeId];
-      if (!raw) return;
+      if (!chestTypeMap[data.chestTypeId] || chestMarkers[data.id]) return;
 
-      const resolved = {
-        ...raw,
-        lootPool: (raw.lootPool || [])
-          .map(id => itemMap[id])
+      const def = chestTypeMap[data.chestTypeId];
+      const enriched = {
+        ...def,
+        lootPool: (def.lootPool || [])
+          .map(id => itemDefMap[id])
           .filter(Boolean)
       };
 
       const marker = createChestMarker(
         data,
-        resolved,
+        enriched,
         map,
         layers,
         showContextMenu,
