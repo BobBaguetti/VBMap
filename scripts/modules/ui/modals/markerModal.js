@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 15 – unified Chest + Item support, and fixed initial UI state
+// @version: 16 – expose refreshPredefinedItems for live updates
 
 import {
   createModal,
@@ -19,7 +19,7 @@ export function initMarkerModal(db) {
   let formApi, rowButtons;
   let itemDefs = {}, chestDefs = {};
 
-  // — Load & cache item defs —
+  // — Load & cache item definitions —
   async function refreshPredefinedItems() {
     if (!fldPredefItem) return;
     const list = await loadItemDefinitions(db);
@@ -33,7 +33,7 @@ export function initMarkerModal(db) {
     });
   }
 
-  // — Load & cache chest‐type defs —
+  // — Load & cache chest‐type definitions —
   async function refreshChestTypes() {
     if (!fldChestType) return;
     const list = await loadChestTypes(db);
@@ -47,7 +47,7 @@ export function initMarkerModal(db) {
     });
   }
 
-  // — Build the modal once —
+  // — Build the modal structure once —
   function ensureBuilt() {
     if (modal) return;
 
@@ -64,11 +64,10 @@ export function initMarkerModal(db) {
     content = created.content;
     modal.classList.add("admin-only");
 
-    // form wrapper
     form = document.createElement("form");
     form.id = "edit-form";
 
-    // 1) Type selector (now includes Chest)
+    // Type selector
     const { row: rowType, select: selectType } = createDropdownField(
       "Type:", "fld-type",
       [
@@ -83,21 +82,21 @@ export function initMarkerModal(db) {
     );
     fldType = selectType;
 
-    // 2) Predefined Item dropdown
+    // Predefined Item selector
     const { row: rp, select: sp } = createDropdownField(
       "Item:", "fld-predef-item", [], { showColor: false }
     );
     rowPredefItem = rp;
     fldPredefItem = sp;
 
-    // 3) Chest Type dropdown
+    // Chest Type selector
     const { row: rc, select: sc } = createDropdownField(
       "Chest Type:", "fld-predef-chest", [], { showColor: false }
     );
     rowChestType = rc;
     fldChestType = sc;
 
-    // 4) Item‐specific block (rarity, type, desc)
+    // Item‐specific fields (rarity, type, desc)
     formApi = createMarkerForm();
     blockItem = document.createElement("div");
     blockItem.classList.add("item-gap");
@@ -107,12 +106,12 @@ export function initMarkerModal(db) {
       formApi.fields.fldDesc.closest(".field-row")
     );
 
-    // 5) Buttons row
+    // Buttons row
     rowButtons = createFormButtonRow();
     rowButtons.querySelector('button[type="button"]')
       .onclick = e => { e.preventDefault(); closeModal(modal); };
 
-    // assemble in order
+    // Assemble form
     form.append(
       formApi.fields.fldName.closest(".field-row"),
       rowType,
@@ -127,48 +126,41 @@ export function initMarkerModal(db) {
     );
     content.appendChild(form);
 
-    // 6) Show/hide on type change
+    // Show/hide on type change
     fldType.onchange = () => {
       const t = fldType.value;
-      const isItem  = t === "Item";
-      const isChest = t === "Chest";
-      rowPredefItem.style.display = isItem  ? "flex" : "none";
-      blockItem.style.display     = isItem  ? "block": "none";
-      rowChestType.style.display  = isChest ? "flex" : "none";
+      rowPredefItem.style.display = (t === "Item")  ? "flex" : "none";
+      blockItem.style.display     = (t === "Item")  ? "block": "none";
+      rowChestType.style.display  = (t === "Chest") ? "flex" : "none";
     };
 
-    // 7) When choosing an item, populate the form
+    // Populate formApi on item select
     fldPredefItem.onchange = () => {
       const def = itemDefs[fldPredefItem.value] || {};
       formApi.setFromDefinition(def);
       formApi.initPickrs();
     };
 
-    // initial load of dropdown data
+    // Initial load
     refreshPredefinedItems();
     refreshChestTypes();
   }
 
-  // — Open for editing existing marker —
+  // Open existing‐marker editor
   async function openEdit(markerObj, data, evt, onSave) {
     ensureBuilt();
-    // load both sets
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
 
-    // set type & trigger UI
     fldType.value = data.type;
     fldType.dispatchEvent(new Event("change"));
 
-    // item case
     if (data.type === "Item" && data.predefinedItemId) {
       fldPredefItem.value = data.predefinedItemId;
       fldPredefItem.dispatchEvent(new Event("change"));
     }
-    // chest case
     if (data.type === "Chest" && data.chestTypeId) {
       fldChestType.value = data.chestTypeId;
     }
-    // clear item fields when not an Item
     if (data.type !== "Item") {
       formApi.setFromDefinition({});
     }
@@ -191,15 +183,13 @@ export function initMarkerModal(db) {
     };
   }
 
-  // — Open for creating a new marker —
+  // Open create‐new‐marker editor
   async function openCreate(coords, type, evt, onCreate) {
     ensureBuilt();
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
 
     fldType.value = type;
     fldType.dispatchEvent(new Event("change"));
-
-    // clear selects
     fldPredefItem.value = "";
     fldChestType.value  = "";
 
@@ -220,5 +210,6 @@ export function initMarkerModal(db) {
     };
   }
 
-  return { openEdit, openCreate };
+  // **Expose** refreshPredefinedItems so script.js can invoke it:
+  return { openEdit, openCreate, refreshPredefinedItems };
 }
