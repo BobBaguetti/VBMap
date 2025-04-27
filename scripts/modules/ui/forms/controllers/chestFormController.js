@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 1.2 – loot-pool picker integrated
+// @version: 1.3 – wire up new CSS classes
 
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 import { createChestForm }     from "../builders/chestFormBuilder.js";
@@ -9,159 +9,157 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   const { form, fields } = createChestForm();
   let _id = null;
 
-  // ─── Build & wire the loot-picker modal ─────────────────────────
+  //
+  // ─── INIT FORM UI ──────────────────────────────────────────────────────────────
+  //
+  // augment the builder’s fields with our chip container & cog button
+  const chipWrapper = document.createElement("div");
+  chipWrapper.classList.add("loot-pool-wrapper");
+  fields.openLootPicker.classList.add("loot-pool-cog");
+  // assume your builder put openLootPicker after the label; insert the wrapper before it:
+  fields.openLootPicker.before(chipWrapper);
+  fields.chipContainer = chipWrapper;
+
+  // keep a plain array of selected IDs
+  fields.lootPool = [];
+
+  //
+  // ─── PICKER MODAL ──────────────────────────────────────────────────────────────
+  //
   let pickerModal, pickerContent, pickerHeader;
   let pickerList, pickerSearch, pickerSave, pickerCancel;
   let allItems = [];
 
   async function ensurePicker() {
     if (pickerModal) return;
-    // 1) Create the modal shell
+    // 1) build the modal shell
     const created = createModal({
-      id:       "chest-loot-picker",
-      title:    "Select Loot Pool Items",
-      size:     "small",
-      backdrop: true,
-      withDivider: true,
-      onClose:  () => closeModal(pickerModal)
+      id:         "chest-loot-picker",
+      title:      "Select Loot Pool Items",
+      size:       "small",
+      backdrop:   true,
+      withDivider:true,
+      onClose:    () => closeModal(pickerModal)
     });
     pickerModal   = created.modal;
     pickerHeader  = created.header;
     pickerContent = created.content;
 
-    // 2) Search box
+    // 2) search box
     pickerSearch = document.createElement("input");
-    pickerSearch.type = "text";
+    pickerSearch.type        = "search";
     pickerSearch.placeholder = "Search…";
-    pickerSearch.style.width = "100%";
-    pickerSearch.style.marginBottom = "8px";
+    pickerSearch.classList.add("ui-input");
     pickerHeader.appendChild(pickerSearch);
 
-    // 3) Scrollable list container
+    // 3) list container
     pickerList = document.createElement("div");
-    Object.assign(pickerList.style, {
-      maxHeight: "200px",
-      overflowY: "auto",
-      marginBottom: "8px"
-    });
+    pickerList.classList.add("loot-pool-picker");
     pickerContent.appendChild(pickerList);
 
-    // 4) Save / Cancel buttons
-    const btnRow = document.createElement("div");
-    btnRow.style.textAlign = "right";
+    // 4) footer buttons
+    const footer = document.createElement("div");
+    footer.classList.add("picker-footer");
     pickerSave   = document.createElement("button");
-    pickerSave.type = "button";
-    pickerSave.className = "ui-button";
+    pickerSave.type        = "button";
+    pickerSave.className   = "ui-button";
     pickerSave.textContent = "Save";
     pickerCancel = document.createElement("button");
-    pickerCancel.type = "button";
-    pickerCancel.className = "ui-button";
+    pickerCancel.type        = "button";
+    pickerCancel.className   = "ui-button";
     pickerCancel.textContent = "Cancel";
-    btnRow.append(pickerCancel, pickerSave);
-    pickerContent.appendChild(btnRow);
+    footer.append(pickerCancel, pickerSave);
+    pickerContent.appendChild(footer);
 
-    // 5) Wire up search/filter
-    pickerSearch.addEventListener("input", filterPickerList);
-
-    // 6) Wire Save/Cancel
-    pickerSave.onclick = () => {
-      // collect checked IDs
-      const selected = Array.from(
-        pickerList.querySelectorAll("input[type=checkbox]:checked")
-      ).map(cb => cb.value);
-      fields.lootPool.splice(0, fields.lootPool.length, ...selected);
+    // 5) wiring
+    pickerSearch.addEventListener("input", filterPicker);
+    pickerSave.onclick   = () => {
+      // pull all checked
+      const selectedIds = [...pickerList.querySelectorAll("input:checked")].map(cb => cb.value);
+      fields.lootPool.splice(0, fields.lootPool.length, ...selectedIds);
       renderChips();
       closeModal(pickerModal);
     };
-    pickerCancel.onclick = () => {
-      closeModal(pickerModal);
-    };
+    pickerCancel.onclick = () => closeModal(pickerModal);
   }
 
-  // Populate the picker list with checkboxes
   async function refreshPickerItems() {
-    if (!allItems.length) {
-      allItems = await loadItemDefinitions(db);
-    }
-    // clear
+    if (!allItems.length) allItems = await loadItemDefinitions(db);
     pickerList.innerHTML = "";
     allItems.forEach(item => {
       const row = document.createElement("div");
-      row.style.display = "flex";
-      row.style.alignItems = "center";
-      row.style.padding = "4px 0";
-
+      row.classList.add("picker-item");
+      // checkbox
       const cb = document.createElement("input");
       cb.type  = "checkbox";
       cb.value = item.id;
       cb.checked = fields.lootPool.includes(item.id);
-      cb.style.marginRight = "8px";
-
-      const lbl = document.createElement("label");
+      // label
+      const lbl = document.createElement("span");
       lbl.textContent = item.name;
-
       row.append(cb, lbl);
+      // click anywhere toggles
+      row.onclick = e => {
+        if (e.target !== cb) cb.checked = !cb.checked;
+        row.classList.toggle("selected", cb.checked);
+      };
+      // initial selected state
+      if (cb.checked) row.classList.add("selected");
       pickerList.appendChild(row);
     });
   }
 
-  // Filter by name
-  function filterPickerList() {
+  function filterPicker() {
     const q = pickerSearch.value.toLowerCase();
-    pickerList.querySelectorAll("div").forEach(row => {
-      const lbl = row.querySelector("label").textContent.toLowerCase();
-      row.style.display = lbl.includes(q) ? "" : "none";
+    pickerList.querySelectorAll(".picker-item").forEach(row => {
+      const txt = row.textContent.toLowerCase();
+      row.style.display = txt.includes(q) ? "" : "none";
     });
   }
 
-  // Render the “chips” in the form
+  //
+  // ─── CHIPS ───────────────────────────────────────────────────────────────────
+  //
   function renderChips() {
-    const container = fields.chipContainer;
-    container.innerHTML = "";
+    fields.chipContainer.innerHTML = "";
     fields.lootPool.forEach(id => {
       const def = allItems.find(i => i.id === id) || { name: id };
       const chip = document.createElement("span");
-      chip.className = "loot-pool-chip";
+      chip.classList.add("loot-pool-chip");
       chip.textContent = def.name;
-      chip.style.cssText = `
-        background:#444; color:#eee;
-        border-radius:12px; padding:2px 8px;
-        margin:2px; display:inline-flex;
-        align-items:center; font-size:0.9em;
-      `;
-      // × remove button
+      // remove icon
       const x = document.createElement("span");
+      x.classList.add("remove-chip");
       x.textContent = "×";
-      x.style.cssText = `
-        margin-left:6px; cursor:pointer;
-      `;
       x.onclick = () => {
-        fields.lootPool.splice(fields.lootPool.indexOf(id),1);
+        fields.lootPool.splice(fields.lootPool.indexOf(id), 1);
         renderChips();
       };
       chip.appendChild(x);
-      container.appendChild(chip);
+      fields.chipContainer.appendChild(chip);
     });
   }
 
-  // ─── Populate loot-pool options on form load ────────────────────
-  async function initLootOptions() {
+  //
+  // ─── INITIAL LOOT OPTIONS ───────────────────────────────────────────────────
+  //
+  (async function initLoot() {
     allItems = await loadItemDefinitions(db);
-    // initial render of chips (empty at first)
     renderChips();
-  }
-  initLootOptions();
+  })();
 
-  // Wire up picker button
+  // hook the cog button
   fields.openLootPicker.onclick = async () => {
     await ensurePicker();
     await refreshPickerItems();
     pickerSearch.value = "";
-    filterPickerList();
+    filterPicker();
     openModal(pickerModal);
   };
 
-  // ─── Reset to “Add” mode ────────────────────────────────────────
+  //
+  // ─── RESET / POPULATE / SUBMIT ───────────────────────────────────────────────
+  //
   function reset() {
     form.reset();
     _id = null;
@@ -169,49 +167,33 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     renderChips();
   }
 
-  // ─── Populate for “Edit” mode ──────────────────────────────────
   function populate(def) {
     form.reset();
-    fields.fldName.value    = def.name       || "";
-    fields.fldIconUrl.value = def.iconUrl    || "";
-    // copy into our array
+    fields.fldName.value       = def.name       || "";
+    fields.fldIconUrl.value    = def.iconUrl    || "";
     fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool||[]));
     renderChips();
     fields.fldMaxDisplay.value = def.maxDisplay || "";
     _id = def.id;
-
-    // show delete button
     form.querySelector(".ui-button-delete").style.display = "";
   }
 
-  // ─── Gather payload ────────────────────────────────────────────
-  function getCustom() {
-    return {
+  form.addEventListener("submit", async e => {
+    e.preventDefault();
+    await onSubmit({
       id:          _id,
       name:        fields.fldName.value.trim(),
       iconUrl:     fields.fldIconUrl.value.trim(),
       maxDisplay:  parseInt(fields.fldMaxDisplay.value, 10) || 1,
       lootPool:    [...fields.lootPool]
-    };
-  }
-
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    await onSubmit(getCustom());
+    });
   });
 
-  // wire up delete & cancel
+  // delete & cancel wiring
   form.querySelector(".ui-button-delete").onclick = () => {
-    if (_id && confirm("Delete this chest type?")) {
-      onDelete(_id);
-    }
+    if (_id && confirm("Delete this chest type?")) onDelete(_id);
   };
   form.querySelector("button[type=button]").onclick = onCancel;
 
-  return {
-    form,
-    reset,
-    populate,
-    getCustom
-  };
+  return { form, reset, populate };
 }
