@@ -1,18 +1,28 @@
-/* @version: 1.0 */
+/* @version: 1.1 */
 /* @file: styles/modals/chestDefinitionsModal.css */
 /* Styles specific to the “Manage Chest Types” modal */
 
-/* Container for the loot‐pool chips + cog button */
-#chest-definitions-modal .loot-pool-wrapper {
+/* ─── Loot-Pool Row ─────────────────────────────────────────────── */
+/* If you grouped your chips + cog into a field-row you can target that: */
+#chest-definitions-modal .field-row.loot-pool-row {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
     gap: 4px;
     margin-top: 4px;
-    padding: 4px 0;
   }
   
-  /* Cogwheel button to open the loot‐pool picker */
+  /* ─── Chips + Cog Wrapper ───────────────────────────────────────── */
+  #chest-definitions-modal .loot-pool-wrapper {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    /* optionally limit max-width to prevent overflow: */
+    /* max-width: calc(100% - 40px); */
+  }
+  
+  /* Cogwheel button to open the loot-pool picker */
   #chest-definitions-modal .loot-pool-cog {
     background: none;
     border: none;
@@ -27,7 +37,7 @@
     color: #fff;
   }
   
-  /* Individual “chip” for each selected loot‐item */
+  /* ─── Individual Chip ───────────────────────────────────────────── */
   #chest-definitions-modal .loot-pool-chip {
     background: #444;
     color: #eee;
@@ -39,18 +49,18 @@
   }
   
   /* The “×” inside each chip to remove it */
-  #chest-definitions-modal .loot-pool-chip span.remove-chip {
+  #chest-definitions-modal .loot-pool-chip .remove-chip {
     margin-left: 6px;
     cursor: pointer;
     font-weight: bold;
     color: #ccc;
     transition: color 0.2s;
   }
-  #chest-definitions-modal .loot-pool-chip span.remove-chip:hover {
+  #chest-definitions-modal .loot-pool-chip .remove-chip:hover {
     color: #fff;
   }
   
-  /* When the picker panel is open, dim the background list */
+  /* ─── Picker Backdrop & Panel ───────────────────────────────────── */
   #chest-definitions-modal .loot-pool-picker-backdrop {
     position: fixed;
     top: 0; left: 0;
@@ -59,7 +69,6 @@
     z-index: 1100;
   }
   
-  /* The floating panel for selecting items into the loot‐pool */
   #chest-definitions-modal .loot-pool-picker {
     position: absolute;
     top: 50%; left: 50%;
@@ -75,8 +84,9 @@
     box-shadow: 0 2px 10px rgba(0,0,0,0.7);
   }
   
-  /* Search bar inside the picker */
-  #chest-definitions-modal .loot-pool-picker input[type="search"] {
+  /* ─── Picker Contents ────────────────────────────────────────────── */
+  #chest-definitions-modal .loot-pool-picker input[type="search"],
+  #chest-definitions-modal .loot-pool-picker input[type="text"] {
     width: 100%;
     padding: 6px 8px;
     margin-bottom: 8px;
@@ -102,7 +112,7 @@
     color: #fff;
   }
   
-  /* Picker footer buttons */
+  /* ─── Picker Footer Buttons ─────────────────────────────────────── */
   #chest-definitions-modal .loot-pool-picker .picker-footer {
     display: flex;
     justify-content: flex-end;
@@ -116,6 +126,7 @@
     cursor: pointer;
     background: #444;
     color: #e5e6e8;
+    transition: background 0.2s;
   }
   #chest-definitions-modal .loot-pool-picker .picker-footer button:hover {
     background: #666;

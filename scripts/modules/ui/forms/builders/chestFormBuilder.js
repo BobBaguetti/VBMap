@@ -1,14 +1,19 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 1.3 – loot-pool chips + picker button
+// @version: 1.1 – loot-pool chip container & picker button
 
 /**
  * Builds the form layout for creating/editing a Chest Type.
+ * Includes:
+ *  • Name
+ *  • Icon URL
+ *  • Loot Pool (chips + picker button)
+ *  • Max Display
  */
 export function createChestForm() {
   const form = document.createElement("form");
   form.id = "chest-form";
 
-  // ─── Name ─────────────────────────────────────────────────────────
+  // — Name —
   const rowName = document.createElement("div");
   rowName.classList.add("field-row");
   const lblName = document.createElement("label");
@@ -19,7 +24,7 @@ export function createChestForm() {
   fldName.id   = "fld-chest-name";
   rowName.append(lblName, fldName);
 
-  // ─── Icon URL ────────────────────────────────────────────────────
+  // — Icon URL —
   const rowIcon = document.createElement("div");
   rowIcon.classList.add("field-row");
   const lblIcon = document.createElement("label");
@@ -30,26 +35,29 @@ export function createChestForm() {
   fldIcon.id   = "fld-chest-icon";
   rowIcon.append(lblIcon, fldIcon);
 
-  // ─── Loot Pool ────────────────────────────────────────────────────
-  // We'll render chosen items as “chips” here and open a picker on ⚙️
+  // — Loot Pool —
+  // label + chips container + cog button
   const rowLoot = document.createElement("div");
   rowLoot.classList.add("field-row");
   const lblLoot = document.createElement("label");
-  lblLoot.htmlFor = "fld-chest-loot-chips";
   lblLoot.textContent = "Loot Pool";
-  // chip container
+  // chips container
   const chipContainer = document.createElement("div");
-  chipContainer.id = "fld-chest-loot-chips";
   chipContainer.classList.add("loot-pool-chips");
-  // picker button (⚙️)
-  const btnPicker = document.createElement("button");
-  btnPicker.type = "button";
-  btnPicker.classList.add("ui-button", "loot-pool-picker-btn");
-  btnPicker.title = "Manage Loot Pool";
-  btnPicker.textContent = "⚙️";
-  rowLoot.append(lblLoot, chipContainer, btnPicker);
+  chipContainer.id = "fld-chest-loot-chips";
+  chipContainer.style.flex = "1";       // fill remaining space
+  chipContainer.style.display = "flex";
+  chipContainer.style.flexWrap = "wrap";
+  chipContainer.style.gap = "4px";
+  // picker button (⚙︎)
+  const openLootPicker = document.createElement("button");
+  openLootPicker.type = "button";
+  openLootPicker.className = "ui-button";
+  openLootPicker.textContent = "⚙︎";
+  openLootPicker.title = "Edit Loot Pool";
+  rowLoot.append(lblLoot, chipContainer, openLootPicker);
 
-  // ─── Max Display ────────────────────────────────────────────────
+  // — Max Display —
   const rowMax = document.createElement("div");
   rowMax.classList.add("field-row");
   const lblMax = document.createElement("label");
@@ -64,18 +72,17 @@ export function createChestForm() {
   // assemble
   form.append(rowName, rowIcon, rowLoot, rowMax);
 
-  // internally track selected IDs
-  const lootPool = [];
-
   return {
     form,
     fields: {
       fldName,
-      fldIconUrl:     fldIcon,
-      fldMaxDisplay:  fldMax,
-      lootPool,               // array of selected item-IDs
-      chipContainer,          // where to render “chips”
-      openLootPicker: btnPicker
+      fldIconUrl: fldIcon,
+      // internal array of IDs
+      lootPool: [],
+      // elements for the picker
+      openLootPicker,
+      chipContainer,
+      fldMaxDisplay: fldMax
     }
   };
 }
