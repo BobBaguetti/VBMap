@@ -1,21 +1,20 @@
 // @file: /scripts/modules/map/chestManager.js
-// @version: 1.2 – use resolved lootPool objects
+// @version: 1.2 – expect lootPool as Array<Object> rather than IDs
 
 import { createMarker } from "./markerManager.js";
 
 /**
  * Builds a Leaflet marker for a chest instance,
- * but routes it through your shared createMarker pipeline.
+ * routed through the shared createMarker pipeline.
  *
  * @param {Object} data    — { id, chestTypeId, coords }
- * @param {Object} typeDef — { id, name, iconUrl, lootPool: Array<{imageSmall,name}>, maxDisplay }
+ * @param {Object} typeDef — { id, name, iconUrl, lootPool: Array<{name,imageSmall}>, maxDisplay }
  * @param {L.Map} map
  * @param {Object} layers  — must include layers.Chest
  * @param {Function} ctxMenu — showContextMenu
  * @param {boolean} isAdmin
  */
 export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) {
-  // shape into the common marker data shape
   const chestData = {
     id:         data.id,
     type:       "Chest",
@@ -30,22 +29,23 @@ export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) 
     layers,
     ctxMenu,
     {
-      onEdit:    null,
-      onCopy:    null,
-      onDragEnd: null,
-      onDelete:  null
+      onEdit:   null,
+      onCopy:   null,
+      onDragEnd: isAdmin ? (_, d) => { /* optional drag logic */ } : null,
+      onDelete: isAdmin
+        ? (m, d) => layers.Chest.removeLayer(m)
+        : null
     },
     isAdmin
   );
 
-  // override its popup
   markerObj.setPopupContent(buildChestPopupHTML(typeDef));
   return markerObj;
 }
 
 /**
  * Build the specific HTML for a chest’s popup.
- * Assumes typeDef.lootPool is already an array of full item-defs.
+ * Expects typeDef.lootPool to be full item-definition objects.
  */
 export function buildChestPopupHTML(typeDef) {
   const count = typeDef.maxDisplay || 4;
@@ -58,13 +58,15 @@ export function buildChestPopupHTML(typeDef) {
                   grid-template-columns:repeat(${count},1fr)">
   `;
 
-  (typeDef.lootPool || []).slice(0, count).forEach(item => {
-    html += `
-      <div class="chest-slot" title="${item.name || ""}">
-        <img src="${item.imageSmall || ""}" style="width:100%">
-      </div>
-    `;
-  });
+  (typeDef.lootPool || [])
+    .slice(0, count)
+    .forEach(itemDef => {
+      html += `
+        <div class="chest-slot" title="${itemDef.name || ""}">
+          <img src="${itemDef.imageSmall || ""}" style="width:100%">
+        </div>
+      `;
+    });
 
   html += `</div></div>`;
   return html;
