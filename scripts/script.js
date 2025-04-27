@@ -1,5 +1,5 @@
 // @file: /scripts/script.js
-// @version: 5.28
+// @version: 5.29
 
 import { initializeApp } from "firebase/app";
 import {
@@ -33,7 +33,6 @@ import { activateFloatingScrollbars }  from "./modules/utils/scrollUtils.js";
 import { initAdminAuth }               from "./authSetup.js";
 
 import { initChestLayer }              from "./modules/map/chestController.js";
-import { initChestInstanceModal }      from "./modules/ui/modals/chestInstanceModal.js";
 
 /* ------------------------------------------------------------------ *
  *  Firebase & Map Setup
@@ -62,8 +61,7 @@ Object.entries(layers).forEach(([type, layer]) => {
 });
 flatItemLayer.addTo(map);
 
-// Set up chest instance modal and real-time chest layer
-const chestInstanceModal = initChestInstanceModal(db);
+// Real‐time chest instances
 initChestLayer(db, map, layers, showContextMenu);
 
 let groupingOn = false;
@@ -119,7 +117,7 @@ onAuthStateChanged(auth, async user => {
       addMarker(m, callbacks);
     });
 
-    // 3) Live item-defs
+    // 3) Live item‐defs
     subscribeItemDefinitions(db, async () => {
       await markerForm.refreshPredefinedItems();
       const { loadItemDefinitions } = await import(
@@ -232,7 +230,20 @@ map.on("contextmenu", evt => {
     items.push({
       text: "Create New Chest",
       action: () => {
-        chestInstanceModal.open([evt.latlng.lat, evt.latlng.lng]);
+        // reuse the marker modal for chests
+        markerForm.openCreate(
+          [evt.latlng.lat, evt.latlng.lng],
+          "Chest",
+          evt.originalEvent,
+          async out => {
+            // out={ type:"Chest", coords, chestTypeId }
+            const saved = await saveChest(db, null, {
+              chestTypeId: out.chestTypeId,
+              coords:      out.coords
+            });
+            console.log("✅ Chest created:", saved.id);
+          }
+        );
       }
     });
   }
