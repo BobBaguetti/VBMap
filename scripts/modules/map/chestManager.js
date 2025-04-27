@@ -1,74 +1,83 @@
 // @file: /scripts/modules/map/chestManager.js
-// @version: 1.0 – initial implementation
+// @version: 1.1 – now reusing createMarker for unified styling & behavior
 
-import { renderPopup as renderItemPopup } from "./markerManager.js";
+import { createMarker } from "./markerManager.js";
 
 /**
- * Create and render a chest marker on the map.
- * @param {Object} data     — { id, chestTypeId, coords: [lat, lng] }
- * @param {Object} typeDef  — { iconUrl, name, lootPool, maxDisplay }
+ * Builds a Leaflet marker for a chest instance,
+ * but routes it through your shared createMarker pipeline.
+ *
+ * @param {Object} data    — { id, chestTypeId, coords }
+ * @param {Object} typeDef — { id, name, iconUrl, lootPool, maxDisplay }
  * @param {L.Map} map
- * @param {Object} layers   — must include layers.Chest (L.layerGroup)
- * @param {Function} showContextMenu
- * @returns {L.Marker}
+ * @param {Object} layers  — your layers object (must have layers.Chest)
+ * @param {Function} ctxMenu — showContextMenu
+ * @param {boolean} isAdmin
  */
-export function createChestMarker(data, typeDef, map, layers, showContextMenu) {
-  const icon = L.icon({ iconUrl: typeDef.iconUrl, iconSize: [32, 32] });
-  const marker = L.marker(data.coords, { icon }).addTo(layers.Chest);
+export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) {
+  // 1) Shape it like any other marker’s data
+  const chestData = {
+    id:         data.id,
+    type:       "Chest",
+    coords:     data.coords,
+    name:       typeDef.name,
+    imageSmall: typeDef.iconUrl,
+    // you can include other fields if your renderPopup needs them
+  };
 
-  marker.bindPopup(buildChestPopupHTML(typeDef), {
-    className: "chest-popup-wrapper",
-    maxWidth: 300
-  });
-
-  // Right‐click context menu (admin only)
-  marker.on("contextmenu", ev => {
-    if (document.body.classList.contains("is-admin")) {
-      showContextMenu(ev.originalEvent.pageX, ev.originalEvent.pageY, [
-        {
-          text: "Delete Chest",
-          action: () => {
-            // let the instance subscription handle removal
-            marker.remove();
+  // 2) Create via your shared helper (will apply CSS classes, clustering, context menus, etc.)
+  const markerObj = createMarker(
+    chestData,
+    map,
+    layers,
+    ctxMenu,
+    {
+      // optional callbacks:
+      onEdit:   null, // we don’t edit instances via this modal
+      onCopy:   null,
+      onDragEnd: isAdmin
+        ? (_, d) => {
+            // if you want drag saving, you can hook in here
           }
-        }
-      ]);
-    }
-  });
+        : null,
+      onDelete: isAdmin
+        ? (m, d) => {
+            // remove from layer and let your delete-chest logic in chestController handle Firestore
+            layers.Chest.removeLayer(m);
+          }
+        : null
+    },
+    isAdmin
+  );
 
-  return marker;
+  // 3) Override popup content with chest‐specific HTML
+  markerObj.setPopupContent(buildChestPopupHTML(typeDef));
+
+  return markerObj;
 }
 
 /**
- * Build the HTML content for a chest‐popup.
- * Shows chest icon, title, and a grid of item thumbnails.
- * @param {Object} typeDef  — { iconUrl, name, lootPool, maxDisplay }
- * @returns {string} HTML string
+ * Build the specific HTML for a chest’s popup.
+ * You can keep your existing markup here.
  */
 export function buildChestPopupHTML(typeDef) {
   let html = `
     <div class="chest-popup">
       <img src="${typeDef.iconUrl}" class="chest-icon">
-      <strong>${typeDef.name}</strong>
-      <hr>
-      <div class="chest-grid" style="
-           display: grid;
-           gap: 4px;
-           grid-template-columns: repeat(${typeDef.maxDisplay},1fr);
-         ">
+      <strong>${typeDef.name}</strong><hr>
+      <div class="chest-grid"
+           style="display:grid; gap:4px;
+                  grid-template-columns:repeat(${typeDef.maxDisplay},1fr)">
   `;
-
-  typeDef.lootPool.forEach(itemDef => {
+  typeDef.lootPool.forEach(itemId => {
+    // assuming you have a global itemDefMap loaded in chestController
+    const def = itemDefMap?.[itemId];
     html += `
-      <div class="chest-slot" title="${itemDef.name}">
-        <img src="${itemDef.imageSmall}" style="width:100%">
+      <div class="chest-slot" title="${def?.name || ""}">
+        <img src="${def?.imageSmall || ""}" style="width:100%" />
       </div>
     `;
   });
-
-  html += `
-      </div>
-    </div>
-  `;
+  html += `</div></div>`;
   return html;
 }
