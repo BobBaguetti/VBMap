@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 1.3 – added button row for Save/Cancel/Delete
+// @version: 1.4 – guard delete-button access in reset() & populate()
 
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 import { createChestForm }     from "../builders/chestFormBuilder.js";
@@ -9,7 +9,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   const { form, fields } = createChestForm();
   let _id = null;
 
-  // ─── Build & wire the loot-picker modal ─────────────────────────
+  // ─── Loot‐picker modal setup ────────────────────────────────────
   let pickerModal, pickerContent, pickerHeader;
   let pickerList, pickerSearch, pickerSave, pickerCancel;
   let allItems = [];
@@ -34,14 +34,16 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     pickerSearch.placeholder = "Search…";
     pickerHeader.appendChild(pickerSearch);
 
-    // list
+    // list container
     pickerList = document.createElement("div");
     Object.assign(pickerList.style, {
-      maxHeight: "200px", overflowY: "auto", margin: "8px 0"
+      maxHeight: "200px",
+      overflowY: "auto",
+      margin:    "8px 0"
     });
     pickerContent.appendChild(pickerList);
 
-    // buttons
+    // buttons row
     const btnRow = document.createElement("div");
     btnRow.style.textAlign = "right";
     pickerCancel = document.createElement("button");
@@ -65,7 +67,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     pickerList.innerHTML = "";
     allItems.forEach(item => {
       const row = document.createElement("div");
-      row.style = "display:flex; align-items:center; padding:4px 0";
+      Object.assign(row.style, { display:"flex", alignItems:"center", padding:"4px 0" });
       const cb = document.createElement("input");
       cb.type    = "checkbox";
       cb.value   = item.id;
@@ -115,7 +117,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     });
   }
 
-  // init loot‐pool picker trigger
+  // trigger loot picker
   fields.openLootPicker.onclick = async () => {
     await ensurePicker();
     await refreshPickerItems();
@@ -124,22 +126,22 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     openModal(pickerModal);
   };
 
-  // ─── Add Save/Cancel/Delete buttons to main form ───────────────
+  // ─── Add Save/Cancel/Delete buttons ─────────────────────────────
   (() => {
     const btnRow = document.createElement("div");
     btnRow.className = "floating-buttons";
-    // Save
+
     const btnSave = document.createElement("button");
     btnSave.type = "submit";
     btnSave.className = "ui-button";
     btnSave.textContent = "Save";
-    // Cancel
+
     const btnCancel = document.createElement("button");
     btnCancel.type = "button";
     btnCancel.className = "ui-button";
     btnCancel.textContent = "Cancel";
     btnCancel.onclick = onCancel;
-    // Delete
+
     const btnDelete = document.createElement("button");
     btnDelete.type = "button";
     btnDelete.className = "ui-button-delete";
@@ -150,11 +152,12 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
         onDelete(_id);
       }
     };
+
     btnRow.append(btnSave, btnCancel, btnDelete);
     form.appendChild(btnRow);
   })();
 
-  // ─── Initialize empty pool and chips ────────────────────────────
+  // initialize chips
   (async function init() {
     allItems = await loadItemDefinitions(db);
     renderChips();
@@ -166,7 +169,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     _id = null;
     fields.lootPool.length = 0;
     renderChips();
-    form.querySelector(".ui-button-delete").style.display = "none";
+    const delBtn = form.querySelector(".ui-button-delete");
+    if (delBtn) delBtn.style.display = "none";
   }
 
   function populate(def) {
@@ -176,26 +180,29 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool || []));
     renderChips();
     _id = def.id;
-    form.querySelector(".ui-button-delete").style.display = "";
+    const delBtn = form.querySelector(".ui-button-delete");
+    if (delBtn) delBtn.style.display = "";
   }
 
-  // ─── Gather & submit ─────────────────────────────────────────────
+  // ─── Form submission ────────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit({
-      id:          _id,
-      name:        fields.fldName.value.trim(),
-      iconUrl:     fields.fldIconUrl.value.trim(),
-      maxDisplay:  fields.fldMaxDisplay.value
-                    ? parseInt(fields.fldMaxDisplay.value, 10)
-                    : 1,
-      lootPool:    [...fields.lootPool]
+      id:       _id,
+      name:     fields.fldName.value.trim(),
+      iconUrl:  fields.fldIconUrl.value.trim(),
+      lootPool: [...fields.lootPool]
     });
   });
 
   return {
     form,
     reset,
-    populate
+    populate,
+    getCustom: () => ({
+      name:    fields.fldName.value.trim(),
+      iconUrl: fields.fldIconUrl.value.trim(),
+      lootPool:[...fields.lootPool]
+    })
   };
 }
