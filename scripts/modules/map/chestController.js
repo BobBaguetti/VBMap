@@ -1,11 +1,12 @@
 // @file: /scripts/modules/map/chestController.js
-// @version: 1.3 – now subscribing to chestDefinitions
+// @version: 1.4 – unified into the markers collection
 
-import { subscribeChestDefinitions } from "../services/chestDefinitionsService.js";
-import { subscribeChests }           from "../services/chestsService.js";
+import { subscribeMarkers } from "../services/firebaseService.js";
 import {
-  subscribeItemDefinitions,
-  loadItemDefinitions
+  subscribeChestDefinitions
+} from "../services/chestDefinitionsService.js";
+import {
+  subscribeItemDefinitions
 } from "../services/itemDefinitionsService.js";
 import {
   createChestMarker,
@@ -17,64 +18,72 @@ export function initChestLayer(db, map, layers, showContextMenu) {
   let itemDefMap  = {};
   const chestMarkers = {};
 
-  // live chestDefinition updates
+  // keep chest definitions live
   subscribeChestDefinitions(db, defs => {
     chestDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
-    Object.values(chestMarkers).forEach(marker => {
-      const data = marker.__chestData;
-      const def  = chestDefMap[data.chestTypeId];
-      if (!def) return;
-      const full = {
-        ...def,
-        lootPool: (def.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
-      };
-      marker.setPopupContent(buildChestPopupHTML(full));
-    });
+    _refreshAllPopups();
   });
 
-  // live itemDefinition updates
+  // keep item definitions live
   subscribeItemDefinitions(db, items => {
     itemDefMap = Object.fromEntries(items.map(i => [i.id, i]));
-    Object.values(chestMarkers).forEach(marker => {
-      const data = marker.__chestData;
-      const def  = chestDefMap[data.chestTypeId];
-      if (!def) return;
-      const full = {
-        ...def,
-        lootPool: (def.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
-      };
-      marker.setPopupContent(buildChestPopupHTML(full));
-    });
+    _refreshAllPopups();
   });
 
-  // watch actual chest instances
-  subscribeChests(db, chests => {
-    const live = new Set(chests.map(c => c.id));
-    // remove old
+  // subscribe to all markers, but handle only chests
+  subscribeMarkers(db, allMarkers => {
+    const newChestIds = new Set(
+      allMarkers.filter(m => m.type === "Chest").map(m => m.id)
+    );
+
+    // remove markers that no longer exist
     Object.keys(chestMarkers).forEach(id => {
-      if (!live.has(id)) {
+      if (!newChestIds.has(id)) {
         layers.Chest.removeLayer(chestMarkers[id]);
         delete chestMarkers[id];
       }
     });
-    // add new
-    chests.forEach(data => {
-      if (!chestDefMap[data.chestTypeId] || chestMarkers[data.id]) return;
-      const raw = chestDefMap[data.chestTypeId];
-      const full = {
-        ...raw,
-        lootPool: (raw.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
+
+    // add or update chest markers
+    allMarkers.forEach(data => {
+      if (data.type !== "Chest") return;
+      // already drawn?
+      if (chestMarkers[data.id]) return;
+
+      const def = chestDefMap[data.chestTypeId] || { lootPool: [] };
+      const fullDef = {
+        ...def,
+        lootPool: (def.lootPool || [])
+          .map(id => itemDefMap[id])
+          .filter(Boolean)
       };
-      const m = createChestMarker(
+
+      const marker = createChestMarker(
         data,
-        full,
+        fullDef,
         map,
         layers,
         showContextMenu,
         document.body.classList.contains("is-admin")
       );
-      m.__chestData = data;
-      chestMarkers[data.id] = m;
+      marker.__chestData = data;
+      chestMarkers[data.id] = marker;
     });
   });
+
+  // helper to re-render popups when definitions change
+  function _refreshAllPopups() {
+    Object.values(chestMarkers).forEach(marker => {
+      const data = marker.__chestData;
+      const def  = chestDefMap[data.chestTypeId];
+      if (!def) return;
+      const fullDef = {
+        ...def,
+        lootPool: (def.lootPool || [])
+          .map(id => itemDefMap[id])
+          .filter(Boolean)
+      };
+      marker.setPopupContent(buildChestPopupHTML(fullDef));
+    });
+  }
 }

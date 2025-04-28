@@ -1,5 +1,5 @@
-// @version: 5.8
 // @file: /scripts/modules/services/firebaseService.js
+// @version: 5.9 – add real-time subscribeMarkers
 
 import { initializeApp } from "firebase/app";
 import {
@@ -9,78 +9,64 @@ import {
   addDoc,
   doc,
   setDoc,
-  deleteDoc
+  deleteDoc,
+  onSnapshot
 } from "firebase/firestore";
 
 /**
  * Initialize Firebase (if needed) and return the Firestore instance.
- * @param {Object} config Your Firebase config object.
- * @returns {import('firebase/firestore').Firestore}
  */
 export function initializeFirebase(config) {
-  // Initialize the Firebase App
   const app = initializeApp(config);
-  // Return the Firestore database instance
   return getFirestore(app);
 }
 
 /**
  * Load all markers from the 'markers' collection.
- * @param {import('firebase/firestore').Firestore} db Firestore instance.
- * @returns {Promise<Array<Object>>} Array of marker objects (each includes its `id`).
  */
 export async function loadMarkers(db) {
-  const colRef = collection(db, "markers");
-  const snapshot = await getDocs(colRef);
-  return snapshot.docs.map(docSnap => ({
-    id: docSnap.id,
-    ...docSnap.data()
-  }));
+  const snapshot = await getDocs(collection(db, "markers"));
+  return snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
 }
 
 /**
- * Add a new marker to Firestore.
- * @param {import('firebase/firestore').Firestore} db Firestore instance.
- * @param {Object} markerData The marker data to add.
- * @returns {Promise<Object>} The saved marker data (with generated `id`).
+ * Real-time subscription to every document in 'markers'.
+ * Calls onUpdate(arrayOfMarkers) on any change.
+ */
+export function subscribeMarkers(db, onUpdate) {
+  return onSnapshot(
+    collection(db, "markers"),
+    snapshot => {
+      const markers = snapshot.docs.map(docSnap => ({ id: docSnap.id, ...docSnap.data() }));
+      onUpdate(markers);
+    },
+    err => console.error("Markers subscription error:", err)
+  );
+}
+
+/**
+ * Add a new marker.
  */
 export async function addMarker(db, markerData) {
-  const colRef = collection(db, "markers");
-  const docRef = await addDoc(colRef, markerData);
+  const docRef = await addDoc(collection(db, "markers"), markerData);
   return { id: docRef.id, ...markerData };
 }
 
 /**
- * Update an existing marker in Firestore.
- * This will merge only the defined fields of the provided marker object.
- * @param {import('firebase/firestore').Firestore} db Firestore instance.
- * @param {Object} markerData The full marker object, including its `id`.
- *                            Only keys with non‐undefined values will be sent.
- * @returns {Promise<void>}
+ * Update (merge) only defined fields of an existing marker.
  */
 export async function updateMarker(db, markerData) {
   const { id, ...raw } = markerData;
-  const docRef = doc(db, "markers", id);
-
-  // Build a new object excluding any undefined values
-  const data = Object.entries(raw).reduce((acc, [key, value]) => {
-    if (value !== undefined) {
-      acc[key] = value;
-    }
+  const data = Object.entries(raw).reduce((acc, [k, v]) => {
+    if (v !== undefined) acc[k] = v;
     return acc;
   }, {});
-
-  // Merge in only the defined fields
-  await setDoc(docRef, data, { merge: true });
+  await setDoc(doc(db, "markers", id), data, { merge: true });
 }
 
 /**
- * Delete a marker from Firestore by ID.
- * @param {import('firebase/firestore').Firestore} db Firestore instance.
- * @param {string} id The document ID of the marker to delete.
- * @returns {Promise<void>}
+ * Delete a marker by ID.
  */
 export async function deleteMarker(db, id) {
-  const docRef = doc(db, "markers", id);
-  await deleteDoc(docRef);
+  await deleteDoc(doc(db, "markers", id));
 }
