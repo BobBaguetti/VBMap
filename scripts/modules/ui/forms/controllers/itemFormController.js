@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.35 – hide delete button by default
+// @version: 4.35 – delete button hidden in Add mode, shown in Edit mode
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -28,7 +28,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   subheading.textContent = "Add Item";
   subheadingWrap.appendChild(subheading);
 
-  // "Add to filters" checkbox
+  // "Add to filters" checkbox inline
   const chkAddFilter = document.createElement("input");
   chkAddFilter.type = "checkbox";
   chkAddFilter.id   = "fld-add-to-filters";
@@ -66,11 +66,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  // *** HIDE IMMEDIATELY in Add mode
+  // hide in Add mode
   btnDelete.style.display = "none";
-
-  // capture on form for reset/populate
-  form._btnDelete = btnDelete;
   btnDelete.onclick = () => {
     if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
       onDelete?.(_id);
@@ -79,6 +76,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   buttonRow.append(btnSave, btnClear, btnDelete);
   subheadingWrap.appendChild(buttonRow);
+
   form.prepend(subheadingWrap);
 
   // ─── Pickr Initialization ──────────────────────────────────────────
@@ -106,10 +104,12 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
     if (!fields.fldType.value || !fields.fldRarity.value) return;
+
     initPickrs();
     const tmp = { itemType: fields.fldType.value, rarity: fields.fldRarity.value };
     applyColorPresets(tmp);
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
+
     setTimeout(() => {
       pickrs.name     && tmp.nameColor      && pickrs.name.setColor(tmp.nameColor);
       pickrs.itemType && tmp.itemTypeColor  && pickrs.itemType.setColor(tmp.itemTypeColor);
@@ -129,7 +129,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([], false);
     _id = null;
     subheading.textContent  = "Add Item";
-    form._btnDelete.style.display = "none";  // hide in Add
+    btnDelete.style.display = "none";   // hide in Add
     btnClear.textContent    = "Clear";
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
@@ -150,7 +150,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
 
     subheading.textContent  = "Edit Item";
-    form._btnDelete.style.display = "";        // show in Edit
+    btnDelete.style.display = "";        // show in Edit
     btnClear.textContent    = "Cancel";
 
     initPickrs();
