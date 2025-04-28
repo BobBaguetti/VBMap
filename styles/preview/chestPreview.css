@@ -1,33 +1,28 @@
 /* @file: styles/preview/chestPreview.css */
-/* @version: 1.4 – add hidden/visible support */
+/* @version: 1.5 – same backdrop as item, hidden by default */
 
-/* background & frame (same as itemPreview) */
 .chest-preview-panel {
   position: fixed;
   top: 0; left: 0;
   width: 432px; height: 432px;
-  background: #1a1a1a url("/VBMap/media/images/itemPreview.png") center/cover no-repeat;
+  background: #1a1a1a url("/VBMap/media/images/itemPreview.png") center center no-repeat;
+  background-size: cover;
   border: 1px solid #333;
   border-radius: 6px;
   box-shadow: 0 0 10px #000;
   padding: 8px;
   z-index: 10001;
+  display: none;           /* hidden until .visible */
 }
 
-/* default hidden */
-.chest-preview-panel.hidden {
-  display: none;
-}
-
-/* when JS toggles visible */
 .chest-preview-panel.visible {
   display: block;
 }
 
 .chest-preview-icon {
   width: 48px; height: 48px;
-  display: block;
   margin-bottom: 8px;
+  display: block;
 }
 
 .chest-preview-name {
@@ -44,12 +39,16 @@
 
 .chest-preview-grid .chest-slot {
   position: relative;
-  cursor: default;
+  background: #333;
+  height: 48px;
   border: 1px solid transparent;
   border-radius: 2px;
   overflow: hidden;
-  background: #333;
-  height: 48px;
+  cursor: default;
+}
+
+.chest-preview-grid .chest-slot:hover {
+  border-color: #888;
 }
 
 .chest-preview-grid .chest-slot-img {

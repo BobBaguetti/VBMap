@@ -1,16 +1,16 @@
 // @file: /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 1.8 – ensure pickr target exists before init; read getColor() string
+// @version: 1.9 – serialize descriptionColor correctly and guard pickr init
 
-import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
-import { createChestForm }     from "../builders/chestFormBuilder.js";
+import { loadItemDefinitions }    from "../../../services/itemDefinitionsService.js";
+import { createChestForm }        from "../builders/chestFormBuilder.js";
 import { createModal, openModal, closeModal } from "../../uiKit.js";
-import { createPickr }         from "../../pickrManager.js";
+import { createPickr }            from "../../pickrManager.js";
 
 export function createChestFormController({ onCancel, onSubmit, onDelete }, db) {
   const { form, fields } = createChestForm();
   let _id = null;
 
-  // ─── Loot‐picker modal setup ───────────────────────────────────
+  // ─── Loot‐picker modal setup ────────────────────────────────────
   let pickerModal, pickerHeader, pickerContent;
   let pickerSearch, pickerList, pickerSave, pickerCancel;
   let allItems = [];
@@ -29,11 +29,13 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     pickerHeader  = created.header;
     pickerContent = created.content;
 
+    // Search input
     pickerSearch = document.createElement("input");
     pickerSearch.type = "text";
     pickerSearch.placeholder = "Search…";
     pickerHeader.appendChild(pickerSearch);
 
+    // List container
     pickerList = document.createElement("div");
     Object.assign(pickerList.style, {
       maxHeight: "200px",
@@ -42,6 +44,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     });
     pickerContent.appendChild(pickerList);
 
+    // Buttons row
     const btnRow = document.createElement("div");
     btnRow.style.textAlign = "right";
     pickerCancel = document.createElement("button");
@@ -65,7 +68,11 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     pickerList.innerHTML = "";
     allItems.forEach(item => {
       const row = document.createElement("div");
-      Object.assign(row.style, { display:"flex", alignItems:"center", padding:"4px 0" });
+      Object.assign(row.style, {
+        display:     "flex",
+        alignItems:  "center",
+        padding:     "4px 0"
+      });
       const cb = document.createElement("input");
       cb.type    = "checkbox";
       cb.value   = item.id;
@@ -126,8 +133,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   // ─── Description Color Picker ─────────────────────────────────
   const pickrs = {};
   function initPickrs() {
-    // only init if swatch is in the DOM
-    const btn = document.getElementById("fld-chest-desc-color");
+    // only init if the color-swatches exists in the DOM
+    const btn = fields.colorDesc || document.getElementById("fld-chest-desc-color");
     if (btn && !pickrs.desc) {
       const p = createPickr(`#${btn.id}`);
       pickrs.desc = p;
@@ -139,7 +146,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   initPickrs();
 
   // ─── Buttons Row ───────────────────────────────────────────────
-  (() => {
+  ;(() => {
     const btnRow = document.createElement("div");
     btnRow.className = "floating-buttons";
 
@@ -159,7 +166,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     btnDelete.className   = "ui-button-delete";
     btnDelete.textContent = "Delete";
     btnDelete.style.display = "none";
-    btnDelete.onclick = () => {
+    btnDelete.onclick       = () => {
       if (_id && confirm("Delete this chest type?")) onDelete(_id);
     };
 
@@ -167,7 +174,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     form.appendChild(btnRow);
   })();
 
-  // Initialize loot‐pool chips
+  // Initialize loot‐pool chips on load
   (async function init() {
     allItems = await loadItemDefinitions(db);
     renderChips();
@@ -186,13 +193,14 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
 
   function populate(def) {
     form.reset();
-    fields.fldName.value     = def.name          || "";
-    fields.fldIconUrl.value  = def.iconUrl       || "";
-    fields.fldSubtext.value  = def.subtext       || "";
+    fields.fldName.value        = def.name        || "";
+    fields.fldIconUrl.value     = def.iconUrl     || "";
+    fields.fldSubtext.value     = def.subtext     || "";
     fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool || []));
     renderChips();
-    fields.fldDesc.value     = def.description   || "";
+    fields.fldDesc.value        = def.description || "";
     fields.extraInfo.setLines(def.extraLines || [], false);
+
     _id = def.id;
     const delBtn = form.querySelector(".ui-button-delete");
     if (delBtn) delBtn.style.display = "";
@@ -203,9 +211,10 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     }
   }
 
-  // ─── Form Submission ─────────────────────────────────────────
+  // ─── Form Submission ───────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
+    initPickrs();
     await onSubmit({
       id:               _id,
       name:             fields.fldName.value.trim(),
@@ -213,7 +222,10 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
       subtext:          fields.fldSubtext.value.trim(),
       lootPool:         [...fields.lootPool],
       description:      fields.fldDesc.value.trim(),
-      descriptionColor: pickrs.desc?.getColor() || null,
+      // now properly output a hex string:
+      descriptionColor: pickrs.desc
+        ? pickrs.desc.getColor().toHEXA().toString()
+        : null,
       extraLines:       fields.extraInfo.getLines()
     });
   });
@@ -229,7 +241,9 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
       subtext:          fields.fldSubtext.value.trim(),
       lootPool:         [...fields.lootPool],
       description:      fields.fldDesc.value.trim(),
-      descriptionColor: pickrs.desc?.getColor() || null,
+      descriptionColor: pickrs.desc
+        ? pickrs.desc.getColor().toHEXA().toString()
+        : null,
       extraLines:       fields.extraInfo.getLines()
     })
   };
