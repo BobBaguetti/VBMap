@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.8 – defer build until open; add subheader, preview positioning, add/edit mode buttons
+// @version: 1.9 – move subheader to body; reposition buttons; raise preview z-index
 
 import {
   createModal,
@@ -22,12 +22,10 @@ import { createChestFormController }   from "../forms/controllers/chestFormContr
 
 export function initChestDefinitionsModal(db) {
   let modal, content, header;
-  let subheader;
   let listApi, formApi, previewApi;
   let definitions = [];
-
-  // Cache all item defs for preview
   let itemMap = {};
+
   async function ensureItemMap() {
     if (!Object.keys(itemMap).length) {
       const items = await loadItemDefinitions(db);
@@ -35,13 +33,15 @@ export function initChestDefinitionsModal(db) {
     }
   }
 
-  // Refresh list items
   async function refreshDefinitions() {
     definitions = await loadChestTypes(db);
     listApi.refresh(definitions);
   }
 
-  // Position the preview panel alongside the modal
+  // Will hold our “Add/Edit Chest Type” header + buttons
+  let bodySubheader;
+
+  // Position the preview beside the modal
   function positionPreviewPanel() {
     const mc = modal.querySelector(".modal-content");
     const pr = previewApi.container;
@@ -49,35 +49,37 @@ export function initChestDefinitionsModal(db) {
     const rect = mc.getBoundingClientRect();
     pr.style.position = "absolute";
     pr.style.left     = `${rect.right + 30}px`;
-    // center vertically
+    pr.style.zIndex   = "1051";   // above backdrop (1040) but below modal (1050+)
     requestAnimationFrame(() => {
       pr.style.top = `${rect.top + rect.height/2 - pr.offsetHeight/2}px`;
     });
   }
 
-  // Switch to "Add Chest Type" mode
+  // Switch into “Add” mode
   function setModeAdd() {
-    subheader.textContent = "Add Chest Type";
+    bodySubheader.querySelector(".subheader-label").textContent = "Add Chest Type";
     formApi.reset();
     previewApi.setFromDefinition({ lootPool: [] });
     previewApi.show();
+    positionPreviewPanel();
   }
 
-  // Switch to "Edit Chest Type" mode
+  // Switch into “Edit” mode
   function setModeEdit(def) {
-    subheader.textContent = "Edit Chest Type";
+    bodySubheader.querySelector(".subheader-label").textContent = "Edit Chest Type";
     formApi.populate(def);
     previewApi.setFromDefinition({
       ...def,
       lootPool: (def.lootPool || []).map(id => itemMap[id]).filter(Boolean)
     });
     previewApi.show();
+    positionPreviewPanel();
   }
 
   return {
     open: async () => {
-      // 1) Build modal on first open
       if (!modal) {
+        // 1) Build the modal shell
         const created = createModal({
           id:          "chest-definitions-modal",
           title:       "Manage Chest Types",
@@ -95,13 +97,7 @@ export function initChestDefinitionsModal(db) {
         header  = created.header;
         modal.classList.add("admin-only");
 
-        // Subheader placeholder
-        subheader = document.createElement("div");
-        subheader.className = "modal-subheader";
-        subheader.style.margin = "8px 0";
-        header.appendChild(subheader);
-
-        // Layout switcher
+        // 2) Layout switcher in header
         const layoutSwitcher = createLayoutSwitcher({
           available:   ["row","stacked","gallery"],
           defaultView: "row",
@@ -109,19 +105,19 @@ export function initChestDefinitionsModal(db) {
         });
         header.appendChild(layoutSwitcher);
 
-        // Definition list container
+        // 3) Prepare list container
         const listContainer = createDefListContainer("chest-def-list");
 
-        // Preview panel & form controller
+        // 4) Preview panel & form
         previewApi = createPreviewPanel("chest");
         formApi    = createChestFormController({
-          onCancel:   () => { setModeAdd(); },
-          onDelete:   async id => {
+          onCancel: async () => setModeAdd(),
+          onDelete: async id => {
             await deleteChestType(db, id);
             await refreshDefinitions();
             setModeAdd();
           },
-          onSubmit:   async payload => {
+          onSubmit: async payload => {
             if (payload.id) {
               await updateChestType(db, payload.id, payload);
             } else {
@@ -132,15 +128,15 @@ export function initChestDefinitionsModal(db) {
           }
         }, db);
 
-        // Live‐preview wiring
+        // 5) Live preview wiring
         formApi.form.classList.add("ui-scroll-float");
         formApi.form.addEventListener("input", async () => {
-          const custom = formApi.getCustom?.();
-          if (!custom) return;
+          const live = formApi.getCustom?.();
+          if (!live) return;
           await ensureItemMap();
           previewApi.setFromDefinition({
-            ...custom,
-            lootPool: (custom.lootPool || [])
+            ...live,
+            lootPool: (live.lootPool || [])
               .map(id => itemMap[id])
               .filter(Boolean)
           });
@@ -148,7 +144,29 @@ export function initChestDefinitionsModal(db) {
           positionPreviewPanel();
         });
 
-        // Assemble body: list + divider + form
+        // 6) Assemble body: list + hr + subheader + form
+        const divider = document.createElement("hr");
+        bodySubheader = document.createElement("div");
+        bodySubheader.className = "modal-subheader";
+        Object.assign(bodySubheader.style, {
+          display:        "flex",
+          justifyContent: "space-between",
+          alignItems:     "center",
+          margin:         "8px 0"
+        });
+        // Label
+        const lbl = document.createElement("span");
+        lbl.className = "subheader-label";
+        bodySubheader.appendChild(lbl);
+        // Move the built-in buttons into this subheader
+        const btnRow = formApi.form.querySelector(".floating-buttons");
+        if (btnRow) {
+          btnRow.style.margin = "0";          // reset any bottom margin
+          btnRow.style.order  = "2";          // ensure it aligns right
+          bodySubheader.appendChild(btnRow);
+        }
+
+        // Now put it all together
         const bodyWrap = document.createElement("div");
         Object.assign(bodyWrap.style, {
           display:       "flex",
@@ -156,10 +174,10 @@ export function initChestDefinitionsModal(db) {
           flex:          "1 1 auto",
           minHeight:     "0"
         });
-        bodyWrap.append(listContainer, document.createElement("hr"), formApi.form);
+        bodyWrap.append(listContainer, divider, bodySubheader, formApi.form);
         content.appendChild(bodyWrap);
 
-        // Definition list manager
+        // 7) Definition list manager
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
@@ -170,7 +188,7 @@ export function initChestDefinitionsModal(db) {
           onDelete: id => deleteChestType(db, id).then(refreshDefinitions)
         });
 
-        // Move search into header
+        // 8) Move search bar into header
         const maybeSearch = listContainer.previousElementSibling;
         if (maybeSearch?.classList.contains("list-header")) {
           maybeSearch.remove();
@@ -180,13 +198,13 @@ export function initChestDefinitionsModal(db) {
         previewApi.hide();
       }
 
-      // 2) On every open: reset, reload data, then show
+      // 9) Every open: reload, then show in Add mode
       await ensureItemMap();
       await refreshDefinitions();
       setModeAdd();
       openModal(modal);
 
-      // 3) Position preview after layout
+      // 10) Kick off preview positioning
       formApi.initPickrs?.();
       requestAnimationFrame(positionPreviewPanel);
     }
