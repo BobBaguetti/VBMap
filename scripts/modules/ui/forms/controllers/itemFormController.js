@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.34 – ensure trash icon hidden in Add mode, shown in Edit
+// @version: 4.35 – hide delete button by default
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -66,7 +66,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  // capture on form for later
+  // *** HIDE IMMEDIATELY in Add mode
+  btnDelete.style.display = "none";
+
+  // capture on form for reset/populate
   form._btnDelete = btnDelete;
   btnDelete.onclick = () => {
     if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
@@ -103,12 +106,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
     if (!fields.fldType.value || !fields.fldRarity.value) return;
-
     initPickrs();
     const tmp = { itemType: fields.fldType.value, rarity: fields.fldRarity.value };
     applyColorPresets(tmp);
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
-
     setTimeout(() => {
       pickrs.name     && tmp.nameColor      && pickrs.name.setColor(tmp.nameColor);
       pickrs.itemType && tmp.itemTypeColor  && pickrs.itemType.setColor(tmp.itemTypeColor);
@@ -128,7 +129,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([], false);
     _id = null;
     subheading.textContent  = "Add Item";
-    form._btnDelete.style.display = "none";
+    form._btnDelete.style.display = "none";  // hide in Add
     btnClear.textContent    = "Clear";
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
@@ -149,7 +150,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
 
     subheading.textContent  = "Edit Item";
-    form._btnDelete.style.display = "";
+    form._btnDelete.style.display = "";        // show in Edit
     btnClear.textContent    = "Cancel";
 
     initPickrs();
