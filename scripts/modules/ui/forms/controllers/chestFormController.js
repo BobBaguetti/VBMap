@@ -1,15 +1,16 @@
 // @file: /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 1.5 – handle subtext, description & extraInfo in reset/populate/getCustom
+// @version: 1.6 – add description color pickr & persist descriptionColor
 
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 import { createChestForm }     from "../builders/chestFormBuilder.js";
 import { createModal, openModal, closeModal } from "../../uiKit.js";
+import { createPickr }         from "../../pickrManager.js";
 
 export function createChestFormController({ onCancel, onSubmit, onDelete }, db) {
   const { form, fields } = createChestForm();
   let _id = null;
 
-  // ─── Loot‐picker modal setup ───────────────────────────────────
+  // ─── Loot‐picker modal setup (unchanged) ────────────────────────
   let pickerModal, pickerHeader, pickerContent;
   let pickerSearch, pickerList, pickerSave, pickerCancel;
   let allItems = [];
@@ -126,6 +127,20 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     openModal(pickerModal);
   };
 
+  // ─── Description Color Picker ───────────────────────────────────
+  const pickrs = {};
+  function initPickrs() {
+    const btn = fields.colorDesc || document.getElementById("fld-chest-desc-color");
+    if (btn && !pickrs.desc) {
+      const p = createPickr(`#${btn.id}`);
+      pickrs.desc = p;
+      p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
+      p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
+      btn.addEventListener("click", () => p.show());
+    }
+  }
+  initPickrs();
+
   // ─── Buttons Row ───────────────────────────────────────────────
   (() => {
     const btnRow = document.createElement("div");
@@ -148,9 +163,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     btnDelete.textContent = "Delete";
     btnDelete.style.display = "none";
     btnDelete.onclick = () => {
-      if (_id && confirm("Delete this chest type?")) {
-        onDelete(_id);
-      }
+      if (_id && confirm("Delete this chest type?")) onDelete(_id);
     };
 
     btnRow.append(btnSave, btnCancel, btnDelete);
@@ -171,33 +184,42 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     renderChips();
     const delBtn = form.querySelector(".ui-button-delete");
     if (delBtn) delBtn.style.display = "none";
+    // reset description color
+    if (pickrs.desc) pickrs.desc.setColor("#E5E6E8");
   }
 
   function populate(def) {
     form.reset();
-    fields.fldName.value    = def.name       || "";
-    fields.fldIconUrl.value = def.iconUrl    || "";
-    fields.fldSubtext.value = def.subtext    || "";
+    fields.fldName.value        = def.name          || "";
+    fields.fldIconUrl.value     = def.iconUrl       || "";
+    fields.fldSubtext.value     = def.subtext       || "";
     fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool || []));
     renderChips();
-    fields.fldDesc.value    = def.description || "";
+    fields.fldDesc.value        = def.description   || "";
     fields.extraInfo.setLines(def.extraLines || [], false);
     _id = def.id;
     const delBtn = form.querySelector(".ui-button-delete");
     if (delBtn) delBtn.style.display = "";
+
+    // populate description color
+    initPickrs();
+    if (pickrs.desc && def.descriptionColor) {
+      pickrs.desc.setColor(def.descriptionColor);
+    }
   }
 
   // ─── Form Submission ───────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit({
-      id:          _id,
-      name:        fields.fldName.value.trim(),
-      iconUrl:     fields.fldIconUrl.value.trim(),
-      subtext:     fields.fldSubtext.value.trim(),
-      lootPool:    [...fields.lootPool],
-      description: fields.fldDesc.value.trim(),
-      extraLines:  fields.extraInfo.getLines()
+      id:               _id,
+      name:             fields.fldName.value.trim(),
+      iconUrl:          fields.fldIconUrl.value.trim(),
+      subtext:          fields.fldSubtext.value.trim(),
+      lootPool:         [...fields.lootPool],
+      description:      fields.fldDesc.value.trim(),
+      descriptionColor: pickrs.desc?.getColor().toHEXA().toString() || null,
+      extraLines:       fields.extraInfo.getLines()
     });
   });
 
@@ -206,13 +228,14 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     reset,
     populate,
     getCustom: () => ({
-      id:           _id,
-      name:         fields.fldName.value.trim(),
-      iconUrl:      fields.fldIconUrl.value.trim(),
-      subtext:      fields.fldSubtext.value.trim(),
-      lootPool:     [...fields.lootPool],
-      description:  fields.fldDesc.value.trim(),
-      extraLines:   fields.extraInfo.getLines()
+      id:               _id,
+      name:             fields.fldName.value.trim(),
+      iconUrl:          fields.fldIconUrl.value.trim(),
+      subtext:          fields.fldSubtext.value.trim(),
+      lootPool:         [...fields.lootPool],
+      description:      fields.fldDesc.value.trim(),
+      descriptionColor: pickrs.desc?.getColor().toHEXA().toString() || null,
+      extraLines:       fields.extraInfo.getLines()
     })
   };
 }

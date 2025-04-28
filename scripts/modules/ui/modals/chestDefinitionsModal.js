@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.9 – move subheader to body; reposition buttons; raise preview z-index
+// @version: 2.0 – embed buttons inside form so Save/Cancel/Delete work
 
 import {
   createModal,
@@ -144,8 +144,7 @@ export function initChestDefinitionsModal(db) {
           positionPreviewPanel();
         });
 
-        // 6) Assemble body: list + hr + subheader + form
-        const divider = document.createElement("hr");
+        // 6) Build our in-form subheader (label + button row)
         bodySubheader = document.createElement("div");
         bodySubheader.className = "modal-subheader";
         Object.assign(bodySubheader.style, {
@@ -154,19 +153,20 @@ export function initChestDefinitionsModal(db) {
           alignItems:     "center",
           margin:         "8px 0"
         });
-        // Label
         const lbl = document.createElement("span");
         lbl.className = "subheader-label";
         bodySubheader.appendChild(lbl);
-        // Move the built-in buttons into this subheader
-        const btnRow = formApi.form.querySelector(".floating-buttons");
-        if (btnRow) {
-          btnRow.style.margin = "0";          // reset any bottom margin
-          btnRow.style.order  = "2";          // ensure it aligns right
-          bodySubheader.appendChild(btnRow);
-        }
 
-        // Now put it all together
+        // 7) Assemble body:
+        //   — listContainer
+        //   — divider
+        //   — <form> (with subheader & buttons prepended inside it)
+        const divider = document.createElement("hr");
+
+        // Move the floating-buttons row _into_ the form, then prepend our subheader
+        const btnRow = formApi.form.querySelector(".floating-buttons");
+        formApi.form.prepend(bodySubheader);
+
         const bodyWrap = document.createElement("div");
         Object.assign(bodyWrap.style, {
           display:       "flex",
@@ -174,10 +174,10 @@ export function initChestDefinitionsModal(db) {
           flex:          "1 1 auto",
           minHeight:     "0"
         });
-        bodyWrap.append(listContainer, divider, bodySubheader, formApi.form);
+        bodyWrap.append(listContainer, divider, formApi.form);
         content.appendChild(bodyWrap);
 
-        // 7) Definition list manager
+        // 8) Definition list manager
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
@@ -188,7 +188,7 @@ export function initChestDefinitionsModal(db) {
           onDelete: id => deleteChestType(db, id).then(refreshDefinitions)
         });
 
-        // 8) Move search bar into header
+        // 9) Move search bar into header
         const maybeSearch = listContainer.previousElementSibling;
         if (maybeSearch?.classList.contains("list-header")) {
           maybeSearch.remove();
@@ -198,13 +198,13 @@ export function initChestDefinitionsModal(db) {
         previewApi.hide();
       }
 
-      // 9) Every open: reload, then show in Add mode
+      // 10) Every open: reload & show Add mode
       await ensureItemMap();
       await refreshDefinitions();
       setModeAdd();
       openModal(modal);
 
-      // 10) Kick off preview positioning
+      // Kick off preview positioning
       formApi.initPickrs?.();
       requestAnimationFrame(positionPreviewPanel);
     }
