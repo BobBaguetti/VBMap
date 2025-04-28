@@ -55,7 +55,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.style.display = "none";
+  btnDelete.style.display = "none";   // hidden in Add mode
   btnDelete.onclick = () => {
     if (_id && confirm("Delete this chest type?")) {
       onDelete?.(_id);
@@ -215,8 +215,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     fields.lootPool.length = 0;
     renderChips();
     subheading.textContent  = "Add Chest Type";
-    btnDelete.style.display = "none";
-    btnClear.textContent    = "Clear";
+    btnDelete.style.display = "none";   // ensure hidden
+    btnClear.textContent    = "Clear";  // matches item form
     initPickrs();
     pickrs.desc && pickrs.desc.setColor("#E5E6E8");
     fields.extraInfo.setLines([], false);
@@ -235,7 +235,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     fields.extraInfo.setLines(def.extraLines || [], false);
 
     subheading.textContent  = "Edit Chest Type";
-    btnDelete.style.display = "";
+    btnDelete.style.display = "";     // show
     btnClear.textContent    = "Cancel";
 
     initPickrs();
