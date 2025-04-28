@@ -18,7 +18,7 @@ import { createChestPreviewPanel } from "./chestPreview.js";
 export function createPreviewPanel(type, mountTo = null) {
   // Create or reuse container
   const container = mountTo || document.createElement("div");
-  container.style.zIndex = 1101;
+  container.style.zIndex = 10000;
   if (!mountTo) document.body.appendChild(container);
 
   let api;
