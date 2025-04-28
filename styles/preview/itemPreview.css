@@ -1,33 +1,6 @@
-/* @version: 4 */
-/* @file: /styles/preview/itemPreview.css */
+/* @file: styles/preview/itemPreview.css – item-specific extras */
 
-#item-preview-panel {
-  position: fixed;
-  z-index: 10001; /* above modal (9999) and backdrop (9998) */
-  top: 0;
-  left: 0;
-  width: 432px;
-  height: 432px;
+.item-preview-panel {
   background: #1a1a1a url("/VBMap/media/images/itemPreview.png") center center no-repeat;
   background-size: cover;
-  border: 1px solid #333;
-  border-radius: 6px;
-  box-shadow: 0 0 10px #000;
-  padding: 8px;
-  display: none;
-}
-
-#item-preview-panel.visible {
-  display: block;
-}
-
-#item-preview-panel .preview-content {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-
-.preview-popup-wrapper {
-  pointer-events: none;
 }

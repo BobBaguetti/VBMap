@@ -1,45 +1,31 @@
 // @file: /scripts/modules/ui/preview/chestPreview.js
-// @version: 1.6 – unified hide/show and full grid logic
+// @version: 2 – uses shared preview-panel CSS
 
-/**
- * Preview panel for Chest Types in the admin modal.
- * Mirrors the item preview frame and behavior.
- */
 export function createChestPreviewPanel(container) {
-  // wipe & apply class
-  container.innerHTML = "";
-  container.className = "chest-preview-panel";
+  container.className = "";                               // reset
+  container.classList.add("preview-panel", "chest-preview-panel");
 
-  // icon
+  /* ─── static DOM structure ─────────────────────────────── */
   const iconEl = document.createElement("img");
   iconEl.className = "chest-preview-icon";
   container.appendChild(iconEl);
 
-  // name
   const nameEl = document.createElement("strong");
   nameEl.className = "chest-preview-name";
   container.appendChild(nameEl);
 
-  // grid container
   const gridEl = document.createElement("div");
   gridEl.className = "chest-preview-grid";
   container.appendChild(gridEl);
 
+  /* ─── public API ───────────────────────────────────────── */
   return {
     container,
-
-    /**
-     * @param {Object} def
-     *   iconUrl, name,
-     *   lootPool: Array<{imageSmall,name,quantity}>,
-     *   maxDisplay?: number
-     */
     setFromDefinition(def = {}) {
       iconEl.src         = def.iconUrl || "";
       nameEl.textContent = def.name    || "";
 
       gridEl.innerHTML = "";
-      // number of columns = maxDisplay or up to 4 by default
       const cols = def.maxDisplay || 4;
       gridEl.style.gridTemplateColumns = `repeat(${cols},1fr)`;
 
@@ -59,16 +45,10 @@ export function createChestPreviewPanel(container) {
           qty.textContent = item.quantity;
           slot.appendChild(qty);
         }
-
         gridEl.appendChild(slot);
       });
     },
-
-    show() {
-      container.classList.add("visible");
-    },
-    hide() {
-      container.classList.remove("visible");
-    }
+    show() { container.classList.add("visible"); },
+    hide() { container.classList.remove("visible"); }
   };
 }

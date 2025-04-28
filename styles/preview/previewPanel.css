@@ -1,0 +1,26 @@
+/* @file: styles/preview/previewPanel.css */
+/* Base frame shared by all preview panels */
+
+.preview-panel {
+    position: fixed;
+    top: 0; left: 0;
+    width: 432px; height: 432px;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 6px;
+    box-shadow: 0 0 10px #000;
+    padding: 8px;
+    z-index: 10001;       /* above modal + backdrop */
+    display: none;        /* hidden until .visible */
+  }
+  
+  .preview-panel.visible { display: block; }
+  
+  /* centres the popup returned by markerManager.renderPopup(...) */
+  .preview-popup-wrapper {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+  

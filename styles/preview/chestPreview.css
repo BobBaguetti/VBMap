@@ -1,36 +1,12 @@
 /* @file: styles/preview/chestPreview.css */
-/* @version: 1.5 – same backdrop as item, hidden by default */
+/* @version: 2 */
 
 .chest-preview-panel {
-  position: fixed;
-  top: 0; left: 0;
-  width: 432px; height: 432px;
   background: #1a1a1a url("/VBMap/media/images/itemPreview.png") center center no-repeat;
   background-size: cover;
-  border: 1px solid #333;
-  border-radius: 6px;
-  box-shadow: 0 0 10px #000;
-  padding: 8px;
-  z-index: 10001;
-  display: none;           /* hidden until .visible */
 }
 
-.chest-preview-panel.visible {
-  display: block;
-}
-
-.chest-preview-icon {
-  width: 48px; height: 48px;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.chest-preview-name {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 8px;
-}
-
+/* existing grid rules kept as-is */
 .chest-preview-grid {
   display: grid;
   gap: 4px;
