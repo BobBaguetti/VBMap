@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.31 – Delete-button hidden in Add mode, shown in Edit mode
+// @version: 4.33 – ensure trash icon hidden in Add mode, shown in Edit
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -129,7 +129,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([], false);
     _id = null;
     subheading.textContent  = "Add Item";
-    btnDelete.style.display = "none";   // stay hidden in Add
+    btnDelete.style.display = "none";   // hide in Add
     btnClear.textContent    = "Clear";
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
