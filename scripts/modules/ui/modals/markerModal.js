@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 20.2 – add “Select type…” placeholder to Type dropdown
+// @version: 20.3 – point chest dropdown at chestDefinitionsService.js
 
 import {
   createModal,
@@ -8,9 +8,9 @@ import {
   createDropdownField,
   createFormButtonRow
 } from "../uiKit.js";
-import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
-import { loadChestTypes }       from "../../services/chestTypesService.js";
-import { createMarkerForm }     from "../forms/markerForm.js";
+import { loadItemDefinitions }      from "../../services/itemDefinitionsService.js";
+import { loadChestDefinitions }     from "../../services/chestDefinitionsService.js";
+import { createMarkerForm }         from "../forms/markerForm.js";
 
 export function initMarkerModal(db) {
   let modal, content, form;
@@ -35,7 +35,7 @@ export function initMarkerModal(db) {
 
   async function refreshChestTypes() {
     if (!fldChestType) return;
-    const list = await loadChestTypes(db);
+    const list = await loadChestDefinitions(db);
     chestDefs = Object.fromEntries(list.map(d => [d.id, d]));
     fldChestType.innerHTML = `<option value="">Select Chest Type</option>`;
     list.forEach(d => {
