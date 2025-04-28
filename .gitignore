@@ -3,3 +3,7 @@ node_modules/
 
 # Do NOT commit your service account
 serviceAccountKey.json
+
+# gibberish documentation
+
+docu.txt

@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 1.3 – add Subtext, Description & Extra Info; remove Max Display
+// @version: 1.4 – assign id to description color swatch
 
 import {
   createDescriptionField,
@@ -67,6 +67,7 @@ export function createChestForm() {
   // — Description —
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
     createDescriptionField();
+  // **give the swatch an ID so Pickr can find it**
   colorDesc.id = "fld-chest-desc-color";
   colorDesc.classList.add("color-swatch");
 

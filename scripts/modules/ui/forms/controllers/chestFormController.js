@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 1.7 – fix import of createPickr
+// @version: 1.8 – ensure pickr target exists before init; read getColor() string
 
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 import { createChestForm }     from "../builders/chestFormBuilder.js";
@@ -10,7 +10,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   const { form, fields } = createChestForm();
   let _id = null;
 
-  // ─── Loot‐picker modal setup ────────────────────────────────────
+  // ─── Loot‐picker modal setup ───────────────────────────────────
   let pickerModal, pickerHeader, pickerContent;
   let pickerSearch, pickerList, pickerSave, pickerCancel;
   let allItems = [];
@@ -29,13 +29,11 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     pickerHeader  = created.header;
     pickerContent = created.content;
 
-    // Search input
     pickerSearch = document.createElement("input");
     pickerSearch.type = "text";
     pickerSearch.placeholder = "Search…";
     pickerHeader.appendChild(pickerSearch);
 
-    // List container
     pickerList = document.createElement("div");
     Object.assign(pickerList.style, {
       maxHeight: "200px",
@@ -44,7 +42,6 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     });
     pickerContent.appendChild(pickerList);
 
-    // Buttons row
     const btnRow = document.createElement("div");
     btnRow.style.textAlign = "right";
     pickerCancel = document.createElement("button");
@@ -118,7 +115,6 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     });
   }
 
-  // Trigger loot‐pool picker
   fields.openLootPicker.onclick = async () => {
     await ensurePicker();
     await refreshPickerItems();
@@ -127,10 +123,11 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     openModal(pickerModal);
   };
 
-  // ─── Description Color Picker ───────────────────────────────────
+  // ─── Description Color Picker ─────────────────────────────────
   const pickrs = {};
   function initPickrs() {
-    const btn = fields.colorDesc || document.getElementById("fld-chest-desc-color");
+    // only init if swatch is in the DOM
+    const btn = document.getElementById("fld-chest-desc-color");
     if (btn && !pickrs.desc) {
       const p = createPickr(`#${btn.id}`);
       pickrs.desc = p;
@@ -147,19 +144,19 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     btnRow.className = "floating-buttons";
 
     const btnSave = document.createElement("button");
-    btnSave.type = "submit";
+    btnSave.type      = "submit";
     btnSave.className = "ui-button";
     btnSave.textContent = "Save";
 
     const btnCancel = document.createElement("button");
-    btnCancel.type = "button";
+    btnCancel.type      = "button";
     btnCancel.className = "ui-button";
     btnCancel.textContent = "Cancel";
-    btnCancel.onclick = onCancel;
+    btnCancel.onclick   = onCancel;
 
     const btnDelete = document.createElement("button");
-    btnDelete.type = "button";
-    btnDelete.className = "ui-button-delete";
+    btnDelete.type        = "button";
+    btnDelete.className   = "ui-button-delete";
     btnDelete.textContent = "Delete";
     btnDelete.style.display = "none";
     btnDelete.onclick = () => {
@@ -176,7 +173,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     renderChips();
   })();
 
-  // ─── Reset & Populate ───────────────────────────────────────────
+  // ─── Reset & Populate ─────────────────────────────────────────
   function reset() {
     form.reset();
     _id = null;
@@ -184,31 +181,29 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     renderChips();
     const delBtn = form.querySelector(".ui-button-delete");
     if (delBtn) delBtn.style.display = "none";
-    // reset description color
     if (pickrs.desc) pickrs.desc.setColor("#E5E6E8");
   }
 
   function populate(def) {
     form.reset();
-    fields.fldName.value        = def.name          || "";
-    fields.fldIconUrl.value     = def.iconUrl       || "";
-    fields.fldSubtext.value     = def.subtext       || "";
+    fields.fldName.value     = def.name          || "";
+    fields.fldIconUrl.value  = def.iconUrl       || "";
+    fields.fldSubtext.value  = def.subtext       || "";
     fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool || []));
     renderChips();
-    fields.fldDesc.value        = def.description   || "";
+    fields.fldDesc.value     = def.description   || "";
     fields.extraInfo.setLines(def.extraLines || [], false);
     _id = def.id;
     const delBtn = form.querySelector(".ui-button-delete");
     if (delBtn) delBtn.style.display = "";
 
-    // populate description color
     initPickrs();
     if (pickrs.desc && def.descriptionColor) {
       pickrs.desc.setColor(def.descriptionColor);
     }
   }
 
-  // ─── Form Submission ───────────────────────────────────────────
+  // ─── Form Submission ─────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit({
@@ -218,7 +213,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
       subtext:          fields.fldSubtext.value.trim(),
       lootPool:         [...fields.lootPool],
       description:      fields.fldDesc.value.trim(),
-      descriptionColor: pickrs.desc?.getColor().toHEXA().toString() || null,
+      descriptionColor: pickrs.desc?.getColor() || null,
       extraLines:       fields.extraInfo.getLines()
     });
   });
@@ -234,7 +229,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
       subtext:          fields.fldSubtext.value.trim(),
       lootPool:         [...fields.lootPool],
       description:      fields.fldDesc.value.trim(),
-      descriptionColor: pickrs.desc?.getColor().toHEXA().toString() || null,
+      descriptionColor: pickrs.desc?.getColor() || null,
       extraLines:       fields.extraInfo.getLines()
     })
   };
