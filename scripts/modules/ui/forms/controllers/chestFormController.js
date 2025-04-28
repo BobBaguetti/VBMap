@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 1.4 – guard delete-button access in reset() & populate()
+// @version: 1.5 – handle subtext, description & extraInfo in reset/populate/getCustom
 
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 import { createChestForm }     from "../builders/chestFormBuilder.js";
@@ -9,9 +9,9 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   const { form, fields } = createChestForm();
   let _id = null;
 
-  // ─── Loot‐picker modal setup ────────────────────────────────────
-  let pickerModal, pickerContent, pickerHeader;
-  let pickerList, pickerSearch, pickerSave, pickerCancel;
+  // ─── Loot‐picker modal setup ───────────────────────────────────
+  let pickerModal, pickerHeader, pickerContent;
+  let pickerSearch, pickerList, pickerSave, pickerCancel;
   let allItems = [];
 
   async function ensurePicker() {
@@ -28,13 +28,13 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     pickerHeader  = created.header;
     pickerContent = created.content;
 
-    // search box
+    // Search input
     pickerSearch = document.createElement("input");
     pickerSearch.type = "text";
     pickerSearch.placeholder = "Search…";
     pickerHeader.appendChild(pickerSearch);
 
-    // list container
+    // List container
     pickerList = document.createElement("div");
     Object.assign(pickerList.style, {
       maxHeight: "200px",
@@ -43,7 +43,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     });
     pickerContent.appendChild(pickerList);
 
-    // buttons row
+    // Buttons row
     const btnRow = document.createElement("div");
     btnRow.style.textAlign = "right";
     pickerCancel = document.createElement("button");
@@ -117,7 +117,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     });
   }
 
-  // trigger loot picker
+  // Trigger loot‐pool picker
   fields.openLootPicker.onclick = async () => {
     await ensurePicker();
     await refreshPickerItems();
@@ -126,7 +126,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     openModal(pickerModal);
   };
 
-  // ─── Add Save/Cancel/Delete buttons ─────────────────────────────
+  // ─── Buttons Row ───────────────────────────────────────────────
   (() => {
     const btnRow = document.createElement("div");
     btnRow.className = "floating-buttons";
@@ -157,7 +157,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     form.appendChild(btnRow);
   })();
 
-  // initialize chips
+  // Initialize loot‐pool chips
   (async function init() {
     allItems = await loadItemDefinitions(db);
     renderChips();
@@ -175,23 +175,29 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
 
   function populate(def) {
     form.reset();
-    fields.fldName.value    = def.name    || "";
-    fields.fldIconUrl.value = def.iconUrl || "";
+    fields.fldName.value    = def.name       || "";
+    fields.fldIconUrl.value = def.iconUrl    || "";
+    fields.fldSubtext.value = def.subtext    || "";
     fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool || []));
     renderChips();
+    fields.fldDesc.value    = def.description || "";
+    fields.extraInfo.setLines(def.extraLines || [], false);
     _id = def.id;
     const delBtn = form.querySelector(".ui-button-delete");
     if (delBtn) delBtn.style.display = "";
   }
 
-  // ─── Form submission ────────────────────────────────────────────
+  // ─── Form Submission ───────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit({
-      id:       _id,
-      name:     fields.fldName.value.trim(),
-      iconUrl:  fields.fldIconUrl.value.trim(),
-      lootPool: [...fields.lootPool]
+      id:          _id,
+      name:        fields.fldName.value.trim(),
+      iconUrl:     fields.fldIconUrl.value.trim(),
+      subtext:     fields.fldSubtext.value.trim(),
+      lootPool:    [...fields.lootPool],
+      description: fields.fldDesc.value.trim(),
+      extraLines:  fields.extraInfo.getLines()
     });
   });
 
@@ -200,9 +206,13 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     reset,
     populate,
     getCustom: () => ({
-      name:    fields.fldName.value.trim(),
-      iconUrl: fields.fldIconUrl.value.trim(),
-      lootPool:[...fields.lootPool]
+      id:           _id,
+      name:         fields.fldName.value.trim(),
+      iconUrl:      fields.fldIconUrl.value.trim(),
+      subtext:      fields.fldSubtext.value.trim(),
+      lootPool:     [...fields.lootPool],
+      description:  fields.fldDesc.value.trim(),
+      extraLines:   fields.extraInfo.getLines()
     })
   };
 }

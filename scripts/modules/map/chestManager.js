@@ -1,5 +1,5 @@
 // @file: /scripts/modules/map/chestManager.js
-// @version: 1.3 – add quantity badges and grid‐column control
+// @version: 1.5 – render Subtext, fixed 4-column grid, Description & Extra Info
 
 import { createMarker } from "./markerManager.js";
 
@@ -8,7 +8,7 @@ import { createMarker } from "./markerManager.js";
  * routed through the shared createMarker pipeline.
  *
  * @param {Object} data    — { id, chestTypeId, coords }
- * @param {Object} typeDef — { id, name, iconUrl, lootPool: Array<{name,imageSmall,quantity}>, maxDisplay }
+ * @param {Object} typeDef — { id, name, iconUrl, subtext, lootPool: Array<{name,imageSmall,quantity}>, description, extraLines }
  * @param {L.Map} map
  * @param {Object} layers  — must include layers.Chest
  * @param {Function} ctxMenu — showContextMenu
@@ -32,47 +32,66 @@ export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) 
       onEdit:    null,
       onCopy:    null,
       onDragEnd: isAdmin ? (_, d) => { /* optional drag logic */ } : null,
-      onDelete:  isAdmin
-        ? (m, d) => layers.Chest.removeLayer(m)
-        : null
+      onDelete:  isAdmin ? (m) => layers.Chest.removeLayer(m) : null
     },
     isAdmin
   );
 
-  // Use our chest‐specific popup HTML
   markerObj.setPopupContent(buildChestPopupHTML(typeDef));
   return markerObj;
 }
 
 /**
  * Build the specific HTML for a chest’s popup.
- * Expects typeDef.lootPool to be full item-definition objects,
- * each possibly carrying a .quantity property.
+ * Always uses a 4-column grid, wrapping onto new rows as needed.
  */
 export function buildChestPopupHTML(typeDef) {
-  const count = typeDef.maxDisplay || 4;
-
   let html = `
-    <div class="chest-popup">
-      <img src="${typeDef.iconUrl}" class="chest-icon">
-      <strong class="chest-title">${typeDef.name}</strong>
-      <hr>
-      <div class="chest-grid" style="--cols: ${count};">
+    <div class="custom-popup" style="position:relative;">
+      <span class="popup-close-btn" style="position:absolute;top:8px;right:8px;cursor:pointer;padding:4px;">
+        ✖
+      </span>
+      <div class="popup-header">
+        <div class="popup-header-left">
+          <img
+            src="${typeDef.iconUrl}"
+            class="popup-image"
+            onerror="this.style.display='none'"
+          >
+          <div class="popup-info">
+            <div class="popup-name">${typeDef.name}</div>
+            ${typeDef.subtext
+              ? `<div class="popup-subtext">${typeDef.subtext}</div>`
+              : ''
+            }
+          </div>
+        </div>
+      </div>
+      <div class="popup-body">
+        <div class="chest-grid" style="--cols: 4;">
   `;
 
-  (typeDef.lootPool || [])
-    .slice(0, count)
-    .forEach(itemDef => {
-      html += `
-        <div class="chest-slot" title="${itemDef.name || ""}">
-          <img src="${itemDef.imageSmall || ""}" class="chest-slot-img">
-          ${itemDef.quantity > 1
-            ? `<span class="chest-slot-qty">${itemDef.quantity}</span>`
-            : ''}
-        </div>`;
-    });
+  (typeDef.lootPool || []).forEach(item => {
+    html += `
+      <div class="chest-slot" title="${item.name || ''}">
+        <img src="${item.imageSmall || ''}" class="chest-slot-img" />
+        ${item.quantity > 1
+          ? `<span class="chest-slot-qty">${item.quantity}</span>`
+          : ''
+        }
+      </div>`;
+  });
 
   html += `
+        </div>
+        ${typeDef.description
+          ? `<p class="popup-desc">${typeDef.description}</p>
+             <hr class="popup-divider">`
+          : ''
+        }
+        ${(typeDef.extraLines || []).map(line => `
+          <p class="popup-extra-line">${line.text}</p>
+        `).join('')}
       </div>
     </div>
   `;

@@ -1,13 +1,11 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 1.2 – removed obsolete Max Display field
+// @version: 1.3 – add Subtext, Description & Extra Info; remove Max Display
 
-/**
- * Builds the form layout for creating/editing a Chest Type.
- * Includes:
- *  • Name
- *  • Icon URL
- *  • Loot Pool (chips + picker button)
- */
+import {
+  createDescriptionField,
+  createExtraInfoField
+} from "../universalForm.js";
+
 export function createChestForm() {
   const form = document.createElement("form");
   form.id = "chest-form";
@@ -34,22 +32,31 @@ export function createChestForm() {
   fldIcon.id   = "fld-chest-icon";
   rowIcon.append(lblIcon, fldIcon);
 
+  // — Subtext —
+  const rowSub = document.createElement("div");
+  rowSub.classList.add("field-row");
+  const lblSub = document.createElement("label");
+  lblSub.htmlFor = "fld-chest-subtext";
+  lblSub.textContent = "Subtext";
+  const fldSub = document.createElement("input");
+  fldSub.type = "text";
+  fldSub.id   = "fld-chest-subtext";
+  rowSub.append(lblSub, fldSub);
+
   // — Loot Pool —
   const rowLoot = document.createElement("div");
   rowLoot.classList.add("field-row");
   const lblLoot = document.createElement("label");
   lblLoot.textContent = "Loot Pool";
-  // chips container
   const chipContainer = document.createElement("div");
   chipContainer.classList.add("loot-pool-chips");
   chipContainer.id = "fld-chest-loot-chips";
   Object.assign(chipContainer.style, {
-    flex:       "1",
-    display:    "flex",
-    flexWrap:   "wrap",
-    gap:        "4px"
+    flex:     "1",
+    display:  "flex",
+    flexWrap: "wrap",
+    gap:      "4px"
   });
-  // picker button (⚙︎)
   const openLootPicker = document.createElement("button");
   openLootPicker.type = "button";
   openLootPicker.className = "ui-button";
@@ -57,17 +64,32 @@ export function createChestForm() {
   openLootPicker.title = "Edit Loot Pool";
   rowLoot.append(lblLoot, chipContainer, openLootPicker);
 
-  // Assemble form
-  form.append(rowName, rowIcon, rowLoot);
+  // — Description —
+  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
+    createDescriptionField();
+  colorDesc.id = "fld-chest-desc-color";
+  colorDesc.classList.add("color-swatch");
+
+  // — Extra Info —
+  const { row: rowExtras, extraInfo } =
+    createExtraInfoField({ withDividers: true });
+
+  // assemble
+  form.append(rowName, rowIcon, rowSub, rowLoot, rowDesc, rowExtras);
 
   return {
     form,
     fields: {
       fldName,
       fldIconUrl:       fldIcon,
+      fldSubtext:       fldSub,
       lootPool:         [],
       openLootPicker,
-      chipContainer
+      chipContainer,
+      fldDesc,
+      colorDesc,
+      extraInfo,
+      rowExtras
     }
   };
 }
