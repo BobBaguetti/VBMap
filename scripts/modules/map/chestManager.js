@@ -1,5 +1,5 @@
 // @file: /scripts/modules/map/chestManager.js
-// @version: 1.7 – remove chest-popup class so .custom-popup styling applies
+// @version: 1.8 – always render 4 slots (with placeholders) so grid never collapses
 
 import { createMarker } from "./markerManager.js";
 
@@ -45,44 +45,58 @@ export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) 
 
 /**
  * Build the specific HTML for a chest’s popup.
- * Matches the item popup structure and styling.
+ * Matches the item popup structure and styling,
+ * and always renders 4 grid slots (with empty placeholders).
  */
 export function buildChestPopupHTML(typeDef) {
-  // Close button
-  const closeBtn = `
-    <span class="popup-close-btn">✖</span>`;
+  // close-button
+  const closeBtn = `<span class="popup-close-btn">✖</span>`;
 
-  // Header image
+  // header image
   const bigImg = typeDef.iconUrl
     ? `<img src="${typeDef.iconUrl}"
             class="popup-image"
             onerror="this.style.display='none'">`
     : "";
 
-  // Name + subtext
-  const nameHTML = `<div class="popup-name">${typeDef.name}</div>`;
+  // name + subtext
+  const nameHTML    = `<div class="popup-name">${typeDef.name}</div>`;
   const subtextHTML = typeDef.subtext
     ? `<div class="popup-type">${typeDef.subtext}</div>`
     : "";
 
-  // Grid of loot slots (4 columns)
-  const gridHTML = `
-    <div class="chest-grid" style="--cols:4;">
-      ${(typeDef.lootPool||[]).map(item=>`
-        <div class="chest-slot" title="${item.name||''}">
-          <img src="${item.imageSmall||''}" class="chest-slot-img">
-          ${item.quantity>1
+  // always 4 columns
+  const count = 4;
+  let slotsMarkup = "";
+
+  // build exactly `count` slots, filling empties if needed
+  for (let i = 0; i < count; i++) {
+    const item = (typeDef.lootPool || [])[i];
+    if (item) {
+      slotsMarkup += `
+        <div class="chest-slot" title="${item.name||""}">
+          <img src="${item.imageSmall||""}" class="chest-slot-img">
+          ${item.quantity > 1
             ? `<span class="chest-slot-qty">${item.quantity}</span>`
-            : ''}
-        </div>`).join('')}
+            : ""}
+        </div>`;
+    } else {
+      // placeholder slot
+      slotsMarkup += `<div class="chest-slot"></div>`;
+    }
+  }
+
+  const gridHTML = `
+    <div class="chest-grid" style="--cols:${count};">
+      ${slotsMarkup}
     </div>`;
 
-  // Description & extra info
-  const descHTML = typeDef.description
+  // description & extra‐info
+  const descHTML  = typeDef.description
     ? `<p class="popup-desc">${typeDef.description}</p>`
     : "";
-  const extraHTML = (typeDef.extraLines||[])
-    .map(line=>`<p class="popup-extra-line">${line.text}</p>`)
+  const extraHTML = (typeDef.extraLines || [])
+    .map(line => `<p class="popup-extra-line">${line.text}</p>`)
     .join("");
 
   return `
