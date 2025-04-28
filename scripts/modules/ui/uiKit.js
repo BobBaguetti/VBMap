@@ -140,7 +140,7 @@ export function closeModal(modal) {
 export function openModal(modal) {
   console.log("[uiKit] openModal called on modal:", modal.id);
   modal.style.display = "block";
-  modal.style.zIndex = "2000";
+  modal.style.zIndex = "9999";
   requestAnimationFrame(() => {
     modal.style.backgroundColor = modal.classList.contains("modal-large")
       ? "rgba(0, 0, 0, 0.5)"
