@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.33 – ensure trash icon hidden in Add mode, shown in Edit
+// @version: 4.34 – ensure trash icon hidden in Add mode, shown in Edit
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -66,8 +66,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  // Start hidden in Add mode
-  btnDelete.style.display = "none";
+  // capture on form for later
+  form._btnDelete = btnDelete;
   btnDelete.onclick = () => {
     if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
       onDelete?.(_id);
@@ -76,7 +76,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   buttonRow.append(btnSave, btnClear, btnDelete);
   subheadingWrap.appendChild(buttonRow);
-
   form.prepend(subheadingWrap);
 
   // ─── Pickr Initialization ──────────────────────────────────────────
@@ -129,7 +128,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([], false);
     _id = null;
     subheading.textContent  = "Add Item";
-    btnDelete.style.display = "none";   // hide in Add
+    form._btnDelete.style.display = "none";
     btnClear.textContent    = "Clear";
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
@@ -150,7 +149,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
 
     subheading.textContent  = "Edit Item";
-    btnDelete.style.display = "";        // show in Edit
+    form._btnDelete.style.display = "";
     btnClear.textContent    = "Cancel";
 
     initPickrs();
