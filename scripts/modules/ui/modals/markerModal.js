@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 20.1 – ensure Item flow hydrates colors & reorder Item Type above Rarity
+// @version: 20.2 – add “Select type…” placeholder to Type dropdown
 
 import {
   createModal,
@@ -80,6 +80,10 @@ export function initMarkerModal(db) {
       ],
       { showColor: false }
     );
+    // insert “Select type…” placeholder
+    selectType.innerHTML = `
+      <option value="" disabled selected>Select type…</option>
+    ` + selectType.innerHTML;
     fldType = selectType;
 
     // ─ Predefined Item dropdown ────────────────────────────────────
@@ -142,7 +146,7 @@ export function initMarkerModal(db) {
     refreshPredefinedItems();
     refreshChestTypes();
 
-    // seed pickrs so first Item‐pick gets colors correctly
+    // seed pickrs so first Item-pick gets colors correctly
     formApi.setFromDefinition({});
     formApi.initPickrs();
   }
@@ -152,31 +156,25 @@ export function initMarkerModal(db) {
     ensureBuilt();
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
 
-    // clear stale selections
     fldPredefItem.value = "";
     fldChestType.value  = "";
 
-    // set type & trigger UI
     fldType.value = data.type;
     fldType.dispatchEvent(new Event("change"));
 
-    // if it was an Item
     if (data.type === "Item" && data.predefinedItemId) {
       fldPredefItem.value = data.predefinedItemId;
       fldPredefItem.dispatchEvent(new Event("change"));
     }
-    // if it was a Chest
     if (data.type === "Chest" && data.chestTypeId) {
       fldChestType.value = data.chestTypeId;
     }
-    // clear formApi if not Item
     if (data.type !== "Item") {
       formApi.setFromDefinition({});
       formApi.initPickrs();
     }
 
     openModalAt(modal, evt);
-
     form.onsubmit = e => {
       e.preventDefault();
       const out = harvest(data.coords);
@@ -190,18 +188,15 @@ export function initMarkerModal(db) {
     ensureBuilt();
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
 
-    // reset everything
     fldPredefItem.value = "";
     fldChestType.value  = "";
     formApi.setFromDefinition({});
     formApi.initPickrs();
 
-    // select the requested type & trigger UI
-    fldType.value = type;
+    fldType.value = type || "";
     fldType.dispatchEvent(new Event("change"));
 
     openModalAt(modal, evt);
-
     form.onsubmit = e => {
       e.preventDefault();
       const out = harvest(coords);
@@ -213,11 +208,9 @@ export function initMarkerModal(db) {
   // ─── Harvest form data ────────────────────────────────────────
   function harvest(coords) {
     const type = fldType.value;
-    // 1) Chest flow
     if (type === "Chest" && fldChestType.value) {
       return { type, coords, chestTypeId: fldChestType.value };
     }
-    // 2) Item flow
     if (type === "Item" && fldPredefItem.value) {
       return {
         type,
@@ -226,7 +219,6 @@ export function initMarkerModal(db) {
         ...formApi.getCustom()
       };
     }
-    // 3) Generic “custom” flow
     return { type, coords, ...formApi.getCustom() };
   }
 
