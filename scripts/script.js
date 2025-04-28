@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 6.0 – unified Chest into the generic markers pipeline
+// @version: 6.1 – remove old chestsService import, fix unified marker creation
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -17,9 +17,7 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
 
-import {
-  subscribeChestDefinitions
-} from "./modules/services/chestDefinitionsService.js";
+import { subscribeChestDefinitions } from "./modules/services/chestDefinitionsService.js";
 
 import {
   createChestMarker,
@@ -32,26 +30,24 @@ import {
   createCustomIcon
 } from "./modules/map/markerManager.js";
 
-import { saveChest }                   from "./modules/services/chestsService.js";
-import { initItemDefinitionsModal }    from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initMarkerModal }             from "./modules/ui/modals/markerModal.js";
-import { initCopyPasteManager }        from "./modules/map/copyPasteManager.js";
-import { setupSidebar }                from "./modules/sidebar/sidebarManager.js";
-import { subscribeItemDefinitions }    from "./modules/services/itemDefinitionsService.js";
-import { initQuestDefinitionsModal }   from "./modules/ui/modals/questDefinitionsModal.js";
-import { activateFloatingScrollbars }  from "./modules/utils/scrollUtils.js";
-import { initAdminAuth }               from "./authSetup.js";
-import { initChestLayer }              from "./modules/map/chestController.js";
+import { initItemDefinitionsModal }  from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initMarkerModal }           from "./modules/ui/modals/markerModal.js";
+import { initCopyPasteManager }      from "./modules/map/copyPasteManager.js";
+import { setupSidebar }              from "./modules/sidebar/sidebarManager.js";
+import { subscribeItemDefinitions }  from "./modules/services/itemDefinitionsService.js";
+import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
+import { activateFloatingScrollbars }from "./modules/utils/scrollUtils.js";
+import { initAdminAuth }             from "./authSetup.js";
+import { initChestLayer }            from "./modules/map/chestController.js";
 
 /* ------------------------------------------------------------------ *
  *  Firebase & Map Setup
  * ------------------------------------------------------------------ */
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+const app   = initializeApp(firebaseConfig);
+const auth  = getAuth(app);
+const db    = getFirestore(app);
 
-const { map } = initializeMap();
-
+const { map }          = initializeMap();
 const clusterItemLayer = L.markerClusterGroup();
 const flatItemLayer    = L.layerGroup();
 
@@ -82,27 +78,6 @@ subscribeChestDefinitions(db, defs => {
 initAdminAuth();
 
 const allMarkers = [];
-const groupingCallbacks = {
-  enableGrouping: () => {
-    flatItemLayer.eachLayer(m => {
-      flatItemLayer.removeLayer(m);
-      clusterItemLayer.addLayer(m);
-    });
-    map.removeLayer(flatItemLayer);
-    map.addLayer(clusterItemLayer);
-    layers.Item = clusterItemLayer;
-  },
-  disableGrouping: () => {
-    clusterItemLayer.eachLayer(m => {
-      clusterItemLayer.removeLayer(m);
-      flatItemLayer.addLayer(m);
-    });
-    map.removeLayer(clusterItemLayer);
-    map.addLayer(flatItemLayer);
-    layers.Item = flatItemLayer;
-  }
-};
-
 let filterMarkers, loadItemFilters;
 let initialized = false;
 
@@ -111,20 +86,19 @@ onAuthStateChanged(auth, async user => {
   const isAdmin = Boolean(claims.admin);
   document.body.classList.toggle("is-admin", isAdmin);
 
-  if (!initialized && user !== null) {
+  if (!initialized && user) {
     // 1) Sidebar
     ({ filterMarkers, loadItemFilters } = await setupSidebar(
-      map, layers, allMarkers, db, groupingCallbacks
+      map, layers, allMarkers, db, { /* grouping callbacks */ }
     ));
 
-    // 2) Existing markers (single collection)
+    // 2) Existing markers
     const markers = await loadMarkers(db);
     markers.forEach(m => {
       if (!m.type || !layers[m.type]) return;
-
       if (m.type === "Chest") {
-        const def      = chestDefMap[m.chestTypeId] || { lootPool: [] };
-        const marker   = createChestMarker(
+        const def    = chestDefMap[m.chestTypeId] || { lootPool: [] };
+        const marker = createChestMarker(
           m, def, map, layers, showContextMenu, isAdmin
         );
         marker.__chestData = m;
@@ -133,14 +107,13 @@ onAuthStateChanged(auth, async user => {
         const markerObj = createMarker(
           m, map, layers, showContextMenu, callbacks, isAdmin
         );
-        flatItemLayer.hasLayer(markerObj)
-          ? flatItemLayer.addLayer(markerObj)
-          : clusterItemLayer.addLayer(markerObj);
+        (clusterItemLayer.hasLayer(markerObj) ? clusterItemLayer : flatItemLayer)
+          .addLayer(markerObj);
         allMarkers.push({ markerObj, data: m });
       }
     });
 
-    // 3) Live item-defs → filters
+    // 3) Live item-defs → rehydrate items
     subscribeItemDefinitions(db, async () => {
       const { loadItemDefinitions } = await import(
         "./modules/services/itemDefinitionsService.js"
@@ -151,16 +124,7 @@ onAuthStateChanged(auth, async user => {
         if (data.predefinedItemId) {
           const def = defMap[data.predefinedItemId];
           Object.assign(data, {
-            name:        def.name,
-            nameColor:   def.nameColor,
-            rarity:      def.rarity,
-            rarityColor: def.rarityColor,
-            description: def.description,
-            extraLines:  JSON.parse(JSON.stringify(def.extraLines||[])),
-            imageSmall:  def.imageSmall,
-            imageBig:    def.imageBig,
-            value:       def.value,
-            quantity:    def.quantity
+            ...def
           });
           markerObj.setIcon(createCustomIcon(data));
           markerObj.setPopupContent(renderPopup(data));
@@ -195,21 +159,19 @@ const questModal = initQuestDefinitionsModal(db);
 async function addAndPersist(data) {
   let markerObj;
   if (data.type === "Chest") {
-    // create UI chest marker
-    const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-    markerObj      = createChestMarker(
+    // UI + Firestore for Chest
+    const def = chestDefMap[data.chestTypeId] || { lootPool: [] };
+    markerObj = createChestMarker(
       data, def, map, layers, showContextMenu,
       document.body.classList.contains("is-admin")
     );
-    data.id = (await firebaseAddMarker(db, data)).id;
+    const saved = await firebaseAddMarker(db, data);
+    data.id = saved.id;
   } else {
-    // generic flow
     markerObj = addMarker(data, callbacks);
     const saved = await firebaseAddMarker(db, data);
     data.id = saved.id;
-    if (data.predefinedItemId) {
-      // hydrate item definitions as before...
-    }
+    // hydrate predefined item if needed...
   }
   return markerObj;
 }
@@ -220,29 +182,28 @@ async function addAndPersist(data) {
 const copyMgr = initCopyPasteManager(map, addAndPersist);
 
 function addMarker(data, cbs = {}) {
-  // NOTE: we no longer call createChestMarker here; chest uses addAndPersist branch
-  const isAdmin  = document.body.classList.contains("is-admin");
+  const isAdmin   = document.body.classList.contains("is-admin");
   const markerObj = createMarker(
     data, map, layers, showContextMenu, cbs, isAdmin
   );
-  if (groupingOn) clusterItemLayer.addLayer(markerObj);
-  else            flatItemLayer.addLayer(markerObj);
+  (clusterItemLayer.hasLayer(markerObj) ? clusterItemLayer : flatItemLayer)
+    .addLayer(markerObj);
   allMarkers.push({ markerObj, data });
   return markerObj;
 }
 
 const callbacks = {
-  onEdit:    (m,d,ev) => markerForm.openEdit(m,d,ev, updated => {
+  onEdit:    (m, d, ev) => markerForm.openEdit(m, d, ev, updated => {
                  m.setIcon(createCustomIcon(updated));
                  m.setPopupContent(renderPopup(updated));
                  firebaseUpdateMarker(db, updated).catch(() => {});
                }),
-  onCopy:    (_,d)    => copyMgr.startCopy(d),
-  onDragEnd: (_,d)    => firebaseUpdateMarker(db, d).catch(() => {}),
-  onDelete:  (m,d)    => {
+  onCopy:    (_, d)     => copyMgr.startCopy(d),
+  onDragEnd: (_, d)     => firebaseUpdateMarker(db, d).catch(() => {}),
+  onDelete:  (m, d)     => {
                  layers[d.type].removeLayer(m);
                  const idx = allMarkers.findIndex(o => o.data.id === d.id);
-                 if (idx !== -1) allMarkers.splice(idx,1);
+                 if (idx !== -1) allMarkers.splice(idx, 1);
                  if (d.id) firebaseDeleteMarker(db, d.id).catch(() => {});
                }
 };
@@ -250,23 +211,22 @@ const callbacks = {
 /* ------------------------------------------------------------------ *
  *  Context-Menu & Scrollbars
  * ------------------------------------------------------------------ */
-// only one “Create New Marker” needed—no separate chest action
+// Single unified "Create New Marker"
 map.on("contextmenu", evt => {
-  const items = [];
-  if (document.body.classList.contains("is-admin")) {
-    items.push({
-      text: "Create New Marker",
-      action: () => {
-        markerForm.openCreate(
-          [evt.latlng.lat, evt.latlng.lng],
-          undefined, // no type override—modal will let you choose
-          evt.originalEvent,
-          addAndPersist
-        );
-      }
-    });
-  }
-  showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, items);
+  if (!document.body.classList.contains("is-admin")) return;
+  showContextMenu(
+    evt.originalEvent.pageX,
+    evt.originalEvent.pageY,
+    [{
+      text:   "Create New Marker",
+      action: () => markerForm.openCreate(
+        [evt.latlng.lat, evt.latlng.lng],
+        undefined, // user chooses type
+        evt.originalEvent,
+        addAndPersist
+      )
+    }]
+  );
 });
 
 document.addEventListener("click", e => {
