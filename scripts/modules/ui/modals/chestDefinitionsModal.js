@@ -1,28 +1,28 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.6 – add guard around getCustom in live-preview
+// @version: 1.8 – defer build until open; add subheader, preview positioning, add/edit mode buttons
 
 import {
   createModal,
-  openModal,
   closeModal,
-  createLayoutSwitcher
+  openModal
 } from "../uiKit.js";
 
-import { createDefListContainer }    from "../../utils/listUtils.js";
+import { createLayoutSwitcher }        from "../uiKit.js";
+import { createDefListContainer }      from "../../utils/listUtils.js";
+import { createDefinitionListManager } from "../components/definitionListManager.js";
+import { createPreviewPanel }          from "../preview/createPreviewPanel.js";
 import {
   loadChestTypes,
   saveChestType,
   updateChestType,
   deleteChestType
 } from "../../services/chestTypesService.js";
-
 import { loadItemDefinitions }         from "../../services/itemDefinitionsService.js";
-import { createDefinitionListManager } from "../components/definitionListManager.js";
-import { createPreviewPanel }          from "../preview/createPreviewPanel.js";
 import { createChestFormController }   from "../forms/controllers/chestFormController.js";
 
 export function initChestDefinitionsModal(db) {
   let modal, content, header;
+  let subheader;
   let listApi, formApi, previewApi;
   let definitions = [];
 
@@ -41,17 +41,51 @@ export function initChestDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
+  // Position the preview panel alongside the modal
+  function positionPreviewPanel() {
+    const mc = modal.querySelector(".modal-content");
+    const pr = previewApi.container;
+    if (!mc || !pr) return;
+    const rect = mc.getBoundingClientRect();
+    pr.style.position = "absolute";
+    pr.style.left     = `${rect.right + 30}px`;
+    // center vertically
+    requestAnimationFrame(() => {
+      pr.style.top = `${rect.top + rect.height/2 - pr.offsetHeight/2}px`;
+    });
+  }
+
+  // Switch to "Add Chest Type" mode
+  function setModeAdd() {
+    subheader.textContent = "Add Chest Type";
+    formApi.reset();
+    previewApi.setFromDefinition({ lootPool: [] });
+    previewApi.show();
+  }
+
+  // Switch to "Edit Chest Type" mode
+  function setModeEdit(def) {
+    subheader.textContent = "Edit Chest Type";
+    formApi.populate(def);
+    previewApi.setFromDefinition({
+      ...def,
+      lootPool: (def.lootPool || []).map(id => itemMap[id]).filter(Boolean)
+    });
+    previewApi.show();
+  }
+
   return {
     open: async () => {
+      // 1) Build modal on first open
       if (!modal) {
-        // 1) Build modal structure
         const created = createModal({
-          id:           "chest-definitions-modal",
-          title:        "Manage Chest Types",
-          size:         "large",
-          backdrop:     true,
-          withDivider:  true,
-          onClose:      () => {
+          id:          "chest-definitions-modal",
+          title:       "Manage Chest Types",
+          size:        "large",
+          backdrop:    true,
+          draggable:   false,
+          withDivider: true,
+          onClose:     () => {
             closeModal(modal);
             previewApi.hide();
           }
@@ -61,7 +95,13 @@ export function initChestDefinitionsModal(db) {
         header  = created.header;
         modal.classList.add("admin-only");
 
-        // 2) Layout switcher
+        // Subheader placeholder
+        subheader = document.createElement("div");
+        subheader.className = "modal-subheader";
+        subheader.style.margin = "8px 0";
+        header.appendChild(subheader);
+
+        // Layout switcher
         const layoutSwitcher = createLayoutSwitcher({
           available:   ["row","stacked","gallery"],
           defaultView: "row",
@@ -69,53 +109,46 @@ export function initChestDefinitionsModal(db) {
         });
         header.appendChild(layoutSwitcher);
 
-        // 3) List container
+        // Definition list container
         const listContainer = createDefListContainer("chest-def-list");
 
-        // 4) Preview panel & form controller
+        // Preview panel & form controller
         previewApi = createPreviewPanel("chest");
         formApi    = createChestFormController({
-          onCancel: async () => {
-            formApi.reset();
-            previewApi.setFromDefinition({ lootPool: [] });
-            previewApi.show();
-          },
-          onDelete: async id => {
+          onCancel:   () => { setModeAdd(); },
+          onDelete:   async id => {
             await deleteChestType(db, id);
             await refreshDefinitions();
-            formApi.reset();
-            previewApi.setFromDefinition({ lootPool: [] });
-            previewApi.show();
+            setModeAdd();
           },
-          onSubmit: async payload => {
+          onSubmit:   async payload => {
             if (payload.id) {
               await updateChestType(db, payload.id, payload);
             } else {
               await saveChestType(db, null, payload);
             }
             await refreshDefinitions();
-            formApi.reset();
-            previewApi.setFromDefinition({ lootPool: [] });
-            previewApi.show();
+            setModeAdd();
           }
         }, db);
 
-        // 5) Live‐preview wiring with guard
+        // Live‐preview wiring
         formApi.form.classList.add("ui-scroll-float");
         formApi.form.addEventListener("input", async () => {
-          // only attempt live‐preview if getCustom exists
-          if (typeof formApi.getCustom !== "function") return;
-          const live = formApi.getCustom();
+          const custom = formApi.getCustom?.();
+          if (!custom) return;
           await ensureItemMap();
           previewApi.setFromDefinition({
-            ...live,
-            lootPool: (live.lootPool || [])
+            ...custom,
+            lootPool: (custom.lootPool || [])
               .map(id => itemMap[id])
               .filter(Boolean)
           });
+          previewApi.show();
+          positionPreviewPanel();
         });
 
-        // 6) Assemble body
+        // Assemble body: list + divider + form
         const bodyWrap = document.createElement("div");
         Object.assign(bodyWrap.style, {
           display:       "flex",
@@ -126,25 +159,18 @@ export function initChestDefinitionsModal(db) {
         bodyWrap.append(listContainer, document.createElement("hr"), formApi.form);
         content.appendChild(bodyWrap);
 
-        // 7) Definition list manager
+        // Definition list manager
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
-          onEntryClick: async def => {
-            formApi.populate(def);
+          onEntryClick:   async def => {
             await ensureItemMap();
-            previewApi.setFromDefinition({
-              ...def,
-              lootPool: (def.lootPool || [])
-                .map(id => itemMap[id])
-                .filter(Boolean)
-            });
-            previewApi.show();
+            setModeEdit(def);
           },
           onDelete: id => deleteChestType(db, id).then(refreshDefinitions)
         });
 
-        // 8) Move search into header
+        // Move search into header
         const maybeSearch = listContainer.previousElementSibling;
         if (maybeSearch?.classList.contains("list-header")) {
           maybeSearch.remove();
@@ -154,13 +180,15 @@ export function initChestDefinitionsModal(db) {
         previewApi.hide();
       }
 
-      // Reset & reload on every open
-      formApi.reset();
+      // 2) On every open: reset, reload data, then show
       await ensureItemMap();
       await refreshDefinitions();
+      setModeAdd();
       openModal(modal);
-      previewApi.setFromDefinition({ lootPool: [] });
-      previewApi.show();
+
+      // 3) Position preview after layout
+      formApi.initPickrs?.();
+      requestAnimationFrame(positionPreviewPanel);
     }
   };
 }
