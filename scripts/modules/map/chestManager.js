@@ -1,5 +1,5 @@
 // @file: /scripts/modules/map/chestManager.js
-// @version: 1.6 – expose createChestMarker; mimic item-popup structure in buildChestPopupHTML
+// @version: 1.7 – remove chest-popup class so .custom-popup styling applies
 
 import { createMarker } from "./markerManager.js";
 
@@ -48,11 +48,9 @@ export function createChestMarker(data, typeDef, map, layers, ctxMenu, isAdmin) 
  * Matches the item popup structure and styling.
  */
 export function buildChestPopupHTML(typeDef) {
-  // Close button icon (using markerManager's helper if available)
+  // Close button
   const closeBtn = `
-    <span class="popup-close-btn">
-      ✖
-    </span>`;
+    <span class="popup-close-btn">✖</span>`;
 
   // Header image
   const bigImg = typeDef.iconUrl
@@ -88,7 +86,7 @@ export function buildChestPopupHTML(typeDef) {
     .join("");
 
   return `
-    <div class="custom-popup chest-popup" style="position:relative;">
+    <div class="custom-popup" style="position:relative;">
       ${closeBtn}
       <div class="popup-header">
         <div class="popup-header-left">
