@@ -1,24 +1,26 @@
 // @file: /scripts/modules/ui/preview/chestPreview.js
-// @version: 1.4 – set explicit grid-template-columns in setFromDefinition
+// @version: 1.5 – mirror itemPreview show/hide via hidden/visible classes
 
 /**
  * Preview panel for Chest Types in the admin modal.
  * Renders the chest icon, name, and a grid of loot‐item thumbnails.
  */
 export function createChestPreviewPanel(container) {
-  // Ensure container is empty and has the correct class
+  // clear and set up classes
   container.innerHTML = "";
-  container.classList.add("chest-preview-panel");
+  container.classList.add("chest-preview-panel", "hidden");
 
-  // Create & append elements
+  // icon
   const iconEl = document.createElement("img");
   iconEl.className = "chest-preview-icon";
   container.appendChild(iconEl);
 
+  // title
   const nameEl = document.createElement("strong");
   nameEl.className = "chest-preview-name";
   container.appendChild(nameEl);
 
+  // grid container
   const gridEl = document.createElement("div");
   gridEl.className = "chest-preview-grid";
   container.appendChild(gridEl);
@@ -35,32 +37,31 @@ export function createChestPreviewPanel(container) {
      *   - maxDisplay: number of items per row (optional)
      */
     setFromDefinition(def = {}) {
-      // Icon and title
-      iconEl.src         = def.iconUrl || "";
-      nameEl.textContent = def.name     || "";
+      // icon & name
+      iconEl.src = def.iconUrl || "";
+      nameEl.textContent = def.name || "";
 
-      // Build the grid, with explicit columns
+      // build grid
       gridEl.innerHTML = "";
-      const count = def.maxDisplay || (def.lootPool || []).length || 4;
-      gridEl.style.display             = "grid";
+      const count = def.maxDisplay || (def.lootPool||[]).length || 4;
       gridEl.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
-      gridEl.style.gap                 = "4px";
 
-      (def.lootPool || []).slice(0, def.maxDisplay || (def.lootPool || []).length || 4)
-        .forEach(itemDef => {
+      (def.lootPool || [])
+        .slice(0, count)
+        .forEach(item => {
           const slot = document.createElement("div");
           slot.className = "chest-slot";
-          slot.title     = itemDef.name || "";
+          slot.title = item.name || "";
 
           const img = document.createElement("img");
-          img.src   = itemDef.imageSmall || "";
+          img.src = item.imageSmall || "";
           img.className = "chest-slot-img";
           slot.appendChild(img);
 
-          if (itemDef.quantity > 1) {
+          if (item.quantity > 1) {
             const qty = document.createElement("span");
             qty.className = "chest-slot-qty";
-            qty.textContent = itemDef.quantity;
+            qty.textContent = item.quantity;
             slot.appendChild(qty);
           }
 
@@ -69,10 +70,12 @@ export function createChestPreviewPanel(container) {
     },
 
     show() {
+      container.classList.remove("hidden");
       container.classList.add("visible");
     },
     hide() {
       container.classList.remove("visible");
+      container.classList.add("hidden");
     }
   };
 }
