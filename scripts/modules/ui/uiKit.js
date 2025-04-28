@@ -36,14 +36,14 @@ export function createModal({
   modal.classList.add("modal", `modal-${size}`);
   modal.id = id;
   // ensure modal backdrop sits above preview panels
-  modal.style.zIndex = "2000";
+  modal.style.zIndex = "9999";
   modal.style.backgroundColor = backdrop ? "rgba(0, 0, 0, 0.5)" : "transparent";
 
   // Inner content box
   const content = document.createElement("div");
   content.classList.add("modal-content");
   // ensure modal content sits above its backdrop
-  content.style.zIndex = "2001";
+  content.style.zIndex = "10001";
 
   if (size === "large") {
     Object.assign(content.style, {
