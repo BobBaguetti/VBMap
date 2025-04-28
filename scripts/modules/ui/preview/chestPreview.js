@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/preview/chestPreview.js
-// @version: 1.3 – toggle visible class on show/hide to work with CSS display rules
+// @version: 1.4 – set explicit grid-template-columns in setFromDefinition
 
 /**
  * Preview panel for Chest Types in the admin modal.
@@ -32,32 +32,40 @@ export function createChestPreviewPanel(container) {
      *   - iconUrl:    URL of the chest icon
      *   - name:       Chest name
      *   - lootPool:   Array of item‐definition objects { imageSmall, name, quantity }
+     *   - maxDisplay: number of items per row (optional)
      */
     setFromDefinition(def = {}) {
-      iconEl.src         = def.iconUrl    || "";
-      nameEl.textContent = def.name       || "";
-      
-      // Build the grid (inline cols set by caller)
+      // Icon and title
+      iconEl.src         = def.iconUrl || "";
+      nameEl.textContent = def.name     || "";
+
+      // Build the grid, with explicit columns
       gridEl.innerHTML = "";
-      (def.lootPool || []).forEach(itemDef => {
-        const slot = document.createElement("div");
-        slot.className = "chest-slot";
-        slot.title     = itemDef.name || "";
+      const count = def.maxDisplay || (def.lootPool || []).length || 4;
+      gridEl.style.display             = "grid";
+      gridEl.style.gridTemplateColumns = `repeat(${count}, 1fr)`;
+      gridEl.style.gap                 = "4px";
 
-        const img = document.createElement("img");
-        img.src   = itemDef.imageSmall || "";
-        img.className = "chest-slot-img";
-        slot.appendChild(img);
+      (def.lootPool || []).slice(0, def.maxDisplay || (def.lootPool || []).length || 4)
+        .forEach(itemDef => {
+          const slot = document.createElement("div");
+          slot.className = "chest-slot";
+          slot.title     = itemDef.name || "";
 
-        if (itemDef.quantity > 1) {
-          const qty = document.createElement("span");
-          qty.className = "chest-slot-qty";
-          qty.textContent = itemDef.quantity;
-          slot.appendChild(qty);
-        }
+          const img = document.createElement("img");
+          img.src   = itemDef.imageSmall || "";
+          img.className = "chest-slot-img";
+          slot.appendChild(img);
 
-        gridEl.appendChild(slot);
-      });
+          if (itemDef.quantity > 1) {
+            const qty = document.createElement("span");
+            qty.className = "chest-slot-qty";
+            qty.textContent = itemDef.quantity;
+            slot.appendChild(qty);
+          }
+
+          gridEl.appendChild(slot);
+        });
     },
 
     show() {
