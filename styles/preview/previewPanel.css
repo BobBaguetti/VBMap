@@ -10,20 +10,22 @@
     border-radius: 6px;
     box-shadow: 0 0 10px #000;
     padding: 8px;
-  
-    /* Make sure we float above BOTH the modal (9999) and its backdrop (9998) */
-    z-index: 1051;
-  
+
+    /* The modal container is 9999; its backdrop 9998 —
+       this needs to float above both */
+    z-index: 11050;
+
     display: none;            /* toggled by .visible */
-  }
-  
-  .preview-panel.visible { display: block; }
-  
-  /* Centers the rendered popup */
-  .preview-popup-wrapper {
+}
+
+.preview-panel.visible {
+    display: block;
+}
+
+/* Centers the rendered popup HTML */
+.preview-popup-wrapper {
     position: absolute;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     pointer-events: none;
-  }
-  
+}

@@ -1,6 +1,5 @@
-// @comment: Comments should not be deleted unless their associated code is also deleted.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.30 
+// @version: 4.31 – Delete-button hidden in Add mode, shown in Edit mode
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -29,7 +28,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   subheading.textContent = "Add Item";
   subheadingWrap.appendChild(subheading);
 
-  // "Add to filters" checkbox inline
+  // "Add to filters" checkbox
   const chkAddFilter = document.createElement("input");
   chkAddFilter.type = "checkbox";
   chkAddFilter.id   = "fld-add-to-filters";
@@ -67,7 +66,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.style.display = "none"; // hidden in Add mode
+  // Start hidden in Add mode
+  btnDelete.style.display = "none";
   btnDelete.onclick = () => {
     if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
       onDelete?.(_id);
@@ -99,7 +99,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       }
     });
   }
-
   initPickrs();
 
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
@@ -130,7 +129,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([], false);
     _id = null;
     subheading.textContent  = "Add Item";
-    btnDelete.style.display = "none";
+    btnDelete.style.display = "none";   // stay hidden in Add
     btnClear.textContent    = "Clear";
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
@@ -149,8 +148,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldImgL.value   = def.imageLarge  || "";
     fields.extraInfo.setLines(def.extraLines || [], false);
     _id = def.id || null;
+
     subheading.textContent  = "Edit Item";
-    btnDelete.style.display = "";
+    btnDelete.style.display = "";        // show in Edit
     btnClear.textContent    = "Cancel";
 
     initPickrs();
@@ -187,8 +187,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
 
   form.addEventListener("submit", async e => {
     e.preventDefault();
-    if (onSubmit) await onSubmit(getCustom());
+    await onSubmit?.(getCustom());
   });
 
-  return { form, reset, populate, getCustom, initPickrs, buttonRow };
+  return { form, reset, populate, getCustom, initPickrs };
 }
