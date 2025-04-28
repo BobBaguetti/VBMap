@@ -1,6 +1,6 @@
 // @comment: Comments should not be deleted unless their associated code is also deleted.
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.30
+// @version: 4.30 
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";

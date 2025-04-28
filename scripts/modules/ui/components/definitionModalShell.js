@@ -1,4 +1,4 @@
-// @file: /scripts/modules/ui/components/definitionModalShell.js
+// @file: /scripts/modules/ui/components/definitionModalShell.js 
 // @version: 3 — suppressed auto-show of preview, now shows only on open
 
 import { createModal, closeModal, openModal } from "../uiKit.js";

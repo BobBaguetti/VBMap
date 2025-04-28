@@ -1,5 +1,5 @@
 // @file: /scripts/modules/map/chestManager.js
-// @version: 1.8 – always render 4 slots (with placeholders) so grid never collapses
+// @version: 1.8 – always render 4 slots (with placeholders) so grid never collapses 
 
 import { createMarker } from "./markerManager.js";
 

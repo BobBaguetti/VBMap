@@ -53,7 +53,7 @@ export async function addMarker(db, markerData) {
 }
 
 /**
- * Update (merge) only defined fields of an existing marker.
+ * Update (merge) only defined fields of an existing marker. 
  */
 export async function updateMarker(db, markerData) {
   const { id, ...raw } = markerData;

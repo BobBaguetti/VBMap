@@ -1,7 +1,6 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/map/copyPasteManager.js
+// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+
 // Clipboard copy‑/paste manager with a ghost preview marker that stays active
 // until the user right‑clicks to cancel. Only free‑form markers (those not linked to a predefined item) have "(copy)" appended to their names.
 

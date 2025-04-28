@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 8 — modal creation deferred until open()
+// @version: 8 — modal creation deferred until open() 
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer }     from "../../utils/listUtils.js";

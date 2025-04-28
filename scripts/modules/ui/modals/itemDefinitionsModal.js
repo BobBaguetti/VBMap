@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
-// @version: 28 – modal creation deferred until open()
+// @version: 28 – modal creation deferred until open() 
 
 import {
   createModal,

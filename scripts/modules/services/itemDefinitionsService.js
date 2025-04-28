@@ -1,4 +1,3 @@
-// @fullfile
 // @version: 10
 // @file:    /scripts/modules/services/itemDefinitionsService.js
 

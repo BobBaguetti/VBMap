@@ -1,6 +1,5 @@
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/map/map.js
+// @version: 1 
 
 export function initializeMap() {
   // Create the map with custom settings
@@ -27,5 +26,3 @@ export function initializeMap() {
   // Return map and related configuration for use in other modules
   return { map, bounds };
 }
-
-// @version: 1

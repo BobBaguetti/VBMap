@@ -1,4 +1,4 @@
-// @version: 5
+// @version: 5 
 // @file: /scripts/modules/utils/definitionListManager.js
 
 import { renderItemEntry } from "../entries/itemEntryRenderer.js";

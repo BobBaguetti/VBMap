@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/questDefinitionsModal.js
-// @version: 8 — modal creation deferred until open()
+// @version: 8 — modal creation deferred until open() 
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { createDefListContainer }     from "../../utils/listUtils.js";

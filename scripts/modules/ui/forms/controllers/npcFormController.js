@@ -1,5 +1,5 @@
 // @version: 3
-// @file: /scripts/modules/ui/forms/controllers/npcFormController.js
+// @file: /scripts/modules/ui/forms/controllers/npcFormController.js 
 
 import { createNpcForm }     from "../builders/npcFormBuilder.js";
 import { createIcon }        from "../../../utils/iconUtils.js";

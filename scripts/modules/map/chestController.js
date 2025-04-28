@@ -1,5 +1,5 @@
 // @file: /scripts/modules/map/chestController.js
-// @version: 1.4 – unified into the markers collection
+// @version: 1.4 – unified into the markers collection 
 
 import { subscribeMarkers } from "../services/firebaseService.js";
 import {

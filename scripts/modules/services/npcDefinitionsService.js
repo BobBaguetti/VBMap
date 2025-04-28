@@ -1,5 +1,5 @@
 // @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 2
+// @version: 2 
 // @file:    /scripts/modules/services/npcDefinitionsService.js
 
 /**

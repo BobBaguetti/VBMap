@@ -1,4 +1,4 @@
-// @file: scripts/script.js
+// @file: scripts/script.js 
 // @version: 6.1 – remove old chestsService import, fix unified marker creation
 
 import { initializeApp } from "firebase/app";

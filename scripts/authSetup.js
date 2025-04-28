@@ -1,5 +1,5 @@
 // @file: /scripts/authSetup.js
-// @version: 6 – with diagnostics
+// @version: 6 – with diagnostics 
 
 import {
   getAuth,

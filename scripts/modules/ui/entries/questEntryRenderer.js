@@ -1,5 +1,5 @@
 // @version: 1
-// @file: /scripts/modules/ui/entries/questEntryRenderer.js
+// @file: /scripts/modules/ui/entries/questEntryRenderer.js 
 
 export function renderQuestEntry(def, layout = "row", { onClick, onDelete } = {}) {
     const entry = document.createElement("div");

@@ -1,4 +1,4 @@
-// @file: /scripts/modules/map/markerManager.js
+// @file: /scripts/modules/map/markerManager.js 
 // @version: 9.2
 
 import { formatRarity }     from "../utils/utils.js";

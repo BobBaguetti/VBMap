@@ -1,5 +1,5 @@
 // @file: /scripts/modules/services/chestDefinitionsService.js
-// @version: 1.0
+// @version: 1.0 
 /**
  * Firestore service for chest *definition* documents.
  * Document structure:

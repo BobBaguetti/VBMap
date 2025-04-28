@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 1.9 – serialize descriptionColor correctly and guard pickr init
+// @version: 1.9 – serialize descriptionColor correctly and guard pickr init 
 
 import { loadItemDefinitions }    from "../../../services/itemDefinitionsService.js";
 import { createChestForm }        from "../builders/chestFormBuilder.js";

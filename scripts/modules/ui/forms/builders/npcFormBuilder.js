@@ -1,5 +1,5 @@
 // @version: 3
-// @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
+// @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js 
 
 import { createNameField, createExtraInfoField } from "../universalForm.js";
 // ← fixed path: up two levels into /scripts/modules/ui, then uiKit.js

@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 1.4 – assign id to description color swatch
+// @version: 1.4 – assign id to description color swatch 
 
 import {
   createDescriptionField,

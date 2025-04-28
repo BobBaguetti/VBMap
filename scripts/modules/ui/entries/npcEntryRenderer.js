@@ -1,5 +1,5 @@
 // @version: 1
-// @file: /scripts/modules/ui/entries/npcEntryRenderer.js
+// @file: /scripts/modules/ui/entries/npcEntryRenderer.js 
 
 export function renderNpcEntry(def, layout = "row", { onClick, onDelete } = {}) {
     const entry = document.createElement("div");

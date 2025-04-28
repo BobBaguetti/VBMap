@@ -1,5 +1,5 @@
 // @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 10.1
+// @version: 10.1 
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
