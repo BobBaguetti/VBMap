@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/preview/chestPreview.js
-// @version: 1.2 – clear container before rendering
+// @version: 1.3 – toggle visible class on show/hide to work with CSS display rules
 
 /**
  * Preview panel for Chest Types in the admin modal.
@@ -31,40 +31,40 @@ export function createChestPreviewPanel(container) {
      * @param {Object} def
      *   - iconUrl:    URL of the chest icon
      *   - name:       Chest name
-     *   - lootPool:   Array of item‐definition objects { imageSmall, name }
-     *   - maxDisplay: number of items per row
+     *   - lootPool:   Array of item‐definition objects { imageSmall, name, quantity }
      */
     setFromDefinition(def = {}) {
-      // Icon and title
-      iconEl.src         = def.iconUrl || "";
-      nameEl.textContent = def.name     || "";
-
-      // Build the grid
+      iconEl.src         = def.iconUrl    || "";
+      nameEl.textContent = def.name       || "";
+      
+      // Build the grid (inline cols set by caller)
       gridEl.innerHTML = "";
-      const count = def.maxDisplay || 4;
-      gridEl.style.display             = "grid";
-      gridEl.style.gridTemplateColumns = `repeat(${count},1fr)`;
-      gridEl.style.gap                 = "4px";
-
-      (def.lootPool || []).slice(0, count).forEach(itemDef => {
+      (def.lootPool || []).forEach(itemDef => {
         const slot = document.createElement("div");
         slot.className = "chest-slot";
         slot.title     = itemDef.name || "";
 
         const img = document.createElement("img");
         img.src   = itemDef.imageSmall || "";
-        img.style.width = "100%";
-
+        img.className = "chest-slot-img";
         slot.appendChild(img);
+
+        if (itemDef.quantity > 1) {
+          const qty = document.createElement("span");
+          qty.className = "chest-slot-qty";
+          qty.textContent = itemDef.quantity;
+          slot.appendChild(qty);
+        }
+
         gridEl.appendChild(slot);
       });
     },
 
     show() {
-      container.style.display = "";
+      container.classList.add("visible");
     },
     hide() {
-      container.style.display = "none";
+      container.classList.remove("visible");
     }
   };
 }
