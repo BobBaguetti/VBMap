@@ -1,13 +1,16 @@
 // @file: /scripts/modules/services/chestDefinitionsService.js
-// @version: 1.0 
+// @version: 1.1 – added size & category to definition schema
+
 /**
  * Firestore service for chest *definition* documents.
  * Document structure:
  * {
- *   name: string,
- *   iconUrl: string,
- *   subtext?: string,
- *   lootPool: Array<string>,
+ *   name:        string,
+ *   iconUrl:     string,
+ *   subtext?:    string,
+ *   size:        "Small" | "Medium" | "Large",
+ *   category:    "Normal" | "Dragonvault",
+ *   lootPool:    Array<string>,
  *   description?: string,
  *   extraLines?: Array<{ text: string, color?: string }>
  * }
@@ -35,10 +38,11 @@ export async function loadChestDefinitions(db) {
   return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
 
-/** 
- * @param {import('firebase/firestore').Firestore} db 
- * @param {string|null} id 
- * @param {Object} payload 
+/**
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string|null} id
+ * @param {Object} payload
+ *   payload must include the fields listed above, including `size` and `category`.
  */
 export async function saveChestDefinition(db, id, payload) {
   const { id: _ignore, ...data } = payload;
@@ -52,7 +56,12 @@ export async function saveChestDefinition(db, id, payload) {
   }
 }
 
-/** @param {import('firebase/firestore').Firestore} db @param {string} id @param {Object} data */
+/**
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string} id
+ * @param {Object} data
+ *   data may include any of the documented fields (including size/category).
+ */
 export async function updateChestDefinition(db, id, data) {
   const ref = doc(db, "chestDefinitions", id);
   await setDoc(ref, data, { merge: true });
@@ -69,6 +78,7 @@ export async function deleteChestDefinition(db, id) {
  * Subscribe in real-time to all chestDefinitions
  * @param {import('firebase/firestore').Firestore} db
  * @param {(defs:Array<Object>)=>void} onUpdate
+ * @returns {() => void} unsubscribe function
  */
 export function subscribeChestDefinitions(db, onUpdate) {
   const col = getChestDefinitionsCollection(db);

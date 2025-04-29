@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 1.4 – assign id to description color swatch 
+// @version: 1.5 – add size & category fields, keep description color swatch
 
 import {
   createDescriptionField,
@@ -20,6 +20,38 @@ export function createChestForm() {
   fldName.type = "text";
   fldName.id   = "fld-chest-name";
   rowName.append(lblName, fldName);
+
+  // — Size —
+  const rowSize = document.createElement("div");
+  rowSize.classList.add("field-row");
+  const lblSize = document.createElement("label");
+  lblSize.htmlFor = "fld-chest-size";
+  lblSize.textContent = "Size";
+  const fldSize = document.createElement("select");
+  fldSize.id = "fld-chest-size";
+  ["Small", "Medium", "Large"].forEach(opt => {
+    const o = document.createElement("option");
+    o.value = opt;
+    o.textContent = opt;
+    fldSize.appendChild(o);
+  });
+  rowSize.append(lblSize, fldSize);
+
+  // — Category —
+  const rowCat = document.createElement("div");
+  rowCat.classList.add("field-row");
+  const lblCat = document.createElement("label");
+  lblCat.htmlFor = "fld-chest-category";
+  lblCat.textContent = "Category";
+  const fldCategory = document.createElement("select");
+  fldCategory.id = "fld-chest-category";
+  ["Normal", "Dragonvault"].forEach(opt => {
+    const o = document.createElement("option");
+    o.value = opt;
+    o.textContent = opt;
+    fldCategory.appendChild(o);
+  });
+  rowCat.append(lblCat, fldCategory);
 
   // — Icon URL —
   const rowIcon = document.createElement("div");
@@ -65,9 +97,11 @@ export function createChestForm() {
   rowLoot.append(lblLoot, chipContainer, openLootPicker);
 
   // — Description —
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
-    createDescriptionField();
-  // **give the swatch an ID so Pickr can find it**
+  const {
+    row: rowDesc,
+    textarea: fldDesc,
+    colorBtn: colorDesc
+  } = createDescriptionField();
   colorDesc.id = "fld-chest-desc-color";
   colorDesc.classList.add("color-swatch");
 
@@ -75,16 +109,27 @@ export function createChestForm() {
   const { row: rowExtras, extraInfo } =
     createExtraInfoField({ withDividers: true });
 
-  // assemble
-  form.append(rowName, rowIcon, rowSub, rowLoot, rowDesc, rowExtras);
+  // assemble the form in logical order
+  form.append(
+    rowName,
+    rowSize,
+    rowCat,
+    rowIcon,
+    rowSub,
+    rowLoot,
+    rowDesc,
+    rowExtras
+  );
 
   return {
     form,
     fields: {
       fldName,
-      fldIconUrl:       fldIcon,
-      fldSubtext:       fldSub,
-      lootPool:         [],
+      fldSize,
+      fldCategory,
+      fldIconUrl:  fldIcon,
+      fldSubtext:  fldSub,
+      lootPool:    [],
       openLootPicker,
       chipContainer,
       fldDesc,

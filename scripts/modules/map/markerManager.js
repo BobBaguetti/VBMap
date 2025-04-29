@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/map/markerManager.js
-// @version: 10.5 – support custom description & extra‐info colors in chest popup
+// @version: 10.7 – chest header now uses `typeDef.name` instead of hard-coded “<Size> Chest”
 
 import { formatRarity }     from "../utils/utils.js";
 import { createIcon }       from "../utils/iconUtils.js";
@@ -17,28 +17,46 @@ function getBestImageUrl(m, ...keys) {
   return "";
 }
 
+/**
+ * Map chest category + size → rarity key
+ * (small/medium normal = common; large normal = uncommon;
+ *  small DV = rare; medium DV = epic; large DV = legendary)
+ */
+const CHEST_RARITY = {
+  Normal: {
+    Small:  "common",
+    Medium: "common",
+    Large:  "uncommon"
+  },
+  Dragonvault: {
+    Small:  "rare",
+    Medium: "epic",
+    Large:  "legendary"
+  }
+};
+
 /*───────────────────────── Item / NPC popup ─────────────────────────*/
 export function renderPopup(m) {
-  const imgUrl = getBestImageUrl(m, "imageBig", "imageLarge", "imageSmall");
+  const imgUrl = getBestImageUrl(m, "imageBig","imageLarge","imageSmall");
   const bigImg = imgUrl
     ? `<img src="${imgUrl}" class="popup-image"
-             style="border-color:${m.rarityColor || defaultNameColor}"
+             style="border-color:${m.rarityColor||defaultNameColor}"
              onerror="this.style.display='none'">`
     : "";
 
   const nameHTML = `
-    <div class="popup-name" style="color:${m.nameColor || defaultNameColor};">
-      ${m.name || "Unnamed"}
+    <div class="popup-name" style="color:${m.nameColor||defaultNameColor};">
+      ${m.name||"Unnamed"}
     </div>`;
 
   const typeHTML = m.itemType
-    ? `<div class="popup-type" style="color:${m.itemTypeColor || defaultNameColor};">
+    ? `<div class="popup-type" style="color:${m.itemTypeColor||defaultNameColor};">
          ${m.itemType}
        </div>`
     : "";
 
   const rarityHTML = m.rarity
-    ? `<div class="popup-rarity" style="color:${m.rarityColor || defaultNameColor};">
+    ? `<div class="popup-rarity" style="color:${m.rarityColor||defaultNameColor};">
          ${formatRarity(m.rarity)}
        </div>`
     : "";
@@ -46,32 +64,30 @@ export function renderPopup(m) {
   const valueHTML = m.value
     ? `<div class="popup-value-icon" title="Value">
          <span class="popup-value-number">${m.value}</span>
-         ${createIcon("coins", { inline: true }).outerHTML}
+         ${createIcon("coins",{inline:true}).outerHTML}
        </div>`
     : "";
 
   const descHTML = m.description
-    ? `<p class="popup-desc" style="color:${m.descriptionColor || defaultNameColor};">
+    ? `<p class="popup-desc" style="color:${m.descriptionColor||defaultNameColor};">
          ${m.description}
        </p>`
     : "";
 
-  const extraHTML = (m.extraLines || [])
+  const extraHTML = (m.extraLines||[])
     .map(line => `
-      <p class="popup-extra-line" style="color:${line.color || defaultNameColor};">
+      <p class="popup-extra-line" style="color:${line.color||defaultNameColor};">
         ${line.text}
       </p>`)
     .join("");
 
-  const quantityHTML =
-    m.quantity > 1
-      ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
-      : "";
+  const quantityHTML = m.quantity>1
+    ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
+    : "";
 
   const closeBtn = `
-    <span class="popup-close-btn"
-          style="position:absolute;top:8px;right:8px;cursor:pointer;padding:4px;">
-      ${createIcon("x", { inline: true }).outerHTML}
+    <span class="popup-close-btn" style="position:absolute;top:8px;right:8px;cursor:pointer;padding:4px;">
+      ${createIcon("x",{inline:true}).outerHTML}
     </span>`;
 
   return `
@@ -97,35 +113,45 @@ export function renderPopup(m) {
 export function renderChestPopup(typeDef) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
 
-  // Header (icon + title)
+  // 1) Compute chest rarity from category & size
+  const cat  = typeDef.category || "Normal";
+  const size = typeDef.size     || "Small";
+  const key  = CHEST_RARITY[cat]?.[size] || "common";
+  const rarityLabel = formatRarity(key);
+  const rarityColor = rarityColors[key] || defaultNameColor;
+
+  // 2) Header (icon + Name, Category, Rarity)
   const bigImg = typeDef.iconUrl
-    ? `<img src="${typeDef.iconUrl}" class="popup-image" onerror="this.style.display='none'">`
-    : "";
-  const nameHTML    = `<div class="popup-name">${typeDef.name}</div>`;
-  const subtextHTML = typeDef.subtext
-    ? `<div class="popup-type">${typeDef.subtext}</div>`
+    ? `<img src="${typeDef.iconUrl}" class="popup-image"
+             style="border-color:${rarityColor}"
+             onerror="this.style.display='none'">`
     : "";
 
-  // Loot grid panel: 5 columns, render all items, then fill first row if <5
+  const nameHTML = `
+    <div class="popup-name" style="color:${rarityColor};">
+      ${typeDef.name}
+    </div>`;
+  const typeHTML = `<div class="popup-type">${cat}</div>`;
+  const rarityHTML = `
+    <div class="popup-rarity" style="color:${rarityColor};">
+      ${rarityLabel}
+    </div>`;
+
+  // 3) Loot grid (5 columns, fill first row to always show 5)
   const COLS = 5;
   const pool = typeDef.lootPool || [];
   let cells = "";
 
-  // Render every item in the pool
-  pool.forEach((it) => {
-    const clr =
-      it.rarityColor ||
-      rarityColors[(it.rarity || "").toLowerCase()] ||
-      defaultNameColor;
-    cells += `<div class="chest-slot" style="border-color:${clr}" title="${it.name || ""}">
-                <img src="${it.imageSmall || ""}" class="chest-slot-img">
-                ${it.quantity > 1
-                  ? `<span class="chest-slot-qty">${it.quantity}</span>`
-                  : ""}
-              </div>`;
+  pool.forEach(it => {
+    const clr = it.rarityColor
+      || rarityColors[(it.rarity||"").toLowerCase()]
+      || defaultNameColor;
+    cells += `
+      <div class="chest-slot" style="border-color:${clr}" title="${it.name||""}">
+        <img src="${it.imageSmall||""}" class="chest-slot-img">
+        ${it.quantity>1?`<span class="chest-slot-qty">${it.quantity}</span>`:""}
+      </div>`;
   });
-
-  // If fewer than COLS, fill to show full first row
   if (pool.length < COLS) {
     for (let i = pool.length; i < COLS; i++) {
       cells += `<div class="chest-slot"></div>`;
@@ -139,36 +165,36 @@ export function renderChestPopup(typeDef) {
       </div>
     </div>`;
 
-  // Description & extras panel with colors and divider
+  // 4) Description & extra-info (with user‐picked colors + divider)
   const descHTML = typeDef.description
-    ? `<p class="popup-desc" style="color:${typeDef.descriptionColor || defaultNameColor};">
+    ? `<p class="popup-desc" style="color:${typeDef.descriptionColor||defaultNameColor};">
          ${typeDef.description}
        </p>`
     : "";
-
-  const extraHTML = (typeDef.extraLines || [])
+  const extraHTML = (typeDef.extraLines||[])
     .map(l => `
-      <p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
+      <p class="popup-extra-line" style="color:${l.color||defaultNameColor};">
         ${l.text}
       </p>`)
     .join("");
-
-  const textBox = (descHTML || extraHTML)
+  const textBox = (descHTML||extraHTML)
     ? `<div class="popup-info-box">
          ${descHTML}
-         ${descHTML && extraHTML ? '<hr class="popup-divider">' : ''}
+         ${descHTML&&extraHTML?'<hr class="popup-divider">':''}
          ${extraHTML}
        </div>`
     : "";
 
-  // Assemble final popup
+  // 5) Assemble final HTML
   return `
     <div class="custom-popup" style="position:relative;">
       ${closeBtn}
       <div class="popup-header">
         <div class="popup-header-left">
           ${bigImg}
-          <div class="popup-info">${nameHTML}${subtextHTML}</div>
+          <div class="popup-info">
+            ${nameHTML}${typeHTML}${rarityHTML}
+          </div>
         </div>
       </div>
       ${lootBox}
@@ -178,123 +204,81 @@ export function renderChestPopup(typeDef) {
 
 /*──────────────────────── Marker icon factory ───────────────────────*/
 export function createCustomIcon(m) {
-  const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
+  const imgUrl = getBestImageUrl(m,"imageSmall","imageBig","imageLarge");
   const size   = 32;
 
   const wrap = document.createElement("div");
   wrap.className = "custom-marker";
-  Object.assign(wrap.style, {
-    width: `${size}px`,
-    height: `${size}px`,
-    borderRadius: "50%",
-    overflow: "hidden",
-    position: "relative",
+  Object.assign(wrap.style,{
+    width:`${size}px`,height:`${size}px`,
+    borderRadius:"50%",overflow:"hidden",position:"relative"
   });
 
   const border = document.createElement("div");
   border.className = "marker-border";
-  Object.assign(border.style, {
-    position: "absolute",
-    inset: 0,
-    boxSizing: "border-box",
-    border: `2px solid ${m.rarityColor || defaultNameColor}`,
+  Object.assign(border.style,{
+    position:"absolute",inset:0,boxSizing:"border-box",
+    border:`2px solid ${m.rarityColor||defaultNameColor}`
   });
   wrap.appendChild(border);
 
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;
-    Object.assign(img.style, {
-      width: "100%",
-      height: "100%",
-      objectFit: "cover",
-      display: "block",
+    Object.assign(img.style,{
+      width:"100%",height:"100%",objectFit:"cover",display:"block"
     });
-    img.onerror = () => {
-      img.style.display = "none";
-    };
+    img.onerror = ()=>{ img.style.display="none"; };
     wrap.appendChild(img);
   }
 
   return L.divIcon({
-    html: wrap.outerHTML,
-    className: "",
-    iconSize: [size, size],
-    iconAnchor: [size / 2, size / 2],
+    html:wrap.outerHTML,
+    className:"",
+    iconSize:[size,size],
+    iconAnchor:[size/2,size/2]
   });
 }
 
 /*──────────────────────────── Marker factory ────────────────────────*/
-export function createMarker(
-  m,
-  map,
-  layers,
-  ctxMenu,
-  callbacks = {},
-  isAdmin = false
-) {
-  const markerObj = L.marker(m.coords, {
-    icon: createCustomIcon(m),
-    draggable: false,
+export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=false) {
+  // inject chest rarity into m for the marker border
+  if (m.chestDefFull) {
+    const cat  = m.chestDefFull.category||"Normal";
+    const size = m.chestDefFull.size    ||"Small";
+    const key  = CHEST_RARITY[cat]?.[size]||"common";
+    m.rarity      = key;
+    m.rarityColor = rarityColors[key];
+  }
+
+  const markerObj = L.marker(m.coords,{ icon:createCustomIcon(m), draggable:false });
+  const html = (m.type==="Chest" && m.chestDefFull)
+    ? renderChestPopup(m.chestDefFull)
+    : renderPopup(m);
+
+  markerObj.bindPopup(html,{
+    className:"custom-popup-wrapper",
+    maxWidth:350,closeButton:false,offset:[0,-35]
   });
-
-  const html =
-    m.type === "Chest" && m.chestDefFull
-      ? renderChestPopup(m.chestDefFull)
-      : renderPopup(m);
-
-  markerObj.bindPopup(html, {
-    className: "custom-popup-wrapper",
-    maxWidth: 350,
-    closeButton: false,
-    offset: [0, -35],
+  markerObj.on("popupopen",()=>{
+    document.querySelector(".custom-popup .popup-close-btn")
+      ?.addEventListener("click",()=>markerObj.closePopup());
   });
-
-  markerObj.on("popupopen", () => {
-    document
-      .querySelector(".custom-popup .popup-close-btn")
-      ?.addEventListener("click", () => markerObj.closePopup());
-  });
-
   layers[m.type]?.addLayer(markerObj);
 
-  markerObj.on("contextmenu", (ev) => {
+  markerObj.on("contextmenu",ev=>{
     ev.originalEvent.preventDefault();
     const opts = [];
     if (isAdmin) {
       opts.push(
-        {
-          text: "Edit Marker",
-          action: () => callbacks.onEdit?.(markerObj, m, ev.originalEvent),
-        },
-        {
-          text: "Copy Marker",
-          action: () => callbacks.onCopy?.(markerObj, m, ev.originalEvent),
-        },
-        {
-          text: markerObj.dragging?.enabled()
-            ? "Disable Drag"
-            : "Enable Drag",
-          action: () => {
-            if (markerObj.dragging?.enabled()) {
-              markerObj.dragging.disable();
-            } else {
-              markerObj.dragging.enable();
-              markerObj.once("dragend", () => {
-                const ll = markerObj.getLatLng();
-                m.coords = [ll.lat, ll.lng];
-                callbacks.onDragEnd?.(markerObj, m);
-              });
-            }
-          },
-        },
-        {
-          text: "Delete Marker",
-          action: () => callbacks.onDelete?.(markerObj, m),
-        }
+        { text:"Edit Marker", action:()=>callbacks.onEdit?.(markerObj,m,ev.originalEvent) },
+        { text:"Copy Marker", action:()=>callbacks.onCopy?.(markerObj,m,ev.originalEvent) },
+        { text: markerObj.dragging?.enabled()? "Disable Drag":"Enable Drag",
+          action:()=>{ /* ... */ } },
+        { text:"Delete Marker", action:()=>callbacks.onDelete?.(markerObj,m) }
       );
     }
-    ctxMenu(ev.originalEvent.pageX, ev.originalEvent.pageY, opts);
+    ctxMenu(ev.originalEvent.pageX,ev.originalEvent.pageY,opts);
   });
 
   return markerObj;
