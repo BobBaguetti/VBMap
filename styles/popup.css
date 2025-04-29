@@ -1,4 +1,4 @@
-/* @version: 23 */
+/* @version: 24 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
@@ -140,11 +140,11 @@
   margin-top: 7px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 2px;           /* tightened from 4px */
 }
 
 .popup-body p {
-  margin: 2px 0;
+  margin: 1px 0;      /* tightened from 2px */
   font-weight: 420;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
@@ -173,7 +173,7 @@
   border: none;
   height: 1px;
   background: #444;
-  margin: 4px 0; /* tightened from 6px to 4px */
+  margin: 2px 0;      /* tightened from 6px */
 }
 
 /* Close Button */
@@ -274,5 +274,5 @@
 
 /* Text panel gap now matches item markers */
 .custom-popup > .popup-info-box:not(.loot-box) {
-  gap: 4px !important;
+  gap: 2px !important; /* tightened from 1px */
 }
