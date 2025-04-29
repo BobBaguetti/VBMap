@@ -1,4 +1,4 @@
-/* @version: 25 */
+/* @version: 26 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
@@ -7,6 +7,7 @@
 .leaflet-container {
   background-color: #1a1a1a !important;
 }
+
 .leaflet-popup {
   background: none !important;
   border: none !important;
@@ -15,6 +16,7 @@
   margin: 0 !important;
   padding: 0 !important;
 }
+
 .leaflet-popup-content-wrapper {
   background: transparent !important;
   border: none !important;
@@ -23,11 +25,13 @@
   margin: 0 !important;
   border-radius: 0 !important;
 }
+
 .leaflet-popup-content {
   width: auto !important;
   padding: 0 !important;
   margin: 0 !important;
 }
+
 .leaflet-popup-tip-container,
 .leaflet-popup-tip {
   display: none !important;
@@ -130,11 +134,11 @@
   margin-top: 7px;
   display: flex;
   flex-direction: column;
-  gap: 1px;           /* tightened from 2px */
+  gap: 1px;           /* tight vertical gap */
 }
 .popup-body p {
-  margin: 0;          /* no extra margin */
-  padding: 2px 0;     /* small vertical padding */
+  margin: 0;
+  padding: 2px 0;
   font-weight: 420;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
@@ -161,7 +165,7 @@
   border: none;
   height: 1px;
   background: #444;
-  margin: 2px 0;      /* tightened from 2px top/bottom */
+  margin: 1px 0;      /* minimal gap */
 }
 
 /* Close Button */
@@ -249,7 +253,11 @@
   height: 0;
 }
 
-/* Text panel gap now matches item markers */
+/* Text panel gap and tight paragraphs */
 .custom-popup > .popup-info-box:not(.loot-box) {
-  gap: 1px !important; /* tightened from 2px */
+  gap: 1px !important;  /* very tight vertical gap */
+}
+.custom-popup > .popup-info-box:not(.loot-box) p {
+  margin: 0;
+  padding: 2px 0;
 }
