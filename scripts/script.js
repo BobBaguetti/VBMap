@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7  – chest markers routed through markerManager; legacy files removed
+// @version: 8 – improved delete‐marker error handling
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -108,13 +108,12 @@ onAuthStateChanged(auth, async user=>{
           Object.assign(data, def);
           markerObj.setIcon(createCustomIcon(data));
           markerObj.setPopupContent(renderPopup(data));
-          if (isAdmin) firebaseUpdateMarker(db, data).catch(()=>{});
+          if (isAdmin) firebaseUpdateMarker(db, data).catch(console.error);
         } else if (data.type === "Chest") {
           const def = chestDefMap[data.chestTypeId] || { lootPool: [] };
           const fullDef = {
             ...def,
-            lootPool:(def.lootPool||[])
-              .map(id=>itemDefMap[id]).filter(Boolean)
+            lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
           };
           markerObj.setPopupContent(renderChestPopup(fullDef));
         }
@@ -177,8 +176,8 @@ function addMarker(data, cbs={}) {
   const markerObj = createMarker(
     data, map, layers, showContextMenu, cbs, isAdmin
   );
-  (clusterItemLayer.hasLayer(markerObj) ? clusterItemLayer : flatItemLayer)
-    .addLayer(markerObj);
+  // cluster vs flat (clusters currently unused, so always flat)
+  flatItemLayer.addLayer(markerObj);
   allMarkers.push({ markerObj, data });
   return markerObj;
 }
@@ -191,19 +190,28 @@ const callbacks = {
                    ? renderChestPopup(updated.chestDefFull||{})
                    : renderPopup(updated)
                );
-               firebaseUpdateMarker(db, updated).catch(()=>{});
+               firebaseUpdateMarker(db, updated).catch(console.error);
              }),
   onCopy:    (_,d)=>copyMgr.startCopy(d),
-  onDragEnd: (_,d)=>firebaseUpdateMarker(db,d).catch(()=>{}),
+  onDragEnd: (_,d)=>firebaseUpdateMarker(db,d).catch(console.error),
   onDelete:  (m,d)=>{
+               // first remove from map & local array
                layers[d.type].removeLayer(m);
-               const idx=allMarkers.findIndex(o=>o.data.id===d.id);
-               if(idx!==-1) allMarkers.splice(idx,1);
-               if(d.id) firebaseDeleteMarker(db,d.id).catch(()=>{});
+               const idx = allMarkers.findIndex(o=>o.data.id===d.id);
+               if (idx !== -1) allMarkers.splice(idx,1);
+
+               // then delete from Firestore, but now log any errors
+               if (d.id) {
+                 firebaseDeleteMarker(db, d.id)
+                   .catch(err => {
+                     console.error("Failed to delete marker:", err);
+                     alert("Error deleting marker: " + err.message);
+                   });
+               }
              }
 };
 
-/* ───────────────── Context-menu & scrollbars ───────────────────────*/
+/* ───────────────── Context-menu & scrollbars ─────────────────────── */
 map.on("contextmenu", evt=>{
   if (!document.body.classList.contains("is-admin")) return;
   showContextMenu(evt.originalEvent.pageX,evt.originalEvent.pageY,[{
