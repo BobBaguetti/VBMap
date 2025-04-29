@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/map/markerManager.js
-// @version: 10.1 – chest-slot borders now use rarityColors (same as item markers)
+// @version: 10.3 – chest popup now renders extra rows of 5 slots
 
 import { formatRarity }     from "../utils/utils.js";
 import { createIcon }       from "../utils/iconUtils.js";
@@ -65,7 +65,10 @@ export function renderPopup(m) {
     )
     .join("");
 
-  const quantityHTML = m.quantity > 1 ? `<p class="popup-meta">Quantity: ${m.quantity}</p>` : "";
+  const quantityHTML =
+    m.quantity > 1
+      ? `<p class="popup-meta">Quantity: ${m.quantity}</p>`
+      : "";
 
   const closeBtn = `
     <span class="popup-close-btn"
@@ -96,34 +99,40 @@ export function renderPopup(m) {
 export function renderChestPopup(typeDef) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
 
-  // ─── Header (icon + title) ────────────────────────────────────────
-  const bigImg     = typeDef.iconUrl
+  // Header (icon + title)
+  const bigImg = typeDef.iconUrl
     ? `<img src="${typeDef.iconUrl}" class="popup-image" onerror="this.style.display='none'">`
     : "";
-  const nameHTML   = `<div class="popup-name">${typeDef.name}</div>`;
-  const subtextHTML= typeDef.subtext
+  const nameHTML = `<div class="popup-name">${typeDef.name}</div>`;
+  const subtextHTML = typeDef.subtext
     ? `<div class="popup-type">${typeDef.subtext}</div>`
     : "";
 
-  // ─── Loot grid panel ──────────────────────────────────────────────
+  // Loot grid panel: 5 columns, render all items, then fill first row if <5
   const COLS = 5;
   const pool = typeDef.lootPool || [];
-  let   cells = "";
+  let cells = "";
 
-  for (let i = 0; i < COLS; i++) {
-    const it = pool[i];
-    if (!it) {
-      cells += `<div class="chest-slot"></div>`;
-      continue;
-    }
-    const clr = it.rarityColor
-              || rarityColors[(it.rarity||"").toLowerCase()]
-              || defaultNameColor;
-
-    cells += `<div class="chest-slot" style="border-color:${clr}" title="${it.name||""}">
-                <img src="${it.imageSmall||""}" class="chest-slot-img">
-                ${it.quantity>1 ? `<span class="chest-slot-qty">${it.quantity}</span>` : ""}
+  // 1) Render every item in the pool
+  pool.forEach((it) => {
+    const clr =
+      it.rarityColor ||
+      rarityColors[(it.rarity || "").toLowerCase()] ||
+      defaultNameColor;
+    cells += `<div class="chest-slot" style="border-color:${clr}" title="${it.name ||
+      ""}">
+                <img src="${it.imageSmall || ""}" class="chest-slot-img">
+                ${it.quantity > 1
+                  ? `<span class="chest-slot-qty">${it.quantity}</span>`
+                  : ""}
               </div>`;
+  });
+
+  // 2) If fewer than 5, fill to COLS so grid always shows full first row
+  if (pool.length < COLS) {
+    for (let i = pool.length; i < COLS; i++) {
+      cells += `<div class="chest-slot"></div>`;
+    }
   }
 
   const lootBox = `
@@ -133,18 +142,19 @@ export function renderChestPopup(typeDef) {
       </div>
     </div>`;
 
-  // ─── Description & extras panel ──────────────────────────────────
-  const descHTML  = typeDef.description
+  // Description & extras panel
+  const descHTML = typeDef.description
     ? `<p class="popup-desc">${typeDef.description}</p>`
     : "";
-  const extraHTML = (typeDef.extraLines||[])
-    .map(l => `<p class="popup-extra-line">${l.text}</p>`)
+  const extraHTML = (typeDef.extraLines || [])
+    .map((l) => `<p class="popup-extra-line">${l.text}</p>`)
     .join("");
-  const textBox   = descHTML||extraHTML
-    ? `<div class="popup-info-box">${descHTML}${extraHTML}</div>`
-    : "";
+  const textBox =
+    descHTML || extraHTML
+      ? `<div class="popup-info-box">${descHTML}${extraHTML}</div>`
+      : "";
 
-  // ─── Assemble final popup HTML ───────────────────────────────────
+  // Assemble final popup
   return `
     <div class="custom-popup" style="position:relative;">
       ${closeBtn}
@@ -208,11 +218,23 @@ export function createCustomIcon(m) {
 }
 
 /*──────────────────────────── Marker factory ────────────────────────*/
-export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = false) {
-  const markerObj = L.marker(m.coords, { icon: createCustomIcon(m), draggable: false });
+export function createMarker(
+  m,
+  map,
+  layers,
+  ctxMenu,
+  callbacks = {},
+  isAdmin = false
+) {
+  const markerObj = L.marker(m.coords, {
+    icon: createCustomIcon(m),
+    draggable: false,
+  });
 
-  /* choose popup html */
-  const html = m.type === "Chest" && m.chestDefFull ? renderChestPopup(m.chestDefFull) : renderPopup(m);
+  const html =
+    m.type === "Chest" && m.chestDefFull
+      ? renderChestPopup(m.chestDefFull)
+      : renderPopup(m);
 
   markerObj.bindPopup(html, {
     className: "custom-popup-wrapper",
@@ -222,7 +244,9 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
   });
 
   markerObj.on("popupopen", () => {
-    document.querySelector(".custom-popup .popup-close-btn")?.addEventListener("click", () => markerObj.closePopup());
+    document
+      .querySelector(".custom-popup .popup-close-btn")
+      ?.addEventListener("click", () => markerObj.closePopup());
   });
 
   layers[m.type]?.addLayer(markerObj);
@@ -232,10 +256,18 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
     const opts = [];
     if (isAdmin) {
       opts.push(
-        { text: "Edit Marker", action: () => callbacks.onEdit?.(markerObj, m, ev.originalEvent) },
-        { text: "Copy Marker", action: () => callbacks.onCopy?.(markerObj, m, ev.originalEvent) },
         {
-          text: markerObj.dragging?.enabled() ? "Disable Drag" : "Enable Drag",
+          text: "Edit Marker",
+          action: () => callbacks.onEdit?.(markerObj, m, ev.originalEvent),
+        },
+        {
+          text: "Copy Marker",
+          action: () => callbacks.onCopy?.(markerObj, m, ev.originalEvent),
+        },
+        {
+          text: markerObj.dragging?.enabled()
+            ? "Disable Drag"
+            : "Enable Drag",
           action: () => {
             if (markerObj.dragging?.enabled()) {
               markerObj.dragging.disable();
