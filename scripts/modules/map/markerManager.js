@@ -96,45 +96,55 @@ export function renderPopup(m) {
 export function renderChestPopup(typeDef) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
 
-  const bigImg = typeDef.iconUrl
-    ? `<img src="${typeDef.iconUrl}"
-            class="popup-image"
-            onerror="this.style.display='none'">`
+  // ─── Header (icon + title) ────────────────────────────────────────
+  const bigImg     = typeDef.iconUrl
+    ? `<img src="${typeDef.iconUrl}" class="popup-image" onerror="this.style.display='none'">`
+    : "";
+  const nameHTML   = `<div class="popup-name">${typeDef.name}</div>`;
+  const subtextHTML= typeDef.subtext
+    ? `<div class="popup-type">${typeDef.subtext}</div>`
     : "";
 
-  const nameHTML = `<div class="popup-name">${typeDef.name}</div>`;
-  const subtextHTML = typeDef.subtext ? `<div class="popup-type">${typeDef.subtext}</div>` : "";
-
-  const cols = 4;
-  let markup = "";
+  // ─── Loot grid panel ──────────────────────────────────────────────
+  const COLS = 4;
   const pool = typeDef.lootPool || [];
+  let   cells = "";
 
-  for (let i = 0; i < cols; i++) {
-    const item = pool[i];
-    if (!item) {
-      markup += `<div class="chest-slot"></div>`;
+  for (let i = 0; i < COLS; i++) {
+    const it = pool[i];
+    if (!it) {
+      cells += `<div class="chest-slot"></div>`;
       continue;
     }
+    const clr = it.rarityColor
+              || rarityColors[(it.rarity||"").toLowerCase()]
+              || defaultNameColor;
 
-    const clr =
-      item.rarityColor ||
-      rarityColors[(item.rarity || "").toLowerCase()] ||
-      defaultNameColor;
-
-    markup += `
-      <div class="chest-slot" style="border-color:${clr}" title="${item.name || ""}">
-        <img src="${item.imageSmall || ""}" class="chest-slot-img">
-        ${item.quantity > 1 ? `<span class="chest-slot-qty">${item.quantity}</span>` : ""}
-      </div>`;
+    cells += `<div class="chest-slot" style="border-color:${clr}" title="${it.name||""}">
+                <img src="${it.imageSmall||""}" class="chest-slot-img">
+                ${it.quantity>1 ? `<span class="chest-slot-qty">${it.quantity}</span>` : ""}
+              </div>`;
   }
 
-  const gridHTML = `<div class="chest-grid" style="--cols:${cols};">${markup}</div>`;
+  const lootBox = `
+    <div class="popup-info-box loot-box">
+      <div class="chest-grid" style="--cols:${COLS};">
+        ${cells}
+      </div>
+    </div>`;
 
-  const descHTML = typeDef.description ? `<p class="popup-desc">${typeDef.description}</p>` : "";
-  const extraHTML = (typeDef.extraLines || [])
-    .map((l) => `<p class="popup-extra-line">${l.text}</p>`)
+  // ─── Description & extras panel ──────────────────────────────────
+  const descHTML  = typeDef.description
+    ? `<p class="popup-desc">${typeDef.description}</p>`
+    : "";
+  const extraHTML = (typeDef.extraLines||[])
+    .map(l => `<p class="popup-extra-line">${l.text}</p>`)
     .join("");
+  const textBox   = descHTML||extraHTML
+    ? `<div class="popup-info-box">${descHTML}${extraHTML}</div>`
+    : "";
 
+  // ─── Assemble final popup HTML ───────────────────────────────────
   return `
     <div class="custom-popup" style="position:relative;">
       ${closeBtn}
@@ -144,11 +154,8 @@ export function renderChestPopup(typeDef) {
           <div class="popup-info">${nameHTML}${subtextHTML}</div>
         </div>
       </div>
-      <div class="popup-body popup-info-box">
-        ${gridHTML}
-        ${descHTML ? `<hr class="popup-divider">${descHTML}` : ""}
-        ${extraHTML}
-      </div>
+      ${lootBox}
+      ${textBox}
     </div>`;
 }
 
