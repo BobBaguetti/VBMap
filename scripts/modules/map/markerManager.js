@@ -106,7 +106,7 @@ export function renderChestPopup(typeDef) {
     : "";
 
   // ─── Loot grid panel ──────────────────────────────────────────────
-  const COLS = 4;
+  const COLS = 5;
   const pool = typeDef.lootPool || [];
   let   cells = "";
 
