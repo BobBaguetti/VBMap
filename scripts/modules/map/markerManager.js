@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/map/markerManager.js
-// @version: 10.7 – chest header now uses `typeDef.name` instead of hard-coded “<Size> Chest”
+// @version: 10.8 – chest-slot hover now shows item preview
 
 import { formatRarity }     from "../utils/utils.js";
 import { createIcon }       from "../utils/iconUtils.js";
@@ -142,19 +142,20 @@ export function renderChestPopup(typeDef) {
   const pool = typeDef.lootPool || [];
   let cells = "";
 
-  pool.forEach(it => {
+  pool.forEach((it, idx) => {
     const clr = it.rarityColor
       || rarityColors[(it.rarity||"").toLowerCase()]
       || defaultNameColor;
     cells += `
-      <div class="chest-slot" style="border-color:${clr}" title="${it.name||""}">
+      <div class="chest-slot" data-index="${idx}"
+           style="border-color:${clr}" title="${it.name||""}">
         <img src="${it.imageSmall||""}" class="chest-slot-img">
         ${it.quantity>1?`<span class="chest-slot-qty">${it.quantity}</span>`:""}
       </div>`;
   });
   if (pool.length < COLS) {
     for (let i = pool.length; i < COLS; i++) {
-      cells += `<div class="chest-slot"></div>`;
+      cells += `<div class="chest-slot" data-index=""></div>`;
     }
   }
 
@@ -165,7 +166,7 @@ export function renderChestPopup(typeDef) {
       </div>
     </div>`;
 
-  // 4) Description & extra-info (with user‐picked colors + divider)
+  // 4) Description & extra-info (with user-picked colors + divider)
   const descHTML = typeDef.description
     ? `<p class="popup-desc" style="color:${typeDef.descriptionColor||defaultNameColor};">
          ${typeDef.description}
@@ -204,39 +205,47 @@ export function renderChestPopup(typeDef) {
 
 /*──────────────────────── Marker icon factory ───────────────────────*/
 export function createCustomIcon(m) {
-  const imgUrl = getBestImageUrl(m,"imageSmall","imageBig","imageLarge");
+  const imgUrl = getBestImageUrl(m, "imageSmall","imageBig","imageLarge");
   const size   = 32;
 
   const wrap = document.createElement("div");
   wrap.className = "custom-marker";
-  Object.assign(wrap.style,{
-    width:`${size}px`,height:`${size}px`,
-    borderRadius:"50%",overflow:"hidden",position:"relative"
+  Object.assign(wrap.style, {
+    width: `${size}px`,
+    height: `${size}px`,
+    borderRadius: "50%",
+    overflow: "hidden",
+    position: "relative"
   });
 
   const border = document.createElement("div");
   border.className = "marker-border";
-  Object.assign(border.style,{
-    position:"absolute",inset:0,boxSizing:"border-box",
-    border:`2px solid ${m.rarityColor||defaultNameColor}`
+  Object.assign(border.style, {
+    position: "absolute",
+    inset: 0,
+    boxSizing: "border-box",
+    border: `2px solid ${m.rarityColor||defaultNameColor}`
   });
   wrap.appendChild(border);
 
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;
-    Object.assign(img.style,{
-      width:"100%",height:"100%",objectFit:"cover",display:"block"
+    Object.assign(img.style, {
+      width: "100%",
+      height: "100%",
+      objectFit: "cover",
+      display: "block"
     });
-    img.onerror = ()=>{ img.style.display="none"; };
+    img.onerror = () => { img.style.display = "none"; };
     wrap.appendChild(img);
   }
 
   return L.divIcon({
-    html:wrap.outerHTML,
-    className:"",
-    iconSize:[size,size],
-    iconAnchor:[size/2,size/2]
+    html: wrap.outerHTML,
+    className: "",
+    iconSize: [size, size],
+    iconAnchor: [size / 2, size / 2]
   });
 }
 
@@ -251,34 +260,61 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
     m.rarityColor = rarityColors[key];
   }
 
-  const markerObj = L.marker(m.coords,{ icon:createCustomIcon(m), draggable:false });
-  const html = (m.type==="Chest" && m.chestDefFull)
+  const markerObj = L.marker(m.coords, { icon: createCustomIcon(m), draggable: false });
+  const html = (m.type === "Chest" && m.chestDefFull)
     ? renderChestPopup(m.chestDefFull)
     : renderPopup(m);
 
-  markerObj.bindPopup(html,{
-    className:"custom-popup-wrapper",
-    maxWidth:350,closeButton:false,offset:[0,-35]
+  markerObj.bindPopup(html, {
+    className: "custom-popup-wrapper",
+    maxWidth: 350,
+    closeButton: false,
+    offset: [0, -35]
   });
-  markerObj.on("popupopen",()=>{
+
+  markerObj.on("popupopen", () => {
+    // Close button hookup
     document.querySelector(".custom-popup .popup-close-btn")
-      ?.addEventListener("click",()=>markerObj.closePopup());
+      ?.addEventListener("click", () => markerObj.closePopup());
+
+    // Hover‐preview for each chest‐slot
+    document.querySelectorAll(".custom-popup .chest-slot[data-index]").forEach(el => {
+      const idx = el.getAttribute("data-index");
+      el.addEventListener("mouseenter", e => {
+        if (!idx) return;
+        const item = m.chestDefFull.lootPool[idx];
+        if (!item) return;
+        const preview = document.createElement("div");
+        preview.className = "chest-item-preview";
+        preview.innerHTML = renderPopup(item);
+        preview.style.position = "absolute";
+        preview.style.zIndex   = "1102";
+        preview.style.left     = `${e.clientX + 8}px`;
+        preview.style.top      = `${e.clientY + 8}px`;
+        document.body.append(preview);
+        el._previewEl = preview;
+      });
+      el.addEventListener("mouseleave", () => {
+        el._previewEl?.remove();
+      });
+    });
   });
+
   layers[m.type]?.addLayer(markerObj);
 
-  markerObj.on("contextmenu",ev=>{
+  markerObj.on("contextmenu", ev => {
     ev.originalEvent.preventDefault();
     const opts = [];
     if (isAdmin) {
       opts.push(
-        { text:"Edit Marker", action:()=>callbacks.onEdit?.(markerObj,m,ev.originalEvent) },
-        { text:"Copy Marker", action:()=>callbacks.onCopy?.(markerObj,m,ev.originalEvent) },
-        { text: markerObj.dragging?.enabled()? "Disable Drag":"Enable Drag",
-          action:()=>{ /* ... */ } },
-        { text:"Delete Marker", action:()=>callbacks.onDelete?.(markerObj,m) }
+        { text: "Edit Marker", action: () => callbacks.onEdit?.(markerObj, m, ev.originalEvent) },
+        { text: "Copy Marker", action: () => callbacks.onCopy?.(markerObj, m, ev.originalEvent) },
+        { text: markerObj.dragging?.enabled() ? "Disable Drag" : "Enable Drag",
+          action: () => { /* …drag logic… */ } },
+        { text: "Delete Marker", action: () => callbacks.onDelete?.(markerObj, m) }
       );
     }
-    ctxMenu(ev.originalEvent.pageX,ev.originalEvent.pageY,opts);
+    ctxMenu(ev.originalEvent.pageX, ev.originalEvent.pageY, opts);
   });
 
   return markerObj;
