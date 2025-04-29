@@ -1,4 +1,4 @@
-/* @version: 21 */
+/* @version: 22 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
@@ -205,17 +205,17 @@
 
 .custom-popup > .popup-info-box.loot-box .chest-grid {
   display: grid;
-  /* each cell is exactly 50×50px, 4px gap horizontally & vertically */
-  grid-template-columns: repeat(var(--cols), 50px);
-  gap: 4px;
+  /* each cell is exactly 52×52px, gap 5px horizontally & vertically */
+  grid-template-columns: repeat(var(--cols), 52px);
+  gap: 5px;
   justify-content: start;
   margin: 0;
 }
 
 .custom-popup > .popup-info-box.loot-box .chest-slot {
   box-sizing: border-box;
-  width: 50px;
-  height: 50px;
+  width: 52px;
+  height: 52px;
   background: #333;
   border: 2px solid transparent; /* inline border-color shows rarity */
   border-radius: 2px;
@@ -270,7 +270,7 @@
 
 .custom-popup > .popup-info-box.loot-box {
   overflow-y: auto;
-  max-height: 133px;    /* shows 2 full rows + half row */
+  max-height: 140px;    /* shows 2 full rows + half row */
   scrollbar-width: none;/* Firefox */
 }
 
