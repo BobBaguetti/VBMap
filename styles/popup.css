@@ -1,4 +1,4 @@
-/* @version: 25 */
+/* @version: 26 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
@@ -60,14 +60,12 @@
   border-bottom: 2px solid #444;
   padding: 0;
 }
-
 .popup-header-left {
   display: flex;
   align-items: flex-start;
   gap: 10px;
   flex: 1;
 }
-
 .popup-image {
   width: 64px;
   height: 64px;
@@ -86,13 +84,11 @@
   margin-top: 0;
   padding-top: 0;
 }
-
 .popup-info > * {
   margin: 0;
   padding: 0;
   line-height: 1.2;
 }
-
 .popup-name {
   font-family: 'Segoe UI', Tahoma, sans-serif;
   font-size: 18px;
@@ -101,7 +97,6 @@
   text-transform: uppercase;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
-
 .popup-type,
 .popup-rarity {
   font-size: 15px;
@@ -122,7 +117,6 @@
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
-
 .popup-value-icon svg {
   width: 16px;
   height: 16px;
@@ -140,15 +134,14 @@
   margin-top: 7px;
   display: flex;
   flex-direction: column;
-  gap: 2px;           /* tightened from 4px */
+  gap: 1px;           /* tight vertical gap */
 }
-
 .popup-body p {
-  margin: 1px 0;      /* tightened from 2px */
+  margin: 0;
+  padding: 2px 0;
   font-weight: 420;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
-
 .popup-desc {
   font-size: 14px;
   font-style: italic;
@@ -160,7 +153,6 @@
   font-size: 14px;
   font-weight: 420;
 }
-
 .popup-meta {
   font-size: 12px;
   text-transform: uppercase;
@@ -173,7 +165,7 @@
   border: none;
   height: 1px;
   background: #444;
-  margin: 2px 0;      /* tightened from 6px */
+  margin: 1px 0;      /* minimal gap */
 }
 
 /* Close Button */
@@ -186,42 +178,28 @@
   padding: 0;
   cursor: pointer;
   z-index: 10;
-
-  /* added animation for text-based “✖” */
-  transition: color 0.2s, transform 0.2s;
 }
-
 .popup-close-btn svg {
   width: 16px;
   height: 16px;
   fill: #aaa;
   transition: fill 0.2s, transform 0.2s;
 }
-
 .popup-close-btn:hover svg {
   fill: white;
-  transform: scale(1.2);
-}
-
-/* hover on the text-based button too */
-.popup-close-btn:hover {
-  color: white;
   transform: scale(1.2);
 }
 
 /* ───────────────────────────────────────────────────────────────── *
    Chest‐marker popup grid & slots (scoped inside loot panel)
  * ───────────────────────────────────────────────────────────────── */
-
 .custom-popup > .popup-info-box.loot-box .chest-grid {
   display: grid;
-  /* each cell is exactly 52×52px, gap 5px horizontally & vertically */
   grid-template-columns: repeat(var(--cols), 52px);
   gap: 5px;
   justify-content: start;
   margin: 0;
 }
-
 .custom-popup > .popup-info-box.loot-box .chest-slot {
   box-sizing: border-box;
   width: 52px;
@@ -233,18 +211,14 @@
   position: relative;
   transition: filter 0.15s ease;
 }
-
 .custom-popup > .popup-info-box.loot-box .chest-slot:hover {
-  /* brighten the whole slot rather than gray it out */
   filter: brightness(1.2) !important;
 }
-
 .custom-popup > .popup-info-box.loot-box .chest-slot-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 .custom-popup > .popup-info-box.loot-box .chest-slot-qty {
   position: absolute;
   bottom: 2px;
@@ -257,7 +231,6 @@
 }
 
 /* ───────────────────────────────────────────────── Two separate panels ─ */
-
 .custom-popup > .popup-info-box {
   background: rgba(20, 20, 20, 0.6);
   border: 1px solid #444;
@@ -272,16 +245,19 @@
 .custom-popup > .popup-info-box.loot-box {
   margin: 4px 0 !important;
   overflow-y: auto;
-  max-height: 140px;    /* shows 2 full rows + half row */
-  scrollbar-width: none;/* Firefox */
+  max-height: 140px;
+  scrollbar-width: none;
 }
-
 .custom-popup > .popup-info-box.loot-box::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-/* Text panel gap now matches item markers */
+/* Text panel gap and tight paragraphs */
 .custom-popup > .popup-info-box:not(.loot-box) {
-  gap: 2px !important; /* tightened from 1px */
+  gap: 1px !important;  /* very tight vertical gap */
+}
+.custom-popup > .popup-info-box:not(.loot-box) p {
+  margin: 0;
+  padding: 2px 0;
 }
