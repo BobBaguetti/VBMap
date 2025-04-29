@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.3 – Delete-button hidden in Add mode, shown in Edit mode
+// @version: 2.4 – Delete-button hidden in Add mode via HTML "hidden" attribute
 
 import { createPickr }            from "../../pickrManager.js";
 import { getPickrHexColor }       from "../../../utils/colorUtils.js";
@@ -34,15 +34,15 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   buttonRow.className = "floating-buttons";
 
   const btnSave = document.createElement("button");
-  btnSave.type      = "submit";
-  btnSave.className = "ui-button";
+  btnSave.type        = "submit";
+  btnSave.className   = "ui-button";
   btnSave.textContent = "Save";
 
   const btnClear = document.createElement("button");
-  btnClear.type      = "button";
-  btnClear.className = "ui-button";
+  btnClear.type        = "button";
+  btnClear.className   = "ui-button";
   btnClear.textContent = "Clear";
-  btnClear.onclick   = () => {
+  btnClear.onclick     = () => {
     reset();
     onCancel?.();
   };
@@ -54,7 +54,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.style.display = "none"; // hidden in Add mode
+  btnDelete.hidden = true; // hidden in Add mode by default
   btnDelete.onclick = () => {
     if (_id && confirm("Delete this chest type?")) {
       onDelete?.(_id);
@@ -199,7 +199,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     fields.lootPool.length = 0;
     renderChips();
     subheading.textContent  = "Add Chest Type";
-    btnDelete.style.display = "none";  // hide
+    btnDelete.hidden        = true;   // hide in Add mode
     btnClear.textContent    = "Clear";
     initPickrs();
     pickrs.desc && pickrs.desc.setColor("#E5E6E8");
@@ -219,7 +219,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     fields.extraInfo.setLines(def.extraLines || [], false);
 
     subheading.textContent  = "Edit Chest Type";
-    btnDelete.style.display = "";       // show
+    btnDelete.hidden        = false;  // show in Edit mode
     btnClear.textContent    = "Cancel";
 
     initPickrs();
