@@ -1,4 +1,4 @@
-/* @version: 20 */
+/* @version: 21 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
@@ -203,9 +203,9 @@
    Chest‐marker popup grid & slots (scoped inside loot panel)
  * ───────────────────────────────────────────────────────────────── */
 
- .custom-popup > .popup-info-box.loot-box .chest-grid {
+.custom-popup > .popup-info-box.loot-box .chest-grid {
   display: grid;
-  /* each cell is exactly 50×50px now, 4px gap */
+  /* each cell is exactly 50×50px, 4px gap horizontally & vertically */
   grid-template-columns: repeat(var(--cols), 50px);
   gap: 4px;
   justify-content: start;
@@ -225,7 +225,7 @@
 }
 
 .custom-popup > .popup-info-box.loot-box .chest-slot:hover {
-  /* brighten the whole slot instead of gray */
+  /* brighten the whole slot rather than gray it out */
   filter: brightness(1.2) !important;
 }
 
@@ -264,4 +264,17 @@
 
 .custom-popup > .popup-info-box:not(.loot-box) {
   gap: 1px !important;
+}
+
+/* ─────────────────────────────────────────── Chest‐loot scrolling panel ─ */
+
+.custom-popup > .popup-info-box.loot-box {
+  overflow-y: auto;
+  max-height: 133px;    /* shows 2 full rows + half row */
+  scrollbar-width: none;/* Firefox */
+}
+
+.custom-popup > .popup-info-box.loot-box::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
