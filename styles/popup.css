@@ -1,9 +1,9 @@
-/* @version: 19 */
+/* @version: 20 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
 
-/* Leaflet Overrides */
+/* ───────────────────────────────────────────────── Leaflet Overrides ─ */
 .leaflet-container {
   background-color: #1a1a1a !important;
 }
@@ -37,15 +37,14 @@
   display: none !important;
 }
 
-/* Custom Popup */
+/* ───────────────────────────────────────────────── Custom Popup ──── */
 .custom-popup {
   position: relative;
-  background: rgba(34, 34, 34, 0.95) !important;
+  background: rgba(34, 34, 34, 0.95);
   border-radius: 8px;
   padding: 11px;
   width: 320px;
   color: #e0e0e0;
-  border: none !important;
   font-family: 'Satoshi', sans-serif;
   font-size: 14px;
   line-height: 1.4;
@@ -83,10 +82,9 @@
 .popup-info {
   display: flex;
   flex-direction: column;
-  justify-content: flex-start;
+  gap: 2px;
   margin-top: 0;
   padding-top: 0;
-  gap: 2px;
 }
 
 .popup-info > * {
@@ -114,13 +112,13 @@
 
 /* Value (coins) block */
 .popup-value-icon {
-  font-size: 15px;
-  font-weight: 520;
   display: inline-flex;
   align-items: center;
   gap: 4px;
   margin-top: 32px;
   margin-right: 4px;
+  font-size: 15px;
+  font-weight: 520;
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
@@ -202,42 +200,39 @@
 }
 
 /* ───────────────────────────────────────────────────────────────── *
-   Chest‐marker popup grid & slots
+   Chest-marker popup grid & slots (scoped inside loot panel)
  * ───────────────────────────────────────────────────────────────── */
 
- .custom-popup .chest-grid {
+.custom-popup > .popup-info-box.loot-box .chest-grid {
   display: grid;
-  /* each cell is exactly 48×48px, gap 4px */
-  grid-template-columns: repeat(var(--cols), 48px) !important;
-  gap: 4px !important;
-  justify-content: start !important;
-  margin-top: 0;  /* flush to the top of its panel */
+  grid-template-columns: repeat(var(--cols), 48px);
+  gap: 4px;
+  justify-content: start;
+  margin: 0;
 }
 
-/* make width/height include the border so the img stays 48px */
-.custom-popup .chest-slot {
+.custom-popup > .popup-info-box.loot-box .chest-slot {
   box-sizing: border-box;
   width: 48px;
   height: 48px;
   background: #333;
-  border: 2px solid transparent;  /* inline style border-color will override this */
+  border: 2px solid transparent; /* inline border-color shows rarity */
   border-radius: 2px;
   overflow: hidden;
+  position: relative;
 }
 
-/* on hover we still override the color but keep 2px thickness */
-.custom-popup .chest-slot:hover {
+.custom-popup > .popup-info-box.loot-box .chest-slot:hover {
   border-color: #888 !important;
 }
 
-.custom-popup .chest-slot-img {
+.custom-popup > .popup-info-box.loot-box .chest-slot-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-.custom-popup .chest-slot-qty {
+.custom-popup > .popup-info-box.loot-box .chest-slot-qty {
   position: absolute;
   bottom: 2px;
   right: 4px;
@@ -248,7 +243,8 @@
   color: #fff;
 }
 
-/* ─── Two standalone panels for chest popups ─────────────────────── */
+/* ───────────────────────────────────────────────── Two separate panels ─ */
+
 .custom-popup > .popup-info-box {
   background: rgba(20, 20, 20, 0.6);
   border: 1px solid #444;
@@ -257,16 +253,12 @@
   margin: 8px 0;
   display: flex;
   flex-direction: column;
-  /* default text-panel gap */
-  gap: 4px;
 }
 
-/* loot-panel gets tighter margins and no top internal gap */
 .custom-popup > .popup-info-box.loot-box {
   margin: 4px 0 !important;
 }
 
-/* reduce text-panel line spacing */
 .custom-popup > .popup-info-box:not(.loot-box) {
   gap: 1px !important;
 }
