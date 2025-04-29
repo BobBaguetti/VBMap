@@ -1,4 +1,4 @@
-/* @version: 22 */
+/* @version: 23 */
 /* @file: /styles/popup.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
@@ -168,11 +168,12 @@
   color: #e0e0e0;
 }
 
+/* Divider after description */
 .popup-divider {
   border: none;
   height: 1px;
   background: #444;
-  margin: 6px 0;
+  margin: 4px 0; /* tightened from 6px to 4px */
 }
 
 /* Close Button */
@@ -258,17 +259,9 @@
   flex-direction: column;
 }
 
+/* Loot panel margins/scroll */
 .custom-popup > .popup-info-box.loot-box {
   margin: 4px 0 !important;
-}
-
-.custom-popup > .popup-info-box:not(.loot-box) {
-  gap: 1px !important;
-}
-
-/* ─────────────────────────────────────────── Chest‐loot scrolling panel ─ */
-
-.custom-popup > .popup-info-box.loot-box {
   overflow-y: auto;
   max-height: 140px;    /* shows 2 full rows + half row */
   scrollbar-width: none;/* Firefox */
@@ -277,4 +270,9 @@
 .custom-popup > .popup-info-box.loot-box::-webkit-scrollbar {
   width: 0;
   height: 0;
+}
+
+/* Text panel gap now matches item markers */
+.custom-popup > .popup-info-box:not(.loot-box) {
+  gap: 4px !important;
 }
