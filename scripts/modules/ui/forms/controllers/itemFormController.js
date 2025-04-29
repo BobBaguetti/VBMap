@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.35 – delete button hidden in Add mode, shown in Edit mode
+// @version: 4.36 – delete button hidden in Add mode via HTML "hidden" attribute
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -49,15 +49,15 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   buttonRow.className = "floating-buttons";
 
   const btnSave = document.createElement("button");
-  btnSave.type      = "submit";
-  btnSave.className = "ui-button";
+  btnSave.type        = "submit";
+  btnSave.className   = "ui-button";
   btnSave.textContent = "Save";
 
   const btnClear = document.createElement("button");
-  btnClear.type      = "button";
-  btnClear.className = "ui-button";
+  btnClear.type        = "button";
+  btnClear.className   = "ui-button";
   btnClear.textContent = "Clear";
-  btnClear.onclick   = onCancel;
+  btnClear.onclick     = onCancel;
 
   const btnDelete = document.createElement("button");
   btnDelete.type        = "button";
@@ -66,8 +66,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  // hide in Add mode
-  btnDelete.style.display = "none";
+  btnDelete.hidden = true; // hidden in Add mode by default
   btnDelete.onclick = () => {
     if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
       onDelete?.(_id);
@@ -129,7 +128,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([], false);
     _id = null;
     subheading.textContent  = "Add Item";
-    btnDelete.style.display = "none";   // hide in Add
+    btnDelete.hidden        = true;  // hide in Add
     btnClear.textContent    = "Clear";
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
@@ -150,7 +149,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
 
     subheading.textContent  = "Edit Item";
-    btnDelete.style.display = "";        // show in Edit
+    btnDelete.hidden        = false; // show in Edit
     btnClear.textContent    = "Cancel";
 
     initPickrs();
