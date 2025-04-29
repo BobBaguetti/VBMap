@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.36 – delete-button given unique ID so only this one toggles
+// @version: 4.35 – delete button hidden in Add mode, shown in Edit mode
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -62,7 +62,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   const btnDelete = document.createElement("button");
   btnDelete.type        = "button";
   btnDelete.className   = "ui-button-delete";
-  btnDelete.id          = "item-form-btn-delete";       // ← unique ID
   btnDelete.title       = "Delete this item";
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
@@ -181,7 +180,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
       quantity:         fields.fldQty.value.trim(),
       quantityColor:    getPickrHexColor(pickrs.quantity),
       imageSmall:       fields.fldImgS.value.trim(),
-      imageLarge:       fields.fldL.value.trim(),
+      imageLarge:       fields.fldImgL.value.trim(),
       extraLines:       fields.extraInfo.getLines()
     };
   }
