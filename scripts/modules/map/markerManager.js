@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/map/markerManager.js
-// @version: 10.3 – chest popup now renders extra rows of 5 slots
+// @version: 10.4 – chest popup now renders divider between description & extra-info
 
 import { formatRarity }     from "../utils/utils.js";
 import { createIcon }       from "../utils/iconUtils.js";
@@ -57,12 +57,10 @@ export function renderPopup(m) {
     : "";
 
   const extraHTML = (m.extraLines || [])
-    .map(
-      (line) => `
+    .map(line => `
       <p class="popup-extra-line" style="color:${line.color || defaultNameColor};">
         ${line.text}
-      </p>`
-    )
+      </p>`)
     .join("");
 
   const quantityHTML =
@@ -119,8 +117,7 @@ export function renderChestPopup(typeDef) {
       it.rarityColor ||
       rarityColors[(it.rarity || "").toLowerCase()] ||
       defaultNameColor;
-    cells += `<div class="chest-slot" style="border-color:${clr}" title="${it.name ||
-      ""}">
+    cells += `<div class="chest-slot" style="border-color:${clr}" title="${it.name || ""}">
                 <img src="${it.imageSmall || ""}" class="chest-slot-img">
                 ${it.quantity > 1
                   ? `<span class="chest-slot-qty">${it.quantity}</span>`
@@ -142,17 +139,20 @@ export function renderChestPopup(typeDef) {
       </div>
     </div>`;
 
-  // Description & extras panel
+  // Description & extras panel with divider
   const descHTML = typeDef.description
     ? `<p class="popup-desc">${typeDef.description}</p>`
     : "";
   const extraHTML = (typeDef.extraLines || [])
-    .map((l) => `<p class="popup-extra-line">${l.text}</p>`)
+    .map(l => `<p class="popup-extra-line">${l.text}</p>`)
     .join("");
-  const textBox =
-    descHTML || extraHTML
-      ? `<div class="popup-info-box">${descHTML}${extraHTML}</div>`
-      : "";
+  const textBox = (descHTML || extraHTML)
+    ? `<div class="popup-info-box">
+         ${descHTML}
+         ${descHTML && extraHTML ? '<hr class="popup-divider">' : ''}
+         ${extraHTML}
+       </div>`
+    : "";
 
   // Assemble final popup
   return `
