@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/map/markerManager.js
-// @version: 10.4 – chest popup now renders divider between description & extra-info
+// @version: 10.5 – support custom description & extra‐info colors in chest popup
 
 import { formatRarity }     from "../utils/utils.js";
 import { createIcon }       from "../utils/iconUtils.js";
@@ -101,7 +101,7 @@ export function renderChestPopup(typeDef) {
   const bigImg = typeDef.iconUrl
     ? `<img src="${typeDef.iconUrl}" class="popup-image" onerror="this.style.display='none'">`
     : "";
-  const nameHTML = `<div class="popup-name">${typeDef.name}</div>`;
+  const nameHTML    = `<div class="popup-name">${typeDef.name}</div>`;
   const subtextHTML = typeDef.subtext
     ? `<div class="popup-type">${typeDef.subtext}</div>`
     : "";
@@ -111,7 +111,7 @@ export function renderChestPopup(typeDef) {
   const pool = typeDef.lootPool || [];
   let cells = "";
 
-  // 1) Render every item in the pool
+  // Render every item in the pool
   pool.forEach((it) => {
     const clr =
       it.rarityColor ||
@@ -125,7 +125,7 @@ export function renderChestPopup(typeDef) {
               </div>`;
   });
 
-  // 2) If fewer than 5, fill to COLS so grid always shows full first row
+  // If fewer than COLS, fill to show full first row
   if (pool.length < COLS) {
     for (let i = pool.length; i < COLS; i++) {
       cells += `<div class="chest-slot"></div>`;
@@ -139,13 +139,20 @@ export function renderChestPopup(typeDef) {
       </div>
     </div>`;
 
-  // Description & extras panel with divider
+  // Description & extras panel with colors and divider
   const descHTML = typeDef.description
-    ? `<p class="popup-desc">${typeDef.description}</p>`
+    ? `<p class="popup-desc" style="color:${typeDef.descriptionColor || defaultNameColor};">
+         ${typeDef.description}
+       </p>`
     : "";
+
   const extraHTML = (typeDef.extraLines || [])
-    .map(l => `<p class="popup-extra-line">${l.text}</p>`)
+    .map(l => `
+      <p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
+        ${l.text}
+      </p>`)
     .join("");
+
   const textBox = (descHTML || extraHTML)
     ? `<div class="popup-info-box">
          ${descHTML}
@@ -172,7 +179,7 @@ export function renderChestPopup(typeDef) {
 /*──────────────────────── Marker icon factory ───────────────────────*/
 export function createCustomIcon(m) {
   const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
-  const size = 32;
+  const size   = 32;
 
   const wrap = document.createElement("div");
   wrap.className = "custom-marker";
@@ -281,7 +288,10 @@ export function createMarker(
             }
           },
         },
-        { text: "Delete Marker", action: () => callbacks.onDelete?.(markerObj, m) }
+        {
+          text: "Delete Marker",
+          action: () => callbacks.onDelete?.(markerObj, m),
+        }
       );
     }
     ctxMenu(ev.originalEvent.pageX, ev.originalEvent.pageY, opts);
