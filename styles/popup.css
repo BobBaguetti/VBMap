@@ -201,29 +201,31 @@
   transform: scale(1.2);
 }
 
-/* ----------------------------------------------------------------- *
- *  Chest-marker popup grid & slots
- * ----------------------------------------------------------------- */
-/* fixed 48px columns, tight 4px gaps */
-.custom-popup .chest-grid {
+/* ───────────────────────────────────────────────────────────────── *
+   Chest‐marker popup grid & slots
+ * ───────────────────────────────────────────────────────────────── */
+
+ .custom-popup .chest-grid {
   display: grid;
+  /* each cell is exactly 48×48px, gap 4px */
   grid-template-columns: repeat(var(--cols), 48px) !important;
   gap: 4px !important;
-  justify-content: flex-start !important;
-  margin-top: 0;  /* moved inside loot-panel */
+  justify-content: start !important;
+  margin-top: 0;  /* flush to the top of its panel */
 }
 
-/* thicker outline */
+/* make width/height include the border so the img stays 48px */
 .custom-popup .chest-slot {
-  position: relative;
-  cursor: pointer;
-  border: 3px solid transparent !important;
+  box-sizing: border-box;
+  width: 48px;
+  height: 48px;
+  background: #333;
+  border: 2px solid transparent;  /* inline style border-color will override this */
   border-radius: 2px;
   overflow: hidden;
-  background: #333;
-  height: 48px;
 }
 
+/* on hover we still override the color but keep 2px thickness */
 .custom-popup .chest-slot:hover {
   border-color: #888 !important;
 }
