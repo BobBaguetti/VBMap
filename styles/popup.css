@@ -200,12 +200,13 @@
 }
 
 /* ───────────────────────────────────────────────────────────────── *
-   Chest-marker popup grid & slots (scoped inside loot panel)
+   Chest‐marker popup grid & slots (scoped inside loot panel)
  * ───────────────────────────────────────────────────────────────── */
 
-.custom-popup > .popup-info-box.loot-box .chest-grid {
+ .custom-popup > .popup-info-box.loot-box .chest-grid {
   display: grid;
-  grid-template-columns: repeat(var(--cols), 48px);
+  /* each cell is exactly 50×50px now, 4px gap */
+  grid-template-columns: repeat(var(--cols), 50px);
   gap: 4px;
   justify-content: start;
   margin: 0;
@@ -213,17 +214,19 @@
 
 .custom-popup > .popup-info-box.loot-box .chest-slot {
   box-sizing: border-box;
-  width: 48px;
-  height: 48px;
+  width: 50px;
+  height: 50px;
   background: #333;
   border: 2px solid transparent; /* inline border-color shows rarity */
   border-radius: 2px;
   overflow: hidden;
   position: relative;
+  transition: filter 0.15s ease;
 }
 
 .custom-popup > .popup-info-box.loot-box .chest-slot:hover {
-  border-color: #888 !important;
+  /* brighten the whole slot instead of gray */
+  filter: brightness(1.2) !important;
 }
 
 .custom-popup > .popup-info-box.loot-box .chest-slot-img {
