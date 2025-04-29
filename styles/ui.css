@@ -232,3 +232,5 @@
     display: block !important;
   }
   
+  /* Hide any element that carries the HTML "hidden" attribute */
+[hidden] { display: none !important; }
