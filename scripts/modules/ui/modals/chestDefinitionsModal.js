@@ -11,6 +11,7 @@ import { createLayoutSwitcher }        from "../uiKit.js";
 import { createDefListContainer }      from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createPreviewPanel }          from "../preview/createPreviewPanel.js";
+import { renderChestEntry }  from "../entries/chestEntryRenderer.js";
 
 import {
   loadChestDefinitions,

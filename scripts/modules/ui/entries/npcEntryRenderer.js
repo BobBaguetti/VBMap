@@ -1,31 +1,38 @@
-// @version: 1
-// @file: /scripts/modules/ui/entries/npcEntryRenderer.js 
+// @file: scripts/modules/ui/entries/npcEntryRenderer.js
+// @version: 1 – initial NPC list entry renderer
 
-export function renderNpcEntry(def, layout = "row", { onClick, onDelete } = {}) {
-    const entry = document.createElement("div");
-    entry.className = `npc-def-entry layout-${layout}`;
-  
-    entry.innerHTML = `
-      <div class="entry-name">${def.name || "Unnamed NPC"}</div>
-      <div class="entry-role">${def.role || "No role assigned"}</div>
-      <div class="entry-faction">${def.faction || "No faction"}</div>
-    `;
-  
-    if (onDelete) {
-      const deleteBtn = document.createElement("button");
-      deleteBtn.className = "entry-delete ui-button-delete";
-      deleteBtn.innerText = "Delete";
-      deleteBtn.onclick = (e) => {
-        e.stopPropagation();
-        if (def.id && confirm(`Delete NPC "${def.name}"?`)) onDelete(def.id);
-      };
-      entry.appendChild(deleteBtn);
-    }
-  
-    if (onClick) {
-      entry.addEventListener("click", () => onClick(def));
-    }
-  
-    return entry;
-  }
-  
+import { createIcon } from "../../utils/iconUtils.js";
+
+/**
+ * @param {Object} def – NPC definition
+ * @param {"row"|"stacked"|"gallery"} layout
+ * @param {{ onClick: (def)=>void, onDelete: (id)=>void }} handlers
+ */
+export function renderNpcEntry(def, layout, { onClick, onDelete }) {
+  const entry = document.createElement("div");
+  entry.className = `npc-def-entry layout-${layout}`;
+
+  // build roles badges
+  const roles = (def.typeFlags||[]).map(f => `<span class="npc-role">${f}</span>`).join(" ");
+
+  entry.innerHTML = `
+    <div class="entry-name">${def.name}</div>
+    <div class="entry-roles">${roles}</div>
+    <div class="entry-stats">
+      <span>HP: ${def.health}</span>
+      <span>DMG: ${def.damage}</span>
+    </div>
+    <div class="entry-extra">
+      ${def.extraLines?.map(l=>`<p style="color:${l.color}">${l.text}</p>`).join("")}
+    </div>
+  `;
+  // delete button
+  const del = document.createElement("button");
+  del.className = "entry-delete ui-button-delete";
+  del.appendChild(createIcon("trash"));
+  del.onclick = e => { e.stopPropagation(); onDelete(def.id); };
+  entry.appendChild(del);
+
+  entry.addEventListener("click", () => onClick(def));
+  return entry;
+}
