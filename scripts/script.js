@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.10 – delete any stray duplicates on marker removal
+// @version: 7.11 – remove duplicate-cleanup and drag-guard hacks
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -14,8 +14,7 @@ import {
   subscribeMarkers,
   upsertMarker,
   updateMarker as firebaseUpdateMarker,
-  deleteMarker as firebaseDeleteMarker,
-  loadMarkers
+  deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
 
 import { subscribeChestDefinitions } from "./modules/services/chestDefinitionsService.js";
@@ -141,6 +140,7 @@ const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
+  // single, deterministic write
   await upsertMarker(db, data);
 }
 
@@ -186,36 +186,23 @@ const callbacks = {
 
   onCopy: (_, d) => copyMgr.startCopy(d),
 
-  onDragEnd: async (_, d) => {
-    if (!d.id) return;
-    const docs = await loadMarkers(db);
-    if (!docs.some(m => m.id === d.id)) return;
+  onDragEnd: (_, d) => {
+    // simply update – deterministic IDs ensure existence
     firebaseUpdateMarker(db, d).catch(() => {});
   },
 
-  onDelete: async (markerObj, data) => {
-    // remove from map
+  onDelete: (markerObj, data) => {
+    // remove from map/UI
     markerObj.remove();
     clusterItemLayer.removeLayer(markerObj);
 
-    // remove from memory
+    // remove from in-memory
     const idx = allMarkers.findIndex(o => o.data.id === data.id);
     if (idx !== -1) allMarkers.splice(idx, 1);
 
-    // delete primary record
+    // delete single doc
     if (data.id) {
-      await firebaseDeleteMarker(db, data.id);
-    }
-
-    // clean up any other docs at same coords (legacy or phantom)
-    const all = await loadMarkers(db);
-    for (const m of all) {
-      if (
-        m.coords[0] === data.coords[0] &&
-        m.coords[1] === data.coords[1]
-      ) {
-        await firebaseDeleteMarker(db, m.id);
-      }
+      firebaseDeleteMarker(db, data.id).catch(() => {});
     }
 
     hideContextMenu();

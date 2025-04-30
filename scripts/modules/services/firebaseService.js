@@ -1,5 +1,5 @@
 // @file: /scripts/modules/services/firebaseService.js
-// @version: 6.1 – added logging to all write operations for debugging
+// @version: 6.2 – removed debug logging
 
 import { initializeApp } from "firebase/app";
 import {
@@ -49,7 +49,6 @@ export function subscribeMarkers(db, onUpdate) {
  * should now use upsertMarker for creation to avoid dupes.)
  */
 export async function addMarker(db, markerData) {
-  console.log("[FIRESTORE][addMarker]", markerData);
   const docRef = await addDoc(collection(db, "markers"), markerData);
   return { id: docRef.id, ...markerData };
 }
@@ -59,7 +58,6 @@ export async function addMarker(db, markerData) {
  * This prevents duplicates at the same latitude/longitude.
  */
 export async function upsertMarker(db, markerData) {
-  console.log("[FIRESTORE][upsertMarker]", markerData);
   const [lat, lng] = markerData.coords;
   const id = `${lat.toFixed(4)}_${lng.toFixed(4)}`;
   await setDoc(doc(db, "markers", id), markerData);
@@ -70,7 +68,6 @@ export async function upsertMarker(db, markerData) {
  * Update (merge) only defined fields of an existing marker.
  */
 export async function updateMarker(db, markerData) {
-  console.log("[FIRESTORE][updateMarker]", markerData.id, markerData);
   const { id, ...raw } = markerData;
   const data = Object.entries(raw).reduce((acc, [k, v]) => {
     if (v !== undefined) acc[k] = v;
@@ -83,6 +80,5 @@ export async function updateMarker(db, markerData) {
  * Delete a marker by ID.
  */
 export async function deleteMarker(db, id) {
-  console.log("[FIRESTORE][deleteMarker]", id);
   await deleteDoc(doc(db, "markers", id));
 }
