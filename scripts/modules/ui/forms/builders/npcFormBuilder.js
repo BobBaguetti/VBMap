@@ -4,8 +4,8 @@
 import {
   createTextField,
   createNumberField
-} from "../../ui/uiKit.js";
-import { createExtraInfoBlock } from "../../ui/uiKit.js";
+} from "../../../uiKit.js";
+import { createExtraInfoBlock } from "../../../uiKit.js";
 import { createTopAlignedFieldRow } from "../../../utils/formUtils.js";
 
 /**
