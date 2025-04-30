@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.7 – switch to upsertMarker for deterministic writes, remove coord‐guard
+// @version: 7.8 – fully switch to upsertMarker for all writes
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -89,14 +89,12 @@ onAuthStateChanged(auth, async user => {
     );
 
     subscribeMarkers(db, markers => {
-      // clear existing
       allMarkers.forEach(({ markerObj }) => {
         markerObj.remove();
         clusterItemLayer.removeLayer(markerObj);
       });
       allMarkers.length = 0;
 
-      // re-add each
       markers.forEach(data => addMarker(data, callbacks));
       loadItemFilters().then(filterMarkers);
     });
@@ -117,10 +115,7 @@ onAuthStateChanged(auth, async user => {
           if (isAdmin) firebaseUpdateMarker(db, data).catch(()=>{});
         } else if (data.type === "Chest") {
           const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-          const fullDef  = {
-            ...def,
-            lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
-          };
+          const fullDef  = {...def, lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)};
           markerObj.setPopupContent(renderChestPopup(fullDef));
         }
       });
@@ -140,7 +135,7 @@ const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
-  // upsert ensures one doc per coordinate pair
+  // ALWAYS use upsertMarker so no random-ID writes slip through
   await upsertMarker(db, data);
 }
 
@@ -152,10 +147,7 @@ function addMarker(data, cbs = {}) {
 
   if (data.type === "Chest") {
     const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-    const fullDef  = {
-      ...def,
-      lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
-    };
+    const fullDef  = {...def, lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)};
     data.name        = fullDef.name;
     data.imageSmall  = fullDef.iconUrl;
     data.chestDefFull= fullDef;
