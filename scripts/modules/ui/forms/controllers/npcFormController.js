@@ -3,7 +3,6 @@
 
 import { createNpcForm }       from "../builders/npcFormBuilder.js";
 import { createIcon }          from "../../../utils/iconUtils.js";
-import { createModal, closeModal, openModal } from "../../components/definitionModalShell.js";
 
 /**
  * Controller for the NPC definition form.
