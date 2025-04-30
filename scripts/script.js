@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.9 – remove definition-sync writes to avoid phantom random-ID docs, fully deterministic writes
+// @version: 7.10 – delete any stray duplicates on marker removal
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -112,7 +112,6 @@ onAuthStateChanged(auth, async user => {
 
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.predefinedItemId) {
-          // Refresh only in-memory state; do NOT persist back on load
           const def = itemDefMap[data.predefinedItemId];
           Object.assign(data, def);
           markerObj.setIcon(createCustomIcon(data));
@@ -142,7 +141,6 @@ const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
-  // always upsert (deterministic ID) — no random-ID writes
   await upsertMarker(db, data);
 }
 
@@ -185,19 +183,41 @@ const callbacks = {
     );
     firebaseUpdateMarker(db, updated).catch(() => {});
   }),
+
   onCopy: (_, d) => copyMgr.startCopy(d),
+
   onDragEnd: async (_, d) => {
     if (!d.id) return;
     const docs = await loadMarkers(db);
     if (!docs.some(m => m.id === d.id)) return;
     firebaseUpdateMarker(db, d).catch(() => {});
   },
-  onDelete: (markerObj, data) => {
+
+  onDelete: async (markerObj, data) => {
+    // remove from map
     markerObj.remove();
     clusterItemLayer.removeLayer(markerObj);
+
+    // remove from memory
     const idx = allMarkers.findIndex(o => o.data.id === data.id);
     if (idx !== -1) allMarkers.splice(idx, 1);
-    if (data.id) firebaseDeleteMarker(db, data.id).catch(() => {});
+
+    // delete primary record
+    if (data.id) {
+      await firebaseDeleteMarker(db, data.id);
+    }
+
+    // clean up any other docs at same coords (legacy or phantom)
+    const all = await loadMarkers(db);
+    for (const m of all) {
+      if (
+        m.coords[0] === data.coords[0] &&
+        m.coords[1] === data.coords[1]
+      ) {
+        await firebaseDeleteMarker(db, m.id);
+      }
+    }
+
     hideContextMenu();
   }
 };
@@ -215,8 +235,12 @@ map.on("contextmenu", evt => {
     )
   }]);
 });
+
 document.addEventListener("click", e => {
   const cm = document.getElementById("context-menu");
-  if (cm?.style.display === "block" && !cm.contains(e.target)) cm.style.display = "none";
+  if (cm?.style.display === "block" && !cm.contains(e.target)) {
+    cm.style.display = "none";
+  }
 });
+
 document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
