@@ -1,4 +1,4 @@
-// @version: 1.0
+// @version: 1.1
 // @file: /scripts/modules/ui/forms/controllers/npcFormController.js
 
 import { createNpcForm }       from "../builders/npcFormBuilder.js";
@@ -45,10 +45,18 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     _id = null;
     titleEl.textContent = "Add NPC";
     btnDelete.style.display = "none";
-    // clear extra‐info blocks
-    fields.lootPoolBlock.extraInfo.setLines([], false);
-    fields.vendorInvBlock.extraInfo.setLines([], false);
-    fields.extraInfoBlock.extraInfo.setLines([], false);
+
+    // guard against missing blocks
+    if (fields.lootPoolBlock?.extraInfo) {
+      fields.lootPoolBlock.extraInfo.setLines([], false);
+    }
+    if (fields.vendorInvBlock?.extraInfo) {
+      fields.vendorInvBlock.extraInfo.setLines([], false);
+    }
+    if (fields.extraInfoBlock?.extraInfo) {
+      fields.extraInfoBlock.extraInfo.setLines([], false);
+    }
+
     // clear checkboxes
     fields.fldTypeFlags.forEach(cb => cb.checked = false);
   }
@@ -70,10 +78,16 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
         : false;
     });
     
-    // pools & notes
-    fields.lootPoolBlock.extraInfo.setLines(def.lootPool || [], false);
-    fields.vendorInvBlock.extraInfo.setLines(def.vendorInventory || [], false);
-    fields.extraInfoBlock.extraInfo.setLines(def.extraLines || [], false);
+    // guard & populate extra‐info blocks
+    if (fields.lootPoolBlock?.extraInfo) {
+      fields.lootPoolBlock.extraInfo.setLines(def.lootPool || [], false);
+    }
+    if (fields.vendorInvBlock?.extraInfo) {
+      fields.vendorInvBlock.extraInfo.setLines(def.vendorInventory || [], false);
+    }
+    if (fields.extraInfoBlock?.extraInfo) {
+      fields.extraInfoBlock.extraInfo.setLines(def.extraLines || [], false);
+    }
   }
   
   // Harvest form values
@@ -84,9 +98,9 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
       typeFlags:        fields.fldTypeFlags.filter(cb=>cb.checked).map(cb=>cb.value),
       health:           Number(fields.fldHealth.value) || 0,
       damage:           Number(fields.fldDamage.value) || 0,
-      lootPool:         fields.lootPoolBlock.extraInfo.getLines(),
-      vendorInventory:  fields.vendorInvBlock.extraInfo.getLines(),
-      extraLines:       fields.extraInfoBlock.extraInfo.getLines()
+      lootPool:         fields.lootPoolBlock?.extraInfo.getLines() || [],
+      vendorInventory:  fields.vendorInvBlock?.extraInfo.getLines() || [],
+      extraLines:       fields.extraInfoBlock?.extraInfo.getLines() || []
     };
   }
   
