@@ -1,59 +1,80 @@
-// @version: 3
-// @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js 
+// @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
+// @version: 1.0 — upgraded: hostile/vendor/quest flags + health/damage + loot & vendor inventory
 
-import { createNameField, createExtraInfoField } from "../universalForm.js";
-// ← fixed path: up two levels into /scripts/modules/ui, then uiKit.js
-import { createDropdownField, createTextField }  from "../../uiKit.js";
+import {
+  createTextField,
+  createNumberField
+} from "../../ui/uiKit.js";
+import { createExtraInfoBlock } from "../../ui/uiKit.js";
+import { createTopAlignedFieldRow } from "../../../utils/formUtils.js";
 
 /**
- * Builds the NPC form with fields:
- * - Name (text + color)
- * - NPC Type (dropdown + color)
- * - HP (text + color)
- * - Extra Info (optional lines with their own colors)
+ * Build the DOM form for NPC definitions.
+ * Returns { form, fields } where fields contains:
+ *   fldName, fldTypeFlags[], fldHealth, fldDamage,
+ *   lootPoolBlock, vendorInvBlock, extraInfoBlock
  */
 export function createNpcForm() {
   const form = document.createElement("form");
   form.id = "npc-form";
 
-  // Name
-  const { row: rowName, input: fldName, colorBtn: colorName } =
-    createNameField("npc-fld-name");
-  colorName.id = "npc-fld-name-color";
-  colorName.classList.add("color-swatch");
+  // — Name —
+  const { row: rowName, input: fldName } =
+    createTextField("Name:", "npc-fld-name");
 
-  // NPC Type
-  const npcTypes = [
-    { value: "vendor",      label: "Vendor" },
-    { value: "quest-giver", label: "Quest Giver" },
-    { value: "enemy",       label: "Enemy" },
-    { value: "ally",        label: "Ally" }
-  ];
-  const { row: rowType, select: fldType, colorBtn: colorType } =
-    createDropdownField("NPC Type:", "npc-fld-type", npcTypes);
-  colorType.id = "npc-fld-type-color";
-  colorType.classList.add("color-swatch");
+  // — Type flags —
+  const typeContainer = document.createElement("div");
+  ["Hostile", "Vendor", "Quest-Giver"].forEach(label => {
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = label.toLowerCase();
+    cb.dataset.typeFlag = label;
+    const lbl = document.createElement("label");
+    lbl.append(cb, document.createTextNode(" " + label));
+    typeContainer.append(lbl, document.createTextNode(" "));
+  });
+  const rowTypes = createTopAlignedFieldRow("NPC Roles:", typeContainer);
+  const fldTypeFlags = Array.from(typeContainer.querySelectorAll("input"));
 
-  // HP
-  const { row: rowHp, input: fldHp, colorBtn: colorHp } =
-    createTextField("HP:", "npc-fld-hp");
-  colorHp.id = "npc-fld-hp-color";
-  colorHp.classList.add("color-swatch");
+  // — Health & Damage —
+  const { row: rowHealth, input: fldHealth } =
+    createNumberField("Health:", "npc-fld-health", { min: 0 });
+  const { row: rowDamage, input: fldDamage } =
+    createNumberField("Damage:", "npc-fld-damage", { min: 0 });
 
-  // Extra Info (lines of text+color)
-  const extraBlock = createExtraInfoField({ withDividers: true });
-  const rowExtra = extraBlock.row;
-  rowExtra.querySelector("label").textContent = "Extra Info:";
+  // — Loot Pool (hostile drops) —
+  const lootExtra = createExtraInfoBlock();
+  const rowLoot = createTopAlignedFieldRow("Loot Pool:", lootExtra.block);
 
-  form.append(rowName, rowType, rowHp, rowExtra);
+  // — Vendor Inventory (for vendors) —
+  const vendExtra = createExtraInfoBlock();
+  const rowVend = createTopAlignedFieldRow("Vendor Inventory:", vendExtra.block);
+
+  // — Description / Notes —
+  const descExtra = createExtraInfoBlock();
+  const rowDesc = createTopAlignedFieldRow("Description / Notes:", descExtra.block);
+
+  // Assemble in order
+  form.append(
+    rowName,
+    rowTypes,
+    rowHealth,
+    rowDamage,
+    rowLoot,
+    rowVend,
+    rowDesc
+  );
 
   return {
     form,
     fields: {
-      fldName,   colorName,
-      fldType,   colorType,
-      fldHp,     colorHp,
-      extraInfo: extraBlock.extraInfo
+      fldName,
+      fldTypeFlags,      // Array of the 3 checkboxes
+      fldHealth,
+      fldDamage,
+      lootPoolBlock: lootExtra,
+      vendorInvBlock: vendExtra,
+      extraInfoBlock: descExtra
     }
   };
 }

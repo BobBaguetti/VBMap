@@ -1,144 +1,73 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @version: 2 
-// @file:    /scripts/modules/services/npcDefinitionsService.js
-
-/**
- * Firestore service for NPC definitions.
- * Fields per NPC:
- *   - name: string
- *   - title: string
- *   - description: string
- *   - imageSmall: string
- *   - imageLarge: string
- *   - notes: Array<{ text: string, color: string }>
- */
+// @file: /scripts/modules/services/npcDefinitionsService.js
+// @version: 1.0 — CRUD + real-time for NPC definitions
 
 import {
   collection,
   getDocs,
   addDoc,
   doc,
-  updateDoc,
   setDoc,
   deleteDoc,
   onSnapshot
 } from "firebase/firestore";
 
-//////////////////////////////
-// 🔹 Collection Reference
-//////////////////////////////
-
 /**
- * Get the Firestore collection reference for NPC definitions.
- * @param {import('firebase/firestore').Firestore} db
- * @returns {import('firebase/firestore').CollectionReference}
- */
-export function getNpcDefinitionsCollection(db) {
-  return collection(db, "npcDefinitions");
-}
-
-//////////////////////////////
-// 🔹 Load NPCs
-//////////////////////////////
-
-/**
- * Load all NPC definitions from Firestore.
- * @param {import('firebase/firestore').Firestore} db
- * @returns {Promise<Array<Object>>} Array of NPC definition objects
+ * Load all NPC definitions.
+ * @param {Firestore} db
+ * @returns {Promise<Array<Object>>}
  */
 export async function loadNpcDefinitions(db) {
-  const colRef = getNpcDefinitionsCollection(db);
-  const snapshot = await getDocs(colRef);
-  return snapshot.docs.map(docSnap => ({
-    id: docSnap.id,
-    ...docSnap.data()
-  }));
+  const snap = await getDocs(collection(db, "npcDefinitions"));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
 }
-
-//////////////////////////////
-// 🔹 Save or Add New NPC
-//////////////////////////////
 
 /**
- * Save an NPC definition (add or update).
- * Returns the saved object with a valid `id`.
- *
- * @param {import('firebase/firestore').Firestore} db
- * @param {string|null} id If null, creates a new entry
- * @param {Object} data NPC definition fields
- * @returns {Promise<Object>} The saved NPC (with `id`)
+ * Real-time subscription to every document in 'npcDefinitions'.
+ * Calls onUpdate(arrayOfDefs) on any change.
  */
-export async function saveNpcDefinition(db, id, data) {
-  const colRef = getNpcDefinitionsCollection(db);
-  const { id: ignoredId, ...cleanData } = data;
-
-  if (id) {
-    const docRef = doc(db, "npcDefinitions", id);
-    await updateDoc(docRef, cleanData);
-    return { id, ...cleanData };
-  } else {
-    const docRef = await addDoc(colRef, cleanData);
-    return { id: docRef.id, ...cleanData };
-  }
+export function subscribeNpcDefinitions(db, onUpdate) {
+  return onSnapshot(
+    collection(db, "npcDefinitions"),
+    snapshot => {
+      const defs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+      onUpdate(defs);
+    },
+    err => console.error("NPC definitions subscription error:", err)
+  );
 }
-
-//////////////////////////////
-// 🔹 Forceful Update (Merge)
-//////////////////////////////
 
 /**
- * Overwrite or merge an NPC definition by ID.
- * @param {import('firebase/firestore').Firestore} db
- * @param {string} id Document ID
- * @param {Object} data Updated fields
- * @returns {Promise<Object>} The updated NPC (with `id`)
+ * Add a new NPC definition.
+ * @param {Firestore} db
+ * @param {Object} def
+ * @returns {Promise<Object>}
  */
-export async function updateNpcDefinition(db, id, data) {
-  const payload = { ...data };
-  const docRef = doc(db, "npcDefinitions", id);
-  await setDoc(docRef, payload, { merge: true });
-  return { id, ...payload };
+export async function addNpcDefinition(db, def) {
+  const docRef = await addDoc(collection(db, "npcDefinitions"), def);
+  return { id: docRef.id, ...def };
 }
 
-//////////////////////////////
-// 🔹 Delete NPC
-//////////////////////////////
+/**
+ * Update (merge) only defined fields of an existing NPC definition.
+ * @param {Firestore} db
+ * @param {Object} def  Must include an `id` property
+ * @returns {Promise<void>}
+ */
+export async function updateNpcDefinition(db, def) {
+  const { id, ...raw } = def;
+  const data = Object.entries(raw).reduce((acc, [k, v]) => {
+    if (v !== undefined) acc[k] = v;
+    return acc;
+  }, {});
+  await setDoc(doc(db, "npcDefinitions", id), data, { merge: true });
+}
 
 /**
  * Delete an NPC definition by ID.
- * @param {import('firebase/firestore').Firestore} db
- * @param {string} id Document ID
+ * @param {Firestore} db
+ * @param {string} id
  * @returns {Promise<void>}
  */
 export async function deleteNpcDefinition(db, id) {
-  const docRef = doc(db, "npcDefinitions", id);
-  await deleteDoc(docRef);
-}
-
-//////////////////////////////
-// 🔹 Real-Time Subscription
-//////////////////////////////
-
-/**
- * Subscribe to real-time updates on the NPC definitions collection.
- * @param {import('firebase/firestore').Firestore} db
- * @param {function(Array<Object>)} onUpdate Callback receiving array of NPCs
- * @returns {function()} unsubscribe
- */
-export function subscribeNpcDefinitions(db, onUpdate) {
-  const colRef = getNpcDefinitionsCollection(db);
-  const unsubscribe = onSnapshot(
-    colRef,
-    snapshot => {
-      const results = snapshot.docs.map(docSnap => ({
-        id: docSnap.id,
-        ...docSnap.data()
-      }));
-      onUpdate(results);
-    },
-    err => {
-      console.error("NpcDefs subscription error:", err);
-    }
-  );
-  return unsubscribe;
+  await deleteDoc(doc(db, "npcDefinitions", id));
 }

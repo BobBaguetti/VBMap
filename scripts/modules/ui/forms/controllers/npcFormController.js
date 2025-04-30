@@ -1,91 +1,102 @@
-// @version: 3
-// @file: /scripts/modules/ui/forms/controllers/npcFormController.js 
+// @version: 1.0
+// @file: /scripts/modules/ui/forms/controllers/npcFormController.js
 
-import { createNpcForm }     from "../builders/npcFormBuilder.js";
-import { createIcon }        from "../../../utils/iconUtils.js";
-// ← fixed path: up two to ui then pickrManager.js
-import { getPickrHexColor }  from "../../pickrManager.js"; 
+import { createNpcForm }       from "../builders/npcFormBuilder.js";
+import { createIcon }          from "../../../utils/iconUtils.js";
+import { createModal, closeModal, openModal } from "../../ui/components/definitionModalShell.js"; // or your preferred modal API
 
 /**
- * Creates a controller around a form layout for NPC definitions.
- * Handles wiring, reset, populate, and getCustom logic.
+ * Controller for the NPC definition form.
+ * @param {{ onCancel: ()=>void, onSubmit: (def)=>Promise, onDelete: (id)=>Promise }} handlers
  */
 export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createNpcForm();
   let _id = null;
-
-  const headerWrap = document.createElement("div");
-  Object.assign(headerWrap.style, {
-    display:        "flex",
-    justifyContent: "space-between",
-    alignItems:     "center"
-  });
-
+  
+  // Header & Buttons
+  const header = document.createElement("div");
+  header.className = "floating-header";
   const titleEl = document.createElement("h3");
   titleEl.textContent = "Add NPC";
-  headerWrap.appendChild(titleEl);
-
   const btnRow = document.createElement("div");
   btnRow.className = "floating-buttons";
-
+  
   const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = "Save";
-
+  btnSave.type = "submit"; btnSave.className = "ui-button"; btnSave.textContent = "Save";
+  
   const btnClear = document.createElement("button");
-  btnClear.type = "button";
-  btnClear.className = "ui-button";
-  btnClear.textContent = "Clear";
+  btnClear.type = "button"; btnClear.className = "ui-button"; btnClear.textContent = "Clear";
   btnClear.onclick = () => { reset(); onCancel?.(); };
-
+  
   const btnDelete = document.createElement("button");
-  btnDelete.type = "button";
-  btnDelete.className = "ui-button-delete";
-  btnDelete.title = "Delete this NPC";
+  btnDelete.type = "button"; btnDelete.className = "ui-button-delete";
   btnDelete.appendChild(createIcon("trash"));
   btnDelete.style.display = "none";
-  btnDelete.onclick = () => { if (_id) onDelete?.(_id); };
-
+  btnDelete.onclick = () => {
+    if (_id) onDelete?.(_id).then(reset);
+  };
+  
   btnRow.append(btnSave, btnClear, btnDelete);
-  headerWrap.appendChild(btnRow);
-  form.prepend(headerWrap);
-
+  header.append(titleEl, btnRow);
+  form.prepend(header);
+  
+  // Reset to empty state
   function reset() {
     form.reset();
     _id = null;
     titleEl.textContent = "Add NPC";
     btnDelete.style.display = "none";
+    // clear extra‐info blocks
+    fields.lootPoolBlock.extraInfo.setLines([], false);
+    fields.vendorInvBlock.extraInfo.setLines([], false);
+    fields.extraInfoBlock.extraInfo.setLines([], false);
+    // clear checkboxes
+    fields.fldTypeFlags.forEach(cb => cb.checked = false);
   }
-
+  
+  // Populate form for edit
   function populate(def = {}) {
     _id = def.id || null;
     titleEl.textContent = _id ? "Edit NPC" : "Add NPC";
     btnDelete.style.display = _id ? "" : "none";
-
-    fields.fldName.value = def.name || "";
-    fields.fldType.value = def.type || "";
-    fields.fldHp.value   = def.hp   || "";
+    
+    fields.fldName.value    = def.name       || "";
+    fields.fldHealth.value  = def.health     ?? "";
+    fields.fldDamage.value  = def.damage     ?? "";
+    
+    // roles
+    fields.fldTypeFlags.forEach(cb => {
+      cb.checked = Array.isArray(def.typeFlags)
+        ? def.typeFlags.includes(cb.value)
+        : false;
+    });
+    
+    // pools & notes
+    fields.lootPoolBlock.extraInfo.setLines(def.lootPool || [], false);
+    fields.vendorInvBlock.extraInfo.setLines(def.vendorInventory || [], false);
+    fields.extraInfoBlock.extraInfo.setLines(def.extraLines || [], false);
   }
-
+  
+  // Harvest form values
   function getCustom() {
     return {
-      id:         _id,
-      name:       fields.fldName.value.trim(),
-      nameColor:  getPickrHexColor(fields.colorName._pickr),
-      type:       fields.fldType.value,
-      typeColor:  getPickrHexColor(fields.colorType._pickr),
-      hp:         fields.fldHp.value.trim(),
-      hpColor:    getPickrHexColor(fields.colorHp._pickr)
+      id:               _id,
+      name:             fields.fldName.value.trim(),
+      typeFlags:        fields.fldTypeFlags.filter(cb=>cb.checked).map(cb=>cb.value),
+      health:           Number(fields.fldHealth.value) || 0,
+      damage:           Number(fields.fldDamage.value) || 0,
+      lootPool:         fields.lootPoolBlock.extraInfo.getLines(),
+      vendorInventory:  fields.vendorInvBlock.extraInfo.getLines(),
+      extraLines:       fields.extraInfoBlock.extraInfo.getLines()
     };
   }
-
+  
   form.addEventListener("submit", async e => {
     e.preventDefault();
-    const payload = getCustom();
-    await onSubmit?.(payload);
+    const def = getCustom();
+    await onSubmit?.(def);
     reset();
   });
-
-  return { form, reset, populate, getCustom };
+  
+  return { form, reset, populate };
 }
