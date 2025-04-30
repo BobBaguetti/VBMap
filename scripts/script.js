@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7 (patched) – improved marker deletion for Item types
+// @version: 7.1 – added immediate re-query after delete to verify Firestore state
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -195,8 +195,9 @@ const callbacks = {
              }),
   onCopy:    (_,d)=>copyMgr.startCopy(d),
   onDragEnd: (_,d)=>firebaseUpdateMarker(db,d).catch(()=>{}),
-  onDelete:  (markerObj, data)=>{
+  onDelete:  async (markerObj, data) => {
                console.log("Deleting marker:", data.id, data.type);
+
                // remove from map/layers
                if (markerObj.remove) {
                  markerObj.remove();
@@ -210,12 +211,17 @@ const callbacks = {
                const idx = allMarkers.findIndex(o=>o.data.id===data.id);
                if (idx!==-1) allMarkers.splice(idx,1);
 
-               // delete from Firestore
+               // delete from Firestore + verify
                if (data.id) {
-                 firebaseDeleteMarker(db,data.id)
-                   .then(()=> console.log("Marker deleted from Firestore", data.id))
-                   .catch(err=> console.error("Delete failed:", err));
+                 firebaseDeleteMarker(db, data.id)
+                   .then(async () => {
+                     console.log("Marker deleted from Firestore", data.id);
+                     const current = await loadMarkers(db);
+                     console.log("Post-delete loadMarkers IDs:", current.map(m => m.id));
+                   })
+                   .catch(err => console.error("Delete failed:", err));
                }
+
                // hide context menu
                hideContextMenu();
              }
