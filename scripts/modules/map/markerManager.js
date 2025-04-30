@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/map/markerManager.js
-// @version: 10.10 – invoke callbacks for drag & delete without altering comments
+// @version: 10.12 – fix drag toggle to not write; only dragend invokes callback
 
 import { formatRarity }     from "../utils/utils.js";
 import { createIcon }       from "../utils/iconUtils.js";
@@ -260,7 +260,20 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
     m.rarityColor = rarityColors[key];
   }
 
-  const markerObj = L.marker(m.coords, { icon: createCustomIcon(m), draggable: false });
+  // create marker, draggable off by default
+  const markerObj = L.marker(m.coords, {
+    icon: createCustomIcon(m),
+    draggable: false
+  });
+
+  // on actual drag end, update data & invoke callback
+  markerObj.on("dragend", ev => {
+    const { lat, lng } = ev.target.getLatLng();
+    m.coords = [lat, lng];
+    callbacks.onDragEnd?.(markerObj, m);
+  });
+
+  // bind popup (rest of your code unchanged…)
   const html = (m.type === "Chest" && m.chestDefFull)
     ? renderChestPopup(m.chestDefFull)
     : renderPopup(m);
@@ -272,17 +285,11 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
     offset: [0, -35]
   });
 
-  // When the popup opens…
   markerObj.on("popupopen", () => {
-    // hook up the close-button
     document.querySelector(".custom-popup .popup-close-btn")
       ?.addEventListener("click", () => markerObj.closePopup());
-
-    // remove each slot’s title (kills the native tooltip)
     document.querySelectorAll(".custom-popup .chest-slot[data-index]").forEach(el => {
       el.removeAttribute("title");
-
-      // wire your hover preview
       const idx = el.getAttribute("data-index");
       el.addEventListener("mouseenter", e => {
         if (!idx) return;
@@ -295,7 +302,7 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
           position: "absolute",
           zIndex:   "1102",
           left:     `${e.clientX + 8}px`,
-          top:      `${e.clientY + 8}px"`
+          top:      `${e.clientY + 8}px`
         });
         document.body.append(preview);
         el._previewEl = preview;
@@ -306,7 +313,6 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
     });
   });
 
-  // **NEW**: clean up any previews when the popup closes
   markerObj.on("popupclose", () => {
     document.querySelectorAll(".chest-item-preview").forEach(el => el.remove());
   });
@@ -327,14 +333,12 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
           action: () => callbacks.onCopy?.(markerObj, m, ev.originalEvent) 
         },
         { 
+          // toggle only, no write
           text: markerObj.dragging.enabled() ? "Disable Drag" : "Enable Drag",
           action: () => {
-            if (markerObj.dragging.enabled()) {
-              markerObj.dragging.disable();
-            } else {
-              markerObj.dragging.enable();
-            }
-            callbacks.onDragEnd?.(markerObj, m);
+            markerObj.dragging.enabled()
+              ? markerObj.dragging.disable()
+              : markerObj.dragging.enable();
           }
         },
         { 
