@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.5 – guard drag updates to avoid recreating deleted markers
+// @version: 7.6 – prevent exact‐coord duplicates at write time
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -89,12 +89,14 @@ onAuthStateChanged(auth, async user => {
     );
 
     subscribeMarkers(db, markers => {
+      // clear existing
       allMarkers.forEach(({ markerObj }) => {
         markerObj.remove();
         clusterItemLayer.removeLayer(markerObj);
       });
       allMarkers.length = 0;
 
+      // re-add each
       markers.forEach(data => addMarker(data, callbacks));
       loadItemFilters().then(filterMarkers);
     });
@@ -115,7 +117,10 @@ onAuthStateChanged(auth, async user => {
           if (isAdmin) firebaseUpdateMarker(db, data).catch(()=>{});
         } else if (data.type === "Chest") {
           const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-          const fullDef  = { ...def, lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean) };
+          const fullDef  = {
+            ...def,
+            lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
+          };
           markerObj.setPopupContent(renderChestPopup(fullDef));
         }
       });
@@ -135,6 +140,15 @@ const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
+  // don't write duplicate markers at same coords
+  const existing = await loadMarkers(db);
+  if (existing.some(m => 
+        m.coords[0] === data.coords[0] &&
+        m.coords[1] === data.coords[1]
+      )) {
+    console.warn("Skipping create: marker already exists at", data.coords);
+    return;
+  }
   await firebaseAddMarker(db, data);
 }
 
@@ -146,7 +160,10 @@ function addMarker(data, cbs = {}) {
 
   if (data.type === "Chest") {
     const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-    const fullDef  = { ...def, lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean) };
+    const fullDef  = {
+      ...def,
+      lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
+    };
     data.name        = fullDef.name;
     data.imageSmall  = fullDef.iconUrl;
     data.chestDefFull= fullDef;
@@ -176,7 +193,6 @@ const callbacks = {
              }),
   onCopy:    (_,d)=> copyMgr.startCopy(d),
   onDragEnd: async (_,d)=> {
-               // Guard: only update if ID exists in Firestore
                if (!d.id) return;
                const docs = await loadMarkers(db);
                if (!docs.some(m=>m.id===d.id)) {
