@@ -1,5 +1,5 @@
 // @file: /scripts/modules/services/firebaseService.js
-// @version: 5.9-patched – add logging for deleteMarker
+// @version: 5.9-logged – log all addMarker calls
 
 import { initializeApp } from "firebase/app";
 import {
@@ -31,7 +31,6 @@ export async function loadMarkers(db) {
 
 /**
  * Real-time subscription to every document in 'markers'.
- * Calls onUpdate(arrayOfMarkers) on any change.
  */
 export function subscribeMarkers(db, onUpdate) {
   return onSnapshot(
@@ -48,7 +47,9 @@ export function subscribeMarkers(db, onUpdate) {
  * Add a new marker.
  */
 export async function addMarker(db, markerData) {
+  console.log("🔥 firebaseService.addMarker called, data:", markerData);
   const docRef = await addDoc(collection(db, "markers"), markerData);
+  console.log("🔥 firebaseService.addMarker completed, id:", docRef.id);
   return { id: docRef.id, ...markerData };
 }
 
