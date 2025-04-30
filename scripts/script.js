@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.3 – remove immediate add in addAndPersist so subscribeMarkers drives creation
+// @version: 7.4 – add logs in addAndPersist & onCopy to debug unintended writes
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -52,7 +52,6 @@ const layers = {
   "Spawn Point":      L.layerGroup(),
   Chest:              L.layerGroup()
 };
-// mount non-Item layers immediately
 Object.entries(layers).forEach(([t,l]) => { if (t !== "Item") l.addTo(map); });
 flatItemLayer.addTo(map);
 
@@ -67,7 +66,7 @@ subscribeChestDefinitions(db, defs => {
 /* ───────────────────── Auth ⟶ Sidebar ⟶ Markers ─────────────────── */
 initAdminAuth();
 
-const allMarkers = [];       // [{ markerObj, data }]
+const allMarkers = [];
 let filterMarkers, loadItemFilters;
 let initialized = false;
 
@@ -77,12 +76,10 @@ onAuthStateChanged(auth, async user => {
   document.body.classList.toggle("is-admin", isAdmin);
 
   if (!initialized && user) {
-    /* 1) sidebar */
     ({ filterMarkers, loadItemFilters } = await setupSidebar(
       map, layers, allMarkers, db, {}
     ));
 
-    /* 2) preload item defs for chest popups */
     const { loadItemDefinitions } = await import(
       "./modules/services/itemDefinitionsService.js"
     );
@@ -90,23 +87,17 @@ onAuthStateChanged(auth, async user => {
       (await loadItemDefinitions(db)).map(i => [i.id,i])
     );
 
-    /* 3) real-time markers */
     subscribeMarkers(db, markers => {
-      // clear existing
       allMarkers.forEach(({ markerObj }) => {
         markerObj.remove();
         clusterItemLayer.removeLayer(markerObj);
       });
       allMarkers.length = 0;
 
-      // re-add each
       markers.forEach(data => addMarker(data, callbacks));
-
-      // re-filter
       loadItemFilters().then(filterMarkers);
     });
 
-    /* 4) live item-definition hydration */
     subscribeItemDefinitions(db, async () => {
       const { loadItemDefinitions } = await import(
         "./modules/services/itemDefinitionsService.js"
@@ -123,7 +114,10 @@ onAuthStateChanged(auth, async user => {
           if (isAdmin) firebaseUpdateMarker(db, data).catch(()=>{});
         } else if (data.type === "Chest") {
           const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-          const fullDef  = { ...def, lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean) };
+          const fullDef  = {
+            ...def,
+            lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
+          };
           markerObj.setPopupContent(renderChestPopup(fullDef));
         }
       });
@@ -142,11 +136,11 @@ const itemModal  = initItemDefinitionsModal(db);
 const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
-// Now *only* writes to Firestore; UI comes from subscribeMarkers
 async function addAndPersist(data) {
+  console.log("addAndPersist → writing new doc, data.id:", data.id, data);
   const saved = await firebaseAddMarker(db, data);
-  // saved.id is set in Firestore; subscribeMarkers will add it to the map
-  return;
+  console.log("addAndPersist → write complete, new id:", saved.id);
+  // UI will update via subscribeMarkers
 }
 
 /* ───────────────── Copy-Paste & Marker utilities ─────────────────── */
@@ -155,13 +149,15 @@ const copyMgr = initCopyPasteManager(map, addAndPersist);
 function addMarker(data, cbs = {}) {
   const isAdmin = document.body.classList.contains("is-admin");
 
-  // Chest → derive UI fields
   if (data.type === "Chest") {
     const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-    const fullDef  = { ...def, lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean) };
+    const fullDef  = {
+      ...def,
+      lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
+    };
     data.name        = fullDef.name;
     data.imageSmall  = fullDef.iconUrl;
-    data.chestDefFull= fullDef;  // used by markerManager
+    data.chestDefFull= fullDef;
 
     const markerObj = createMarker(data, map, layers, showContextMenu, cbs, isAdmin);
     markerObj.setPopupContent(renderChestPopup(fullDef));
@@ -169,7 +165,6 @@ function addMarker(data, cbs = {}) {
     return markerObj;
   }
 
-  // Everything else
   const markerObj = createMarker(data, map, layers, showContextMenu, cbs, isAdmin);
   (clusterItemLayer.hasLayer(markerObj) ? clusterItemLayer : flatItemLayer)
     .addLayer(markerObj);
@@ -187,8 +182,14 @@ const callbacks = {
                );
                firebaseUpdateMarker(db, updated).catch(()=>{});
              }),
-  onCopy:    (_,d)=> copyMgr.startCopy(d),
-  onDragEnd: (_,d)=> firebaseUpdateMarker(db,d).catch(()=>{}),
+  onCopy:    (_,d)=> {
+               console.log("Copy action → calling addAndPersist, data.id:", d.id, d);
+               copyMgr.startCopy(d);
+             },
+  onDragEnd: (_,d)=> {
+               console.log("DragEnd → calling update, data.id:", d.id, d.coords);
+               firebaseUpdateMarker(db,d).catch(()=>{});
+             },
   onDelete:  (markerObj, data) => {
                console.log("Deleting marker:", data.id, data.type);
                markerObj.remove();
@@ -210,18 +211,15 @@ const callbacks = {
 /* ───────────────── Context-menu & scrollbars ─────────────────────── */
 map.on("contextmenu", evt => {
   if (!document.body.classList.contains("is-admin")) return;
-  showContextMenu(
-    evt.originalEvent.pageX,
-    evt.originalEvent.pageY, [{
-      text: "Create New Marker",
-      action: ()=> markerForm.openCreate(
-        [evt.latlng.lat, evt.latlng.lng],
-        undefined,
-        evt.originalEvent,
-        addAndPersist
-      )
-    }]
-  );
+  showContextMenu(evt.originalEvent.pageX, evt.originalEvent.pageY, [{
+    text: "Create New Marker",
+    action: () => markerForm.openCreate(
+      [evt.latlng.lat, evt.latlng.lng],
+      undefined,
+      evt.originalEvent,
+      addAndPersist
+    )
+  }]);
 });
 document.addEventListener("click", e => {
   const cm = document.getElementById("context-menu");
