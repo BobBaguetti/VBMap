@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.4 – add logs in addAndPersist & onCopy to debug unintended writes
+// @version: 7.5 – guard drag updates to avoid recreating deleted markers
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -14,7 +14,8 @@ import {
   subscribeMarkers,
   addMarker    as firebaseAddMarker,
   updateMarker as firebaseUpdateMarker,
-  deleteMarker as firebaseDeleteMarker
+  deleteMarker as firebaseDeleteMarker,
+  loadMarkers
 } from "./modules/services/firebaseService.js";
 
 import { subscribeChestDefinitions } from "./modules/services/chestDefinitionsService.js";
@@ -114,10 +115,7 @@ onAuthStateChanged(auth, async user => {
           if (isAdmin) firebaseUpdateMarker(db, data).catch(()=>{});
         } else if (data.type === "Chest") {
           const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-          const fullDef  = {
-            ...def,
-            lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
-          };
+          const fullDef  = { ...def, lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean) };
           markerObj.setPopupContent(renderChestPopup(fullDef));
         }
       });
@@ -137,10 +135,7 @@ const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
-  console.log("addAndPersist → writing new doc, data.id:", data.id, data);
-  const saved = await firebaseAddMarker(db, data);
-  console.log("addAndPersist → write complete, new id:", saved.id);
-  // UI will update via subscribeMarkers
+  await firebaseAddMarker(db, data);
 }
 
 /* ───────────────── Copy-Paste & Marker utilities ─────────────────── */
@@ -151,10 +146,7 @@ function addMarker(data, cbs = {}) {
 
   if (data.type === "Chest") {
     const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-    const fullDef  = {
-      ...def,
-      lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
-    };
+    const fullDef  = { ...def, lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean) };
     data.name        = fullDef.name;
     data.imageSmall  = fullDef.iconUrl;
     data.chestDefFull= fullDef;
@@ -182,28 +174,25 @@ const callbacks = {
                );
                firebaseUpdateMarker(db, updated).catch(()=>{});
              }),
-  onCopy:    (_,d)=> {
-               console.log("Copy action → calling addAndPersist, data.id:", d.id, d);
-               copyMgr.startCopy(d);
-             },
-  onDragEnd: (_,d)=> {
-               console.log("DragEnd → calling update, data.id:", d.id, d.coords);
+  onCopy:    (_,d)=> copyMgr.startCopy(d),
+  onDragEnd: async (_,d)=> {
+               // Guard: only update if ID exists in Firestore
+               if (!d.id) return;
+               const docs = await loadMarkers(db);
+               if (!docs.some(m=>m.id===d.id)) {
+                 console.warn("Skipping drag-update: marker missing in DB", d.id);
+                 return;
+               }
                firebaseUpdateMarker(db,d).catch(()=>{});
              },
   onDelete:  (markerObj, data) => {
-               console.log("Deleting marker:", data.id, data.type);
                markerObj.remove();
                clusterItemLayer.removeLayer(markerObj);
-
                const idx = allMarkers.findIndex(o=>o.data.id===data.id);
                if (idx!==-1) allMarkers.splice(idx,1);
-
                if (data.id) {
-                 firebaseDeleteMarker(db,data.id)
-                   .then(()=> console.log("Marker deleted from Firestore", data.id))
-                   .catch(err=> console.error("Delete failed:", err));
+                 firebaseDeleteMarker(db,data.id).catch(()=>{});
                }
-
                hideContextMenu();
              }
 };
