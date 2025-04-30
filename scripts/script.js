@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7  – chest markers routed through markerManager; legacy files removed
+// @version: 7 (patched) – improved marker deletion for Item types
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -8,7 +8,7 @@ import { getFirestore } from "firebase/firestore";
 import { firebaseConfig } from "../src/firebaseConfig.js";
 
 import { initializeMap }   from "./modules/map/map.js";
-import { showContextMenu } from "./modules/ui/uiManager.js";
+import { showContextMenu, hideContextMenu } from "./modules/ui/uiManager.js";
 
 import {
   loadMarkers,
@@ -173,7 +173,7 @@ function addMarker(data, cbs={}) {
     return markerObj;
   }
 
-  // Everything else
+  // Everything else (Items, Doors, Teleport, etc.)
   const markerObj = createMarker(
     data, map, layers, showContextMenu, cbs, isAdmin
   );
@@ -195,11 +195,29 @@ const callbacks = {
              }),
   onCopy:    (_,d)=>copyMgr.startCopy(d),
   onDragEnd: (_,d)=>firebaseUpdateMarker(db,d).catch(()=>{}),
-  onDelete:  (m,d)=>{
-               layers[d.type].removeLayer(m);
-               const idx=allMarkers.findIndex(o=>o.data.id===d.id);
-               if(idx!==-1) allMarkers.splice(idx,1);
-               if(d.id) firebaseDeleteMarker(db,d.id).catch(()=>{});
+  onDelete:  (markerObj, data)=>{
+               console.log("Deleting marker:", data.id, data.type);
+               // remove from map/layers
+               if (markerObj.remove) {
+                 markerObj.remove();
+               } else {
+                 layers[data.type]?.removeLayer(markerObj);
+               }
+               // also ensure cluster removal
+               clusterItemLayer.removeLayer(markerObj);
+
+               // remove from in-memory store
+               const idx = allMarkers.findIndex(o=>o.data.id===data.id);
+               if (idx!==-1) allMarkers.splice(idx,1);
+
+               // delete from Firestore
+               if (data.id) {
+                 firebaseDeleteMarker(db,data.id)
+                   .then(()=> console.log("Marker deleted from Firestore", data.id))
+                   .catch(err=> console.error("Delete failed:", err));
+               }
+               // hide context menu
+               hideContextMenu();
              }
 };
 

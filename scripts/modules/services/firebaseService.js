@@ -1,5 +1,5 @@
 // @file: /scripts/modules/services/firebaseService.js
-// @version: 5.9 – add real-time subscribeMarkers
+// @version: 5.9-patched – add logging for deleteMarker
 
 import { initializeApp } from "firebase/app";
 import {
@@ -53,7 +53,7 @@ export async function addMarker(db, markerData) {
 }
 
 /**
- * Update (merge) only defined fields of an existing marker. 
+ * Update (merge) only defined fields of an existing marker.
  */
 export async function updateMarker(db, markerData) {
   const { id, ...raw } = markerData;
@@ -68,5 +68,12 @@ export async function updateMarker(db, markerData) {
  * Delete a marker by ID.
  */
 export async function deleteMarker(db, id) {
-  await deleteDoc(doc(db, "markers", id));
+  console.log("firebaseService: attempting to delete marker id=", id);
+  try {
+    await deleteDoc(doc(db, "markers", id));
+    console.log("firebaseService: successfully deleted marker id=", id);
+  } catch (err) {
+    console.error("firebaseService: delete failed for id=", id, err);
+    throw err;
+  }
 }

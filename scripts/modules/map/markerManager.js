@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/map/markerManager.js
-// @version: 10.9 – strip slot titles & clean up previews on popup close
+// @version: 10.10 – invoke callbacks for drag & delete without altering comments
 
 import { formatRarity }     from "../utils/utils.js";
 import { createIcon }       from "../utils/iconUtils.js";
@@ -295,7 +295,7 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
           position: "absolute",
           zIndex:   "1102",
           left:     `${e.clientX + 8}px`,
-          top:      `${e.clientY + 8}px`
+          top:      `${e.clientY + 8}px"`
         });
         document.body.append(preview);
         el._previewEl = preview;
@@ -318,11 +318,29 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
     const opts = [];
     if (isAdmin) {
       opts.push(
-        { text:"Edit Marker", action:()=>callbacks.onEdit?.(markerObj,m,ev.originalEvent) },
-        { text:"Copy Marker", action:()=>callbacks.onCopy?.(markerObj,m,ev.originalEvent) },
-        { text: markerObj.dragging?.enabled()? "Disable Drag":"Enable Drag",
-          action:()=>{ /* …drag logic… */ } },
-        { text:"Delete Marker", action:()=>callbacks.onDelete?.(markerObj,m) }
+        { 
+          text: "Edit Marker", 
+          action: () => callbacks.onEdit?.(markerObj, m, ev.originalEvent) 
+        },
+        { 
+          text: "Copy Marker", 
+          action: () => callbacks.onCopy?.(markerObj, m, ev.originalEvent) 
+        },
+        { 
+          text: markerObj.dragging.enabled() ? "Disable Drag" : "Enable Drag",
+          action: () => {
+            if (markerObj.dragging.enabled()) {
+              markerObj.dragging.disable();
+            } else {
+              markerObj.dragging.enable();
+            }
+            callbacks.onDragEnd?.(markerObj, m);
+          }
+        },
+        { 
+          text: "Delete Marker", 
+          action: () => callbacks.onDelete?.(markerObj, m) 
+        }
       );
     }
     ctxMenu(ev.originalEvent.pageX, ev.originalEvent.pageY, opts);
