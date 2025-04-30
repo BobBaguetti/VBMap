@@ -1,5 +1,5 @@
 // @file: /scripts/modules/services/firebaseService.js
-// @version: 5.9-logged – log all addMarker calls
+// @version: 6.0 – add upsertMarker for deterministic IDs
 
 import { initializeApp } from "firebase/app";
 import {
@@ -44,13 +44,25 @@ export function subscribeMarkers(db, onUpdate) {
 }
 
 /**
- * Add a new marker.
+ * Add a new marker with a random ID.
+ * (We’re keeping this for backwards compatibility, but you
+ * should now use upsertMarker for creation to avoid dupes.)
  */
 export async function addMarker(db, markerData) {
-  console.log("🔥 firebaseService.addMarker called, data:", markerData);
   const docRef = await addDoc(collection(db, "markers"), markerData);
-  console.log("🔥 firebaseService.addMarker completed, id:", docRef.id);
   return { id: docRef.id, ...markerData };
+}
+
+/**
+ * Create or overwrite a marker doc with a deterministic ID based on coords.
+ * This prevents duplicates at the same latitude/longitude.
+ */
+export async function upsertMarker(db, markerData) {
+  // Round coords to 4 decimal places for stable IDs
+  const [lat, lng] = markerData.coords;
+  const id = `${lat.toFixed(4)}_${lng.toFixed(4)}`;
+  await setDoc(doc(db, "markers", id), markerData);
+  return { id, ...markerData };
 }
 
 /**
@@ -69,12 +81,5 @@ export async function updateMarker(db, markerData) {
  * Delete a marker by ID.
  */
 export async function deleteMarker(db, id) {
-  console.log("firebaseService: attempting to delete marker id=", id);
-  try {
-    await deleteDoc(doc(db, "markers", id));
-    console.log("firebaseService: successfully deleted marker id=", id);
-  } catch (err) {
-    console.error("firebaseService: delete failed for id=", id, err);
-    throw err;
-  }
+  await deleteDoc(doc(db, "markers", id));
 }

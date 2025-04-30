@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.6 – prevent exact‐coord duplicates at write time
+// @version: 7.7 – switch to upsertMarker for deterministic writes, remove coord‐guard
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -12,7 +12,7 @@ import { showContextMenu, hideContextMenu } from "./modules/ui/uiManager.js";
 
 import {
   subscribeMarkers,
-  addMarker    as firebaseAddMarker,
+  upsertMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker,
   loadMarkers
@@ -140,16 +140,8 @@ const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
-  // don't write duplicate markers at same coords
-  const existing = await loadMarkers(db);
-  if (existing.some(m => 
-        m.coords[0] === data.coords[0] &&
-        m.coords[1] === data.coords[1]
-      )) {
-    console.warn("Skipping create: marker already exists at", data.coords);
-    return;
-  }
-  await firebaseAddMarker(db, data);
+  // upsert ensures one doc per coordinate pair
+  await upsertMarker(db, data);
 }
 
 /* ───────────────── Copy-Paste & Marker utilities ─────────────────── */
@@ -195,10 +187,7 @@ const callbacks = {
   onDragEnd: async (_,d)=> {
                if (!d.id) return;
                const docs = await loadMarkers(db);
-               if (!docs.some(m=>m.id===d.id)) {
-                 console.warn("Skipping drag-update: marker missing in DB", d.id);
-                 return;
-               }
+               if (!docs.some(m=>m.id===d.id)) return;
                firebaseUpdateMarker(db,d).catch(()=>{});
              },
   onDelete:  (markerObj, data) => {
@@ -206,9 +195,7 @@ const callbacks = {
                clusterItemLayer.removeLayer(markerObj);
                const idx = allMarkers.findIndex(o=>o.data.id===data.id);
                if (idx!==-1) allMarkers.splice(idx,1);
-               if (data.id) {
-                 firebaseDeleteMarker(db,data.id).catch(()=>{});
-               }
+               if (data.id) firebaseDeleteMarker(db,data.id).catch(()=>{});
                hideContextMenu();
              }
 };
