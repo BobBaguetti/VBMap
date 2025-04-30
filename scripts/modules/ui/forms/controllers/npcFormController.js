@@ -1,32 +1,24 @@
 // @version: 1.2
-// @file: /scripts/modules/ui/forms/controllers/npcFormController.js
+// @file: scripts/modules/ui/forms/controllers/npcFormController.js
 
-import { createPickr }         from "../../ui/pickrManager.js";
+import { createPickr }         from "../../pickrManager.js";
 import { getPickrHexColor }    from "../../../utils/colorUtils.js";
 import { createNpcForm }       from "../builders/npcFormBuilder.js";
 import { createIcon }          from "../../../utils/iconUtils.js";
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
-import { createModal, openModal, closeModal } from "../../ui/uiKit.js";
+import { createModal, openModal, closeModal } from "../../uiKit.js";
 
-export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
+export function createNpcFormController(db, { onCancel, onSubmit, onDelete }) {
   const { form, fields } = createNpcForm();
   const pickrs = {};
-  let _id = null,
+  let _id = null;
 
-      // picker state
-      lootPickerModal = null,
-      lootPickerContent,
-      lootSearch,
-      lootList,
-      vendorPickerModal = null,
-      vendorPickerContent,
-      vendorSearch,
-      vendorList,
-      allItems = [];
+  // picker state
+  let lootPickerModal, lootPickerContent, lootSearch, lootList;
+  let vendorPickerModal, vendorPickerContent, vendorSearch, vendorList;
+  let allItems = [];
 
   // ─── Header + Buttons ─────────────────────────────────────────────
-  const header = document.createElement("div");
-  header.className = "floating-buttons";
   const titleEl = document.createElement("h3");
   titleEl.textContent = "Add NPC";
   const btnRow = document.createElement("div");
@@ -55,18 +47,18 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
   btnRow.append(btnSave, btnClear, btnDelete);
   form.prepend(titleEl, btnRow);
 
-  // ─── Pickr for future color fields (if any) ───────────────────────
+  // ─── Helpers ───────────────────────────────────────────────────────
   function initPickrs() {
-    if (pickrs.desc || !document.body.contains(fields.extraInfoBlock.block)) return;
-    // Example: you could hook up a pickr here if you add color swatches to extraInfoBlock
+    if (pickrs.extra || !fields.extraInfoBlock.block) return;
+    // no built-in swatches on NPC form right now
   }
 
-  // ─── Common ensureAllItems ────────────────────────────────────────
   async function ensureAllItems() {
-    if (!allItems.length) allItems = await loadItemDefinitions(db);
+    if (allItems.length) return;
+    allItems = await loadItemDefinitions(db);
   }
 
-  // ─── Build & Open Loot-Pool Picker ───────────────────────────────
+  // ─── Loot Picker ──────────────────────────────────────────────────
   async function buildLootPicker() {
     if (lootPickerModal) return;
     const { modal, header, content } = createModal({
@@ -93,25 +85,25 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     });
     content.appendChild(lootList);
 
-    const btnRow = document.createElement("div");
-    btnRow.style.textAlign = "right";
+    const row = document.createElement("div");
+    row.style.textAlign = "right";
     const cancel = document.createElement("button");
     cancel.type = "button"; cancel.className = "ui-button"; cancel.textContent = "Cancel";
     cancel.onclick = () => closeModal(modal);
-    const save   = document.createElement("button");
-    save.type    = "button"; save.className = "ui-button"; save.textContent = "Save";
+    const save = document.createElement("button");
+    save.type = "button"; save.className = "ui-button"; save.textContent = "Save";
     save.onclick = saveLootPicker;
-    btnRow.append(cancel, save);
-    content.append(btnRow);
+    row.append(cancel, save);
+    content.append(row);
 
     lootSearch.addEventListener("input", filterLootList);
   }
 
   function filterLootList() {
     const q = lootSearch.value.toLowerCase();
-    lootList.childNodes.forEach(row => {
-      const txt = row.querySelector("label").textContent.toLowerCase();
-      row.style.display = txt.includes(q) ? "" : "none";
+    lootList.childNodes.forEach(r => {
+      const txt = r.querySelector("label").textContent.toLowerCase();
+      r.style.display = txt.includes(q) ? "" : "none";
     });
   }
 
@@ -120,38 +112,40 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     await ensureAllItems();
     lootList.innerHTML = "";
     allItems.forEach(item => {
-      const row = document.createElement("div");
-      Object.assign(row.style, { display:"flex", alignItems:"center", padding:"4px 0" });
+      const r = document.createElement("div");
+      Object.assign(r.style, { display:"flex", alignItems:"center", padding:"4px 0" });
       const cb = document.createElement("input");
-      cb.type = "checkbox"; cb.value = item.id;
+      cb.type = "checkbox";
+      cb.value = item.id;
       cb.checked = fields.lootPoolBlock.extraInfo.getLines().some(l => l.id === item.id);
       cb.style.marginRight = "8px";
       const lbl = document.createElement("label");
       lbl.textContent = item.name;
-      row.append(cb, lbl);
-      lootList.appendChild(row);
+      r.append(cb, lbl);
+      lootList.append(r);
     });
-    lootSearch.value = ""; filterLootList();
+    lootSearch.value = "";
+    filterLootList();
     openModal(lootPickerModal);
   }
 
   function saveLootPicker() {
-    const selected = Array.from(
-      lootList.querySelectorAll("input[type=checkbox]:checked")
+    const sel = Array.from(
+      lootList.querySelectorAll("input:checked")
     ).map(cb => {
-      const def = allItems.find(i => i.id === cb.value);
-      return def ? { text:def.name, color:"#ccc", id:def.id } : null;
+      const d = allItems.find(i => i.id === cb.value);
+      return d && { text: d.name, color: "#ccc", id: d.id };
     }).filter(Boolean);
-    fields.lootPoolBlock.extraInfo.setLines(selected, false);
+    fields.lootPoolBlock.extraInfo.setLines(sel, false);
     closeModal(lootPickerModal);
   }
 
-  // ─── Build & Open Vendor-Inventory Picker ────────────────────────
+  // ─── Vendor Picker ────────────────────────────────────────────────
   async function buildVendorPicker() {
     if (vendorPickerModal) return;
     const { modal, header, content } = createModal({
       id: "npc-vendor-picker",
-      title: "Select Vendor Inventory Items",
+      title: "Select Vendor Inventory",
       size: "small",
       backdrop: true,
       withDivider: true,
@@ -173,25 +167,25 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     });
     content.appendChild(vendorList);
 
-    const btnRow = document.createElement("div");
-    btnRow.style.textAlign = "right";
+    const row = document.createElement("div");
+    row.style.textAlign = "right";
     const cancel = document.createElement("button");
     cancel.type = "button"; cancel.className = "ui-button"; cancel.textContent = "Cancel";
     cancel.onclick = () => closeModal(modal);
-    const save   = document.createElement("button");
-    save.type    = "button"; save.className = "ui-button"; save.textContent = "Save";
+    const save = document.createElement("button");
+    save.type = "button"; save.className = "ui-button"; save.textContent = "Save";
     save.onclick = saveVendorPicker;
-    btnRow.append(cancel, save);
-    content.append(btnRow);
+    row.append(cancel, save);
+    content.append(row);
 
     vendorSearch.addEventListener("input", filterVendorList);
   }
 
   function filterVendorList() {
     const q = vendorSearch.value.toLowerCase();
-    vendorList.childNodes.forEach(row => {
-      const txt = row.querySelector("label").textContent.toLowerCase();
-      row.style.display = txt.includes(q) ? "" : "none";
+    vendorList.childNodes.forEach(r => {
+      const txt = r.querySelector("label").textContent.toLowerCase();
+      r.style.display = txt.includes(q) ? "" : "none";
     });
   }
 
@@ -200,29 +194,30 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     await ensureAllItems();
     vendorList.innerHTML = "";
     allItems.forEach(item => {
-      const row = document.createElement("div");
-      Object.assign(row.style, { display:"flex", alignItems:"center", padding:"4px 0" });
+      const r = document.createElement("div");
+      Object.assign(r.style, { display:"flex", alignItems:"center", padding:"4px 0" });
       const cb = document.createElement("input");
       cb.type = "checkbox"; cb.value = item.id;
       cb.checked = fields.vendorInvBlock.extraInfo.getLines().some(l => l.id === item.id);
       cb.style.marginRight = "8px";
       const lbl = document.createElement("label");
       lbl.textContent = item.name;
-      row.append(cb, lbl);
-      vendorList.appendChild(row);
+      r.append(cb, lbl);
+      vendorList.append(r);
     });
-    vendorSearch.value = ""; filterVendorList();
+    vendorSearch.value = "";
+    filterVendorList();
     openModal(vendorPickerModal);
   }
 
   function saveVendorPicker() {
-    const selected = Array.from(
-      vendorList.querySelectorAll("input[type=checkbox]:checked")
+    const sel = Array.from(
+      vendorList.querySelectorAll("input:checked")
     ).map(cb => {
-      const def = allItems.find(i => i.id === cb.value);
-      return def ? { text:def.name, color:"#ccc", id:def.id } : null;
+      const d = allItems.find(i => i.id === cb.value);
+      return d && { text: d.name, color: "#ccc", id: d.id };
     }).filter(Boolean);
-    fields.vendorInvBlock.extraInfo.setLines(selected, false);
+    fields.vendorInvBlock.extraInfo.setLines(sel, false);
     closeModal(vendorPickerModal);
   }
 
@@ -239,32 +234,34 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     fields.fldTypeFlags.forEach(cb => cb.checked = false);
   }
 
-  function populate(def={}) {
+  function populate(def = {}) {
     _id = def.id || null;
     titleEl.textContent = _id ? "Edit NPC" : "Add NPC";
     btnDelete.style.display = _id ? "" : "none";
 
-    fields.fldName.value    = def.name       || "";
-    fields.fldHealth.value  = def.health     ?? "";
-    fields.fldDamage.value  = def.damage     ?? "";
-    fields.fldTypeFlags.forEach(cb => cb.checked = (def.typeFlags||[]).includes(cb.value));
+    fields.fldName.value   = def.name      || "";
+    fields.fldHealth.value = def.health    ?? "";
+    fields.fldDamage.value = def.damage    ?? "";
+
+    fields.fldTypeFlags.forEach(cb => {
+      cb.checked = Array.isArray(def.typeFlags) && def.typeFlags.includes(cb.value);
+    });
 
     fields.lootPoolBlock.extraInfo.setLines(def.lootPool || [], false);
     fields.vendorInvBlock.extraInfo.setLines(def.vendorInventory || [], false);
     fields.extraInfoBlock.extraInfo.setLines(def.extraLines || [], false);
   }
 
-  // ─── Gather form values ───────────────────────────────────────────
   function getCustom() {
     return {
-      id:              _id,
-      name:            fields.fldName.value.trim(),
-      typeFlags:       fields.fldTypeFlags.filter(cb=>cb.checked).map(cb=>cb.value),
-      health:          Number(fields.fldHealth.value) || 0,
-      damage:          Number(fields.fldDamage.value) || 0,
-      lootPool:        fields.lootPoolBlock.extraInfo.getLines(),
-      vendorInventory: fields.vendorInvBlock.extraInfo.getLines(),
-      extraLines:      fields.extraInfoBlock.extraInfo.getLines()
+      id:               _id,
+      name:             fields.fldName.value.trim(),
+      typeFlags:        fields.fldTypeFlags.filter(cb=>cb.checked).map(cb=>cb.value),
+      health:           Number(fields.fldHealth.value) || 0,
+      damage:           Number(fields.fldDamage.value) || 0,
+      lootPool:         fields.lootPoolBlock.extraInfo.getLines(),
+      vendorInventory:  fields.vendorInvBlock.extraInfo.getLines(),
+      extraLines:       fields.extraInfoBlock.extraInfo.getLines()
     };
   }
 
@@ -274,7 +271,7 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     reset();
   });
 
-  // ─── Wire up our two pickers ─────────────────────────────────────
+  // wire up the picker buttons:
   fields.lootPoolBlock.block
     .querySelector("button")
     .addEventListener("click", openLootPicker);
