@@ -1,11 +1,10 @@
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
-// @version: 1.0 — upgraded: hostile/vendor/quest flags + health/damage + loot & vendor inventory
+// @version: 1.1 — use createTextField for numbers, remove createNumberField
 
 import {
   createTextField,
-  createNumberField
+  createExtraInfoBlock
 } from "../../uiKit.js";
-import { createExtraInfoBlock } from "../../uiKit.js";
 import { createTopAlignedFieldRow } from "../../../utils/formUtils.js";
 
 /**
@@ -36,23 +35,28 @@ export function createNpcForm() {
   const rowTypes = createTopAlignedFieldRow("NPC Roles:", typeContainer);
   const fldTypeFlags = Array.from(typeContainer.querySelectorAll("input"));
 
-  // — Health & Damage —
+  // — Health & Damage (numeric) —
   const { row: rowHealth, input: fldHealth } =
-    createNumberField("Health:", "npc-fld-health", { min: 0 });
+    createTextField("Health:", "npc-fld-health");
+  fldHealth.type = "number";
+  fldHealth.min  = "0";
+
   const { row: rowDamage, input: fldDamage } =
-    createNumberField("Damage:", "npc-fld-damage", { min: 0 });
+    createTextField("Damage:", "npc-fld-damage");
+  fldDamage.type = "number";
+  fldDamage.min  = "0";
 
   // — Loot Pool (hostile drops) —
   const lootExtra = createExtraInfoBlock();
-  const rowLoot = createTopAlignedFieldRow("Loot Pool:", lootExtra.block);
+  const rowLoot   = createTopAlignedFieldRow("Loot Pool:", lootExtra.block);
 
   // — Vendor Inventory (for vendors) —
   const vendExtra = createExtraInfoBlock();
-  const rowVend = createTopAlignedFieldRow("Vendor Inventory:", vendExtra.block);
+  const rowVend   = createTopAlignedFieldRow("Vendor Inventory:", vendExtra.block);
 
   // — Description / Notes —
   const descExtra = createExtraInfoBlock();
-  const rowDesc = createTopAlignedFieldRow("Description / Notes:", descExtra.block);
+  const rowDesc   = createTopAlignedFieldRow("Description / Notes:", descExtra.block);
 
   // Assemble in order
   form.append(
