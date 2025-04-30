@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.8 – fully switch to upsertMarker for deterministic writes
+// @version: 7.9 – remove definition-sync writes to avoid phantom random-ID docs, fully deterministic writes
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -88,6 +88,7 @@ onAuthStateChanged(auth, async user => {
       (await loadItemDefinitions(db)).map(i => [i.id,i])
     );
 
+    /* ───── subscribe to markers ───────────────────────────────── */
     subscribeMarkers(db, markers => {
       // clear existing
       allMarkers.forEach(({ markerObj }) => {
@@ -101,25 +102,26 @@ onAuthStateChanged(auth, async user => {
       loadItemFilters().then(filterMarkers);
     });
 
+    /* ─── live item-definition hydration ───────────────────────── */
     subscribeItemDefinitions(db, async () => {
       const { loadItemDefinitions } = await import(
         "./modules/services/itemDefinitionsService.js"
       );
       const defs = await loadItemDefinitions(db);
-      itemDefMap = Object.fromEntries(defs.map(d=>[d.id,d]));
+      itemDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
 
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.predefinedItemId) {
+          // Refresh only in-memory state; do NOT persist back on load
           const def = itemDefMap[data.predefinedItemId];
           Object.assign(data, def);
           markerObj.setIcon(createCustomIcon(data));
           markerObj.setPopupContent(renderPopup(data));
-          if (isAdmin) firebaseUpdateMarker(db, data).catch(()=>{});
         } else if (data.type === "Chest") {
           const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
           const fullDef  = {
             ...def,
-            lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
+            lootPool: (def.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
           };
           markerObj.setPopupContent(renderChestPopup(fullDef));
         }
@@ -140,7 +142,7 @@ const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
-  // always upsert (deterministic ID) — random‐ID writes are gone
+  // always upsert (deterministic ID) — no random-ID writes
   await upsertMarker(db, data);
 }
 
@@ -154,7 +156,7 @@ function addMarker(data, cbs = {}) {
     const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
     const fullDef  = {
       ...def,
-      lootPool:(def.lootPool||[]).map(id=>itemDefMap[id]).filter(Boolean)
+      lootPool: (def.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
     };
     data.name        = fullDef.name;
     data.imageSmall  = fullDef.iconUrl;
@@ -174,30 +176,30 @@ function addMarker(data, cbs = {}) {
 }
 
 const callbacks = {
-  onEdit:    (m,d,e)=> markerForm.openEdit(m,d,e,updated=>{
-               m.setIcon(createCustomIcon(updated));
-               m.setPopupContent(
-                 updated.type==="Chest"
-                   ? renderChestPopup(updated.chestDefFull||{})
-                   : renderPopup(updated)
-               );
-               firebaseUpdateMarker(db, updated).catch(()=>{});
-             }),
-  onCopy:    (_,d)=> copyMgr.startCopy(d),
-  onDragEnd: async (_,d)=> {
-               if (!d.id) return;
-               const docs = await loadMarkers(db);
-               if (!docs.some(m=>m.id===d.id)) return;
-               firebaseUpdateMarker(db,d).catch(()=>{});
-             },
-  onDelete:  (markerObj, data) => {
-               markerObj.remove();
-               clusterItemLayer.removeLayer(markerObj);
-               const idx = allMarkers.findIndex(o=>o.data.id===data.id);
-               if (idx!==-1) allMarkers.splice(idx,1);
-               if (data.id) firebaseDeleteMarker(db,data.id).catch(()=>{});
-               hideContextMenu();
-             }
+  onEdit: (m, d, e) => markerForm.openEdit(m, d, e, updated => {
+    m.setIcon(createCustomIcon(updated));
+    m.setPopupContent(
+      updated.type === "Chest"
+        ? renderChestPopup(updated.chestDefFull || {})
+        : renderPopup(updated)
+    );
+    firebaseUpdateMarker(db, updated).catch(() => {});
+  }),
+  onCopy: (_, d) => copyMgr.startCopy(d),
+  onDragEnd: async (_, d) => {
+    if (!d.id) return;
+    const docs = await loadMarkers(db);
+    if (!docs.some(m => m.id === d.id)) return;
+    firebaseUpdateMarker(db, d).catch(() => {});
+  },
+  onDelete: (markerObj, data) => {
+    markerObj.remove();
+    clusterItemLayer.removeLayer(markerObj);
+    const idx = allMarkers.findIndex(o => o.data.id === data.id);
+    if (idx !== -1) allMarkers.splice(idx, 1);
+    if (data.id) firebaseDeleteMarker(db, data.id).catch(() => {});
+    hideContextMenu();
+  }
 };
 
 /* ───────────────── Context-menu & scrollbars ─────────────────────── */
@@ -215,6 +217,6 @@ map.on("contextmenu", evt => {
 });
 document.addEventListener("click", e => {
   const cm = document.getElementById("context-menu");
-  if (cm?.style.display==="block" && !cm.contains(e.target)) cm.style.display="none";
+  if (cm?.style.display === "block" && !cm.contains(e.target)) cm.style.display = "none";
 });
 document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
