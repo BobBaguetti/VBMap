@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.2 – use subscribeMarkers for real-time sync (fixes delete persisting)
+// @version: 7.3 – remove immediate add in addAndPersist so subscribeMarkers drives creation
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -11,7 +11,6 @@ import { initializeMap }     from "./modules/map/map.js";
 import { showContextMenu, hideContextMenu } from "./modules/ui/uiManager.js";
 
 import {
-  loadMarkers,
   subscribeMarkers,
   addMarker    as firebaseAddMarker,
   updateMarker as firebaseUpdateMarker,
@@ -94,16 +93,14 @@ onAuthStateChanged(auth, async user => {
     /* 3) real-time markers */
     subscribeMarkers(db, markers => {
       // clear existing
-      allMarkers.forEach(({ markerObj, data }) => {
+      allMarkers.forEach(({ markerObj }) => {
         markerObj.remove();
         clusterItemLayer.removeLayer(markerObj);
       });
       allMarkers.length = 0;
 
       // re-add each
-      markers.forEach(data => {
-        addMarker(data, callbacks);
-      });
+      markers.forEach(data => addMarker(data, callbacks));
 
       // re-filter
       loadItemFilters().then(filterMarkers);
@@ -117,7 +114,6 @@ onAuthStateChanged(auth, async user => {
       const defs = await loadItemDefinitions(db);
       itemDefMap = Object.fromEntries(defs.map(d=>[d.id,d]));
 
-      // update existing
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.predefinedItemId) {
           const def = itemDefMap[data.predefinedItemId];
@@ -145,12 +141,12 @@ const markerForm = initMarkerModal(db);
 const itemModal  = initItemDefinitionsModal(db);
 const questModal = initQuestDefinitionsModal(db);
 
-/* ─────────────── Add & Persist helper (all types) ────────────────── */
+/* ─────────────── Create & Persist helper ────────────────────────── */
+// Now *only* writes to Firestore; UI comes from subscribeMarkers
 async function addAndPersist(data) {
-  const markerObj = addMarker(data, callbacks);
-  const saved     = await firebaseAddMarker(db, data);
-  data.id = saved.id;
-  return markerObj;
+  const saved = await firebaseAddMarker(db, data);
+  // saved.id is set in Firestore; subscribeMarkers will add it to the map
+  return;
 }
 
 /* ───────────────── Copy-Paste & Marker utilities ─────────────────── */
@@ -195,15 +191,12 @@ const callbacks = {
   onDragEnd: (_,d)=> firebaseUpdateMarker(db,d).catch(()=>{}),
   onDelete:  (markerObj, data) => {
                console.log("Deleting marker:", data.id, data.type);
-               // remove from map
                markerObj.remove();
                clusterItemLayer.removeLayer(markerObj);
 
-               // remove from memory
                const idx = allMarkers.findIndex(o=>o.data.id===data.id);
                if (idx!==-1) allMarkers.splice(idx,1);
 
-               // delete from Firestore
                if (data.id) {
                  firebaseDeleteMarker(db,data.id)
                    .then(()=> console.log("Marker deleted from Firestore", data.id))
