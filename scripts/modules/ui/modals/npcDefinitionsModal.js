@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 1.2 — fixed imports, real-time list, refresh on save/delete
+// @version: 1.3 — pass `db` into the form controller
 
 import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
 import { createDefListContainer }       from "../../utils/listUtils.js";
@@ -25,7 +25,6 @@ export function initNpcDefinitionsModal(db) {
   }
 
   function startSubscription() {
-    // Clean up an existing subscription if there is one
     unsubscribe?.();
     unsubscribe = subscribeNpcDefinitions(db, defs => {
       listApi.refresh(defs);
@@ -55,7 +54,7 @@ export function initNpcDefinitionsModal(db) {
       bodyWrap.appendChild(listContainer);
       listApi = createDefinitionListManager({
         container:      listContainer,
-        getDefinitions: () => [], // initial placeholder
+        getDefinitions: () => [], // will be replaced by subscription
         renderEntry:    (def, layout) => renderNpcEntry(def, layout, {
           onClick:  d => {
             formApi.populate(d);
@@ -72,20 +71,20 @@ export function initNpcDefinitionsModal(db) {
         })
       });
 
-      // 3) Form controller
-      formApi = createNpcFormController({
-        onCancel: () => {
+      // 3) Form controller — **pass `db` as the first argument** 
+      formApi = createNpcFormController(db, {
+        onCancel: async () => {
           formApi.reset();
           previewApi.hide();
         },
-        onDelete:          async id => {
+        onDelete: async id => {
           if (confirm(`Delete NPC "${id}"?`)) {
             await deleteNpcDefinition(db, id);
             formApi.reset();
             previewApi.hide();
           }
         },
-        onSubmit:          async def => {
+        onSubmit: async def => {
           if (def.id) {
             await updateNpcDefinition(db, def.id, def);
           } else {
