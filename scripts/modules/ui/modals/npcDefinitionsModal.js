@@ -53,7 +53,7 @@ export function initNpcDefinitionsModal(db) {
       const listContainer = createDefListContainer("npc-def-list");
       bodyWrap.appendChild(listContainer);
       listApi = createDefinitionListManager({
-        container:      listContainer,
+        container:      listContainer, 
         getDefinitions: () => [], // will be replaced by subscription
         renderEntry:    (def, layout) => renderNpcEntry(def, layout, {
           onClick:  d => {
