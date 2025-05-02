@@ -1,12 +1,12 @@
 // @version: 1.3
 // @file: scripts/modules/ui/forms/controllers/npcFormController.js
 
-import { createPickr }         from "../../ui/pickrManager.js";
-import { getPickrHexColor }    from "../../../utils/colorUtils.js";
+import { createPickr }         from "../../../pickrManager.js";
+import { getPickrHexColor }    from "../../../../utils/colorUtils.js";
 import { createNpcForm }       from "../builders/npcFormBuilder.js";
-import { createIcon }          from "../../../utils/iconUtils.js";
-import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
-import { createModal, openModal, closeModal } from "../../uiKit.js";
+import { createIcon }          from "../../../../utils/iconUtils.js";
+import { loadItemDefinitions } from "../../../../services/itemDefinitionsService.js";
+import { createModal, openModal, closeModal } from "../../../uiKit.js";
 
 export function createNpcFormController(db, { onCancel, onSubmit, onDelete }) {
   const { form, fields } = createNpcForm();
@@ -131,7 +131,6 @@ export function createNpcFormController(db, { onCancel, onSubmit, onDelete }) {
       return d && { text: d.name, color: "#ccc", id: d.id };
     }).filter(Boolean);
 
-    // **Directly on the block now:**
     fields.lootPoolBlock.setLines(sel, false);
     closeModal(lootPickerModal);
   }
