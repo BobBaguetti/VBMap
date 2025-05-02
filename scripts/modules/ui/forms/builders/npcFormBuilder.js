@@ -1,10 +1,10 @@
-// @version: 3 – added Image S/L and Extra Info fields
+// @version: 3.1 – use createExtraInfoField instead of nonexistent createListField
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
 
 import { createTextField }           from "../../uiKit.js";
 import { createDescriptionField }    from "../universalForm.js";
+import { createExtraInfoField }      from "../universalForm.js";
 import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
-import { createListField }           from "../../../utils/formUtils.js";
 
 /**
  * Build the DOM form for NPC definitions:
@@ -88,15 +88,11 @@ export function createNpcForm() {
   const { row: rowImgL, input: fldImgL } =
     createTextField("Image L:", "npc-fld-imgl");
 
-  // — Extra Info —
-  const { row: rowExtra, container: extraContainer, getValues: getExtraValues, clear: clearExtra } =
-    createListField("Extra Info:", {
-      addLabel: "+",
-      itemBuilder: () => ({
-        text: createTextField("", "").input,
-        color: createDescriptionField().colorBtn
-      })
-    });
+  // — Extra Info (text + color swatches) —
+  const {
+    row:       rowExtra,
+    extraInfo: extraField
+  } = createExtraInfoField({ withDividers: false });
 
   // assemble form
   form.append(
@@ -128,10 +124,7 @@ export function createNpcForm() {
       colorDesc,
       fldImgS,
       fldImgL,
-      extra: {
-        getValues: getExtraValues,
-        clear:     clearExtra
-      }
+      extra:              extraField
     }
   };
 }
