@@ -1,6 +1,8 @@
-// @version: 2.1
+// @version: 2.2
 // @file: /scripts/modules/ui/forms/controllers/npcFormController.js
 
+import { createPickr }         from "../../ui/pickrManager.js";
+import { getPickrHexColor }    from "../../../utils/colorUtils.js";
 import { createNpcForm }       from "../builders/npcFormBuilder.js";
 import { createIcon }          from "../../../utils/iconUtils.js";
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
@@ -8,6 +10,7 @@ import { createModal, openModal, closeModal } from "../../uiKit.js";
 
 export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
   const { form, fields } = createNpcForm();
+  const pickrs = {};
   let _id = null;
 
   // picker state
@@ -18,7 +21,6 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
   // ─── Header + Buttons ─────────────────────────────────────────────
   const titleEl = document.createElement("h3");
   titleEl.textContent = "Add NPC";
-
   const btnRow = document.createElement("div");
   btnRow.className = "floating-buttons";
 
@@ -47,8 +49,9 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
 
   // ─── Helpers ───────────────────────────────────────────────────────
   async function ensureAllItems() {
-    if (allItems.length) return;
-    allItems = await loadItemDefinitions();
+    if (!allItems.length) {
+      allItems = await loadItemDefinitions(db);
+    }
   }
 
   // ─── Loot Picker ──────────────────────────────────────────────────
@@ -78,25 +81,23 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     });
     content.appendChild(lootList);
 
-    const controlRow = document.createElement("div");
-    controlRow.style.textAlign = "right";
+    const row = document.createElement("div");
+    row.style.textAlign = "right";
     const cancel = document.createElement("button");
     cancel.type = "button"; cancel.className = "ui-button"; cancel.textContent = "Cancel";
     cancel.onclick = () => closeModal(modal);
     const save = document.createElement("button");
     save.type = "button"; save.className = "ui-button"; save.textContent = "Save";
     save.onclick = saveLootPicker;
-    controlRow.append(cancel, save);
-    content.append(controlRow);
+    row.append(cancel, save);
+    content.append(row);
 
-    lootSearch.addEventListener("input", filterLootList);
-  }
-
-  function filterLootList() {
-    const q = lootSearch.value.toLowerCase();
-    lootList.childNodes.forEach(r => {
-      const txt = r.querySelector("label").textContent.toLowerCase();
-      r.style.display = txt.includes(q) ? "" : "none";
+    lootSearch.addEventListener("input", () => {
+      const q = lootSearch.value.toLowerCase();
+      lootList.childNodes.forEach(r => {
+        const txt = r.querySelector("label").textContent.toLowerCase();
+        r.style.display = txt.includes(q) ? "" : "none";
+      });
     });
   }
 
@@ -105,8 +106,8 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     await ensureAllItems();
     lootList.innerHTML = "";
     allItems.forEach(item => {
-      const row = document.createElement("div");
-      Object.assign(row.style, { display:"flex", alignItems:"center", padding:"4px 0" });
+      const r = document.createElement("div");
+      Object.assign(r.style, { display:"flex", alignItems:"center", padding:"4px 0" });
       const cb = document.createElement("input");
       cb.type = "checkbox";
       cb.value = item.id;
@@ -114,11 +115,9 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
       cb.style.marginRight = "8px";
       const lbl = document.createElement("label");
       lbl.textContent = item.name;
-      row.append(cb, lbl);
-      lootList.append(row);
+      r.append(cb, lbl);
+      lootList.append(r);
     });
-    lootSearch.value = "";
-    filterLootList();
     openModal(lootPickerModal);
   }
 
@@ -129,20 +128,21 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
       const d = allItems.find(i => i.id === cb.value);
       return d && { text: d.name, color: "#ccc", id: d.id };
     }).filter(Boolean);
-    fields.lootPool.splice(0, fields.lootPool.length, ...sel);
-    fields.chipContainer.innerHTML = "";
-    sel.forEach(line => {
+    fields.lootPool = sel;
+    if (fields.chipContainer) fields.chipContainer.innerHTML = "";
+    sel.forEach(item => {
       const chip = document.createElement("span");
       chip.className = "loot-pool-chip";
-      chip.textContent = line.text;
+      chip.textContent = item.text;
       const x = document.createElement("span");
-      x.className = "remove-chip"; x.textContent = "×";
+      x.className = "remove-chip";
+      x.textContent = "×";
       x.onclick = () => {
-        fields.lootPool.splice(fields.lootPool.indexOf(line),1);
+        fields.lootPool = fields.lootPool.filter(l => l.id !== item.id);
         chip.remove();
       };
       chip.append(x);
-      fields.chipContainer.append(chip);
+      fields.chipContainer?.append(chip);
     });
     closeModal(lootPickerModal);
   }
@@ -174,25 +174,23 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     });
     content.appendChild(vendorList);
 
-    const controlRow = document.createElement("div");
-    controlRow.style.textAlign = "right";
+    const row = document.createElement("div");
+    row.style.textAlign = "right";
     const cancel = document.createElement("button");
     cancel.type = "button"; cancel.className = "ui-button"; cancel.textContent = "Cancel";
     cancel.onclick = () => closeModal(modal);
     const save = document.createElement("button");
     save.type = "button"; save.className = "ui-button"; save.textContent = "Save";
     save.onclick = saveVendorPicker;
-    controlRow.append(cancel, save);
-    content.append(controlRow);
+    row.append(cancel, save);
+    content.append(row);
 
-    vendorSearch.addEventListener("input", filterVendorList);
-  }
-
-  function filterVendorList() {
-    const q = vendorSearch.value.toLowerCase();
-    vendorList.childNodes.forEach(r => {
-      const txt = r.querySelector("label").textContent.toLowerCase();
-      r.style.display = txt.includes(q) ? "" : "none";
+    vendorSearch.addEventListener("input", () => {
+      const q = vendorSearch.value.toLowerCase();
+      vendorList.childNodes.forEach(r => {
+        const txt = r.querySelector("label").textContent.toLowerCase();
+        r.style.display = txt.includes(q) ? "" : "none";
+      });
     });
   }
 
@@ -201,19 +199,17 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     await ensureAllItems();
     vendorList.innerHTML = "";
     allItems.forEach(item => {
-      const row = document.createElement("div");
-      Object.assign(row.style, { display:"flex", alignItems:"center", padding:"4px 0" });
+      const r = document.createElement("div");
+      Object.assign(r.style, { display:"flex", alignItems:"center", padding:"4px 0" });
       const cb = document.createElement("input");
       cb.type = "checkbox"; cb.value = item.id;
       cb.checked = fields.vendorInv.some(v => v.id === item.id);
       cb.style.marginRight = "8px";
       const lbl = document.createElement("label");
       lbl.textContent = item.name;
-      row.append(cb, lbl);
-      vendorList.append(row);
+      r.append(cb, lbl);
+      vendorList.append(r);
     });
-    vendorSearch.value = "";
-    filterVendorList();
     openModal(vendorPickerModal);
   }
 
@@ -224,20 +220,21 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
       const d = allItems.find(i => i.id === cb.value);
       return d && { text: d.name, color: "#ccc", id: d.id };
     }).filter(Boolean);
-    fields.vendorInv.splice(0, fields.vendorInv.length, ...sel);
-    fields.chipContainerVend.innerHTML = "";
-    sel.forEach(line => {
+    fields.vendorInv = sel;
+    if (fields.chipContainerVend) fields.chipContainerVend.innerHTML = "";
+    sel.forEach(item => {
       const chip = document.createElement("span");
       chip.className = "loot-pool-chip";
-      chip.textContent = line.text;
+      chip.textContent = item.text;
       const x = document.createElement("span");
-      x.className = "remove-chip"; x.textContent = "×";
+      x.className = "remove-chip";
+      x.textContent = "×";
       x.onclick = () => {
-        fields.vendorInv.splice(fields.vendorInv.indexOf(line),1);
+        fields.vendorInv = fields.vendorInv.filter(v => v.id !== item.id);
         chip.remove();
       };
       chip.append(x);
-      fields.chipContainerVend.append(chip);
+      fields.chipContainerVend?.append(chip);
     });
     closeModal(vendorPickerModal);
   }
@@ -249,13 +246,18 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     titleEl.textContent = "Add NPC";
     btnDelete.style.display = "none";
 
-    fields.lootPool.length = 0;
-    fields.chipContainer.innerHTML = "";
+    // clear chips safely
+    fields.lootPool = [];
+    if (fields.chipContainer) fields.chipContainer.innerHTML = "";
 
-    fields.vendorInv.length = 0;
-    fields.chipContainerVend.innerHTML = "";
+    fields.vendorInv = [];
+    if (fields.chipContainerVend) fields.chipContainerVend.innerHTML = "";
 
-    fields.extraInfoBlock.extraInfo.setLines([], false);
+    // clear extra‐info
+    if (fields.extraInfoBlock?.extraInfo) {
+      fields.extraInfoBlock.extraInfo.setLines([], false);
+    }
+
     fields.fldTypeFlags.forEach(cb => cb.checked = false);
   }
 
@@ -264,49 +266,42 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     titleEl.textContent = _id ? "Edit NPC" : "Add NPC";
     btnDelete.style.display = _id ? "" : "none";
 
-    fields.fldName.value    = def.name       || "";
-    fields.fldHealth.value  = def.health     ?? "";
-    fields.fldDamage.value  = def.damage     ?? "";
+    fields.fldName.value   = def.name      || "";
+    fields.fldHealth.value = def.health    ?? "";
+    fields.fldDamage.value = def.damage    ?? "";
     fields.fldTypeFlags.forEach(cb => {
-      cb.checked = (def.typeFlags || []).includes(cb.value);
+      cb.checked = Array.isArray(def.typeFlags) && def.typeFlags.includes(cb.value);
     });
 
-    // loot pool
-    fields.lootPool = (def.lootPool || []).map(l => ({ ...l }));
-    fields.chipContainer.innerHTML = "";
-    fields.lootPool.forEach(l => {
+    // repopulate chips
+    reset(); // clear everything first
+    (def.lootPool || []).forEach(l => {
+      fields.lootPool.push(l);
       const chip = document.createElement("span");
       chip.className = "loot-pool-chip";
       chip.textContent = l.text;
       const x = document.createElement("span");
       x.className = "remove-chip"; x.textContent = "×";
-      x.onclick = () => {
-        fields.lootPool.splice(fields.lootPool.indexOf(l),1);
-        chip.remove();
-      };
+      x.onclick = () => chip.remove();
       chip.append(x);
-      fields.chipContainer.append(chip);
+      fields.chipContainer?.append(chip);
     });
 
-    // vendor inventory
-    fields.vendorInv = (def.vendorInventory || []).map(i => ({ ...i }));
-    fields.chipContainerVend.innerHTML = "";
-    fields.vendorInv.forEach(i => {
+    (def.vendorInventory || []).forEach(v => {
+      fields.vendorInv.push(v);
       const chip = document.createElement("span");
       chip.className = "loot-pool-chip";
-      chip.textContent = i.text;
+      chip.textContent = v.text;
       const x = document.createElement("span");
       x.className = "remove-chip"; x.textContent = "×";
-      x.onclick = () => {
-        fields.vendorInv.splice(fields.vendorInv.indexOf(i),1);
-        chip.remove();
-      };
+      x.onclick = () => chip.remove();
       chip.append(x);
-      fields.chipContainerVend.append(chip);
+      fields.chipContainerVend?.append(chip);
     });
 
-    // notes
-    fields.extraInfoBlock.extraInfo.setLines(def.extraLines || [], false);
+    if (fields.extraInfoBlock?.extraInfo) {
+      fields.extraInfoBlock.extraInfo.setLines(def.extraLines||[], false);
+    }
   }
 
   function getCustom() {
@@ -318,7 +313,7 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
       damage:           Number(fields.fldDamage.value) || 0,
       lootPool:         fields.lootPool,
       vendorInventory:  fields.vendorInv,
-      extraLines:       fields.extraInfoBlock.extraInfo.getLines()
+      extraLines:       fields.extraInfoBlock?.extraInfo.getLines() || []
     };
   }
 
@@ -328,9 +323,9 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }) {
     reset();
   });
 
-  // wire up the picker buttons
-  fields.openLootPicker.addEventListener("click", openLootPicker);
-  fields.openVendorPicker.addEventListener("click", openVendorPicker);
+  // wire up the picker buttons:
+  fields.openLootPicker?.addEventListener("click", openLootPicker);
+  fields.openVendorPicker?.addEventListener("click", openVendorPicker);
 
   return { form, reset, populate };
 }
