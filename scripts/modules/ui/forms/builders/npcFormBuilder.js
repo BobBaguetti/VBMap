@@ -1,19 +1,16 @@
-// @version: 3.2 — description + Extra Info block (no “Notes” label)
+// @version: 2.8
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
 
-import { createTextField }         from "../../uiKit.js";
-import { createDescriptionField }  from "../universalForm.js";
-import { createExtraInfoField }    from "../universalForm.js";
-import { createTopAlignedFieldRow } from "../../../utils/formUtils.js";
+import { createTextField }           from "../../uiKit.js";
+import { createDescriptionField }    from "../universalForm.js";
+import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
 
 /**
- * Build the DOM form for NPC definitions.
- * Returns { form, fields } where fields contains:
- *   fldName, fldTypeFlags[], fldHealth, fldDamage,
- *   lootPool + openLootPicker + chipContainerLoot,
- *   vendorInv + openVendorPicker + chipContainerVend,
- *   fldDesc + colorDesc,
- *   extraInfoBlock (the "Extra Info" rows under description)
+ * Build the DOM form for NPC definitions:
+ * - Name, Roles, Health, Damage
+ * - Loot Pool (chips + picker button)
+ * - Vendor Inventory (chips + picker button)
+ * - Description (textarea + color swatch)
  */
 export function createNpcForm() {
   const form = document.createElement("form");
@@ -23,7 +20,7 @@ export function createNpcForm() {
   const { row: rowName, input: fldName } =
     createTextField("Name:", "npc-fld-name");
 
-  // — NPC Roles —
+  // — Roles —
   const typeContainer = document.createElement("div");
   ["Hostile","Vendor","Quest-Giver"].forEach(label => {
     const cb = document.createElement("input");
@@ -39,49 +36,41 @@ export function createNpcForm() {
   // — Health & Damage —
   const { row: rowHealth, input: fldHealth } =
     createTextField("Health:", "npc-fld-health");
-  fldHealth.type = "number";
-  fldHealth.min  = "0";
+  fldHealth.type = "number"; fldHealth.min = "0";
 
   const { row: rowDamage, input: fldDamage } =
     createTextField("Damage:", "npc-fld-damage");
-  fldDamage.type = "number";
-  fldDamage.min  = "0";
+  fldDamage.type = "number"; fldDamage.min = "0";
 
-  // — Loot Pool (chips + gear) —
-  const rowLoot = document.createElement("div");
-  rowLoot.classList.add("field-row");
-  const lblLoot = document.createElement("label");
-  lblLoot.textContent = "Loot Pool:";
+  // — Loot Pool (chips + picker) —
   const chipContainerLoot = document.createElement("div");
-  chipContainerLoot.classList.add("loot-pool-chips");
+  chipContainerLoot.className = "loot-pool-chips";
   Object.assign(chipContainerLoot.style, {
     flex: "1", display: "flex", flexWrap: "wrap", gap: "4px"
   });
-  const openLootPicker = document.createElement("button");
-  openLootPicker.type        = "button";
-  openLootPicker.className   = "ui-button";
-  openLootPicker.textContent = "⚙︎";
-  openLootPicker.title       = "Edit Loot Pool";
-  rowLoot.append(lblLoot, chipContainerLoot, openLootPicker);
+  const btnLoot = document.createElement("button");
+  btnLoot.type = "button";
+  btnLoot.className = "ui-button";
+  btnLoot.textContent = "⚙︎";
+  btnLoot.title = "Edit Loot Pool";
+  const rowLoot = createTopAlignedFieldRow("Loot Pool:", chipContainerLoot);
+  rowLoot.append(btnLoot);
 
-  // — Vendor Inventory (chips + gear) —
-  const rowVend = document.createElement("div");
-  rowVend.classList.add("field-row");
-  const lblVend = document.createElement("label");
-  lblVend.textContent = "Vendor Inventory:";
+  // — Vendor Inventory (chips + picker) —
   const chipContainerVend = document.createElement("div");
-  chipContainerVend.classList.add("loot-pool-chips");
+  chipContainerVend.className = "loot-pool-chips";
   Object.assign(chipContainerVend.style, {
     flex: "1", display: "flex", flexWrap: "wrap", gap: "4px"
   });
-  const openVendorPicker = document.createElement("button");
-  openVendorPicker.type        = "button";
-  openVendorPicker.className   = "ui-button";
-  openVendorPicker.textContent = "⚙︎";
-  openVendorPicker.title       = "Edit Vendor Inventory";
-  rowVend.append(lblVend, chipContainerVend, openVendorPicker);
+  const btnVend = document.createElement("button");
+  btnVend.type = "button";
+  btnVend.className = "ui-button";
+  btnVend.textContent = "⚙︎";
+  btnVend.title = "Edit Vendor Inventory";
+  const rowVend = createTopAlignedFieldRow("Vendor Inventory:", chipContainerVend);
+  rowVend.append(btnVend);
 
-  // — Description (textarea + color swatch) —
+  // — Description (textarea + swatch) —
   const {
     row:      rowDesc,
     textarea: fldDesc,
@@ -90,11 +79,7 @@ export function createNpcForm() {
   colorDesc.id = "npc-fld-desc-color";
   colorDesc.classList.add("color-swatch");
 
-  // — Extra Info (only place with dynamic rows) —
-  const extraInfoField = createExtraInfoField({ withDividers: true });
-  // extraInfoField.row already has the "Extra Info:" label + "+" button
-
-  // Assemble in order
+  // assemble form
   form.append(
     rowName,
     rowTypes,
@@ -102,34 +87,32 @@ export function createNpcForm() {
     rowDamage,
     rowLoot,
     rowVend,
-    rowDesc,
-    extraInfoField.row
+    document.createElement("hr"),
+    rowDesc
   );
 
   return {
     form,
     fields: {
+      // basic
       fldName,
       fldTypeFlags,
       fldHealth,
       fldDamage,
 
-      // Loot‐pool
-      lootPool:           [],              // selected IDs
-      openLootPicker,                      // ⚙︎ button
-      chipContainerLoot,                   // shows item chips
+      // loot pool
+      lootPool:           [],                // selected IDs
+      openLootPicker:     btnLoot,           // picker trigger
+      chipContainerLoot,                      // DOM container for chips
 
-      // Vendor inventory
-      vendorInv:          [],              // selected IDs
-      openVendorPicker,                    // ⚙︎ button
-      chipContainerVend,                   // shows item chips
+      // vendor inventory
+      vendorInv:          [],                // selected IDs
+      openVendorPicker:   btnVend,           // picker trigger
+      chipContainerVend,                      // DOM container for chips
 
-      // Description
-      fldDesc,
-      colorDesc,
-
-      // Extra Info under description
-      extraInfoBlock:     extraInfoField.extraInfo
+      // description
+      fldDesc,                               // <textarea>
+      colorDesc                              // swatch button
     }
   };
 }
