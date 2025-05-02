@@ -1,18 +1,18 @@
-// @version: 2.9 — add Extra Info block under Description
+// @version: 3.0 — add Description + Extra Info block
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
 
-import { createTextField }           from "../../uiKit.js";
-import { createDescriptionField }    from "../universalForm.js";
-import { createExtraInfoField }      from "../universalForm.js";
-import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
+import { createTextField }        from "../../uiKit.js";
+import { createDescriptionField, createExtraInfoField } from "../universalForm.js";
+import { createTopAlignedFieldRow } from "../../../utils/formUtils.js";
 
 /**
- * Build the DOM form for NPC definitions:
- * - Name, Roles, Health, Damage
- * - Loot Pool (chips + picker)
- * - Vendor Inventory (chips + picker)
- * - Description (textarea + swatch)
- * - Extra Info (dynamic lines)
+ * Build the DOM form for NPC definitions.
+ * Returns { form, fields } where fields contains:
+ *   fldName, fldTypeFlags[], fldHealth, fldDamage,
+ *   lootPoolBlock, openLootPicker,
+ *   vendorInvBlock, openVendorPicker,
+ *   fldDesc, colorDesc,
+ *   extraInfoBlock
  */
 export function createNpcForm() {
   const form = document.createElement("form");
@@ -22,11 +22,11 @@ export function createNpcForm() {
   const { row: rowName, input: fldName } =
     createTextField("Name:", "npc-fld-name");
 
-  // — Roles —
+  // — NPC Roles —
   const typeContainer = document.createElement("div");
   ["Hostile","Vendor","Quest-Giver"].forEach(label => {
     const cb = document.createElement("input");
-    cb.type  = "checkbox";
+    cb.type = "checkbox";
     cb.value = label.toLowerCase();
     const lbl = document.createElement("label");
     lbl.append(cb, document.createTextNode(" " + label));
@@ -38,41 +38,35 @@ export function createNpcForm() {
   // — Health & Damage —
   const { row: rowHealth, input: fldHealth } =
     createTextField("Health:", "npc-fld-health");
-  fldHealth.type = "number"; fldHealth.min = "0";
+  fldHealth.type = "number";
+  fldHealth.min  = "0";
 
   const { row: rowDamage, input: fldDamage } =
     createTextField("Damage:", "npc-fld-damage");
-  fldDamage.type = "number"; fldDamage.min = "0";
+  fldDamage.type = "number";
+  fldDamage.min  = "0";
 
-  // — Loot Pool (chips + picker) —
-  const chipContainerLoot = document.createElement("div");
-  chipContainerLoot.className = "loot-pool-chips";
-  Object.assign(chipContainerLoot.style, {
-    flex: "1", display: "flex", flexWrap: "wrap", gap: "4px"
-  });
-  const btnLoot = document.createElement("button");
-  btnLoot.type = "button";
-  btnLoot.className = "ui-button";
-  btnLoot.textContent = "⚙︎";
-  btnLoot.title = "Edit Loot Pool";
-  const rowLoot = createTopAlignedFieldRow("Loot Pool:", chipContainerLoot);
-  rowLoot.append(btnLoot);
+  // — Loot Pool —
+  const lootExtra   = createExtraInfoField({ withDividers: true });
+  const btnLootGear = document.createElement("button");
+  btnLootGear.type        = "button";
+  btnLootGear.className   = "ui-button";
+  btnLootGear.textContent = "⚙︎";
+  btnLootGear.title       = "Edit Loot Pool";
+  lootExtra.row.append(btnLootGear);
+  const rowLoot = createTopAlignedFieldRow("Loot Pool:", lootExtra.row);
 
-  // — Vendor Inventory (chips + picker) —
-  const chipContainerVend = document.createElement("div");
-  chipContainerVend.className = "loot-pool-chips";
-  Object.assign(chipContainerVend.style, {
-    flex: "1", display: "flex", flexWrap: "wrap", gap: "4px"
-  });
-  const btnVend = document.createElement("button");
-  btnVend.type = "button";
-  btnVend.className = "ui-button";
-  btnVend.textContent = "⚙︎";
-  btnVend.title = "Edit Vendor Inventory";
-  const rowVend = createTopAlignedFieldRow("Vendor Inventory:", chipContainerVend);
-  rowVend.append(btnVend);
+  // — Vendor Inventory —
+  const vendExtra   = createExtraInfoField({ withDividers: true });
+  const btnVendGear = document.createElement("button");
+  btnVendGear.type        = "button";
+  btnVendGear.className   = "ui-button";
+  btnVendGear.textContent = "⚙︎";
+  btnVendGear.title       = "Edit Vendor Inventory";
+  vendExtra.row.append(btnVendGear);
+  const rowVend = createTopAlignedFieldRow("Vendor Inventory:", vendExtra.row);
 
-  // — Description (textarea + swatch) —
+  // — Description —
   const {
     row:      rowDesc,
     textarea: fldDesc,
@@ -81,11 +75,11 @@ export function createNpcForm() {
   colorDesc.id = "npc-fld-desc-color";
   colorDesc.classList.add("color-swatch");
 
-  // — Extra Info (dynamic lines) —
-  const extraInfo = createExtraInfoField({ withDividers: true });
-  const rowExtra = createTopAlignedFieldRow("Extra Info:", extraInfo.block);
+  // — Extra Info under Description —
+  const notesExtra = createExtraInfoField({ withDividers: true });
+  const rowNotes   = createTopAlignedFieldRow("Notes:", notesExtra.row);
 
-  // assemble form
+  // Assemble all rows
   form.append(
     rowName,
     rowTypes,
@@ -93,36 +87,32 @@ export function createNpcForm() {
     rowDamage,
     rowLoot,
     rowVend,
-    document.createElement("hr"),
     rowDesc,
-    rowExtra
+    rowNotes
   );
 
   return {
     form,
     fields: {
-      // basic
       fldName,
       fldTypeFlags,
       fldHealth,
       fldDamage,
 
-      // loot-pool
-      lootPool:           [],                // selected IDs
-      openLootPicker:     btnLoot,           // picker trigger
-      chipContainerLoot,                      // DOM container
+      // Loot‐pool
+      lootPoolBlock:   lootExtra.extraInfo,
+      openLootPicker:  btnLootGear,
 
-      // vendor-inventory
-      vendorInv:          [],                // selected IDs
-      openVendorPicker:   btnVend,           // picker trigger
-      chipContainerVend,                      // DOM container
+      // Vendor inventory
+      vendorInvBlock:  vendExtra.extraInfo,
+      openVendorPicker: btnVendGear,
 
-      // description
-      fldDesc,                               // <textarea>
-      colorDesc,                             // swatch btn
+      // Description
+      fldDesc,
+      colorDesc,
 
-      // extra info
-      extraInfo                              // { block, getLines, setLines }
+      // Free‐form notes
+      extraInfoBlock:  notesExtra.extraInfo
     }
   };
 }
