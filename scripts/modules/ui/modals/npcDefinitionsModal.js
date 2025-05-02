@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 1.3 — pass `db` into the form controller
+// @version: 2 – full toolbar, updated to use new form and preview wiring
 
 import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
 import { createDefListContainer }       from "../../utils/listUtils.js";
@@ -33,10 +33,11 @@ export function initNpcDefinitionsModal(db) {
 
   async function open() {
     if (!modal) {
-      // 1) Build shell
+      // 1) Build shell with full toolbar
       const shell = createDefinitionModalShell({
         id:           "npc-definitions-modal",
         title:        "Manage NPCs",
+        toolbar:      ["list", "form", "preview", "search"],
         withPreview:  true,
         previewType:  "npc",
         layoutOptions:["row", "stacked", "gallery"]
@@ -53,8 +54,8 @@ export function initNpcDefinitionsModal(db) {
       const listContainer = createDefListContainer("npc-def-list");
       bodyWrap.appendChild(listContainer);
       listApi = createDefinitionListManager({
-        container:      listContainer, 
-        getDefinitions: () => [], // will be replaced by subscription
+        container:      listContainer,
+        getDefinitions: () => [],  // replaced by subscription
         renderEntry:    (def, layout) => renderNpcEntry(def, layout, {
           onClick:  d => {
             formApi.populate(d);
@@ -71,7 +72,7 @@ export function initNpcDefinitionsModal(db) {
         })
       });
 
-      // 3) Form controller — **pass `db` as the first argument** 
+      // 3) Form controller
       formApi = createNpcFormController(db, {
         onCancel: async () => {
           formApi.reset();
@@ -98,20 +99,23 @@ export function initNpcDefinitionsModal(db) {
       bodyWrap.appendChild(document.createElement("hr"));
       bodyWrap.appendChild(formApi.form);
 
-      // 4) Pull the search bar into the header
+      // 4) Move search bar into header
       const maybeHeader = listContainer.previousElementSibling;
       if (maybeHeader?.classList.contains("list-header")) {
         maybeHeader.remove();
         header.appendChild(maybeHeader);
       }
 
+      // 5) Initialize color pickers and hide preview initially
       initModalPickrs(bodyWrap);
       previewApi.hide();
 
+      // 6) Start Firestore subscription and initial load
       startSubscription();
       await refreshList();
     }
 
+    // Always reset form and hide preview on open
     formApi.reset();
     previewApi.hide();
     openModal();

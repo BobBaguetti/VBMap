@@ -1,9 +1,10 @@
-// @version: 2.8
+// @version: 3 – added Image S/L and Extra Info fields
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
 
 import { createTextField }           from "../../uiKit.js";
 import { createDescriptionField }    from "../universalForm.js";
 import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
+import { createListField }           from "../../../utils/formUtils.js";
 
 /**
  * Build the DOM form for NPC definitions:
@@ -11,6 +12,8 @@ import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
  * - Loot Pool (chips + picker button)
  * - Vendor Inventory (chips + picker button)
  * - Description (textarea + color swatch)
+ * - Image S (map icon) and Image L (popup icon)
+ * - Extra Info (list of text + color)
  */
 export function createNpcForm() {
   const form = document.createElement("form");
@@ -79,6 +82,22 @@ export function createNpcForm() {
   colorDesc.id = "npc-fld-desc-color";
   colorDesc.classList.add("color-swatch");
 
+  // — Image URLs —
+  const { row: rowImgS, input: fldImgS } =
+    createTextField("Image S:", "npc-fld-imgs");
+  const { row: rowImgL, input: fldImgL } =
+    createTextField("Image L:", "npc-fld-imgl");
+
+  // — Extra Info —
+  const { row: rowExtra, container: extraContainer, getValues: getExtraValues, clear: clearExtra } =
+    createListField("Extra Info:", {
+      addLabel: "+",
+      itemBuilder: () => ({
+        text: createTextField("", "").input,
+        color: createDescriptionField().colorBtn
+      })
+    });
+
   // assemble form
   form.append(
     rowName,
@@ -88,31 +107,31 @@ export function createNpcForm() {
     rowLoot,
     rowVend,
     document.createElement("hr"),
-    rowDesc
+    rowDesc,
+    rowImgS,
+    rowImgL,
+    rowExtra
   );
 
   return {
     form,
     fields: {
-      // basic
       fldName,
       fldTypeFlags,
       fldHealth,
       fldDamage,
-
-      // loot pool
-      lootPool:           [],                // selected IDs
-      openLootPicker:     btnLoot,           // picker trigger
-      chipContainerLoot,                      // DOM container for chips
-
-      // vendor inventory
-      vendorInv:          [],                // selected IDs
-      openVendorPicker:   btnVend,           // picker trigger
-      chipContainerVend,                      // DOM container for chips
-
-      // description
-      fldDesc,                               // <textarea>
-      colorDesc                              // swatch button
+      lootPool:           chipContainerLoot,
+      openLootPicker:     btnLoot,
+      vendorInv:          chipContainerVend,
+      openVendorPicker:   btnVend,
+      fldDesc,
+      colorDesc,
+      fldImgS,
+      fldImgL,
+      extra: {
+        getValues: getExtraValues,
+        clear:     clearExtra
+      }
     }
   };
 }

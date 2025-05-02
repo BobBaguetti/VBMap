@@ -1,10 +1,10 @@
 // comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed
 // @file: /scripts/modules/ui/preview/createPreviewPanel.js
-// @version: 6
+// @version: 7 – always clear container before instantiation
 
-import { createItemPreviewPanel } from "./itemPreview.js";
+import { createItemPreviewPanel }  from "./itemPreview.js";
 import { createQuestPreviewPanel } from "./questPreview.js";
-import { createNpcPreviewPanel } from "./npcPreview.js";
+import { createNpcPreviewPanel }   from "./npcPreview.js";
 import { createChestPreviewPanel } from "./chestPreview.js";
 
 /**
@@ -19,7 +19,11 @@ export function createPreviewPanel(type, mountTo = null) {
   // Create or reuse container
   const container = mountTo || document.createElement("div");
   container.style.zIndex = 10000;
-  if (!mountTo) document.body.appendChild(container);
+  // Clear any previous content
+  container.innerHTML = "";
+  if (!mountTo) {
+    document.body.appendChild(container);
+  }
 
   let api;
   switch (type) {
@@ -27,17 +31,12 @@ export function createPreviewPanel(type, mountTo = null) {
       api = createItemPreviewPanel(container);
       break;
     case "quest":
-      container.innerHTML = "";
       api = createQuestPreviewPanel(container);
       break;
     case "npc":
-      container.innerHTML = "";
       api = createNpcPreviewPanel(container);
       break;
     case "chest":
-      // clear any previous content
-      container.innerHTML = "";
-      // use chest-specific preview
       api = createChestPreviewPanel(container);
       break;
     default:

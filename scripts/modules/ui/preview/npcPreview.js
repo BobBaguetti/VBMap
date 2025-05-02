@@ -1,10 +1,9 @@
 // @file: scripts/modules/ui/preview/npcPreview.js
-// @version: 1 – initial NPC preview panel
+// @version: 2 – aligned to Chest-style preview panel
 
 /**
  * A preview panel for NPC definitions.
- * Shows name, roles, HP/Damage, loot pool (for hostiles),
- * vendor inventory (for vendors), and extra notes.
+ * Shows icon, name, roles, HP/Damage, loot slots, and extra notes.
  */
 export function createNpcPreviewPanel(container) {
   container.id = "npc-preview-panel";
@@ -13,15 +12,17 @@ export function createNpcPreviewPanel(container) {
   // wrapper for consistent styling
   const wrapper = document.createElement("div");
   wrapper.className = "preview-popup-wrapper";
+  container.innerHTML = "";
   container.appendChild(wrapper);
 
   return {
     /**
+     * Populate panel from NPC definition or clear if null.
      * @param {Object|null} def
      *   { name, typeFlags[], health, damage,
-     *     lootPool: Array<{text,color}>,
-     *     vendorInventory: Array<{text,color}>,
-     *     extraLines: Array<{text,color}> }
+     *     lootPool: Array<{id,text,color,imageS}>,
+     *     extraLines: Array<{text,color}>,
+     *     imageL: string }
      */
     setFromDefinition(def) {
       if (!def) {
@@ -29,33 +30,41 @@ export function createNpcPreviewPanel(container) {
         return;
       }
 
-      // Roles badges
-      const rolesHtml = (def.typeFlags||[])
+      // Header: icon (Image L) + title/stats
+      const iconHtml = def.imageL
+        ? `<img class="preview-icon" src="${def.imageL}" alt="${def.name}">`
+        : `<div class="preview-icon placeholder"></div>`;
+
+      const rolesHtml = (def.typeFlags || [])
         .map(f => `<span class="npc-role-badge">${f}</span>`)
         .join(" ");
 
-      // Loot list
-      const lootHtml = def.lootPool && def.lootPool.length
-        ? `<div class="npc-preview-section">
-             <h4>Loot Pool</h4>
+      const headerHtml = `
+        <div class="preview-header">
+          ${iconHtml}
+          <div class="preview-title">
+            <div class="preview-name">${def.name}</div>
+            <div class="preview-roles">${rolesHtml}</div>
+            <div class="preview-stats">
+              <span>HP: ${def.health}</span>
+              <span>DMG: ${def.damage}</span>
+            </div>
+          </div>
+        </div>`;
+
+      // Loot slots row
+      const slotsHtml = def.lootPool?.length
+        ? `<div class="npc-slots">
              ${def.lootPool.map(l =>
-               `<p style="color:${l.color}">${l.text}</p>`
+               `<div class="slot" style="border-color:${l.color}">
+                  <img src="${l.imageS||''}" title="${l.text}">
+                </div>`
              ).join("")}
            </div>`
         : "";
 
-      // Vendor inventory
-      const vendHtml = def.vendorInventory && def.vendorInventory.length
-        ? `<div class="npc-preview-section">
-             <h4>Vendor Inventory</h4>
-             ${def.vendorInventory.map(i =>
-               `<p style="color:${i.color}">${i.text}</p>`
-             ).join("")}
-           </div>`
-        : "";
-
-      // Extra notes / description
-      const notesHtml = def.extraLines && def.extraLines.length
+      // Extra info notes
+      const notesHtml = def.extraLines?.length
         ? `<div class="npc-preview-section">
              <h4>Notes</h4>
              ${def.extraLines.map(n =>
@@ -65,16 +74,8 @@ export function createNpcPreviewPanel(container) {
         : "";
 
       wrapper.innerHTML = `
-        <div class="npc-preview-header">
-          <div class="npc-preview-name">${def.name}</div>
-          <div class="npc-preview-roles">${rolesHtml}</div>
-        </div>
-        <div class="npc-preview-stats">
-          <span>HP: ${def.health}</span>
-          <span>DMG: ${def.damage}</span>
-        </div>
-        ${lootHtml}
-        ${vendHtml}
+        ${headerHtml}
+        ${slotsHtml}
         ${notesHtml}
       `;
     },
