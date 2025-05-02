@@ -1,16 +1,16 @@
+// @version: 2.8
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
-// @version: 2.4 — single Description field with color picker
 
 import { createTextField }           from "../../uiKit.js";
 import { createDescriptionField }    from "../universalForm.js";
-import { createExtraInfoField }      from "../universalForm.js";
 import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
 
 /**
- * Build the DOM form for NPC definitions.
- * Returns { form, fields } where fields contains:
- *   fldName, fldTypeFlags[], fldHealth, fldDamage,
- *   lootPoolBlock, vendorInvBlock, descField
+ * Build the DOM form for NPC definitions:
+ * - Name, Roles, Health, Damage
+ * - Loot Pool (chips + picker button)
+ * - Vendor Inventory (chips + picker button)
+ * - Description (textarea + color swatch)
  */
 export function createNpcForm() {
   const form = document.createElement("form");
@@ -20,7 +20,7 @@ export function createNpcForm() {
   const { row: rowName, input: fldName } =
     createTextField("Name:", "npc-fld-name");
 
-  // — Type flags —
+  // — Roles —
   const typeContainer = document.createElement("div");
   ["Hostile","Vendor","Quest-Giver"].forEach(label => {
     const cb = document.createElement("input");
@@ -36,35 +36,41 @@ export function createNpcForm() {
   // — Health & Damage —
   const { row: rowHealth, input: fldHealth } =
     createTextField("Health:", "npc-fld-health");
-  fldHealth.type = "number";
-  fldHealth.min  = "0";
+  fldHealth.type = "number"; fldHealth.min = "0";
 
   const { row: rowDamage, input: fldDamage } =
     createTextField("Damage:", "npc-fld-damage");
-  fldDamage.type = "number";
-  fldDamage.min  = "0";
+  fldDamage.type = "number"; fldDamage.min = "0";
 
-  // — Loot Pool —
-  const lootExtra = createExtraInfoField({ withDividers: true });
-  const openLootPicker = document.createElement("button");
-  openLootPicker.type        = "button";
-  openLootPicker.className   = "ui-button";
-  openLootPicker.textContent = "⚙︎";
-  openLootPicker.title       = "Edit Loot Pool";
-  lootExtra.row.append(openLootPicker);
-  const rowLoot = createTopAlignedFieldRow("Loot Pool:", lootExtra.row);
+  // — Loot Pool (chips + picker) —
+  const chipContainerLoot = document.createElement("div");
+  chipContainerLoot.className = "loot-pool-chips";
+  Object.assign(chipContainerLoot.style, {
+    flex: "1", display: "flex", flexWrap: "wrap", gap: "4px"
+  });
+  const btnLoot = document.createElement("button");
+  btnLoot.type = "button";
+  btnLoot.className = "ui-button";
+  btnLoot.textContent = "⚙︎";
+  btnLoot.title = "Edit Loot Pool";
+  const rowLoot = createTopAlignedFieldRow("Loot Pool:", chipContainerLoot);
+  rowLoot.append(btnLoot);
 
-  // — Vendor Inventory —
-  const vendExtra = createExtraInfoField({ withDividers: true });
-  const openVendorPicker = document.createElement("button");
-  openVendorPicker.type        = "button";
-  openVendorPicker.className   = "ui-button";
-  openVendorPicker.textContent = "⚙︎";
-  openVendorPicker.title       = "Edit Vendor Inventory";
-  vendExtra.row.append(openVendorPicker);
-  const rowVend = createTopAlignedFieldRow("Vendor Inventory:", vendExtra.row);
+  // — Vendor Inventory (chips + picker) —
+  const chipContainerVend = document.createElement("div");
+  chipContainerVend.className = "loot-pool-chips";
+  Object.assign(chipContainerVend.style, {
+    flex: "1", display: "flex", flexWrap: "wrap", gap: "4px"
+  });
+  const btnVend = document.createElement("button");
+  btnVend.type = "button";
+  btnVend.className = "ui-button";
+  btnVend.textContent = "⚙︎";
+  btnVend.title = "Edit Vendor Inventory";
+  const rowVend = createTopAlignedFieldRow("Vendor Inventory:", chipContainerVend);
+  rowVend.append(btnVend);
 
-  // — Description —
+  // — Description (textarea + swatch) —
   const {
     row:      rowDesc,
     textarea: fldDesc,
@@ -73,7 +79,7 @@ export function createNpcForm() {
   colorDesc.id = "npc-fld-desc-color";
   colorDesc.classList.add("color-swatch");
 
-  // Assemble
+  // assemble form
   form.append(
     rowName,
     rowTypes,
@@ -81,30 +87,32 @@ export function createNpcForm() {
     rowDamage,
     rowLoot,
     rowVend,
+    document.createElement("hr"),
     rowDesc
   );
 
   return {
     form,
     fields: {
+      // basic
       fldName,
       fldTypeFlags,
       fldHealth,
       fldDamage,
 
-      // Loot-pool
-      lootPool:          [],                    // selected item IDs
-      openLootPicker,                             // button to open picker
-      lootPoolBlock:     lootExtra.extraInfo,    // has .block, .getLines(), .setLines()
+      // loot pool
+      lootPool:           [],                // selected IDs
+      openLootPicker:     btnLoot,           // picker trigger
+      chipContainerLoot,                      // DOM container for chips
 
-      // Vendor inventory
-      vendorInv:         [],                    // selected item IDs
-      openVendorPicker,                           // button to open picker
-      vendorInvBlock:    vendExtra.extraInfo,    // same API
+      // vendor inventory
+      vendorInv:          [],                // selected IDs
+      openVendorPicker:   btnVend,           // picker trigger
+      chipContainerVend,                      // DOM container for chips
 
-      // Single description field
-      fldDesc,            // <textarea>
-      colorDesc          // swatch btn
+      // description
+      fldDesc,                               // <textarea>
+      colorDesc                              // swatch button
     }
   };
 }
