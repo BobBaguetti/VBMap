@@ -1,16 +1,18 @@
-// @version: 2.8
+// @version: 2.9 — add Extra Info block under Description
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
 
 import { createTextField }           from "../../uiKit.js";
 import { createDescriptionField }    from "../universalForm.js";
+import { createExtraInfoField }      from "../universalForm.js";
 import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
 
 /**
  * Build the DOM form for NPC definitions:
  * - Name, Roles, Health, Damage
- * - Loot Pool (chips + picker button)
- * - Vendor Inventory (chips + picker button)
- * - Description (textarea + color swatch)
+ * - Loot Pool (chips + picker)
+ * - Vendor Inventory (chips + picker)
+ * - Description (textarea + swatch)
+ * - Extra Info (dynamic lines)
  */
 export function createNpcForm() {
   const form = document.createElement("form");
@@ -79,6 +81,10 @@ export function createNpcForm() {
   colorDesc.id = "npc-fld-desc-color";
   colorDesc.classList.add("color-swatch");
 
+  // — Extra Info (dynamic lines) —
+  const extraInfo = createExtraInfoField({ withDividers: true });
+  const rowExtra = createTopAlignedFieldRow("Extra Info:", extraInfo.block);
+
   // assemble form
   form.append(
     rowName,
@@ -88,7 +94,8 @@ export function createNpcForm() {
     rowLoot,
     rowVend,
     document.createElement("hr"),
-    rowDesc
+    rowDesc,
+    rowExtra
   );
 
   return {
@@ -100,19 +107,22 @@ export function createNpcForm() {
       fldHealth,
       fldDamage,
 
-      // loot pool
+      // loot-pool
       lootPool:           [],                // selected IDs
       openLootPicker:     btnLoot,           // picker trigger
-      chipContainerLoot,                      // DOM container for chips
+      chipContainerLoot,                      // DOM container
 
-      // vendor inventory
+      // vendor-inventory
       vendorInv:          [],                // selected IDs
       openVendorPicker:   btnVend,           // picker trigger
-      chipContainerVend,                      // DOM container for chips
+      chipContainerVend,                      // DOM container
 
       // description
       fldDesc,                               // <textarea>
-      colorDesc                              // swatch button
+      colorDesc,                             // swatch btn
+
+      // extra info
+      extraInfo                              // { block, getLines, setLines }
     }
   };
 }
