@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 2 – full toolbar, updated to use new form and preview wiring
+// @version: 2.1 – use default toolbar actions instead of overriding
 
 import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
 import { createDefListContainer }       from "../../utils/listUtils.js";
@@ -33,11 +33,10 @@ export function initNpcDefinitionsModal(db) {
 
   async function open() {
     if (!modal) {
-      // 1) Build shell with full toolbar
+      // 1) Build shell (default toolbar: list/form actions, preview & search handled automatically)
       const shell = createDefinitionModalShell({
         id:           "npc-definitions-modal",
         title:        "Manage NPCs",
-        toolbar:      ["list", "form", "preview", "search"],
         withPreview:  true,
         previewType:  "npc",
         layoutOptions:["row", "stacked", "gallery"]
@@ -99,14 +98,14 @@ export function initNpcDefinitionsModal(db) {
       bodyWrap.appendChild(document.createElement("hr"));
       bodyWrap.appendChild(formApi.form);
 
-      // 4) Move search bar into header
+      // 4) Move search bar into header (if present)
       const maybeHeader = listContainer.previousElementSibling;
       if (maybeHeader?.classList.contains("list-header")) {
         maybeHeader.remove();
         header.appendChild(maybeHeader);
       }
 
-      // 5) Initialize color pickers and hide preview initially
+      // 5) Initialize color pickers and hide preview
       initModalPickrs(bodyWrap);
       previewApi.hide();
 
