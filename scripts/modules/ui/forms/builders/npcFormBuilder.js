@@ -1,16 +1,16 @@
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
-// @version: 2.1 – switch loot & vendor sections to ExtraInfoField blocks
+// @version: 2.4 – chip-style picker buttons for loot & vendor + notes block
 
-import { createTextField }           from "../../uiKit.js";
-import { createExtraInfoField }      from "../universalForm.js";
-import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
+import { createTextField }          from "../../uiKit.js";
+import { createExtraInfoField }     from "../universalForm.js";
+import { createTopAlignedFieldRow } from "../../../utils/formUtils.js";
 
 /**
  * Build the DOM form for NPC definitions.
  * Returns { form, fields } where fields contains:
  *   fldName, fldTypeFlags[], fldHealth, fldDamage,
- *   lootPool (array of IDs), openLootPicker, lootPoolBlock,
- *   vendorInv (array of IDs), openVendorPicker, vendorInvBlock,
+ *   lootPoolBlock, openLootPicker,
+ *   vendorInvBlock, openVendorPicker,
  *   extraInfoBlock
  */
 export function createNpcForm() {
@@ -21,7 +21,7 @@ export function createNpcForm() {
   const { row: rowName, input: fldName } =
     createTextField("Name:", "npc-fld-name");
 
-  // — Type flags —
+  // — NPC Roles —
   const typeContainer = document.createElement("div");
   ["Hostile","Vendor","Quest-Giver"].forEach(label => {
     const cb = document.createElement("input");
@@ -44,24 +44,27 @@ export function createNpcForm() {
 
   // — Loot Pool —
   const lootExtra = createExtraInfoField({ withDividers: true });
-  // add our picker button into the label row
   const openLootPicker = document.createElement("button");
-  openLootPicker.type = "button"; openLootPicker.className = "ui-button";
-  openLootPicker.textContent = "⚙︎"; openLootPicker.title = "Edit Loot Pool";
+  openLootPicker.type = "button";
+  openLootPicker.className = "ui-button";
+  openLootPicker.textContent = "⚙︎";
+  openLootPicker.title = "Edit Loot Pool";
   lootExtra.row.append(openLootPicker);
   const rowLoot = createTopAlignedFieldRow("Loot Pool:", lootExtra.row);
 
   // — Vendor Inventory —
   const vendExtra = createExtraInfoField({ withDividers: true });
   const openVendorPicker = document.createElement("button");
-  openVendorPicker.type = "button"; openVendorPicker.className = "ui-button";
-  openVendorPicker.textContent = "⚙︎"; openVendorPicker.title = "Edit Vendor Inventory";
+  openVendorPicker.type = "button";
+  openVendorPicker.className = "ui-button";
+  openVendorPicker.textContent = "⚙︎";
+  openVendorPicker.title = "Edit Vendor Inventory";
   vendExtra.row.append(openVendorPicker);
   const rowVend = createTopAlignedFieldRow("Vendor Inventory:", vendExtra.row);
 
-  // — Free‐form notes —
-  const descExtra = createExtraInfoField({ withDividers: true });
-  const rowDesc   = createTopAlignedFieldRow("Notes:", descExtra.row);
+  // — Notes —
+  const notesExtra = createExtraInfoField({ withDividers: true });
+  const rowNotes   = createTopAlignedFieldRow("Notes:", notesExtra.row);
 
   // Assemble
   form.append(
@@ -71,7 +74,7 @@ export function createNpcForm() {
     rowDamage,
     rowLoot,
     rowVend,
-    rowDesc
+    rowNotes
   );
 
   return {
@@ -82,18 +85,16 @@ export function createNpcForm() {
       fldHealth,
       fldDamage,
 
-      // Loot‐pool
-      lootPool:       [],              // array of selected IDs
-      openLootPicker,                   // picker trigger
-      lootPoolBlock:  lootExtra.extraInfo, // has .block, .setLines(), .getLines()
+      // Loot pool controls
+      lootPoolBlock: lootExtra.extraInfo,    // .block, .getLines(), .setLines()
+      openLootPicker,
 
-      // Vendor inventory
-      vendorInv:         [],           // array of selected IDs
-      openVendorPicker,                 // picker trigger
-      vendorInvBlock:    vendExtra.extraInfo,
+      // Vendor inventory controls
+      vendorInvBlock: vendExtra.extraInfo,   // .block, .getLines(), .setLines()
+      openVendorPicker,
 
-      // Notes
-      extraInfoBlock:    descExtra.extraInfo
+      // Free-form notes
+      extraInfoBlock: notesExtra.extraInfo
     }
   };
 }
