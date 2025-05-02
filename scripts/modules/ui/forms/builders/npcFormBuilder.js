@@ -1,19 +1,17 @@
-// @version: 3.1 – use createExtraInfoField instead of nonexistent createListField
+// @version: 3.2 – re-expose chipContainerLoot/Vend for controller reset
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
 
 import { createTextField }           from "../../uiKit.js";
-import { createDescriptionField }    from "../universalForm.js";
-import { createExtraInfoField }      from "../universalForm.js";
+import { createDescriptionField, createExtraInfoField } from "../universalForm.js";
 import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
 
 /**
- * Build the DOM form for NPC definitions:
+ * Build the DOM form for NPC definitions, including:
  * - Name, Roles, Health, Damage
- * - Loot Pool (chips + picker button)
- * - Vendor Inventory (chips + picker button)
- * - Description (textarea + color swatch)
- * - Image S (map icon) and Image L (popup icon)
- * - Extra Info (list of text + color)
+ * - Loot Pool & Vendor Inventory pickers
+ * - Description + color
+ * - Image S/L URLs
+ * - Extra Info list
  */
 export function createNpcForm() {
   const form = document.createElement("form");
@@ -116,15 +114,27 @@ export function createNpcForm() {
       fldTypeFlags,
       fldHealth,
       fldDamage,
-      lootPool:           chipContainerLoot,
-      openLootPicker:     btnLoot,
-      vendorInv:          chipContainerVend,
-      openVendorPicker:   btnVend,
+
+      // Loot pool state and container
+      lootPool:           [],               // selected IDs
+      chipContainerLoot,                    // DOM container for chips
+      openLootPicker:     btnLoot,          // picker trigger
+
+      // Vendor inventory state and container
+      vendorInv:          [],               // selected IDs
+      chipContainerVend,                    // DOM container for chips
+      openVendorPicker:   btnVend,          // picker trigger
+
+      // Description
       fldDesc,
       colorDesc,
+
+      // Images
       fldImgS,
       fldImgL,
-      extra:              extraField
+
+      // Extra info
+      extra:              extraField        // API: getValues(), clear(), setValues()
     }
   };
 }
