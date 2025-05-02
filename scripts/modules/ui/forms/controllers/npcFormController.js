@@ -1,4 +1,4 @@
-// @version: 4 – added Image S/L, Extra Info, and full form wiring
+// @version: 4.1 – use extra.setLines for clearing extra-info
 // @file: /scripts/modules/ui/forms/controllers/npcFormController.js
 
 import { createNpcForm }       from "../builders/npcFormBuilder.js";
@@ -139,7 +139,6 @@ export function createNpcFormController(db, { onCancel, onSubmit, onDelete }) {
       ? fields.chipContainerLoot
       : fields.chipContainerVend;
 
-    // Update fields and chips
     if (type === "loot") {
       fields.lootPool = lines.map(l => l.id);
     } else {
@@ -173,7 +172,8 @@ export function createNpcFormController(db, { onCancel, onSubmit, onDelete }) {
     fields.vendorInv = [];
     fields.chipContainerLoot.innerHTML = "";
     fields.chipContainerVend.innerHTML = "";
-    fields.extra.clear();
+    // Clear extra-info using correct API
+    fields.extra.setLines([], false);
   }
 
   // Populate for Edit mode
@@ -185,17 +185,15 @@ export function createNpcFormController(db, { onCancel, onSubmit, onDelete }) {
     fields.fldHealth.value = def.health ?? "";
     fields.fldDamage.value = def.damage ?? "";
     fields.fldDesc.value   = def.description || "";
-    fields.typeFlags.forEach(cb => {
-      cb.checked = Array.isArray(def.typeFlags) && def.typeFlags.includes(cb.value);
-    });
     fields.fldImgS.value   = def.imageS || "";
     fields.fldImgL.value   = def.imageL || "";
-    fields.extra.clear();
-    (def.extraLines || []).forEach(line => {
-      fields.extra.getValues().push({ text: line.text, color: line.color });
+    fields.fldTypeFlags.forEach(cb => {
+      cb.checked = Array.isArray(def.typeFlags) && def.typeFlags.includes(cb.value);
     });
+    // Populate extra-info lines
+    fields.extra.setLines(def.extraLines || [], false);
 
-    // Render chips
+    // Render chips for loot and vendor
     savePicker("loot");
     savePicker("vend");
   }
@@ -213,9 +211,9 @@ export function createNpcFormController(db, { onCancel, onSubmit, onDelete }) {
       description:     fields.fldDesc.value.trim(),
       imageS:          fields.fldImgS.value.trim(),
       imageL:          fields.fldImgL.value.trim(),
-      extraLines:      fields.extra.getValues().map(item => ({
-                          text:  item.text.value.trim(),
-                          color: item.color.value
+      extraLines:      fields.extra.getLines().map(item => ({
+                          text:  item.text.trim(),
+                          color: item.color
                         }))
     };
   }
