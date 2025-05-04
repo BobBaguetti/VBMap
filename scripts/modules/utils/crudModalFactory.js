@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.15 – fixed buildList wiring so custom renderer actually runs
+// @version: 1.16 – corrected buildList for unified renderEntry signature
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -83,33 +83,13 @@ export function initCrudModal({
   }
 
   function buildList() {
-    // Here we correctly pass the callbacks object into YOUR renderer:
+    // ← Here we use the unified object‐style signature:
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      renderEntry: (def, layout, cbs) => {
-        // First, wire your modal callbacks into cbs:
-        const wrappedCbs = {
-          onClick: () => {
-            formApi.populate(def);
-            _showEdit();
-            previewApi.setFromDefinition(def);
-            previewApi.show();
-            cbs.onClick && cbs.onClick(def);
-          },
-          onDelete: async () => {
-            if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} "${def.id}"?`)) {
-              await onDelete(def.id);
-              formApi.reset();
-              previewApi.hide();
-              _showAdd();
-              await refreshList();
-              cbs.onDelete && cbs.onDelete(def.id);
-            }
-          }
-        };
-        // Then call the custom renderer you passed to initCrudModal:
-        return renderEntry(def, layout, wrappedCbs);
+      renderEntry: (def, layout, { onClick, onDelete }) => {
+        // Directly invoke the renderer you passed in:
+        return renderEntry(def, layout, { onClick, onDelete });
       }
     });
   }
