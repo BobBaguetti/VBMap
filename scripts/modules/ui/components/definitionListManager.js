@@ -1,7 +1,5 @@
-// @version: 5 
-// @file: /scripts/modules/utils/definitionListManager.js
-
-import { renderItemEntry } from "../entries/itemEntryRenderer.js";
+// @version: 6
+// @file: /scripts/modules/ui/components/definitionListManager.js
 
 /**
  * Creates and manages a sortable, searchable definition list.
@@ -9,14 +7,14 @@ import { renderItemEntry } from "../entries/itemEntryRenderer.js";
  * @param {Object} options
  * @param {HTMLElement} options.container
  * @param {() => Array} options.getDefinitions
- * @param {(def: Object) => void} options.onEntryClick
+ * @param {(def: Object, layout: string, onClick: Function, onDelete: Function) => HTMLElement} options.renderEntry
  * @param {(id: string) => Promise<void>} options.onDelete
  * @param {() => string} [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
   container,
   getDefinitions,
-  onEntryClick,
+  renderEntry,
   onDelete,
   getCurrentLayout = () => "row"
 }) {
@@ -34,20 +32,34 @@ export function createDefinitionListManager({
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
     filtered.forEach(def => {
-      const entry = renderItemEntry(def, layout, onEntryClick, onDelete);
-      container.appendChild(entry);
+      // call your custom renderer, wiring in the click & delete callbacks
+      const entryEl = renderEntry(
+        def,
+        layout,
+        // onClick handler
+        () => {
+          // top‐level list click hook (if needed)
+        },
+        // onDelete handler from list‐manager (if you need it separately)
+        async id => {
+          await onDelete(id);
+          render();
+        }
+      );
+      container.appendChild(entryEl);
     });
   }
 
+  // build & insert the search header
   const header = document.createElement("div");
   header.className = "list-header";
 
   const searchInput = document.createElement("input");
   searchInput.className = "ui-input";
-  searchInput.placeholder = "Search items...";
+  searchInput.placeholder = "Search…";
   searchInput.addEventListener("input", render);
-  header.appendChild(searchInput);
 
+  header.appendChild(searchInput);
   container.parentNode.insertBefore(header, container);
 
   return {
