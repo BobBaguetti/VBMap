@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.6 – ensure getDefinitions returns a real Array for definitionListManager
+// @version: 1.7 – action buttons aligned next to heading
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -21,9 +21,7 @@ export function initCrudModal({
   let cachedDefs = [];  // always store definitions here
 
   async function refreshList() {
-    // Fetch raw data
     let defs = await loadAll();
-    // Normalize Firestore QuerySnapshot
     if (defs && defs.docs && Array.isArray(defs.docs)) {
       defs = defs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
@@ -64,12 +62,18 @@ export function initCrudModal({
     actionRow  = document.createElement("div");
     actionRow.className = "modal-actions";
 
+    // Build a heading row with flex to align heading and buttons
+    const headingRow = document.createElement("div");
+    headingRow.style.display        = "flex";
+    headingRow.style.justifyContent = "space-between";
+    headingRow.style.alignItems     = "center";
+    headingRow.append(formHeader, actionRow);
+
     // Assemble modal body
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
-    bodyWrap.appendChild(formHeader);
+    bodyWrap.appendChild(headingRow);
     bodyWrap.appendChild(formApi.form);
-    bodyWrap.appendChild(actionRow);
 
     initModalPickrs(bodyWrap);
 
@@ -82,8 +86,8 @@ export function initCrudModal({
   function buildList() {
     listApi = createDefinitionListManager({
       container:      listContainer,
-      getDefinitions: () => cachedDefs,   // always return the Array
-      onEntryClick:   def => {            // hook entry click
+      getDefinitions: () => cachedDefs,
+      onEntryClick:   def => {
         formApi.populate(def);
         _showEdit();
         previewApi.setFromDefinition(def);
@@ -94,7 +98,6 @@ export function initCrudModal({
         formApi.reset();
         previewApi.hide();
         _showAdd();
-        // also refresh full list
         await refreshList();
       }
     });
