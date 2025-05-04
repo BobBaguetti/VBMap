@@ -1,73 +1,36 @@
 // @file: /scripts/modules/services/npcDefinitionsService.js
-// @version: 1.0 — CRUD + real-time for NPC definitions
+// @version: 2.0 – now uses generic Firestore service factory
 
-import {
-  collection,
-  getDocs,
-  addDoc,
-  doc,
-  setDoc,
-  deleteDoc,
-  onSnapshot
-} from "firebase/firestore";
+import { makeFirestoreService } from "../utils/firestoreServiceFactory.js";
+
+const npcService = makeFirestoreService("npcDefinitions");
 
 /**
- * Load all NPC definitions.
- * @param {Firestore} db
- * @returns {Promise<Array<Object>>}
+ * Load all NPC definitions as an array of {id, ...data}.
  */
-export async function loadNpcDefinitions(db) {
-  const snap = await getDocs(collection(db, "npcDefinitions"));
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
+export const loadNpcDefinitions = db => npcService.loadAll(db);
 
 /**
- * Real-time subscription to every document in 'npcDefinitions'.
- * Calls onUpdate(arrayOfDefs) on any change.
+ * Subscribe to NPC definitions; callback receives an array on every update.
+ * Returns an unsubscribe function.
  */
-export function subscribeNpcDefinitions(db, onUpdate) {
-  return onSnapshot(
-    collection(db, "npcDefinitions"),
-    snapshot => {
-      const defs = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      onUpdate(defs);
-    },
-    err => console.error("NPC definitions subscription error:", err)
-  );
-}
+export const subscribeNpcDefinitions = (db, onUpdate) =>
+  npcService.subscribeAll(db, onUpdate);
 
 /**
- * Add a new NPC definition.
- * @param {Firestore} db
- * @param {Object} def
- * @returns {Promise<Object>}
+ * Add a new NPC definition. Returns the added record ({id, ...data}).
  */
-export async function addNpcDefinition(db, def) {
-  const docRef = await addDoc(collection(db, "npcDefinitions"), def);
-  return { id: docRef.id, ...def };
-}
+export const addNpcDefinition = (db, data) =>
+  npcService.add(db, data);
 
 /**
- * Update (merge) only defined fields of an existing NPC definition.
- * @param {Firestore} db
- * @param {Object} def  Must include an `id` property
- * @returns {Promise<void>}
+ * Update an existing NPC definition by id. Returns the updated record.
  */
-export async function updateNpcDefinition(db, def) {
-  const { id, ...raw } = def;
-  const data = Object.entries(raw).reduce((acc, [k, v]) => {
-    if (v !== undefined) acc[k] = v;
-    return acc;
-  }, {});
-  await setDoc(doc(db, "npcDefinitions", id), data, { merge: true });
-}
+export const updateNpcDefinition = (db, id, data) =>
+  npcService.update(db, id, data);
 
 /**
- * Delete an NPC definition by ID.
- * @param {Firestore} db
- * @param {string} id
- * @returns {Promise<void>}
+ * Delete an NPC definition by id.
  */
-export async function deleteNpcDefinition(db, id) {
-  await deleteDoc(doc(db, "npcDefinitions", id));
-}
+export const deleteNpcDefinition = (db, id) =>
+  npcService.remove(db, id);
