@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionListManager.js
-// @version: 7 – unified callback signature & custom renderer support
+// @version: 8 – full backward compatibility + custom renderer support
 
 import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 
@@ -10,15 +10,16 @@ import { renderItemEntry } from "../entries/itemEntryRenderer.js";
  * @param {HTMLElement} options.container
  * @param {() => Array} options.getDefinitions
  * @param {(def: Object, layout: string, cbs: {onClick:Function, onDelete:Function}) => HTMLElement}
- *                  [options.renderEntry] – custom entry‐renderer; defaults to items
- * @param {(def: Object) => void} [options.onEntryClick]
- * @param {(id: string) => Promise<void>} [options.onDelete]
+ *                  [options.renderEntry] – custom entry renderer; defaults to items
+ * @param {(def: Object) => void} [options.onEntryClick] – legacy click hook
+ * @param {(id: string) => Promise<void>} [options.onDelete] – legacy delete hook
  * @param {() => string} [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
   container,
   getDefinitions,
   renderEntry = (def, layout, { onClick, onDelete }) =>
+    // default: adapt old-style renderItemEntry
     renderItemEntry(def, layout, onClick, onDelete),
   onEntryClick = () => {},
   onDelete = () => Promise.resolve(),
@@ -48,10 +49,14 @@ export function createDefinitionListManager({
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
     filtered.forEach(def => {
-      // unified object‐style callbacks
+      // call the appropriate renderer
       const entryEl = renderEntry(def, layout, {
-        onClick: () => onEntryClick(def),
-        onDelete: () => onDelete(def.id)
+        onClick: () => {
+          onEntryClick(def);
+        },
+        onDelete: () => {
+          onDelete(def.id);
+        }
       });
       container.appendChild(entryEl);
     });
