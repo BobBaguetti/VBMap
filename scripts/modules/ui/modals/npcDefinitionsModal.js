@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 3.3 – align renderEntry signature to (def, layout, {onClick,onDelete})
+// @version: 3.5 – pass renderEntry directly for full styling
 
 import { initCrudModal }            from "../../utils/crudModalFactory.js";
 import {
@@ -26,9 +26,8 @@ export function initNpcDefinitionsModal(db) {
                        : addNpcDefinition(db, def),
     onDelete:      id => deleteNpcDefinition(db, id),
 
-    // <-- updated to accept (def, layout, {onClick,onDelete})
-    renderEntry:   (def, layout, { onClick, onDelete }) =>
-                     renderNpcEntry(def, layout, { onClick, onDelete }),
+    // <-- simplified to pass renderNpcEntry straight through
+    renderEntry:   renderNpcEntry,
 
     formFactory:   createNpcFormController,
     previewType:   "npc",
