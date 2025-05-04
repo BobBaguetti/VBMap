@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.12 – unified renderEntry signature in buildList
+// @version: 1.13 – snapshot/array support + unified renderEntry
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -10,29 +10,52 @@ import { initModalPickrs }              from "../ui/pickrManager.js";
  * Initializes a CRUD modal for any collection.
  */
 export function initCrudModal({
-  id, title, db,
-  loadAll, subscribeAll,
-  onSave, onDelete,
-  renderEntry, formFactory,
+  id,
+  title,
+  db,
+  loadAll,
+  subscribeAll,
+  onSave,
+  onDelete,
+  renderEntry,
+  formFactory,
   previewType = null,
-  layoutOptions = ["row","stacked","gallery"],
+  layoutOptions = ["row", "stacked", "gallery"],
   toolbar = []
 }) {
   let shell, listApi, formApi, previewApi, unsubscribe;
   let listContainer, formHeader, actionRow;
   let cachedDefs = [];
 
+  // Load once on open
   async function refreshList() {
-    const snapshot = await loadAll();
-    const defs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    const result = await loadAll();
+    let defs = [];
+
+    if (result && Array.isArray(result.docs)) {
+      // Firestore snapshot
+      defs = result.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } else if (Array.isArray(result)) {
+      // Plain array
+      defs = result;
+    }
+
     cachedDefs = defs;
     listApi.refresh(cachedDefs);
   }
 
+  // Real‐time updates
   function startSubscription() {
     unsubscribe?.();
     unsubscribe = subscribeAll(snap => {
-      const defs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      let defs = [];
+
+      if (snap && Array.isArray(snap.docs)) {
+        defs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } else if (Array.isArray(snap)) {
+        defs = snap;
+      }
+
       cachedDefs = defs;
       listApi.refresh(cachedDefs);
     });
@@ -40,6 +63,7 @@ export function initCrudModal({
 
   function buildShell() {
     listContainer = listContainer || createDefListContainer(id + "-list");
+
     shell = createDefinitionModalShell({
       id,
       title,
@@ -51,9 +75,11 @@ export function initCrudModal({
     const { header, bodyWrap, previewApi: p, open: shellOpen } = shell;
     previewApi = p;
 
+    // Move search header into the modal header
     const searchHdr = listContainer.previousElementSibling;
     if (searchHdr) header.appendChild(searchHdr);
 
+    // Form header and action buttons container
     formHeader = document.createElement("h3");
     formHeader.className = "form-heading";
     actionRow = document.createElement("div");
@@ -82,7 +108,7 @@ export function initCrudModal({
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      // unified object‐style signature:
+      // unified object‐style callback signature
       renderEntry: (def, layout, { onClick, onDelete }) =>
         renderEntry(def, layout, { onClick, onDelete })
     });
