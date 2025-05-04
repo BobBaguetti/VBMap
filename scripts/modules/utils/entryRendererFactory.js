@@ -1,5 +1,7 @@
 // @file: /scripts/modules/utils/entryRendererFactory.js
-// @version: 1.0 – generic definition‐list entry renderer
+// @version: 1.1 – added missing createIcon import
+
+import { createIcon } from "./iconUtils.js";
 
 /**
  * Factory for list‐entry renderers (Item, Chest, NPC, Quest).
@@ -42,7 +44,6 @@ export function makeEntryRenderer({
       if (onDelete) {
         const btn = document.createElement("button");
         btn.className = "entry-delete ui-button-delete";
-        // assumes createIcon is globally available
         btn.innerHTML = deleteIcon
           ? createIcon(deleteIcon.icon, { inline: deleteIcon.inline }).outerHTML
           : "Delete";
@@ -63,4 +64,3 @@ export function makeEntryRenderer({
       return entry;
     };
   }
-  
