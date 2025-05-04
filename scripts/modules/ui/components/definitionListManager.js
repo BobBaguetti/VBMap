@@ -1,7 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionListManager.js
-// @version: 7 – unified callback signature & custom renderer support
-
-import { renderItemEntry } from "../entries/itemEntryRenderer.js";
+// @version: 8 – full support for custom renderEntry(def, layout, {onClick,onDelete})
 
 /**
  * Creates and manages a sortable, searchable definition list.
@@ -10,18 +8,13 @@ import { renderItemEntry } from "../entries/itemEntryRenderer.js";
  * @param {HTMLElement} options.container
  * @param {() => Array} options.getDefinitions
  * @param {(def: Object, layout: string, cbs: {onClick:Function, onDelete:Function}) => HTMLElement}
- *                  [options.renderEntry] – custom entry‐renderer; defaults to items
- * @param {(def: Object) => void} [options.onEntryClick]
- * @param {(id: string) => Promise<void>} [options.onDelete]
+ *                  options.renderEntry – **required** entry renderer
  * @param {() => string} [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
   container,
   getDefinitions,
-  renderEntry = (def, layout, { onClick, onDelete }) =>
-    renderItemEntry(def, layout, onClick, onDelete),
-  onEntryClick = () => {},
-  onDelete = () => Promise.resolve(),
+  renderEntry,
   getCurrentLayout = () => "row"
 }) {
   let layout = getCurrentLayout();
@@ -48,14 +41,18 @@ export function createDefinitionListManager({
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
     filtered.forEach(def => {
-      // unified object‐style callbacks
+      // call the custom renderer passed by the modal factory
       const entryEl = renderEntry(def, layout, {
-        onClick: () => onEntryClick(def),
-        onDelete: () => onDelete(def.id)
+        onClick: () => renderOrHighlight(def),
+        onDelete: () => deleteOrRefresh(def.id)
       });
       container.appendChild(entryEl);
     });
   }
+
+  // no-op placeholders; they can be hooked if needed
+  function renderOrHighlight(def) { /* highlighting if you add it */ }
+  function deleteOrRefresh(id) { /* extra deletion logic if you add it */ }
 
   return {
     refresh: render,
