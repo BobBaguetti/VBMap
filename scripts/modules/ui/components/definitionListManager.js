@@ -1,5 +1,7 @@
 // @file: /scripts/modules/ui/components/definitionListManager.js
-// @version: 8 – full support for custom renderEntry(def, layout, {onClick,onDelete})
+// @version: 7 – unified callback signature & custom renderer support
+
+import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 
 /**
  * Creates and manages a sortable, searchable definition list.
@@ -8,13 +10,18 @@
  * @param {HTMLElement} options.container
  * @param {() => Array} options.getDefinitions
  * @param {(def: Object, layout: string, cbs: {onClick:Function, onDelete:Function}) => HTMLElement}
- *                  options.renderEntry – **required** entry renderer
+ *                  [options.renderEntry] – custom entry‐renderer; defaults to items
+ * @param {(def: Object) => void} [options.onEntryClick]
+ * @param {(id: string) => Promise<void>} [options.onDelete]
  * @param {() => string} [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
   container,
   getDefinitions,
-  renderEntry,
+  renderEntry = (def, layout, { onClick, onDelete }) =>
+    renderItemEntry(def, layout, onClick, onDelete),
+  onEntryClick = () => {},
+  onDelete = () => Promise.resolve(),
   getCurrentLayout = () => "row"
 }) {
   let layout = getCurrentLayout();
@@ -41,18 +48,14 @@ export function createDefinitionListManager({
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
     filtered.forEach(def => {
-      // call the custom renderer passed by the modal factory
+      // unified object‐style callbacks
       const entryEl = renderEntry(def, layout, {
-        onClick: () => renderOrHighlight(def),
-        onDelete: () => deleteOrRefresh(def.id)
+        onClick: () => onEntryClick(def),
+        onDelete: () => onDelete(def.id)
       });
       container.appendChild(entryEl);
     });
   }
-
-  // no-op placeholders; they can be hooked if needed
-  function renderOrHighlight(def) { /* highlighting if you add it */ }
-  function deleteOrRefresh(id) { /* extra deletion logic if you add it */ }
 
   return {
     refresh: render,
