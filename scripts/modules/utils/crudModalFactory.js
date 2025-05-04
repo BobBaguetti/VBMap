@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.4 – corrected import paths to match utils folder
+// @version: 1.5 – normalize Firestore snapshots to Arrays in refreshList
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -8,21 +8,6 @@ import { initModalPickrs }              from "../ui/pickrManager.js";
 
 /**
  * Initializes a CRUD modal for any collection.
- *
- * @param {Object} cfg
- * @param {string} cfg.id             – unique modal DOM id
- * @param {string} cfg.title          – modal window title
- * @param {object} cfg.db             – Firestore DB instance
- * @param {Function} cfg.loadAll      – () => Promise<definitions[]>
- * @param {Function} cfg.subscribeAll – (cb) => unsubscribeFn
- * @param {Function} cfg.onSave       – (def) => Promise
- * @param {Function} cfg.onDelete     – (id)  => Promise
- * @param {Function} cfg.renderEntry  – (def, { onClick, onDelete }) => HTMLElement
- * @param {Function} cfg.formFactory  – (db, { onSubmit, onCancel, onDelete }) => { form, populate, reset, getId, getCurrent }
- * @param {string|null} cfg.previewType   – "item"|"chest"|"npc"|"quest" or null
- * @param {string[]} cfg.layoutOptions    – e.g. ["row","stacked","gallery"]
- *
- * @returns {{ open: Function }}  an object with an `open()` method
  */
 export function initCrudModal({
   id, title, db,
@@ -35,17 +20,30 @@ export function initCrudModal({
   let listContainer, formHeader, actionRow;
 
   async function refreshList() {
-    const defs = await loadAll();
+    // Fetch raw data (could be snapshot or plain Array)
+    let defs = await loadAll();
+
+    // If Firestore QuerySnapshot, map to Array
+    if (defs && typeof defs.docs !== "undefined" && Array.isArray(defs.docs)) {
+      defs = defs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    }
+
     listApi.refresh(defs);
   }
 
   function startSubscription() {
     unsubscribe?.();
-    unsubscribe = subscribeAll(defs => listApi.refresh(defs));
+    unsubscribe = subscribeAll(defs => {
+      // Normalize subscription payload too
+      let arr = defs;
+      if (arr && typeof arr.docs !== "undefined" && Array.isArray(arr.docs)) {
+        arr = arr.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      }
+      listApi.refresh(arr);
+    });
   }
 
   function buildShell() {
-    // Ensure listContainer exists
     listContainer = listContainer || createDefListContainer(id + "-list");
 
     shell = createDefinitionModalShell({
@@ -56,27 +54,23 @@ export function initCrudModal({
     const { header, bodyWrap, previewApi: p, open: shellOpen } = shell;
     previewApi = p;
 
-    // Relocate search bar from list into header
-    const searchHeader = listContainer.previousElementSibling;
-    if (searchHeader) header.appendChild(searchHeader);
+    // Move search header
+    const searchHdr = listContainer.previousElementSibling;
+    if (searchHdr) header.appendChild(searchHdr);
 
-    // Create form heading & actions container
     formHeader = document.createElement("h3");
     formHeader.className = "form-heading";
-    actionRow = document.createElement("div");
+    actionRow  = document.createElement("div");
     actionRow.className = "modal-actions";
 
-    // Assemble modal body
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
     bodyWrap.appendChild(formHeader);
     bodyWrap.appendChild(formApi.form);
     bodyWrap.appendChild(actionRow);
 
-    // Initialize color pickers
     initModalPickrs(bodyWrap);
 
-    // Override open to reset to Add mode after showing
     shell.open = () => {
       shellOpen();
       _showAdd();
@@ -127,7 +121,6 @@ export function initCrudModal({
     });
     formApi.form.classList.add("ui-scroll-float");
 
-    // Live preview on input
     formApi.form.addEventListener("input", () => {
       const cur = formApi.getCurrent?.();
       if (cur) {
@@ -139,14 +132,14 @@ export function initCrudModal({
 
   function buildActions() {
     actionRow.innerHTML = "";
-    const btnSave   = createBtn("Save",   () => formApi.form.requestSubmit());
-    const btnClear  = createBtn("Clear",  () => formApi.reset());
-    const btnCancel = createBtn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); });
-    const btnDelete = createBtn("Delete", () => formApi.onDelete?.(formApi.getId()));
+    const btnSave   = _createBtn("Save",   () => formApi.form.requestSubmit());
+    const btnClear  = _createBtn("Clear",  () => formApi.reset());
+    const btnCancel = _createBtn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); });
+    const btnDelete = _createBtn("Delete", () => formApi.onDelete?.(formApi.getId()));
     actionRow.append(btnSave, btnClear, btnCancel, btnDelete);
   }
 
-  function createBtn(label, onClick) {
+  function _createBtn(label, onClick) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = label;
