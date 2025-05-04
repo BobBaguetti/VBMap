@@ -1,10 +1,10 @@
-// @file: /scripts/utils/crudModalFactory.js
-// @version: 1.3 – fix imports to point at modules folder
+// @file: /scripts/modules/utils/crudModalFactory.js
+// @version: 1.4 – corrected import paths to match utils folder
 
-import { createDefinitionModalShell }   from "../modules/ui/components/definitionModalShell.js";
-import { createDefListContainer }       from "../modules/utils/listUtils.js";
-import { createDefinitionListManager }  from "../modules/ui/components/definitionListManager.js";
-import { initModalPickrs }              from "../modules/ui/pickrManager.js";
+import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
+import { createDefListContainer }       from "./listUtils.js";
+import { createDefinitionListManager }  from "../ui/components/definitionListManager.js";
+import { initModalPickrs }              from "../ui/pickrManager.js";
 
 /**
  * Initializes a CRUD modal for any collection.
