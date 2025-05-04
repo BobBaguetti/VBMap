@@ -1,4 +1,4 @@
-// @version: 6.2
+// @version: 7
 // @file: /scripts/modules/ui/components/definitionListManager.js
 
 import { renderItemEntry } from "../entries/itemEntryRenderer.js";
@@ -9,24 +9,25 @@ import { renderItemEntry } from "../entries/itemEntryRenderer.js";
  * @param {Object} options
  * @param {HTMLElement} options.container
  * @param {() => Array} options.getDefinitions
- * @param {(def: Object, layout: string, onClick: Function, onDelete: Function) => HTMLElement} 
- *                  [options.renderEntry]        – custom entry‐renderer; defaults to renderItemEntry
- * @param {(def: Object) => void} [options.onEntryClick] – optional list‐level click hook
- * @param {(id: string) => Promise<void>} [options.onDelete] 
- *                  – optional list‐level delete hook
+ * @param {(def: Object, layout: string, cbs: {onClick:Function, onDelete:Function}) => HTMLElement}
+ *                  [options.renderEntry]   – custom entry‐renderer; defaults to items
+ * @param {(def: Object) => void} [options.onEntryClick]
+ * @param {(id: string) => Promise<void>} [options.onDelete]
  * @param {() => string} [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
   container,
   getDefinitions,
-  renderEntry = renderItemEntry,
+  renderEntry = (def, layout, { onClick, onDelete }) =>
+    // adapt old renderItemEntry to object signature
+    renderItemEntry(def, layout, onClick, onDelete),
   onEntryClick = () => {},
   onDelete = () => Promise.resolve(),
   getCurrentLayout = () => "row"
 }) {
   let layout = getCurrentLayout();
 
-  // Build and insert the search header
+  // build & insert the search header
   const header = document.createElement("div");
   header.className = "list-header";
   const searchInput = document.createElement("input");
@@ -36,25 +37,23 @@ export function createDefinitionListManager({
   header.appendChild(searchInput);
   container.parentNode.insertBefore(header, container);
 
-  // Render function
+  // main render function
   function render() {
     const allDefs = getDefinitions();
-    const query = searchInput.value.trim().toLowerCase();
+    const q = searchInput.value.trim().toLowerCase();
     const filtered = allDefs.filter(d =>
-      d.name?.toLowerCase().includes(query)
+      d.name?.toLowerCase().includes(q)
     );
 
     container.innerHTML = "";
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
     filtered.forEach(def => {
-      // positional signature: (def, layout, onClick, onDelete)
-      const entryEl = renderEntry(
-        def,
-        layout,
-        () => onEntryClick(def),
-        id => onDelete(id)
-      );
+      // unified object‐style callbacks
+      const entryEl = renderEntry(def, layout, {
+        onClick: () => onEntryClick(def),
+        onDelete: () => onDelete(def.id)
+      });
       container.appendChild(entryEl);
     });
   }
