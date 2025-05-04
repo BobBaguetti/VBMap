@@ -1,12 +1,11 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 3.6 – modular CRUD modal wired like Item/Chest
+// @version: 3.7 – subscription handler now guards against missing .docs
 
 import {
   createModal,
   closeModal,
   openModal
 } from "../uiKit.js";
-
 import { createLayoutSwitcher }        from "../uiKit.js";
 import { createDefListContainer }      from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
@@ -93,7 +92,7 @@ export function initNpcDefinitionsModal(db) {
           },
           onSubmit: async def => {
             if (def.id) await updateNpcDefinition(db, def.id, def);
-            else       await addNpcDefinition(db, def);
+            else        await addNpcDefinition(db, def);
             await refreshDefinitions();
             formApi.reset();
             previewApi.hide();
@@ -146,11 +145,20 @@ export function initNpcDefinitionsModal(db) {
           header.appendChild(searchHdr);
         }
 
-        // Final setup
+        // Safely handle subscription payloads
         unsubscribe = subscribeNpcDefinitions(db, snap => {
-          definitions = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          let arr;
+          if (snap && Array.isArray(snap.docs)) {
+            arr = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+          } else if (Array.isArray(snap)) {
+            arr = snap;
+          } else {
+            arr = [];
+          }
+          definitions = arr;
           listApi.refresh(definitions);
         });
+
         previewApi.hide();
       }
 
