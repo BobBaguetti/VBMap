@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 3.2 – added toolbar configuration for full CRUD controls
+// @version: 3.3 – align renderEntry signature to (def, layout, {onClick,onDelete})
 
 import { initCrudModal }            from "../../utils/crudModalFactory.js";
 import {
@@ -16,7 +16,7 @@ export function initNpcDefinitionsModal(db) {
   return initCrudModal({
     id:            "npc-definitions-modal",
     title:         "Manage NPCs",
-    toolbar:       ["list", "form", "preview", "search"],  // ← ensure same toolbar as Items/Chests
+    toolbar:       ["list", "form", "preview", "search"],
     db,
     loadAll:       () => loadNpcDefinitions(db),
     subscribeAll:  cb => subscribeNpcDefinitions(db, cb),
@@ -25,8 +25,11 @@ export function initNpcDefinitionsModal(db) {
                        ? updateNpcDefinition(db, def.id, def)
                        : addNpcDefinition(db, def),
     onDelete:      id => deleteNpcDefinition(db, id),
-    renderEntry:   (def, { onClick, onDelete }) =>
-                     renderNpcEntry(def, { onClick, onDelete }),
+
+    // <-- updated to accept (def, layout, {onClick,onDelete})
+    renderEntry:   (def, layout, { onClick, onDelete }) =>
+                     renderNpcEntry(def, layout, { onClick, onDelete }),
+
     formFactory:   createNpcFormController,
     previewType:   "npc",
     layoutOptions: ["row", "stacked", "gallery"]
