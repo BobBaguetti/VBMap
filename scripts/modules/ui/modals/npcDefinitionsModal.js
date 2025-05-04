@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 3.1 – fixed import path for crudModalFactory
+// @version: 3.2 – added toolbar configuration for full CRUD controls
 
 import { initCrudModal }            from "../../utils/crudModalFactory.js";
 import {
@@ -16,6 +16,7 @@ export function initNpcDefinitionsModal(db) {
   return initCrudModal({
     id:            "npc-definitions-modal",
     title:         "Manage NPCs",
+    toolbar:       ["list", "form", "preview", "search"],  // ← ensure same toolbar as Items/Chests
     db,
     loadAll:       () => loadNpcDefinitions(db),
     subscribeAll:  cb => subscribeNpcDefinitions(db, cb),
