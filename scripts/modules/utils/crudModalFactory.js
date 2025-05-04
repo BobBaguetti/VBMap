@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.13 – snapshot/array support + unified renderEntry
+// @version: 1.14 – full-file drop-in with unified buildList
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -27,7 +27,7 @@ export function initCrudModal({
   let listContainer, formHeader, actionRow;
   let cachedDefs = [];
 
-  // Load once on open
+  // Load definitions once
   async function refreshList() {
     const result = await loadAll();
     let defs = [];
@@ -44,7 +44,7 @@ export function initCrudModal({
     listApi.refresh(cachedDefs);
   }
 
-  // Real‐time updates
+  // Subscribe to real-time updates
   function startSubscription() {
     unsubscribe?.();
     unsubscribe = subscribeAll(snap => {
@@ -61,6 +61,7 @@ export function initCrudModal({
     });
   }
 
+  // Build the modal shell
   function buildShell() {
     listContainer = listContainer || createDefListContainer(id + "-list");
 
@@ -75,11 +76,11 @@ export function initCrudModal({
     const { header, bodyWrap, previewApi: p, open: shellOpen } = shell;
     previewApi = p;
 
-    // Move search header into the modal header
+    // Move the search header into the modal header
     const searchHdr = listContainer.previousElementSibling;
     if (searchHdr) header.appendChild(searchHdr);
 
-    // Form header and action buttons container
+    // Prepare form header and action buttons container
     formHeader = document.createElement("h3");
     formHeader.className = "form-heading";
     actionRow = document.createElement("div");
@@ -104,16 +105,39 @@ export function initCrudModal({
     };
   }
 
+  // Build the list with unified callback signature
   function buildList() {
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      // unified object‐style callback signature
-      renderEntry: (def, layout, { onClick, onDelete }) =>
-        renderEntry(def, layout, { onClick, onDelete })
+      renderEntry: (def, layout, { onClick, onDelete }) => {
+        // First wire up the modal’s form/preview callbacks
+        const entryEl = renderEntry(def, layout, {
+          onClick: () => {
+            formApi.populate(def);
+            _showEdit();
+            previewApi.setFromDefinition(def);
+            previewApi.show();
+            // Then let the list manager handle its own click logic
+            onClick(def);
+          },
+          onDelete: async () => {
+            if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} "${def.id}"?`)) {
+              await onDelete(def.id);
+              formApi.reset();
+              previewApi.hide();
+              _showAdd();
+              await refreshList();
+              onDelete(def.id);
+            }
+          }
+        });
+        return entryEl;
+      }
     });
   }
 
+  // Build the form
   function buildForm() {
     formApi = formFactory(db, {
       onCancel: async () => {
@@ -148,11 +172,12 @@ export function initCrudModal({
     });
   }
 
+  // Build action buttons
   function buildActions() {
     actionRow.innerHTML = "";
     actionRow.append(
-      _createBtn("Save",   () => formApi.form.requestSubmit()),
-      _createBtn("Clear",  () => formApi.reset()),
+      _createBtn("Save", () => formApi.form.requestSubmit()),
+      _createBtn("Clear", () => formApi.reset()),
       _createBtn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); }),
       _createBtn("Delete", () => formApi.onDelete?.(formApi.getId()))
     );
