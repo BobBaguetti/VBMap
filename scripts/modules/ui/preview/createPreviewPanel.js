@@ -1,6 +1,5 @@
-// comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed
 // @file: /scripts/modules/ui/preview/createPreviewPanel.js
-// @version: 7 – always clear container before instantiation
+// @version: 8 – added support for “npc” previews
 
 import { createItemPreviewPanel }  from "./itemPreview.js";
 import { createQuestPreviewPanel } from "./questPreview.js";
