@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.11 – now forwards toolbar to modal shell
+// @version: 1.12 – unified renderEntry signature in buildList
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -16,17 +16,15 @@ export function initCrudModal({
   renderEntry, formFactory,
   previewType = null,
   layoutOptions = ["row","stacked","gallery"],
-  toolbar = []      // ← now accepted here
+  toolbar = []
 }) {
   let shell, listApi, formApi, previewApi, unsubscribe;
   let listContainer, formHeader, actionRow;
   let cachedDefs = [];
 
   async function refreshList() {
-    let defs = await loadAll();
-    if (defs && defs.docs && Array.isArray(defs.docs)) {
-      defs = defs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    }
+    const snapshot = await loadAll();
+    const defs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     cachedDefs = defs;
     listApi.refresh(cachedDefs);
   }
@@ -34,22 +32,18 @@ export function initCrudModal({
   function startSubscription() {
     unsubscribe?.();
     unsubscribe = subscribeAll(snap => {
-      let arr = snap;
-      if (arr && arr.docs && Array.isArray(arr.docs)) {
-        arr = arr.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      }
-      cachedDefs = arr;
+      const defs = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      cachedDefs = defs;
       listApi.refresh(cachedDefs);
     });
   }
 
   function buildShell() {
     listContainer = listContainer || createDefListContainer(id + "-list");
-
     shell = createDefinitionModalShell({
       id,
       title,
-      toolbar,               // ← pass it through
+      toolbar,
       withPreview: !!previewType,
       previewType,
       layoutOptions
@@ -88,29 +82,9 @@ export function initCrudModal({
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      // fixed signature: def, layout, listOnClick, listOnDelete
-      renderEntry: (def, layout, listOnClick, listOnDelete) => {
-        const entryEl = renderEntry(def, layout, {
-          onClick: () => {
-            formApi.populate(def);
-            _showEdit();
-            previewApi.setFromDefinition(def);
-            previewApi.show();
-            listOnClick?.(def);
-          },
-          onDelete: async () => {
-            if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} "${def.id}"?`)) {
-              await onDelete(def.id);
-              formApi.reset();
-              previewApi.hide();
-              _showAdd();
-              await refreshList();
-              listOnDelete?.(def.id);
-            }
-          }
-        });
-        return entryEl;
-      }
+      // unified object‐style signature:
+      renderEntry: (def, layout, { onClick, onDelete }) =>
+        renderEntry(def, layout, { onClick, onDelete })
     });
   }
 
@@ -150,11 +124,12 @@ export function initCrudModal({
 
   function buildActions() {
     actionRow.innerHTML = "";
-    const btnSave   = _createBtn("Save",   () => formApi.form.requestSubmit());
-    const btnClear  = _createBtn("Clear",  () => formApi.reset());
-    const btnCancel = _createBtn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); });
-    const btnDelete = _createBtn("Delete", () => formApi.onDelete?.(formApi.getId()));
-    actionRow.append(btnSave, btnClear, btnCancel, btnDelete);
+    actionRow.append(
+      _createBtn("Save",   () => formApi.form.requestSubmit()),
+      _createBtn("Clear",  () => formApi.reset()),
+      _createBtn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); }),
+      _createBtn("Delete", () => formApi.onDelete?.(formApi.getId()))
+    );
   }
 
   function _createBtn(label, onClick) {
