@@ -1,5 +1,5 @@
 // @file: /scripts/utils/crudModalFactory.js
-// @version: 1 – centralized CRUD‐modal factory
+// @version: 1.1 – ensure listContainer is in the DOM before wiring list manager
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "../utils/listUtils.js";
@@ -45,6 +45,9 @@ export function initCrudModal({
   }
 
   function buildShell() {
+    // Create list container first and append it, so parentNode exists
+    listContainer = createDefListContainer(id + "-list");
+
     shell = createDefinitionModalShell({
       id, title,
       withPreview:   !!previewType,
@@ -63,7 +66,7 @@ export function initCrudModal({
     actionRow = document.createElement("div");
     actionRow.className = "modal-actions";
 
-    // insert regions
+    // insert regions in order: list, hr, heading, form, actions
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
     bodyWrap.appendChild(formHeader);
@@ -73,15 +76,15 @@ export function initCrudModal({
     // init pickers
     initModalPickrs(bodyWrap);
 
+    // override shell.open to show Add mode heading after opening
     shell.open = () => {
       shellOpen();
-      // after open, ensure correct mode & heading
       _showAdd();
     };
   }
 
   function buildList() {
-    listContainer = createDefListContainer(id + "-list");
+    // Now that listContainer is in the DOM, wire the list manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: loadAll,
@@ -141,7 +144,6 @@ export function initCrudModal({
     const btnClear  = createBtn("Clear",  () => formApi.reset());
     const btnCancel = createBtn("Cancel", () => formApi.reset() || previewApi.hide() || _showAdd());
     const btnDelete = createBtn("Delete", () => formApi.onDelete?.(formApi.getId()));
-
     actionRow.append(btnSave, btnClear, btnCancel, btnDelete);
   }
 
@@ -156,27 +158,27 @@ export function initCrudModal({
 
   function _showAdd() {
     formHeader.textContent = `Add ${title.replace(/^Manage\s+/, "")}`;
-    actionRow.children[0].style.display = "";  // Save
-    actionRow.children[1].style.display = "";  // Clear
-    actionRow.children[2].style.display = "none";// Cancel
-    actionRow.children[3].style.display = "none";// Delete
+    actionRow.children[0].style.display = "";   // Save
+    actionRow.children[1].style.display = "";   // Clear
+    actionRow.children[2].style.display = "none"; // Cancel
+    actionRow.children[3].style.display = "none"; // Delete
   }
 
   function _showEdit() {
     formHeader.textContent = `Edit ${title.replace(/^Manage\s+/, "")}`;
-    actionRow.children[0].style.display = "";  // Save
-    actionRow.children[1].style.display = "none";// Clear
-    actionRow.children[2].style.display = "";  // Cancel
-    actionRow.children[3].style.display = "";  // Delete
+    actionRow.children[0].style.display = "";   // Save
+    actionRow.children[1].style.display = "none"; // Clear
+    actionRow.children[2].style.display = "";   // Cancel
+    actionRow.children[3].style.display = "";   // Delete
   }
 
   return {
     async open() {
       if (!shell) {
-        buildList();
         buildForm();
         buildActions();
         buildShell();
+        buildList();
         startSubscription();
         await refreshList();
       }
