@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.9 – fixed buildList to use renderEntry(def, layout, …)
+// @version: 1.10 – fixed buildList to wire entry‐click handlers correctly
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -83,24 +83,35 @@ export function initCrudModal({
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      renderEntry: (def, layout) =>
-        renderEntry(def, layout, {
-          onClick: d => {
-            formApi.populate(d);
+      // ← here’s the fixed signature: def, layout, onClick, onDelete
+      renderEntry: (def, layout, listOnClick, listOnDelete) => {
+        // call your NPC/item/etc. renderer, wiring in both the CRUD‐modal handlers
+        // and also invoking the list‐manager’s callbacks if it wants to do extra work.
+        const entryEl = renderEntry(def, layout, {
+          onClick: () => {
+            // 1) populate the form & switch to edit mode
+            formApi.populate(def);
             _showEdit();
-            previewApi.setFromDefinition(d);
+            previewApi.setFromDefinition(def);
             previewApi.show();
+            // 2) notify the list manager, if it needs to sync selection/highlight
+            listOnClick?.(def);
           },
-          onDelete: async id => {
-            if (confirm(`Delete NPC "${id}"?`)) {
-              await onDelete(id);
+          onDelete: async () => {
+            if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} "${def.id}"?`)) {
+              await onDelete(def.id);
               formApi.reset();
               previewApi.hide();
               _showAdd();
               await refreshList();
+              // also notify list manager
+              listOnDelete?.(def.id);
             }
           }
-        })
+        });
+
+        return entryEl;
+      }
     });
   }
 
@@ -112,7 +123,7 @@ export function initCrudModal({
         _showAdd();
       },
       onDelete: async id => {
-        if (confirm(`Delete NPC "${id}"?`)) {
+        if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} "${id}"?`)) {
           await onDelete(id);
           formApi.reset();
           previewApi.hide();
@@ -140,8 +151,8 @@ export function initCrudModal({
 
   function buildActions() {
     actionRow.innerHTML = "";
-    const btnSave = _createBtn("Save", () => formApi.form.requestSubmit());
-    const btnClear = _createBtn("Clear", () => formApi.reset());
+    const btnSave   = _createBtn("Save",   () => formApi.form.requestSubmit());
+    const btnClear  = _createBtn("Clear",  () => formApi.reset());
     const btnCancel = _createBtn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); });
     const btnDelete = _createBtn("Delete", () => formApi.onDelete?.(formApi.getId()));
     actionRow.append(btnSave, btnClear, btnCancel, btnDelete);
