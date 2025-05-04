@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.7 – action buttons aligned next to heading
+// @version: 1.8 – full file including corrected buildList()
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -87,19 +87,24 @@ export function initCrudModal({
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => cachedDefs,
-      onEntryClick:   def => {
-        formApi.populate(def);
-        _showEdit();
-        previewApi.setFromDefinition(def);
-        previewApi.show();
-      },
-      onDelete:       async id => {
-        await onDelete(id);
-        formApi.reset();
-        previewApi.hide();
-        _showAdd();
-        await refreshList();
-      }
+      renderEntry: def =>
+        renderEntry(def, /* layout */ undefined, {
+          onClick: d => {
+            formApi.populate(d);
+            _showEdit();
+            previewApi.setFromDefinition(d);
+            previewApi.show();
+          },
+          onDelete: async id => {
+            if (confirm(`Delete NPC "${id}"?`)) {
+              await onDelete(id);
+              formApi.reset();
+              previewApi.hide();
+              _showAdd();
+              await refreshList();
+            }
+          }
+        })
     });
   }
 
@@ -111,11 +116,13 @@ export function initCrudModal({
         _showAdd();
       },
       onDelete: async id => {
-        await onDelete(id);
-        formApi.reset();
-        previewApi.hide();
-        _showAdd();
-        await refreshList();
+        if (confirm(`Delete NPC "${id}"?`)) {
+          await onDelete(id);
+          formApi.reset();
+          previewApi.hide();
+          _showAdd();
+          await refreshList();
+        }
       },
       onSubmit: async def => {
         await onSave(def);
