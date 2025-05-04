@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.5 – normalize Firestore snapshots to Arrays in refreshList
+// @version: 1.6 – ensure getDefinitions returns a real Array for definitionListManager
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -18,28 +18,28 @@ export function initCrudModal({
 }) {
   let shell, listApi, formApi, previewApi, unsubscribe;
   let listContainer, formHeader, actionRow;
+  let cachedDefs = [];  // always store definitions here
 
   async function refreshList() {
-    // Fetch raw data (could be snapshot or plain Array)
+    // Fetch raw data
     let defs = await loadAll();
-
-    // If Firestore QuerySnapshot, map to Array
-    if (defs && typeof defs.docs !== "undefined" && Array.isArray(defs.docs)) {
+    // Normalize Firestore QuerySnapshot
+    if (defs && defs.docs && Array.isArray(defs.docs)) {
       defs = defs.docs.map(doc => ({ id: doc.id, ...doc.data() }));
     }
-
-    listApi.refresh(defs);
+    cachedDefs = defs;
+    listApi.refresh(cachedDefs);
   }
 
   function startSubscription() {
     unsubscribe?.();
-    unsubscribe = subscribeAll(defs => {
-      // Normalize subscription payload too
-      let arr = defs;
-      if (arr && typeof arr.docs !== "undefined" && Array.isArray(arr.docs)) {
+    unsubscribe = subscribeAll(snap => {
+      let arr = snap;
+      if (arr && arr.docs && Array.isArray(arr.docs)) {
         arr = arr.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       }
-      listApi.refresh(arr);
+      cachedDefs = arr;
+      listApi.refresh(cachedDefs);
     });
   }
 
@@ -48,21 +48,23 @@ export function initCrudModal({
 
     shell = createDefinitionModalShell({
       id, title,
-      withPreview:   !!previewType,
+      withPreview:  !!previewType,
       previewType, layoutOptions
     });
     const { header, bodyWrap, previewApi: p, open: shellOpen } = shell;
     previewApi = p;
 
-    // Move search header
+    // Move search header into shell header
     const searchHdr = listContainer.previousElementSibling;
     if (searchHdr) header.appendChild(searchHdr);
 
+    // Create form heading & actions container
     formHeader = document.createElement("h3");
     formHeader.className = "form-heading";
     actionRow  = document.createElement("div");
     actionRow.className = "modal-actions";
 
+    // Assemble modal body
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
     bodyWrap.appendChild(formHeader);
@@ -80,21 +82,21 @@ export function initCrudModal({
   function buildList() {
     listApi = createDefinitionListManager({
       container:      listContainer,
-      getDefinitions: loadAll,
-      renderEntry: def => renderEntry(def, {
-        onClick: async d => {
-          formApi.populate(d);
-          _showEdit();
-          previewApi.setFromDefinition(d);
-          previewApi.show();
-        },
-        onDelete: async id => {
-          await onDelete(id);
-          formApi.reset();
-          previewApi.hide();
-          _showAdd();
-        }
-      })
+      getDefinitions: () => cachedDefs,   // always return the Array
+      onEntryClick:   def => {            // hook entry click
+        formApi.populate(def);
+        _showEdit();
+        previewApi.setFromDefinition(def);
+        previewApi.show();
+      },
+      onDelete:       async id => {
+        await onDelete(id);
+        formApi.reset();
+        previewApi.hide();
+        _showAdd();
+        // also refresh full list
+        await refreshList();
+      }
     });
   }
 
@@ -110,6 +112,7 @@ export function initCrudModal({
         formApi.reset();
         previewApi.hide();
         _showAdd();
+        await refreshList();
       },
       onSubmit: async def => {
         await onSave(def);
@@ -120,7 +123,6 @@ export function initCrudModal({
       }
     });
     formApi.form.classList.add("ui-scroll-float");
-
     formApi.form.addEventListener("input", () => {
       const cur = formApi.getCurrent?.();
       if (cur) {
@@ -141,27 +143,27 @@ export function initCrudModal({
 
   function _createBtn(label, onClick) {
     const btn = document.createElement("button");
-    btn.type = "button";
+    btn.type        = "button";
     btn.textContent = label;
-    btn.className = label === "Delete" ? "ui-button-danger" : "ui-button";
-    btn.onclick = onClick;
+    btn.className   = label === "Delete" ? "ui-button-danger" : "ui-button";
+    btn.onclick     = onClick;
     return btn;
   }
 
   function _showAdd() {
     formHeader.textContent = `Add ${title.replace(/^Manage\s+/, "")}`;
-    actionRow.children[0].style.display = "";   // Save
-    actionRow.children[1].style.display = "";   // Clear
-    actionRow.children[2].style.display = "none"; // Cancel
-    actionRow.children[3].style.display = "none"; // Delete
+    actionRow.children[0].style.display = "";
+    actionRow.children[1].style.display = "";
+    actionRow.children[2].style.display = "none";
+    actionRow.children[3].style.display = "none";
   }
 
   function _showEdit() {
     formHeader.textContent = `Edit ${title.replace(/^Manage\s+/, "")}`;
-    actionRow.children[0].style.display = "";   // Save
-    actionRow.children[1].style.display = "none"; // Clear
-    actionRow.children[2].style.display = "";   // Cancel
-    actionRow.children[3].style.display = "";   // Delete
+    actionRow.children[0].style.display = "";
+    actionRow.children[1].style.display = "none";
+    actionRow.children[2].style.display = "";
+    actionRow.children[3].style.display = "";
   }
 
   return {
