@@ -1,7 +1,7 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 3 – migrated to use initCrudModal for full modular CRUD flow
+// @version: 3.1 – fixed import path for crudModalFactory
 
-import { initCrudModal }            from "../../../utils/crudModalFactory.js";
+import { initCrudModal }            from "../../utils/crudModalFactory.js";
 import {
   loadNpcDefinitions,
   subscribeNpcDefinitions,
