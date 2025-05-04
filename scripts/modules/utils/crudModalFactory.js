@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.8 – full file including corrected buildList()
+// @version: 1.9 – fixed buildList to use renderEntry(def, layout, …)
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -18,7 +18,7 @@ export function initCrudModal({
 }) {
   let shell, listApi, formApi, previewApi, unsubscribe;
   let listContainer, formHeader, actionRow;
-  let cachedDefs = [];  // always store definitions here
+  let cachedDefs = [];
 
   async function refreshList() {
     let defs = await loadAll();
@@ -46,30 +46,26 @@ export function initCrudModal({
 
     shell = createDefinitionModalShell({
       id, title,
-      withPreview:  !!previewType,
+      withPreview: !!previewType,
       previewType, layoutOptions
     });
     const { header, bodyWrap, previewApi: p, open: shellOpen } = shell;
     previewApi = p;
 
-    // Move search header into shell header
     const searchHdr = listContainer.previousElementSibling;
     if (searchHdr) header.appendChild(searchHdr);
 
-    // Create form heading & actions container
     formHeader = document.createElement("h3");
     formHeader.className = "form-heading";
-    actionRow  = document.createElement("div");
+    actionRow = document.createElement("div");
     actionRow.className = "modal-actions";
 
-    // Build a heading row with flex to align heading and buttons
     const headingRow = document.createElement("div");
-    headingRow.style.display        = "flex";
+    headingRow.style.display = "flex";
     headingRow.style.justifyContent = "space-between";
-    headingRow.style.alignItems     = "center";
+    headingRow.style.alignItems = "center";
     headingRow.append(formHeader, actionRow);
 
-    // Assemble modal body
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
     bodyWrap.appendChild(headingRow);
@@ -85,10 +81,10 @@ export function initCrudModal({
 
   function buildList() {
     listApi = createDefinitionListManager({
-      container:      listContainer,
+      container: listContainer,
       getDefinitions: () => cachedDefs,
-      renderEntry: def =>
-        renderEntry(def, /* layout */ undefined, {
+      renderEntry: (def, layout) =>
+        renderEntry(def, layout, {
           onClick: d => {
             formApi.populate(d);
             _showEdit();
@@ -144,8 +140,8 @@ export function initCrudModal({
 
   function buildActions() {
     actionRow.innerHTML = "";
-    const btnSave   = _createBtn("Save",   () => formApi.form.requestSubmit());
-    const btnClear  = _createBtn("Clear",  () => formApi.reset());
+    const btnSave = _createBtn("Save", () => formApi.form.requestSubmit());
+    const btnClear = _createBtn("Clear", () => formApi.reset());
     const btnCancel = _createBtn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); });
     const btnDelete = _createBtn("Delete", () => formApi.onDelete?.(formApi.getId()));
     actionRow.append(btnSave, btnClear, btnCancel, btnDelete);
@@ -153,10 +149,10 @@ export function initCrudModal({
 
   function _createBtn(label, onClick) {
     const btn = document.createElement("button");
-    btn.type        = "button";
+    btn.type = "button";
     btn.textContent = label;
-    btn.className   = label === "Delete" ? "ui-button-danger" : "ui-button";
-    btn.onclick     = onClick;
+    btn.className = label === "Delete" ? "ui-button-danger" : "ui-button";
+    btn.onclick = onClick;
     return btn;
   }
 
