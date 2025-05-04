@@ -1,20 +1,23 @@
-// @version: 6
+// @version: 6.1
 // @file: /scripts/modules/ui/components/definitionListManager.js
 
 /**
  * Creates and manages a sortable, searchable definition list.
  *
  * @param {Object} options
- * @param {HTMLElement} options.container
- * @param {() => Array} options.getDefinitions
- * @param {(def: Object, layout: string, onClick: Function, onDelete: Function) => HTMLElement} options.renderEntry
- * @param {(id: string) => Promise<void>} options.onDelete
- * @param {() => string} [options.getCurrentLayout]
+ * @param {HTMLElement}                          options.container
+ * @param {() => Array}                          options.getDefinitions
+ * @param {(def: Object, layout: string, cbs: {onClick:Function, onDelete:Function}) => HTMLElement} 
+ *                                              options.renderEntry
+ * @param {(def: Object) => void}                options.onEntryClick
+ * @param {(id: string) => Promise<void>}        options.onDelete
+ * @param {() => string}                         [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
   container,
   getDefinitions,
   renderEntry,
+  onEntryClick,
   onDelete,
   getCurrentLayout = () => "row"
 }) {
@@ -32,20 +35,11 @@ export function createDefinitionListManager({
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
     filtered.forEach(def => {
-      // call your custom renderer, wiring in the click & delete callbacks
-      const entryEl = renderEntry(
-        def,
-        layout,
-        // onClick handler
-        () => {
-          // top‐level list click hook (if needed)
-        },
-        // onDelete handler from list‐manager (if you need it separately)
-        async id => {
-          await onDelete(id);
-          render();
-        }
-      );
+      // pass def + layout + callback-object to your renderer
+      const entryEl = renderEntry(def, layout, {
+        onClick: () => onEntryClick?.(def),
+        onDelete: () => onDelete(def.id)
+      });
       container.appendChild(entryEl);
     });
   }
