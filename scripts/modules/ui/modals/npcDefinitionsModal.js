@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/npcDefinitionsModal.js
-// @version: 2.2 – inject form action buttons (Save/Clear, Save/Cancel/Delete)
+// @version: 2.3 – add form heading and align action buttons
 
 import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
 import { createDefListContainer }       from "../../utils/listUtils.js";
@@ -18,9 +18,13 @@ import { initModalPickrs }              from "../pickrManager.js";
 export function initNpcDefinitionsModal(db) {
   let modal, header, bodyWrap, previewApi, openModal;
   let formApi, listApi, unsubscribe;
+
+  // Create heading + actions container
+  const formHeader = document.createElement("h3");
+  formHeader.className = "form-heading";
   const actionRow = document.createElement("div");
   actionRow.className = "modal-actions";
-  
+
   async function refreshList() {
     const defs = await loadNpcDefinitions(db);
     listApi.refresh(defs);
@@ -35,7 +39,7 @@ export function initNpcDefinitionsModal(db) {
 
   async function open() {
     if (!modal) {
-      // 1) Build shell (no toolbar override)
+      // 1) Build shell (use default toolbar behavior)
       const shell = createDefinitionModalShell({
         id:           "npc-definitions-modal",
         title:        "Manage NPCs",
@@ -56,7 +60,7 @@ export function initNpcDefinitionsModal(db) {
       bodyWrap.appendChild(listContainer);
       listApi = createDefinitionListManager({
         container:      listContainer,
-        getDefinitions: () => [], 
+        getDefinitions: () => [],
         renderEntry:    (def, layout) => renderNpcEntry(def, layout, {
           onClick:  d => {
             formApi.populate(d);
@@ -91,22 +95,14 @@ export function initNpcDefinitionsModal(db) {
           }
         },
         onSubmit: async def => {
-          if (def.id) {
-            await updateNpcDefinition(db, def.id, def);
-          } else {
-            await addNpcDefinition(db, def);
-          }
+          if (def.id) await updateNpcDefinition(db, def.id, def);
+          else          await addNpcDefinition(db, def);
           formApi.reset();
           previewApi.hide();
           _showAddActions();
         }
       });
       formApi.form.classList.add("ui-scroll-float");
-
-      // Insert form and action row
-      bodyWrap.appendChild(document.createElement("hr"));
-      bodyWrap.appendChild(formApi.form);
-      bodyWrap.appendChild(actionRow);
 
       // 4) Move search bar into header
       const maybeHeader = listContainer.previousElementSibling;
@@ -115,15 +111,21 @@ export function initNpcDefinitionsModal(db) {
         header.appendChild(maybeHeader);
       }
 
-      // 5) Init pickers & hide preview
+      // 5) Initialize pickers & hide preview
       initModalPickrs(bodyWrap);
       previewApi.hide();
 
-      // 6) Start subscription & load
+      // 6) Start subscription & initial load
       startSubscription();
       await refreshList();
 
-      // Setup action buttons
+      // 7) Insert heading, form, and actions
+      bodyWrap.appendChild(document.createElement("hr"));
+      bodyWrap.appendChild(formHeader);
+      bodyWrap.appendChild(formApi.form);
+      bodyWrap.appendChild(actionRow);
+
+      // 8) Build action buttons and default to Add mode
       _buildActions();
       _showAddActions();
     }
@@ -134,32 +136,28 @@ export function initNpcDefinitionsModal(db) {
     openModal();
   }
 
-  // Build Save/Clear and Save/Cancel/Delete buttons
+  // Build the Save/Clear and Save/Cancel/Delete buttons
   function _buildActions() {
     actionRow.innerHTML = "";
 
-    // Save button
     const btnSave = document.createElement("button");
     btnSave.type = "button";
     btnSave.textContent = "Save";
     btnSave.className = "ui-button";
     btnSave.onclick = () => formApi.form.requestSubmit();
 
-    // Clear button (only in Add mode)
     const btnClear = document.createElement("button");
     btnClear.type = "button";
     btnClear.textContent = "Clear";
     btnClear.className = "ui-button";
     btnClear.onclick = () => formApi.reset();
 
-    // Cancel button (only in Edit mode)
     const btnCancel = document.createElement("button");
     btnCancel.type = "button";
     btnCancel.textContent = "Cancel";
     btnCancel.className = "ui-button";
-    btnCancel.onclick = async () => formApi.reset() | previewApi.hide() | _showAddActions();
+    btnCancel.onclick = () => formApi.reset() | previewApi.hide() | _showAddActions();
 
-    // Delete button (only in Edit mode)
     const btnDelete = document.createElement("button");
     btnDelete.type = "button";
     btnDelete.textContent = "Delete";
@@ -169,16 +167,18 @@ export function initNpcDefinitionsModal(db) {
     actionRow.append(btnSave, btnClear, btnCancel, btnDelete);
   }
 
-  // Toggle actions for Add vs Edit
   function _showAddActions() {
-    actionRow.children[0].style.display = ""; // Save
-    actionRow.children[1].style.display = ""; // Clear
-    actionRow.children[2].style.display = "none"; // Cancel
-    actionRow.children[3].style.display = "none"; // Delete
-  }
-  function _showEditActions() {
+    formHeader.textContent = "Add NPC";
     actionRow.children[0].style.display = "";  // Save
-    actionRow.children[1].style.display = "none"; // Clear
+    actionRow.children[1].style.display = "";  // Clear
+    actionRow.children[2].style.display = "none";// Cancel
+    actionRow.children[3].style.display = "none";// Delete
+  }
+
+  function _showEditActions() {
+    formHeader.textContent = "Edit NPC";
+    actionRow.children[0].style.display = "";  // Save
+    actionRow.children[1].style.display = "none";// Clear
     actionRow.children[2].style.display = "";  // Cancel
     actionRow.children[3].style.display = "";  // Delete
   }
