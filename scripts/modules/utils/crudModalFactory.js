@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.10 – fixed buildList to wire entry‐click handlers correctly
+// @version: 1.11 – now forwards toolbar to modal shell
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -14,7 +14,9 @@ export function initCrudModal({
   loadAll, subscribeAll,
   onSave, onDelete,
   renderEntry, formFactory,
-  previewType = null, layoutOptions = ["row","stacked","gallery"]
+  previewType = null,
+  layoutOptions = ["row","stacked","gallery"],
+  toolbar = []      // ← now accepted here
 }) {
   let shell, listApi, formApi, previewApi, unsubscribe;
   let listContainer, formHeader, actionRow;
@@ -45,9 +47,12 @@ export function initCrudModal({
     listContainer = listContainer || createDefListContainer(id + "-list");
 
     shell = createDefinitionModalShell({
-      id, title,
+      id,
+      title,
+      toolbar,               // ← pass it through
       withPreview: !!previewType,
-      previewType, layoutOptions
+      previewType,
+      layoutOptions
     });
     const { header, bodyWrap, previewApi: p, open: shellOpen } = shell;
     previewApi = p;
@@ -83,18 +88,14 @@ export function initCrudModal({
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      // ← here’s the fixed signature: def, layout, onClick, onDelete
+      // fixed signature: def, layout, listOnClick, listOnDelete
       renderEntry: (def, layout, listOnClick, listOnDelete) => {
-        // call your NPC/item/etc. renderer, wiring in both the CRUD‐modal handlers
-        // and also invoking the list‐manager’s callbacks if it wants to do extra work.
         const entryEl = renderEntry(def, layout, {
           onClick: () => {
-            // 1) populate the form & switch to edit mode
             formApi.populate(def);
             _showEdit();
             previewApi.setFromDefinition(def);
             previewApi.show();
-            // 2) notify the list manager, if it needs to sync selection/highlight
             listOnClick?.(def);
           },
           onDelete: async () => {
@@ -104,12 +105,10 @@ export function initCrudModal({
               previewApi.hide();
               _showAdd();
               await refreshList();
-              // also notify list manager
               listOnDelete?.(def.id);
             }
           }
         });
-
         return entryEl;
       }
     });
