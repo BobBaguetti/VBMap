@@ -47,14 +47,16 @@ export function initCrudModal({
   function buildShell() {
     listContainer = listContainer || createDefListContainer(id + "-list");
     shell = createDefinitionModalShell({
-      id, title, toolbar,
+      id,
+      title,
+      toolbar,
       withPreview: !!previewType,
-      previewType, layoutOptions
+      previewType,
+      layoutOptions
     });
     const { header, bodyWrap, previewApi: p, open: shellOpen } = shell;
     previewApi = p;
 
-    // move search into header
     const searchHdr = listContainer.previousElementSibling;
     if (searchHdr) header.appendChild(searchHdr);
 
@@ -83,14 +85,12 @@ export function initCrudModal({
   }
 
   function buildList() {
-    // ← Here we use the unified object‐style signature:
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      renderEntry: (def, layout, { onClick, onDelete }) => {
-        // Directly invoke the renderer you passed in:
-        return renderEntry(def, layout, { onClick, onDelete });
-      }
+      // unified object-style signature: call your passed-in renderer directly
+      renderEntry: (def, layout, { onClick, onDelete }) =>
+        renderEntry(def, layout, { onClick, onDelete })
     });
   }
 
