@@ -2,29 +2,17 @@
 // VBMap • Definition Modal Shell
 // ---------------------------------------------------------
 // @file:    /scripts/modules/ui/components/definitionModalShell.js
-// @version: 1.1  (2025‑05‑08)
-// ---------------------------------------------------------
-// Generic admin‑side modal for any definition type.
+// @version: 1.2  (2025‑05‑08)
 // =========================================================
 
 import { createModal, openModal, closeModal } from "../uiKit.js";
-import { createDefinitionListManager }       from "./definitionListManager.js";  // ← fixed name
+import { createDefinitionListManager }       from "./definitionListManager.js";
 
 /**
- * @typedef {Object} ModalShellConfig
- * @property {string}         id
- * @property {string}         title
- * @property {function():Promise<Array<Object>>} loadAll
- * @property {function(Object):Promise<void>}    upsert
- * @property {function(string):Promise<void>}    remove
- * @property {function(Object):FormController}   createFormController
- * @property {function(Object,string,Object):HTMLElement} renderEntry
- * @property {{ container:HTMLElement, setFromDefinition:function(Object)}} [previewPanel]
- */
-
-/**
- * Build & return `{ open }`
- * @param {ModalShellConfig} cfg
+ * Build and return `{ open }`
+ * Expects cfg.previewPanel to be either:
+ *   – undefined (no preview) OR
+ *   – { container:HTMLElement, setFromDefinition(fn) }
  */
 export function createDefinitionModalShell(cfg) {
   const { modal, header, content } = createModal({
@@ -34,38 +22,46 @@ export function createDefinitionModalShell(cfg) {
     backdrop: true
   });
 
-  /* Layout: list | form | (optional) preview */
+  /* Layout panes -------------------------------------------------- */
   const paneList = document.createElement("div");
   paneList.className = "def-shell-list";
+
   const paneForm = document.createElement("div");
-  Object.assign(paneForm.style, { flex:"1 1 auto", overflowY:"auto", padding:"0 16px" });
+  Object.assign(paneForm.style, {
+    flex: "1 1 auto",
+    overflowY: "auto",
+    padding: "0 16px"
+  });
 
   const bodyFlex = document.createElement("div");
-  Object.assign(bodyFlex.style, { display:"flex", height:"calc(100% - 48px)" });
+  Object.assign(bodyFlex.style, { display: "flex", height: "calc(100% - 48px)" });
   bodyFlex.append(paneList, paneForm);
-  cfg.previewPanel && bodyFlex.append(cfg.previewPanel.container);
+
+  if (cfg.previewPanel?.container instanceof HTMLElement) {
+    bodyFlex.append(cfg.previewPanel.container);
+  }
+
   content.appendChild(bodyFlex);
 
-  /* List manager */
+  /* List manager -------------------------------------------------- */
+  let _defs = [];
   const listMgr = createDefinitionListManager({
     container: paneList,
     getDefinitions: () => _defs,
     renderEntry: cfg.renderEntry,
     onEntryClick: onEntryClick,
-    onDelete: async id => { await cfg.remove(id); await refresh(); formCtrl.reset(); },
+    onDelete: async id => { await cfg.remove(id); await refresh(); buildForm(); },
     getCurrentLayout: () => "row"
   });
 
-  /* Form controller instance */
+  /* Form controller ---------------------------------------------- */
   let formCtrl = null;
-  let _defs = [];
-
-  function buildForm(def) {
+  function buildForm(def = null) {
     paneForm.innerHTML = "";
     formCtrl = cfg.createFormController({
-      onCancel: () => formCtrl.reset(),
-      onSubmit: async d => { await cfg.upsert(d); await refresh(); formCtrl.reset(); },
-      onDelete: async id => { await cfg.remove(id); await refresh(); formCtrl.reset(); }
+      onCancel : () => formCtrl.reset(),
+      onSubmit : async d => { await cfg.upsert(d); await refresh(); formCtrl.reset(); },
+      onDelete : async id => { await cfg.remove(id); await refresh(); formCtrl.reset(); }
     });
     paneForm.appendChild(formCtrl.form);
     formCtrl.reset();
@@ -74,17 +70,20 @@ export function createDefinitionModalShell(cfg) {
 
   function onEntryClick(def) {
     buildForm(def);
-    cfg.previewPanel && cfg.previewPanel.setFromDefinition(def);
+    cfg.previewPanel?.setFromDefinition?.(def);
   }
 
+  /* Data refresh -------------------------------------------------- */
   async function refresh() {
     _defs = await cfg.loadAll();
     listMgr.refresh();
   }
 
+  /* open() -------------------------------------------------------- */
   async function open() {
     if (!modal.isBuilt) {
       await refresh();
+      buildForm();                       // blank form on first open
       modal.isBuilt = true;
     }
     openModal(modal);

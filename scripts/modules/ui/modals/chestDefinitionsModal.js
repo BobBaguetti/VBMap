@@ -2,16 +2,15 @@
    VBMap – Chest Definitions Modal (shell)
    ---------------------------------------------------------
    @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-   @version: 3.2  (2025‑05‑08)
+   @version: 3.3  (2025‑05‑08)
    ========================================================= */
 
    import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
    import { createChestFormController }    from "../forms/controllers/chestFormController.js";
    import { renderChestEntry }             from "../entries/chestEntryRenderer.js";
-   import { createChestPreviewPanel }      from "../preview/chestPreview.js";
    
    import { initializeFirebase }           from "../../services/firebaseService.js";
-   import { firebaseConfig }               from "../../../../src/firebaseConfig.js";  // ← named import
+   import { firebaseConfig }               from "../../../../src/firebaseConfig.js";  // named export
    
    import {
      loadChestDefinitions,
@@ -22,20 +21,20 @@
    /* Firestore handle */
    const db = initializeFirebase(firebaseConfig);
    
-   /* Preview */
-   const preview = createChestPreviewPanel(document.createElement("div"));
-   
-   /* Shell */
+   /* Build shell (no preview for now) */
    const shell = createDefinitionModalShell({
      id: "chest-def-shell",
-     title: "Manage Chest Types",
+     title: "Manage Chests",
      loadAll: () => loadChestDefinitions(db),
      upsert : def => saveChestDefinition(db, def.id, def),
      remove : id  => deleteChestDefinition(db, id),
      createFormController: cb => createChestFormController(cb, db),
-     renderEntry: (def, layout, handlers) => renderChestEntry(def, layout, handlers),
-     previewPanel: preview
+     renderEntry: (def, layout, handlers) => renderChestEntry(def, layout, handlers)
    });
    
+   /* Public API */
    export function openChestDefinitionsModal() { shell.open(); }
+   
+   /* Back‑compat alias for sidebar */
+   export const initChestDefinitionsModal = () => ({ open: openChestDefinitionsModal });
    
