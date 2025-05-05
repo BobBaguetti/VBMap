@@ -85,12 +85,14 @@ export function initCrudModal({
   }
 
   function buildList() {
+    // pull your renderer into a local so we don’t shadow
+    const entryRenderer = renderEntry;
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      // unified object-style signature: call your passed-in renderer directly
-      renderEntry: (def, layout, { onClick, onDelete }) =>
-        renderEntry(def, layout, { onClick, onDelete })
+      // now actually call your passed-in renderer
+      renderEntry: (def, layout, cbs) =>
+        entryRenderer(def, layout, cbs)
     });
   }
 
