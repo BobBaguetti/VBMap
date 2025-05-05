@@ -3,23 +3,10 @@
 
 import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 
-/**
- * Creates and manages a sortable, searchable definition list.
- *
- * @param {Object} options
- * @param {HTMLElement} options.container
- * @param {() => Array} options.getDefinitions
- * @param {(def: Object, layout: string, cbs: {onClick:Function, onDelete:Function}) => HTMLElement}
- *                  [options.renderEntry]   – custom entry renderer; defaults to items
- * @param {(def: Object) => void} [options.onEntryClick]
- * @param {(id: string) => Promise<void>} [options.onDelete]
- * @param {() => string} [options.getCurrentLayout]
- */
 export function createDefinitionListManager({
   container,
   getDefinitions,
   renderEntry = (def, layout, { onClick, onDelete }) =>
-    // adapt old itemEntry signature to object callback form
     renderItemEntry(def, layout, onClick, onDelete),
   onEntryClick = () => {},
   onDelete = () => Promise.resolve(),
@@ -37,7 +24,6 @@ export function createDefinitionListManager({
   header.appendChild(searchInput);
   container.parentNode.insertBefore(header, container);
 
-  // main render function
   function render() {
     const allDefs = getDefinitions();
     const q = searchInput.value.trim().toLowerCase();
@@ -58,14 +44,7 @@ export function createDefinitionListManager({
   }
 
   return {
-    /**
-     * Refresh the list display with current data + search filter.
-     */
     refresh: render,
-
-    /**
-     * Change the layout (row/stacked/gallery) and re-render.
-     */
     setLayout(newLayout) {
       layout = newLayout;
       render();

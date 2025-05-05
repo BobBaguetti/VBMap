@@ -25,7 +25,7 @@ export function initNpcDefinitionsModal(db) {
                        ? updateNpcDefinition(db, def.id, def)
                        : addNpcDefinition(db, def),
     onDelete:      id => deleteNpcDefinition(db, id),
-    renderEntry:   renderNpcEntry,
+    renderEntry:   renderNpcEntry,      // unified signature
     formFactory:   createNpcFormController,
     previewType:   "npc",
     layoutOptions: ["row", "stacked", "gallery"]

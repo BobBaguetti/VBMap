@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.18 – correctly wire list-manager callbacks into your custom renderer
+// @version: 1.16 – corrected buildList for unified renderEntry signature
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -13,8 +13,7 @@ export function initCrudModal({
   id, title, db,
   loadAll, subscribeAll,
   onSave, onDelete,
-  renderEntry: customRenderEntry,
-  formFactory,
+  renderEntry, formFactory,
   previewType = null,
   layoutOptions = ["row","stacked","gallery"],
   toolbar = []
@@ -48,9 +47,12 @@ export function initCrudModal({
   function buildShell() {
     listContainer = listContainer || createDefListContainer(id + "-list");
     shell = createDefinitionModalShell({
-      id, title, toolbar,
+      id,
+      title,
+      toolbar,
       withPreview: !!previewType,
-      previewType, layoutOptions
+      previewType,
+      layoutOptions
     });
     const { header, bodyWrap, previewApi: p, open: shellOpen } = shell;
     previewApi = p;
@@ -84,32 +86,11 @@ export function initCrudModal({
 
   function buildList() {
     listApi = createDefinitionListManager({
-      container: listContainer,
+      container:      listContainer,
       getDefinitions: () => cachedDefs,
-      renderEntry: (def, layout, cbs) => {
-        // wrap the list-manager callbacks (cbs) with your form/preview logic
-        const wrappedCbs = {
-          onClick: () => {
-            formApi.populate(def);
-            _showEdit();
-            previewApi.setFromDefinition(def);
-            previewApi.show();
-            cbs.onClick?.(def);
-          },
-          onDelete: async () => {
-            if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} "${def.id}"?`)) {
-              await onDelete(def.id);
-              formApi.reset();
-              previewApi.hide();
-              _showAdd();
-              await refreshList();
-              cbs.onDelete?.(def.id);
-            }
-          }
-        };
-        // call your passed‐in renderer with those wrapped callbacks
-        return customRenderEntry(def, layout, wrappedCbs);
-      }
+      // now calls your renderer exactly
+      renderEntry:    (def, layout, cbs) =>
+        renderEntry(def, layout, cbs)
     });
   }
 
@@ -150,14 +131,14 @@ export function initCrudModal({
   function buildActions() {
     actionRow.innerHTML = "";
     actionRow.append(
-      _btn("Save",   () => formApi.form.requestSubmit()),
-      _btn("Clear",  () => formApi.reset()),
-      _btn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); }),
-      _btn("Delete", () => formApi.onDelete?.(formApi.getId()))
+      _createBtn("Save",   () => formApi.form.requestSubmit()),
+      _createBtn("Clear",  () => formApi.reset()),
+      _createBtn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); }),
+      _createBtn("Delete", () => formApi.onDelete?.(formApi.getId()))
     );
   }
 
-  function _btn(label, onClick) {
+  function _createBtn(label, onClick) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = label;
