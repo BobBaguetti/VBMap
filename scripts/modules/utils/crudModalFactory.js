@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.17 – fixed shadowing so custom renderer actually runs
+// @version: 1.18 – correctly wire list-manager callbacks into your custom renderer
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -13,7 +13,7 @@ export function initCrudModal({
   id, title, db,
   loadAll, subscribeAll,
   onSave, onDelete,
-  renderEntry: customRenderEntry,    // renamed to avoid shadowing
+  renderEntry: customRenderEntry,
   formFactory,
   previewType = null,
   layoutOptions = ["row","stacked","gallery"],
@@ -48,12 +48,9 @@ export function initCrudModal({
   function buildShell() {
     listContainer = listContainer || createDefListContainer(id + "-list");
     shell = createDefinitionModalShell({
-      id,
-      title,
-      toolbar,
+      id, title, toolbar,
       withPreview: !!previewType,
-      previewType,
-      layoutOptions
+      previewType, layoutOptions
     });
     const { header, bodyWrap, previewApi: p, open: shellOpen } = shell;
     previewApi = p;
@@ -89,9 +86,30 @@ export function initCrudModal({
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      // now using your passed-in renderer
-      renderEntry: (def, layout, cbs) =>
-        customRenderEntry(def, layout, cbs)
+      renderEntry: (def, layout, cbs) => {
+        // wrap the list-manager callbacks (cbs) with your form/preview logic
+        const wrappedCbs = {
+          onClick: () => {
+            formApi.populate(def);
+            _showEdit();
+            previewApi.setFromDefinition(def);
+            previewApi.show();
+            cbs.onClick?.(def);
+          },
+          onDelete: async () => {
+            if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} "${def.id}"?`)) {
+              await onDelete(def.id);
+              formApi.reset();
+              previewApi.hide();
+              _showAdd();
+              await refreshList();
+              cbs.onDelete?.(def.id);
+            }
+          }
+        };
+        // call your passed‐in renderer with those wrapped callbacks
+        return customRenderEntry(def, layout, wrappedCbs);
+      }
     });
   }
 
