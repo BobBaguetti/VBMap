@@ -1,13 +1,8 @@
 /* =========================================================
    VBMap – Item Form Controller
    ---------------------------------------------------------
-   DO NOT REMOVE OR EDIT THIS HEADER WITHOUT UPDATING CODE.
-   Handles colour pickers, preset sync, reset / populate /
-   getCurrent helpers, and submit / delete callbacks for
-   the Item‑definition modal form.
-   ---------------------------------------------------------
    @file:    /scripts/modules/ui/forms/controllers/itemFormController.js
-   @version: 5.0  (2025‑05‑05)
+   @version: 5.1  (2025‑05‑06)
    ========================================================= */
 
    import { attachColorSwatch, swatchHex } from "../../components/colorSwatch.js";
@@ -15,17 +10,12 @@
    import { createItemForm }               from "../builders/itemFormBuilder.js";
    import { createIcon }                   from "../../../utils/iconUtils.js";
    
-   /**
-    * Builds the controller around the Item definition form.
-    *
-    * @param {{ onCancel?:Function, onSubmit?:Function, onDelete?:Function }} cb
-    * @returns {{ form:HTMLFormElement, reset:Function, populate:Function, getCurrent:Function, getId:Function }}
-    */
    export function createItemFormController(cb = {}) {
      const { form, fields } = createItemForm();
      let _id = null;
+     let saveBtn, headerTitle;
    
-     /* ─────────────────────── colour swatches ─────────────────────── */
+     /* ─────────────── colour swatches ───────────────────── */
      const pickrs = {
        name:        attachColorSwatch(fields.colorName,  form),
        itemType:    attachColorSwatch(fields.colorType,  form),
@@ -35,17 +25,68 @@
        quantity:    attachColorSwatch(fields.colorQty,   form)
      };
    
-     /* ─────────────────────── preset sync logic ───────────────────── */
-     function applyPresets() {
-       const type   = fields.fldType.value;
-       const rarity = fields.fldRarity.value;
-       if (!type || !rarity) return;
+     function initPickrs() {/* no‑op for modal compatibility */}
+     /* expose for modal */
+     const initPickrsPublic = () => initPickrs();
    
-       const preset = applyColorPresets({ itemType: type, rarity });
-       // Defaults: name picks rarity colour if not explicitly mapped
+     /* ─────────────── form sub‑header ───────────────────── */
+     function ensureHeader() {
+       if (headerTitle) return;
+   
+       const bar = document.createElement("div");
+       bar.className = "form-subheader";
+   
+       headerTitle = document.createElement("span");
+       headerTitle.className = "subheader-title";
+       bar.appendChild(headerTitle);
+   
+       const btnRow = document.createElement("span");
+       btnRow.className = "subheader-btnrow";
+   
+       saveBtn = document.createElement("button");
+       saveBtn.type = "submit";
+       saveBtn.className = "ui-button-primary";
+       btnRow.appendChild(saveBtn);
+   
+       const cancelBtn = document.createElement("button");
+       cancelBtn.className = "ui-button";
+       cancelBtn.textContent = "Cancel";
+       cancelBtn.type = "button";
+       cancelBtn.onclick = () => cb.onCancel?.();
+       btnRow.appendChild(cancelBtn);
+   
+       if (cb.onDelete) {
+         const delBtn = document.createElement("button");
+         delBtn.className = "ui-button-delete";
+         delBtn.appendChild(createIcon("trash"));
+         delBtn.type = "button";
+         delBtn.onclick = () => cb.onDelete?.(_id);
+         btnRow.appendChild(delBtn);
+       }
+   
+       bar.appendChild(btnRow);
+       form.prepend(bar);
+     }
+     ensureHeader();
+   
+     function updateHeader() {
+       if (_id) {
+         headerTitle.textContent = "Edit Item";
+         saveBtn.textContent     = "Save";
+       } else {
+         headerTitle.textContent = "Add Item";
+         saveBtn.textContent     = "Create";
+       }
+     }
+   
+     /* ─────────────── presets & colour sync ─────────────── */
+     function applyPresets() {
+       const preset = applyColorPresets({
+         itemType: fields.fldType.value,
+         rarity:   fields.fldRarity.value
+       });
        preset.nameColor = preset.nameColor || preset.rarityColor || preset.itemTypeColor;
    
-       // Update pickrs & emit form input to trigger live preview
        Object.entries({
          name:        preset.nameColor,
          itemType:    preset.itemTypeColor,
@@ -57,36 +98,35 @@
      fields.fldType  .addEventListener("change", applyPresets);
      fields.fldRarity.addEventListener("change", applyPresets);
    
-     /* ───────────────────────── form helpers ───────────────────────── */
+     /* ─────────────── reset / populate / getCurrent ─────── */
      function reset() {
        form.reset();
        _id = null;
        Object.values(pickrs).forEach(p => p?.setColor("#E5E6E8"));
        fields.extraInfo.setLines([], false);
+       updateHeader();
      }
    
      function populate(def) {
        reset();
        _id = def.id || null;
    
-       // Basic fields
-       fields.fldName.value   = def.name        || "";
-       fields.fldType.value   = def.itemType    || "";
-       fields.fldRarity.value = def.rarity      || "";
-       fields.fldValue.value  = def.value       ?? "";
-       fields.fldQty.value    = def.quantity    ?? "";
+       fields.fldName.value   = def.name     || "";
+       fields.fldType.value   = def.itemType || "";
+       fields.fldRarity.value = def.rarity   || "";
+       fields.fldValue.value  = def.value    ?? "";
+       fields.fldQty.value    = def.quantity ?? "";
        fields.fldDesc.value   = def.description || "";
    
-       // Colours
-       pickrs.name       && def.nameColor        && pickrs.name.setColor(def.nameColor);
-       pickrs.itemType   && def.itemTypeColor    && pickrs.itemType.setColor(def.itemTypeColor);
-       pickrs.rarity     && def.rarityColor      && pickrs.rarity.setColor(def.rarityColor);
-       pickrs.description&& def.descriptionColor && pickrs.description.setColor(def.descriptionColor);
-       pickrs.value      && def.valueColor       && pickrs.value.setColor(def.valueColor);
-       pickrs.quantity   && def.quantityColor    && pickrs.quantity.setColor(def.quantityColor);
+       pickrs.name?.setColor(       def.nameColor        || "#E5E6E8");
+       pickrs.itemType?.setColor(   def.itemTypeColor    || "#E5E6E8");
+       pickrs.rarity?.setColor(     def.rarityColor      || "#E5E6E8");
+       pickrs.description?.setColor(def.descriptionColor || "#E5E6E8");
+       pickrs.value?.setColor(      def.valueColor       || "#E5E6E8");
+       pickrs.quantity?.setColor(   def.quantityColor    || "#E5E6E8");
    
-       // Extra info lines
        fields.extraInfo.setLines(def.extraLines || [], false);
+       updateHeader();
      }
    
      function getCurrent() {
@@ -95,11 +135,10 @@
          name:              fields.fldName.value.trim(),
          itemType:          fields.fldType.value,
          rarity:            fields.fldRarity.value,
-         value:             Number(fields.fldValue.value)  || 0,
-         quantity:          Number(fields.fldQty.value)    || 0,
+         value:             Number(fields.fldValue.value) || 0,
+         quantity:          Number(fields.fldQty.value)   || 0,
          description:       fields.fldDesc.value.trim(),
    
-         // Hex colours from swatches
          nameColor:         swatchHex(fields.colorName),
          itemTypeColor:     swatchHex(fields.colorType),
          rarityColor:       swatchHex(fields.colorRarity),
@@ -111,40 +150,19 @@
        };
      }
    
-     /* ─────────────────── header buttons / actions ────────────────── */
-     const btnRow = document.createElement("div");
-     btnRow.className = "form-btn-row";
-   
-     const saveBtn = document.createElement("button");
-     saveBtn.type = "submit";
-     saveBtn.className = "ui-button-primary";
-     saveBtn.textContent = _id ? "Save" : "Create";
-     btnRow.appendChild(saveBtn);
-   
-     if (cb.onDelete) {
-       const delBtn = document.createElement("button");
-       delBtn.type = "button";
-       delBtn.className = "ui-button-delete";
-       delBtn.appendChild(createIcon("trash"));
-       delBtn.onclick = () => cb.onDelete?.(_id);
-       btnRow.appendChild(delBtn);
-     }
-   
-     const cancelBtn = document.createElement("button");
-     cancelBtn.type = "button";
-     cancelBtn.className = "ui-button";
-     cancelBtn.textContent = "Cancel";
-     cancelBtn.onclick = () => cb.onCancel?.();
-     btnRow.appendChild(cancelBtn);
-   
-     form.prepend(btnRow);
-   
-     /* ──────────────────── submit wiring ──────────────────── */
+     /* ─────────────── submit wiring ─────────────────────── */
      form.addEventListener("submit", e => {
        e.preventDefault();
        cb.onSubmit?.(getCurrent());
      });
    
-     return { form, reset, populate, getCurrent, getId: () => _id };
+     return {
+       form,
+       reset,
+       populate,
+       getCurrent,
+       getId: () => _id,
+       initPickrs: initPickrsPublic
+     };
    }
    
