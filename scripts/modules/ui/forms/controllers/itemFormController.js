@@ -1,8 +1,8 @@
 /* =========================================================
    VBMap – Item Form Controller
    ---------------------------------------------------------
-   @file:    /scripts/modules/ui/forms/controllers/itemFormController.js
-   @version: 5.1  (2025‑05‑06)
+   @file: /scripts/modules/ui/forms/controllers/itemFormController.js
+   @version: 5.2  (2025‑05‑06)
    ========================================================= */
 
    import { attachColorSwatch, swatchHex } from "../../components/colorSwatch.js";
@@ -15,33 +15,41 @@
      let _id = null;
      let saveBtn, headerTitle;
    
-     /* ─────────────── colour swatches ───────────────────── */
-     const pickrs = {
-       name:        attachColorSwatch(fields.colorName,  form),
-       itemType:    attachColorSwatch(fields.colorType,  form),
-       rarity:      attachColorSwatch(fields.colorRarity,form),
-       description: attachColorSwatch(fields.colorDesc,  form),
-       value:       attachColorSwatch(fields.colorValue, form),
-       quantity:    attachColorSwatch(fields.colorQty,   form)
-     };
+     /* ──────────── lazy swatch attachment ──────────── */
+     const pickrs = {};
+     function initPickrs() {
+       if (!document.body.contains(form)) return;      // wait until DOM attached
+       if (!pickrs.name) {  // only run once
+         pickrs.name        = attachColorSwatch(fields.colorName,  form);
+         pickrs.itemType    = attachColorSwatch(fields.colorType,  form);
+         pickrs.rarity      = attachColorSwatch(fields.colorRarity,form);
+         pickrs.description = attachColorSwatch(fields.colorDesc,  form);
+         pickrs.value       = attachColorSwatch(fields.colorValue, form);
+         pickrs.quantity    = attachColorSwatch(fields.colorQty,   form);
+       }
+     }
    
-     function initPickrs() {/* no‑op for modal compatibility */}
      /* expose for modal */
      const initPickrsPublic = () => initPickrs();
    
-     /* ─────────────── form sub‑header ───────────────────── */
+     /* ─────────────── sub‑header (title + buttons) ─────────────── */
      function ensureHeader() {
        if (headerTitle) return;
    
        const bar = document.createElement("div");
        bar.className = "form-subheader";
+       bar.style.display = "flex";
+       bar.style.alignItems = "center";
    
        headerTitle = document.createElement("span");
        headerTitle.className = "subheader-title";
        bar.appendChild(headerTitle);
    
        const btnRow = document.createElement("span");
-       btnRow.className = "subheader-btnrow";
+       btnRow.className  = "subheader-btnrow";
+       btnRow.style.display = "flex";
+       btnRow.style.gap    = "6px";
+       btnRow.style.marginLeft = "auto";               // push to right
    
        saveBtn = document.createElement("button");
        saveBtn.type = "submit";
@@ -81,6 +89,7 @@
    
      /* ─────────────── presets & colour sync ─────────────── */
      function applyPresets() {
+       initPickrs();  // ensure pickrs exist
        const preset = applyColorPresets({
          itemType: fields.fldType.value,
          rarity:   fields.fldRarity.value
@@ -102,6 +111,7 @@
      function reset() {
        form.reset();
        _id = null;
+       initPickrs();
        Object.values(pickrs).forEach(p => p?.setColor("#E5E6E8"));
        fields.extraInfo.setLines([], false);
        updateHeader();
@@ -118,6 +128,7 @@
        fields.fldQty.value    = def.quantity ?? "";
        fields.fldDesc.value   = def.description || "";
    
+       initPickrs();
        pickrs.name?.setColor(       def.nameColor        || "#E5E6E8");
        pickrs.itemType?.setColor(   def.itemTypeColor    || "#E5E6E8");
        pickrs.rarity?.setColor(     def.rarityColor      || "#E5E6E8");
@@ -130,6 +141,7 @@
      }
    
      function getCurrent() {
+       initPickrs();
        return {
          id:                _id,
          name:              fields.fldName.value.trim(),
@@ -162,7 +174,7 @@
        populate,
        getCurrent,
        getId: () => _id,
-       initPickrs: initPickrsPublic
+       initPickrs: initPickrsPublic     // modal hook
      };
    }
    

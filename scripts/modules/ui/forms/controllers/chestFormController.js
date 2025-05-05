@@ -2,7 +2,7 @@
    VBMap – Chest Form Controller
    ---------------------------------------------------------
    @file:    /scripts/modules/ui/forms/controllers/chestFormController.js
-   @version: 3.4  (2025‑05‑06)
+   @version: 3.5  (2025‑05‑06)
    ========================================================= */
 
    import { createPickr }            from "../../pickrManager.js";
@@ -11,52 +11,82 @@
    import { openInventoryPicker }    from "../../components/inventoryPicker.js";
    import { loadItemDefinitions }    from "../../../services/itemDefinitionsService.js";
    
-   /* ───────────────────────── factory ────────────────────── */
+   /* ────────────────────────── factory ────────────────────────── */
    export function createChestFormController(cb, db) {
+     /* -------- DOM from builder -------- */
      const { form, fields } = createChestForm();
-     const pickrs = {};
-     let _id          = null;
-     let saveBtn      = null;
-     let headerTitle  = null;
-     let allItems     = [];
    
-     /* ─────────────── Pickr (description only) ───────────── */
+     /* -------- locals -------- */
+     const pickrs   = {};        // { desc: Pickr }
+     let   _id      = null;
+     let   allItems = [];
+   
+     /* header bits keep references so we can update text */
+     let headerTitle, saveBtn;
+   
+     /* =========================================================
+        1.  Colour picker (description only)
+        ======================================================= */
      function initPickrs() {
-       if (pickrs.desc || !document.body.contains(fields.colorDesc)) return;
+       /* ensure form is in DOM (builder inserts before modal append) */
+       if (!document.body.contains(form)) {
+         requestAnimationFrame(initPickrs);
+         return;
+       }
+       if (pickrs.desc) return;  // already done
+   
        pickrs.desc = createPickr(`#${fields.colorDesc.id}`);
-       const bubble = () => form.dispatchEvent(new Event("input", { bubbles: true }));
-       pickrs.desc.on("change", bubble).on("save", bubble);
+       const redispatch = () =>
+         form.dispatchEvent(new Event("input", { bubbles: true }));
+       pickrs.desc.on("change", redispatch).on("save", redispatch);
        fields.colorDesc.addEventListener("click", () => pickrs.desc.show());
      }
-     initPickrs();
-     const initPickrsPublic = () => initPickrs();   // exposed for modal
+     initPickrs();                            // bootstrap once
+     const initPickrsPublic = () => initPickrs();   // expose for modal
    
-     /* ─────────────── header row (title + buttons) ───────── */
-     function ensureHeader() {
-       if (headerTitle) return;
+     /* =========================================================
+        2.  Sub‑header (title + buttons aligned right)
+        ======================================================= */
+     function buildHeader() {
+       if (headerTitle) return;               // already built
    
+       /* flex container */
        const bar = document.createElement("div");
        bar.className = "form-subheader";
+       Object.assign(bar.style, {
+         display: "flex",
+         alignItems: "center"
+       });
    
+       /* title */
        headerTitle = document.createElement("span");
        headerTitle.className = "subheader-title";
        bar.appendChild(headerTitle);
    
+       /* button row pushed right */
        const btnRow = document.createElement("span");
        btnRow.className = "subheader-btnrow";
+       Object.assign(btnRow.style, {
+         display: "flex",
+         gap: "6px",
+         marginLeft: "auto"
+       });
    
+       /* Save / Create */
        saveBtn = document.createElement("button");
        saveBtn.type = "submit";
        saveBtn.className = "ui-button-primary";
        btnRow.appendChild(saveBtn);
    
-       const cancelBtn = document.createElement("button");
-       cancelBtn.className = "ui-button";
-       cancelBtn.textContent = "Clear";
-       cancelBtn.type = "button";
-       cancelBtn.onclick = () => cb?.onCancel?.();
-       btnRow.appendChild(cancelBtn);
+       /* Clear */
+       const clearBtn = document.createElement("button");
+       clearBtn.className = "ui-button";
+       clearBtn.textContent = "Clear";
+       clearBtn.type = "button";
+       clearBtn.onclick = () => cb?.onCancel?.();
+       btnRow.appendChild(clearBtn);
    
+       /* Delete (optional) */
        if (cb.onDelete) {
          const delBtn = document.createElement("button");
          delBtn.className = "ui-button-delete";
@@ -69,19 +99,21 @@
        bar.appendChild(btnRow);
        form.prepend(bar);
      }
-     ensureHeader();
+     buildHeader();
    
-     function updateHeader() {
-       if (!_id) {
-         headerTitle.textContent = "Add Chest Type";
-         saveBtn.textContent     = "Create";
-       } else {
+     function updateHeaderText() {
+       if (_id) {
          headerTitle.textContent = "Edit Chest Type";
          saveBtn.textContent     = "Save";
+       } else {
+         headerTitle.textContent = "Add Chest Type";
+         saveBtn.textContent     = "Create";
        }
      }
    
-     /* ─────────────── inventory chips ────────────────────── */
+     /* =========================================================
+        3.  Inventory chip helpers
+        ======================================================= */
      async function ensureItems() {
        if (!allItems.length) allItems = await loadItemDefinitions(db);
      }
@@ -90,8 +122,10 @@
        await ensureItems();
        const box = fields.chipContainer;
        box.innerHTML = "";
+   
        fields.lootPool.forEach(id => {
          const def  = allItems.find(i => i.id === id) || { name: id };
+   
          const chip = document.createElement("span");
          chip.className = "loot-pool-chip";
          chip.textContent = def.name;
@@ -101,13 +135,18 @@
          x.textContent = "×";
          x.onclick = () => {
            const idx = fields.lootPool.indexOf(id);
-           if (idx > -1) { fields.lootPool.splice(idx, 1); renderChips(); }
+           if (idx > -1) {
+             fields.lootPool.splice(idx, 1);
+             renderChips();
+           }
          };
+   
          chip.appendChild(x);
          box.appendChild(chip);
        });
      }
    
+     /* open ⚙︎ picker */
      fields.openLootPicker.onclick = async () => {
        const ids = await openInventoryPicker(db, {
          selectedIds: fields.lootPool,
@@ -117,7 +156,9 @@
        renderChips();
      };
    
-     /* ─────────────── reset / populate ───────────────────── */
+     /* =========================================================
+        4.  Form helpers (reset / populate / serialize)
+        ======================================================= */
      function reset() {
        form.reset();
        _id = null;
@@ -126,30 +167,32 @@
        initPickrs();
        pickrs.desc?.setColor("#E5E6E8");
        fields.extraInfo.setLines([], false);
-       updateHeader();
+       updateHeaderText();
      }
    
      function populate(def) {
        reset();
        _id = def.id || null;
    
-       /* ----- basic fields (guard each) ------------------- */
+       /* basic */
        if (fields.fldName)     fields.fldName.value     = def.name    || "";
        if (fields.fldSize)     fields.fldSize.value     = def.size    || "small";
        if (fields.fldCategory) fields.fldCategory.value = def.category|| "";
    
+       /* icon (support legacy field names) */
        const iconField = fields.fldIcon || fields.fldIconUrl;
        if (iconField) iconField.value = def.iconUrl || "";
    
-       /* ----- inventories -------------------------------- */
+       /* inventories */
        fields.lootPool.splice(0, 0, ...(def.lootPool || []));
        renderChips();
    
-       /* ----- description & extras ----------------------- */
+       /* description */
        fields.fldDesc.value = def.description || "";
        pickrs.desc?.setColor(def.descriptionColor || "#E5E6E8");
        fields.extraInfo.setLines(def.extraLines || [], false);
-       updateHeader();
+   
+       updateHeaderText();
      }
    
      function getCurrent() {
@@ -167,19 +210,22 @@
        };
      }
    
-     /* ─────────────── submit wiring ─────────────────────── */
+     /* =========================================================
+        5.  Submit wiring
+        ======================================================= */
      form.addEventListener("submit", e => {
        e.preventDefault();
        cb?.onSubmit?.(getCurrent());
      });
    
+     /* public API */
      return {
        form,
        reset,
        populate,
        getCurrent,
        getId: () => _id,
-       initPickrs: initPickrsPublic   // modal hook
+       initPickrs: initPickrsPublic
      };
    }
    
