@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.16 – corrected buildList for unified renderEntry signature
+// @version: 1.16 – corrected buildList for unified renderEntry signature and re-wired modal callbacks
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -85,14 +85,32 @@ export function initCrudModal({
   }
 
   function buildList() {
-    // pull your renderer into a local so we don’t shadow
-    const entryRenderer = renderEntry;
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      // now actually call your passed-in renderer
-      renderEntry: (def, layout, cbs) =>
-        entryRenderer(def, layout, cbs)
+      // wrap the list-manager callbacks with your modal logic
+      renderEntry: (def, layout, listCbs) => {
+        const wrappedCbs = {
+          onClick: () => {
+            formApi.populate(def);
+            _showEdit();
+            previewApi.setFromDefinition(def);
+            previewApi.show();
+            listCbs.onClick(def);
+          },
+          onDelete: async () => {
+            if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} \"${def.name||def.id}\"?`)) {
+              await onDelete(def.id);
+              formApi.reset();
+              previewApi.hide();
+              _showAdd();
+              await refreshList();
+              listCbs.onDelete(def.id);
+            }
+          }
+        };
+        return renderEntry(def, layout, wrappedCbs);
+      }
     });
   }
 
@@ -104,7 +122,7 @@ export function initCrudModal({
         _showAdd();
       },
       onDelete: async id => {
-        if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} "${id}"?`)) {
+        if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} \"${id}\"?`)) {
           await onDelete(id);
           formApi.reset();
           previewApi.hide();
