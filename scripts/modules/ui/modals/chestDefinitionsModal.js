@@ -2,7 +2,7 @@
    VBMap – Chest Definitions Modal (shell)
    ---------------------------------------------------------
    @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-   @version: 3.0  (2025‑05‑08)
+   @version: 3.1  (2025‑05‑08)
    ========================================================= */
 
    import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
@@ -11,7 +11,7 @@
    import { createChestPreviewPanel }      from "../preview/chestPreview.js";
    
    import { initializeFirebase }           from "../../services/firebaseService.js";
-   import firebaseConfig                   from "../../../src/firebaseConfig.js";
+   import firebaseConfig                   from "../../../../src/firebaseConfig.js";   // ← fixed path
    
    import {
      loadChestDefinitions,
@@ -19,13 +19,13 @@
      deleteChestDefinition
    } from "../../services/chestDefinitionsService.js";
    
-   /* ── Firestore handle (singleton) ─────────────────────── */
+   /* Firestore handle */
    const db = initializeFirebase(firebaseConfig);
    
-   /* ── optional preview pane ────────────────────────────── */
+   /* Preview pane */
    const preview = createChestPreviewPanel(document.createElement("div"));
    
-   /* ── shell config ─────────────────────────────────────── */
+   /* Modal shell */
    const shell = createDefinitionModalShell({
      id: "chest-def-shell",
      title: "Manage Chest Types",
@@ -37,6 +37,6 @@
      previewPanel: preview
    });
    
-   /* ── exported API ─────────────────────────────────────── */
+   /* Public API */
    export function openChestDefinitionsModal() { shell.open(); }
    
