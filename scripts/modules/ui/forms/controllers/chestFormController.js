@@ -2,7 +2,7 @@
    VBMap – Chest Form Controller
    ---------------------------------------------------------
    @file:    /scripts/modules/ui/forms/controllers/chestFormController.js
-   @version: 3.3  (2025‑05‑06)
+   @version: 3.4  (2025‑05‑06)
    ========================================================= */
 
    import { createPickr }            from "../../pickrManager.js";
@@ -133,20 +133,19 @@
        reset();
        _id = def.id || null;
    
-       // Basic fields
-       fields.fldName?.value       = def.name    || "";
+       /* ----- basic fields (guard each) ------------------- */
+       if (fields.fldName)     fields.fldName.value     = def.name    || "";
        if (fields.fldSize)     fields.fldSize.value     = def.size    || "small";
        if (fields.fldCategory) fields.fldCategory.value = def.category|| "";
    
-       // Safe icon field
        const iconField = fields.fldIcon || fields.fldIconUrl;
        if (iconField) iconField.value = def.iconUrl || "";
    
-       // Inventories
+       /* ----- inventories -------------------------------- */
        fields.lootPool.splice(0, 0, ...(def.lootPool || []));
        renderChips();
    
-       // Description & extras
+       /* ----- description & extras ----------------------- */
        fields.fldDesc.value = def.description || "";
        pickrs.desc?.setColor(def.descriptionColor || "#E5E6E8");
        fields.extraInfo.setLines(def.extraLines || [], false);
@@ -180,8 +179,7 @@
        populate,
        getCurrent,
        getId: () => _id,
-       /* hook for modal */
-       initPickrs: initPickrsPublic
+       initPickrs: initPickrsPublic   // modal hook
      };
    }
    
