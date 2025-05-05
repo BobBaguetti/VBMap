@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionListManager.js
-// @version: 8 – unified object-style callbacks for renderEntry
+// @version: 8 – unified object-style callbacks & support for CRUD factory wiring
 
 import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 
@@ -10,7 +10,9 @@ import { renderItemEntry } from "../entries/itemEntryRenderer.js";
  * @param {HTMLElement} options.container
  * @param {() => Array} options.getDefinitions
  * @param {(def: Object, layout: string, cbs: {onClick:Function, onDelete:Function}) => HTMLElement}
- *                  [options.renderEntry]   – custom entry‐renderer; defaults to items
+ *                  [options.renderEntry] – entry renderer; defaults to items
+ * @param {(def: Object) => void} [options.onEntryClick] – callback when entry clicked
+ * @param {(id: string) => void} [options.onDelete] – callback when delete invoked
  * @param {() => string} [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
@@ -18,6 +20,8 @@ export function createDefinitionListManager({
   getDefinitions,
   renderEntry = (def, layout, { onClick, onDelete }) =>
     renderItemEntry(def, layout, onClick, onDelete),
+  onEntryClick = () => {},
+  onDelete = () => {},
   getCurrentLayout = () => "row"
 }) {
   let layout = getCurrentLayout();
@@ -44,10 +48,10 @@ export function createDefinitionListManager({
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
     filtered.forEach(def => {
-      // here we hand your renderer both callbacks
+      // object-style callbacks handed to CRUD factory
       const entryEl = renderEntry(def, layout, {
-        onClick: ()    => {},       // filled in by crudModalFactory
-        onDelete: ()   => {}        // filled in by crudModalFactory
+        onClick: () => onEntryClick(def),
+        onDelete: () => onDelete(def.id)
       });
       container.appendChild(entryEl);
     });
