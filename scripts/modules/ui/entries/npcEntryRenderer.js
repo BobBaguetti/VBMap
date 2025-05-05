@@ -1,27 +1,38 @@
-// @file: /scripts/modules/ui/entries/npcEntryRenderer.js
-// @version: 3.0 – now uses makeEntryRenderer
+// @file: scripts/modules/ui/entries/npcEntryRenderer.js
+// @version: 1.0 – list entry renderer for NPC definitions (2025‑05‑05)
 
-import { makeEntryRenderer } from "../../utils/entryRendererFactory.js";
-import { createIcon }        from "../../utils/iconUtils.js";
+import { createIcon } from "../../utils/iconUtils.js";
 
-export const renderNpcEntry = makeEntryRenderer({
-  baseClass: "npc-def-entry",
-  headerHtml: def => `
-    <div class="entry-name">${def.name}</div>
-    <div class="entry-delete-wrapper">
-      ${createIcon("trash", { inline: true }).outerHTML}
-    </div>`,
-  metaHtml: def => {
-    const roles = (def.typeFlags||[])
-      .map(f=>`<span class="entry-role-badge">${f}</span>`).join(" ");
-    return `
-      <div class="entry-roles">${roles}</div>
-      <span class="entry-stat">HP: ${def.health}</span>
-      <span class="entry-stat">DMG: ${def.damage}</span>
-    `;
-  },
-  extraHtml: def => def.extraLines?.length
-    ? `<div class="entry-extra">${def.extraLines[0].text}</div>`
-    : "",
-  deleteIcon: { icon: "trash", inline: true }
-});
+export function renderNpcEntry(def, layout, { onClick, onDelete }) {
+  const entry = document.createElement("div");
+  entry.className = `npc-def-entry layout-${layout}`;
+
+  const iconHtml = def.iconUrl
+    ? `<img src="${def.iconUrl}" class="entry-icon">`
+    : "";
+
+  const roles = Array.isArray(def.roles) ? def.roles.join(", ") : "";
+
+  entry.innerHTML = `
+    <div class="entry-header">
+      ${iconHtml}
+      <div>
+        <div class="entry-name">${def.name}</div>
+        <div class="entry-meta">${roles}</div>
+      </div>
+    </div>
+    <div class="entry-stats">HP: ${def.health} • DMG: ${def.damage}</div>
+  `;
+
+  const delBtn = document.createElement("button");
+  delBtn.className = "entry-delete ui-button-delete";
+  delBtn.appendChild(createIcon("trash"));
+  delBtn.onclick = e => {
+    e.stopPropagation();
+    onDelete(def.id);
+  };
+  entry.appendChild(delBtn);
+
+  entry.addEventListener("click", () => onClick(def));
+  return entry;
+}

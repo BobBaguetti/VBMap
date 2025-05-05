@@ -1,36 +1,85 @@
 // @file: /scripts/modules/services/npcDefinitionsService.js
-// @version: 2.0 – now uses generic Firestore service factory
-
-import { makeFirestoreService } from "../utils/firestoreServiceFactory.js";
-
-const npcService = makeFirestoreService("npcDefinitions");
+// @version: 1.0 – initial modular service derived from chestDefinitionsService (2025‑05‑05)
 
 /**
- * Load all NPC definitions as an array of {id, ...data}.
+ * Firestore service for **NPC definitions**. NPCs can be enemies, vendors, or both.
+ * Each document uses this shape:
+ * {
+ *   name:             string,
+ *   roles:            Array<"Enemy"|"Vendor"|"QuestGiver">,
+ *   health:           number,
+ *   damage:           number,
+ *   iconUrl?:         string,
+ *   subtext?:         string,
+ *   lootPool?:        Array<string>,          // itemDefinition ids dropped on death
+ *   vendorInventory?: Array<string>,          // itemDefinition ids sold when alive
+ *   description?:     string,
+ *   descriptionColor: string (hex),
+ *   extraLines?:      Array<{ text:string, color?:string }>,
+ *   createdAt?:       Timestamp
+ * }
  */
-export const loadNpcDefinitions = db => npcService.loadAll(db);
+
+import {
+  collection,
+  getDocs,
+  addDoc,
+  updateDoc,
+  setDoc,
+  deleteDoc,
+  doc,
+  onSnapshot,
+  serverTimestamp
+} from "firebase/firestore";
+
+/** @param {import('firebase/firestore').Firestore} db */
+export function getNpcDefinitionsCollection(db) {
+  return collection(db, "npcDefinitions");
+}
+
+export async function loadNpcDefinitions(db) {
+  const snap = await getDocs(getNpcDefinitionsCollection(db));
+  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+}
 
 /**
- * Subscribe to NPC definitions; callback receives an array on every update.
- * Returns an unsubscribe function.
+ * Create or update based on id. If `id` is null a new document is created.
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string|null} id
+ * @param {Object} data – see schema in JSDoc
  */
-export const subscribeNpcDefinitions = (db, onUpdate) =>
-  npcService.subscribeAll(db, onUpdate);
+export async function saveNpcDefinition(db, id, data) {
+  const { id: _ignore, ...payload } = data;
+  if (id) {
+    const ref = doc(db, "npcDefinitions", id);
+    await updateDoc(ref, payload);
+    return { id, ...payload };
+  } else {
+    const ref = await addDoc(getNpcDefinitionsCollection(db), {
+      ...payload,
+      createdAt: serverTimestamp()
+    });
+    return { id: ref.id, ...payload };
+  }
+}
 
-/**
- * Add a new NPC definition. Returns the added record ({id, ...data}).
- */
-export const addNpcDefinition = (db, data) =>
-  npcService.add(db, data);
+/** Merge‑update convenience */
+export async function updateNpcDefinition(db, id, data) {
+  const ref = doc(db, "npcDefinitions", id);
+  await setDoc(ref, data, { merge: true });
+  return { id, ...data };
+}
 
-/**
- * Update an existing NPC definition by id. Returns the updated record.
- */
-export const updateNpcDefinition = (db, id, data) =>
-  npcService.update(db, id, data);
+export async function deleteNpcDefinition(db, id) {
+  await deleteDoc(doc(db, "npcDefinitions", id));
+}
 
-/**
- * Delete an NPC definition by id.
- */
-export const deleteNpcDefinition = (db, id) =>
-  npcService.remove(db, id);
+export function subscribeNpcDefinitions(db, onUpdate) {
+  return onSnapshot(
+    getNpcDefinitionsCollection(db),
+    snap => {
+      onUpdate(snap.docs.map(d => ({ id: d.id, ...d.data() })));
+    },
+    err => console.error("subscribeNpcDefinitions:", err)
+  );
+}

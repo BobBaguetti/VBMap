@@ -1,140 +1,160 @@
-// @version: 3.2 – re-expose chipContainerLoot/Vend for controller reset
 // @file: /scripts/modules/ui/forms/builders/npcFormBuilder.js
+// @version: 1.0 – fresh modular builder derived from chestFormBuilder (2025‑05‑05)
 
-import { createTextField }           from "../../uiKit.js";
-import { createDescriptionField, createExtraInfoField } from "../universalForm.js";
-import { createTopAlignedFieldRow }  from "../../../utils/formUtils.js";
+import {
+  createDescriptionField,
+  createExtraInfoField
+} from "../universalForm.js";
+
+import { createTopAlignedFieldRow } from "../../../utils/formUtils.js";
 
 /**
- * Build the DOM form for NPC definitions, including:
- * - Name, Roles, Health, Damage
- * - Loot Pool & Vendor Inventory pickers
- * - Description + color
- * - Image S/L URLs
- * - Extra Info list
+ * Builds and returns the **NPC definition** form.
+ * The returned object mirrors chestFormBuilder shape:
+ *   - `form`   DOM <form>
+ *   - `fields` map of input refs & helper arrays
  */
 export function createNpcForm() {
   const form = document.createElement("form");
   form.id = "npc-form";
 
-  // — Name —
-  const { row: rowName, input: fldName } =
-    createTextField("Name:", "npc-fld-name");
-
-  // — Roles —
-  const typeContainer = document.createElement("div");
-  ["Hostile","Vendor","Quest-Giver"].forEach(label => {
-    const cb = document.createElement("input");
-    cb.type  = "checkbox";
-    cb.value = label.toLowerCase();
+  // helper to build a simple labelled row
+  const makeRow = (label, input) => {
+    const row = document.createElement("div");
+    row.classList.add("field-row");
     const lbl = document.createElement("label");
-    lbl.append(cb, document.createTextNode(" " + label));
-    typeContainer.append(lbl, document.createTextNode(" "));
+    lbl.textContent = label;
+    row.append(lbl, input);
+    return row;
+  };
+
+  /* ── basics ───────────────────────────────────────────── */
+  const fldName = document.createElement("input");
+  fldName.type = "text";
+  fldName.id   = "fld-npc-name";
+  const rowName = makeRow("Name", fldName);
+
+  const fldIcon = document.createElement("input");
+  fldIcon.type = "text";
+  fldIcon.id   = "fld-npc-icon";
+  const rowIcon = makeRow("Icon URL", fldIcon);
+
+  const fldSub = document.createElement("input");
+  fldSub.type = "text";
+  fldSub.id   = "fld-npc-subtext";
+  const rowSub = makeRow("Subtext", fldSub);
+
+  /* ── roles ─────────────────────────────────────────────── */
+  const rowRoles = document.createElement("div");
+  rowRoles.classList.add("field-row");
+  const lblRoles = document.createElement("label");
+  lblRoles.textContent = "Roles";
+  const rolesWrap = document.createElement("div");
+  rolesWrap.style.display = "flex";
+  rolesWrap.style.gap = "8px";
+  const ROLE_OPTS = ["Enemy", "Vendor", "QuestGiver"];
+  const roleCbs = ROLE_OPTS.map(r => {
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.value = r;
+    cb.id = "fld-npc-role-" + r.toLowerCase();
+    const lab = document.createElement("label");
+    lab.htmlFor = cb.id;
+    lab.textContent = r;
+    const cell = document.createElement("div");
+    cell.append(cb, lab);
+    return cell;
   });
-  const rowTypes = createTopAlignedFieldRow("NPC Roles:", typeContainer);
-  const fldTypeFlags = Array.from(typeContainer.querySelectorAll("input"));
+  roleCbs.forEach(c => rolesWrap.appendChild(c));
+  rowRoles.append(lblRoles, rolesWrap);
 
-  // — Health & Damage —
-  const { row: rowHealth, input: fldHealth } =
-    createTextField("Health:", "npc-fld-health");
-  fldHealth.type = "number"; fldHealth.min = "0";
+  /* ── stats ─────────────────────────────────────────────── */
+  const fldHP = document.createElement("input");
+  fldHP.type = "number";
+  fldHP.min  = "0";
+  fldHP.id   = "fld-npc-hp";
+  const rowHP = makeRow("Health", fldHP);
 
-  const { row: rowDamage, input: fldDamage } =
-    createTextField("Damage:", "npc-fld-damage");
-  fldDamage.type = "number"; fldDamage.min = "0";
+  const fldDMG = document.createElement("input");
+  fldDMG.type = "number";
+  fldDMG.min  = "0";
+  fldDMG.id   = "fld-npc-dmg";
+  const rowDMG = makeRow("Damage", fldDMG);
 
-  // — Loot Pool (chips + picker) —
-  const chipContainerLoot = document.createElement("div");
-  chipContainerLoot.className = "loot-pool-chips";
-  Object.assign(chipContainerLoot.style, {
-    flex: "1", display: "flex", flexWrap: "wrap", gap: "4px"
-  });
-  const btnLoot = document.createElement("button");
-  btnLoot.type = "button";
-  btnLoot.className = "ui-button";
-  btnLoot.textContent = "⚙︎";
-  btnLoot.title = "Edit Loot Pool";
-  const rowLoot = createTopAlignedFieldRow("Loot Pool:", chipContainerLoot);
-  rowLoot.append(btnLoot);
+  /* ── loot/vendor pickers ───────────────────────────────── */
+  const makePickerRow = (label, btnId, chipsId) => {
+    const row = document.createElement("div");
+    row.classList.add("field-row");
+    const lbl = document.createElement("label");
+    lbl.textContent = label;
+    const chips = document.createElement("div");
+    chips.id = chipsId;
+    Object.assign(chips.style, {
+      flex: "1",
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "4px"
+    });
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ui-button";
+    btn.textContent = "⚙︎";
+    btn.id = btnId;
+    btn.title = "Edit " + label;
+    row.append(lbl, chips, btn);
+    return { row, chips, btn };
+  };
 
-  // — Vendor Inventory (chips + picker) —
-  const chipContainerVend = document.createElement("div");
-  chipContainerVend.className = "loot-pool-chips";
-  Object.assign(chipContainerVend.style, {
-    flex: "1", display: "flex", flexWrap: "wrap", gap: "4px"
-  });
-  const btnVend = document.createElement("button");
-  btnVend.type = "button";
-  btnVend.className = "ui-button";
-  btnVend.textContent = "⚙︎";
-  btnVend.title = "Edit Vendor Inventory";
-  const rowVend = createTopAlignedFieldRow("Vendor Inventory:", chipContainerVend);
-  rowVend.append(btnVend);
+  const lootRow   = makePickerRow("Loot Pool",   "btn-npc-loot-edit", "chips-npc-loot");
+  const vendRow   = makePickerRow("Vendor Stock","btn-npc-vend-edit", "chips-npc-vend");
 
-  // — Description (textarea + swatch) —
+  /* ── description & extra info ──────────────────────────── */
   const {
-    row:      rowDesc,
-    textarea: fldDesc,
-    colorBtn: colorDesc
+    row:       rowDesc,
+    textarea:  fldDesc,
+    colorBtn:  colorDesc
   } = createDescriptionField();
-  colorDesc.id = "npc-fld-desc-color";
+  colorDesc.id = "fld-npc-desc-color";
   colorDesc.classList.add("color-swatch");
 
-  // — Image URLs —
-  const { row: rowImgS, input: fldImgS } =
-    createTextField("Image S:", "npc-fld-imgs");
-  const { row: rowImgL, input: fldImgL } =
-    createTextField("Image L:", "npc-fld-imgl");
+  const { row: rowExtras, extraInfo } = createExtraInfoField({ withDividers: true });
 
-  // — Extra Info (text + color swatches) —
-  const {
-    row:       rowExtra,
-    extraInfo: extraField
-  } = createExtraInfoField({ withDividers: false });
-
-  // assemble form
+  /* ── assemble ──────────────────────────────────────────── */
   form.append(
     rowName,
-    rowTypes,
-    rowHealth,
-    rowDamage,
-    rowLoot,
-    rowVend,
-    document.createElement("hr"),
+    rowRoles,
+    rowHP,
+    rowDMG,
+    rowIcon,
+    rowSub,
+    lootRow.row,
+    vendRow.row,
     rowDesc,
-    rowImgS,
-    rowImgL,
-    rowExtra
+    rowExtras
   );
 
   return {
     form,
     fields: {
       fldName,
-      fldTypeFlags,
-      fldHealth,
-      fldDamage,
+      fldIcon,
+      fldSubtext: fldSub,
 
-      // Loot pool state and container
-      lootPool:           [],               // selected IDs
-      chipContainerLoot,                    // DOM container for chips
-      openLootPicker:     btnLoot,          // picker trigger
+      roleCheckboxes: roleCbs.map(c => c.querySelector("input")),
+      fldHP,
+      fldDMG,
 
-      // Vendor inventory state and container
-      vendorInv:          [],               // selected IDs
-      chipContainerVend,                    // DOM container for chips
-      openVendorPicker:   btnVend,          // picker trigger
+      lootPool:       [],
+      vendInventory:  [],
+      chipContainerLoot: lootRow.chips,
+      chipContainerVend: vendRow.chips,
+      btnEditLoot:    lootRow.btn,
+      btnEditVend:    vendRow.btn,
 
-      // Description
       fldDesc,
       colorDesc,
-
-      // Images
-      fldImgS,
-      fldImgL,
-
-      // Extra info
-      extra:              extraField        // API: getValues(), clear(), setValues()
+      extraInfo,
+      rowExtras
     }
   };
 }
