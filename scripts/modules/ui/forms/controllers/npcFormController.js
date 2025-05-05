@@ -1,89 +1,85 @@
 // @file: /scripts/modules/ui/forms/controllers/npcFormController.js
-// @version: 1.0 – fresh modular controller derived from chestFormController (2025‑05‑05)
+// @version: 2.0
 
 import { createPickr }          from "../../pickrManager.js";
 import { getPickrHexColor }     from "../../../utils/colorUtils.js";
 import { createNpcForm }        from "../builders/npcFormBuilder.js";
-import { createIcon }           from "../../../utils/iconUtils.js";
 import { loadItemDefinitions }  from "../../../services/itemDefinitionsService.js";
 import { createModal, openModal, closeModal } from "../../uiKit.js";
 
 /**
- * NPC‑definition form controller.
- * Mirrors chestFormController patterns but includes:
- *   • Loot Pool **and** Vendor Stock pickers  
- *   • Role checkboxes, HP & Damage fields
+ * Controller for the NPC form.
+ * Handles colour pickers, loot/vendor selectors, populate/reset helpers,
+ * and submit/delete callbacks wired in by the modal.
+ *
+ * @param {{ onCancel?:Function, onSubmit?:Function, onDelete?:Function }} cb
+ * @param {import('firebase/firestore').Firestore} db
+ * @returns {{ form:HTMLFormElement, reset:Function, populate:Function, getCurrent:Function, getId:Function }}
  */
-export function createNpcFormController({ onCancel, onSubmit, onDelete }, db) {
+export function createNpcFormController(cb, db) {
   const { form, fields } = createNpcForm();
   const pickrs = {};
-  let _id = null;
+  let _id      = null;
   let allItems = [];
 
-  /* ── helpers ───────────────────────────────────────────── */
-  async function ensureAllItems() {
-    if (!allItems.length) allItems = await loadItemDefinitions(db);
-  }
-
-  /* ── Pickr ─────────────────────────────────────────────── */
+  /* ───────────────────────────────── Pickr helpers ────── */
   function initPickrs() {
-    if (pickrs.desc || !document.body.contains(fields.colorDesc)) return;
-    pickrs.desc = createPickr(`#${fields.colorDesc.id}`);
-    const redispatch = () =>
-      form.dispatchEvent(new Event("input", { bubbles: true }));
-    pickrs.desc.on("change", redispatch).on("save", redispatch);
-    fields.colorDesc.addEventListener("click", () => pickrs.desc.show());
+    const attach = (btn, key) => {
+      if (pickrs[key] || !document.body.contains(btn)) return;
+      pickrs[key] = createPickr(`#${btn.id}`);
+      const redispatch = () => form.dispatchEvent(new Event("input", { bubbles: true }));
+      pickrs[key].on("change", redispatch).on("save", redispatch);
+      btn.addEventListener("click", () => pickrs[key].show());
+    };
+    attach(fields.swName, "name");
+    attach(fields.swHP,   "hp");
+    attach(fields.swDMG,  "dmg");
+    attach(fields.swDesc, "desc");
   }
   initPickrs();
 
-  /* ── dual inventory picker modal ───────────────────────── */
-  let pickerModal, pickerContent, pickerSearch, pickerList, pickerMode;
-
-  async function buildPicker() {
-    if (pickerModal) return;
-    const { modal, header, content } = createModal({
-      id: "npc-item-picker",
-      title: "Select items",
-      size: "small",
-      backdrop: true,
-      withDivider: true,
-      onClose: () => closeModal(modal)
-    });
-    pickerModal   = modal;
-    pickerContent = content;
-
-    pickerSearch = document.createElement("input");
-    pickerSearch.type = "text";
-    pickerSearch.placeholder = "Search…";
-    header.appendChild(pickerSearch);
-
-    pickerList = document.createElement("div");
-    Object.assign(pickerList.style, {
-      maxHeight: "200px",
-      overflowY: "auto",
-      margin: "8px 0"
-    });
-    pickerContent.appendChild(pickerList);
-
-    const btnRow = document.createElement("div");
-    btnRow.style.textAlign = "right";
-    const cancelBtn = document.createElement("button");
-    cancelBtn.type = "button";
-    cancelBtn.className = "ui-button";
-    cancelBtn.textContent = "Cancel";
-    cancelBtn.onclick = () => closeModal(pickerModal);
-    const saveBtn = document.createElement("button");
-    saveBtn.type = "button";
-    saveBtn.className = "ui-button";
-    saveBtn.textContent = "Save";
-    saveBtn.onclick = saveSelection;
-    btnRow.append(cancelBtn, saveBtn);
-    pickerContent.appendChild(btnRow);
-
-    pickerSearch.addEventListener("input", filterList);
+  /* ──────────────────────────────── Item definitions ──── */
+  async function ensureItems() {
+    if (!allItems.length) allItems = await loadItemDefinitions(db);
   }
 
-  function filterList() {
+  /* ───────────── shared picker modal for loot & vendor ── */
+  let pickerModal, pickerList, pickerSearch, pickerMode;
+  async function buildPicker() {
+    if (pickerModal) return;
+
+    const { modal, header, content } = createModal({
+      id:       "npc-item-picker",
+      title:    "Select items",
+      size:     "small",
+      backdrop: true,
+      onClose:  () => closeModal(modal)
+    });
+    pickerModal = modal;
+
+    pickerSearch = Object.assign(document.createElement("input"), {
+      type: "text",
+      placeholder: "Search…"
+    });
+    header.appendChild(pickerSearch);
+
+    pickerList = Object.assign(document.createElement("div"), {
+      style: "max-height:200px;overflow-y:auto;margin:8px 0"
+    });
+    content.appendChild(pickerList);
+
+    const btnRow = Object.assign(document.createElement("div"), { style: "text-align:right" });
+    const cancel = Object.assign(document.createElement("button"), { className: "ui-button", type: "button", textContent: "Cancel" });
+    const save   = Object.assign(document.createElement("button"), { className: "ui-button", type: "button", textContent: "Save" });
+    cancel.onclick = () => closeModal(pickerModal);
+    save.onclick   = saveSelection;
+    btnRow.append(cancel, save);
+    content.appendChild(btnRow);
+
+    pickerSearch.addEventListener("input", filterPicker);
+  }
+
+  function filterPicker() {
     const q = pickerSearch.value.toLowerCase();
     pickerList.childNodes.forEach(row => {
       const txt = row.querySelector("label").textContent.toLowerCase();
@@ -91,151 +87,148 @@ export function createNpcFormController({ onCancel, onSubmit, onDelete }, db) {
     });
   }
 
-  async function openPicker(mode /* "loot" | "vend" */) {
+  async function openPicker(mode /* 'loot' | 'vend' */) {
     pickerMode = mode;
     await buildPicker();
-    await ensureAllItems();
+    await ensureItems();
+
+    const selected = mode === "loot" ? fields.lootPool : fields.vendInv;
     pickerList.innerHTML = "";
 
-    const selected = mode === "loot" ? fields.lootPool : fields.vendInventory;
-
-    allItems.forEach(item => {
+    allItems.forEach(def => {
       const row = document.createElement("div");
-      Object.assign(row.style, {
-        display: "flex",
-        alignItems: "center",
-        padding: "4px 0"
+      row.style.display = "flex";
+      row.style.alignItems = "center";
+
+      const cb  = Object.assign(document.createElement("input"), {
+        type: "checkbox",
+        value: def.id,
+        checked: selected.includes(def.id),
+        style: "margin-right:8px"
       });
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.value = item.id;
-      cb.checked = selected.includes(item.id);
-      cb.style.marginRight = "8px";
-      const lbl = document.createElement("label");
-      lbl.textContent = item.name;
-      row.append(cb, lbl);
+      const lab = Object.assign(document.createElement("label"), { textContent: def.name });
+      row.append(cb, lab);
       pickerList.appendChild(row);
     });
 
     pickerSearch.value = "";
-    filterList();
+    filterPicker();
+
     pickerModal.querySelector("h2").textContent =
       mode === "loot" ? "Select Loot Pool Items" : "Select Vendor Stock Items";
     openModal(pickerModal);
   }
 
   function saveSelection() {
-    const ids = Array.from(
-      pickerList.querySelectorAll("input[type=checkbox]:checked")
-    ).map(cb => cb.value);
-
+    const ids = Array.from(pickerList.querySelectorAll("input:checked")).map(n => n.value);
     if (pickerMode === "loot") {
       fields.lootPool.splice(0, fields.lootPool.length, ...ids);
       renderChips("loot");
     } else {
-      fields.vendInventory.splice(0, fields.vendInventory.length, ...ids);
+      fields.vendInv.splice(0, fields.vendInv.length, ...ids);
       renderChips("vend");
     }
     closeModal(pickerModal);
   }
 
-  function renderChips(mode) {
-    const container =
-      mode === "loot" ? fields.chipContainerLoot : fields.chipContainerVend;
-    const ids = mode === "loot" ? fields.lootPool : fields.vendInventory;
+  function renderChips(which /* loot | vend */) {
+    const container = which === "loot" ? fields.lootChips : fields.vendChips;
+    const ids       = which === "loot" ? fields.lootPool  : fields.vendInv;
     container.innerHTML = "";
+
     ids.forEach(id => {
-      const def = allItems.find(i => i.id === id) || { name: id };
-      const chip = document.createElement("span");
-      chip.className = "loot-pool-chip";
-      chip.textContent = def.name;
-      const x = document.createElement("span");
-      x.className = "remove-chip";
-      x.textContent = "×";
+      const item = allItems.find(i => i.id === id) || { name: id };
+      const chip = Object.assign(document.createElement("span"), { className: "loot-pool-chip", textContent: item.name });
+      const x = Object.assign(document.createElement("span"), { className: "remove-chip", textContent: "×" });
       x.onclick = () => {
-        const arr = mode === "loot" ? fields.lootPool : fields.vendInventory;
-        arr.splice(arr.indexOf(id), 1);
-        renderChips(mode);
+        ids.splice(ids.indexOf(id), 1);
+        renderChips(which);
       };
-      chip.append(x);
-      container.append(chip);
+      chip.appendChild(x);
+      container.appendChild(chip);
     });
   }
 
-  fields.btnEditLoot.onclick = () => openPicker("loot");
-  fields.btnEditVend.onclick = () => openPicker("vend");
+  fields.btnLoot.onclick = () => openPicker("loot");
+  fields.btnVend.onclick = () => openPicker("vend");
 
-  /* ── Reset / Populate / getCurrent ─────────────────────── */
+  /* ─────────────────────────────── form helpers ───────── */
   function reset() {
     form.reset();
     _id = null;
     fields.lootPool.length = 0;
-    fields.vendInventory.length = 0;
+    fields.vendInv.length  = 0;
     renderChips("loot");
     renderChips("vend");
+
     fields.roleCheckboxes.forEach(cb => (cb.checked = false));
     initPickrs();
-    pickrs.desc?.setColor("#E5E6E8");
+    Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
     fields.extraInfo.setLines([], false);
   }
 
   function populate(def) {
-    form.reset();
+    reset(); // clears all fields first
     _id = def.id || null;
 
-    fields.fldName.value      = def.name    || "";
-    fields.fldIcon.value      = def.iconUrl || "";
-    fields.fldSubtext.value   = def.subtext || "";
-    fields.fldHP.value        = def.health  ?? "";
-    fields.fldDMG.value       = def.damage  ?? "";
+    fields.fldName.value     = def.name               || "";
+    fields.fldHealth.value   = def.health             ?? "";
+    fields.fldDamage.value   = def.damage             ?? "";
+    fields.fldImgSmall.value = def.imageSmallUrl      || "";
+    fields.fldImgLarge.value = def.imageLargeUrl      || "";
 
-    // roles
+    /* roles */
     fields.roleCheckboxes.forEach(cb => {
       cb.checked = Array.isArray(def.roles) && def.roles.includes(cb.value);
     });
 
-    // inventories
-    fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool || []));
-    fields.vendInventory.splice(
-      0,
-      fields.vendInventory.length,
-      ...(def.vendorInventory || [])
-    );
+    /* inventories */
+    fields.lootPool.splice(0, 0, ...(def.lootPool       || []));
+    fields.vendInv.splice(0, 0, ...(def.vendorInventory || []));
     renderChips("loot");
     renderChips("vend");
 
-    // description
+    /* colours */
+    def.nameColor        && pickrs.name?.setColor(  def.nameColor );
+    def.healthColor      && pickrs.hp?.setColor(    def.healthColor );
+    def.damageColor      && pickrs.dmg?.setColor(   def.damageColor );
+    def.descriptionColor && pickrs.desc?.setColor(  def.descriptionColor );
+
+    /* description & extras */
     fields.fldDesc.value = def.description || "";
     fields.extraInfo.setLines(def.extraLines || [], false);
-    initPickrs();
-    def.descriptionColor && pickrs.desc.setColor(def.descriptionColor);
   }
 
   function getCurrent() {
     initPickrs();
-    const roles = fields.roleCheckboxes
-      .filter(cb => cb.checked)
-      .map(cb => cb.value);
-
     return {
       id: _id,
-      name: fields.fldName.value.trim(),
-      roles,
-      health: Number(fields.fldHP.value) || 0,
-      damage: Number(fields.fldDMG.value) || 0,
-      iconUrl: fields.fldIcon.value.trim(),
-      subtext: fields.fldSubtext.value.trim(),
-      lootPool: [...fields.lootPool],
-      vendorInventory: [...fields.vendInventory],
-      description: fields.fldDesc.value.trim(),
+
+      name:          fields.fldName.value.trim(),
+      health:        Number(fields.fldHealth.value) || 0,
+      damage:        Number(fields.fldDamage.value) || 0,
+      roles:         fields.roleCheckboxes.filter(cb => cb.checked).map(cb => cb.value),
+
+      imageSmallUrl: fields.fldImgSmall.value.trim(),
+      imageLargeUrl: fields.fldImgLarge.value.trim(),
+
+      lootPool:        [...fields.lootPool],
+      vendorInventory: [...fields.vendInv],
+
+      nameColor:   getPickrHexColor(pickrs.name),
+      healthColor: getPickrHexColor(pickrs.hp),
+      damageColor: getPickrHexColor(pickrs.dmg),
+
+      description:      fields.fldDesc.value.trim(),
       descriptionColor: getPickrHexColor(pickrs.desc),
-      extraLines: fields.extraInfo.getLines()
+      extraLines:       fields.extraInfo.getLines()
     };
   }
 
-  form.addEventListener("submit", async e => {
+  /* ─────────────────────────── event wiring ───────────── */
+  form.addEventListener("submit", e => {
     e.preventDefault();
-    await onSubmit?.(getCurrent());
+    cb?.onSubmit?.(getCurrent());
   });
 
   return { form, reset, populate, getCurrent, getId: () => _id };

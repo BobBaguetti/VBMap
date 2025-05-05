@@ -1,24 +1,32 @@
 // @file: /scripts/modules/services/npcDefinitionsService.js
-// @version: 1.0 – initial modular service derived from chestDefinitionsService (2025‑05‑05)
-
-/**
- * Firestore service for **NPC definitions**. NPCs can be enemies, vendors, or both.
- * Each document uses this shape:
- * {
- *   name:             string,
- *   roles:            Array<"Enemy"|"Vendor"|"QuestGiver">,
- *   health:           number,
- *   damage:           number,
- *   iconUrl?:         string,
- *   subtext?:         string,
- *   lootPool?:        Array<string>,          // itemDefinition ids dropped on death
- *   vendorInventory?: Array<string>,          // itemDefinition ids sold when alive
- *   description?:     string,
- *   descriptionColor: string (hex),
- *   extraLines?:      Array<{ text:string, color?:string }>,
- *   createdAt?:       Timestamp
- * }
- */
+// @version: 2.0
+//
+// Firestore service for NPC definitions.
+// Schema reference:
+//
+// {
+//   name:            string,
+//   roles:           string[],          // "Enemy" | "Vendor" | "QuestGiver"
+//   health:          number,
+//   damage:          number,
+//
+//   imageSmallUrl:   string,            // icon‑sized
+//   imageLargeUrl:   string,            // full portrait
+//
+//   lootPool:        string[],          // item IDs dropped on death
+//   vendorInventory: string[],          // item IDs sold while alive
+//
+//   // UI colours (hex)
+//   nameColor:       string,
+//   healthColor:     string,
+//   damageColor:     string,
+//   description:     string,
+//   descriptionColor:string,
+//   extraLines:      Array<{ text:string, color?:string }>,
+//
+//   createdAt?:      Timestamp          // auto‑set on create
+// }
+// ---------------------------------------------------------------------
 
 import {
   collection,
@@ -43,10 +51,10 @@ export async function loadNpcDefinitions(db) {
 }
 
 /**
- * Create or update based on id. If `id` is null a new document is created.
+ * Create or update an NPC definition.
  * @param {import('firebase/firestore').Firestore} db
- * @param {string|null} id
- * @param {Object} data – see schema in JSDoc
+ * @param {string|null} id  Document ID (null = create)
+ * @param {Object} data     See schema above
  */
 export async function saveNpcDefinition(db, id, data) {
   const { id: _ignore, ...payload } = data;
@@ -74,6 +82,12 @@ export async function deleteNpcDefinition(db, id) {
   await deleteDoc(doc(db, "npcDefinitions", id));
 }
 
+/**
+ * Subscribe to NPC definitions in real time.
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {Function} onUpdate  Callback receives array of definitions
+ * @returns {Function} Unsubscribe function
+ */
 export function subscribeNpcDefinitions(db, onUpdate) {
   return onSnapshot(
     getNpcDefinitionsCollection(db),
