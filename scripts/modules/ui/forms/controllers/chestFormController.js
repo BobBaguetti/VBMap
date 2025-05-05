@@ -2,7 +2,7 @@
    VBMap – Chest Form Controller
    ---------------------------------------------------------
    @file:    /scripts/modules/ui/forms/controllers/chestFormController.js
-   @version: 3.2  (2025‑05‑06)
+   @version: 3.3  (2025‑05‑06)
    ========================================================= */
 
    import { createPickr }            from "../../pickrManager.js";
@@ -15,10 +15,10 @@
    export function createChestFormController(cb, db) {
      const { form, fields } = createChestForm();
      const pickrs = {};
-     let   _id          = null;
-     let   saveBtn      = null;
-     let   headerTitle  = null;
-     let   allItems     = [];
+     let _id          = null;
+     let saveBtn      = null;
+     let headerTitle  = null;
+     let allItems     = [];
    
      /* ─────────────── Pickr (description only) ───────────── */
      function initPickrs() {
@@ -29,9 +29,7 @@
        fields.colorDesc.addEventListener("click", () => pickrs.desc.show());
      }
      initPickrs();
-   
-     /* Expose to modal */
-     const initPickrsPublic = () => initPickrs();
+     const initPickrsPublic = () => initPickrs();   // exposed for modal
    
      /* ─────────────── header row (title + buttons) ───────── */
      function ensureHeader() {
@@ -97,6 +95,7 @@
          const chip = document.createElement("span");
          chip.className = "loot-pool-chip";
          chip.textContent = def.name;
+   
          const x = document.createElement("span");
          x.className = "remove-chip";
          x.textContent = "×";
@@ -134,15 +133,20 @@
        reset();
        _id = def.id || null;
    
-       // Field names may differ between builder versions; guard each.
+       // Basic fields
        fields.fldName?.value       = def.name    || "";
-       (fields.fldIcon  || fields.fldIconUrl)?.value = def.iconUrl || "";
-       fields.fldSize?.value       = def.size    || "small";
-       fields.fldCategory?.value   = def.category|| "";
+       if (fields.fldSize)     fields.fldSize.value     = def.size    || "small";
+       if (fields.fldCategory) fields.fldCategory.value = def.category|| "";
    
+       // Safe icon field
+       const iconField = fields.fldIcon || fields.fldIconUrl;
+       if (iconField) iconField.value = def.iconUrl || "";
+   
+       // Inventories
        fields.lootPool.splice(0, 0, ...(def.lootPool || []));
        renderChips();
    
+       // Description & extras
        fields.fldDesc.value = def.description || "";
        pickrs.desc?.setColor(def.descriptionColor || "#E5E6E8");
        fields.extraInfo.setLines(def.extraLines || [], false);
@@ -150,10 +154,11 @@
      }
    
      function getCurrent() {
+       const iconField = fields.fldIcon || fields.fldIconUrl;
        return {
          id:            _id,
          name:          fields.fldName.value.trim(),
-         iconUrl:       (fields.fldIcon || fields.fldIconUrl).value.trim(),
+         iconUrl:       iconField ? iconField.value.trim() : "",
          size:          fields.fldSize.value,
          category:      fields.fldCategory.value.trim(),
          lootPool:      [...fields.lootPool],
