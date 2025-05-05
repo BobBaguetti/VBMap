@@ -10,7 +10,7 @@
    import { renderChestEntry }             from "../entries/chestEntryRenderer.js";
    
    import { initializeFirebase }           from "../../services/firebaseService.js";
-   import { firebaseConfig }               from "../../../../src/firebaseConfig.js";  // named export
+   import { firebaseConfig }               from "../../../../src/firebaseConfig.js";
    
    import {
      loadChestDefinitions,
@@ -18,12 +18,12 @@
      deleteChestDefinition
    } from "../../services/chestDefinitionsService.js";
    
-   /* Firestore handle */
+   /* ── Firestore handle ───────────────────────────────────── */
    const db = initializeFirebase(firebaseConfig);
    
-   /* Build shell (no preview for now) */
+   /* ── Modal shell ────────────────────────────────────────── */
    const shell = createDefinitionModalShell({
-     id: "chest-def-shell",
+     id:    "chest-def-shell",
      title: "Manage Chests",
      loadAll: () => loadChestDefinitions(db),
      upsert : def => saveChestDefinition(db, def.id, def),
@@ -32,9 +32,9 @@
      renderEntry: (def, layout, handlers) => renderChestEntry(def, layout, handlers)
    });
    
-   /* Public API */
+   /* ── Public API ─────────────────────────────────────────── */
    export function openChestDefinitionsModal() { shell.open(); }
    
-   /* Back‑compat alias for sidebar */
+   /* legacy alias */
    export const initChestDefinitionsModal = () => ({ open: openChestDefinitionsModal });
    

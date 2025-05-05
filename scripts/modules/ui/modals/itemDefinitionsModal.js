@@ -1,41 +1,40 @@
 /* =========================================================
-   VBMap – Chest Definitions Modal (shell)
+   VBMap – Item Definitions Modal (shell)
    ---------------------------------------------------------
-   @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-   @version: 3.2  (2025‑05‑08)
+   @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
+   @version: 3.6  (2025‑05‑08)
    ========================================================= */
 
-   import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
-   import { createChestFormController }    from "../forms/controllers/chestFormController.js";
-   import { renderChestEntry }             from "../entries/chestEntryRenderer.js";
-   import { createChestPreviewPanel }      from "../preview/chestPreview.js";
+   import { createDefinitionModalShell }  from "../components/definitionModalShell.js";
+   import { createItemFormController }    from "../forms/controllers/itemFormController.js";
+   import { renderItemEntry }             from "../entries/itemEntryRenderer.js";
    
-   import { initializeFirebase }           from "../../services/firebaseService.js";
-   import { firebaseConfig }               from "../../../../src/firebaseConfig.js";  // ← named import
+   import { initializeFirebase }          from "../../services/firebaseService.js";
+   import { firebaseConfig }              from "../../../../src/firebaseConfig.js";
    
    import {
-     loadChestDefinitions,
-     saveChestDefinition,
-     deleteChestDefinition
-   } from "../../services/chestDefinitionsService.js";
+     loadItemDefinitions,
+     saveItemDefinition,
+     deleteItemDefinition
+   } from "../../services/itemDefinitionsService.js";
    
-   /* Firestore handle */
+   /* ── Firestore handle (singleton) ───────────────────────── */
    const db = initializeFirebase(firebaseConfig);
    
-   /* Preview */
-   const preview = createChestPreviewPanel(document.createElement("div"));
-   
-   /* Shell */
+   /* ── Modal shell config ─────────────────────────────────── */
    const shell = createDefinitionModalShell({
-     id: "chest-def-shell",
-     title: "Manage Chest Types",
-     loadAll: () => loadChestDefinitions(db),
-     upsert : def => saveChestDefinition(db, def.id, def),
-     remove : id  => deleteChestDefinition(db, id),
-     createFormController: cb => createChestFormController(cb, db),
-     renderEntry: (def, layout, handlers) => renderChestEntry(def, layout, handlers),
-     previewPanel: preview
+     id:    "item-def-shell",
+     title: "Manage Items",
+     loadAll: () => loadItemDefinitions(db),
+     upsert : def => saveItemDefinition(db, def.id, def),
+     remove : id  => deleteItemDefinition(db, id),
+     createFormController: cb => createItemFormController(cb),
+     renderEntry: (def, layout, handlers) => renderItemEntry(def, layout, handlers)
    });
    
-   export function openChestDefinitionsModal() { shell.open(); }
+   /* ── Public API ─────────────────────────────────────────── */
+   export function openItemDefinitionsModal() { shell.open(); }
+   
+   /* legacy alias (keeps old imports working) */
+   export const initItemDefinitionsModal = () => ({ open: openItemDefinitionsModal });
    
