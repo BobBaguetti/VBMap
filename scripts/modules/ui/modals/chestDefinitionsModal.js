@@ -2,7 +2,7 @@
    VBMap – Chest Definitions Modal (shell)
    ---------------------------------------------------------
    @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-   @version: 3.1  (2025‑05‑08)
+   @version: 3.2  (2025‑05‑08)
    ========================================================= */
 
    import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
@@ -11,7 +11,7 @@
    import { createChestPreviewPanel }      from "../preview/chestPreview.js";
    
    import { initializeFirebase }           from "../../services/firebaseService.js";
-   import firebaseConfig                   from "../../../../src/firebaseConfig.js";   // ← fixed path
+   import { firebaseConfig }               from "../../../../src/firebaseConfig.js";  // ← named import
    
    import {
      loadChestDefinitions,
@@ -22,10 +22,10 @@
    /* Firestore handle */
    const db = initializeFirebase(firebaseConfig);
    
-   /* Preview pane */
+   /* Preview */
    const preview = createChestPreviewPanel(document.createElement("div"));
    
-   /* Modal shell */
+   /* Shell */
    const shell = createDefinitionModalShell({
      id: "chest-def-shell",
      title: "Manage Chest Types",
@@ -37,6 +37,5 @@
      previewPanel: preview
    });
    
-   /* Public API */
    export function openChestDefinitionsModal() { shell.open(); }
    

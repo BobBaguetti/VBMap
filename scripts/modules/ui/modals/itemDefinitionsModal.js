@@ -2,7 +2,7 @@
    VBMap – Item Definitions Modal (shell)
    ---------------------------------------------------------
    @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
-   @version: 3.3  (2025‑05‑08)
+   @version: 3.4  (2025‑05‑08)
    ========================================================= */
 
    import { createDefinitionModalShell }  from "../components/definitionModalShell.js";
@@ -11,7 +11,7 @@
    import { createItemPreviewPanel }      from "../preview/itemPreview.js";
    
    import { initializeFirebase }          from "../../services/firebaseService.js";
-   import firebaseConfig                  from "../../../../src/firebaseConfig.js";   // ← fixed path
+   import { firebaseConfig }              from "../../../../src/firebaseConfig.js";   // ← named import
    
    import {
      loadItemDefinitions,
@@ -19,13 +19,13 @@
      deleteItemDefinition
    } from "../../services/itemDefinitionsService.js";
    
-   /* Firestore handle (singleton) */
+   /* Firestore handle */
    const db = initializeFirebase(firebaseConfig);
    
-   /* Preview pane (optional) */
+   /* Preview */
    const preview = createItemPreviewPanel(document.createElement("div"));
    
-   /* Modal shell */
+   /* Shell */
    const shell = createDefinitionModalShell({
      id: "item-def-shell",
      title: "Manage Item Types",
@@ -37,6 +37,5 @@
      previewPanel: preview
    });
    
-   /* Public API */
    export function openItemDefinitionsModal() { shell.open(); }
    
