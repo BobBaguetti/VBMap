@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionListManager.js
-// @version: 8 – unified object-style callbacks & support for CRUD factory wiring
+// @version: 8 – full custom renderer support with object-style callbacks
 
 import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 
@@ -10,18 +10,19 @@ import { renderItemEntry } from "../entries/itemEntryRenderer.js";
  * @param {HTMLElement} options.container
  * @param {() => Array} options.getDefinitions
  * @param {(def: Object, layout: string, cbs: {onClick:Function, onDelete:Function}) => HTMLElement}
- *                  [options.renderEntry] – entry renderer; defaults to items
- * @param {(def: Object) => void} [options.onEntryClick] – callback when entry clicked
- * @param {(id: string) => void} [options.onDelete] – callback when delete invoked
+ *                  [options.renderEntry]   – custom entry renderer; defaults to items
+ * @param {(def: Object) => void} [options.onEntryClick]
+ * @param {(id: string) => Promise<void>} [options.onDelete]
  * @param {() => string} [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
   container,
   getDefinitions,
   renderEntry = (def, layout, { onClick, onDelete }) =>
+    // adapt old itemEntry signature to object callback form
     renderItemEntry(def, layout, onClick, onDelete),
   onEntryClick = () => {},
-  onDelete = () => {},
+  onDelete = () => Promise.resolve(),
   getCurrentLayout = () => "row"
 }) {
   let layout = getCurrentLayout();
@@ -48,7 +49,6 @@ export function createDefinitionListManager({
     container.className = `def-list ui-scroll-float layout-${layout}`;
 
     filtered.forEach(def => {
-      // object-style callbacks handed to CRUD factory
       const entryEl = renderEntry(def, layout, {
         onClick: () => onEntryClick(def),
         onDelete: () => onDelete(def.id)
@@ -58,7 +58,14 @@ export function createDefinitionListManager({
   }
 
   return {
+    /**
+     * Refresh the list display with current data + search filter.
+     */
     refresh: render,
+
+    /**
+     * Change the layout (row/stacked/gallery) and re-render.
+     */
     setLayout(newLayout) {
       layout = newLayout;
       render();
