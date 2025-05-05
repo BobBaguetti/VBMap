@@ -1,5 +1,5 @@
 // @file: /scripts/modules/utils/crudModalFactory.js
-// @version: 1.16 – corrected buildList for unified renderEntry signature and re-wired modal callbacks
+// @version: 1.17 – fixed shadowing so custom renderer actually runs
 
 import { createDefinitionModalShell }   from "../ui/components/definitionModalShell.js";
 import { createDefListContainer }       from "./listUtils.js";
@@ -13,7 +13,8 @@ export function initCrudModal({
   id, title, db,
   loadAll, subscribeAll,
   onSave, onDelete,
-  renderEntry, formFactory,
+  renderEntry: customRenderEntry,    // renamed to avoid shadowing
+  formFactory,
   previewType = null,
   layoutOptions = ["row","stacked","gallery"],
   toolbar = []
@@ -88,29 +89,9 @@ export function initCrudModal({
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => cachedDefs,
-      // wrap the list-manager callbacks with your modal logic
-      renderEntry: (def, layout, listCbs) => {
-        const wrappedCbs = {
-          onClick: () => {
-            formApi.populate(def);
-            _showEdit();
-            previewApi.setFromDefinition(def);
-            previewApi.show();
-            listCbs.onClick(def);
-          },
-          onDelete: async () => {
-            if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} \"${def.name||def.id}\"?`)) {
-              await onDelete(def.id);
-              formApi.reset();
-              previewApi.hide();
-              _showAdd();
-              await refreshList();
-              listCbs.onDelete(def.id);
-            }
-          }
-        };
-        return renderEntry(def, layout, wrappedCbs);
-      }
+      // now using your passed-in renderer
+      renderEntry: (def, layout, cbs) =>
+        customRenderEntry(def, layout, cbs)
     });
   }
 
@@ -122,7 +103,7 @@ export function initCrudModal({
         _showAdd();
       },
       onDelete: async id => {
-        if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} \"${id}\"?`)) {
+        if (confirm(`Delete ${title.replace(/^Manage\s+/, "")} "${id}"?`)) {
           await onDelete(id);
           formApi.reset();
           previewApi.hide();
@@ -151,14 +132,14 @@ export function initCrudModal({
   function buildActions() {
     actionRow.innerHTML = "";
     actionRow.append(
-      _createBtn("Save",   () => formApi.form.requestSubmit()),
-      _createBtn("Clear",  () => formApi.reset()),
-      _createBtn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); }),
-      _createBtn("Delete", () => formApi.onDelete?.(formApi.getId()))
+      _btn("Save",   () => formApi.form.requestSubmit()),
+      _btn("Clear",  () => formApi.reset()),
+      _btn("Cancel", () => { formApi.reset(); previewApi.hide(); _showAdd(); }),
+      _btn("Delete", () => formApi.onDelete?.(formApi.getId()))
     );
   }
 
-  function _createBtn(label, onClick) {
+  function _btn(label, onClick) {
     const btn = document.createElement("button");
     btn.type = "button";
     btn.textContent = label;
