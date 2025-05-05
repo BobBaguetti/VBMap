@@ -2,30 +2,28 @@
 // VBMap • Definition Modal Shell
 // ---------------------------------------------------------
 // @file:    /scripts/modules/ui/components/definitionModalShell.js
-// @version: 1.0  (2025‑05‑08)
+// @version: 1.1  (2025‑05‑08)
 // ---------------------------------------------------------
-// Generic admin‑side modal that shows a searchable list of
-// entity definitions on the left and a form (+ preview) on
-// the right.  Supply entity‑specific bits via config.
+// Generic admin‑side modal for any definition type.
 // =========================================================
 
 import { createModal, openModal, closeModal } from "../uiKit.js";
-import { createListManager } from "./definitionListManager.js";
+import { createDefinitionListManager }       from "./definitionListManager.js";  // ← fixed name
 
 /**
  * @typedef {Object} ModalShellConfig
- * @property {string}         id                 Unique DOM id
- * @property {string}         title              Modal window title
- * @property {function}       loadAll            ()⇒Promise<def[]>
- * @property {function}       upsert             (def)⇒Promise<void>
- * @property {function}       remove             (id)⇒Promise<void>
- * @property {function}       createFormController (callbacks)⇒controller
- * @property {function}       renderEntry        (def, layout, handlers)⇒HTMLElement
- * @property {HTMLElement?}   previewPanel       Optional preview pane
+ * @property {string}         id
+ * @property {string}         title
+ * @property {function():Promise<Array<Object>>} loadAll
+ * @property {function(Object):Promise<void>}    upsert
+ * @property {function(string):Promise<void>}    remove
+ * @property {function(Object):FormController}   createFormController
+ * @property {function(Object,string,Object):HTMLElement} renderEntry
+ * @property {{ container:HTMLElement, setFromDefinition:function(Object)}} [previewPanel]
  */
 
 /**
- * Builds the modal and returns `{ open() }`
+ * Build & return `{ open }`
  * @param {ModalShellConfig} cfg
  */
 export function createDefinitionModalShell(cfg) {
@@ -36,47 +34,52 @@ export function createDefinitionModalShell(cfg) {
     backdrop: true
   });
 
-  /* layout: sidebar list | form column | (optional) preview */
+  /* Layout: list | form | (optional) preview */
   const paneList = document.createElement("div");
   paneList.className = "def-shell-list";
   const paneForm = document.createElement("div");
-  paneForm.className = "def-shell-form";
-  Object.assign(paneForm.style, { flex: "1 1 auto", overflowY: "auto", padding: "0 16px" });
+  Object.assign(paneForm.style, { flex:"1 1 auto", overflowY:"auto", padding:"0 16px" });
 
   const bodyFlex = document.createElement("div");
-  Object.assign(bodyFlex.style, { display: "flex", height: "calc(100% - 48px)" });
+  Object.assign(bodyFlex.style, { display:"flex", height:"calc(100% - 48px)" });
   bodyFlex.append(paneList, paneForm);
-  cfg.previewPanel && bodyFlex.append(cfg.previewPanel);
+  cfg.previewPanel && bodyFlex.append(cfg.previewPanel.container);
   content.appendChild(bodyFlex);
 
-  /* list manager */
-  const listMgr = createListManager(paneList);
+  /* List manager */
+  const listMgr = createDefinitionListManager({
+    container: paneList,
+    getDefinitions: () => _defs,
+    renderEntry: cfg.renderEntry,
+    onEntryClick: onEntryClick,
+    onDelete: async id => { await cfg.remove(id); await refresh(); formCtrl.reset(); },
+    getCurrentLayout: () => "row"
+  });
 
-  /* current form controller */
+  /* Form controller instance */
   let formCtrl = null;
+  let _defs = [];
 
   function buildForm(def) {
-    if (formCtrl) paneForm.innerHTML = "";          // wipe previous
+    paneForm.innerHTML = "";
     formCtrl = cfg.createFormController({
-      onCancel : () => formCtrl.reset(),
-      onSubmit : async d => { await cfg.upsert(d); await refresh(); formCtrl.reset(); },
-      onDelete : async id => { await cfg.remove(id); await refresh(); formCtrl.reset(); }
+      onCancel: () => formCtrl.reset(),
+      onSubmit: async d => { await cfg.upsert(d); await refresh(); formCtrl.reset(); },
+      onDelete: async id => { await cfg.remove(id); await refresh(); formCtrl.reset(); }
     });
     paneForm.appendChild(formCtrl.form);
     formCtrl.reset();
     if (def) formCtrl.populate(def);
   }
 
+  function onEntryClick(def) {
+    buildForm(def);
+    cfg.previewPanel && cfg.previewPanel.setFromDefinition(def);
+  }
+
   async function refresh() {
-    const all = await cfg.loadAll();
-    listMgr.render(all, def => {
-      buildForm(def);
-      cfg.previewPanel && cfg.previewPanel.setFromDefinition(def);
-    }, async id => {
-      await cfg.remove(id);
-      await refresh();
-      formCtrl.reset();
-    }, cfg.renderEntry);
+    _defs = await cfg.loadAll();
+    listMgr.refresh();
   }
 
   async function open() {
