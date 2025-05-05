@@ -1,103 +1,90 @@
-// @version: 5.1
-// @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
+/* =========================================================
+   VBMap – Item Form Builder
+   ---------------------------------------------------------
+   @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
+   @version: 2.1  (2025‑05‑07)
+   ========================================================= */
 
-import {
-  createNameField,
-  createItemTypeField,
-  createRarityField,
-  createDescriptionField,
-  createValueField,
-  createQuantityField,
-  createImageFieldSet,
-  createExtraInfoField
-} from "../universalForm.js";
-
-export function createItemForm() {
-  const form = document.createElement("form");
-  form.id = "item-form";
-
-  // Name
-  const { row: rowName, input: fldName, colorBtn: colorName } = createNameField();
-  colorName.id = "fld-name-color";
-  colorName.classList.add("color-swatch");
-
-  // Item Type
-  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField();
-  // insert placeholder
-  const placeholderType = document.createElement("option");
-  placeholderType.value = "";
-  placeholderType.disabled = true;
-  placeholderType.selected = true;
-  placeholderType.textContent = "Select Item Type";
-  fldType.insertBefore(placeholderType, fldType.firstChild);
-
-  colorType.id = "fld-item-type-color";
-  colorType.classList.add("color-swatch");
-
-  // Rarity
-  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField();
-  // insert placeholder
-  const placeholderRarity = document.createElement("option");
-  placeholderRarity.value = "";
-  placeholderRarity.disabled = true;
-  placeholderRarity.selected = true;
-  placeholderRarity.textContent = "Select Rarity";
-  fldRarity.insertBefore(placeholderRarity, fldRarity.firstChild);
-
-  colorRarity.id = "fld-rarity-color";
-  colorRarity.classList.add("color-swatch");
-
-  // Description
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField();
-  colorDesc.id = "fld-desc-item-color";
-  colorDesc.classList.add("color-swatch");
-
-  // Extra Info (no color swatch here)
-  const { row: rowExtras, extraInfo } = createExtraInfoField({ withDividers: true });
-
-  // Value
-  const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField();
-  colorValue.id = "fld-value-color";
-  colorValue.classList.add("color-swatch");
-
-  // Quantity
-  const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField();
-  colorQty.id = "fld-quantity-color";
-  colorQty.classList.add("color-swatch");
-
-  // Images
-  const {
-    rowImgS, fldImgS,
-    rowImgL, fldImgL
-  } = createImageFieldSet();
-
-  form.append(
-    rowName,
-    rowType,
-    rowRarity,
-    rowDesc,
-    rowExtras,
-    rowValue,
-    rowQty,
-    rowImgS,
-    rowImgL
-  );
-
-  return {
-    form,
-    fields: {
-      fldName, colorName,
-      fldType, colorType,
-      fldRarity, colorRarity,
-      fldDesc, colorDesc,
-      fldValue, colorValue,
-      fldQty, colorQty,
-      fldImgS, fldImgL,
-      extraInfo,
-      rowExtras,
-      rowValue,
-      rowQty
-    }
-  };
-}
- 
+   import {
+    createDescriptionField,
+    createExtraInfoField
+  } from "../universalForm.js";
+  
+  function makeRow(label, input, widget = null) {
+    const row = document.createElement("div");
+    row.classList.add("field-row");
+    const lbl = document.createElement("label");
+    lbl.textContent = label;
+    row.append(lbl, input);
+    widget && row.append(widget);
+    return row;
+  }
+  
+  function swatch(id) {
+    return Object.assign(document.createElement("button"), {
+      type: "button",
+      className: "color-swatch",
+      id
+    });
+  }
+  
+  export function createItemForm() {
+    const form = document.createElement("form");
+  
+    /* basic inputs */
+    const fldName   = Object.assign(document.createElement("input"), { type:"text"  });
+    const fldType   = Object.assign(document.createElement("select"));
+    const fldRarity = Object.assign(document.createElement("select"));
+    const fldValue  = Object.assign(document.createElement("input"), { type:"number", min:"0" });
+    const fldQty    = Object.assign(document.createElement("input"), { type:"number", min:"0" });
+  
+    /* populate selects (static options kept short here) */
+    ["", "Crafting Material", "Consumable"].forEach(t => {
+      const o = new Option(t, t); fldType.append(o);
+    });
+    ["", "Common", "Uncommon", "Rare"].forEach(r => {
+      const o = new Option(r, r); fldRarity.append(o);
+    });
+  
+    /* colour swatches */
+    const swName  = swatch("sw-name");
+    const swType  = swatch("sw-type");
+    const swRarity= swatch("sw-rarity");
+    const swDesc  = swatch("sw-desc");
+    const swVal   = swatch("sw-val");
+    const swQty   = swatch("sw-qty");
+  
+    /* description & extra lines */
+    const { row: rowDesc, textarea: fldDesc } = createDescriptionField();
+    rowDesc.append(swDesc);
+    const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers:true });
+  
+    /* assemble */
+    form.append(
+      makeRow("Name:",      fldName,   swName),
+      makeRow("Item Type:", fldType,   swType),
+      makeRow("Rarity:",    fldRarity, swRarity),
+      rowDesc,
+      rowExtra,
+      makeRow("Value:",     fldValue,  swVal),
+      makeRow("Quantity:",  fldQty,    swQty)
+    );
+  
+    return {
+      form,
+      fields: {
+        /* inputs */
+        fldName, fldType, fldRarity, fldValue, fldQty, fldDesc,
+        /* swatches */
+        colorName: swName,
+        colorType: swType,
+        colorRarity: swRarity,
+        colorDesc: swDesc,
+        colorValue: swVal,
+        colorQty: swQty,
+        /* extra */
+        extraInfo
+      }
+    };
+  }
+  
