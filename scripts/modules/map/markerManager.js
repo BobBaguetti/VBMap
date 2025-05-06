@@ -1,10 +1,10 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 10.12 – fix drag toggle to not write; only dragend invokes callback
+// @version: 10.13 – removed Leaflet import & fixed createIcon path
 
-import L from "leaflet";
-import { formatRarity }     from "../utils/coreUtils.js";
-import { createIcon }       from "../utils/iconUtils.js";
-import { defaultNameColor, rarityColors } from "../utils/colorPresets.js";
+import { formatRarity }         from "../utils/coreUtils.js";
+import { createIcon }           from "../utils/renderUtils.js";
+import { defaultNameColor,
+         rarityColors }         from "../utils/colorPresets.js";
 
 /*────────────────────────── Shared helpers ──────────────────────────*/
 function isImgUrl(str) {
@@ -256,34 +256,35 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
     offset: [0, -35]
   });
 
-  // Popup handlers (close button, chest-slot previews)
+  // Popup handlers…
   markerObj.on("popupopen", () => {
     document.querySelector(".custom-popup .popup-close-btn")
       ?.addEventListener("click", () => markerObj.closePopup());
-    document.querySelectorAll(".custom-popup .chest-slot[data-index]").forEach(el => {
-      const idx = el.getAttribute("data-index");
-      el.addEventListener("mouseenter", e => {
-        if (!idx) return;
-        const item = m.chestDefFull.lootPool[idx];
-        if (!item) return;
-        const preview = document.createElement("div");
-        preview.className = "chest-item-preview";
-        preview.innerHTML = renderPopup(item);
-        Object.assign(preview.style, {
-          position: "absolute", zIndex: "1102",
-          left: `${e.clientX+8}px`, top: `${e.clientY+8}px`
+    document.querySelectorAll(".custom-popup .chest-slot[data-index]")
+      .forEach(el => {
+        const idx = el.getAttribute("data-index");
+        el.addEventListener("mouseenter", e => {
+          if (!idx) return;
+          const item = m.chestDefFull.lootPool[idx];
+          if (!item) return;
+          const preview = document.createElement("div");
+          preview.className = "chest-item-preview";
+          preview.innerHTML = renderPopup(item);
+          Object.assign(preview.style, {
+            position: "absolute", zIndex: "1102",
+            left: `${e.clientX+8}px`, top: `${e.clientY+8}px`
+          });
+          document.body.append(preview);
+          el._previewEl = preview;
         });
-        document.body.append(preview);
-        el._previewEl = preview;
+        el.addEventListener("mouseleave", () => el._previewEl?.remove());
       });
-      el.addEventListener("mouseleave", () => el._previewEl?.remove());
-    });
   });
   markerObj.on("popupclose", () => {
     document.querySelectorAll(".chest-item-preview").forEach(el => el.remove());
   });
 
-  // Context menu with drag toggle but no immediate write
+  // Context menu…
   markerObj.on("contextmenu", ev => {
     ev.originalEvent.preventDefault();
     const opts = [];
