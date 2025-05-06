@@ -1,18 +1,13 @@
 // =========================================================
 // VBMap • Definition Modal Shell
 // ---------------------------------------------------------
-// @file:    /scripts/modules/ui/components/definitionModalShell.js
-// @version: 1.4  (2025‑05‑09)
+// @file: /scripts/modules/ui/components/definitionModalShell.js
+// @version: 1.5  (2025‑05‑09)
 // =========================================================
 
 import { createModal, openModal, closeModal } from "../uiKit.js";
 import { createDefinitionListManager }       from "./definitionListManager.js";
 
-/**
- * Builds the generic “Manage X” modal.
- * cfg.previewPanel is optional; if provided it must be
- * { container:HTMLElement, setFromDefinition(fn) }.
- */
 export function createDefinitionModalShell(cfg) {
   const { modal, header, content } = createModal({
     id: cfg.id,
@@ -21,11 +16,11 @@ export function createDefinitionModalShell(cfg) {
     backdrop: true
   });
 
-  /* ───────────────── layout panes ────────────────────── */
+  /* ─── layout panes ───────────────────────────────────── */
   const paneList = document.createElement("div");
   paneList.className = "def-shell-list";
   Object.assign(paneList.style, {
-    flex: "0 0 280px",        // fixed 280 px sidebar
+    flex: "0 0 280px",
     overflowY: "auto",
     borderRight: "1px solid #222"
   });
@@ -33,8 +28,8 @@ export function createDefinitionModalShell(cfg) {
   const paneForm = document.createElement("div");
   paneForm.className = "def-shell-form";
   Object.assign(paneForm.style, {
-    flex: "1 1 auto",
-    minWidth: "0",            // allow flex item to shrink
+    flex: "1 1 400px",      // ← flex‑basis 400 px ensures inputs have room
+    minWidth: "300px",      // extra guard
     overflowY: "auto",
     padding: "0 16px"
   });
@@ -46,10 +41,9 @@ export function createDefinitionModalShell(cfg) {
   });
   bodyFlex.append(paneList, paneForm);
   if (cfg.previewPanel?.container) bodyFlex.append(cfg.previewPanel.container);
-
   content.appendChild(bodyFlex);
 
-  /* ─────────────── list manager ──────────────────────── */
+  /* ───────── list manager / form build remain unchanged ───────── */
   let _defs = [];
   const listMgr = createDefinitionListManager({
     container: paneList,
@@ -60,7 +54,6 @@ export function createDefinitionModalShell(cfg) {
     getCurrentLayout: () => "row"
   });
 
-  /* ─────────────── form controller ───────────────────── */
   let formCtrl = null;
   function buildForm(def = null) {
     paneForm.innerHTML = "";
@@ -79,16 +72,13 @@ export function createDefinitionModalShell(cfg) {
     cfg.previewPanel?.setFromDefinition?.(def);
   }
 
-  /* ─────────────── data refresh ──────────────────────── */
   async function refresh() { _defs = await cfg.loadAll(); listMgr.refresh(); }
 
-  /* ─────────────── open() wiring ─────────────────────── */
   async function open() {
     if (!modal.isBuilt) { await refresh(); buildForm(); modal.isBuilt = true; }
     openModal(modal);
   }
 
   header.querySelector("button.close")?.addEventListener("click", () => closeModal(modal));
-
   return { open };
 }
