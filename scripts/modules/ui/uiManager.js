@@ -1,5 +1,5 @@
 // @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
-// @version: 3   The current file version is 3. Increase by 1 every time you update anything.
+// @version: 4   The current file version is 4. Increase by 1 every time you update anything.
 // @file:    /scripts/modules/ui/uiManager.js
 
 import { showContextMenu, hideContextMenu } from "./components/contextMenu.js";
@@ -7,6 +7,15 @@ import { makeDraggable }                   from "./components/draggable.js";
 
 // Re-export makeDraggable for backward compatibility
 export { makeDraggable };
+
+/**
+ * Displays a context menu at the specified screen coordinates with the provided options.
+ * Each option should be an object: { text: string, action: function }.
+ * @param {number} x Horizontal position in pixels.
+ * @param {number} y Vertical position in pixels.
+ * @param {Array} options Array of option objects.
+ */
+export { showContextMenu, hideContextMenu };
 
 /**
  * Positions the modal relative to an event (e.g. mouse event).
