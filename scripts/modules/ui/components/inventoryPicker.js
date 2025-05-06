@@ -1,10 +1,11 @@
+// @version: 1.1
 // @file: /scripts/modules/ui/components/inventoryPicker.js
-// @version: 1.1 – now uses standalone modalHelpers
 
 import {
   createModal,
+  openModal,
   closeModal,
-  openModal
+  createFormButtonRow
 } from "./modalHelpers.js";
 
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
@@ -24,21 +25,20 @@ export async function openInventoryPicker(db, {
   selectedIds = [],
   title       = "Select Items"
 } = {}) {
-  // cache item list between calls
   if (!openInventoryPicker._allItems) {
     openInventoryPicker._allItems = await loadItemDefinitions(db);
   }
   const allItems = openInventoryPicker._allItems;
 
-  /* ── build modal (singleton) ─────────────────────────── */
+  // build modal once
   if (!openInventoryPicker._modal) {
     const { modal, header, content } = createModal({
-      id:          "inventory-picker-modal",
+      id:       "inventory-picker-modal",
       title,
-      size:        "small",
-      backdrop:    true,
+      size:     "small",
+      backdrop: true,
       withDivider: true,
-      onClose:     () => closeModal(modal)
+      onClose: () => closeModal(modal)
     });
     openInventoryPicker._modal   = modal;
     openInventoryPicker._header  = header;
@@ -51,7 +51,7 @@ export async function openInventoryPicker(db, {
     header.appendChild(search);
     openInventoryPicker._search = search;
 
-    // list
+    // list container
     const list = document.createElement("div");
     Object.assign(list.style, {
       maxHeight: "200px",
@@ -62,21 +62,16 @@ export async function openInventoryPicker(db, {
     openInventoryPicker._list = list;
 
     // buttons
-    const btnRow = document.createElement("div");
-    btnRow.style.textAlign = "right";
-    const cancel = document.createElement("button");
-    cancel.type = "button";
-    cancel.className = "ui-button";
-    cancel.textContent = "Cancel";
-    cancel.onclick = () => closeModal(modal);
-    const save = document.createElement("button");
-    save.type = "button";
-    save.className = "ui-button";
-    save.textContent = "Save";
-    btnRow.append(cancel, save);
+    const btnRow = createFormButtonRow(
+      () => closeModal(modal),
+      "Save",
+      "Cancel"
+    );
     content.appendChild(btnRow);
+    openInventoryPicker._saveBtn = btnRow.querySelector('button[type="submit"]');
 
-    openInventoryPicker._filter = function () {
+    // filter logic
+    openInventoryPicker._filter = () => {
       const q = search.value.toLowerCase();
       list.childNodes.forEach(row => {
         const txt = row.querySelector("label").textContent.toLowerCase();
@@ -84,27 +79,16 @@ export async function openInventoryPicker(db, {
       });
     };
     search.addEventListener("input", openInventoryPicker._filter);
-
-    openInventoryPicker._saveBtn = save;
   }
 
-  /* ── populate list for this invocation ──────────────── */
-  const {
-    _modal: modal,
-    _header: header,
-    _content: content,
-    _list: list,
-    _search: search,
-    _filter: filter,
-    _saveBtn: saveBtn
-  } = openInventoryPicker;
-
+  // populate for this run
+  const { _modal: modal, _header: header, _list: list, _search: search, _filter: filter, _saveBtn: saveBtn } = openInventoryPicker;
   header.querySelector("h2").textContent = title;
   list.innerHTML = "";
 
   allItems.forEach(item => {
     const row = document.createElement("div");
-    Object.assign(row.style, { display: "flex", alignItems: "center", padding: "4px 0" });
+    Object.assign(row.style, { display:"flex", alignItems:"center", padding:"4px 0" });
 
     const cb = document.createElement("input");
     cb.type = "checkbox";
@@ -124,8 +108,7 @@ export async function openInventoryPicker(db, {
 
   return new Promise(resolve => {
     saveBtn.onclick = () => {
-      const ids = Array.from(list.querySelectorAll("input:checked"))
-        .map(n => n.value);
+      const ids = Array.from(list.querySelectorAll("input:checked")).map(n => n.value);
       closeModal(modal);
       resolve(ids);
     };
