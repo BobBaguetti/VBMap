@@ -5,7 +5,7 @@
 // @version: 1.1  (2025‑05‑05)
 // =========================================================
 
-import { createPickr }      from "../pickrManager.js";
+import { createPickr }      from "./pickrUtils.js";
 import { getPickrHexColor } from "../../utils/colorUtils.js";
 
 /**
