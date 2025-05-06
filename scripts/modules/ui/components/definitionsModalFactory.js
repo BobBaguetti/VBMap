@@ -1,11 +1,9 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 1.4 – added guard for sub-header detection
+// @version: 1.5 – slimmed down: uses controllers’ own forms instead of rebuilding fields
 
 import { createDefinitionModalShell }   from "./definitionModalShell.js";
 import { createDefListContainer }      from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "./definitionListManager.js";
-import { createDescriptionField, createExtraInfoField } from "../forms/universalForm.js";
-import { openInventoryPicker }         from "./inventoryPicker.js";
 
 /**
  * @typedef DefinitionModalConfig
@@ -23,17 +21,15 @@ import { openInventoryPicker }         from "./inventoryPicker.js";
  *   reset(): void, 
  *   populate(def:Object): void, 
  *   getCurrent(): Object, 
- *   getSubHeaderElement?(): HTMLElement, 
+ *   getSubHeaderElement(): HTMLElement, 
  *   initPickrs?(): void 
  * }} createFormController
  * @property {(def:Object, layout:string, callbacks:Object) => HTMLElement} renderEntry
- * @property {object} [formSchema]
  * @property {(headerEl:HTMLElement, api:Object) => void} [enhanceHeader]
- * @property {(formEl:HTMLFormElement, fields:Object, api:Object) => void} [enhanceForm]
  */
 
 /**
- * Builds a full CRUD modal with standardized header, list, form, and preview.
+ * Builds a full CRUD modal with consistent shell, list, preview, and form.
  * Exposes:
  *   - open(): Promise<void>
  *   - refresh(): Promise<void>
@@ -43,21 +39,8 @@ export function createDefinitionsModal(config) {
     id, title, previewType, db,
     loadDefs, saveDef, updateDef, deleteDef,
     createFormController, renderEntry,
-    formSchema = {},
-    enhanceHeader, enhanceForm
+    enhanceHeader
   } = config;
-
-  // Default flags for which fields to render
-  const schema = {
-    name:            formSchema.name         !== false,
-    imageUrls:       formSchema.imageUrls    !== false,
-    description:     formSchema.description  !== false,
-    extraInfo:       formSchema.extraInfo    !== false,
-    filterToggle:    formSchema.filterToggle === true,
-    inventoryPicker: formSchema.inventoryPicker === true,
-    types:           formSchema.types        === true,
-    rarities:        formSchema.rarities     === true
-  };
 
   let shell, listApi, formApi, previewApi;
   let definitions = [];
@@ -70,11 +53,11 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) Create modal shell (with title, layout toggles, search, close)
+    // 1) Create modal shell (title, layout toggles, search, close, preview panel)
     shell = createDefinitionModalShell({ id, title, withPreview: true, previewType });
     const { header, bodyWrap } = shell;
 
-    // 2) Instantiate form controller (which builds its own sub-header)
+    // 2) Instantiate the form controller (builds its own form + sub-header)
     formApi = createFormController({
       onCancel: async () => {
         formApi.reset();
@@ -101,93 +84,30 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // 3) Locate sub-header element
-    let subHeader = formApi.getSubHeaderElement?.() || formApi.form.querySelector('.sub-header');
+    // 3) Pull the form’s sub-header into the modal header (aligned right)
+    const subHeader = formApi.getSubHeaderElement();
     if (subHeader && subHeader.style) {
-      subHeader.style.marginLeft = 'auto';
+      subHeader.style.marginLeft = "auto";
       header.appendChild(subHeader);
     } else {
       console.warn(`Sub-header not found for modal '${id}'.`);
     }
 
-    // 4) Allow wrapper to add custom header items
+    // 4) Allow wrapper to add extra header controls
     enhanceHeader?.(header, { shell, formApi });
 
-    // 5) Build list container under header
+    // 5) Build and insert the list container
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
-    bodyWrap.appendChild(document.createElement('hr'));
+    bodyWrap.appendChild(document.createElement("hr"));
 
-    // 6) Create standardized form fields
+    // 6) Insert the controller’s own form element
     previewApi = shell.previewApi;
-    const form = document.createElement('form');
-    form.classList.add('ui-scroll-float');
-    const fields = {};
+    formApi.form.classList.add("ui-scroll-float");
+    bodyWrap.appendChild(formApi.form);
 
-    if (schema.name) {
-      const row = document.createElement('div'); row.className = 'field-row';
-      const lbl = document.createElement('label'); lbl.htmlFor = `${id}-fld-name`; lbl.textContent = 'Name';
-      const inp = document.createElement('input'); inp.type = 'text'; inp.id = `${id}-fld-name`;
-      row.append(lbl, inp); form.appendChild(row);
-      fields.name = inp;
-    }
-
-    if (schema.imageUrls) {
-      ['Small', 'Large'].forEach(size => {
-        const row = document.createElement('div'); row.className = 'field-row';
-        const lbl = document.createElement('label'); lbl.htmlFor = `${id}-fld-img-${size.toLowerCase()}`; lbl.textContent = `Image ${size}`;
-        const inp = document.createElement('input'); inp.type = 'text'; inp.id = `${id}-fld-img-${size.toLowerCase()}`;
-        row.append(lbl, inp); form.appendChild(row);
-        fields[`image${size}`] = inp;
-      });
-    }
-
-    if (schema.description) {
-      const { row: descRow, textarea, colorBtn } = createDescriptionField();
-      descRow.insertBefore(colorBtn, descRow.firstChild);
-      form.appendChild(descRow);
-      fields.description = textarea;
-      fields.descriptionColor = colorBtn;
-    }
-
-    if (schema.extraInfo) {
-      const { row: extraRow, extraInfo } = createExtraInfoField({ withDividers: true });
-      form.appendChild(extraRow);
-      fields.extraInfo = extraInfo;
-    }
-
-    if (schema.filterToggle) {
-      const row = document.createElement('div'); row.className = 'field-row';
-      const cb  = document.createElement('input'); cb.type = 'checkbox'; cb.id = `${id}-fld-filter-toggle`;
-      const lbl = document.createElement('label'); lbl.htmlFor = cb.id; lbl.textContent = 'Add to filters';
-      row.append(lbl, cb); form.appendChild(row);
-      fields.addToFilters = cb;
-    }
-
-    if (schema.inventoryPicker) {
-      const row = document.createElement('div'); row.className = 'field-row';
-      const lbl = document.createElement('label'); lbl.textContent = 'Loot Pool';
-      const chipContainer = document.createElement('div'); chipContainer.className = 'loot-pool-chips';
-      const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = '⚙︎';
-      btn.onclick = async () => {
-        const ids = await openInventoryPicker(db, {
-          selectedIds: fields.lootPool || [],
-          title: `Select ${title} Items`
-        });
-        fields.lootPool = ids;
-      };
-      row.append(lbl, chipContainer, btn); form.appendChild(row);
-      fields.lootPool = [];
-      fields.chipContainer = chipContainer;
-    }
-
-    bodyWrap.appendChild(form);
-
-    // 7) Allow wrapper to inject additional controls
-    enhanceForm?.(form, fields, { shell, formApi, previewApi });
-
-    // 8) Live preview binding
-    form.addEventListener('input', () => {
+    // 7) Live preview on form input
+    formApi.form.addEventListener("input", () => {
       const live = formApi.getCurrent?.();
       if (live) {
         previewApi.setFromDefinition(live);
@@ -195,10 +115,7 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // Attach form and fields back onto formApi
-    Object.assign(formApi, { form, fields });
-
-    // 9) Wire definition list manager
+    // 8) Wire up the definitions list manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,

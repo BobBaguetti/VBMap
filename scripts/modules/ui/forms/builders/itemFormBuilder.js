@@ -1,90 +1,89 @@
-/* =========================================================
-   VBMap – Item Form Builder
-   ---------------------------------------------------------
-   @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
-   @version: 2.1  (2025‑05‑07)
-   ========================================================= */
+// @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
+// @version: 3.0 – refactored to use universalForm and idPrefix
 
-   import {
-    createDescriptionField,
-    createExtraInfoField
-  } from "../universalForm.js";
-  
-  function makeRow(label, input, widget = null) {
-    const row = document.createElement("div");
-    row.classList.add("field-row");
-    const lbl = document.createElement("label");
-    lbl.textContent = label;
-    row.append(lbl, input);
-    widget && row.append(widget);
-    return row;
-  }
-  
-  function swatch(id) {
-    return Object.assign(document.createElement("button"), {
-      type: "button",
-      className: "color-swatch",
-      id
-    });
-  }
-  
-  export function createItemForm() {
-    const form = document.createElement("form");
-  
-    /* basic inputs */
-    const fldName   = Object.assign(document.createElement("input"), { type:"text"  });
-    const fldType   = Object.assign(document.createElement("select"));
-    const fldRarity = Object.assign(document.createElement("select"));
-    const fldValue  = Object.assign(document.createElement("input"), { type:"number", min:"0" });
-    const fldQty    = Object.assign(document.createElement("input"), { type:"number", min:"0" });
-  
-    /* populate selects (static options kept short here) */
-    ["", "Crafting Material", "Consumable"].forEach(t => {
-      const o = new Option(t, t); fldType.append(o);
-    });
-    ["", "Common", "Uncommon", "Rare"].forEach(r => {
-      const o = new Option(r, r); fldRarity.append(o);
-    });
-  
-    /* colour swatches */
-    const swName  = swatch("sw-name");
-    const swType  = swatch("sw-type");
-    const swRarity= swatch("sw-rarity");
-    const swDesc  = swatch("sw-desc");
-    const swVal   = swatch("sw-val");
-    const swQty   = swatch("sw-qty");
-  
-    /* description & extra lines */
-    const { row: rowDesc, textarea: fldDesc } = createDescriptionField();
-    rowDesc.append(swDesc);
-    const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers:true });
-  
-    /* assemble */
-    form.append(
-      makeRow("Name:",      fldName,   swName),
-      makeRow("Item Type:", fldType,   swType),
-      makeRow("Rarity:",    fldRarity, swRarity),
-      rowDesc,
-      rowExtra,
-      makeRow("Value:",     fldValue,  swVal),
-      makeRow("Quantity:",  fldQty,    swQty)
-    );
-  
-    return {
-      form,
-      fields: {
-        /* inputs */
-        fldName, fldType, fldRarity, fldValue, fldQty, fldDesc,
-        /* swatches */
-        colorName: swName,
-        colorType: swType,
-        colorRarity: swRarity,
-        colorDesc: swDesc,
-        colorValue: swVal,
-        colorQty: swQty,
-        /* extra */
-        extraInfo
-      }
-    };
-  }
-  
+import {
+  createTextField,
+  createDropdownField,
+  createDescriptionField,
+  createExtraInfoField
+} from "../universalForm.js";
+
+/**
+ * Build the item form.
+ *
+ * @param {string} [idPrefix="item"]  – prefix for all field IDs (e.g. "item" → "fld-item-name")
+ * @returns {{ form: HTMLFormElement, fields: Object }}
+ */
+export function createItemForm(idPrefix = "item") {
+  const form = document.createElement("form");
+  form.id = `${idPrefix}-form`;
+
+  // Name
+  const { row: rowName, input: fldName } = createTextField("Name:", `fld-${idPrefix}-name`);
+
+  // Item Type
+  const typeOpts = [
+    { value: "", label: "" },
+    { value: "Crafting Material", label: "Crafting Material" },
+    { value: "Special", label: "Special" },
+    { value: "Consumable", label: "Consumable" },
+    { value: "Quest", label: "Quest" }
+  ];
+  const { row: rowType, select: fldType, colorBtn: colorType } =
+    createDropdownField("Item Type:", `fld-${idPrefix}-type`, typeOpts);
+
+  // Rarity
+  const rarityOpts = [
+    { value: "", label: "" },
+    { value: "Common", label: "Common" },
+    { value: "Uncommon", label: "Uncommon" },
+    { value: "Rare", label: "Rare" }
+  ];
+  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } =
+    createDropdownField("Rarity:", `fld-${idPrefix}-rarity`, rarityOpts);
+
+  // Description + color swatch
+  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
+    createDescriptionField(`fld-${idPrefix}-description`);
+
+  // Extra Info rows
+  const { row: rowExtras, extraInfo } =
+    createExtraInfoField({ withDividers: true });
+
+  // Value
+  const { row: rowValue, input: fldValue, colorBtn: colorValue } =
+    createTextField("Value:", `fld-${idPrefix}-value`);
+
+  // Quantity
+  const { row: rowQty, input: fldQty, colorBtn: colorQty } =
+    createTextField("Quantity:", `fld-${idPrefix}-quantity`);
+
+  // Assemble in logical order
+  form.append(
+    rowName,
+    rowType,
+    rowRarity,
+    rowDesc,
+    rowExtras,
+    rowValue,
+    rowQty
+  );
+
+  return {
+    form,
+    fields: {
+      fldName,
+      fldType,
+      fldRarity,
+      fldDesc,
+      extraInfo,
+      fldValue,
+      fldQty,
+      colorType,
+      colorRarity,
+      colorDesc,
+      colorValue,
+      colorQty
+    }
+  };
+}
