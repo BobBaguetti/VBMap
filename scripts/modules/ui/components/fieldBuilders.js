@@ -1,7 +1,7 @@
 // @file: /scripts/modules/ui/components/fieldBuilders.js
-// @version: 1.1 – removed createFormButtonRow
+// @version: 1.2 – fixed createPickr import path
 
-import { createPickr } from "../pickrMixin.js";
+import { createPickr } from "./pickrMixin.js";  // correct relative path to mixin
 
 /**
  * Simple row with a label and an input element.
@@ -16,7 +16,7 @@ export function createFieldRow(labelText, inputEl) {
 }
 
 /**
- * A standalone color‐swatch button.
+ * A standalone color-swatch button.
  */
 export function createColorButton(id) {
   const btn = document.createElement("div");
@@ -82,7 +82,7 @@ export function createTextareaFieldWithColor(label, id) {
 }
 
 /**
- * Simple single‐line text field for URLs/images.
+ * Simple single-line text field for URLs/images.
  */
 export function createImageField(label, id) {
   const input = document.createElement("input");
@@ -92,7 +92,7 @@ export function createImageField(label, id) {
 }
 
 /**
- * Simple single‐line text field for video URLs.
+ * Simple single-line text field for video URLs.
  */
 export function createVideoField(label, id) {
   const input = document.createElement("input");
@@ -102,7 +102,7 @@ export function createVideoField(label, id) {
 }
 
 /**
- * Reusable extra‐info block with dynamic rows and color pickers.
+ * Reusable extra-info block with dynamic rows and color pickers.
  */
 export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = false } = {}) {
   const wrap = document.createElement("div");
