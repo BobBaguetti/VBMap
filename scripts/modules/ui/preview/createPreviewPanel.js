@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/preview/createPreviewPanel.js
-// @version: 1.1 – now schema‐driven, removed NPC/Quest
+// @version: 1.2 – switched to named export for createPreviewPanel
 
 import { makePreviewPanelFactory } from "../../utils/previewPanelFactory.js";
 
@@ -35,7 +35,7 @@ const previewFactories = {
  * Create a preview panel for the given type.
  * @param {"item"|"chest"} type
  */
-export default function createPreviewPanel(type) {
+export function createPreviewPanel(type) {
   const factory = previewFactories[type];
   if (!factory) {
     console.warn(`No preview factory for type "${type}"`);
