@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/markerForm.js
-// @version: 11.2 – fixed createPickr import path
+// @version: 11.3 – fixed createPickr import path
 
 import {
   createNameField,
@@ -14,13 +14,16 @@ import {
   createVideoField
 } from "../components/fieldBuilders.js";
 
-import { createPickr } from "../../pickrManager.js";  // ← corrected path
+// ← Here’s the correct path from /ui/forms to /ui/pickrManager.js
+import { createPickr } from "../pickrManager.js";
+
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
 export function createMarkerForm() {
   const form = document.createElement("form");
   form.id = "marker-form";
 
+  // Build fields
   const { row: rowName, input: fldName, colorBtn: colorName } =
     createNameField("marker-fld-name");
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } =
@@ -29,16 +32,21 @@ export function createMarkerForm() {
     createItemTypeField("marker-fld-item-type");
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
     createDescriptionField("marker-fld-desc-item");
-  const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true });
-  const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "marker-fld-img-s");
-  const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "marker-fld-img-l");
-  const { row: rowVid, input: fldVid }   = createVideoField("Video:",   "marker-fld-vid");
+  const { row: rowExtra, extraInfo } =
+    createExtraInfoField({ withDividers: true });
+  const { row: rowImgS, input: fldImgS } =
+    createImageField("Image S:", "marker-fld-img-s");
+  const { row: rowImgL, input: fldImgL } =
+    createImageField("Image L:", "marker-fld-img-l");
+  const { row: rowVid, input: fldVid } =
+    createVideoField("Video:", "marker-fld-vid");
 
-  // spacing
+  // Spacing tweaks
   rowRarity.classList.add("item-gap");
   rowItemType.classList.add("item-gap");
   rowDesc.classList.add("item-gap");
 
+  // Assemble form
   form.append(
     rowName,
     rowRarity,
@@ -50,7 +58,7 @@ export function createMarkerForm() {
     rowVid
   );
 
-  // Pickr map
+  // Pickr setup
   const pickrs = new Map();
   const pickrTargets = [colorName, colorRarity, colorItemType, colorDesc];
 
@@ -62,21 +70,31 @@ export function createMarkerForm() {
     });
   }
 
-  const safe = (v, d="") => v ?? d;
-  const getColor = (el, fallback="#E5E6E8") =>
+  const safe = (val, fallback = "") => val ?? fallback;
+  const getColor = (el, fallback = "#E5E6E8") =>
     pickrs.get(el)?.getColor()?.toHEXA()?.toString() || fallback;
 
   function setFromDefinition(def = {}) {
     initPickrs();
+
     fldName.value = safe(def.name);
     pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
+
     fldRarity.value = safe(def.rarity);
-    pickrs.get(colorRarity)?.setColor(def.rarityColor || rarityColors[fldRarity.value] || "#E5E6E8");
+    pickrs.get(colorRarity)?.setColor(
+      def.rarityColor || rarityColors[fldRarity.value] || "#E5E6E8"
+    );
+
     fldItemType.value = safe(def.itemType);
-    pickrs.get(colorItemType)?.setColor(def.itemTypeColor || itemTypeColors[fldItemType.value] || "#E5E6E8");
+    pickrs.get(colorItemType)?.setColor(
+      def.itemTypeColor || itemTypeColors[fldItemType.value] || "#E5E6E8"
+    );
+
     fldDesc.value = safe(def.description);
     pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
+
     extraInfo.setLines(safe(def.extraLines, []), false);
+
     fldImgS.value = safe(def.imageSmall);
     fldImgL.value = safe(def.imageBig);
     fldVid.value  = safe(def.video);
@@ -84,11 +102,15 @@ export function createMarkerForm() {
 
   function setFromNonItem(data = {}) {
     initPickrs();
+
     fldName.value = safe(data.name);
     pickrs.get(colorName)?.setColor(data.nameColor || "#E5E6E8");
+
     fldDesc.value = safe(data.description);
     pickrs.get(colorDesc)?.setColor(data.descriptionColor || "#E5E6E8");
+
     extraInfo.setLines(safe(data.extraLines, []), false);
+
     fldImgS.value = safe(data.imageSmall);
     fldImgL.value = safe(data.imageBig);
     fldVid.value  = safe(data.video);
