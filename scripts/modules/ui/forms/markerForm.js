@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/forms/markerForm.js
-// @version: 11.1 – fully wired to fieldBuilders.js and pickrMixin
+// @version: 11.2 – fixed createPickr import path
 
 import {
   createNameField,
@@ -14,7 +14,7 @@ import {
   createVideoField
 } from "../components/fieldBuilders.js";
 
-import { createPickr } from "../components/pickrMixin.js";
+import { createPickr } from "../../pickrManager.js";  // ← corrected path
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
 export function createMarkerForm() {
