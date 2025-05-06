@@ -1,12 +1,13 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 2.5 – sub-header moved below list instead of in title bar
+// @version: 2.4 – search in header, sub-header between list & form, close button right
 
-import { createDefinitionModalShell }  from "./definitionModalShell.js";
-import { createDefListContainer }      from "../../utils/listUtils.js";
-import { createDefinitionListManager } from "./definitionListManager.js";
+import { createDefinitionModalShell }   from "./definitionModalShell.js";
+import { createDefListContainer, createSearchRow } from "../../utils/listUtils.js";
+import { createDefinitionListManager }  from "./definitionListManager.js";
 import {
   defaultToolbar,
   defaultLayoutOptions,
+  defaultSearchPlaceholder,
   renderToolbarButton
 } from "./modalDefaults.js";
 
@@ -43,8 +44,8 @@ export function createDefinitionsModal(config) {
   function startSubscription() {
     if (typeof subscribeDefs !== "function") return;
     unsubscribe?.();
-    unsubscribe = subscribeDefs(newDefs => {
-      definitions = newDefs;
+    unsubscribe = subscribeDefs(defs => {
+      definitions = defs;
       listApi.refresh(definitions);
     });
   }
@@ -52,7 +53,7 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) create the shell (backdrop, header, close-button, layout toggles)
+    // 1) Create the modal shell
     shell = createDefinitionModalShell({
       id,
       title,
@@ -63,10 +64,24 @@ export function createDefinitionsModal(config) {
     });
     const { header, bodyWrap } = shell;
 
-    // 1a) render toolbar icons into header (before close ×)
+    // Make header flex so close button always far right
+    header.style.display = "flex";
+    header.style.alignItems = "center";
+
+    // 1a) Render toolbar buttons (before layout toggles)
     toolbar.forEach(cfg => renderToolbarButton(cfg, header, { shell }));
 
-    // 2) instantiate the form controller
+    // 1b) Layout toggles are already appended by createDefinitionModalShell
+    // but we want them after toolbar and before the search…
+
+    // 1c) Inject search bar into header
+    const { row: searchRow, input: searchInput } =
+      createSearchRow(`${id}-search`, defaultSearchPlaceholder);
+    searchRow.style.marginLeft = "auto";
+    searchRow.style.flexShrink = "0";
+    header.appendChild(searchRow);
+
+    // 2) Instantiate form controller
     formApi = createFormController({
       onCancel: async () => {
         formApi.reset();
@@ -93,16 +108,17 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // 3) prepare list container
+    // 3) Build list container & divider
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
+    bodyWrap.appendChild(document.createElement("hr"));
 
-    // 4) wire up the list manager (it auto-injects its own search header)
+    // 4) Wire up definition list manager (it uses its own search input)
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
       renderEntry,
-      onEntryClick: async def => {
+      onEntryClick: def => {
         formApi.populate(def);
         previewApi.setFromDefinition(def);
         previewApi.show();
@@ -118,24 +134,26 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // 5) divider below list
-    bodyWrap.appendChild(document.createElement("hr"));
+    // Tie our header search to the list manager
+    searchInput.addEventListener("input", () => {
+      listApi.refresh(definitions);
+    });
 
-    // 6) move the Add/Edit sub-header _here_, above the form
+    // 5) Add/Edit sub-header (from the form controller)
     const subHeader = formApi.getSubHeaderElement();
     if (subHeader) {
-      subHeader.style.margin = "0 0 10px 0";
+      subHeader.style.margin = "0 0 10px";
       bodyWrap.appendChild(subHeader);
     } else {
-      console.warn(`Sub-header not found for modal '${id}'.`);
+      console.warn(`Sub-header not found in modal '${id}'`);
     }
 
-    // 7) insert the form
+    // 6) Insert the form
     previewApi = shell.previewApi;
     formApi.form.classList.add("ui-scroll-float");
     bodyWrap.appendChild(formApi.form);
 
-    // 8) live-preview wiring
+    // 7) Live preview on form input
     formApi.form.addEventListener("input", () => {
       const live = formApi.getCurrent();
       if (live) {
