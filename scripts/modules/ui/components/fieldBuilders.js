@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/ui/components/fieldBuilders.js
-// @version: 1.5 – added createCheckboxField
+// @version: 1.6 – added createCheckboxField and aliased textarea for schema builder
 
 import { createPickr } from "./pickrUtils.js";
 
@@ -80,6 +80,9 @@ export function createTextareaFieldWithColor(label, id) {
   const { row, colorBtn } = createColorFieldRow(label, textarea, `${id}-color`);
   return { row, textarea, colorBtn };
 }
+
+// Alias for schemaFormBuilder expecting createTextAreaField
+export { createTextareaFieldWithColor as createTextAreaField };
 
 /**
  * Simple single-line text field for URLs/images.
