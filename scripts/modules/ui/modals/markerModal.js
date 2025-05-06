@@ -1,15 +1,13 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 20.5 – updated imports to modalCore & fieldBuilders
+// @version: 21.0 – import from modalHelpers instead of modalCore
 
 import {
   createModal,
   closeModal,
-  openModalAt
-} from "../components/modalCore.js";
-import {
+  openModalAt,
   createDropdownField,
   createFormButtonRow
-} from "../components/fieldBuilders.js";
+} from "../components/modalHelpers.js";
 
 import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
 import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";
@@ -51,7 +49,7 @@ export function initMarkerModal(db) {
   function ensureBuilt() {
     if (modal) return;
 
-    const created = createModal({
+    const built = createModal({
       id:         "edit-marker-modal",
       title:      "Edit Marker",
       size:       "small",
@@ -60,8 +58,8 @@ export function initMarkerModal(db) {
       withDivider:true,
       onClose:    () => closeModal(modal)
     });
-    modal   = created.modal;
-    content = created.content;
+    modal   = built.modal;
+    content = built.content;
     modal.classList.add("admin-only");
 
     form = document.createElement("form");
