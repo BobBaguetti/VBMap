@@ -1,9 +1,11 @@
 // @file: /scripts/modules/ui/components/modalDefaults.js
-// @version: 1.0 - central configuration for all definition modals
+// @version: 1.1 – added renderToolbarButton
+
+import { createIcon } from "./domUtils.js";
 
 /**
  * Global toolbar buttons for definition modals.
- * Each entry: { icon?: string, label: string, onClick: () => void }
+ * Each entry: { icon?: string, label: string, onClick: (api:Object)=>void }
  * Entity-specific toolbars can extend or override this.
  */
 export const defaultToolbar = [];
@@ -32,3 +34,29 @@ export const defaultFormButtonLabels = {
   cancel: "Cancel",
   delete: "Delete"
 };
+
+/**
+ * Renders a single toolbar button into the modal header.
+ *
+ * @param {{ icon?: string, label: string, onClick: (api:Object)=>void }} cfg
+ * @param {HTMLElement} headerEl  – the modal header element to append into
+ * @param {Object} api            – passed through to onClick
+ */
+export function renderToolbarButton(cfg, headerEl, api) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "toolbar-button";
+  if (cfg.icon) {
+    // inline icon preferred
+    const iconEl = createIcon(cfg.icon, { inline: true, className: "inline-icon" });
+    btn.appendChild(iconEl);
+    if (cfg.label) {
+      const text = document.createTextNode(" " + cfg.label);
+      btn.appendChild(text);
+    }
+  } else {
+    btn.textContent = cfg.label;
+  }
+  btn.onclick = () => cfg.onClick(api);
+  headerEl.appendChild(btn);
+}
