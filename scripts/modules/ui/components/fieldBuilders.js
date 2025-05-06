@@ -1,7 +1,7 @@
 // @file:    /scripts/modules/ui/components/fieldBuilders.js
-// @version: 1.3 – added createFormButtonRow
+// @version: 1.4 – fixed Pickr import path
 
-import { createPickr } from "../pickrManager.js";
+import { createPickr } from "./pickrUtils.js";
 
 /**
  * Simple row with a label and an input element.

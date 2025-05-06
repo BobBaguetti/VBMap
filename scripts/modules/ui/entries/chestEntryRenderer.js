@@ -1,7 +1,7 @@
 // @file: scripts/modules/ui/entries/chestEntryRenderer.js
-// @version: 1 – initial Chest list entry renderer
+// @version: 1.2 – initial Chest list entry renderer
 
-import { createIcon } from "../../utils/iconUtils.js";
+import { createIcon } from "../../utils/renderUtils.js";
 
 export function renderChestEntry(def, layout, { onClick, onDelete }) {
   const entry = document.createElement("div");
