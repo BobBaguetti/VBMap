@@ -1,10 +1,10 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.1 – fixed imports for createTextField/createDropdownField
+// @version: 2.2 – fixed uiKit import path
 
 import {
   createTextField,
   createDropdownField
-} from "../../ui/uiKit.js";
+} from "../../uiKit.js";
 
 import {
   createDescriptionField,

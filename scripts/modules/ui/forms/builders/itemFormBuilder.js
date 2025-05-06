@@ -1,10 +1,10 @@
 // @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
-// @version: 3.1 – fixed imports for createTextField/createDropdownField
+// @version: 3.2 – fixed uiKit import path
 
 import {
   createTextField,
   createDropdownField
-} from "../../ui/uiKit.js";
+} from "../../uiKit.js";
 
 import {
   createDescriptionField,
