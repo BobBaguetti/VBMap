@@ -1,6 +1,20 @@
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
-// @version: 2.0 – rebuilt on definitionModalShell
+// @version: 28.1 – now uses modalHelpers
 
+import {
+  createModal,
+  openModal,
+  closeModal,
+  createDropdownField,
+  createFormButtonRow
+} from "../components/modalHelpers.js";
+
+import { createDefListContainer }      from "../../utils/listUtils.js";
+import { createLayoutSwitcher }        from "../components/layoutSwitcher.js";
+import { createPreviewPanel }          from "../preview/createPreviewPanel.js";
+import { createDefinitionListManager } from "../components/definitionListManager.js";
+import { createItemFormController }    from "../forms/controllers/itemFormController.js";
+import { applyColorPresets }           from "../../utils/colorUtils.js";
 import {
   loadItemDefinitions,
   saveItemDefinition,
@@ -8,12 +22,8 @@ import {
   deleteItemDefinition
 } from "../../services/itemDefinitionsService.js";
 
-import { createDefinitionModalShell }      from "../components/definitionModalShell.js";
-import { createDefinitionListManager }     from "../components/definitionListManager.js";
-import { createItemFormController }        from "../forms/controllers/itemFormController.js";
-import { createPreviewPanel }              from "../preview/createPreviewPanel.js";
-
 export function initItemDefinitionsModal(db) {
+  let modal, content, header;
   let listApi, formApi, previewApi;
   let definitions = [];
 
@@ -22,41 +32,50 @@ export function initItemDefinitionsModal(db) {
     listApi.refresh(definitions);
   }
 
-  // Build the shell once
-  const shell = createDefinitionModalShell({
-    id:             "item-definitions-modal",
-    title:          "Manage Items",
-    size:           "large",
-    withPreview:    true,
-    previewType:    "item",
-    layoutOptions:  ["row","stacked","gallery"],
-    onClose:        () => previewApi.hide()
-  });
+  function positionPreviewPanel() {
+    const mc = modal.querySelector(".modal-content");
+    const pr = previewApi.container;
+    if (!mc || !pr) return;
+    const r = mc.getBoundingClientRect();
+    pr.style.position = "absolute";
+    pr.style.left = `${r.right + 30}px`;
+    requestAnimationFrame(() => {
+      pr.style.top = `${r.top + r.height / 2 - pr.offsetHeight / 2}px`;
+    });
+  }
 
   return {
+    refresh: refreshDefinitions,
+
     open: async () => {
-      // First-time setup
-      if (!listApi) {
-        // 1) list on left
-        const listContainer = document.createElement("div");
-        shell.bodyWrap.appendChild(listContainer);
-        listApi = createDefinitionListManager({
-          container:      listContainer,
-          getDefinitions: () => definitions,
-          onEntryClick: def => {
-            formApi.populate({ ...def, addToFilters: def.showInFilters });
-            formApi.initPickrs();
-            previewApi.setFromDefinition(def);
-            previewApi.show();
-          },
-          onDelete: async id => {
-            await deleteItemDefinition(db, id);
-            await refreshDefinitions();
+      if (!modal) {
+        const created = createModal({
+          id:          "item-definitions-modal",
+          title:       "Manage Items",
+          size:        "large",
+          backdrop:    true,
+          draggable:   false,
+          withDivider: true,
+          onClose:     () => {
+            closeModal(modal);
+            previewApi.hide();
           }
         });
+        modal   = created.modal;
+        content = created.content;
+        header  = created.header;
+        modal.classList.add("admin-only");
 
-        // 2) form on right
-        formApi = createItemFormController({
+        const layoutSwitcher = createLayoutSwitcher({
+          available:   ["row", "stacked", "gallery"],
+          defaultView: "row",
+          onChange:    layout => listApi.setLayout(layout)
+        });
+        header.appendChild(layoutSwitcher);
+
+        const listContainer = createDefListContainer("item-def-list");
+        previewApi = createPreviewPanel("item");
+        formApi    = createItemFormController({
           onCancel: () => {
             formApi.reset();
             previewApi.setFromDefinition({});
@@ -70,8 +89,8 @@ export function initItemDefinitionsModal(db) {
             previewApi.show();
           },
           onSubmit: async payload => {
-            // sync filter flag
             payload.showInFilters = payload.addToFilters;
+            applyColorPresets(payload);
             if (payload.id) {
               await updateItemDefinition(db, payload.id, payload);
             } else {
@@ -83,26 +102,63 @@ export function initItemDefinitionsModal(db) {
             previewApi.show();
           }
         });
-        shell.bodyWrap.appendChild(formApi.form);
 
-        // 3) preview panel
-        previewApi = shell.previewApi;
-
-        // live preview
-        formApi.form.addEventListener("input", () => {
+        formApi.form.classList.add("ui-scroll-float");
+        formApi.form.addEventListener("input", e => {
+          if (e.target.id === "fld-add-to-filters") return;
           const live = formApi.getCurrent();
-          previewApi.setFromDefinition(live);
-          previewApi.show();
+          if (live) {
+            previewApi.setFromDefinition(live);
+            previewApi.show();
+          }
         });
+
+        const bodyWrap = document.createElement("div");
+        Object.assign(bodyWrap.style, {
+          display:       "flex",
+          flexDirection: "column",
+          flex:          "1 1 auto",
+          minHeight:     "0"
+        });
+        bodyWrap.append(listContainer, document.createElement("hr"), formApi.form);
+        content.appendChild(bodyWrap);
+
+        listApi = createDefinitionListManager({
+          container:      listContainer,
+          getDefinitions: () => definitions,
+          renderEntry:    renderItemEntry,
+          onEntryClick:   def => {
+            formApi.populate({ ...def, addToFilters: def.showInFilters });
+            formApi.initPickrs();
+            previewApi.setFromDefinition(def);
+            previewApi.show();
+          },
+          onDelete: async id => {
+            await deleteItemDefinition(db, id);
+            await refreshDefinitions();
+          }
+        });
+
+        const maybeHeader = listContainer.previousElementSibling;
+        if (maybeHeader?.classList.contains("list-header")) {
+          maybeHeader.remove();
+          header.appendChild(maybeHeader);
+        }
+
+        previewApi.hide();
       }
 
-      // Every open: reset + load
       formApi.reset();
       await refreshDefinitions();
-      shell.open();
+      destroyAllPickrs();
+
+      openModal(modal);
       formApi.initPickrs();
       previewApi.setFromDefinition({});
-      previewApi.show();
+      requestAnimationFrame(() => {
+        positionPreviewPanel();
+        previewApi.show();
+      });
     }
   };
 }
