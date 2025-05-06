@@ -1,7 +1,7 @@
 // @file: /scripts/modules/ui/entries/itemEntryRenderer.js
 // @version: 1.3 – fixed iconUtils import path
 
-import { createIcon } from "../../utils/renderUtils.js";
+import { createIcon } from "../../utils/domUtils.js";
 
 /**
  * Renders a single item definition entry in the list.

@@ -1,8 +1,8 @@
 // @file: /scripts/modules/map/markerManager.js
-// @version: 10.13 – removed Leaflet import & fixed createIcon path
+// @version: 10.14 – removed Leaflet import & fixed createIcon path
 
 import { formatRarity }         from "../utils/coreUtils.js";
-import { createIcon }           from "../utils/renderUtils.js";
+import { createIcon }           from "../utils/domUtils.js";
 import { defaultNameColor,
          rarityColors }         from "../utils/colorPresets.js";
 
