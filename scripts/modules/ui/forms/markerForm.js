@@ -14,8 +14,7 @@ import {
   createVideoField
 } from "../components/fieldBuilders.js";
 
-// ← Here’s the correct path from /ui/forms to /ui/pickrManager.js
-import { createPickr } from "../pickrManager.js";
+import { createPickr } from "../components/pickrUtils.js";
 
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
