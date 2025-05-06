@@ -1,13 +1,15 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 21.0 – import from modalHelpers instead of modalCore
+// @version: 21.2 – fixed imports to match modalCore API
 
 import {
-  createModal,
+  createModalCore as createModal,
   closeModal,
-  openModalAt,
+  openAt       as openModalAt
+} from "../components/modalCore.js";
+import {
   createDropdownField,
   createFormButtonRow
-} from "../components/modalHelpers.js";
+} from "../components/fieldBuilders.js";
 
 import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
 import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";
@@ -90,6 +92,7 @@ export function initMarkerModal(db) {
       "Chest Type:", "fld-predef-chest", [], { showColor: false }
     ));
 
+    // Marker-specific fields
     formApi = createMarkerForm();
     blockItem = document.createElement("div");
     blockItem.classList.add("item-gap");
@@ -99,6 +102,7 @@ export function initMarkerModal(db) {
       formApi.fields.fldDesc.closest(".field-row")
     );
 
+    // Save/Cancel buttons
     rowButtons = createFormButtonRow();
     rowButtons.querySelector('button[type="button"]').onclick = e => {
       e.preventDefault();
@@ -119,6 +123,7 @@ export function initMarkerModal(db) {
     );
     content.appendChild(form);
 
+    // Show/hide item vs chest sub-fields
     fldType.onchange = () => {
       const t = fldType.value;
       rowPredefItem.style.display = t === "Item" ? "flex" : "none";
@@ -126,6 +131,7 @@ export function initMarkerModal(db) {
       rowChestType.style.display  = t === "Chest" ? "flex" : "none";
     };
 
+    // Populate custom fields when selecting predefined item
     fldPredefItem.onchange = () => {
       formApi.setFromDefinition(itemDefs[fldPredefItem.value] || {});
       formApi.initPickrs();
@@ -142,12 +148,15 @@ export function initMarkerModal(db) {
     ensureBuilt();
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
 
+    // Reset selectors
     fldPredefItem.value = "";
     fldChestType.value  = "";
 
+    // Set type and fire change
     fldType.value = data.type;
     fldType.dispatchEvent(new Event("change"));
 
+    // Prefill if editing an existing Item or Chest
     if (data.type === "Item" && data.predefinedItemId) {
       fldPredefItem.value = data.predefinedItemId;
       fldPredefItem.dispatchEvent(new Event("change"));
