@@ -1,9 +1,12 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.0 – refactored to use universalForm and idPrefix
+// @version: 2.1 – fixed imports for createTextField/createDropdownField
 
 import {
   createTextField,
-  createDropdownField,
+  createDropdownField
+} from "../../ui/uiKit.js";
+
+import {
   createDescriptionField,
   createExtraInfoField
 } from "../universalForm.js";
@@ -11,7 +14,7 @@ import {
 /**
  * Build the chest form.
  *
- * @param {string} [idPrefix="chest"]  – prefix for all field IDs (e.g. "chest" → "fld-chest-name")
+ * @param {string} [idPrefix="chest"]
  * @returns {{ form: HTMLFormElement, fields: Object }}
  */
 export function createChestForm(idPrefix = "chest") {
@@ -19,23 +22,28 @@ export function createChestForm(idPrefix = "chest") {
   form.id = `${idPrefix}-form`;
 
   // Name
-  const { row: rowName, input: fldName } = createTextField("Name:", `fld-${idPrefix}-name`);
+  const { row: rowName, input: fldName } =
+    createTextField("Name:", `fld-${idPrefix}-name`);
 
   // Size
   const sizeOpts = ["Small", "Medium", "Large"].map(o => ({ value: o, label: o }));
-  const { row: rowSize, select: fldSize } = createDropdownField("Size:", `fld-${idPrefix}-size`, sizeOpts, { showColor: false });
+  const { row: rowSize, select: fldSize } =
+    createDropdownField("Size:", `fld-${idPrefix}-size`, sizeOpts, { showColor: false });
 
   // Category
   const catOpts = ["Normal", "Dragonvault"].map(o => ({ value: o, label: o }));
-  const { row: rowCat, select: fldCategory } = createDropdownField("Category:", `fld-${idPrefix}-category`, catOpts, { showColor: false });
+  const { row: rowCat, select: fldCategory } =
+    createDropdownField("Category:", `fld-${idPrefix}-category`, catOpts, { showColor: false });
 
   // Icon URL
-  const { row: rowIcon, input: fldIcon } = createTextField("Icon URL:", `fld-${idPrefix}-icon`);
+  const { row: rowIcon, input: fldIcon } =
+    createTextField("Icon URL:", `fld-${idPrefix}-icon`);
 
   // Subtext
-  const { row: rowSub, input: fldSubtext } = createTextField("Subtext:", `fld-${idPrefix}-subtext`);
+  const { row: rowSub, input: fldSubtext } =
+    createTextField("Subtext:", `fld-${idPrefix}-subtext`);
 
-  // Loot Pool (will be wired up by controller)
+  // Loot Pool (chips + picker button; wired by controller)
   const rowLoot = document.createElement("div");
   rowLoot.className = "field-row";
   const lblLoot = document.createElement("label");
@@ -58,7 +66,7 @@ export function createChestForm(idPrefix = "chest") {
   const { row: rowExtras, extraInfo } =
     createExtraInfoField({ withDividers: true });
 
-  // Assemble in logical order
+  // Assemble form fields
   form.append(
     rowName,
     rowSize,

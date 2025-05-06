@@ -1,9 +1,12 @@
 // @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
-// @version: 3.0 – refactored to use universalForm and idPrefix
+// @version: 3.1 – fixed imports for createTextField/createDropdownField
 
 import {
   createTextField,
-  createDropdownField,
+  createDropdownField
+} from "../../ui/uiKit.js";
+
+import {
   createDescriptionField,
   createExtraInfoField
 } from "../universalForm.js";
@@ -11,7 +14,7 @@ import {
 /**
  * Build the item form.
  *
- * @param {string} [idPrefix="item"]  – prefix for all field IDs (e.g. "item" → "fld-item-name")
+ * @param {string} [idPrefix="item"]
  * @returns {{ form: HTMLFormElement, fields: Object }}
  */
 export function createItemForm(idPrefix = "item") {
@@ -19,7 +22,8 @@ export function createItemForm(idPrefix = "item") {
   form.id = `${idPrefix}-form`;
 
   // Name
-  const { row: rowName, input: fldName } = createTextField("Name:", `fld-${idPrefix}-name`);
+  const { row: rowName, input: fldName } =
+    createTextField("Name:", `fld-${idPrefix}-name`);
 
   // Item Type
   const typeOpts = [
@@ -58,7 +62,7 @@ export function createItemForm(idPrefix = "item") {
   const { row: rowQty, input: fldQty, colorBtn: colorQty } =
     createTextField("Quantity:", `fld-${idPrefix}-quantity`);
 
-  // Assemble in logical order
+  // Assemble form fields
   form.append(
     rowName,
     rowType,
