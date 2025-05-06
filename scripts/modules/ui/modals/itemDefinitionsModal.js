@@ -1,34 +1,34 @@
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
-// @version: 29.0 – now uses createDefinitionsModal
+// @version: 1.0 – migrate to createDefinitionsModal + schemaFormController
 
-import { createDefinitionsModal }    from "../components/definitionsModalFactory.js";
-import itemSchema                     from "../forms/schemas/itemSchema.js";
-import { createItemFormController }   from "../forms/controllers/itemFormController.js";
-import { renderItemEntry }            from "../entries/itemEntryRenderer.js";
-import { makeFirestoreService }       from "../../utils/firestoreServiceFactory.js";
-import { createPreviewPanel }         from "../preview/createPreviewPanel.js";
+import { createDefinitionsModal } from "../components/definitionsModalFactory.js";
+import itemSchema from "../forms/schemas/itemSchema.js";
+import { createSchemaFormController } from "../components/schemaFormBuilder.js";
 
-const itemService = makeFirestoreService("itemDefinitions");
+import {
+  loadItemDefinitions,
+  saveItemDefinition,
+  updateItemDefinition,
+  deleteItemDefinition,
+  subscribeItemDefinitions
+} from "../../services/itemDefinitionsService.js";
+
+import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 
 export function initItemDefinitionsModal(db) {
   return createDefinitionsModal({
-    id:            "item-definitions",
-    title:         "Manage Items",
-    previewType:   "item",
+    id:           "item-definitions-modal",
+    title:        "Manage Items",
+    previewType:  "item",
     db,
-
-    loadDefs:      () => itemService.loadAll(db),
-    subscribeDefs: cb => itemService.subscribeAll(db, cb),
-    saveDef:       (db, _, payload) => itemService.add(db, payload),
-    updateDef:     (db, id, payload) => itemService.update(db, id, payload),
-    deleteDef:     (db, id) => itemService.remove(db, id),
-
-    createFormController: callbacks => createSchemaFormController(itemSchema, callbacks),
-    renderEntry:          (def, layout, { onClick, onDelete }) =>
-                           renderItemEntry(def, layout, onClick, onDelete),
-
-    enhanceHeader: header => {
-      // Optional header tweaks
-    }
+    loadDefs:     () => loadItemDefinitions(db),
+    saveDef:      (db, id, payload) => saveItemDefinition(db, id, payload),
+    updateDef:    (db, id, payload) => updateItemDefinition(db, id, payload),
+    deleteDef:    (db, id)         => deleteItemDefinition(db, id),
+    subscribeDefs: cb               => subscribeItemDefinitions(db, cb),
+    createFormController: callbacks =>
+      createSchemaFormController(itemSchema, db, callbacks),
+    renderEntry:  (def, layout, callbacks) =>
+      renderItemEntry(def, layout, callbacks)
   });
 }

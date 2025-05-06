@@ -1,34 +1,34 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 4.0 – now uses createDefinitionsModal
+// @version: 1.0 – migrate to createDefinitionsModal + schemaFormController
 
-import { createDefinitionsModal }    from "../components/definitionsModalFactory.js";
-import chestSchema                    from "../forms/schemas/chestSchema.js";
-import { createChestFormController }  from "../forms/controllers/chestFormController.js";
-import { renderChestEntry }           from "../entries/chestEntryRenderer.js";
-import { makeFirestoreService }       from "../../utils/firestoreServiceFactory.js";
-import { createPreviewPanel }         from "../preview/createPreviewPanel.js";
+import { createDefinitionsModal } from "../components/definitionsModalFactory.js";
+import chestSchema from "../forms/schemas/chestSchema.js";
+import { createSchemaFormController } from "../components/schemaFormBuilder.js";
 
-const chestService = makeFirestoreService("chestDefinitions");
+import {
+  loadChestDefinitions,
+  saveChestDefinition,
+  updateChestDefinition,
+  deleteChestDefinition,
+  subscribeChestDefinitions
+} from "../../services/chestDefinitionsService.js";
+
+import { renderChestEntry } from "../entries/chestEntryRenderer.js";
 
 export function initChestDefinitionsModal(db) {
   return createDefinitionsModal({
-    id:            "chest-definitions",
-    title:         "Manage Chest Types",
-    previewType:   "chest",
+    id:           "chest-definitions-modal",
+    title:        "Manage Chest Types",
+    previewType:  "chest",
     db,
-
-    loadDefs:      () => chestService.loadAll(db),
-    subscribeDefs: cb => chestService.subscribeAll(db, cb),
-    saveDef:       (db, _, payload) => chestService.add(db, payload),
-    updateDef:     (db, id, payload) => chestService.update(db, id, payload),
-    deleteDef:     (db, id) => chestService.remove(db, id),
-
-    createFormController: callbacks => createSchemaFormController(chestSchema, callbacks),
-    renderEntry:          (def, layout, { onClick, onDelete }) =>
-                           renderChestEntry(def, layout, onClick, onDelete),
-
-    enhanceHeader: header => {
-      // Optional: you can still position your preview panel or adjust header
-    }
+    loadDefs:     () => loadChestDefinitions(db),
+    saveDef:      (db, id, payload) => saveChestDefinition(db, id, payload),
+    updateDef:    (db, id, payload) => updateChestDefinition(db, id, payload),
+    deleteDef:    (db, id)         => deleteChestDefinition(db, id),
+    subscribeDefs: cb               => subscribeChestDefinitions(db, cb),
+    createFormController: callbacks =>
+      createSchemaFormController(chestSchema, db, callbacks),
+    renderEntry:  (def, layout, callbacks) =>
+      renderChestEntry(def, layout, callbacks)
   });
 }
