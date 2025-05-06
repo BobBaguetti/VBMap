@@ -2,7 +2,7 @@
 // VBMap • Definition Modal Shell
 // ---------------------------------------------------------
 // @file: /scripts/modules/ui/components/definitionModalShell.js
-// @version: 1.5  (2025‑05‑09)
+// @version: 1.6  (2025‑05‑09)
 // =========================================================
 
 import { createModal, openModal, closeModal } from "../uiKit.js";
@@ -20,7 +20,8 @@ export function createDefinitionModalShell(cfg) {
   const paneList = document.createElement("div");
   paneList.className = "def-shell-list";
   Object.assign(paneList.style, {
-    flex: "0 0 280px",
+    flex: "0 0 280px",   // basis 280
+    maxWidth: "280px",   // ← clamp growth
     overflowY: "auto",
     borderRight: "1px solid #222"
   });
@@ -28,8 +29,8 @@ export function createDefinitionModalShell(cfg) {
   const paneForm = document.createElement("div");
   paneForm.className = "def-shell-form";
   Object.assign(paneForm.style, {
-    flex: "1 1 400px",      // ← flex‑basis 400 px ensures inputs have room
-    minWidth: "300px",      // extra guard
+    flex: "1 1 400px",
+    minWidth: "280px",
     overflowY: "auto",
     padding: "0 16px"
   });
@@ -43,7 +44,7 @@ export function createDefinitionModalShell(cfg) {
   if (cfg.previewPanel?.container) bodyFlex.append(cfg.previewPanel.container);
   content.appendChild(bodyFlex);
 
-  /* ───────── list manager / form build remain unchanged ───────── */
+  /* list manager + form builder – unchanged ---------------------- */
   let _defs = [];
   const listMgr = createDefinitionListManager({
     container: paneList,
