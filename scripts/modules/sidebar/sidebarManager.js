@@ -1,13 +1,12 @@
 // @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 12.0  (2025‑05‑08)
+// @version: 10.1 
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
-
-import { openItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";   // UPDATED
+import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
 import { initQuestDefinitionsModal } from "../ui/modals/questDefinitionsModal.js";
 import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
-import { openChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";  // UPDATED
+import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
 
 export async function setupSidebar(
   map, layers, allMarkers, db,
@@ -186,10 +185,10 @@ export async function setupSidebar(
   adminWrap.style.display = "none";
 
   [
-    ["Manage Items",  () => openItemDefinitionsModal()],  
-    ["Manage Chests", () => openChestDefinitionsModal()], 
-    ["Manage Quests", () => initQuestDefinitionsModal(db).open()],
-    ["Manage NPCs",   () => initNpcDefinitionsModal(db).open()]
+    ["Manage Items",       () => initItemDefinitionsModal(db).open()],
+    ["Manage Quests",      () => initQuestDefinitionsModal(db).open()],
+    ["Manage NPCs",        () => initNpcDefinitionsModal(db).open()],
+    ["Manage Chest Types", () => initChestDefinitionsModal(db).open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;

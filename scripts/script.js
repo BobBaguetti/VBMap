@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.13 – remove obsolete initItemDefinitionsModal import
+// @version: 7.12 – merge in definition fields without overwriting marker.id
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -26,6 +26,7 @@ import {
   renderChestPopup
 } from "./modules/map/markerManager.js";
 
+import { initItemDefinitionsModal }  from "./modules/ui/modals/itemDefinitionsModal.js";
 import { initMarkerModal }           from "./modules/ui/modals/markerModal.js";
 import { initCopyPasteManager }      from "./modules/map/copyPasteManager.js";
 import { setupSidebar }              from "./modules/sidebar/sidebarManager.js";
@@ -111,7 +112,8 @@ onAuthStateChanged(auth, async user => {
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.predefinedItemId) {
           const def = itemDefMap[data.predefinedItemId] || {};
-          const { id: _ignored, ...defFields } = def;   // no overwrite
+          // only merge in def’s fields, not its `id`
+          const { id: _ignored, ...defFields } = def;
           Object.assign(data, defFields);
 
           markerObj.setIcon(createCustomIcon(data));
@@ -139,11 +141,12 @@ onAuthStateChanged(auth, async user => {
 
 /* ─────────────────── Marker & Definition Modals ─────────────────── */
 const markerForm = initMarkerModal(db);
-/* Note: Item & Chest modals are now opened via sidebar buttons using
-   openItemDefinitionsModal() / openChestDefinitionsModal() */
+const itemModal  = initItemDefinitionsModal(db);
+const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
+  // single, deterministic write
   await upsertMarker(db, data);
 }
 
@@ -197,6 +200,7 @@ const callbacks = {
   onCopy: (_, d) => copyMgr.startCopy(d),
 
   onDragEnd: (_, d) => {
+    // update only the existing marker ID
     firebaseUpdateMarker(db, d).catch(() => {});
   },
 
