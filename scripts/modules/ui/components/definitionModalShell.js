@@ -1,20 +1,20 @@
 // @file: /scripts/modules/ui/components/definitionModalShell.js
-// @version: 4.0 – now delegates modal creation to modalShell.js
+// @version: 4.1 – now delegates modal creation to modalCore.js
 
-import { createModal, openModal, closeModal } from "./modalShell.js";
-import { createLayoutSwitcher }              from "./layoutSwitcher.js";
-import { createPreviewPanel }                from "../preview/createPreviewPanel.js";
+import { createModalCore }      from "./modalCore.js";
+import { createLayoutSwitcher } from "./layoutSwitcher.js";
+import { createPreviewPanel }   from "../preview/createPreviewPanel.js";
 
 /**
  * Shell factory for all “definitions” modals.
  *
  * @param {object} opts
- * @param {string} opts.id           – DOM id for the modal
- * @param {string} opts.title        – Modal title text
- * @param {string} [opts.size]       – “small” or “large”
- * @param {boolean} [opts.withPreview=false]
+ * @param {string} opts.id             – DOM id for the modal
+ * @param {string} opts.title          – Modal title text
+ * @param {string} [opts.size]         – “small” or “large”
+ * @param {boolean} [opts.withPreview] – whether to include the preview panel
  * @param {string|null} [opts.previewType]
- * @param {boolean} [opts.withDivider=true]
+ * @param {boolean} [opts.withDivider]
  * @param {Function} [opts.onClose]
  */
 export function createDefinitionModalShell({
@@ -26,8 +26,8 @@ export function createDefinitionModalShell({
   withDivider = true,
   onClose = () => {}
 }) {
-  // 1) Create the base modal (backdrop, header, close button)
-  const { modal, content, header } = createModal({
+  // 1) Create the core modal (backdrop, header, close button, lifecycle)
+  const { modal, content, header, open, close } = createModalCore({
     id,
     title,
     size,
@@ -40,6 +40,7 @@ export function createDefinitionModalShell({
   modal.classList.add("admin-only");
 
   // 2) Add the layout‐switcher into the header
+  let listApi;  // will be set by the factory consumer
   const layoutSwitcher = createLayoutSwitcher({
     available:   ["row", "stacked", "gallery"],
     defaultView: "row",
@@ -68,16 +69,15 @@ export function createDefinitionModalShell({
     header,
     content,
     bodyWrap,
-    open: () => openModal(modal),
+    open,
     close: () => {
       if (previewApi) previewApi.hide();
-      closeModal(modal);
+      close();
     },
     get previewApi() {
       return previewApi;
     },
     set listApi(api) {
-      // allows wiring the layout switcher to the list manager later
       listApi = api;
     }
   };

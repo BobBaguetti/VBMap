@@ -1,7 +1,7 @@
 // @file:    /scripts/modules/map/markerManager.js
 // @version: 10.12 – fix drag toggle to not write; only dragend invokes callback
 
-import { formatRarity }     from "../utils/utils.js";
+import { formatRarity }     from "../utils/coreUtils.js";
 import { createIcon }       from "../utils/iconUtils.js";
 import { defaultNameColor, rarityColors } from "../utils/colorPresets.js";
 

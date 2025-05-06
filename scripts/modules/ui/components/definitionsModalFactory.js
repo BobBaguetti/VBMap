@@ -1,20 +1,22 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 1.5 – slimmed down: uses controllers’ own forms instead of rebuilding fields
+// @version: 2.0 – merged live subscriptions, toolbar & layoutOptions
 
 import { createDefinitionModalShell }   from "./definitionModalShell.js";
-import { createDefListContainer }      from "../../utils/listUtils.js";
-import { createDefinitionListManager } from "./definitionListManager.js";
+import { createDefListContainer }       from "../../utils/listUtils.js";
+import { createDefinitionListManager }  from "./definitionListManager.js";
 
 /**
  * @typedef DefinitionModalConfig
  * @property {string} id
  * @property {string} title
- * @property {string} previewType
+ * @property {string|null} [previewType]
  * @property {object} db
  * @property {() => Promise<Array<Object>>} loadDefs
  * @property {(db:object, id:string|null, payload:Object) => Promise<Object>} saveDef
  * @property {(db:object, id:string, payload:Object) => Promise<Object>} updateDef
  * @property {(db:object, id:string) => Promise<void>} deleteDef
+ * @property {(callback: (defs:Array<Object>) => void) => () => void} [subscribeDefs]
+ *   // Optional: receives a listener that gets the fresh defs array, returns an unsubscribe fn
  * @property {(callbacks:Object) => { 
  *   form: HTMLFormElement, 
  *   fields: Object, 
@@ -26,6 +28,10 @@ import { createDefinitionListManager } from "./definitionListManager.js";
  * }} createFormController
  * @property {(def:Object, layout:string, callbacks:Object) => HTMLElement} renderEntry
  * @property {(headerEl:HTMLElement, api:Object) => void} [enhanceHeader]
+ * @property {Array<{ icon?: string, label: string, onClick: () => void }>} [toolbar]
+ *   // Optional: toolbar buttons to render in the modal header
+ * @property {Array<string>} [layoutOptions]
+ *   // Optional: override layout toggles (e.g. ["row","stacked","gallery"])
  */
 
 /**
@@ -36,13 +42,15 @@ import { createDefinitionListManager } from "./definitionListManager.js";
  */
 export function createDefinitionsModal(config) {
   const {
-    id, title, previewType, db,
+    id, title, previewType = null, db,
     loadDefs, saveDef, updateDef, deleteDef,
+    subscribeDefs,
     createFormController, renderEntry,
-    enhanceHeader
+    enhanceHeader, toolbar, layoutOptions
   } = config;
 
   let shell, listApi, formApi, previewApi;
+  let unsubscribe;
   let definitions = [];
 
   async function refreshDefinitions() {
@@ -50,14 +58,30 @@ export function createDefinitionsModal(config) {
     listApi.refresh(definitions);
   }
 
+  function startSubscription() {
+    if (typeof subscribeDefs !== "function") return;
+    unsubscribe?.();
+    unsubscribe = subscribeDefs(newDefs => {
+      definitions = newDefs;
+      listApi.refresh(definitions);
+    });
+  }
+
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) Create modal shell (title, layout toggles, search, close, preview panel)
-    shell = createDefinitionModalShell({ id, title, withPreview: true, previewType });
+    // 1) Create modal shell (with toolbar/layoutOptions if provided)
+    shell = createDefinitionModalShell({
+      id,
+      title,
+      toolbar,
+      withPreview: true,
+      previewType,
+      layoutOptions
+    });
     const { header, bodyWrap } = shell;
 
-    // 2) Instantiate the form controller (builds its own form + sub-header)
+    // 2) Instantiate the form controller
     formApi = createFormController({
       onCancel: async () => {
         formApi.reset();
@@ -84,16 +108,16 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // 3) Pull the form’s sub-header into the modal header (aligned right)
+    // 3) Move the form’s sub-header into the modal header
     const subHeader = formApi.getSubHeaderElement();
-    if (subHeader && subHeader.style) {
+    if (subHeader) {
       subHeader.style.marginLeft = "auto";
       header.appendChild(subHeader);
     } else {
       console.warn(`Sub-header not found for modal '${id}'.`);
     }
 
-    // 4) Allow wrapper to add extra header controls
+    // 4) Allow extra header controls
     enhanceHeader?.(header, { shell, formApi });
 
     // 5) Build and insert the list container
@@ -108,7 +132,7 @@ export function createDefinitionsModal(config) {
 
     // 7) Live preview on form input
     formApi.form.addEventListener("input", () => {
-      const live = formApi.getCurrent?.();
+      const live = formApi.getCurrent();
       if (live) {
         previewApi.setFromDefinition(live);
         previewApi.show();
@@ -124,24 +148,52 @@ export function createDefinitionsModal(config) {
         formApi.populate(def);
         previewApi.setFromDefinition(def);
         previewApi.show();
+        _showEditButtons();
       },
       onDelete: async defId => {
         await deleteDef(db, defId);
         await refreshDefinitions();
+        formApi.reset();
+        previewApi.setFromDefinition({});
+        previewApi.show();
+        _showAddButtons();
       }
     });
   }
 
+  function _showAddButtons() {
+    formApi.showAdd?.();
+  }
+
+  function _showEditButtons() {
+    formApi.showEdit?.();
+  }
+
   return {
-    open: async () => {
+    async open() {
       await buildIfNeeded();
+
+      // start live updates if requested, otherwise just one-time load
+      if (subscribeDefs) {
+        startSubscription();
+      } else {
+        await refreshDefinitions();
+      }
+
       formApi.reset();
-      await refreshDefinitions();
       shell.open();
       formApi.initPickrs?.();
       previewApi.setFromDefinition({});
       requestAnimationFrame(() => previewApi.show());
     },
-    refresh: refreshDefinitions
+
+    // Manual refresh when you don't need subscriptions
+    refresh: refreshDefinitions,
+
+    // If you subscribed, allow external teardown
+    destroy: () => {
+      unsubscribe?.();
+      shell?.close?.();
+    }
   };
 }
