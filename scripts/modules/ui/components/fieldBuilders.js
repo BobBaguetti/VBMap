@@ -1,7 +1,7 @@
 // @file: /scripts/modules/ui/components/fieldBuilders.js
 // @version: 1.2 – fixed createPickr import path
 
-import { createPickr } from "./pickrMixin.js";  // correct relative path to mixin
+import { createPickr } from "../pickrManager.js";  // fixed import path from pickrManager
 
 /**
  * Simple row with a label and an input element.
