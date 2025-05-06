@@ -1,7 +1,7 @@
 // @file: /scripts/modules/ui/components/modalDefaults.js
-// @version: 1.1 – added renderToolbarButton
+// @version: 1.2 – add renderToolbarButton and fix import paths
 
-import { createIcon } from "./domUtils.js";
+import { createIcon } from "../../utils/domUtils.js";
 
 /**
  * Global toolbar buttons for definition modals.
@@ -36,27 +36,36 @@ export const defaultFormButtonLabels = {
 };
 
 /**
- * Renders a single toolbar button into the modal header.
+ * Renders a toolbar button into a modal header.
  *
  * @param {{ icon?: string, label: string, onClick: (api:Object)=>void }} cfg
- * @param {HTMLElement} headerEl  – the modal header element to append into
- * @param {Object} api            – passed through to onClick
+ * @param {HTMLElement} headerEl
+ * @param {Object} api  – whatever you want to pass through (e.g. { shell, formApi })
  */
-export function renderToolbarButton(cfg, headerEl, api) {
+export function renderToolbarButton(cfg, headerEl, api = {}) {
   const btn = document.createElement("button");
   btn.type = "button";
   btn.className = "toolbar-button";
+
+  // Icon (inline SVG or font icon)
   if (cfg.icon) {
-    // inline icon preferred
-    const iconEl = createIcon(cfg.icon, { inline: true, className: "inline-icon" });
+    const iconEl = createIcon(cfg.icon, { inline: true, className: "toolbar-icon" });
     btn.appendChild(iconEl);
-    if (cfg.label) {
-      const text = document.createTextNode(" " + cfg.label);
-      btn.appendChild(text);
-    }
-  } else {
-    btn.textContent = cfg.label;
   }
-  btn.onclick = () => cfg.onClick(api);
+
+  // Label
+  const text = document.createElement("span");
+  text.textContent = cfg.label;
+  btn.appendChild(text);
+
+  // Click handler
+  btn.addEventListener("click", () => {
+    try {
+      cfg.onClick(api);
+    } catch (err) {
+      console.error("Toolbar button error:", err);
+    }
+  });
+
   headerEl.appendChild(btn);
 }
