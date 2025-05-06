@@ -1,12 +1,13 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 2.2 – wired in modalDefaults for toolbar & layoutOptions and renders toolbar buttons
+// @version: 2.3 – restore search bar into header alongside toolbar & layout toggles
 
 import { createDefinitionModalShell }   from "./definitionModalShell.js";
-import { createDefListContainer }       from "../../utils/listUtils.js";
+import { createDefListContainer, createSearchRow } from "../../utils/listUtils.js";
 import { createDefinitionListManager }  from "./definitionListManager.js";
 import {
   defaultToolbar,
   defaultLayoutOptions,
+  defaultSearchPlaceholder,
   renderToolbarButton
 } from "./modalDefaults.js";
 
@@ -41,6 +42,7 @@ import {
  * Exposes:
  *   - open(): Promise<void>
  *   - refresh(): Promise<void>
+ *   - destroy(): void
  */
 export function createDefinitionsModal(config) {
   const {
@@ -82,7 +84,7 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) Create the shell with your default toolbar & layout toggles
+    // 1) Create the modal shell with toolbar & layout toggles
     shell = createDefinitionModalShell({
       id,
       title,
@@ -93,8 +95,14 @@ export function createDefinitionsModal(config) {
     });
     const { header, bodyWrap } = shell;
 
-    // 1a) Render toolbar buttons into header
+    // 1a) Render any toolbar buttons
     toolbar.forEach(cfg => renderToolbarButton(cfg, header, { shell }));
+
+    // 1b) Add search row next to toolbar/layout controls
+    const { row: searchRow, input: searchInput } =
+      createSearchRow(`${id}-search`, defaultSearchPlaceholder);
+    searchRow.style.marginLeft = "auto";
+    header.appendChild(searchRow);
 
     // 2) Instantiate the form controller
     formApi = createFormController({
@@ -132,15 +140,15 @@ export function createDefinitionsModal(config) {
       console.warn(`Sub-header not found for modal '${id}'.`);
     }
 
-    // 4) Allow extra header controls
+    // 4) Allow any extra header enhancements
     enhanceHeader?.(header, { shell, formApi });
 
-    // 5) Build and insert the list container
+    // 5) Build and insert the list container + divider
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
 
-    // 6) Insert the form
+    // 6) Insert the form into the body
     previewApi = shell.previewApi;
     formApi.form.classList.add("ui-scroll-float");
     bodyWrap.appendChild(formApi.form);
@@ -174,11 +182,17 @@ export function createDefinitionsModal(config) {
         _showAddButtons();
       }
     });
+
+    // 8a) Wire the search input to re-render the list
+    searchInput.addEventListener("input", () => {
+      listApi.refresh(definitions);
+    });
   }
 
   function _showAddButtons() {
     formApi.showAdd?.();
   }
+
   function _showEditButtons() {
     formApi.showEdit?.();
   }
@@ -187,6 +201,7 @@ export function createDefinitionsModal(config) {
     async open() {
       await buildIfNeeded();
 
+      // start real-time updates or one-time load
       if (subscribeDefs) {
         startSubscription();
       } else {
@@ -199,7 +214,11 @@ export function createDefinitionsModal(config) {
       previewApi.setFromDefinition({});
       requestAnimationFrame(() => previewApi.show());
     },
+
+    // manual refresh
     refresh: refreshDefinitions,
+
+    // teardown if subscribed
     destroy: () => {
       unsubscribe?.();
       shell?.close?.();
