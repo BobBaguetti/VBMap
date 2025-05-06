@@ -1,7 +1,7 @@
 // @file: /scripts/modules/services/chestDefinitionsService.js
-// @version: 2.0 – now uses shared Firestore factory
+// @version: 2.1 – fixed import path
 
-import { makeFirestoreService } from "../../utils/firestoreServiceFactory.js";
+import { makeFirestoreService } from "../utils/firestoreServiceFactory.js";
 
 const svc = makeFirestoreService("chestDefinitions");
 

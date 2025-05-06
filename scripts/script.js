@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.13 – wire in chestDefinitionsModal alongside item & quest
+// @version: 7.14 – removed quest modal & scrollUtils imports
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -27,13 +27,11 @@ import {
 } from "./modules/map/markerManager.js";
 
 import { initItemDefinitionsModal }   from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal }  from "./modules/ui/modals/chestDefinitionsModal.js";  // ← added
+import { initChestDefinitionsModal }  from "./modules/ui/modals/chestDefinitionsModal.js";
 import { initMarkerModal }            from "./modules/ui/modals/markerModal.js";
 import { initCopyPasteManager }       from "./modules/map/copyPasteManager.js";
 import { setupSidebar }               from "./modules/sidebar/sidebarManager.js";
 import { subscribeItemDefinitions }   from "./modules/services/itemDefinitionsService.js";
-import { initQuestDefinitionsModal }  from "./modules/ui/modals/questDefinitionsModal.js";
-import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js";
 import { initAdminAuth }              from "./authSetup.js";
 
 /* ───────────────────────── Firebase & Map ───────────────────────── */
@@ -90,14 +88,12 @@ onAuthStateChanged(auth, async user => {
 
     /* ───── subscribe to markers ───────────────────────────────── */
     subscribeMarkers(db, markers => {
-      // clear existing
       allMarkers.forEach(({ markerObj }) => {
         markerObj.remove();
         clusterItemLayer.removeLayer(markerObj);
       });
       allMarkers.length = 0;
 
-      // re-add each
       markers.forEach(data => addMarker(data, callbacks));
       loadItemFilters().then(filterMarkers);
     });
@@ -120,8 +116,8 @@ onAuthStateChanged(auth, async user => {
           markerObj.setPopupContent(renderPopup(data));
           if (isAdmin) firebaseUpdateMarker(db, data).catch(() => {});
         } else if (data.type === "Chest") {
-          const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-          const fullDef  = {
+          const def     = chestDefMap[data.chestTypeId] || { lootPool: [] };
+          const fullDef = {
             ...def,
             lootPool: (def.lootPool || [])
               .map(id => itemDefMap[id])
@@ -142,11 +138,7 @@ onAuthStateChanged(auth, async user => {
 /* ─────────────────── Marker & Definition Modals ─────────────────── */
 const markerForm = initMarkerModal(db);
 const itemModal  = initItemDefinitionsModal(db);
-const chestModal = initChestDefinitionsModal(db);   // ← added
-const questModal = initQuestDefinitionsModal(db);
-
-// TODO: hook these up to your admin UI—e.g.:
-// document.getElementById('btn-manage-chests').onclick = () => chestModal.open();
+const chestModal = initChestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
@@ -160,8 +152,8 @@ function addMarker(data, cbs = {}) {
   const isAdmin = document.body.classList.contains("is-admin");
 
   if (data.type === "Chest") {
-    const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
-    const fullDef  = {
+    const def     = chestDefMap[data.chestTypeId] || { lootPool: [] };
+    const fullDef = {
       ...def,
       lootPool: (def.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
     };
@@ -216,7 +208,7 @@ const callbacks = {
   }
 };
 
-/* ───────────────── Context-menu & scrollbars ─────────────────────── */
+/* ───────────────── Context-menu & cleanup ─────────────────────── */
 map.on("contextmenu", evt => {
   if (!document.body.classList.contains("is-admin")) return;
   showContextMenu(
@@ -240,5 +232,3 @@ document.addEventListener("click", e => {
     cm.style.display = "none";
   }
 });
-
-document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
