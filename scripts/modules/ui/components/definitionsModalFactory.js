@@ -1,48 +1,17 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 2.3 – restore search bar into header alongside toolbar & layout toggles
+// @version: 2.5 – sub-header moved below list instead of in title bar
 
-import { createDefinitionModalShell }   from "./definitionModalShell.js";
-import { createDefListContainer, createSearchRow } from "../../utils/listUtils.js";
-import { createDefinitionListManager }  from "./definitionListManager.js";
+import { createDefinitionModalShell }  from "./definitionModalShell.js";
+import { createDefListContainer }      from "../../utils/listUtils.js";
+import { createDefinitionListManager } from "./definitionListManager.js";
 import {
   defaultToolbar,
   defaultLayoutOptions,
-  defaultSearchPlaceholder,
   renderToolbarButton
 } from "./modalDefaults.js";
 
 /**
- * @typedef DefinitionModalConfig
- * @property {string} id
- * @property {string} title
- * @property {string|null} [previewType]
- * @property {object} db
- * @property {() => Promise<Array<Object>>} loadDefs
- * @property {(db:object, id:string|null, payload:Object) => Promise<Object>} saveDef
- * @property {(db:object, id:string, payload:Object) => Promise<Object>} updateDef
- * @property {(db:object, id:string) => Promise<void>} deleteDef
- * @property {(callback: (defs:Array<Object>) => void) => () => void} [subscribeDefs]
- * @property {(callbacks:Object) => { 
- *   form: HTMLFormElement, 
- *   fields: Object, 
- *   reset(): void, 
- *   populate(def:Object): void, 
- *   getCurrent(): Object, 
- *   getSubHeaderElement(): HTMLElement, 
- *   initPickrs?(): void 
- * }} createFormController
- * @property {(def:Object, layout:string, callbacks:Object) => HTMLElement} renderEntry
- * @property {(headerEl:HTMLElement, api:Object) => void} [enhanceHeader]
- * @property {Array<{ icon?: string, label: string, onClick: () => void }>} [toolbar]
- * @property {Array<string>} [layoutOptions]
- */
-
-/**
  * Builds a full CRUD modal with consistent shell, list, preview, and form.
- * Exposes:
- *   - open(): Promise<void>
- *   - refresh(): Promise<void>
- *   - destroy(): void
  */
 export function createDefinitionsModal(config) {
   const {
@@ -58,8 +27,7 @@ export function createDefinitionsModal(config) {
     createFormController,
     renderEntry,
     enhanceHeader,
-    // fall back to defaults if none passed
-    toolbar = defaultToolbar,
+    toolbar       = defaultToolbar,
     layoutOptions = defaultLayoutOptions
   } = config;
 
@@ -84,7 +52,7 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) Create the modal shell with toolbar & layout toggles
+    // 1) create the shell (backdrop, header, close-button, layout toggles)
     shell = createDefinitionModalShell({
       id,
       title,
@@ -95,16 +63,10 @@ export function createDefinitionsModal(config) {
     });
     const { header, bodyWrap } = shell;
 
-    // 1a) Render any toolbar buttons
+    // 1a) render toolbar icons into header (before close ×)
     toolbar.forEach(cfg => renderToolbarButton(cfg, header, { shell }));
 
-    // 1b) Add search row next to toolbar/layout controls
-    const { row: searchRow, input: searchInput } =
-      createSearchRow(`${id}-search`, defaultSearchPlaceholder);
-    searchRow.style.marginLeft = "auto";
-    header.appendChild(searchRow);
-
-    // 2) Instantiate the form controller
+    // 2) instantiate the form controller
     formApi = createFormController({
       onCancel: async () => {
         formApi.reset();
@@ -131,38 +93,11 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // 3) Move the form’s sub-header into the modal header
-    const subHeader = formApi.getSubHeaderElement();
-    if (subHeader) {
-      subHeader.style.marginLeft = "auto";
-      header.appendChild(subHeader);
-    } else {
-      console.warn(`Sub-header not found for modal '${id}'.`);
-    }
-
-    // 4) Allow any extra header enhancements
-    enhanceHeader?.(header, { shell, formApi });
-
-    // 5) Build and insert the list container + divider
+    // 3) prepare list container
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
-    bodyWrap.appendChild(document.createElement("hr"));
 
-    // 6) Insert the form into the body
-    previewApi = shell.previewApi;
-    formApi.form.classList.add("ui-scroll-float");
-    bodyWrap.appendChild(formApi.form);
-
-    // 7) Live preview on form input
-    formApi.form.addEventListener("input", () => {
-      const live = formApi.getCurrent();
-      if (live) {
-        previewApi.setFromDefinition(live);
-        previewApi.show();
-      }
-    });
-
-    // 8) Wire up the definitions list manager
+    // 4) wire up the list manager (it auto-injects its own search header)
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -171,7 +106,7 @@ export function createDefinitionsModal(config) {
         formApi.populate(def);
         previewApi.setFromDefinition(def);
         previewApi.show();
-        _showEditButtons();
+        formApi.showEdit?.();
       },
       onDelete: async defId => {
         await deleteDef(db, defId);
@@ -179,34 +114,42 @@ export function createDefinitionsModal(config) {
         formApi.reset();
         previewApi.setFromDefinition({});
         previewApi.show();
-        _showAddButtons();
+        formApi.showAdd?.();
       }
     });
 
-    // 8a) Wire the search input to re-render the list
-    searchInput.addEventListener("input", () => {
-      listApi.refresh(definitions);
+    // 5) divider below list
+    bodyWrap.appendChild(document.createElement("hr"));
+
+    // 6) move the Add/Edit sub-header _here_, above the form
+    const subHeader = formApi.getSubHeaderElement();
+    if (subHeader) {
+      subHeader.style.margin = "0 0 10px 0";
+      bodyWrap.appendChild(subHeader);
+    } else {
+      console.warn(`Sub-header not found for modal '${id}'.`);
+    }
+
+    // 7) insert the form
+    previewApi = shell.previewApi;
+    formApi.form.classList.add("ui-scroll-float");
+    bodyWrap.appendChild(formApi.form);
+
+    // 8) live-preview wiring
+    formApi.form.addEventListener("input", () => {
+      const live = formApi.getCurrent();
+      if (live) {
+        previewApi.setFromDefinition(live);
+        previewApi.show();
+      }
     });
-  }
-
-  function _showAddButtons() {
-    formApi.showAdd?.();
-  }
-
-  function _showEditButtons() {
-    formApi.showEdit?.();
   }
 
   return {
     async open() {
       await buildIfNeeded();
-
-      // start real-time updates or one-time load
-      if (subscribeDefs) {
-        startSubscription();
-      } else {
-        await refreshDefinitions();
-      }
+      if (subscribeDefs) startSubscription();
+      else await refreshDefinitions();
 
       formApi.reset();
       shell.open();
@@ -214,11 +157,7 @@ export function createDefinitionsModal(config) {
       previewApi.setFromDefinition({});
       requestAnimationFrame(() => previewApi.show());
     },
-
-    // manual refresh
     refresh: refreshDefinitions,
-
-    // teardown if subscribed
     destroy: () => {
       unsubscribe?.();
       shell?.close?.();
