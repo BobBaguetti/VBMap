@@ -1,5 +1,5 @@
 // @file:    /scripts/modules/ui/components/fieldBuilders.js
-// @version: 1.4 – fixed Pickr import path
+// @version: 1.5 – added createCheckboxField
 
 import { createPickr } from "./pickrUtils.js";
 
@@ -16,7 +16,7 @@ export function createFieldRow(labelText, inputEl) {
 }
 
 /**
- * A standalone color‐swatch button.
+ * A standalone color-swatch button.
  */
 export function createColorButton(id) {
   const btn = document.createElement("div");
@@ -82,7 +82,7 @@ export function createTextareaFieldWithColor(label, id) {
 }
 
 /**
- * Simple single‐line text field for URLs/images.
+ * Simple single-line text field for URLs/images.
  */
 export function createImageField(label, id) {
   const input = document.createElement("input");
@@ -92,7 +92,7 @@ export function createImageField(label, id) {
 }
 
 /**
- * Simple single‐line text field for video URLs.
+ * Simple single-line text field for video URLs.
  */
 export function createVideoField(label, id) {
   const input = document.createElement("input");
@@ -102,7 +102,18 @@ export function createVideoField(label, id) {
 }
 
 /**
- * Reusable extra‐info block with dynamic rows and color pickers.
+ * Checkbox input with a label.
+ */
+export function createCheckboxField(labelText, id) {
+  const input = document.createElement("input");
+  input.type = "checkbox";
+  input.id = id;
+  const row = createFieldRow(labelText, input);
+  return { row, input };
+}
+
+/**
+ * Reusable extra-info block with dynamic rows and color pickers.
  */
 export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = false } = {}) {
   const wrap = document.createElement("div");
