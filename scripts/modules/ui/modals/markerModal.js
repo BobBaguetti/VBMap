@@ -1,14 +1,13 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 20.4 – fully integrated with modalHelpers, fieldBuilders, formButtonRow, layoutSwitcher
+// @version: 20.4 – imports now come from modalHelpers
 
 import {
   createModal,
   closeModal,
-  openModalAt
+  openModalAt,
+  createDropdownField,
+  createFormButtonRow
 } from "../components/modalHelpers.js";
-import { createDropdownField }  from "../components/fieldBuilders.js";
-import { createFormButtonRow }  from "../components/formButtonRow.js";
-import { createLayoutSwitcher } from "../components/layoutSwitcher.js";
 
 import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
 import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";
@@ -16,7 +15,9 @@ import { createMarkerForm }     from "../forms/markerForm.js";
 
 export function initMarkerModal(db) {
   let modal, content, form;
-  let fldType, fldPredefItem, fldChestType, blockItem, formApi, rowButtons;
+  let fldType, fldPredefItem, fldChestType;
+  let rowPredefItem, rowChestType, blockItem;
+  let formApi, rowButtons;
   let itemDefs = {}, chestDefs = {};
 
   async function refreshPredefinedItems() {
@@ -48,61 +49,47 @@ export function initMarkerModal(db) {
   function ensureBuilt() {
     if (modal) return;
 
-    // create modal shell
     const created = createModal({
-      id:          "edit-marker-modal",
-      title:       "Edit Marker",
-      size:        "small",
-      backdrop:    false,
-      draggable:   true,
-      withDivider: true,
-      onClose:     () => closeModal(modal)
+      id:         "edit-marker-modal",
+      title:      "Edit Marker",
+      size:       "small",
+      backdrop:   false,
+      draggable:  true,
+      withDivider:true,
+      onClose:    () => closeModal(modal)
     });
     modal   = created.modal;
     content = created.content;
     modal.classList.add("admin-only");
 
-    // layout switcher into header
-    const layoutSwitcher = createLayoutSwitcher({
-      available:   ["form"],
-      defaultView: "form",
-      onChange:    () => {}
-    });
-    content.insertBefore(layoutSwitcher, content.firstChild);
-
-    // form
     form = document.createElement("form");
     form.id = "edit-form";
 
-    // Type dropdown
+    // Type selector
     const { row: rowType, select: selectType } = createDropdownField(
       "Type:", "fld-type",
       [
-        { value: "Door",              label: "Door" },
-        { value: "Extraction Portal", label: "Extraction Portal" },
-        { value: "Item",              label: "Item" },
-        { value: "Chest",             label: "Chest" },
-        { value: "Teleport",          label: "Teleport" },
-        { value: "Spawn Point",       label: "Spawn Point" }
-      ],
-      { showColor: false }
+        { value: "Door",               label: "Door" },
+        { value: "Extraction Portal",  label: "Extraction Portal" },
+        { value: "Item",               label: "Item" },
+        { value: "Chest",              label: "Chest" },
+        { value: "Teleport",           label: "Teleport" },
+        { value: "Spawn Point",        label: "Spawn Point" }
+      ], { showColor: false }
     );
-    selectType.insertAdjacentHTML("afterbegin", `<option value="" disabled selected>Select type…</option>`);
+    selectType.innerHTML = `<option value="" disabled selected>Select type…</option>` + selectType.innerHTML;
     fldType = selectType;
 
-    // Predef item
-    const {
-      row: rowPredefItem,
-      select: fldPredefItem
-    } = createDropdownField("Item:", "fld-predef-item", [], { showColor: false });
+    // Predefined item
+    ({ row: rowPredefItem, select: fldPredefItem } = createDropdownField(
+      "Item:", "fld-predef-item", [], { showColor: false }
+    ));
 
     // Chest type
-    const {
-      row: rowChestType,
-      select: fldChestType
-    } = createDropdownField("Chest Type:", "fld-predef-chest", [], { showColor: false });
+    ({ row: rowChestType, select: fldChestType } = createDropdownField(
+      "Chest Type:", "fld-predef-chest", [], { showColor: false }
+    ));
 
-    // markerForm
     formApi = createMarkerForm();
     blockItem = document.createElement("div");
     blockItem.classList.add("item-gap");
@@ -112,14 +99,12 @@ export function initMarkerModal(db) {
       formApi.fields.fldDesc.closest(".field-row")
     );
 
-    // buttons
-    rowButtons = createFormButtonRow(
-      () => closeModal(modal),
-      "Save",
-      "Cancel"
-    );
+    rowButtons = createFormButtonRow();
+    rowButtons.querySelector('button[type="button"]').onclick = e => {
+      e.preventDefault();
+      closeModal(modal);
+    };
 
-    // assemble
     form.append(
       formApi.fields.fldName.closest(".field-row"),
       rowType,
@@ -134,23 +119,21 @@ export function initMarkerModal(db) {
     );
     content.appendChild(form);
 
-    // show/hide logic
     fldType.onchange = () => {
       const t = fldType.value;
-      rowPredefItem.style.display = t === "Item"  ? "flex" : "none";
-      blockItem.style.display     = t === "Item"  ? "block": "none";
+      rowPredefItem.style.display = t === "Item" ? "flex" : "none";
+      blockItem.style.display     = t === "Item" ? "block" : "none";
       rowChestType.style.display  = t === "Chest" ? "flex" : "none";
     };
 
     fldPredefItem.onchange = () => {
-      const def = itemDefs[fldPredefItem.value] || {};
-      formApi.setFromDefinition(def);
+      formApi.setFromDefinition(itemDefs[fldPredefItem.value] || {});
       formApi.initPickrs();
     };
 
-    // initial load
     refreshPredefinedItems();
     refreshChestTypes();
+
     formApi.setFromDefinition({});
     formApi.initPickrs();
   }
