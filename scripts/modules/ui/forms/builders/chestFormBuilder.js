@@ -1,10 +1,10 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.2 – fixed uiKit import path
+// @version: 2.3 – updated imports to use fieldBuilders.js
 
 import {
   createTextField,
   createDropdownField
-} from "../../uiKit.js";
+} from "../../components/fieldBuilders.js";
 
 import {
   createDescriptionField,

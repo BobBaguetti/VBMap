@@ -1,75 +1,66 @@
-// @file: /scripts/modules/ui/components/definitionModalShell.js 
-// @version: 3 — suppressed auto-show of preview, now shows only on open
+// @file: /scripts/modules/ui/components/definitionModalShell.js
+// @version: 4.0 – now delegates modal creation to modalShell.js
 
-import { createModal, closeModal, openModal } from "../uiKit.js";
-import { createLayoutSwitcher } from "../uiKit.js";
-import { createPreviewPanel } from "../preview/createPreviewPanel.js";
+import { createModal, openModal, closeModal } from "./modalShell.js";
+import { createLayoutSwitcher }              from "./layoutSwitcher.js";
+import { createPreviewPanel }                from "../preview/createPreviewPanel.js";
 
+/**
+ * Shell factory for all “definitions” modals.
+ *
+ * @param {object} opts
+ * @param {string} opts.id           – DOM id for the modal
+ * @param {string} opts.title        – Modal title text
+ * @param {string} [opts.size]       – “small” or “large”
+ * @param {boolean} [opts.withPreview=false]
+ * @param {string|null} [opts.previewType]
+ * @param {boolean} [opts.withDivider=true]
+ * @param {Function} [opts.onClose]
+ */
 export function createDefinitionModalShell({
   id,
   title,
   size = "large",
   withPreview = false,
   previewType = null,
-  layoutOptions = ["row", "stacked", "gallery"],
+  withDivider = true,
   onClose = () => {}
 }) {
+  // 1) Create the base modal (backdrop, header, close button)
   const { modal, content, header } = createModal({
     id,
     title,
     size,
     backdrop: true,
     draggable: false,
-    withDivider: true,
-    onClose: () => {
-      onClose();
-      if (withPreview) previewApi?.hide();
-      closeModal(modal);
-    }
+    withDivider,
+    onClose
   });
 
-  // Header layout switcher
+  modal.classList.add("admin-only");
+
+  // 2) Add the layout‐switcher into the header
   const layoutSwitcher = createLayoutSwitcher({
-    available: layoutOptions,
-    defaultView: layoutOptions[0],
-    onChange: () => {}
+    available:   ["row", "stacked", "gallery"],
+    defaultView: "row",
+    onChange:    v => listApi?.setLayout(v)
   });
   header.appendChild(layoutSwitcher);
 
-  // Body wrapper
+  // 3) Prepare the body wrapper for list + form
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
-    display: "flex",
+    display:       "flex",
     flexDirection: "column",
-    flex: "1 1 auto",
-    minHeight: "0"
+    flex:          "1 1 auto",
+    minHeight:     "0"
   });
   content.appendChild(bodyWrap);
 
+  // 4) Optionally create a floating preview panel
   let previewApi = null;
-  let showPreview = null;
-
   if (withPreview && previewType) {
-    const previewPanel = document.createElement("div");
-    previewPanel.style.zIndex = "1101";
-    document.body.appendChild(previewPanel);
-
-    previewApi = createPreviewPanel(previewType, previewPanel);
-
-    const positionPreview = () => {
-      const mc = modal.querySelector(".modal-content")?.getBoundingClientRect();
-      const pr = previewPanel.getBoundingClientRect();
-      if (mc) {
-        previewPanel.style.position = "absolute";
-        previewPanel.style.left   = `${mc.right + 30}px`;
-        previewPanel.style.top    = `${mc.top + (mc.height/2) - (pr.height/2)}px`;
-      }
-    };
-
-    showPreview = () => {
-      positionPreview();
-      previewApi.show();
-    };
+    previewApi = createPreviewPanel(previewType);
   }
 
   return {
@@ -77,15 +68,17 @@ export function createDefinitionModalShell({
     header,
     content,
     bodyWrap,
-    layoutSwitcher,
-    previewApi,
-    open: () => {
-      openModal(modal);
-      if (withPreview && showPreview) showPreview();
-    },
+    open: () => openModal(modal),
     close: () => {
-      if (withPreview && previewApi) previewApi.hide();
+      if (previewApi) previewApi.hide();
       closeModal(modal);
+    },
+    get previewApi() {
+      return previewApi;
+    },
+    set listApi(api) {
+      // allows wiring the layout switcher to the list manager later
+      listApi = api;
     }
   };
 }

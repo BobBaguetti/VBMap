@@ -1,40 +1,121 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.1 – updated to use formSchema for standardized fields
+// @version: 4.0 – rebuilt on definitionModalShell
 
-import { createDefinitionsModal }      from "../components/definitionsModalFactory.js";
-import * as chestSvc                   from "../../services/chestDefinitionsService.js";
-import { createChestFormController }   from "../forms/controllers/chestFormController.js";
-import { renderChestEntry }            from "../entries/chestEntryRenderer.js";
+import { subscribeChestDefinitions, loadChestDefinitions } from "../../services/chestDefinitionsService.js";
+import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 
-/**
- * Initializes the chest definitions modal with standardized form fields.
- *
- * @param {import('firebase/firestore').Firestore} db
- * @returns {{ open(): Promise<void>, refresh(): Promise<void> }}
- */
+import { createDefinitionModalShell } from "../components/definitionModalShell.js";
+import { createDefinitionListManager } from "../components/definitionListManager.js";
+import { createChestFormController } from "../forms/controllers/chestFormController.js";
+import { createPreviewPanel } from "../preview/createPreviewPanel.js";
+
 export function initChestDefinitionsModal(db) {
-  return createDefinitionsModal({
-    id:                   "chest-definitions-modal",
-    title:                "Manage Chest Types",
-    previewType:          "chest",
-    db,
-    loadDefs:             () => chestSvc.loadChestDefinitions(db),
-    saveDef:              (database, id, payload) => chestSvc.saveChestDefinition(database, id, payload),
-    updateDef:            (database, id, payload) => chestSvc.updateChestDefinition(database, id, payload),
-    deleteDef:            (database, id) => chestSvc.deleteChestDefinition(database, id),
-    createFormController: callbacks => createChestFormController(callbacks, db),
-    renderEntry:          renderChestEntry,
+  // form API, list API, preview API, raw data
+  let listApi, formApi, previewApi;
+  let definitions = [];
+  let itemMap = {};
 
-    // standardize which form fields to include
-    formSchema: {
-      name:            true,   // Name field
-      imageUrls:       true,   // Image S/L URL fields
-      description:     true,   // Description textarea + color swatch
-      extraInfo:       true,   // Dynamic extra info rows
-      filterToggle:    false,  // no “Add to filters” for chests
-      inventoryPicker: true,   // Loot pool chips + picker
-      types:           true,   // Size/category selects
-      rarities:        false   // no rarity for chests
+  // keep an in-memory map of item defs for loot-pool preview
+  async function ensureItemMap() {
+    if (!Object.keys(itemMap).length) {
+      const items = await loadItemDefinitions(db);
+      itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
+  }
+
+  // refresh raw chest defs & tell the list to re-render
+  async function refreshDefinitions() {
+    definitions = await loadChestDefinitions(db);
+    listApi.refresh(definitions);
+  }
+
+  // build shell once:
+  const shell = createDefinitionModalShell({
+    id:          "chest-definitions-modal",
+    title:       "Manage Chest Types",
+    size:        "large",
+    withPreview: true,
+    previewType: "chest",
+    layoutOptions: ["row","stacked","gallery"],
+    onClose:     () => previewApi.hide()
   });
+
+  // expose for sidebar to call
+  return {
+    open: async () => {
+      // first-time wiring
+      if (!listApi) {
+        // 1) list manager in shell.bodyWrap
+        const listContainer = document.createElement("div");
+        shell.bodyWrap.appendChild(listContainer);
+        listApi = createDefinitionListManager({
+          container: listContainer,
+          getDefinitions: () => definitions,
+          onEntryClick: async def => {
+            formApi.populate(def);
+            await ensureItemMap();
+            previewApi.setFromDefinition({
+              ...def,
+              lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
+            });
+            previewApi.show();
+          },
+          onDelete: async id => {
+            await deleteChestDefinition(db, id);
+            await refreshDefinitions();
+          }
+        });
+
+        // 2) form controller under the list
+        formApi = createChestFormController({
+          onCancel: () => {
+            formApi.reset();
+            previewApi.setFromDefinition({ lootPool: [] });
+            previewApi.show();
+          },
+          onDelete: async id => {
+            await deleteChestDefinition(db, id);
+            await refreshDefinitions();
+            formApi.reset();
+            previewApi.setFromDefinition({ lootPool: [] });
+            previewApi.show();
+          },
+          onSubmit: async payload => {
+            if (payload.id)
+              await updateChestDefinition(db, payload.id, payload);
+            else
+              await saveChestDefinition(db, null, payload);
+            await refreshDefinitions();
+            formApi.reset();
+            previewApi.setFromDefinition({ lootPool: [] });
+            previewApi.show();
+          }
+        }, db);
+        shell.bodyWrap.appendChild(formApi.form);
+
+        // 3) preview panel comes with the shell
+        previewApi = shell.previewApi;
+
+        // wire live preview on form input
+        formApi.form.addEventListener("input", async () => {
+          const live = formApi.getCurrent();
+          await ensureItemMap();
+          previewApi.setFromDefinition({
+            ...live,
+            lootPool: (live.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
+          });
+          previewApi.show();
+        });
+      }
+
+      // every open: reset, reload, then show
+      formApi.reset();
+      await ensureItemMap();
+      await refreshDefinitions();
+      shell.open();
+      formApi.initPickrs();
+      previewApi.setFromDefinition({ lootPool: [] });
+      previewApi.show();
+    }
+  };
 }
