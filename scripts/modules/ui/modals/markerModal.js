@@ -1,13 +1,15 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 20.4 – imports now come from modalHelpers
+// @version: 20.5 – updated imports to modalCore & fieldBuilders
 
 import {
   createModal,
   closeModal,
-  openModalAt,
+  openModalAt
+} from "../components/modalCore.js";
+import {
   createDropdownField,
   createFormButtonRow
-} from "../components/modalHelpers.js";
+} from "../components/fieldBuilders.js";
 
 import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
 import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";

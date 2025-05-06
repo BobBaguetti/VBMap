@@ -1,13 +1,19 @@
 // @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 10.1 
+// @version: 10.2 – removed NPC/Quest imports and UI
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
-import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
 import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
-import { initQuestDefinitionsModal } from "../ui/modals/questDefinitionsModal.js";
-import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
 import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
 
+/**
+ * Sets up the sidebar UI, including toggles for item and chest management.
+ *
+ * @param {L.Map} map
+ * @param {Object} layers
+ * @param {Array} allMarkers
+ * @param {Firestore} db
+ * @param {Object} options
+ */
 export async function setupSidebar(
   map, layers, allMarkers, db,
   { enableGrouping, disableGrouping }
@@ -36,10 +42,7 @@ export async function setupSidebar(
 
   document.querySelectorAll(".filter-group").forEach(group => {
     const header = group.querySelector("h3");
-    header.addEventListener("click", () => {
-      group.classList.toggle("collapsed");
-      console.log(`[sidebar] toggled ${group.id || header.textContent}`);
-    });
+    header.addEventListener("click", () => group.classList.toggle("collapsed"));
   });
 
   // ─── Settings Toggles ─────────────────────────────────────────────
@@ -50,21 +53,19 @@ export async function setupSidebar(
   settingsSect.appendChild(groupingLabel);
   const groupingCb = document.getElementById("enable-grouping");
   groupingCb.checked = false;
-  groupingCb.addEventListener("change", () => {
-    console.log("[sidebar] marker grouping:", groupingCb.checked);
-    groupingCb.checked ? enableGrouping() : disableGrouping();
-  });
+  groupingCb.addEventListener("change", () =>
+    groupingCb.checked ? enableGrouping() : disableGrouping()
+  );
 
   const smallLabel = document.createElement("label");
   smallLabel.innerHTML = `<input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span>`;
   settingsSect.appendChild(smallLabel);
   const smallCb = document.getElementById("toggle-small-markers");
   smallCb.checked = false;
-  smallCb.addEventListener("change", () => {
-    console.log("[sidebar] small markers:", smallCb.checked);
+  smallCb.addEventListener("change", () =>
     document.getElementById("map")
-      .classList.toggle("small-markers", smallCb.checked);
-  });
+      .classList.toggle("small-markers", smallCb.checked)
+  );
 
   // ─── Core Filtering Logic ─────────────────────────────────────────
   function filterMarkers() {
@@ -72,7 +73,7 @@ export async function setupSidebar(
     const pveOn     = document.getElementById("toggle-pve")?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      const isNpc       = data.type === "npc";
+      const isNpc       = data.type === "npc"; // still possible type but no filters
       const matchesPvE  = pveOn || !isNpc;
       const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
@@ -91,18 +92,7 @@ export async function setupSidebar(
         if (itemCb && !itemCb.checked) itemVisible = false;
       }
 
-      let enemyVisible = true;
-      if (isNpc) {
-        const enemyCb = document.querySelector(
-          `#enemy-filter-list input[data-enemy-id="${data.id}"]`
-        );
-        if (enemyCb && !enemyCb.checked) enemyVisible = false;
-      }
-
-      const shouldShow = matchesPvE
-                       && matchesName
-                       && mainVisible
-                       && (isNpc ? enemyVisible : itemVisible);
+      const shouldShow = matchesPvE && matchesName && mainVisible && itemVisible;
       const layerGroup = layers[data.type];
       if (!layerGroup) return;
 
@@ -122,8 +112,7 @@ export async function setupSidebar(
   const chestLabel = document.createElement("label");
   chestLabel.innerHTML = `<input type="checkbox" checked data-layer="Chest"/><span>Chests</span>`;
   mainGroup.append(chestLabel);
-  chestLabel.querySelector("input")
-    .addEventListener("change", filterMarkers);
+  chestLabel.querySelector("input").addEventListener("change", filterMarkers);
 
   // ─── Item Filters ─────────────────────────────────────────────────
   const itemFilterList = document.getElementById("item-filter-list");
@@ -145,35 +134,7 @@ export async function setupSidebar(
   }
   await loadItemFilters();
 
-  // ─── Enemy Filters ────────────────────────────────────────────────
-  const enemyWrap = document.createElement("div");
-  enemyWrap.className = "filter-group";
-  enemyWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
-  document.getElementById("item-filters").after(enemyWrap);
-
-  const enemyFilterList = document.getElementById("enemy-filter-list");
-  async function loadEnemyFilters() {
-    enemyFilterList.innerHTML = "";
-    const npcs = await loadNpcDefinitions(db);
-    npcs.forEach(d => {
-      const label = document.createElement("label");
-      const cb    = document.createElement("input");
-      cb.type            = "checkbox";
-      cb.checked         = true;
-      cb.dataset.enemyId = d.id;
-      const span = document.createElement("span");
-      span.textContent = d.name;
-      label.append(cb, span);
-      enemyFilterList.append(label);
-      cb.addEventListener("change", filterMarkers);
-    });
-  }
-  await loadEnemyFilters();
-
   // ─── Admin Tools ──────────────────────────────────────────────────
-  sidebar.querySelector(".admin-header")?.remove();
-  sidebar.querySelector("#sidebar-admin-tools")?.remove();
-
   const adminHeader = document.createElement("h2");
   adminHeader.className   = "admin-header";
   adminHeader.textContent = "🛠 Admin Tools";
@@ -184,10 +145,9 @@ export async function setupSidebar(
   adminWrap.id = "sidebar-admin-tools";
   adminWrap.style.display = "none";
 
+  // Only Item & Chest
   [
     ["Manage Items",       () => initItemDefinitionsModal(db).open()],
-    ["Manage Quests",      () => initQuestDefinitionsModal(db).open()],
-    ["Manage NPCs",        () => initNpcDefinitionsModal(db).open()],
     ["Manage Chest Types", () => initChestDefinitionsModal(db).open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
@@ -198,7 +158,6 @@ export async function setupSidebar(
 
   sidebar.appendChild(adminWrap);
 
-  // Show admin tools if body already has the class
   if (document.body.classList.contains("is-admin")) {
     adminHeader.style.display = "";
     adminWrap.style.display   = "";
