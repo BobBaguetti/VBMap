@@ -1,11 +1,7 @@
 // @file: /scripts/modules/ui/modals/markerModal.js
-// @version: 21.2 – fixed imports to match modalCore API
+// @version: 21.3 – use modalApi from createModalCore
 
-import {
-  createModalCore as createModal,
-  closeModal,
-  openAt       as openModalAt
-} from "../components/modalCore.js";
+import { createModalCore as createModal } from "../components/modalCore.js";
 import {
   createDropdownField,
   createFormButtonRow
@@ -17,6 +13,7 @@ import { createMarkerForm }     from "../forms/markerForm.js";
 
 export function initMarkerModal(db) {
   let modal, content, form;
+  let modalApi;
   let fldType, fldPredefItem, fldChestType;
   let rowPredefItem, rowChestType, blockItem;
   let formApi, rowButtons;
@@ -51,17 +48,18 @@ export function initMarkerModal(db) {
   function ensureBuilt() {
     if (modal) return;
 
-    const built = createModal({
+    modalApi = createModal({
       id:         "edit-marker-modal",
       title:      "Edit Marker",
       size:       "small",
       backdrop:   false,
       draggable:  true,
       withDivider:true,
-      onClose:    () => closeModal(modal)
+      onClose:    () => modalApi.close()
     });
-    modal   = built.modal;
-    content = built.content;
+
+    modal   = modalApi.modal;
+    content = modalApi.content;
     modal.classList.add("admin-only");
 
     form = document.createElement("form");
@@ -92,7 +90,7 @@ export function initMarkerModal(db) {
       "Chest Type:", "fld-predef-chest", [], { showColor: false }
     ));
 
-    // Marker-specific fields
+    // Marker-specific custom fields
     formApi = createMarkerForm();
     blockItem = document.createElement("div");
     blockItem.classList.add("item-gap");
@@ -106,7 +104,7 @@ export function initMarkerModal(db) {
     rowButtons = createFormButtonRow();
     rowButtons.querySelector('button[type="button"]').onclick = e => {
       e.preventDefault();
-      closeModal(modal);
+      modalApi.close();
     };
 
     form.append(
@@ -123,7 +121,7 @@ export function initMarkerModal(db) {
     );
     content.appendChild(form);
 
-    // Show/hide item vs chest sub-fields
+    // Toggle sub-fields based on type
     fldType.onchange = () => {
       const t = fldType.value;
       rowPredefItem.style.display = t === "Item" ? "flex" : "none";
@@ -131,7 +129,7 @@ export function initMarkerModal(db) {
       rowChestType.style.display  = t === "Chest" ? "flex" : "none";
     };
 
-    // Populate custom fields when selecting predefined item
+    // Prefill custom form when selecting a predefined item
     fldPredefItem.onchange = () => {
       formApi.setFromDefinition(itemDefs[fldPredefItem.value] || {});
       formApi.initPickrs();
@@ -148,15 +146,12 @@ export function initMarkerModal(db) {
     ensureBuilt();
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
 
-    // Reset selectors
     fldPredefItem.value = "";
     fldChestType.value  = "";
 
-    // Set type and fire change
     fldType.value = data.type;
     fldType.dispatchEvent(new Event("change"));
 
-    // Prefill if editing an existing Item or Chest
     if (data.type === "Item" && data.predefinedItemId) {
       fldPredefItem.value = data.predefinedItemId;
       fldPredefItem.dispatchEvent(new Event("change"));
@@ -169,12 +164,12 @@ export function initMarkerModal(db) {
       formApi.initPickrs();
     }
 
-    openModalAt(modal, evt);
+    modalApi.openAt(evt);
     form.onsubmit = e => {
       e.preventDefault();
       const out = harvest(data.coords);
       onSave(markerObj, out, evt);
-      closeModal(modal);
+      modalApi.close();
     };
   }
 
@@ -190,12 +185,12 @@ export function initMarkerModal(db) {
     fldType.value = type || "";
     fldType.dispatchEvent(new Event("change"));
 
-    openModalAt(modal, evt);
+    modalApi.openAt(evt);
     form.onsubmit = e => {
       e.preventDefault();
       const out = harvest(coords);
       onCreate(out);
-      closeModal(modal);
+      modalApi.close();
     };
   }
 
