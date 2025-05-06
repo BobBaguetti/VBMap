@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 1.3 – adds standardized form schema and header structure for all modals
+// @version: 1.4 – added guard for sub-header detection
 
 import { createDefinitionModalShell }   from "./definitionModalShell.js";
 import { createDefListContainer }      from "../../utils/listUtils.js";
@@ -17,18 +17,17 @@ import { openInventoryPicker }         from "./inventoryPicker.js";
  * @property {(db:object, id:string|null, payload:Object) => Promise<Object>} saveDef
  * @property {(db:object, id:string, payload:Object) => Promise<Object>} updateDef
  * @property {(db:object, id:string) => Promise<void>} deleteDef
- * @property {(callbacks:Object) => { form:HTMLFormElement, fields:Object, 
- *             reset():void, populate(def:Object):void, getCurrent():Object, getSubHeaderElement():HTMLElement, initPickrs?():void }} createFormController
+ * @property {(callbacks:Object) => { 
+ *   form: HTMLFormElement, 
+ *   fields: Object, 
+ *   reset(): void, 
+ *   populate(def:Object): void, 
+ *   getCurrent(): Object, 
+ *   getSubHeaderElement?(): HTMLElement, 
+ *   initPickrs?(): void 
+ * }} createFormController
  * @property {(def:Object, layout:string, callbacks:Object) => HTMLElement} renderEntry
- * @property {object} [formSchema]  – flags controlling which standard fields to include:
- *   @property {boolean} [name=true]
- *   @property {boolean} [imageUrls=true]
- *   @property {boolean} [description=true]
- *   @property {boolean} [extraInfo=true]
- *   @property {boolean} [filterToggle=false]
- *   @property {boolean} [inventoryPicker=false]
- *   @property {boolean} [types=false]
- *   @property {boolean} [rarities=false]
+ * @property {object} [formSchema]
  * @property {(headerEl:HTMLElement, api:Object) => void} [enhanceHeader]
  * @property {(formEl:HTMLFormElement, fields:Object, api:Object) => void} [enhanceForm]
  */
@@ -48,16 +47,16 @@ export function createDefinitionsModal(config) {
     enhanceHeader, enhanceForm
   } = config;
 
-  // default form schema flags
+  // Default flags for which fields to render
   const schema = {
-    name:         formSchema.name         !== false,
-    imageUrls:    formSchema.imageUrls    !== false,
-    description:  formSchema.description  !== false,
-    extraInfo:    formSchema.extraInfo    !== false,
-    filterToggle: formSchema.filterToggle === true,
+    name:            formSchema.name         !== false,
+    imageUrls:       formSchema.imageUrls    !== false,
+    description:     formSchema.description  !== false,
+    extraInfo:       formSchema.extraInfo    !== false,
+    filterToggle:    formSchema.filterToggle === true,
     inventoryPicker: formSchema.inventoryPicker === true,
-    types:        formSchema.types        === true,
-    rarities:     formSchema.rarities     === true
+    types:           formSchema.types        === true,
+    rarities:        formSchema.rarities     === true
   };
 
   let shell, listApi, formApi, previewApi;
@@ -71,11 +70,11 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) create modal shell with consistent header (title, layout toggles, search, close)
+    // 1) Create modal shell (with title, layout toggles, search, close)
     shell = createDefinitionModalShell({ id, title, withPreview: true, previewType });
     const { header, bodyWrap } = shell;
 
-    // 2) instantiate form controller (builds sub-header with Save/Clear/Delete)
+    // 2) Instantiate form controller (which builds its own sub-header)
     formApi = createFormController({
       onCancel: async () => {
         formApi.reset();
@@ -102,42 +101,43 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // 3) relocate the form's sub-header into the modal header on the right
-    const subHeader = formApi.getSubHeaderElement();
-    subHeader.style.marginLeft = "auto";
-    header.appendChild(subHeader);
+    // 3) Locate sub-header element
+    let subHeader = formApi.getSubHeaderElement?.() || formApi.form.querySelector('.sub-header');
+    if (subHeader && subHeader.style) {
+      subHeader.style.marginLeft = 'auto';
+      header.appendChild(subHeader);
+    } else {
+      console.warn(`Sub-header not found for modal '${id}'.`);
+    }
 
-    // 4) allow wrapper to add global header items
+    // 4) Allow wrapper to add custom header items
     enhanceHeader?.(header, { shell, formApi });
 
-    // 5) build list container under header
+    // 5) Build list container under header
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
-    bodyWrap.appendChild(document.createElement("hr"));
+    bodyWrap.appendChild(document.createElement('hr'));
 
-    // 6) create core form fields according to schema
+    // 6) Create standardized form fields
     previewApi = shell.previewApi;
-    const form = document.createElement("form");
-    form.classList.add("ui-scroll-float");
-
+    const form = document.createElement('form');
+    form.classList.add('ui-scroll-float');
     const fields = {};
 
     if (schema.name) {
-      const row = document.createElement("div"); row.className = "field-row";
-      const lbl = document.createElement("label"); lbl.textContent = "Name"; lbl.htmlFor = `${id}-fld-name`;
-      const inp = document.createElement("input"); inp.type = "text"; inp.id = `${id}-fld-name`;
-      row.append(lbl, inp);
-      form.appendChild(row);
+      const row = document.createElement('div'); row.className = 'field-row';
+      const lbl = document.createElement('label'); lbl.htmlFor = `${id}-fld-name`; lbl.textContent = 'Name';
+      const inp = document.createElement('input'); inp.type = 'text'; inp.id = `${id}-fld-name`;
+      row.append(lbl, inp); form.appendChild(row);
       fields.name = inp;
     }
 
     if (schema.imageUrls) {
-      ["Small","Large"].forEach(size => {
-        const row = document.createElement("div"); row.className = "field-row";
-        const lbl = document.createElement("label"); lbl.textContent = `Image ${size}`; lbl.htmlFor = `${id}-fld-img-${size.toLowerCase()}`;
-        const inp = document.createElement("input"); inp.type = "text"; inp.id = `${id}-fld-img-${size.toLowerCase()}`;
-        row.append(lbl, inp);
-        form.appendChild(row);
+      ['Small', 'Large'].forEach(size => {
+        const row = document.createElement('div'); row.className = 'field-row';
+        const lbl = document.createElement('label'); lbl.htmlFor = `${id}-fld-img-${size.toLowerCase()}`; lbl.textContent = `Image ${size}`;
+        const inp = document.createElement('input'); inp.type = 'text'; inp.id = `${id}-fld-img-${size.toLowerCase()}`;
+        row.append(lbl, inp); form.appendChild(row);
         fields[`image${size}`] = inp;
       });
     }
@@ -151,43 +151,43 @@ export function createDefinitionsModal(config) {
     }
 
     if (schema.extraInfo) {
-      const { row: extraRow, extraInfo } = createExtraInfoField({ withDividers:true });
+      const { row: extraRow, extraInfo } = createExtraInfoField({ withDividers: true });
       form.appendChild(extraRow);
       fields.extraInfo = extraInfo;
     }
 
     if (schema.filterToggle) {
-      const row = document.createElement("div"); row.className = "field-row";
-      const cb  = document.createElement("input"); cb.type = "checkbox"; cb.id = `${id}-fld-filter-toggle`;
-      const lbl = document.createElement("label"); lbl.htmlFor = cb.id; lbl.textContent = "Add to filters";
-      row.append(lbl, cb);
-      form.appendChild(row);
+      const row = document.createElement('div'); row.className = 'field-row';
+      const cb  = document.createElement('input'); cb.type = 'checkbox'; cb.id = `${id}-fld-filter-toggle`;
+      const lbl = document.createElement('label'); lbl.htmlFor = cb.id; lbl.textContent = 'Add to filters';
+      row.append(lbl, cb); form.appendChild(row);
       fields.addToFilters = cb;
     }
 
     if (schema.inventoryPicker) {
-      const row = document.createElement("div"); row.className = "field-row";
-      const lbl = document.createElement("label"); lbl.textContent = "Loot Pool";
-      const chipContainer = document.createElement("div"); chipContainer.className = "loot-pool-chips";
-      const btn = document.createElement("button"); btn.type = "button"; btn.textContent = "⚙︎";
+      const row = document.createElement('div'); row.className = 'field-row';
+      const lbl = document.createElement('label'); lbl.textContent = 'Loot Pool';
+      const chipContainer = document.createElement('div'); chipContainer.className = 'loot-pool-chips';
+      const btn = document.createElement('button'); btn.type = 'button'; btn.textContent = '⚙︎';
       btn.onclick = async () => {
-        const ids = await openInventoryPicker(db, { selectedIds: fields.lootPool || [], title: `Select ${title} Items` });
+        const ids = await openInventoryPicker(db, {
+          selectedIds: fields.lootPool || [],
+          title: `Select ${title} Items`
+        });
         fields.lootPool = ids;
-        // re-render chips...
       };
-      row.append(lbl, chipContainer, btn);
-      form.appendChild(row);
+      row.append(lbl, chipContainer, btn); form.appendChild(row);
       fields.lootPool = [];
       fields.chipContainer = chipContainer;
     }
 
     bodyWrap.appendChild(form);
 
-    // 7) allow wrapper to inject additional controls
+    // 7) Allow wrapper to inject additional controls
     enhanceForm?.(form, fields, { shell, formApi, previewApi });
 
-    // 8) wire live preview
-    form.addEventListener("input", () => {
+    // 8) Live preview binding
+    form.addEventListener('input', () => {
       const live = formApi.getCurrent?.();
       if (live) {
         previewApi.setFromDefinition(live);
@@ -195,10 +195,10 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // attach our built form and fields to formApi for populate/getCurrent
+    // Attach form and fields back onto formApi
     Object.assign(formApi, { form, fields });
 
-    // 9) wire definition list
+    // 9) Wire definition list manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
