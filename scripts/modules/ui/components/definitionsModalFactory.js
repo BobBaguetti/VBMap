@@ -1,9 +1,10 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 2.0 – merged live subscriptions, toolbar & layoutOptions
+// @version: 2.1 – wired in modalDefaults for toolbar & layoutOptions
 
 import { createDefinitionModalShell }   from "./definitionModalShell.js";
 import { createDefListContainer }       from "../../utils/listUtils.js";
 import { createDefinitionListManager }  from "./definitionListManager.js";
+import { defaultToolbar, defaultLayoutOptions } from "./modalDefaults.js";
 
 /**
  * @typedef DefinitionModalConfig
@@ -16,22 +17,11 @@ import { createDefinitionListManager }  from "./definitionListManager.js";
  * @property {(db:object, id:string, payload:Object) => Promise<Object>} updateDef
  * @property {(db:object, id:string) => Promise<void>} deleteDef
  * @property {(callback: (defs:Array<Object>) => void) => () => void} [subscribeDefs]
- *   // Optional: receives a listener that gets the fresh defs array, returns an unsubscribe fn
- * @property {(callbacks:Object) => { 
- *   form: HTMLFormElement, 
- *   fields: Object, 
- *   reset(): void, 
- *   populate(def:Object): void, 
- *   getCurrent(): Object, 
- *   getSubHeaderElement(): HTMLElement, 
- *   initPickrs?(): void 
- * }} createFormController
+ * @property {(callbacks:Object) => { form: HTMLFormElement, fields: Object, reset(): void, populate(def:Object): void, getCurrent(): Object, getSubHeaderElement(): HTMLElement, initPickrs?(): void }} createFormController
  * @property {(def:Object, layout:string, callbacks:Object) => HTMLElement} renderEntry
  * @property {(headerEl:HTMLElement, api:Object) => void} [enhanceHeader]
  * @property {Array<{ icon?: string, label: string, onClick: () => void }>} [toolbar]
- *   // Optional: toolbar buttons to render in the modal header
  * @property {Array<string>} [layoutOptions]
- *   // Optional: override layout toggles (e.g. ["row","stacked","gallery"])
  */
 
 /**
@@ -42,11 +32,21 @@ import { createDefinitionListManager }  from "./definitionListManager.js";
  */
 export function createDefinitionsModal(config) {
   const {
-    id, title, previewType = null, db,
-    loadDefs, saveDef, updateDef, deleteDef,
+    id,
+    title,
+    previewType = null,
+    db,
+    loadDefs,
+    saveDef,
+    updateDef,
+    deleteDef,
     subscribeDefs,
-    createFormController, renderEntry,
-    enhanceHeader, toolbar, layoutOptions
+    createFormController,
+    renderEntry,
+    enhanceHeader,
+    // use defaults if not provided
+    toolbar = defaultToolbar,
+    layoutOptions = defaultLayoutOptions
   } = config;
 
   let shell, listApi, formApi, previewApi;
@@ -70,7 +70,7 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) Create modal shell (with toolbar/layoutOptions if provided)
+    // 1) Create modal shell (with toolbar/layoutOptions)
     shell = createDefinitionModalShell({
       id,
       title,
@@ -173,7 +173,6 @@ export function createDefinitionsModal(config) {
     async open() {
       await buildIfNeeded();
 
-      // start live updates if requested, otherwise just one-time load
       if (subscribeDefs) {
         startSubscription();
       } else {
@@ -187,10 +186,8 @@ export function createDefinitionsModal(config) {
       requestAnimationFrame(() => previewApi.show());
     },
 
-    // Manual refresh when you don't need subscriptions
     refresh: refreshDefinitions,
 
-    // If you subscribed, allow external teardown
     destroy: () => {
       unsubscribe?.();
       shell?.close?.();

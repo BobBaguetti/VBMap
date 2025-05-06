@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionModalShell.js
-// @version: 4.1 – now delegates modal creation to modalCore.js
+// @version: 4.2 – added toolbar & layoutOptions support
 
 import { createModalCore }      from "./modalCore.js";
 import { createLayoutSwitcher } from "./layoutSwitcher.js";
@@ -9,13 +9,15 @@ import { createPreviewPanel }   from "../preview/createPreviewPanel.js";
  * Shell factory for all “definitions” modals.
  *
  * @param {object} opts
- * @param {string} opts.id             – DOM id for the modal
- * @param {string} opts.title          – Modal title text
- * @param {string} [opts.size]         – “small” or “large”
- * @param {boolean} [opts.withPreview] – whether to include the preview panel
+ * @param {string} opts.id
+ * @param {string} opts.title
+ * @param {string} [opts.size]
+ * @param {boolean} [opts.withPreview]
  * @param {string|null} [opts.previewType]
  * @param {boolean} [opts.withDivider]
  * @param {Function} [opts.onClose]
+ * @param {Array<{icon?:string,label:string,onClick:()=>void}>} [opts.toolbar]
+ * @param {Array<string>} [opts.layoutOptions]
  */
 export function createDefinitionModalShell({
   id,
@@ -24,9 +26,11 @@ export function createDefinitionModalShell({
   withPreview = false,
   previewType = null,
   withDivider = true,
-  onClose = () => {}
+  onClose = () => {},
+  toolbar = [],
+  layoutOptions = ["row", "stacked", "gallery"]
 }) {
-  // 1) Create the core modal (backdrop, header, close button, lifecycle)
+  // 1) Core modal
   const { modal, content, header, open, close } = createModalCore({
     id,
     title,
@@ -39,16 +43,31 @@ export function createDefinitionModalShell({
 
   modal.classList.add("admin-only");
 
-  // 2) Add the layout‐switcher into the header
-  let listApi;  // will be set by the factory consumer
+  // 2) Toolbar buttons (insert before layout switcher)
+  if (Array.isArray(toolbar) && toolbar.length) {
+    const tb = document.createElement("div");
+    tb.className = "modal-toolbar";
+    toolbar.forEach(btnCfg => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = btnCfg.label;
+      if (btnCfg.icon) btn.classList.add(`icon-${btnCfg.icon}`);
+      btn.onclick = btnCfg.onClick;
+      tb.appendChild(btn);
+    });
+    header.appendChild(tb);
+  }
+
+  // 3) Layout switcher
+  let listApi;
   const layoutSwitcher = createLayoutSwitcher({
-    available:   ["row", "stacked", "gallery"],
-    defaultView: "row",
+    available:   layoutOptions,
+    defaultView: layoutOptions[0],
     onChange:    v => listApi?.setLayout(v)
   });
   header.appendChild(layoutSwitcher);
 
-  // 3) Prepare the body wrapper for list + form
+  // 4) Body wrapper
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
     display:       "flex",
@@ -58,7 +77,7 @@ export function createDefinitionModalShell({
   });
   content.appendChild(bodyWrap);
 
-  // 4) Optionally create a floating preview panel
+  // 5) Preview panel
   let previewApi = null;
   if (withPreview && previewType) {
     previewApi = createPreviewPanel(previewType);

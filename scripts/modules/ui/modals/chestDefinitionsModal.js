@@ -1,178 +1,34 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 3.1 – now uses modalHelpers
+// @version: 4.0 – now uses createDefinitionsModal
 
-import {
-  createModal,
-  openModal,
-  closeModal,
-  createDropdownField,
-  createFormButtonRow
-} from "../components/modalHelpers.js";
+import { createDefinitionsModal }    from "../components/definitionsModalFactory.js";
+import chestSchema                    from "../forms/schemas/chestSchema.js";
+import { createChestFormController }  from "../forms/controllers/chestFormController.js";
+import { renderChestEntry }           from "../entries/chestEntryRenderer.js";
+import { makeFirestoreService }       from "../../utils/firestoreServiceFactory.js";
+import { createPreviewPanel }         from "../preview/createPreviewPanel.js";
 
-import { createLayoutSwitcher }        from "../components/layoutSwitcher.js";
-import { createDefListContainer }      from "../../utils/listUtils.js";
-import { createDefinitionListManager } from "../components/definitionListManager.js";
-import { createPreviewPanel }          from "../preview/createPreviewPanel.js";
-import { renderChestEntry }            from "../entries/chestEntryRenderer.js";
-
-import {
-  loadChestDefinitions,
-  saveChestDefinition,
-  updateChestDefinition,
-  deleteChestDefinition
-} from "../../services/chestDefinitionsService.js";
-
-import { loadItemDefinitions }       from "../../services/itemDefinitionsService.js";
-import { createChestFormController } from "../forms/controllers/chestFormController.js";
+const chestService = makeFirestoreService("chestDefinitions");
 
 export function initChestDefinitionsModal(db) {
-  let modal, content, header;
-  let listApi, formApi, previewApi;
-  let definitions = [];
-  let itemMap = {};
+  return createDefinitionsModal({
+    id:            "chest-definitions",
+    title:         "Manage Chest Types",
+    previewType:   "chest",
+    db,
 
-  async function ensureItemMap() {
-    if (!Object.keys(itemMap).length) {
-      const items = await loadItemDefinitions(db);
-      itemMap = Object.fromEntries(items.map(i => [i.id, i]));
+    loadDefs:      () => chestService.loadAll(db),
+    subscribeDefs: cb => chestService.subscribeAll(db, cb),
+    saveDef:       (db, _, payload) => chestService.add(db, payload),
+    updateDef:     (db, id, payload) => chestService.update(db, id, payload),
+    deleteDef:     (db, id) => chestService.remove(db, id),
+
+    createFormController: callbacks => createSchemaFormController(chestSchema, callbacks),
+    renderEntry:          (def, layout, { onClick, onDelete }) =>
+                           renderChestEntry(def, layout, onClick, onDelete),
+
+    enhanceHeader: header => {
+      // Optional: you can still position your preview panel or adjust header
     }
-  }
-
-  async function refreshDefinitions() {
-    definitions = await loadChestDefinitions(db);
-    listApi?.refresh(definitions);
-  }
-
-  function positionPreviewPanel() {
-    const mc = modal.querySelector(".modal-content");
-    const pr = previewApi.container;
-    if (!mc || !pr) return;
-    const r = mc.getBoundingClientRect();
-    pr.style.position = "absolute";
-    pr.style.left = `${r.right + 30}px`;
-    requestAnimationFrame(() => {
-      pr.style.top = `${r.top + r.height / 2 - pr.offsetHeight / 2}px`;
-    });
-  }
-
-  return {
-    refresh: refreshDefinitions,
-
-    open: async () => {
-      if (!modal) {
-        const built = createModal({
-          id:          "chest-definitions-modal",
-          title:       "Manage Chest Types",
-          size:        "large",
-          backdrop:    true,
-          draggable:   false,
-          withDivider: true,
-          onClose:     () => {
-            closeModal(modal);
-            previewApi.hide();
-          }
-        });
-        modal   = built.modal;
-        content = built.content;
-        header  = built.header;
-        modal.classList.add("admin-only");
-
-        const layoutSwitcher = createLayoutSwitcher({
-          available:   ["row", "stacked", "gallery"],
-          defaultView: "row",
-          onChange:    v => listApi.setLayout(v)
-        });
-        header.appendChild(layoutSwitcher);
-
-        const listContainer = createDefListContainer("chest-def-list");
-        previewApi = createPreviewPanel("chest");
-        formApi    = createChestFormController({
-          onCancel: () => {
-            formApi.reset();
-            previewApi.setFromDefinition({ lootPool: [] });
-            previewApi.show();
-          },
-          onDelete: async id => {
-            await deleteChestDefinition(db, id);
-            await refreshDefinitions();
-            formApi.reset();
-            previewApi.setFromDefinition({ lootPool: [] });
-            previewApi.show();
-          },
-          onSubmit: async payload => {
-            if (payload.id) {
-              await updateChestDefinition(db, payload.id, payload);
-            } else {
-              await saveChestDefinition(db, null, payload);
-            }
-            await refreshDefinitions();
-            formApi.reset();
-            previewApi.setFromDefinition({ lootPool: [] });
-            previewApi.show();
-          }
-        }, db);
-
-        formApi.form.classList.add("ui-scroll-float");
-        formApi.form.addEventListener("input", async () => {
-          const live = formApi.getCurrent();
-          if (!live) return;
-          await ensureItemMap();
-          previewApi.setFromDefinition({
-            ...live,
-            lootPool: (live.lootPool || []).map(id => itemMap[id]).filter(Boolean)
-          });
-          previewApi.show();
-        });
-
-        const bodyWrap = document.createElement("div");
-        Object.assign(bodyWrap.style, {
-          display:       "flex",
-          flexDirection: "column",
-          flex:          "1 1 auto",
-          minHeight:     "0"
-        });
-        bodyWrap.append(listContainer, document.createElement("hr"), formApi.form);
-        content.appendChild(bodyWrap);
-
-        listApi = createDefinitionListManager({
-          container:      listContainer,
-          getDefinitions: () => definitions,
-          onEntryClick:   async def => {
-            await ensureItemMap();
-            formApi.populate(def);
-            previewApi.setFromDefinition({
-              ...def,
-              lootPool: (def.lootPool || []).map(id => itemMap[id]).filter(Boolean)
-            });
-            previewApi.show();
-          },
-          onDelete: async id => {
-            await deleteChestDefinition(db, id);
-            await refreshDefinitions();
-          }
-        });
-
-        const maybeSearch = listContainer.previousElementSibling;
-        if (maybeSearch?.classList.contains("list-header")) {
-          maybeSearch.remove();
-          header.appendChild(maybeSearch);
-        }
-
-        previewApi.hide();
-      }
-
-      formApi.reset();
-      await ensureItemMap();
-      await refreshDefinitions();
-
-      openModal(modal);
-
-      formApi.initPickrs();
-      previewApi.setFromDefinition({ lootPool: [] });
-      requestAnimationFrame(() => {
-        positionPreviewPanel();
-        previewApi.show();
-      });
-    }
-  };
+  });
 }

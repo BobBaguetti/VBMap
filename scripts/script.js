@@ -15,7 +15,7 @@ import {
   upsertMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
-} from "./modules/services/firebaseService.js";
+} from "./modules/services/markerService.js";
 
 import { subscribeChestDefinitions } from "./modules/services/chestDefinitionsService.js";
 

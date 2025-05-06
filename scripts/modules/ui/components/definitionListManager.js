@@ -1,53 +1,76 @@
 // @file: /scripts/modules/ui/components/definitionListManager.js
-// @version: 8 – full custom renderer support with object-style callbacks
+// @version: 9.1 - integrated defaultSearchPlaceholder from modalDefaults
 
-import { renderItemEntry } from "../entries/itemEntryRenderer.js";
+import { createFilterableList } from "../../utils/listUtils.js";
+import { defaultSearchPlaceholder } from "./modalDefaults.js";
 
+/**
+ * Manages a list of definitions with search, optional filters, and layout support.
+ *
+ * @param {object} cfg
+ * @param {HTMLElement} cfg.container             - the container element for entries
+ * @param {() => Array<Object>} cfg.getDefinitions - function that returns current definition array
+ * @param {(def:Object, layout:string, { onClick, onDelete }) => HTMLElement} cfg.renderEntry
+ * @param {(def:Object)=>void} [cfg.onEntryClick]
+ * @param {(id:string)=>Promise<void>} [cfg.onDelete]
+ * @param {Array<{id:string,label:string}>} [cfg.filters]        - optional filter buttons
+ * @param {string} [cfg.searchPlaceholder]                       - placeholder for search input
+ * @param {() => string} [cfg.getCurrentLayout]                  - returns current layout ("row", "stacked", etc.)
+ *
+ * @returns {{
+ *   refresh(): void,
+ *   setLayout(layout:string): void,
+ *   activeSorts: Set<string>
+ * }}
+ */
 export function createDefinitionListManager({
   container,
   getDefinitions,
-  renderEntry = (def, layout, { onClick, onDelete }) =>
-    renderItemEntry(def, layout, onClick, onDelete),
+  renderEntry,
   onEntryClick = () => {},
   onDelete = () => Promise.resolve(),
+  filters = [],
+  searchPlaceholder = defaultSearchPlaceholder,
   getCurrentLayout = () => "row"
 }) {
-  let layout = getCurrentLayout();
-
-  // build & insert the search header
-  const header = document.createElement("div");
-  header.className = "list-header";
-  const searchInput = document.createElement("input");
-  searchInput.className = "ui-input";
-  searchInput.placeholder = "Search…";
-  searchInput.addEventListener("input", render);
-  header.appendChild(searchInput);
-  container.parentNode.insertBefore(header, container);
-
-  function render() {
-    const allDefs = getDefinitions();
-    const q = searchInput.value.trim().toLowerCase();
-    const filtered = allDefs.filter(d =>
-      d.name?.toLowerCase().includes(q)
-    );
-
-    container.innerHTML = "";
-    container.className = `def-list ui-scroll-float layout-${layout}`;
-
-    filtered.forEach(def => {
+  // Use createFilterableList to build header (filters & search) and hook rendering
+  const sortFns = {}; // no custom sorts by default
+  const filterable = createFilterableList(
+    container,
+    [], // start empty; we'll refresh immediately
+    sortFns,
+    def => {
+      const layout = getCurrentLayout();
       const entryEl = renderEntry(def, layout, {
         onClick: () => onEntryClick(def),
         onDelete: () => onDelete(def.id)
       });
-      container.appendChild(entryEl);
-    });
+      return entryEl;
+    },
+    {
+      filters,
+      searchPlaceholder,
+      showFilters: filters.length > 0
+    }
+  );
+
+  // Initial render
+  function render() {
+    const defs = getDefinitions();
+    filterable.refresh(defs);
   }
+
+  // Expose layout switching by re-rendering
+  function setLayout(layout) {
+    render();
+  }
+
+  // Run first render
+  render();
 
   return {
     refresh: render,
-    setLayout(newLayout) {
-      layout = newLayout;
-      render();
-    }
+    setLayout,
+    activeSorts: filterable.activeSorts
   };
 }
