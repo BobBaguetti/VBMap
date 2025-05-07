@@ -3,35 +3,35 @@
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 
-// Services under scripts/modules/
+// Services under src/modules/services/
 import {
   subscribeMarkers,
   upsertMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
-} from "../scripts/modules/services/firebaseService.js";
-import { subscribeChestDefinitions } from "../scripts/modules/services/chestDefinitionsService.js";
+} from "./modules/services/firebaseService.js";
+import { subscribeChestDefinitions } from "./modules/services/chestDefinitionsService.js";
 import {
   subscribeItemDefinitions,
   loadItemDefinitions
-} from "../scripts/modules/services/itemDefinitionsService.js";
+} from "./modules/services/itemDefinitionsService.js";
 
-// Map & UI under scripts/modules/
+// Map & UI under src/modules/
 import {
   createMarker,
   createCustomIcon,
   renderPopup,
   renderChestPopup
-} from "../scripts/modules/map/markerManager.js";
-import { initMarkerModal }          from "../scripts/modules/ui/modals/markerModal.js";
-import { initItemDefinitionsModal } from "../scripts/modules/ui/modals/itemDefinitionsModal.js";
-import { initCopyPasteManager }     from "../scripts/modules/map/copyPasteManager.js";
-import { setupSidebar }             from "../scripts/modules/sidebar/sidebarManager.js";
+} from "./modules/map/markerManager.js";
+import { initMarkerModal }          from "./modules/ui/modals/markerModal.js";
+import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initCopyPasteManager }     from "./modules/map/copyPasteManager.js";
+import { setupSidebar }             from "./modules/sidebar/sidebarManager.js";
 import {
   showContextMenu,
   hideContextMenu
-} from "../scripts/modules/ui/uiManager.js";
-import { activateFloatingScrollbars } from "../scripts/modules/utils/scrollUtils.js";
+} from "./modules/ui/uiManager.js";
+import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js";
 
 let chestDefMap = {};
 let itemDefMap  = {};
@@ -39,29 +39,36 @@ export let allMarkers = [];
 let filterMarkers, loadItemFilters;
 
 export function bootstrapUI(isAdmin) {
+  // Keep chest definitions up to date
   subscribeChestDefinitions(db, defs => {
     chestDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
   });
 
   (async () => {
+    // Sidebar (filters, etc.)
     ({ filterMarkers, loadItemFilters } = await setupSidebar(
       map, layers, allMarkers, db, {}
     ));
 
+    // Initial item definitions load
     const initialDefs = await loadItemDefinitions(db);
     itemDefMap = Object.fromEntries(initialDefs.map(d => [d.id, d]));
 
+    // Subscribe to markers
     subscribeMarkers(db, markers => {
+      // Clear old markers
       allMarkers.forEach(({ markerObj }) => {
         markerObj.remove();
         clusterItemLayer.removeLayer(markerObj);
       });
       allMarkers.length = 0;
 
+      // Add new ones
       markers.forEach(data => addMarker(data));
       loadItemFilters().then(filterMarkers);
     });
 
+    // Live item-definition hydration
     subscribeItemDefinitions(db, async () => {
       const defs = await loadItemDefinitions(db);
       itemDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
@@ -88,10 +95,12 @@ export function bootstrapUI(isAdmin) {
       filterMarkers();
     });
 
+    // Initialize modals and copy/paste
     const markerForm = initMarkerModal(db);
     initItemDefinitionsModal(db);
     const copyMgr = initCopyPasteManager(map, upsertMarker.bind(null, db));
 
+    // Helper for adding markers
     function addMarker(data) {
       if (data.type === "Chest") {
         const def = chestDefMap[data.chestTypeId] || { lootPool: [] };
@@ -121,6 +130,7 @@ export function bootstrapUI(isAdmin) {
       allMarkers.push({ markerObj, data });
     }
 
+    // Common callbacks for edit/copy/drag/delete
     const callbacks = {
       onEdit: (m, d, e) => markerForm.openEdit(m, d, e, updated => {
         m.setIcon(createCustomIcon(updated));
@@ -143,6 +153,7 @@ export function bootstrapUI(isAdmin) {
       }
     };
 
+    // Context menu for creating markers
     map.on("contextmenu", evt => {
       if (!isAdmin) return;
       showContextMenu(
@@ -160,6 +171,7 @@ export function bootstrapUI(isAdmin) {
       );
     });
 
+    // Hide context menu on outside click
     document.addEventListener("click", e => {
       const cm = document.getElementById("context-menu");
       if (cm?.style.display === "block" && !cm.contains(e.target)) {
@@ -167,6 +179,7 @@ export function bootstrapUI(isAdmin) {
       }
     });
 
+    // Activate custom scrollbars once DOM is ready
     document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
   })();
 }
