@@ -189,5 +189,13 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     await onSubmit?.(getCustom());
   });
 
-  return { form, reset, populate, getCustom, initPickrs };
+  return {
+    form,
+    reset,
+    populate,
+    initPickrs,
+    // alias for preview wiring
+    getCurrentPayload: getCustom,
+    getCustom
+  };
 }
