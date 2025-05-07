@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.37 — added onFieldChange wiring to inputs/selects/textareas
+// @version: 4.38 — wire onFieldChange via form 'input' event
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -187,21 +187,16 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     };
   }
 
-  // ─── Live‐preview wiring ───────────────────────────────────────────
-  Array.from(form.elements).forEach(el => {
-    if (!["INPUT","SELECT","TEXTAREA"].includes(el.tagName)) return;
-    const evt = el.tagName === "SELECT" ? "change" : "input";
-    el.addEventListener(evt, () => {
-      if (typeof onFieldChange === "function") {
-        onFieldChange(getCustom());
-      }
-    });
-  });
-
-  // ─── Form submission ───────────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit?.(getCustom());
+  });
+
+  // ─── Live‐preview wiring ───────────────────────────────────────────
+  form.addEventListener("input", () => {
+    if (typeof onFieldChange === "function") {
+      onFieldChange(getCustom());
+    }
   });
 
   return {
@@ -209,7 +204,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     reset,
     populate,
     initPickrs,
-    getCustom,
-    getCurrentPayload: getCustom
+    getCurrentPayload: getCustom,
+    getCustom
   };
 }

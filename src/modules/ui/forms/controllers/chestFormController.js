@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.6 — added onFieldChange wiring to inputs/selects/textareas
+// @version: 2.7 — wire onFieldChange via form 'input' event
 
 import { createPickr }            from "../../pickrManager.js";
 import { getPickrHexColor }       from "../../../utils/colorUtils.js";
@@ -74,7 +74,6 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
 
   buttonRow.append(btnSave, btnClear, btnDelete);
   subheadingWrap.appendChild(buttonRow);
-
   form.prepend(subheadingWrap);
 
   // ─── Pickr for Description ────────────────────────────────────────
@@ -90,6 +89,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
 
   // ─── Loot-pool picker ─────────────────────────────────────────────
   let pickerModal, pickerContent, pickerSearch, pickerList;
+
   async function buildPicker() {
     if (pickerModal) return;
     const { modal, header, content } = createModal({
@@ -251,21 +251,16 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     };
   }
 
-  // ─── Live‐preview wiring for simple fields ─────────────────────────
-  Array.from(form.elements).forEach(el => {
-    if (!["INPUT","SELECT","TEXTAREA"].includes(el.tagName)) return;
-    const evt = el.tagName === "SELECT" ? "change" : "input";
-    el.addEventListener(evt, () => {
-      if (typeof onFieldChange === "function") {
-        onFieldChange(getCustom());
-      }
-    });
-  });
-
-  // ─── Form submission ───────────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit?.(getCustom());
+  });
+
+  // ─── Live‐preview wiring ───────────────────────────────────────────
+  form.addEventListener("input", () => {
+    if (typeof onFieldChange === "function") {
+      onFieldChange(getCustom());
+    }
   });
 
   return {
@@ -273,7 +268,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     reset,
     populate,
     initPickrs,
-    getCustom,
-    getCurrentPayload: getCustom
+    getCurrentPayload: getCustom,
+    getCustom
   };
 }
