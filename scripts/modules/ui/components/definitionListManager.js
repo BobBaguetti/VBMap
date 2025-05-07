@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionListManager.js
-// @version: 9.1 - integrated defaultSearchPlaceholder from modalDefaults
+// @version: 9.2 – add showSearch flag to suppress built-in search
 
 import { createFilterableList } from "../../utils/listUtils.js";
 import { defaultSearchPlaceholder } from "./modalDefaults.js";
@@ -8,14 +8,15 @@ import { defaultSearchPlaceholder } from "./modalDefaults.js";
  * Manages a list of definitions with search, optional filters, and layout support.
  *
  * @param {object} cfg
- * @param {HTMLElement} cfg.container             - the container element for entries
- * @param {() => Array<Object>} cfg.getDefinitions - function that returns current definition array
+ * @param {HTMLElement} cfg.container               - the container element for entries
+ * @param {() => Array<Object>} cfg.getDefinitions - returns current definition array
  * @param {(def:Object, layout:string, { onClick, onDelete }) => HTMLElement} cfg.renderEntry
  * @param {(def:Object)=>void} [cfg.onEntryClick]
  * @param {(id:string)=>Promise<void>} [cfg.onDelete]
- * @param {Array<{id:string,label:string}>} [cfg.filters]        - optional filter buttons
- * @param {string} [cfg.searchPlaceholder]                       - placeholder for search input
- * @param {() => string} [cfg.getCurrentLayout]                  - returns current layout ("row", "stacked", etc.)
+ * @param {Array<{id:string,label:string}>} [cfg.filters] - optional filter buttons
+ * @param {string} [cfg.searchPlaceholder]             - placeholder for search input
+ * @param {boolean} [cfg.showSearch=true]              - whether to show built-in search box
+ * @param {() => string} [cfg.getCurrentLayout]        - returns current layout
  *
  * @returns {{
  *   refresh(): void,
@@ -27,49 +28,48 @@ export function createDefinitionListManager({
   container,
   getDefinitions,
   renderEntry,
-  onEntryClick = () => {},
-  onDelete = () => Promise.resolve(),
-  filters = [],
+  onEntryClick      = () => {},
+  onDelete          = () => Promise.resolve(),
+  filters           = [],
   searchPlaceholder = defaultSearchPlaceholder,
-  getCurrentLayout = () => "row"
+  showSearch        = true,
+  getCurrentLayout  = () => "row"
 }) {
-  // Use createFilterableList to build header (filters & search) and hook rendering
-  const sortFns = {}; // no custom sorts by default
+  // Build header (filters & optional search) and hook rendering
   const filterable = createFilterableList(
     container,
-    [], // start empty; we'll refresh immediately
-    sortFns,
+    [],      // start empty; we'll refresh immediately
+    {},      // no custom sort functions
     def => {
       const layout = getCurrentLayout();
-      const entryEl = renderEntry(def, layout, {
-        onClick: () => onEntryClick(def),
+      return renderEntry(def, layout, {
+        onClick:  () => onEntryClick(def),
         onDelete: () => onDelete(def.id)
       });
-      return entryEl;
     },
     {
       filters,
       searchPlaceholder,
-      showFilters: filters.length > 0
+      showFilters: filters.length > 0,
+      showSearch   // ← honor the flag
     }
   );
 
-  // Initial render
+  // Perform initial render
   function render() {
     const defs = getDefinitions();
     filterable.refresh(defs);
   }
 
-  // Expose layout switching by re-rendering
+  // Re-render when layout changes
   function setLayout(layout) {
     render();
   }
 
-  // Run first render
   render();
 
   return {
-    refresh: render,
+    refresh:    render,
     setLayout,
     activeSorts: filterable.activeSorts
   };

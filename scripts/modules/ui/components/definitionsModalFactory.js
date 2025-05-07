@@ -1,9 +1,9 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 2.4 – search in header, sub-header between list & form, close button right
+// @version: 2.4 – suppress list’s built-in search (use only header search)
 
-import { createDefinitionModalShell }   from "./definitionModalShell.js";
+import { createDefinitionModalShell } from "./definitionModalShell.js";
 import { createDefListContainer, createSearchRow } from "../../utils/listUtils.js";
-import { createDefinitionListManager }  from "./definitionListManager.js";
+import { createDefinitionListManager } from "./definitionListManager.js";
 import {
   defaultToolbar,
   defaultLayoutOptions,
@@ -18,7 +18,7 @@ export function createDefinitionsModal(config) {
   const {
     id,
     title,
-    previewType = null,
+    previewType      = null,
     db,
     loadDefs,
     saveDef,
@@ -28,8 +28,8 @@ export function createDefinitionsModal(config) {
     createFormController,
     renderEntry,
     enhanceHeader,
-    toolbar       = defaultToolbar,
-    layoutOptions = defaultLayoutOptions
+    toolbar           = defaultToolbar,
+    layoutOptions     = defaultLayoutOptions
   } = config;
 
   let shell, listApi, formApi, previewApi;
@@ -53,7 +53,7 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) Create the modal shell
+    // 1) modal shell (toolbar & layout toggles)
     shell = createDefinitionModalShell({
       id,
       title,
@@ -64,24 +64,16 @@ export function createDefinitionsModal(config) {
     });
     const { header, bodyWrap } = shell;
 
-    // Make header flex so close button always far right
-    header.style.display = "flex";
-    header.style.alignItems = "center";
-
-    // 1a) Render toolbar buttons (before layout toggles)
+    // render any toolbar buttons
     toolbar.forEach(cfg => renderToolbarButton(cfg, header, { shell }));
 
-    // 1b) Layout toggles are already appended by createDefinitionModalShell
-    // but we want them after toolbar and before the search…
-
-    // 1c) Inject search bar into header
+    // insert our custom header search (only one)
     const { row: searchRow, input: searchInput } =
       createSearchRow(`${id}-search`, defaultSearchPlaceholder);
     searchRow.style.marginLeft = "auto";
-    searchRow.style.flexShrink = "0";
     header.appendChild(searchRow);
 
-    // 2) Instantiate form controller
+    // 2) form controller
     formApi = createFormController({
       onCancel: async () => {
         formApi.reset();
@@ -108,17 +100,29 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // 3) Build list container & divider
+    // 3) move the Add/Edit sub-header into the modal header
+    const subHeader = formApi.getSubHeaderElement();
+    if (subHeader) {
+      subHeader.style.marginLeft = "auto";
+      header.appendChild(subHeader);
+    } else {
+      console.warn(`Sub-header not found for modal '${id}'.`);
+    }
+
+    // 4) any extra header wiring
+    enhanceHeader?.(header, { shell, formApi });
+
+    // 5) insert list + divider
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
 
-    // 4) Wire up definition list manager (it uses its own search input)
+    // 6) suppress the list’s own search, rely on our header search instead
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
       renderEntry,
-      onEntryClick: def => {
+      onEntryClick: async def => {
         formApi.populate(def);
         previewApi.setFromDefinition(def);
         previewApi.show();
@@ -131,29 +135,21 @@ export function createDefinitionsModal(config) {
         previewApi.setFromDefinition({});
         previewApi.show();
         formApi.showAdd?.();
-      }
+      },
+      showSearch: false    // ← turn off built-in search box
     });
 
-    // Tie our header search to the list manager
+    // wire our header search into the list
     searchInput.addEventListener("input", () => {
       listApi.refresh(definitions);
     });
 
-    // 5) Add/Edit sub-header (from the form controller)
-    const subHeader = formApi.getSubHeaderElement();
-    if (subHeader) {
-      subHeader.style.margin = "0 0 10px";
-      bodyWrap.appendChild(subHeader);
-    } else {
-      console.warn(`Sub-header not found in modal '${id}'`);
-    }
-
-    // 6) Insert the form
+    // 7) insert the form
     previewApi = shell.previewApi;
     formApi.form.classList.add("ui-scroll-float");
     bodyWrap.appendChild(formApi.form);
 
-    // 7) Live preview on form input
+    // live preview on edits
     formApi.form.addEventListener("input", () => {
       const live = formApi.getCurrent();
       if (live) {
