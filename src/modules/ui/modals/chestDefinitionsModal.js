@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.4 — uses previewController to shrink modal code
+// @version: 1.5 — plug in getCurrentPayload to previewController
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
@@ -19,7 +19,7 @@ import { createChestFormController } from "../forms/controllers/chestFormControl
 export function initChestDefinitionsModal(db) {
   let listApi, formApi, definitions = [];
   let modal, header, content, openShell;
-  let showPreview, hidePreview;
+  let showPreview, liveReShow, hidePreview;
   let itemMap = {};
 
   async function ensureItemMap() {
@@ -38,35 +38,34 @@ export function initChestDefinitionsModal(db) {
   return {
     async open() {
       if (!modal) {
-        // build the shell (no built-in preview, disable its search)
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
           id:            "chest-definitions-modal",
           title:         "Manage Chest Types",
           size:          "large",
           searchable:    false,
-          layoutOptions: ["row", "gallery", "stacked"],
+          layoutOptions: ["row","gallery","stacked"],
           onClose:       () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
-        // set up preview controller
-        const preview = createPreviewController("chest");
-        showPreview = preview.show;
-        hidePreview = preview.hide;
-        hidePreview();
+        // preview wiring
+        const preview = createPreviewController("chest", () => formApi.getCurrentPayload());
+        showPreview  = preview.show;
+        liveReShow   = preview.liveReShow;
+        hidePreview  = preview.hide;
 
         // list & form
         const listContainer = createDefListContainer("chest-def-list");
         formApi = createChestFormController({
           onCancel: async () => {
             formApi.reset();
-            showPreview({ lootPool: [] });
+            liveReShow();
           },
           onDelete: async id => {
             await deleteChestDefinition(db, id);
             await refreshList();
             formApi.reset();
-            showPreview({ lootPool: [] });
+            liveReShow();
           },
           onSubmit: async payload => {
             if (payload.id) {
@@ -76,11 +75,11 @@ export function initChestDefinitionsModal(db) {
             }
             await refreshList();
             formApi.reset();
-            showPreview({ lootPool: [] });
+            liveReShow();
           }
         }, db);
 
-        // assemble modal content
+        // assemble
         header.append(...listContainer.querySelectorAll(".list-header"));
         content.append(
           listContainer,
@@ -95,10 +94,8 @@ export function initChestDefinitionsModal(db) {
           onEntryClick: async def => {
             await ensureItemMap();
             formApi.populate(def);
-            showPreview({
-              ...def,
-              lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
-            });
+            formApi.initPickrs();
+            liveReShow();
           },
           onDelete: async id => {
             await deleteChestDefinition(db, id);
@@ -107,7 +104,7 @@ export function initChestDefinitionsModal(db) {
         });
       }
 
-      // on each open
+      // each open
       formApi.reset();
       await ensureItemMap();
       await refreshList();
@@ -116,7 +113,7 @@ export function initChestDefinitionsModal(db) {
       formApi.initPickrs();
       initModalPickrs(content);
 
-      showPreview({ lootPool: [] });
+      liveReShow();
     }
   };
 }

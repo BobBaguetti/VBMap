@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.4 — uses previewController to shrink modal code
+// @version: 1.5 — plug in getCurrentPayload to previewController
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
@@ -19,7 +19,7 @@ import { createItemFormController } from "../forms/controllers/itemFormControlle
 export function initItemDefinitionsModal(db) {
   let listApi, formApi, definitions = [];
   let modal, header, content, openShell;
-  let showPreview, hidePreview;
+  let showPreview, liveReShow, hidePreview;
 
   async function refreshList() {
     definitions = await loadItemDefinitions(db);
@@ -29,35 +29,34 @@ export function initItemDefinitionsModal(db) {
   return {
     async open() {
       if (!modal) {
-        // build the shell (no built-in preview, disable its search)
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
           id:            "item-definitions-modal",
           title:         "Manage Items",
           size:          "large",
           searchable:    false,
-          layoutOptions: ["row", "gallery", "stacked"],
+          layoutOptions: ["row","gallery","stacked"],
           onClose:       () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
-        // set up preview controller
-        const preview = createPreviewController("item");
-        showPreview = preview.show;
-        hidePreview = preview.hide;
-        hidePreview();
+        // wire preview with formApi.getCurrentPayload
+        const preview = createPreviewController("item", () => formApi.getCurrentPayload());
+        showPreview  = preview.show;
+        liveReShow   = preview.liveReShow;
+        hidePreview  = preview.hide;
 
         // list & form
         const listContainer = createDefListContainer("item-def-list");
         formApi = createItemFormController({
           onCancel: async () => {
             formApi.reset();
-            showPreview({});
+            liveReShow();
           },
           onDelete: async id => {
             await deleteItemDefinition(db, id);
             await refreshList();
             formApi.reset();
-            showPreview({});
+            liveReShow();
           },
           onSubmit: async payload => {
             payload.showInFilters = payload.addToFilters;
@@ -68,11 +67,11 @@ export function initItemDefinitionsModal(db) {
             }
             await refreshList();
             formApi.reset();
-            showPreview({});
+            liveReShow();
           }
         }, db);
 
-        // assemble modal content
+        // assemble
         header.append(...listContainer.querySelectorAll(".list-header"));
         content.append(
           listContainer,
@@ -87,7 +86,7 @@ export function initItemDefinitionsModal(db) {
           onEntryClick: def => {
             formApi.populate(def);
             formApi.initPickrs();
-            showPreview(def);
+            liveReShow();
           },
           onDelete: async id => {
             await deleteItemDefinition(db, id);
@@ -96,7 +95,7 @@ export function initItemDefinitionsModal(db) {
         });
       }
 
-      // on each open
+      // each open
       formApi.reset();
       await refreshList();
 
@@ -104,7 +103,8 @@ export function initItemDefinitionsModal(db) {
       formApi.initPickrs();
       initModalPickrs(content);
 
-      showPreview({});
+      // show blank or initial payload
+      liveReShow();
     }
   };
 }
