@@ -1,5 +1,5 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 2
+// @version: 3
 
 import { makeDraggable, positionModal, hideContextMenu } from "../uiManager.js";
 import { initPickr } from "../pickrManager.js";            // your Pickr setup
@@ -20,9 +20,9 @@ export function createDefinitionModal({
   loadFn,
   saveFn,
   deleteFn,
-  onInit,      // (modalEl) => void
-  onPopulate,  // (formEl, def) => void
-  onCollect    // (formEl) => partial overrides on collected data
+  onInit,
+  onPopulate,
+  onCollect
 }) {
   let modal, listEl, formEl;
 
@@ -71,7 +71,7 @@ export function createDefinitionModal({
     footer.appendChild(closeBtn);
     modal.appendChild(footer);
 
-    // outside-click hides context menus
+    // Outside-click hides context menus
     document.addEventListener("click", e => {
       if (!modal.contains(e.target)) hideContextMenu();
     });
@@ -113,10 +113,19 @@ export function createDefinitionModal({
   function populate(def) {
     editing = { ...def };
     clearForm();
+
     schema.forEach(field => {
+      // Field wrapper
       const wrapper = document.createElement("div");
+      wrapper.classList.add("field-row");
+      if (field.type === "multiselect") {
+        wrapper.classList.add("loot-pool-row");
+      }
       const label = document.createElement("label");
       label.textContent = field.label;
+      wrapper.appendChild(label);
+
+      // Input element
       let input;
       switch (field.type) {
         case "textarea":
@@ -149,15 +158,35 @@ export function createDefinitionModal({
       if (field.min != null) input.min = field.min;
       if (field.step != null) input.step = field.step;
       input.name = field.name;
-      wrapper.append(label, input);
-      formEl.appendChild(wrapper);
+      wrapper.appendChild(input);
 
+      // Color picker
       if (field.colorPicker) {
         initPickr(input);
       }
+      // Extra-info UI
       if (field.extraInfo) {
         initExtraInfo(wrapper, editing[field.name] || "");
       }
+
+      // For loot-pool: add cog + wrapper
+      if (field.type === "multiselect") {
+        const select = input;
+        const poolWrap = document.createElement("div");
+        poolWrap.className = "loot-pool-wrapper";
+        poolWrap.appendChild(select);
+
+        const cog = document.createElement("button");
+        cog.type = "button";
+        cog.className = "loot-pool-cog";
+        cog.innerHTML = "⚙";
+        // can wire up the old picker-open logic here if needed
+        poolWrap.appendChild(cog);
+
+        wrapper.appendChild(poolWrap);
+      }
+
+      formEl.appendChild(wrapper);
     });
 
     onPopulate?.(formEl, editing);
@@ -175,9 +204,7 @@ export function createDefinitionModal({
         data[el.name] = el.value;
       }
     });
-    // allow override/transforms
     Object.assign(data, onCollect?.(formEl) || {});
-    // preserve id if editing
     if (editing.id) data.id = editing.id;
     return data;
   }
