@@ -35,3 +35,4 @@ Object.entries(layers).forEach(([type, layer]) => {
 
 // show clustered items
 flatItemLayer.addTo(map);
+ 
