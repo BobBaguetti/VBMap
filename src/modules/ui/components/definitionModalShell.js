@@ -1,8 +1,9 @@
 // @file: src/modules/ui/components/definitionModalShell.js
-// @version: 5.6 — reintroduce a scrollable body wrapper for content
+// @version: 5.7 — re-enable floating scrollbars in the body
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }              from "../uiKit.js";
+import { activateFloatingScrollbars }        from "../../utils/scrollUtils.js";
 
 export function createDefinitionModalShell({
   id,
@@ -12,7 +13,7 @@ export function createDefinitionModalShell({
   layoutOptions = ["row", "stacked", "gallery"],
   onClose = () => {}
 }) {
-  // Build the base modal
+  // 1) Build base modal with header & close-span
   const { modal, content, header } = createModal({
     id,
     title,
@@ -26,11 +27,13 @@ export function createDefinitionModalShell({
     }
   });
 
-  // Grab and remove the close “×” (span.close)
+  // 2) Grab the original close “×” button (span.close)
   const closeBtn = header.querySelector(".close");
 
-  // Clear header and rebuild it in two columns
+  // 3) Clear out the header so we can rebuild it
   header.innerHTML = "";
+
+  // 4) Left side: Title
   const left = document.createElement("div");
   left.style.flex = "1";
   left.style.display = "flex";
@@ -40,12 +43,13 @@ export function createDefinitionModalShell({
   titleEl.style.margin = 0;
   left.appendChild(titleEl);
 
+  // 5) Right side: layout switcher, optional search, then close
   const right = document.createElement("div");
   right.style.display = "flex";
   right.style.alignItems = "center";
   right.style.gap = "8px";
 
-  // Layout switcher
+  // layout‐switcher buttons
   const layoutSwitcher = createLayoutSwitcher({
     available:   layoutOptions,
     defaultView: layoutOptions[0],
@@ -53,7 +57,7 @@ export function createDefinitionModalShell({
   });
   right.appendChild(layoutSwitcher);
 
-  // Optional search input
+  // optional header search
   if (searchable) {
     const search = document.createElement("input");
     search.type        = "search";
@@ -62,11 +66,12 @@ export function createDefinitionModalShell({
     right.appendChild(search);
   }
 
-  // Re-append close button at far right
+  // re-append the close button at the far right
   if (closeBtn) {
     right.appendChild(closeBtn);
   }
 
+  // 6) Final header assembly
   header.style.display        = "flex";
   header.style.alignItems     = "center";
   header.style.justifyContent = "space-between";
@@ -74,20 +79,23 @@ export function createDefinitionModalShell({
 
   // ─── Create a scrollable body wrapper ───────────────────────────────
   const bodyWrap = document.createElement("div");
+  bodyWrap.classList.add("ui-scroll-float");
   Object.assign(bodyWrap.style, {
-    flex:        "1 1 auto",
-    overflowY:   "auto",
-    padding:     "1rem",      // optional padding
-    boxSizing:   "border-box"
+    flex:      "1 1 auto",
+    overflowY: "auto",
+    padding:   "1rem",
+    boxSizing: "border-box"
   });
 
-  // Move any existing children after header into bodyWrap
+  // Move any existing contents (divider, etc.) into bodyWrap
   while (content.childNodes.length > 1) {
     bodyWrap.appendChild(content.childNodes[1]);
   }
   content.appendChild(bodyWrap);
 
-  // Return the body wrapper as the "content" target for modals
+  // Re-activate your floating scrollbar logic
+  activateFloatingScrollbars(bodyWrap);
+
   return {
     modal,
     header,
