@@ -1,16 +1,20 @@
 // @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 10.4
+// @version: 10.5
 
-import { loadItemDefinitions } from "../services/itemDefinitionsService.js";
-// We assume script.js attaches these to window:
-const itemModal  = window.itemModal;
-const chestModal = window.chestModal;
+import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
+import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
+import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
 
 export async function setupSidebar(
   map, layers, allMarkers, db,
   { enableGrouping, disableGrouping }
 ) {
   console.log("[sidebar] setupSidebar() running");
+
+  // Instantiate modals here
+  const itemModal  = initItemDefinitionsModal(db);
+  const chestModal = initChestDefinitionsModal(db);
+
   const searchBar     = document.getElementById("search-bar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebar       = document.getElementById("sidebar");
@@ -76,7 +80,8 @@ export async function setupSidebar(
       const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
       let mainVisible = true;
-      document.querySelectorAll("#main-filters .toggle-group input")
+      document
+        .querySelectorAll("#main-filters .toggle-group input")
         .forEach(cb => {
           if (data.type === cb.dataset.layer && !cb.checked)
             mainVisible = false;
@@ -112,11 +117,12 @@ export async function setupSidebar(
 
   // ─── Add “Chests” Toggle ─────────────────────────────────────────
   const mainGroup = document.querySelector("#main-filters .toggle-group");
-  const chestLabel = document.createElement("label");
-  chestLabel.innerHTML =
+  const chestLabelChk = document.createElement("label");
+  chestLabelChk.innerHTML =
     `<input type="checkbox" checked data-layer="Chest"/><span>Chests</span>`;
-  mainGroup.append(chestLabel);
-  chestLabel.querySelector("input")
+  mainGroup.append(chestLabelChk);
+  chestLabelChk
+    .querySelector("input")
     .addEventListener("change", filterMarkers);
 
   // ─── Item Filters ─────────────────────────────────────────────────
@@ -124,18 +130,20 @@ export async function setupSidebar(
   async function loadItemFilters() {
     itemFilterList.innerHTML = "";
     const defs = await loadItemDefinitions(db);
-    defs.filter(d => d.showInFilters).forEach(d => {
-      const label = document.createElement("label");
-      const cb    = document.createElement("input");
-      cb.type           = "checkbox";
-      cb.checked        = true;
-      cb.dataset.itemId = d.id;
-      const span = document.createElement("span");
-      span.textContent = d.name;
-      label.append(cb, span);
-      itemFilterList.append(label);
-      cb.addEventListener("change", filterMarkers);
-    });
+    defs
+      .filter(d => d.showInFilters)
+      .forEach(d => {
+        const label = document.createElement("label");
+        const cb    = document.createElement("input");
+        cb.type           = "checkbox";
+        cb.checked        = true;
+        cb.dataset.itemId = d.id;
+        const span = document.createElement("span");
+        span.textContent = d.name;
+        label.append(cb, span);
+        itemFilterList.append(label);
+        cb.addEventListener("change", filterMarkers);
+      });
   }
   await loadItemFilters();
 
@@ -154,16 +162,8 @@ export async function setupSidebar(
   adminWrap.style.display = "none";
 
   [
-    ["Manage Items", () => {
-      console.log("Sidebar: Manage Items clicked");
-      if (itemModal) itemModal.open();
-      else console.error("itemModal is undefined");
-    }],
-    ["Manage Chests", () => {
-      console.log("Sidebar: Manage Chests clicked");
-      if (chestModal) chestModal.open();
-      else console.error("chestModal is undefined");
-    }]
+    ["Manage Items",  () => { console.log("Manage Items clicked"); itemModal.open(); }],
+    ["Manage Chests", () => { console.log("Manage Chests clicked"); chestModal.open(); }]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;
