@@ -1,182 +1,204 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 10
+// @version: 11
 
-import { createModal, openModal, closeModal } from "../uiKit.js";
-import { createPickr }                        from "../pickrManager.js";
-import { createExtraInfoField }               from "../forms/universalForm.js";
+import { createDefinitionModalShell } from "../components/definitionModalShell.js";
+import { createPickr }               from "../pickrManager.js";
+import { createExtraInfoField }       from "../forms/universalForm.js";
 
+/**
+ * Generic modal factory using your modal shell + schema-driven form.
+ *
+ * schema: array of { name, label, type, extraInfo?, colorPicker?, optionsService?, required?, min?, step? }
+ * loadFn: () => Promise<[defs]>
+ * saveFn: def => Promise
+ * deleteFn: id => Promise
+ * onCollect/onPopulate/onInit: hooks
+ */
 export function createDefinitionModal({
   id, title, schema,
   loadFn, saveFn, deleteFn,
+  withPreview = false,
+  previewType = null,
+  layoutOptions = ["row","stacked","gallery"],
   onInit, onPopulate, onCollect
 }) {
-  let modalEl, contentEl, headerEl;
+  // instantiate shell
+  const shell = createDefinitionModalShell({
+    id,
+    title,
+    size: "large",
+    withPreview,
+    previewType,
+    layoutOptions,
+    onClose: () => shell.close()
+  });
+
+  const { modal, bodyWrap, header } = shell;
   let listEl, formEl;
   let currentDefs = [], editing = {};
-  const extraInfoMap = {}; // name->api
+  const extraInfoMap = {};
 
-  function ensureModal() {
-    if (modalEl) return { modalEl, contentEl, headerEl, listEl, formEl };
+  // build the two panels inside bodyWrap: left = list+search, right = form
+  const leftPanel = document.createElement("div");
+  leftPanel.className = "def-shell-list";
+  Object.assign(leftPanel.style, { flex: "0 0 200px", overflowY: "auto" });
 
-    const parts = createModal({
-      id,
-      title,
-      size: "large",
-      backdrop: true,
-      draggable: true,
-      withDivider: true,
-      onClose: () => close()
-    });
-    modalEl   = parts.modal;
-    contentEl = parts.content;
-    headerEl  = parts.header;
+  // search input
+  const search = document.createElement("input");
+  search.type = "search";
+  search.placeholder = "Search…";
+  search.className = "ui-input";
+  search.style.width = "100%";
+  search.style.marginBottom = "8px";
+  leftPanel.appendChild(search);
 
-    listEl = document.createElement("div");
-    listEl.className = "def-list";
-    contentEl.appendChild(listEl);
+  // list container
+  listEl = document.createElement("div");
+  leftPanel.appendChild(listEl);
 
-    formEl = document.createElement("form");
-    formEl.className = "def-form";
-    contentEl.appendChild(formEl);
+  // toolbar
+  const toolbar = document.createElement("div");
+  toolbar.className = "def-shell-toolbar";
+  toolbar.style.marginTop = "8px";
+  const newBtn = document.createElement("button");
+  newBtn.textContent = "+ New";
+  newBtn.className = "ui-button";
+  toolbar.appendChild(newBtn);
+  leftPanel.appendChild(toolbar);
 
-    onInit?.(modalEl);
-    return { modalEl, contentEl, headerEl, listEl, formEl };
-  }
+  // form panel
+  formEl = document.createElement("div");
+  formEl.className = "def-shell-form";
+  formEl.style.flex = "1 1 auto";
+  formEl.style.overflowY = "auto";
+  formEl = document.createElement("form");
+  formEl.className = "def-form";
 
-  async function open() {
-    ensureModal();
-    await refreshList();
-    populate({});       // auto-open "New"
-    openModal(modalEl);
-  }
+  // layout panels
+  const container = document.createElement("div");
+  container.style.display = "flex";
+  container.style.height = "100%";
+  container.append(leftPanel, formEl);
+  bodyWrap.appendChild(container);
 
-  function close() {
-    if (modalEl) closeModal(modalEl);
-  }
+  // Hook up search & new
+  search.addEventListener("input", filterList);
+  newBtn.addEventListener("click", () => populate({}));
 
+  // load definitions, render list
   async function refreshList() {
-    ensureModal();
     currentDefs = await loadFn();
+    renderList();
+  }
+
+  function renderList() {
     listEl.innerHTML = "";
+    const q = (search.value || "").toLowerCase();
+    currentDefs
+      .filter(d => d.name.toLowerCase().includes(q))
+      .forEach(def => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = def.name;
+        btn.className = "ui-button def-list-entry";
+        btn.onclick = () => populate(def);
+        listEl.appendChild(btn);
+      });
+  }
 
-    currentDefs.forEach(def => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = def.name;
-      btn.addEventListener("click", () => populate(def));
-      listEl.appendChild(btn);
-    });
-
-    const newBtn = document.createElement("button");
-    newBtn.type = "button";
-    newBtn.textContent = "+ New";
-    newBtn.addEventListener("click", () => populate({}));
-    listEl.appendChild(newBtn);
+  function filterList() {
+    renderList();
   }
 
   function clearForm() {
-    ensureModal();
     formEl.innerHTML = "";
-    // clear previous extraInfos
     Object.keys(extraInfoMap).forEach(k => delete extraInfoMap[k]);
   }
 
   function populate(def) {
-    ensureModal();
     editing = { ...def };
     clearForm();
 
     schema.forEach(field => {
       const row = document.createElement("div");
       row.className = "field-row";
-
+      // label
       const label = document.createElement("label");
       label.textContent = field.label;
       row.appendChild(label);
 
-      let input; 
+      let input, extraInfoApi;
+
       if (field.extraInfo) {
-        // custom extra-info UI
         const { row: infoRow, extraInfo } = createExtraInfoField({ withDividers: false });
         extraInfoMap[field.name] = extraInfo;
         row.appendChild(infoRow);
-        // no `input` assignment here
       } else {
         switch (field.type) {
           case "textarea":
             input = document.createElement("textarea");
             input.value = editing[field.name] || "";
-            row.appendChild(input);
-            break;
-          case "multiselect":
-            input = document.createElement("select");
-            input.multiple = true;
-            row.appendChild(input);
-            field.optionsService().then(opts => {
-              opts.forEach(o => {
-                const opt = document.createElement("option");
-                opt.value = o.id;
-                opt.textContent = o.name;
-                if ((editing[field.name] || []).includes(o.id)) opt.selected = true;
-                input.appendChild(opt);
-              });
-            });
             break;
           case "checkbox":
             input = document.createElement("input");
             input.type = "checkbox";
             input.checked = Boolean(editing[field.name]);
-            row.appendChild(input);
+            break;
+          case "multiselect":
+            input = document.createElement("select");
+            input.multiple = true;
+            field.optionsService().then(opts => {
+              opts.forEach(o => {
+                const oEl = document.createElement("option");
+                oEl.value = o.id;
+                oEl.textContent = o.name;
+                if ((editing[field.name]||[]).includes(o.id)) oEl.selected = true;
+                input.appendChild(oEl);
+              });
+            });
             break;
           default:
             input = document.createElement("input");
             input.type = field.type;
             input.value = editing[field.name] || "";
-            row.appendChild(input);
         }
+        row.appendChild(input);
       }
 
-      // for normal inputs, assign attributes
+      // common
       if (input) {
         input.name = field.name;
         if (field.required) input.required = true;
-        if (field.min != null) input.min = field.min;
-        if (field.step != null) input.step = field.step;
-
+        if (field.min!=null) input.min = field.min;
+        if (field.step!=null) input.step = field.step;
         if (field.colorPicker) {
-          const pickr = createPickr(`#${input.id || input.name}`);
-          pickr.on("change", () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
-          pickr.on("save",   () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
+          const pickr = createPickr(`#${input.id||input.name}`);
+          pickr.on("change", ()=> formEl.dispatchEvent(new Event("input",{bubbles:true})));
+          pickr.on("save",   ()=> formEl.dispatchEvent(new Event("input",{bubbles:true})));
         }
       }
 
       formEl.appendChild(row);
 
-      // populate extra-info if present
+      // populate extra info
       if (field.extraInfo && extraInfoMap[field.name]) {
-        extraInfoMap[field.name].setLines(editing[field.name] || [], false);
+        extraInfoMap[field.name].setLines(editing[field.name]||[], false);
       }
     });
-
-    onPopulate?.(formEl, editing);
   }
 
   function collect() {
-    ensureModal();
     const data = {};
-    // collect normal fields
     Array.from(formEl.elements).forEach(el => {
       if (!el.name) return;
-      if (el.type === "checkbox") data[el.name] = el.checked;
-      else if (el.multiple)        data[el.name] = Array.from(el.selectedOptions).map(o => o.value);
-      else                         data[el.name] = el.value;
+      if (el.type === "checkbox") data[el.name]=el.checked;
+      else if (el.multiple)        data[el.name]=Array.from(el.selectedOptions).map(o=>o.value);
+      else                         data[el.name]=el.value;
     });
-    // collect extraInfo fields
-    Object.entries(extraInfoMap).forEach(([name, api]) => {
-      data[name] = api.getLines();
+    Object.entries(extraInfoMap).forEach(([k,api])=> {
+      data[k] = api.getLines();
     });
-
-    Object.assign(data, onCollect?.(formEl) || {});
+    Object.assign(data, onCollect?.(formEl)||{});
     if (editing.id) data.id = editing.id;
     return data;
   }
@@ -185,7 +207,6 @@ export function createDefinitionModal({
     await saveFn(collect());
     await refreshList();
   }
-
   async function onDelete() {
     if (!editing.id) return;
     await deleteFn(editing.id);
@@ -193,5 +214,27 @@ export function createDefinitionModal({
     clearForm();
   }
 
-  return { open, close };
+  // add save/delete buttons below form
+  const btnRow = document.createElement("div");
+  btnRow.className = "field-row";
+  btnRow.style.justifyContent="flex-end";
+  const saveBtn = document.createElement("button");
+  saveBtn.type="button"; saveBtn.textContent="Save"; saveBtn.onclick=onSave;
+  btnRow.appendChild(saveBtn);
+  if (deleteFn) {
+    const delBtn = document.createElement("button");
+    delBtn.type="button"; delBtn.textContent="Delete"; delBtn.onclick=onDelete;
+    btnRow.append(delBtn);
+  }
+  formEl.appendChild(btnRow);
+
+  // initial load
+  refreshList();
+
+  onInit?.(modal);
+
+  return {
+    open: shell.open,
+    close: shell.close
+  };
 }
