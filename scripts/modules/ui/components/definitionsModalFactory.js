@@ -1,15 +1,11 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 2.4 – suppress list’s built-in search (use only header search)
+// @version: 3.3 – footer removed, sub-header remains
 
 import { createDefinitionModalShell } from "./definitionModalShell.js";
-import { createDefListContainer, createSearchRow } from "../../utils/listUtils.js";
+import { buildModalHeader }         from "./modalHeader.js";
+import { createDefListContainer }    from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "./definitionListManager.js";
-import {
-  defaultToolbar,
-  defaultLayoutOptions,
-  defaultSearchPlaceholder,
-  renderToolbarButton
-} from "./modalDefaults.js";
+import { defaultSearchPlaceholder }  from "./modalDefaults.js";
 
 /**
  * Builds a full CRUD modal with consistent shell, list, preview, and form.
@@ -28,13 +24,11 @@ export function createDefinitionsModal(config) {
     createFormController,
     renderEntry,
     enhanceHeader,
-    toolbar           = defaultToolbar,
-    layoutOptions     = defaultLayoutOptions
+    toolbar           = [],
+    layoutOptions     = []
   } = config;
 
-  let shell, listApi, formApi, previewApi;
-  let unsubscribe;
-  let definitions = [];
+  let shell, listApi, formApi, previewApi, unsubscribe, definitions = [];
 
   async function refreshDefinitions() {
     definitions = await loadDefs();
@@ -53,27 +47,36 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) modal shell (toolbar & layout toggles)
+    // 1) Core shell & header
     shell = createDefinitionModalShell({
       id,
       title,
       toolbar,
-      withPreview: true,
-      previewType,
-      layoutOptions
+      layoutOptions,
+      onClose: () => previewApi?.hide()
     });
     const { header, bodyWrap } = shell;
 
-    // render any toolbar buttons
-    toolbar.forEach(cfg => renderToolbarButton(cfg, header, { shell }));
+    // 2) Search input
+    const searchContainer = document.createElement("div");
+    searchContainer.className = "modal-search";
+    const searchInput = document.createElement("input");
+    searchInput.type = "search";
+    searchInput.placeholder = defaultSearchPlaceholder;
+    searchInput.className = "ui-input";
+    searchContainer.appendChild(searchInput);
 
-    // insert our custom header search (only one)
-    const { row: searchRow, input: searchInput } =
-      createSearchRow(`${id}-search`, defaultSearchPlaceholder);
-    searchRow.style.marginLeft = "auto";
-    header.appendChild(searchRow);
+    // 3) Build header
+    buildModalHeader(header, {
+      title,
+      toolbar,
+      layoutOptions,
+      onLayoutChange: view => listApi.setLayout(view),
+      searchEl: searchContainer
+    });
+    enhanceHeader?.(header, { shell });
 
-    // 2) form controller
+    // 4) Form controller + sub-header
     formApi = createFormController({
       onCancel: async () => {
         formApi.reset();
@@ -86,38 +89,27 @@ export function createDefinitionsModal(config) {
         formApi.reset();
         previewApi.setFromDefinition({});
         previewApi.show();
+        formApi.showAdd?.();
       },
       onSubmit: async payload => {
-        if (payload.id) {
-          await updateDef(db, payload.id, payload);
-        } else {
-          await saveDef(db, null, payload);
-        }
+        if (payload.id) await updateDef(db, payload.id, payload);
+        else await saveDef(db, null, payload);
         await refreshDefinitions();
         formApi.reset();
         previewApi.setFromDefinition({});
         previewApi.show();
       }
     });
+    const subHeaderEl = formApi.getSubHeaderElement();
+    subHeaderEl.classList.add("modal-subheader");
 
-    // 3) move the Add/Edit sub-header into the modal header
-    const subHeader = formApi.getSubHeaderElement();
-    if (subHeader) {
-      subHeader.style.marginLeft = "auto";
-      header.appendChild(subHeader);
-    } else {
-      console.warn(`Sub-header not found for modal '${id}'.`);
-    }
-
-    // 4) any extra header wiring
-    enhanceHeader?.(header, { shell, formApi });
-
-    // 5) insert list + divider
+    // 5) Body: list + divider + sub-header
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
+    bodyWrap.appendChild(subHeaderEl);
 
-    // 6) suppress the list’s own search, rely on our header search instead
+    // 6) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -136,38 +128,31 @@ export function createDefinitionsModal(config) {
         previewApi.show();
         formApi.showAdd?.();
       },
-      showSearch: false    // ← turn off built-in search box
+      showSearch: false
     });
+    shell.listApi = listApi;
 
-    // wire our header search into the list
-    searchInput.addEventListener("input", () => {
-      listApi.refresh(definitions);
-    });
+    // 7) Search wiring
+    searchInput.addEventListener("input", () => listApi.refresh(definitions));
 
-    // 7) insert the form
+    // 8) Form and preview
     previewApi = shell.previewApi;
     formApi.form.classList.add("ui-scroll-float");
     bodyWrap.appendChild(formApi.form);
-
-    // live preview on edits
     formApi.form.addEventListener("input", () => {
       const live = formApi.getCurrent();
-      if (live) {
-        previewApi.setFromDefinition(live);
-        previewApi.show();
-      }
+      if (live) previewApi.setFromDefinition(live), previewApi.show();
     });
+
+    // *** Footer is removed per request ***
   }
 
   return {
     async open() {
       await buildIfNeeded();
-      if (subscribeDefs) startSubscription();
-      else await refreshDefinitions();
-
+      subscribeDefs ? startSubscription() : await refreshDefinitions();
       formApi.reset();
       shell.open();
-      formApi.initPickrs?.();
       previewApi.setFromDefinition({});
       requestAnimationFrame(() => previewApi.show());
     },

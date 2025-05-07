@@ -1,0 +1,127 @@
+/* @file: styles/modals/modal.entries.css */
+/* @version: entry styling for modal.large */
+
+/* ─── Shared Entry Rows ─────────────────────────────────────────────── */
+
+/* Container for each entry */
+.entry-row {
+    padding: 6px 10px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    background-color: transparent;
+    transition: background 0.2s;
+  }
+  
+  .entry-row:nth-child(even) {
+    background-color: #2a2a2a;
+  }
+  
+  .entry-row:hover {
+    background-color: #333;
+  }
+  
+  /* Layout variants */
+  .layout-row.entry-row {
+    flex-direction: row;
+  }
+  .layout-stacked.entry-row {
+    flex-direction: column;
+  }
+  /* Gallery layout parent lives in modal.large; entries just adapt */
+  .layout-gallery .entry-row {
+    flex-direction: column;
+    align-items: center;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    padding: 10px;
+    width: 110px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+  }
+  
+  .layout-gallery .entry-row:hover {
+    background: #333;
+  }
+  
+  /* Entry content wrapper */
+  .entry-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Title */
+  .entry-name {
+    font-weight: bold;
+    font-size: 15px;
+    color: #e5e6e8;
+  }
+  
+  /* Meta text (type, rarity) */
+  .entry-meta {
+    font-size: 12px;
+    color: #bbb;
+    margin-top: 2px;
+  }
+  
+  /* Description */
+  .entry-description {
+    font-style: italic;
+    font-size: 13px;
+    color: #aaa;
+    margin-top: 2px;
+  }
+  
+  /* Details area (e.g. badge) */
+  .entry-details {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  
+  /* Badge */
+  .entry-badge {
+    background: #444;
+    color: #eee;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 0.85em;
+  }
+  
+  /* Delete button inside entry */
+  .entry-delete {
+    background-color: #551111;
+    color: #eee;
+    border: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    transition: background 0.3s, color 0.3s;
+  }
+  .entry-delete:hover {
+    background-color: #772222;
+    color: white;
+  }
+  
+  /* ─── Gallery overrides for name & meta/text ───────────────────────── */
+  
+  .layout-gallery .entry-row .entry-name {
+    font-size: 13px;
+    text-align: center;
+  }
+  
+  .layout-gallery .entry-row .entry-meta,
+  .layout-gallery .entry-row .entry-details {
+    font-size: 11px;
+    text-align: center;
+  }
+  

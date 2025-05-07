@@ -1,5 +1,5 @@
 /* @version: 19 */
-/* @file: /styles/modals/modal.large.css */
+/* @file: styles/modals/modal.large.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
 
@@ -20,7 +20,6 @@
   color: #e5e6e8;
 }
 
-/* Core modal box */
 .modal.modal-large .modal-content {
   position: relative;
   width: 100%;
@@ -34,7 +33,6 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  font-family: 'Satoshi', sans-serif;
 }
 
 /* Header */
@@ -44,147 +42,109 @@
   align-items: center;
   margin-bottom: 8px;
 }
-
 .modal.modal-large .modal-header h2 {
   margin: 0;
   font-size: 20px;
-  color: #e5e6e8;
   font-weight: 600;
-}
-
-.modal.modal-large h3 {
-  font-weight: 500;
   color: #e5e6e8;
 }
-
 .modal.modal-large .modal-header .close {
   font-size: 24px;
   cursor: pointer;
   color: #e5e6e8;
 }
-
 .modal.modal-large hr {
   margin: 6px 0;
   border: 0;
   border-top: 2px solid #444;
 }
 
-/* Scrollable list container */
+/* Scrollable list */
 .modal.modal-large .def-list {
   flex: 0 0 240px;
   overflow-y: auto;
   padding-right: 4px;
-  min-height: 0;
   max-height: 240px;
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE/Edge */
-}
-.modal.modal-large .def-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-/* Scrollable form area */
-.modal.modal-large form {
-  flex: 1 1 auto;
-  min-height: 0;
-  max-height: 100%;
-  padding-right: 4px;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.modal.modal-large form::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+.modal.modal-large .def-list::-webkit-scrollbar { width: 0; }
+
+/* Scrollable form */
+.modal.modal-large form {
+  flex: 1 1 auto;
+  padding-right: 4px;
+  max-height: 100%;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
+.modal.modal-large form::-webkit-scrollbar { width: 0; }
 
 /* ─── Fields ───────────────────────────────────────────────────────── */
 
-/* Container for each label+control row */
 .modal.modal-large .field-row {
   display: flex;
   align-items: center;
-  margin-bottom: 8px;
   gap: 10px;
+  margin-bottom: 8px;
 }
-
 .modal.modal-large .field-row label {
   width: 100px;
-  font-weight: 400;
-  color: #e5e6e8;
   flex-shrink: 0;
+  color: #e5e6e8;
 }
-
-/* Uniform styling for text, number, select, textarea */
 .modal.modal-large .field-row input[type="text"],
 .modal.modal-large .field-row input[type="number"],
 .modal.modal-large .field-row textarea,
 .modal.modal-large .field-row select {
   flex: 1;
-  background-color: #2a2a2a;
+  background: #2a2a2a;
   color: #e5e6e8;
   border: 1px solid #555;
-  padding: 6px 8px;
   border-radius: 3px;
+  padding: 6px 8px;
   font-size: 14px;
-  font-weight: 400;
 }
-
-/* Hide native number input spinners and standardize appearance */
 .modal.modal-large .field-row input[type="number"]::-webkit-outer-spin-button,
 .modal.modal-large .field-row input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 .modal.modal-large .field-row input[type="number"] {
-  /* Remove spinner in Firefox/Edge, Safari/Chrome, and use standard */
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
   margin: 0;
 }
+.modal.modal-large .field-row textarea { resize: vertical; }
 
-/* Allow textarea vertical resize */
-.modal.modal-large .field-row textarea {
-  resize: vertical;
-}
-
-/* Color-picker & remove-line buttons */
+/* Legacy color-btn (inline swatches now use .color-preview) */
 .modal.modal-large .field-row .color-btn {
   width: 24px;
   height: 24px;
   background-color: #e5e6e8;
   border: 1px solid #555;
-  cursor: pointer;
   border-radius: 2px;
+  cursor: pointer;
 }
 
 /* ─── Buttons & Floating Controls ───────────────────────────────────── */
 
 .modal.modal-large .ui-button {
-  background-color: #444;
+  background: #444;
   color: #e5e6e8;
   border: none;
   padding: 6px 10px;
   margin-left: 5px;
   border-radius: 4px;
   cursor: pointer;
-  font-weight: 400;
-  font-family: 'Satoshi', sans-serif;
 }
-.modal.modal-large .ui-button:hover {
-  background-color: #666;
-}
-
-.modal.modal-large .field-row.extra-row {
-  align-items: center;
-}
+.modal.modal-large .ui-button:hover { background: #666; }
 
 .modal.modal-large .extra-info-block > button,
 .modal.modal-large .extra-info-line .remove-line-btn {
   width: 28px;
   height: 28px;
-  padding: 0;
   background: none;
   border: none;
   display: flex;
@@ -197,173 +157,25 @@
   fill: #e5e6e8;
 }
 
-/* Fix alignment for image URL fields */
 .modal.modal-large .field-row input[id^="def-image"] {
   max-width: 100%;
   box-sizing: border-box;
 }
 
-/* Floating button row (Save/Clear/Delete) */
-.modal-large .floating-buttons {
+.modal.modal-large .floating-buttons {
   display: flex;
   gap: 6px;
   align-items: center;
 }
 
-/* ─── Definition List Entries ───────────────────────────────────────── */
+/* ─── Form Sub-Header (Add/Edit Bar) ───────────────────────────────── */
 
-.modal.modal-large .item-def-entry {
-  padding: 6px 8px;
-  cursor: pointer;
-  transition: background 0.2s;
-  border-radius: 4px;
-}
-
-.modal.modal-large .item-def-entry:hover {
-  background-color: #333;
-}
-
-.modal.modal-large .item-def-entry .entry-name {
-  font-weight: bold;
-  font-size: 15px;
-}
-
-.modal.modal-large .item-def-entry .entry-meta {
-  font-size: 12px;
-  color: #bbb;
-  margin-top: 2px;
-}
-
-.modal.modal-large .item-def-entry .entry-description {
-  font-style: italic;
-  font-size: 13px;
-  color: #aaa;
-  margin-top: 2px;
-}
-
-.modal.modal-large .item-def-entry .entry-details {
+.modal-large .modal-subheader {
   display: flex;
-  gap: 12px;
-  margin-top: 4px;
-  font-size: 13px;
-  color: #ccc;
-  align-items: center;
-}
-
-.modal.modal-large .item-def-entry .entry-value svg {
-  width: 14px;
-  height: 14px;
-  vertical-align: middle;
-  margin-left: 4px;
-}
-
-.modal.modal-large .item-def-entry .entry-quantity {
-  font-style: italic;
-  color: #aaa;
-}
-
-.modal.modal-large .item-def-entry .entry-delete {
-  margin-top: 6px;
-  background-color: #551111;
-  color: #eee;
-  padding: 4px 10px;
-  border: none;
-  border-radius: 4px;
-  font-size: 13px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: background 0.3s, color 0.3s;
-}
-
-.modal.modal-large .item-def-entry .entry-delete:hover {
-  background-color: #772222;
-  color: white;
-}
-
-.modal.modal-large .item-def-entry .entry-delete svg {
-  width: 16px;
-  height: 16px;
-}
-
-/* Layout Modes */
-.modal-large .layout-row .item-def-entry {
-  display: flex;
-  flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  padding: 6px 10px;
+  padding: 8px 0;
+  border-bottom: 2px solid #444;
 }
 
-.modal-large .layout-row .item-def-entry > .entry-name {
-  flex: 2;
-}
-
-.modal-large .layout-row .item-def-entry > .entry-meta,
-.modal-large .layout-row .item-def-entry > .entry-description,
-.modal-large .layout-row .item-def-entry > .entry-details {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.modal-large .layout-row .item-def-entry > .entry-delete {
-  align-self: flex-start;
-  margin-left: auto;
-}
-
-.modal-large .layout-stacked .item-def-entry {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 8px 10px;
-}
-
-.modal-large .layout-stacked .item-def-entry > .entry-delete {
-  align-self: flex-end;
-  margin-top: 4px;
-}
-
-.modal-large .layout-gallery {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: space-evenly;
-  padding: 6px;
-}
-
-.modal-large .layout-gallery .item-def-entry {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #2a2a2a;
-  border: 1px solid #444;
-  padding: 10px;
-  width: 110px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.modal-large .layout-gallery .item-def-entry:hover {
-  background: #333;
-}
-
-.modal-large .layout-gallery .item-def-entry > .entry-name {
-  font-size: 13px;
-  font-weight: bold;
-  text-align: center;
-}
-
-.modal-large .layout-gallery .item-def-entry > .entry-meta,
-.modal-large .layout-gallery .item-def-entry > .entry-details {
-  font-size: 11px;
-  text-align: center;
-}
-
-.modal-large .layout-gallery .item-def-entry .entry-delete {
-  margin-top: 6px;
-}
+/* You may add spacing around specific controls inside .modal-subheader as needed */
