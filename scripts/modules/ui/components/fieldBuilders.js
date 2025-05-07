@@ -1,232 +1,142 @@
-// @file:    /scripts/modules/ui/components/fieldBuilders.js
-// @version: 1.6 – added createCheckboxField and aliased textarea for schema builder
+// @file: /scripts/modules/ui/components/fieldBuilders.js
+// @version: 2.0 – removed legacy swatches; only use createColorPreview
 
-import { createPickr } from "./pickrUtils.js";
+import { createIcon }           from "../../utils/iconUtils.js";
+import { createColorPreview }   from "./colorPreview.js";
 
 /**
- * Simple row with a label and an input element.
+ * Build a text or number field row.
  */
-export function createFieldRow(labelText, inputEl) {
+export function createTextField(key, labelText, type = "text") {
   const row = document.createElement("div");
-  row.classList.add("field-row");
+  row.className = "field-row";
+
   const label = document.createElement("label");
+  label.htmlFor = key;
   label.textContent = labelText;
-  row.append(label, inputEl);
-  return row;
-}
 
-/**
- * A standalone color-swatch button.
- */
-export function createColorButton(id) {
-  const btn = document.createElement("div");
-  btn.className = "color-btn";
-  btn.id = id;
-  return btn;
-}
-
-/**
- * Combines a label, an input/select, and a color button.
- */
-export function createColorFieldRow(labelText, inputEl, colorId) {
-  const row = document.createElement("div");
-  row.classList.add("field-row");
-  const label = document.createElement("label");
-  label.textContent = labelText;
-  const colorBtn = createColorButton(colorId);
-  row.append(label, inputEl, colorBtn);
-  return { row, colorBtn };
-}
-
-/**
- * Dropdown with optional color swatch.
- */
-export function createDropdownField(
-  label,
-  id,
-  options = [],
-  { showColor = true } = {}
-) {
-  const select = document.createElement("select");
-  select.id = id;
-  options.forEach(opt => {
-    const o = document.createElement("option");
-    o.value = opt.value;
-    o.textContent = opt.label;
-    select.append(o);
-  });
-  const { row, colorBtn } = createColorFieldRow(label, select, `${id}-color`);
-  if (!showColor) colorBtn.style.visibility = "hidden";
-  return { row, select, colorBtn };
-}
-
-/**
- * Text input with a color swatch.
- */
-export function createTextField(label, id) {
   const input = document.createElement("input");
-  input.id = id;
+  input.type = type;
+  input.id   = key;
+  input.name = key;
   input.className = "ui-input";
-  const { row, colorBtn } = createColorFieldRow(label, input, `${id}-color`);
-  return { row, input, colorBtn };
-}
 
-/**
- * Textarea with a color swatch.
- */
-export function createTextareaFieldWithColor(label, id) {
-  const textarea = document.createElement("textarea");
-  textarea.id = id;
-  const { row, colorBtn } = createColorFieldRow(label, textarea, `${id}-color`);
-  return { row, textarea, colorBtn };
-}
-
-// Alias for schemaFormBuilder expecting createTextAreaField
-export { createTextareaFieldWithColor as createTextAreaField };
-
-/**
- * Simple single-line text field for URLs/images.
- */
-export function createImageField(label, id) {
-  const input = document.createElement("input");
-  input.id = id;
-  input.type = "text";
-  return { row: createFieldRow(label, input), input };
-}
-
-/**
- * Simple single-line text field for video URLs.
- */
-export function createVideoField(label, id) {
-  const input = document.createElement("input");
-  input.id = id;
-  input.type = "text";
-  return { row: createFieldRow(label, input), input };
-}
-
-/**
- * Checkbox input with a label.
- */
-export function createCheckboxField(labelText, id) {
-  const input = document.createElement("input");
-  input.type = "checkbox";
-  input.id = id;
-  const row = createFieldRow(labelText, input);
+  row.append(label, input);
   return { row, input };
 }
 
 /**
- * Reusable extra-info block with dynamic rows and color pickers.
+ * Build a select/dropdown field row.
  */
-export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = false } = {}) {
-  const wrap = document.createElement("div");
-  wrap.className = "extra-info-block";
+export function createDropdownField(key, labelText, options = []) {
+  const row = document.createElement("div");
+  row.className = "field-row";
 
-  const lineWrap = document.createElement("div");
-  const btnAdd = document.createElement("button");
-  btnAdd.type = "button";
-  btnAdd.textContent = "+";
-  btnAdd.classList.add("ui-button");
+  const label = document.createElement("label");
+  label.htmlFor = key;
+  label.textContent = labelText;
 
-  wrap.append(lineWrap, btnAdd);
+  const select = document.createElement("select");
+  select.id   = key;
+  select.name = key;
+  select.className = "ui-input";
 
-  let lines = [];
+  options.forEach(opt => {
+    const o = document.createElement("option");
+    o.value   = opt.value;
+    o.textContent = opt.label;
+    select.appendChild(o);
+  });
 
-  function render() {
-    lineWrap.innerHTML = "";
-    lines.forEach((line, i) => {
-      const row = document.createElement("div");
-      row.className = "field-row";
-      row.style.marginBottom = "5px";
-
-      const input = document.createElement("input");
-      input.className = "ui-input";
-      input.value = line.text;
-      input.readOnly = readonly;
-      input.oninput = () => {
-        line.text = input.value;
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
-      };
-
-      const color = document.createElement("div");
-      color.className = "color-btn";
-      color.id = `extra-color-${i}`;
-      color.style.marginLeft = "5px";
-
-      const btnRemove = document.createElement("button");
-      btnRemove.type = "button";
-      btnRemove.className = "ui-button";
-      btnRemove.textContent = "×";
-      btnRemove.style.marginLeft = "5px";
-      btnRemove.onclick = () => {
-        lines.splice(i, 1);
-        render();
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
-      };
-
-      row.append(input, color);
-      if (!readonly) row.appendChild(btnRemove);
-      lineWrap.appendChild(row);
-
-      const pickr = createPickr(`#${color.id}`);
-      line._pickr = pickr;
-      setTimeout(() => pickr.setColor(line.color || defaultColor), 0);
-
-      pickr.on("change", colorObj => {
-        line.color = colorObj.toHEXA().toString();
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
-      });
-      pickr.on("save", colorObj => {
-        line.color = colorObj.toHEXA().toString();
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
-      });
-    });
-  }
-
-  btnAdd.onclick = () => {
-    lines.push({ text: "", color: defaultColor });
-    render();
-    wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
-  };
-
-  return {
-    block: wrap,
-    getLines: () => lines.map(l => ({
-      text: l.text,
-      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
-    })),
-    setLines: (newLines, isReadonly = false) => {
-      lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
-      render();
-      if (isReadonly) btnAdd.style.display = "none";
-    }
-  };
+  row.append(label, select);
+  return { row, select };
 }
 
 /**
- * Standard Save/Cancel button row.
+ * Build a textarea field row.
  */
-export function createFormButtonRow(
-  onCancel,
-  saveText = "Save",
-  cancelText = "Cancel"
-) {
+export function createTextAreaField(key, labelText) {
   const row = document.createElement("div");
   row.className = "field-row";
+
+  const label = document.createElement("label");
+  label.htmlFor = key;
+  label.textContent = labelText;
+
+  const textarea = document.createElement("textarea");
+  textarea.id   = key;
+  textarea.name = key;
+  textarea.className = "ui-input";
+
+  row.append(label, textarea);
+  return { row, textarea };
+}
+
+/**
+ * Build a checkbox field row.
+ */
+export function createCheckboxField(key, labelText) {
+  const row = document.createElement("div");
+  row.className = "field-row";
+
+  const label = document.createElement("label");
+  label.htmlFor = key;
+  label.textContent = labelText;
+
+  const checkbox = document.createElement("input");
+  checkbox.type = "checkbox";
+  checkbox.id   = key;
+  checkbox.name = key;
+  checkbox.className = "ui-input";
+
+  row.append(label, checkbox);
+  return { row, checkbox };
+}
+
+/**
+ * Build an image-URL input row.
+ */
+export function createImageField(key, labelText) {
+  const row = document.createElement("div");
+  row.className = "field-row";
+
+  const label = document.createElement("label");
+  label.htmlFor = key;
+  label.textContent = labelText;
+
+  const input = document.createElement("input");
+  input.type = "url";
+  input.id   = key;
+  input.name = key;
+  input.className = "ui-input";
+
+  row.append(label, input);
+  return { row, input };
+}
+
+/**
+ * Build the form’s Save / Clear / (Delete) button row.
+ */
+export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
+  const row = document.createElement("div");
+  row.className = "form-button-row";
+  row.style.marginTop = "12px";
+  row.style.display = "flex";
+  row.style.gap = "8px";
   row.style.justifyContent = "flex-end";
-  row.style.marginTop = "10px";
 
-  const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = saveText;
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "submit";
+  saveBtn.textContent = saveText;
+  saveBtn.className = "ui-button-primary";
+  row.appendChild(saveBtn);
 
-  const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "ui-button";
-  btnCancel.textContent = cancelText;
-  btnCancel.onclick = onCancel;
+  const cancelBtn = document.createElement("button");
+  cancelBtn.type = "button";
+  cancelBtn.textContent = cancelText;
+  cancelBtn.className = "ui-button";
+  cancelBtn.onclick = onCancel;
+  row.appendChild(cancelBtn);
 
-  row.append(btnSave, btnCancel);
   return row;
 }

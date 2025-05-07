@@ -99,17 +99,10 @@
   margin: 0;
 }
 
-/* 8) Color‐picker & remove‐line buttons */
-.modal-content .color-btn {
-  margin-left: 8px !important;
-  flex: 0 0 19px;
-  width: 19px; height: 19px;
-  border: 1px solid #555;
-  border-radius: 2px;
-  cursor: pointer;
-}
+/* 8) Removed legacy color-btn styling */
+/* .modal-content .color-btn { display: none; } */
 
-/* 9) Inline color‐preview swatch */
+/* 9) Inline color-preview swatch */
 .modal-content .field-row .color-preview {
   width: 20px;
   height: 20px;
