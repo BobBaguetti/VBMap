@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.7 — ensure selectors match your chest form fields
+// @version: 1.8 — pass onFieldChange to form controller for live preview
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
@@ -39,12 +39,12 @@ export function initChestDefinitionsModal(db) {
     async open() {
       if (!modal) {
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
-          id:         "chest-definitions-modal",
-          title:      "Manage Chest Types",
-          size:       "large",
-          searchable: false,
-          layoutOptions:["row","gallery","stacked"],
-          onClose:    () => hidePreview()
+          id:            "chest-definitions-modal",
+          title:         "Manage Chest Types",
+          size:          "large",
+          searchable:    false,
+          layoutOptions: ["row","gallery","stacked"],
+          onClose:       () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
@@ -53,7 +53,7 @@ export function initChestDefinitionsModal(db) {
         showPreview = preview.show;
         hidePreview = preview.hide;
 
-        // list & form
+        // list & form (pass showPreview as onFieldChange)
         const listContainer = createDefListContainer("chest-def-list");
         formApi = createChestFormController({
           onCancel: async () => {
@@ -75,6 +75,14 @@ export function initChestDefinitionsModal(db) {
             await refreshList();
             formApi.reset();
             showPreview({ lootPool: [] });
+          },
+          onFieldChange: data => {
+            // rehydrate lootPool items
+            const merged = {
+              ...data,
+              lootPool: (data.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
+            };
+            showPreview(merged);
           }
         }, db);
 
@@ -86,7 +94,6 @@ export function initChestDefinitionsModal(db) {
           formApi.form
         );
 
-        // list manager
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
@@ -116,29 +123,7 @@ export function initChestDefinitionsModal(db) {
       formApi.initPickrs();
       initModalPickrs(content);
 
-      // initial blank preview
       showPreview({ lootPool: [] });
-
-      // live‐update key fields
-      const chestFields = [
-        formApi.form.querySelector('input[name="name"]'),
-        formApi.form.querySelector('select[name="size"]'),
-        formApi.form.querySelector('select[name="category"]'),
-        formApi.form.querySelector('input[name="iconUrl"]'),
-        formApi.form.querySelector('textarea[name="description"]')
-      ];
-      chestFields.forEach(el => {
-        if (!el) return;
-        const evt = el.tagName === "SELECT" ? "change" : "input";
-        el.addEventListener(evt, () => {
-          const custom = formApi.getCustom();
-          const merged = {
-            ...custom,
-            lootPool: (custom.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
-          };
-          showPreview(merged);
-        });
-      });
     }
   };
 }
