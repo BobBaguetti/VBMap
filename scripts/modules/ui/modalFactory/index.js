@@ -1,28 +1,16 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 4
+// @version: 5
 
 import { makeDraggable, positionModal, hideContextMenu } from "../uiManager.js";
-import { initPickr } from "../pickrManager.js"; // your Pickr setup
+import { createPickr } from "../pickrManager.js"; // match your controllers
 import { createExtraInfoField } from "../forms/universalForm.js";
 
 /**
  * Creates a fully generic definition modal.
- * Supports:
- *  - text, number, textarea, checkbox, hidden, multiselect
- *  - colorPicker fields via Pickr
- *  - extraInfo fields via universalForm
- *  - lifecycle hooks: onInit, onPopulate, onCollect
  */
 export function createDefinitionModal({
-  id,
-  title,
-  schema,
-  loadFn,
-  saveFn,
-  deleteFn,
-  onInit,
-  onPopulate,
-  onCollect
+  id, title, schema, loadFn, saveFn, deleteFn,
+  onInit, onPopulate, onCollect
 }) {
   let modal, listEl, formEl;
 
@@ -34,13 +22,11 @@ export function createDefinitionModal({
     modal.style.display = "none";
     document.body.appendChild(modal);
 
-    // Header
     const hdr = document.createElement("h3");
     hdr.textContent = title;
     modal.appendChild(hdr);
     makeDraggable(modal, hdr);
 
-    // List + Form containers
     listEl = document.createElement("div");
     listEl.className = "def-list";
     modal.appendChild(listEl);
@@ -49,7 +35,6 @@ export function createDefinitionModal({
     formEl.className = "def-form";
     modal.appendChild(formEl);
 
-    // Footer
     const footer = document.createElement("div");
     footer.className = "def-footer";
     const saveBtn = document.createElement("button");
@@ -57,6 +42,7 @@ export function createDefinitionModal({
     saveBtn.textContent = "Save";
     saveBtn.addEventListener("click", onSave);
     footer.appendChild(saveBtn);
+
     if (deleteFn) {
       const delBtn = document.createElement("button");
       delBtn.type = "button";
@@ -64,14 +50,15 @@ export function createDefinitionModal({
       delBtn.addEventListener("click", onDelete);
       footer.appendChild(delBtn);
     }
+
     const closeBtn = document.createElement("button");
     closeBtn.type = "button";
     closeBtn.textContent = "Close";
     closeBtn.addEventListener("click", close);
     footer.appendChild(closeBtn);
+
     modal.appendChild(footer);
 
-    // Outside-click hides context menus
     document.addEventListener("click", e => {
       if (!modal.contains(e.target)) hideContextMenu();
     });
@@ -115,26 +102,23 @@ export function createDefinitionModal({
     clearForm();
 
     schema.forEach(field => {
-      // Field wrapper
       const wrapper = document.createElement("div");
       wrapper.classList.add("field-row");
-      if (field.type === "multiselect") {
-        wrapper.classList.add("loot-pool-row");
-      }
+      if (field.type === "multiselect") wrapper.classList.add("loot-pool-row");
+
       const label = document.createElement("label");
       label.textContent = field.label;
       wrapper.appendChild(label);
 
       let input, extraInfoObj;
 
-      // Handle extra-info fields first, since they render a custom textarea
+      // Extra-info widget
       if (field.extraInfo) {
         const { row, extraInfo } = createExtraInfoField({ withDividers: false });
         extraInfoObj = extraInfo;
         wrapper.appendChild(row);
-        input = extraInfo.getInputElement(); // assume the extra-info API provides this
+        input = extraInfo.getInputElement();
       } else {
-        // Normal input element
         switch (field.type) {
           case "textarea":
             input = document.createElement("textarea");
@@ -166,37 +150,36 @@ export function createDefinitionModal({
         wrapper.appendChild(input);
       }
 
-      // Common attributes
+      // Common attrs
       if (field.required) input.required = true;
       if (field.min != null) input.min = field.min;
       if (field.step != null) input.step = field.step;
       input.name = field.name;
 
-      // Color picker
+      // Color picker via createPickr :contentReference[oaicite:1]{index=1}
       if (field.colorPicker) {
-        initPickr(input);
+        const picker = createPickr(`#${input.id || (input.name)}`);
+        input.addEventListener("click", () => picker.show());
+        picker.on("change", () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
+        picker.on("save",   () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
       }
 
-      // For loot-pool: add cog + wrapper
+      // Loot-pool wrapper & cog
       if (field.type === "multiselect") {
         const select = input;
         const poolWrap = document.createElement("div");
         poolWrap.className = "loot-pool-wrapper";
         poolWrap.appendChild(select);
-
         const cog = document.createElement("button");
         cog.type = "button";
         cog.className = "loot-pool-cog";
         cog.innerHTML = "⚙";
-        // wire up your picker-open logic here if needed
         poolWrap.appendChild(cog);
-
         wrapper.appendChild(poolWrap);
       }
 
       formEl.appendChild(wrapper);
 
-      // If extraInfo, populate its content
       if (field.extraInfo && extraInfoObj) {
         extraInfoObj.setLines(editing[field.name] || "");
       }
@@ -209,13 +192,9 @@ export function createDefinitionModal({
     const data = {};
     Array.from(formEl.elements).forEach(el => {
       if (!el.name) return;
-      if (el.type === "checkbox") {
-        data[el.name] = el.checked;
-      } else if (el.multiple) {
-        data[el.name] = Array.from(el.selectedOptions).map(o => o.value);
-      } else {
-        data[el.name] = el.value;
-      }
+      if (el.type === "checkbox") data[el.name] = el.checked;
+      else if (el.multiple)        data[el.name] = Array.from(el.selectedOptions).map(o => o.value);
+      else                         data[el.name] = el.value;
     });
     Object.assign(data, onCollect?.(formEl) || {});
     if (editing.id) data.id = editing.id;
