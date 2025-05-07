@@ -1,24 +1,24 @@
 // @file: src/modules/ui/components/formControllerShell.js
-// @version: 1.1 — correct import path for createIcon
+// @version: 1.2 — fixed import path for createIcon
 
-import { createIcon } from "../utils/iconUtils.js";
+import { createIcon } from "../../utils/iconUtils.js";
 
-/**
- * Builds the H3 subheading + floating-buttons row.
- *
- * @param {object} opts
- * @param {string} opts.title         — text for the <h3>
- * @param {boolean} [opts.hasFilter]  — whether to show the “Add to filters” checkbox
- * @param {function} opts.onFilter    — called when the filter checkbox toggles
- * @param {function} opts.onCancel
- * @param {function} opts.onDelete
- * @returns {{
- *   container: HTMLDivElement,     // the wrapper <div>
- *   subheading: HTMLHeadingElement,
- *   filterCheckbox?: HTMLInputElement,
- *   setDeleteVisible: (v:boolean)=>void
- * }}
- */
+ /**
+  * Builds the H3 subheading + floating-buttons row.
+  *
+  * @param {object} opts
+  * @param {string} opts.title         — text for the <h3>
+  * @param {boolean} [opts.hasFilter]  — whether to show the “Add to filters” checkbox
+  * @param {function} opts.onFilter    — called when the filter checkbox toggles
+  * @param {function} opts.onCancel
+  * @param {function} opts.onDelete
+  * @returns {{
+  *   container: HTMLDivElement,     // the wrapper <div>
+  *   subheading: HTMLHeadingElement,
+  *   filterCheckbox?: HTMLInputElement,
+  *   setDeleteVisible: (v:boolean)=>void
+  * }}
+  */
 export function createFormControllerHeader({
   title, hasFilter = false, onFilter, onCancel, onDelete
 }) {
