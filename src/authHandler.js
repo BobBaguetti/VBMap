@@ -2,7 +2,8 @@
 // Handles Firebase Auth state and gates admin UI
 
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
-import { initAdminAuth } from "../authSetup.js";
+// authSetup.js lives under root/scripts/
+import { initAdminAuth } from "../scripts/authSetup.js";
 
 import { bootstrapUI } from "./uiBootstrap.js";
 

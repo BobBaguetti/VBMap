@@ -3,26 +3,26 @@
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 
+// Services under scripts/modules/
 import {
   subscribeMarkers,
   upsertMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
 } from "../scripts/modules/services/firebaseService.js";
-
 import { subscribeChestDefinitions } from "../scripts/modules/services/chestDefinitionsService.js";
 import {
   subscribeItemDefinitions,
   loadItemDefinitions
 } from "../scripts/modules/services/itemDefinitionsService.js";
 
+// Map & UI under scripts/modules/
 import {
   createMarker,
   createCustomIcon,
   renderPopup,
   renderChestPopup
 } from "../scripts/modules/map/markerManager.js";
-
 import { initMarkerModal }          from "../scripts/modules/ui/modals/markerModal.js";
 import { initItemDefinitionsModal } from "../scripts/modules/ui/modals/itemDefinitionsModal.js";
 import { initCopyPasteManager }     from "../scripts/modules/map/copyPasteManager.js";
@@ -39,36 +39,29 @@ export let allMarkers = [];
 let filterMarkers, loadItemFilters;
 
 export function bootstrapUI(isAdmin) {
-  // Keep chest definitions up to date
   subscribeChestDefinitions(db, defs => {
     chestDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
   });
 
   (async () => {
-    // Sidebar (filters, etc.)  
     ({ filterMarkers, loadItemFilters } = await setupSidebar(
       map, layers, allMarkers, db, {}
     ));
 
-    // Initial item definitions load
-    const initialItemDefs = await loadItemDefinitions(db);
-    itemDefMap = Object.fromEntries(initialItemDefs.map(d => [d.id, d]));
+    const initialDefs = await loadItemDefinitions(db);
+    itemDefMap = Object.fromEntries(initialDefs.map(d => [d.id, d]));
 
-    // Subscribe to markers
     subscribeMarkers(db, markers => {
-      // Clear old markers
       allMarkers.forEach(({ markerObj }) => {
         markerObj.remove();
         clusterItemLayer.removeLayer(markerObj);
       });
       allMarkers.length = 0;
 
-      // Add new ones
       markers.forEach(data => addMarker(data));
       loadItemFilters().then(filterMarkers);
     });
 
-    // Re-hydrate item definitions live
     subscribeItemDefinitions(db, async () => {
       const defs = await loadItemDefinitions(db);
       itemDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
@@ -95,22 +88,19 @@ export function bootstrapUI(isAdmin) {
       filterMarkers();
     });
 
-    // Modals & copy-paste
     const markerForm = initMarkerModal(db);
     initItemDefinitionsModal(db);
     const copyMgr = initCopyPasteManager(map, upsertMarker.bind(null, db));
 
-    // Helper to create & persist
     function addMarker(data) {
-      // shared create logic
       if (data.type === "Chest") {
         const def = chestDefMap[data.chestTypeId] || { lootPool: [] };
         const fullDef = {
           ...def,
           lootPool: def.lootPool.map(id => itemDefMap[id]).filter(Boolean)
         };
-        data.name       = fullDef.name;
-        data.imageSmall = fullDef.iconUrl;
+        data.name         = fullDef.name;
+        data.imageSmall   = fullDef.iconUrl;
         data.chestDefFull = fullDef;
 
         const markerObj = createMarker(
@@ -131,7 +121,6 @@ export function bootstrapUI(isAdmin) {
       allMarkers.push({ markerObj, data });
     }
 
-    // Common callbacks for edit/copy/drag/delete
     const callbacks = {
       onEdit: (m, d, e) => markerForm.openEdit(m, d, e, updated => {
         m.setIcon(createCustomIcon(updated));
@@ -154,7 +143,6 @@ export function bootstrapUI(isAdmin) {
       }
     };
 
-    // Context menu handler
     map.on("contextmenu", evt => {
       if (!isAdmin) return;
       showContextMenu(
