@@ -1,22 +1,15 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.11 — expose initPickrs() for re-wiring after form insertion
+// @version: 2.12 — use shared listPicker for loot‐pool selection
 
-import { getPickrHexColor }                 from "../../../utils/colorUtils.js";
-import { createChestForm }                  from "../builders/chestFormBuilder.js";
-import { createFormControllerHeader, wireFormEvents } from "../../components/formControllerShell.js";
-import { initFormPickrs }                   from "../../components/formPickrManager.js";
-import { createIcon }                       from "../../../utils/iconUtils.js";
-import { loadItemDefinitions }              from "../../../services/itemDefinitionsService.js";
+import { getPickrHexColor }                          from "../../../utils/colorUtils.js";
+import { createChestForm }                           from "../builders/chestFormBuilder.js";
+import { createFormControllerHeader, wireFormEvents }from "../../components/formControllerShell.js";
+import { initFormPickrs }                            from "../../components/formPickrManager.js";
+import { pickItems }                                 from "../../components/listPicker.js";
+import { loadItemDefinitions }                       from "../../../services/itemDefinitionsService.js";
 
 /**
- * Creates a controller around a form layout for chest definitions.
- * Handles wiring, reset, populate, and getCustom logic.
- *
- * @param {object} callbacks
- * @param {function} callbacks.onCancel
- * @param {function} callbacks.onSubmit
- * @param {function} callbacks.onDelete
- * @param {function} [callbacks.onFieldChange] — called with current payload on any field change
+ * Chest‐definition form controller.
  */
 export function createChestFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },
@@ -24,7 +17,7 @@ export function createChestFormController(
 ) {
   const { form, fields } = createChestForm();
 
-  // shared header + buttons
+  // ─── Shared header + buttons ─────────────────────────────────────
   const {
     container: subheadingWrap,
     subheading,
@@ -42,106 +35,17 @@ export function createChestFormController(
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
-  // initial Pickr wiring (only description)
+  // ─── Shared Pickr wiring ─────────────────────────────────────────
   const pickrs = initFormPickrs(form, {
     description: fields.colorDesc
   });
 
-  // ─── Loot-pool picker logic ─────────────────────────────────────────
-  let pickerModal, pickerContent, pickerSearch, pickerList;
+  // ─── Loot-pool picker (uses shared listPicker) ───────────────────
   let itemMap = [];
-
   async function ensureAllItems() {
     if (!itemMap.length) {
       itemMap = await loadItemDefinitions(db);
     }
-  }
-
-  function filterList() {
-    const q = pickerSearch.value.toLowerCase();
-    pickerList.childNodes.forEach(row => {
-      const txt = row.querySelector("label").textContent.toLowerCase();
-      row.style.display = txt.includes(q) ? "" : "none";
-    });
-  }
-
-  async function buildPicker() {
-    if (pickerModal) return;
-    const { modal, header, content } = createModal({
-      id:          "chest-loot-picker",
-      title:       "Select Loot Pool Items",
-      size:        "small",
-      backdrop:    true,
-      withDivider: true,
-      onClose:     () => closeModal(modal)
-    });
-    pickerModal   = modal;
-    pickerContent = content;
-
-    pickerSearch = document.createElement("input");
-    pickerSearch.type = "text";
-    pickerSearch.placeholder = "Search…";
-    header.appendChild(pickerSearch);
-
-    pickerList = document.createElement("div");
-    Object.assign(pickerList.style, {
-      maxHeight: "200px",
-      overflowY: "auto",
-      margin:    "8px 0"
-    });
-    pickerContent.appendChild(pickerList);
-
-    const btnRow = document.createElement("div");
-    btnRow.style.textAlign = "right";
-    const cancel = document.createElement("button");
-    cancel.type        = "button";
-    cancel.className   = "ui-button";
-    cancel.textContent = "Cancel";
-    cancel.onclick     = () => closeModal(pickerModal);
-    const save = document.createElement("button");
-    save.type        = "button";
-    save.className   = "ui-button";
-    save.textContent = "Save";
-    save.onclick     = savePicker;
-    btnRow.append(cancel, save);
-    pickerContent.appendChild(btnRow);
-
-    pickerSearch.addEventListener("input", filterList);
-  }
-
-  async function openPicker() {
-    await buildPicker();
-    await ensureAllItems();
-    pickerList.innerHTML = "";
-    itemMap.forEach(item => {
-      const row = document.createElement("div");
-      Object.assign(row.style, {
-        display:    "flex",
-        alignItems: "center",
-        padding:    "4px 0"
-      });
-      const cb = document.createElement("input");
-      cb.type    = "checkbox";
-      cb.value   = item.id;
-      cb.checked = fields.lootPool.includes(item.id);
-      cb.style.marginRight = "8px";
-      const lbl = document.createElement("label");
-      lbl.textContent = item.name;
-      row.append(cb, lbl);
-      pickerList.appendChild(row);
-    });
-    pickerSearch.value = "";
-    filterList();
-    openModal(pickerModal);
-  }
-
-  function savePicker() {
-    const selected = Array.from(
-      pickerList.querySelectorAll("input[type=checkbox]:checked")
-    ).map(cb => cb.value);
-    fields.lootPool.splice(0, fields.lootPool.length, ...selected);
-    renderChips();
-    closeModal(pickerModal);
   }
 
   function renderChips() {
@@ -157,17 +61,31 @@ export function createChestFormController(
       x.onclick     = () => {
         fields.lootPool.splice(fields.lootPool.indexOf(id), 1);
         renderChips();
+        onFieldChange?.(getCustom());
       };
       chip.append(x);
       fields.chipContainer.append(chip);
     });
   }
+  renderChips();
 
-  fields.openLootPicker.onclick = openPicker;
+  fields.openLootPicker.onclick = async () => {
+    await ensureAllItems();
+    const chosen = await pickItems({
+      title:    "Select Loot Pool Items",
+      items:    itemMap,
+      selected: fields.lootPool,
+      labelKey: "name"
+    });
+    fields.lootPool.splice(0, fields.lootPool.length, ...chosen);
+    renderChips();
+    onFieldChange?.(getCustom());
+  };
 
-  // ─── Reset / Populate / Get Custom Payload ─────────────────────────
+  // ─── Internal state ───────────────────────────────────────────────
   let _id = null;
 
+  // ─── Reset / Add mode ─────────────────────────────────────────────
   function reset() {
     form.reset();
     _id = null;
@@ -182,6 +100,7 @@ export function createChestFormController(
     onFieldChange?.(getCustom());
   }
 
+  // ─── Populate / Edit mode ─────────────────────────────────────────
   function populate(def) {
     form.reset();
     _id = def.id || null;
@@ -194,12 +113,13 @@ export function createChestFormController(
     renderChips();
     fields.fldDesc.value        = def.description || "";
     fields.extraInfo.setLines(def.extraLines || [], false);
-    subheading.textContent      = "Edit Chest Type";
-    setDeleteVisible(true);
+    subheading.textContent      = _id ? "Edit Chest Type" : "Add Chest Type";
+    setDeleteVisible(!!_id);
     pickrs.description?.setColor(def.descriptionColor);
     onFieldChange?.(getCustom());
   }
 
+  // ─── Gather form data ─────────────────────────────────────────────
   function getCustom() {
     return {
       id:               _id,
@@ -215,7 +135,7 @@ export function createChestFormController(
     };
   }
 
-  // wire submission & live-preview
+  // ─── Wire submit & live‐preview events ───────────────────────────
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
@@ -225,10 +145,7 @@ export function createChestFormController(
     getCustom,
     getCurrentPayload: getCustom,
 
-    /**
-     * Re-wire Pickr instances after the form
-     * has been inserted into the DOM.
-     */
+    // For re-wiring Pickr after insertion
     initPickrs() {
       Object.assign(pickrs, initFormPickrs(form, {
         description: fields.colorDesc
