@@ -1,11 +1,11 @@
 // @file: src/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.39 — DRY header + buttons via shared FormControllerShell
+// @version: 4.40 — DRY form event wiring via shared shell
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
 import { createItemForm }                      from "../builders/itemFormBuilder.js";
 import { createIcon }                          from "../../../utils/iconUtils.js";
-import { createFormControllerHeader }          from "../../components/formControllerShell.js";
+import { createFormControllerHeader, wireFormEvents } from "../../components/formControllerShell.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
@@ -31,10 +31,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
   } = createFormControllerHeader({
     title:     "Add Item",
     hasFilter: true,
-    onFilter:  checked => {
-      // immediately update preview when toggling filter checkbox
-      onFieldChange?.(getCustom());
-    },
+    onFilter:  _checked => onFieldChange?.(getCustom()),
     onCancel,
     onDelete: () => {
       if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
@@ -43,7 +40,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     }
   });
 
-  // hide Delete button in "Add" mode
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
@@ -61,7 +57,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
-        // dispatch "input" so live-preview wiring catches it
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
         btn.addEventListener("click", () => p.show());
@@ -73,7 +68,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
   // ─── Sync Presets on Rarity or Type Change ─────────────────────────
   function applyPresetsAndRefresh() {
     if (!fields.fldType.value || !fields.fldRarity.value) return;
-
     initPickrs();
     const tmp = { itemType: fields.fldType.value, rarity: fields.fldRarity.value };
     applyColorPresets(tmp);
@@ -152,18 +146,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     };
   }
 
-  // ─── Form submission ───────────────────────────────────────────────
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    await onSubmit?.(getCustom());
-  });
-
-  // ─── Live‐preview wiring ───────────────────────────────────────────
-  form.addEventListener("input", () => {
-    if (typeof onFieldChange === "function") {
-      onFieldChange(getCustom());
-    }
-  });
+  // ─── Wire form submission & live‐preview events ───────────────────
+  wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
     form,

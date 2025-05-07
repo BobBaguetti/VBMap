@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.8 — DRY header + buttons via shared FormControllerShell
+// @version: 2.9 — DRY form event wiring via shared shell
 
 import { createPickr }            from "../../pickrManager.js";
 import { getPickrHexColor }       from "../../../utils/colorUtils.js";
@@ -7,7 +7,7 @@ import { createChestForm }        from "../builders/chestFormBuilder.js";
 import { createIcon }             from "../../../utils/iconUtils.js";
 import { loadItemDefinitions }    from "../../../services/itemDefinitionsService.js";
 import { createModal, openModal, closeModal } from "../../uiKit.js";
-import { createFormControllerHeader }          from "../../components/formControllerShell.js";
+import { createFormControllerHeader, wireFormEvents } from "../../components/formControllerShell.js";
 
 /**
  * Chest-definition form controller.
@@ -30,20 +30,18 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     subheading,
     setDeleteVisible
   } = createFormControllerHeader({
-    title:    "Add Chest Type",
+    title:     "Add Chest Type",
     hasFilter: false,
-    onCancel: () => {
+    onCancel:  () => {
       reset();
       onCancel?.();
     },
-    onDelete: () => {
+    onDelete:  () => {
       if (_id && confirm("Delete this chest type?")) {
         onDelete?.(_id);
       }
     }
   });
-
-  // hide Delete button in "Add" mode
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
@@ -157,7 +155,6 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
       x.onclick = () => {
         fields.lootPool.splice(fields.lootPool.indexOf(id),1);
         renderChips();
-        if (typeof onFieldChange === "function") onFieldChange(getCustom());
       };
       chip.append(x);
       fields.chipContainer.append(chip);
@@ -166,29 +163,24 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
 
   fields.openLootPicker.onclick = openPicker;
 
-  // ─── Reset / Populate / getCustom ─────────────────────────────────
+  // ─── Reset / Populate / Get form data ──────────────────────────────
   function reset() {
     form.reset();
     _id = null;
     fields.lootPool.length = 0;
     renderChips();
-
     fields.fldSize.value     = "Small";
     fields.fldCategory.value = "Normal";
-
     subheading.textContent   = "Add Chest Type";
     setDeleteVisible(false);
     initPickrs();
     pickrs.desc?.setColor("#E5E6E8");
     fields.extraInfo.setLines([], false);
-
-    if (typeof onFieldChange === "function") onFieldChange(getCustom());
   }
 
   function populate(def) {
     form.reset();
     _id = def.id || null;
-
     fields.fldName.value        = def.name    || "";
     fields.fldSize.value        = def.size    || "Small";
     fields.fldCategory.value    = def.category|| "Normal";
@@ -196,17 +188,12 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     fields.fldSubtext.value     = def.subtext || "";
     fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool||[]));
     renderChips();
-
     fields.fldDesc.value        = def.description || "";
     fields.extraInfo.setLines(def.extraLines || [], false);
-
-    subheading.textContent   = "Edit Chest Type";
+    subheading.textContent      = "Edit Chest Type";
     setDeleteVisible(true);
-
     initPickrs();
     def.descriptionColor && pickrs.desc.setColor(def.descriptionColor);
-
-    if (typeof onFieldChange === "function") onFieldChange(getCustom());
   }
 
   function getCustom() {
@@ -225,17 +212,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     };
   }
 
-  form.addEventListener("submit", async e => {
-    e.preventDefault();
-    await onSubmit?.(getCustom());
-  });
-
-  // ─── Live‐preview wiring ───────────────────────────────────────────
-  form.addEventListener("input", () => {
-    if (typeof onFieldChange === "function") {
-      onFieldChange(getCustom());
-    }
-  });
+  // ─── Wire form submission & live‐preview events ───────────────────
+  wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
     form,
