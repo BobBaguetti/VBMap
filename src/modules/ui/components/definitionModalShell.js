@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/definitionModalShell.js
-// @version: 5.5 — correctly select and re-append the span.close element
+// @version: 5.6 — reintroduce a scrollable body wrapper for content
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }              from "../uiKit.js";
@@ -12,7 +12,7 @@ export function createDefinitionModalShell({
   layoutOptions = ["row", "stacked", "gallery"],
   onClose = () => {}
 }) {
-  // 1) build the base modal and get header
+  // Build the base modal
   const { modal, content, header } = createModal({
     id,
     title,
@@ -26,13 +26,11 @@ export function createDefinitionModalShell({
     }
   });
 
-  // 2) grab the span.close element (the ×) before we clear header
+  // Grab and remove the close “×” (span.close)
   const closeBtn = header.querySelector(".close");
 
-  // 3) clear header and rebuild two sections
+  // Clear header and rebuild it in two columns
   header.innerHTML = "";
-
-  // 4) Left: the title
   const left = document.createElement("div");
   left.style.flex = "1";
   left.style.display = "flex";
@@ -42,13 +40,12 @@ export function createDefinitionModalShell({
   titleEl.style.margin = 0;
   left.appendChild(titleEl);
 
-  // 5) Right: layout switcher, search, then close
   const right = document.createElement("div");
   right.style.display = "flex";
   right.style.alignItems = "center";
   right.style.gap = "8px";
 
-  // a) layout buttons
+  // Layout switcher
   const layoutSwitcher = createLayoutSwitcher({
     available:   layoutOptions,
     defaultView: layoutOptions[0],
@@ -56,7 +53,7 @@ export function createDefinitionModalShell({
   });
   right.appendChild(layoutSwitcher);
 
-  // b) optional search input
+  // Optional search input
   if (searchable) {
     const search = document.createElement("input");
     search.type        = "search";
@@ -65,21 +62,36 @@ export function createDefinitionModalShell({
     right.appendChild(search);
   }
 
-  // c) re-attach the original close <span>
+  // Re-append close button at far right
   if (closeBtn) {
     right.appendChild(closeBtn);
   }
 
-  // 6) finalize header layout
   header.style.display        = "flex";
   header.style.alignItems     = "center";
   header.style.justifyContent = "space-between";
   header.append(left, right);
 
+  // ─── Create a scrollable body wrapper ───────────────────────────────
+  const bodyWrap = document.createElement("div");
+  Object.assign(bodyWrap.style, {
+    flex:        "1 1 auto",
+    overflowY:   "auto",
+    padding:     "1rem",      // optional padding
+    boxSizing:   "border-box"
+  });
+
+  // Move any existing children after header into bodyWrap
+  while (content.childNodes.length > 1) {
+    bodyWrap.appendChild(content.childNodes[1]);
+  }
+  content.appendChild(bodyWrap);
+
+  // Return the body wrapper as the "content" target for modals
   return {
     modal,
     header,
-    content,
+    content: bodyWrap,
     open:  () => openModal(modal),
     close: () => closeModal(modal)
   };
