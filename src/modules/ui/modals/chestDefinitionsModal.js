@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.5 — plug in getCurrentPayload to previewController
+// @version: 1.6 — live‐update wired per‐field
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
@@ -19,7 +19,7 @@ import { createChestFormController } from "../forms/controllers/chestFormControl
 export function initChestDefinitionsModal(db) {
   let listApi, formApi, definitions = [];
   let modal, header, content, openShell;
-  let showPreview, liveReShow, hidePreview;
+  let showPreview, hidePreview;
   let itemMap = {};
 
   async function ensureItemMap() {
@@ -48,24 +48,23 @@ export function initChestDefinitionsModal(db) {
         }));
         modal.classList.add("admin-only");
 
-        // preview wiring
-        const preview = createPreviewController("chest", () => formApi.getCurrentPayload());
-        showPreview  = preview.show;
-        liveReShow   = preview.liveReShow;
-        hidePreview  = preview.hide;
+        // preview
+        const preview = createPreviewController("chest");
+        showPreview = preview.show;
+        hidePreview = preview.hide;
 
         // list & form
         const listContainer = createDefListContainer("chest-def-list");
         formApi = createChestFormController({
           onCancel: async () => {
             formApi.reset();
-            liveReShow();
+            showPreview({ lootPool: [] });
           },
           onDelete: async id => {
             await deleteChestDefinition(db, id);
             await refreshList();
             formApi.reset();
-            liveReShow();
+            showPreview({ lootPool: [] });
           },
           onSubmit: async payload => {
             if (payload.id) {
@@ -75,7 +74,7 @@ export function initChestDefinitionsModal(db) {
             }
             await refreshList();
             formApi.reset();
-            liveReShow();
+            showPreview({ lootPool: [] });
           }
         }, db);
 
@@ -95,7 +94,12 @@ export function initChestDefinitionsModal(db) {
             await ensureItemMap();
             formApi.populate(def);
             formApi.initPickrs();
-            liveReShow();
+            // rebuild fullDef for preview
+            const fullDef = {
+              ...def,
+              lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
+            };
+            showPreview(fullDef);
           },
           onDelete: async id => {
             await deleteChestDefinition(db, id);
@@ -113,7 +117,29 @@ export function initChestDefinitionsModal(db) {
       formApi.initPickrs();
       initModalPickrs(content);
 
-      liveReShow();
+      // initial blank preview
+      showPreview({ lootPool: [] });
+
+      // live‐update key fields
+      const chestFields = [
+        formApi.form.querySelector('input[name="name"]'),
+        formApi.form.querySelector('select[name="size"]'),
+        formApi.form.querySelector('select[name="category"]'),
+        formApi.form.querySelector('input[name="iconUrl"]'),
+        formApi.form.querySelector('textarea[name="description"]')
+      ];
+      chestFields.forEach(el => {
+        if (!el) return;
+        const evt = el.tagName === "SELECT" ? "change" : "input";
+        el.addEventListener(evt, () => {
+          const custom = formApi.getCustom();
+          const merged = {
+            ...custom,
+            lootPool: (custom.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
+          };
+          showPreview(merged);
+        });
+      });
     }
   };
 }
