@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 3 – added chestDefinitionsModal integration
+// @version: 4 – exposing modals on window for sidebar
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -142,6 +142,10 @@ onAuthStateChanged(auth, async user => {
 const markerForm  = initMarkerModal(db);
 const itemModal   = initItemDefinitionsModal(db);
 const chestModal  = initChestDefinitionsModal(db);
+
+// expose to sidebar
+window.itemModal  = itemModal;
+window.chestModal = chestModal;
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
