@@ -1,22 +1,24 @@
 // @file: src/modules/ui/components/definitionModalShell.js
-// @version: 4.2 — fixed pickr integration using initModalPickrs
+// @version: 5.0 — shell only, no built-in preview, single close button from uiKit
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }              from "../uiKit.js";
-import { createPreviewPanel }                from "../preview/createPreviewPanel.js";
-// Use the existing initModalPickrs helper
-import { initModalPickrs }                   from "../pickrManager.js";
 
+/**
+ * Shared modal shell:
+ *  - uses uiKit.createModal (which injects its own close-button and backdrop)
+ *  - header with title, layout switcher, optional search input
+ *  - content container you fill in your modal init
+ */
 export function createDefinitionModalShell({
   id,
   title,
   size = "large",
-  withPreview = false,
-  previewType = null,
-  layoutOptions = ["row", "stacked", "gallery"],
   searchable = false,
+  layoutOptions = ["row", "stacked", "gallery"],
   onClose = () => {}
 }) {
+  // build the base modal (uiKit handles close button & backdrop)
   const { modal, content, header } = createModal({
     id,
     title,
@@ -26,24 +28,21 @@ export function createDefinitionModalShell({
     withDivider: true,
     onClose: () => {
       onClose();
-      if (withPreview) previewApi?.hide();
       closeModal(modal);
     }
   });
 
-  // Flex header for title, toolbar, and close
-  header.style.display = "flex";
-  header.style.alignItems = "center";
+  // header layout
+  header.style.display        = "flex";
+  header.style.alignItems     = "center";
   header.style.justifyContent = "space-between";
 
-  // Toolbar container
+  // toolbar (layout switcher + optional search)
   const toolbar = document.createElement("div");
-  toolbar.classList.add("modal__toolbar");
-  toolbar.style.display = "flex";
+  toolbar.style.display    = "flex";
   toolbar.style.alignItems = "center";
-  toolbar.style.gap = "8px";
+  toolbar.style.gap        = "8px";
 
-  // Layout switcher
   const layoutSwitcher = createLayoutSwitcher({
     available:   layoutOptions,
     defaultView: layoutOptions[0],
@@ -51,7 +50,6 @@ export function createDefinitionModalShell({
   });
   toolbar.appendChild(layoutSwitcher);
 
-  // Optional search input
   if (searchable) {
     const search = document.createElement("input");
     search.type        = "search";
@@ -62,60 +60,11 @@ export function createDefinitionModalShell({
 
   header.appendChild(toolbar);
 
-  // Preview panel toggle
-  let previewApi, showPreview;
-  if (withPreview && previewType) {
-    const previewContainer = document.createElement("div");
-    previewContainer.style.zIndex = "1101";
-    document.body.appendChild(previewContainer);
-
-    previewApi = createPreviewPanel(previewType, previewContainer);
-
-    showPreview = () => {
-      const mc = modal.querySelector(".modal-content")?.getBoundingClientRect();
-      const pr = previewContainer.getBoundingClientRect();
-      if (mc) {
-        previewContainer.style.position = "absolute";
-        previewContainer.style.left     = `${mc.right + 30}px`;
-        previewContainer.style.top      = `${mc.top + (mc.height/2) - (pr.height/2)}px`;
-      }
-      previewApi.show();
-    };
-  }
-
-  // Close button (always rightmost)
-  const closeBtn = document.createElement("button");
-  closeBtn.classList.add("modal__close");
-  closeBtn.type = "button";
-  closeBtn.innerHTML = "&times;";
-  closeBtn.addEventListener("click", () => {
-    if (withPreview && previewApi) previewApi.hide();
-    closeModal(modal);
-  });
-  header.appendChild(closeBtn);
-
   return {
     modal,
     header,
     content,
-    layoutSwitcher,
-    previewApi,
-    open: () => {
-      openModal(modal);
-      if (withPreview && showPreview) showPreview();
-    },
-    close: () => {
-      if (withPreview && previewApi) previewApi.hide();
-      closeModal(modal);
-    }
+    open:  () => openModal(modal),
+    close: () => closeModal(modal)
   };
-}
-
-/**
- * Initialize all pickrs inside this modal content.
- * Assumes form fields that need color picking have class "color-swatch"
- * or are otherwise discovered by initModalPickrs.
- */
-export function initModalColorPickers(containerEl) {
-  initModalPickrs(containerEl);
 }

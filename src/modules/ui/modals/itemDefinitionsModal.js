@@ -1,10 +1,11 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.2 — corrected open(), removed shell searchbar, reordered pickr init
+// @version: 1.3 — shell without preview, shell search disabled, own preview only
 
-import { createDefinitionModalShell, initModalColorPickers } from "../components/definitionModalShell.js";
-import { createDefListContainer }      from "../../utils/listUtils.js";
-import { createDefinitionListManager } from "../components/definitionListManager.js";
-import { createPreviewPanel }          from "../preview/createPreviewPanel.js";
+import { createDefinitionModalShell } from "../components/definitionModalShell.js";
+import { initModalPickrs }            from "../pickrManager.js";
+import { createDefListContainer }     from "../../utils/listUtils.js";
+import { createDefinitionListManager }from "../components/definitionListManager.js";
+import { createPreviewPanel }         from "../preview/createPreviewPanel.js";
 
 import {
   loadItemDefinitions,
@@ -17,7 +18,7 @@ import { createItemFormController } from "../forms/controllers/itemFormControlle
 
 export function initItemDefinitionsModal(db) {
   let listApi, formApi, previewApi, definitions = [];
-  let modal, header, content, open;
+  let modal, header, content, openShell;
 
   async function refreshList() {
     definitions = await loadItemDefinitions(db);
@@ -27,23 +28,23 @@ export function initItemDefinitionsModal(db) {
   return {
     async open() {
       if (!modal) {
-        // 1) build shell (disable its built-in searchbar)
-        ({ modal, header, content, open } = createDefinitionModalShell({
+        // build the shell (no built-in preview, disable shell search)
+        ({ modal, header, content, open: openShell } = createDefinitionModalShell({
           id:            "item-definitions-modal",
           title:         "Manage Items",
           size:          "large",
-          withPreview:   true,
-          previewType:   "item",
+          searchable:    false,
           layoutOptions: ["row", "gallery", "stacked"],
-          searchable:    false, // we use the list's search instead
           onClose:       () => previewApi?.hide()
         }));
         modal.classList.add("admin-only");
 
-        // 2) list + preview + form
+        // create your own preview panel
+        previewApi = createPreviewPanel("item");
+
+        // build list & form
         const listContainer = createDefListContainer("item-def-list");
-        previewApi  = createPreviewPanel("item");
-        formApi     = createItemFormController({
+        formApi = createItemFormController({
           onCancel: async () => {
             formApi.reset();
             previewApi.setFromDefinition({});
@@ -70,7 +71,7 @@ export function initItemDefinitionsModal(db) {
           }
         }, db);
 
-        // 3) assemble into modal
+        // assemble
         header.append(...listContainer.querySelectorAll(".list-header"));
         content.append(
           listContainer,
@@ -78,7 +79,7 @@ export function initItemDefinitionsModal(db) {
           formApi.form
         );
 
-        // 4) wiring list manager
+        // list manager
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
@@ -94,25 +95,19 @@ export function initItemDefinitionsModal(db) {
           }
         });
 
-        // 5) initial state
         previewApi.hide();
       }
 
-      // every time we open:
+      // each open
       formApi.reset();
       await refreshList();
 
-      // use shell's open()
-      open();
+      openShell();               // show modal
+      formApi.initPickrs();      // wire per-form pickrManager
+      initModalPickrs(content);  // init any color-swatch buttons inside
 
-      // initialize form color-pickers after form fields exist
-      formApi.initPickrs();
-      initModalColorPickers(content);
-
-      requestAnimationFrame(() => {
-        previewApi.setFromDefinition({});
-        previewApi.show();
-      });
+      previewApi.setFromDefinition({});
+      previewApi.show();
     }
   };
 }
