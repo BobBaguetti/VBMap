@@ -1,11 +1,11 @@
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.9 — wired shell header search into listApi.filter()
+// @version: 1.10 — removed formApi.initPickrs() calls
 
-import { createDefinitionModalShell } from "../components/definitionModalShell.js";
-import { initModalPickrs }            from "../pickrManager.js";
-import { createDefListContainer }     from "../../utils/listUtils.js";
-import { createDefinitionListManager }from "../components/definitionListManager.js";
-import { createPreviewController }    from "../preview/previewController.js";
+import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
+import { initModalPickrs }              from "../pickrManager.js";
+import { createDefListContainer }       from "../../utils/listUtils.js";
+import { createDefinitionListManager }  from "../components/definitionListManager.js";
+import { createPreviewController }      from "../preview/previewController.js";
 
 import {
   loadChestDefinitions,
@@ -14,7 +14,7 @@ import {
   deleteChestDefinition
 } from "../../services/chestDefinitionsService.js";
 
-import { createChestFormController } from "../forms/controllers/chestFormController.js";
+import { createChestFormController }    from "../forms/controllers/chestFormController.js";
 
 export function initChestDefinitionsModal(db) {
   let listApi, formApi, definitions = [];
@@ -39,12 +39,12 @@ export function initChestDefinitionsModal(db) {
     async open() {
       if (!modal) {
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
-          id:         "chest-definitions-modal",
-          title:      "Manage Chest Types",
-          size:       "large",
-          searchable: true,    // now using shell search
+          id:            "chest-definitions-modal",
+          title:         "Manage Chest Types",
+          size:          "large",
+          searchable:    true,
           layoutOptions: ["row","gallery","stacked"],
-          onClose:    () => hidePreview()
+          onClose:       () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
@@ -98,7 +98,7 @@ export function initChestDefinitionsModal(db) {
           onEntryClick: async def => {
             await ensureItemMap();
             formApi.populate(def);
-            formApi.initPickrs();
+            // removed formApi.initPickrs()
             const fullDef = {
               ...def,
               lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
@@ -111,7 +111,7 @@ export function initChestDefinitionsModal(db) {
           }
         });
 
-        // ─── NEW: Hook shell header search to filter list ────────────
+        // hook shell search to filter list
         const shellSearch = modal.querySelector(".modal__search");
         if (shellSearch) {
           shellSearch.addEventListener("input", () => {
@@ -126,9 +126,8 @@ export function initChestDefinitionsModal(db) {
       await refreshList();
 
       openShell();
-      formApi.initPickrs();
+      // removed formApi.initPickrs()
       initModalPickrs(content);
-
       showPreview({ lootPool: [] });
     }
   };

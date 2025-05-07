@@ -1,11 +1,11 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.9 — wired shell header search into listApi.filter()
+// @version: 1.10 — removed formApi.initPickrs() calls
 
-import { createDefinitionModalShell } from "../components/definitionModalShell.js";
-import { initModalPickrs }            from "../pickrManager.js";
-import { createDefListContainer }     from "../../utils/listUtils.js";
-import { createDefinitionListManager }from "../components/definitionListManager.js";
-import { createPreviewController }    from "../preview/previewController.js";
+import { createDefinitionModalShell }  from "../components/definitionModalShell.js";
+import { initModalPickrs }             from "../pickrManager.js";
+import { createDefListContainer }      from "../../utils/listUtils.js";
+import { createDefinitionListManager } from "../components/definitionListManager.js";
+import { createPreviewController }     from "../preview/previewController.js";
 
 import {
   loadItemDefinitions,
@@ -14,7 +14,7 @@ import {
   deleteItemDefinition
 } from "../../services/itemDefinitionsService.js";
 
-import { createItemFormController } from "../forms/controllers/itemFormController.js";
+import { createItemFormController }    from "../forms/controllers/itemFormController.js";
 
 export function initItemDefinitionsModal(db) {
   let listApi, formApi, definitions = [];
@@ -30,12 +30,12 @@ export function initItemDefinitionsModal(db) {
     async open() {
       if (!modal) {
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
-          id:         "item-definitions-modal",
-          title:      "Manage Items",
-          size:       "large",
-          searchable: true,    // now using shell search
+          id:            "item-definitions-modal",
+          title:         "Manage Items",
+          size:          "large",
+          searchable:    true,
           layoutOptions: ["row","gallery","stacked"],
-          onClose:    () => hidePreview()
+          onClose:       () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
@@ -47,7 +47,7 @@ export function initItemDefinitionsModal(db) {
         // list & form
         const listContainer = createDefListContainer("item-def-list");
         formApi = createItemFormController({
-          onCancel: async () => {
+          onCancel:   async () => {
             formApi.reset();
             showPreview({});
           },
@@ -84,7 +84,6 @@ export function initItemDefinitionsModal(db) {
           getDefinitions: () => definitions,
           onEntryClick: def => {
             formApi.populate(def);
-            formApi.initPickrs();
             showPreview(def);
           },
           onDelete: async id => {
@@ -93,7 +92,7 @@ export function initItemDefinitionsModal(db) {
           }
         });
 
-        // ─── NEW: Hook shell header search to filter list ────────────
+        // hook shell search to list filter
         const shellSearch = modal.querySelector(".modal__search");
         if (shellSearch) {
           shellSearch.addEventListener("input", () => {
@@ -102,14 +101,12 @@ export function initItemDefinitionsModal(db) {
         }
       }
 
-      // each open
+      // on each open
       formApi.reset();
       await refreshList();
 
       openShell();
-      formApi.initPickrs();
       initModalPickrs(content);
-
       showPreview({});
     }
   };
