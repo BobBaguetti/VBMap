@@ -2,7 +2,7 @@
 // @version: 12
 
 import { createDefinitionModalShell }    from "../components/definitionModalShell.js";
-import { createDefinitionListManager }   from "../utils/definitionListManager.js";
+import { createDefinitionListManager }   from "../../utils/definitionListManager.js";
 import { createPickr }                   from "../pickrManager.js";
 import { createExtraInfoField }          from "../forms/universalForm.js";
 
