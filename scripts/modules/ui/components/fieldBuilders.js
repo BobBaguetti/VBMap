@@ -1,8 +1,7 @@
 // @file: /scripts/modules/ui/components/fieldBuilders.js
-// @version: 2.0 – removed legacy swatches; only use createColorPreview
+// @version: 2.0 – removed iconUtils import; only uses createColorPreview
 
-import { createIcon }           from "../../utils/iconUtils.js";
-import { createColorPreview }   from "./colorPreview.js";
+import { createColorPreview } from "./colorPreview.js";
 
 /**
  * Build a text or number field row.
@@ -43,7 +42,7 @@ export function createDropdownField(key, labelText, options = []) {
 
   options.forEach(opt => {
     const o = document.createElement("option");
-    o.value   = opt.value;
+    o.value       = opt.value;
     o.textContent = opt.label;
     select.appendChild(o);
   });
@@ -115,7 +114,7 @@ export function createImageField(key, labelText) {
 }
 
 /**
- * Build the form’s Save / Clear / (Delete) button row.
+ * Build the form’s Save / Clear buttons row.
  */
 export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
   const row = document.createElement("div");
