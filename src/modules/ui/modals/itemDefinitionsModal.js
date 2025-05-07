@@ -1,7 +1,7 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.0 — now uses definitionModalShell + shared color‐picker wiring
+// @version: 1.1 — corrected import path for definitionModalShell
 
-import { createDefinitionModalShell, initModalColorPickers } from "../definitionModalShell.js";
+import { createDefinitionModalShell, initModalColorPickers } from "../components/definitionModalShell.js";
 import { createDefListContainer }      from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createPreviewPanel }          from "../preview/createPreviewPanel.js";
@@ -17,7 +17,7 @@ import { createItemFormController } from "../forms/controllers/itemFormControlle
 
 export function initItemDefinitionsModal(db) {
   let listApi, formApi, previewApi, definitions = [];
-  let modalEl, headerEl, contentEl;
+  let modal, header, content;
 
   async function refreshList() {
     definitions = await loadItemDefinitions(db);
@@ -26,20 +26,19 @@ export function initItemDefinitionsModal(db) {
 
   return {
     async open() {
-      if (!modalEl) {
+      if (!modal) {
         // 1) build shell
-        ({ modalEl, headerEl, contentEl } = createDefinitionModalShell({
+        ({ modal, header, content } = createDefinitionModalShell({
           id:         "item-definitions-modal",
           title:      "Manage Items",
-          toolbar:    [
-            { iconClass: "fas fa-list",    onClick: () => listApi.setLayout("row")    },
-            { iconClass: "fas fa-th-large", onClick: () => listApi.setLayout("gallery")},
-            { iconClass: "fas fa-th-list",  onClick: () => listApi.setLayout("stacked")} 
-          ],
+          size:       "large",
+          withPreview: true,
+          previewType: "item",
+          layoutOptions: ["row","gallery","stacked"],
           searchable: true,
-          size:       "large"
+          onClose: () => previewApi?.hide()
         }));
-        modalEl.classList.add("admin-only");
+        modal.classList.add("admin-only");
 
         // 2) list + preview + form
         const listContainer = createDefListContainer("item-def-list");
@@ -72,8 +71,8 @@ export function initItemDefinitionsModal(db) {
         }, db);
 
         // 3) assemble
-        headerEl.append(...listContainer.querySelectorAll(".list-header"));
-        contentEl.append(
+        header.append(...listContainer.querySelectorAll(".list-header"));
+        content.append(
           listContainer,
           document.createElement("hr"),
           formApi.form
@@ -102,8 +101,8 @@ export function initItemDefinitionsModal(db) {
       // every open…
       formApi.reset();
       await refreshList();
-      openModal(modalEl);             // from definitionModalShell
-      initModalColorPickers(contentEl);
+      modal.open();
+      initModalColorPickers(content);
       formApi.initPickrs();
       requestAnimationFrame(() => {
         previewApi.setFromDefinition({});
