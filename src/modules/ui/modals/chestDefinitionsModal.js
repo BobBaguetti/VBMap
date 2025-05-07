@@ -1,11 +1,10 @@
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.10 — removed formApi.initPickrs() calls
+// @version: 1.11 — wire in formApi.initPickrs() after form inject
 
 import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
-import { initModalPickrs }              from "../pickrManager.js";
-import { createDefListContainer }       from "../../utils/listUtils.js";
-import { createDefinitionListManager }  from "../components/definitionListManager.js";
-import { createPreviewController }      from "../preview/previewController.js";
+import { createDefListContainer }      from "../../utils/listUtils.js";
+import { createDefinitionListManager } from "../components/definitionListManager.js";
+import { createPreviewController }     from "../preview/previewController.js";
 
 import {
   loadChestDefinitions,
@@ -14,7 +13,7 @@ import {
   deleteChestDefinition
 } from "../../services/chestDefinitionsService.js";
 
-import { createChestFormController }    from "../forms/controllers/chestFormController.js";
+import { createChestFormController }   from "../forms/controllers/chestFormController.js";
 
 export function initChestDefinitionsModal(db) {
   let listApi, formApi, definitions = [];
@@ -48,12 +47,12 @@ export function initChestDefinitionsModal(db) {
         }));
         modal.classList.add("admin-only");
 
-        // preview
+        // preview controller
         const preview = createPreviewController("chest");
         showPreview = preview.show;
         hidePreview = preview.hide;
 
-        // list & form
+        // list container + form
         const listContainer = createDefListContainer("chest-def-list");
         formApi = createChestFormController({
           onCancel: async () => {
@@ -92,13 +91,13 @@ export function initChestDefinitionsModal(db) {
           formApi.form
         );
 
+        // list manager
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
           onEntryClick: async def => {
             await ensureItemMap();
             formApi.populate(def);
-            // removed formApi.initPickrs()
             const fullDef = {
               ...def,
               lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
@@ -111,7 +110,7 @@ export function initChestDefinitionsModal(db) {
           }
         });
 
-        // hook shell search to filter list
+        // hook modal-search to list filter
         const shellSearch = modal.querySelector(".modal__search");
         if (shellSearch) {
           shellSearch.addEventListener("input", () => {
@@ -120,12 +119,16 @@ export function initChestDefinitionsModal(db) {
         }
       }
 
-      // each open
+      // on each open
       formApi.reset();
       await ensureItemMap();
       await refreshList();
 
       openShell();
+
+      // ⬇ wire Pickr swatches now that form is in DOM
+      formApi.initPickrs();
+
       showPreview({ lootPool: [] });
     }
   };

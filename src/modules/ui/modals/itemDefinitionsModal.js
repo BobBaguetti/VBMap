@@ -1,8 +1,7 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.10 — removed formApi.initPickrs() calls
+// @version: 1.11 — wire in formApi.initPickrs() after form inject
 
-import { createDefinitionModalShell }  from "../components/definitionModalShell.js";
-import { initModalPickrs }             from "../pickrManager.js";
+import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
 import { createDefListContainer }      from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "../components/definitionListManager.js";
 import { createPreviewController }     from "../preview/previewController.js";
@@ -39,12 +38,12 @@ export function initItemDefinitionsModal(db) {
         }));
         modal.classList.add("admin-only");
 
-        // preview
+        // preview controller
         const preview = createPreviewController("item");
         showPreview = preview.show;
         hidePreview = preview.hide;
 
-        // list & form
+        // list container + form
         const listContainer = createDefListContainer("item-def-list");
         formApi = createItemFormController({
           onCancel:   async () => {
@@ -92,7 +91,7 @@ export function initItemDefinitionsModal(db) {
           }
         });
 
-        // hook shell search to list filter
+        // hook modal-search to list filter
         const shellSearch = modal.querySelector(".modal__search");
         if (shellSearch) {
           shellSearch.addEventListener("input", () => {
@@ -106,6 +105,10 @@ export function initItemDefinitionsModal(db) {
       await refreshList();
 
       openShell();
+
+      // ⬇ wire Pickr swatches now that form is in DOM
+      formApi.initPickrs();
+
       showPreview({});
     }
   };

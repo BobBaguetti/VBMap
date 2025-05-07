@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.41 — Pickr wiring factored into shared formPickrManager
+// @version: 4.42 — expose initPickrs() for re-wiring after form insertion
 
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
 import { createItemForm }                      from "../builders/itemFormBuilder.js";
@@ -8,25 +8,25 @@ import { initFormPickrs }                     from "../../components/formPickrMa
 
 /**
  * Creates a controller around a form layout for item definitions.
- * Handles the shared header, DRY’d Pickr wiring, live‐preview hooks, and CRUD logic.
+ * Handles wiring, reset, populate, and getCustom logic.
  *
  * @param {object} callbacks
  * @param {function} callbacks.onCancel
  * @param {function} callbacks.onSubmit
  * @param {function} callbacks.onDelete
- * @param {function} [callbacks.onFieldChange] — called with getCustom() on any field change
+ * @param {function} [callbacks.onFieldChange] — called with current payload on any field change
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete, onFieldChange }) {
   const { form, fields } = createItemForm();
 
-  // ─── Shared header + buttons ───────────────────────────────────────
+  // shared header + buttons
   const {
     container: subheadingWrap,
     subheading,
     filterCheckbox: chkAddFilter,
     setDeleteVisible
   } = createFormControllerHeader({
-    title:     "Add Item",
+    title:    "Add Item",
     hasFilter: true,
     onFilter:  checked => onFieldChange?.(getCustom()),
     onCancel,
@@ -39,7 +39,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
-  // ─── Shared Pickr wiring ───────────────────────────────────────────
+  // initial Pickr wiring (no-ops if form not yet in DOM)
   const pickrs = initFormPickrs(form, {
     name:        fields.colorName,
     itemType:    fields.colorType,
@@ -49,19 +49,15 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     quantity:    fields.colorQty
   });
 
-  // ─── Sync presets on type/rarity change ────────────────────────────
+  // sync presets on type/rarity change
   function applyPresetsAndRefresh() {
     if (!fields.fldType.value || !fields.fldRarity.value) return;
-
     const tmp = {
       itemType: fields.fldType.value,
       rarity:   fields.fldRarity.value
     };
     applyColorPresets(tmp);
-    // fallback for name color
     tmp.nameColor = tmp.nameColor || tmp.rarityColor || tmp.itemTypeColor;
-
-    // apply back into pickrs and trigger preview
     setTimeout(() => {
       pickrs.name     && tmp.nameColor      && pickrs.name.setColor(tmp.nameColor);
       pickrs.itemType && tmp.itemTypeColor  && pickrs.itemType.setColor(tmp.itemTypeColor);
@@ -72,10 +68,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
   fields.fldType .addEventListener("change", applyPresetsAndRefresh);
   fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
 
-  // ─── Internal state ────────────────────────────────────────────────
   let _id = null;
 
-  // ─── Reset to “Add” mode ───────────────────────────────────────────
   function reset() {
     form.reset();
     chkAddFilter.checked   = false;
@@ -85,11 +79,9 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     _id = null;
     subheading.textContent = "Add Item";
     setDeleteVisible(false);
-    // reset all pickr swatches
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
 
-  // ─── Populate for “Edit” mode ──────────────────────────────────────
   function populate(def) {
     form.reset();
     chkAddFilter.checked   = !!def.showInFilters;
@@ -107,7 +99,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     subheading.textContent = "Edit Item";
     setDeleteVisible(true);
 
-    // apply saved colors
     pickrs.name        && def.nameColor        && pickrs.name.setColor(def.nameColor);
     pickrs.itemType    && def.itemTypeColor    && pickrs.itemType.setColor(def.itemTypeColor);
     pickrs.rarity      && def.rarityColor      && pickrs.rarity.setColor(def.rarityColor);
@@ -116,7 +107,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     pickrs.quantity    && def.quantityColor    && pickrs.quantity.setColor(def.quantityColor);
   }
 
-  // ─── Collect form payload ──────────────────────────────────────────
   function getCustom() {
     return {
       id:               _id,
@@ -139,7 +129,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     };
   }
 
-  // ─── Wire submit & live‐preview hooks ─────────────────────────────
+  // wire form submission & live-preview
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
@@ -147,6 +137,21 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     reset,
     populate,
     getCustom,
-    getCurrentPayload: getCustom
+    getCurrentPayload: getCustom,
+
+    /**
+     * Re-wire Pickr instances *after* the form is
+     * inserted into the DOM (e.g. from modal.open()).
+     */
+    initPickrs() {
+      Object.assign(pickrs, initFormPickrs(form, {
+        name:        fields.colorName,
+        itemType:    fields.colorType,
+        rarity:      fields.colorRarity,
+        description: fields.colorDesc,
+        value:       fields.colorValue,
+        quantity:    fields.colorQty
+      }));
+    }
   };
 }

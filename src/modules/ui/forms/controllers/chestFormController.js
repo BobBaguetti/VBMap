@@ -1,25 +1,22 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.10 — Pickr wiring via shared formPickrManager
+// @version: 2.11 — expose initPickrs() for re-wiring after form insertion
 
-import { getPickrHexColor }                          from "../../../utils/colorUtils.js";
-import { createChestForm }                           from "../builders/chestFormBuilder.js";
-import { createIcon }                                from "../../../utils/iconUtils.js";
-import { loadItemDefinitions }                       from "../../../services/itemDefinitionsService.js";
-import { createModal, openModal, closeModal }        from "../../uiKit.js";
-import {
-  createFormControllerHeader,
-  wireFormEvents
-}                                                    from "../../components/formControllerShell.js";
-import { initFormPickrs }                            from "../../components/formPickrManager.js";
+import { getPickrHexColor }                 from "../../../utils/colorUtils.js";
+import { createChestForm }                  from "../builders/chestFormBuilder.js";
+import { createFormControllerHeader, wireFormEvents } from "../../components/formControllerShell.js";
+import { initFormPickrs }                   from "../../components/formPickrManager.js";
+import { createIcon }                       from "../../../utils/iconUtils.js";
+import { loadItemDefinitions }              from "../../../services/itemDefinitionsService.js";
 
 /**
- * Chest-definition form controller.
+ * Creates a controller around a form layout for chest definitions.
+ * Handles wiring, reset, populate, and getCustom logic.
  *
  * @param {object} callbacks
  * @param {function} callbacks.onCancel
  * @param {function} callbacks.onSubmit
  * @param {function} callbacks.onDelete
- * @param {function} [callbacks.onFieldChange]
+ * @param {function} [callbacks.onFieldChange] — called with current payload on any field change
  */
 export function createChestFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },
@@ -27,18 +24,15 @@ export function createChestFormController(
 ) {
   const { form, fields } = createChestForm();
 
-  // ─── Shared header + buttons ───────────────────────────────────────
+  // shared header + buttons
   const {
     container: subheadingWrap,
     subheading,
     setDeleteVisible
   } = createFormControllerHeader({
     title:    "Add Chest Type",
-    hasFilter:false,
-    onCancel: () => {
-      reset();
-      onCancel?.();
-    },
+    hasFilter: false,
+    onCancel: () => onCancel?.(),
     onDelete: () => {
       if (_id && confirm("Delete this chest type?")) {
         onDelete?.(_id);
@@ -48,12 +42,12 @@ export function createChestFormController(
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
-  // ─── Shared Pickr wiring ───────────────────────────────────────────
+  // initial Pickr wiring (only description)
   const pickrs = initFormPickrs(form, {
     description: fields.colorDesc
   });
 
-  // ─── Loot-pool picker setup ────────────────────────────────────────
+  // ─── Loot-pool picker logic ─────────────────────────────────────────
   let pickerModal, pickerContent, pickerSearch, pickerList;
   let itemMap = [];
 
@@ -127,8 +121,8 @@ export function createChestFormController(
         padding:    "4px 0"
       });
       const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.value = item.id;
+      cb.type    = "checkbox";
+      cb.value   = item.id;
       cb.checked = fields.lootPool.includes(item.id);
       cb.style.marginRight = "8px";
       const lbl = document.createElement("label");
@@ -221,7 +215,7 @@ export function createChestFormController(
     };
   }
 
-  // ─── Wire form submission & live‐preview hooks ───────────────────
+  // wire submission & live-preview
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
@@ -229,6 +223,16 @@ export function createChestFormController(
     reset,
     populate,
     getCustom,
-    getCurrentPayload: getCustom
+    getCurrentPayload: getCustom,
+
+    /**
+     * Re-wire Pickr instances after the form
+     * has been inserted into the DOM.
+     */
+    initPickrs() {
+      Object.assign(pickrs, initFormPickrs(form, {
+        description: fields.colorDesc
+      }));
+    }
   };
 }
