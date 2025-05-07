@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.0 – migrate to createDefinitionsModal + schemaFormController
+// @version: 1.1 – now uses shared renderListEntry
 
 import { createDefinitionsModal } from "../components/definitionsModalFactory.js";
 import itemSchema from "../forms/schemas/itemSchema.js";
@@ -13,7 +13,7 @@ import {
   subscribeItemDefinitions
 } from "../../services/itemDefinitionsService.js";
 
-import { renderItemEntry } from "../entries/itemEntryRenderer.js";
+import { renderListEntry } from "../components/listEntryRenderer.js";
 
 export function initItemDefinitionsModal(db) {
   return createDefinitionsModal({
@@ -27,8 +27,7 @@ export function initItemDefinitionsModal(db) {
     deleteDef:    (db, id)         => deleteItemDefinition(db, id),
     subscribeDefs: cb               => subscribeItemDefinitions(db, cb),
     createFormController: callbacks =>
-      createSchemaFormController(itemSchema, db, callbacks),
-    renderEntry:  (def, layout, callbacks) =>
-      renderItemEntry(def, layout, callbacks)
+      createSchemaFormController(itemSchema, callbacks),
+    renderEntry:  renderListEntry
   });
 }

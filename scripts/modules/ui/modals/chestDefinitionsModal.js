@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.0 – migrate to createDefinitionsModal + schemaFormController
+// @version: 1.1 – now uses shared renderListEntry
 
 import { createDefinitionsModal } from "../components/definitionsModalFactory.js";
 import chestSchema from "../forms/schemas/chestSchema.js";
@@ -13,7 +13,7 @@ import {
   subscribeChestDefinitions
 } from "../../services/chestDefinitionsService.js";
 
-import { renderChestEntry } from "../entries/chestEntryRenderer.js";
+import { renderListEntry } from "../components/listEntryRenderer.js";
 
 export function initChestDefinitionsModal(db) {
   return createDefinitionsModal({
@@ -27,8 +27,7 @@ export function initChestDefinitionsModal(db) {
     deleteDef:    (db, id)         => deleteChestDefinition(db, id),
     subscribeDefs: cb               => subscribeChestDefinitions(db, cb),
     createFormController: callbacks =>
-      createSchemaFormController(chestSchema, db, callbacks),
-    renderEntry:  (def, layout, callbacks) =>
-      renderChestEntry(def, layout, callbacks)
+      createSchemaFormController(chestSchema, callbacks),
+    renderEntry:  renderListEntry
   });
 }
