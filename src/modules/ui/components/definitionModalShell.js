@@ -1,11 +1,11 @@
 // @file: src/modules/ui/components/definitionModalShell.js
-// @version: 4.1 — fixed pickrManager import path
+// @version: 4.2 — fixed pickr integration using initModalPickrs
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }              from "../uiKit.js";
 import { createPreviewPanel }                from "../preview/createPreviewPanel.js";
-// Correct path to pickrManager
-import { createPickrForInput }               from "../pickrManager.js";
+// Use the existing initModalPickrs helper
+import { initModalPickrs }                   from "../pickrManager.js";
 
 export function createDefinitionModalShell({
   id,
@@ -94,7 +94,6 @@ export function createDefinitionModalShell({
   });
   header.appendChild(closeBtn);
 
-  // Expose API
   return {
     modal,
     header,
@@ -113,10 +112,10 @@ export function createDefinitionModalShell({
 }
 
 /**
- * Initialize color-pickers on any input with [data-color-picker]
+ * Initialize all pickrs inside this modal content.
+ * Assumes form fields that need color picking have class "color-swatch"
+ * or are otherwise discovered by initModalPickrs.
  */
 export function initModalColorPickers(containerEl) {
-  containerEl
-    .querySelectorAll("[data-color-picker]")
-    .forEach(input => createPickrForInput(input));
+  initModalPickrs(containerEl);
 }
