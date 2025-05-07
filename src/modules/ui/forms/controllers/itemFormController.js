@@ -1,10 +1,11 @@
 // @file: src/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.38 — wire onFieldChange via form 'input' event
+// @version: 4.39 — DRY header + buttons via shared FormControllerShell
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
 import { createItemForm }                      from "../builders/itemFormBuilder.js";
 import { createIcon }                          from "../../../utils/iconUtils.js";
+import { createFormControllerHeader }          from "../../components/formControllerShell.js";
 
 /**
  * Creates a controller around a form layout for item definitions.
@@ -14,71 +15,36 @@ import { createIcon }                          from "../../../utils/iconUtils.js
  * @param {function} callbacks.onCancel
  * @param {function} callbacks.onSubmit
  * @param {function} callbacks.onDelete
- * @param {function} [callbacks.onFieldChange]  — called with getCustom() on any field change
+ * @param {function} [callbacks.onFieldChange] — called with getCustom() on any field change
  */
 export function createItemFormController({ onCancel, onSubmit, onDelete, onFieldChange }) {
   const { form, fields } = createItemForm();
   const pickrs = {};
   let _id = null;
 
-  // ─── Header + Buttons + "Add to filters" ─────────────────────────
-  const subheadingWrap = document.createElement("div");
-  Object.assign(subheadingWrap.style, {
-    display:        "flex",
-    justifyContent: "space-between",
-    alignItems:     "center"
-  });
-
-  const subheading = document.createElement("h3");
-  subheading.textContent = "Add Item";
-  subheadingWrap.appendChild(subheading);
-
-  const chkAddFilter = document.createElement("input");
-  chkAddFilter.type = "checkbox";
-  chkAddFilter.id   = "fld-add-to-filters";
-  const lblAddFilter = document.createElement("label");
-  lblAddFilter.htmlFor = chkAddFilter.id;
-  lblAddFilter.textContent = "Add to filters";
-  const filterContainer = document.createElement("div");
-  Object.assign(filterContainer.style, {
-    display:    "flex",
-    alignItems: "center",
-    marginLeft: "1rem"
-  });
-  filterContainer.append(lblAddFilter, chkAddFilter);
-  subheadingWrap.appendChild(filterContainer);
-
-  const buttonRow = document.createElement("div");
-  buttonRow.className = "floating-buttons";
-
-  const btnSave = document.createElement("button");
-  btnSave.type        = "submit";
-  btnSave.className   = "ui-button";
-  btnSave.textContent = "Save";
-
-  const btnClear = document.createElement("button");
-  btnClear.type        = "button";
-  btnClear.className   = "ui-button";
-  btnClear.textContent = "Clear";
-  btnClear.onclick     = onCancel;
-
-  const btnDelete = document.createElement("button");
-  btnDelete.type        = "button";
-  btnDelete.className   = "ui-button-delete";
-  btnDelete.title       = "Delete this item";
-  btnDelete.style.width = "28px";
-  btnDelete.style.height= "28px";
-  btnDelete.appendChild(createIcon("trash"));
-  btnDelete.hidden = true;
-  btnDelete.onclick = () => {
-    if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
-      onDelete?.(_id);
+  // ─── Shared header + buttons ───────────────────────────────────────
+  const {
+    container: subheadingWrap,
+    subheading,
+    filterCheckbox: chkAddFilter,
+    setDeleteVisible
+  } = createFormControllerHeader({
+    title:     "Add Item",
+    hasFilter: true,
+    onFilter:  checked => {
+      // immediately update preview when toggling filter checkbox
+      onFieldChange?.(getCustom());
+    },
+    onCancel,
+    onDelete: () => {
+      if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
+        onDelete?.(_id);
+      }
     }
-  };
+  });
 
-  buttonRow.append(btnSave, btnClear, btnDelete);
-  subheadingWrap.appendChild(buttonRow);
-
+  // hide Delete button in "Add" mode
+  setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
   // ─── Pickr Initialization ──────────────────────────────────────────
@@ -95,6 +61,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
       if (!pickrs[key] && document.body.contains(btn)) {
         const p = createPickr(`#${btn.id}`);
         pickrs[key] = p;
+        // dispatch "input" so live-preview wiring catches it
         p.on("change", () => form.dispatchEvent(new Event("input", { bubbles: true })));
         p.on("save",   () => form.dispatchEvent(new Event("input", { bubbles: true })));
         btn.addEventListener("click", () => p.show());
@@ -130,9 +97,8 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     fields.fldRarity.value = "";
     fields.extraInfo.setLines([], false);
     _id = null;
-    subheading.textContent  = "Add Item";
-    btnDelete.hidden        = true;
-    btnClear.textContent    = "Clear";
+    subheading.textContent = "Add Item";
+    setDeleteVisible(false);
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
 
@@ -151,24 +117,23 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     fields.extraInfo.setLines(def.extraLines || [], false);
     _id = def.id || null;
 
-    subheading.textContent  = "Edit Item";
-    btnDelete.hidden        = false;
-    btnClear.textContent    = "Cancel";
+    subheading.textContent = "Edit Item";
+    setDeleteVisible(true);
 
     initPickrs();
-    pickrs.name       && def.nameColor        && pickrs.name.setColor(def.nameColor);
-    pickrs.itemType   && def.itemTypeColor    && pickrs.itemType.setColor(def.itemTypeColor);
-    pickrs.rarity     && def.rarityColor      && pickrs.rarity.setColor(def.rarityColor);
-    pickrs.description&& def.descriptionColor && pickrs.description.setColor(def.descriptionColor);
-    pickrs.value      && def.valueColor       && pickrs.value.setColor(def.valueColor);
-    pickrs.quantity   && def.quantityColor    && pickrs.quantity.setColor(def.quantityColor);
+    pickrs.name        && def.nameColor        && pickrs.name.setColor(def.nameColor);
+    pickrs.itemType    && def.itemTypeColor    && pickrs.itemType.setColor(def.itemTypeColor);
+    pickrs.rarity      && def.rarityColor      && pickrs.rarity.setColor(def.rarityColor);
+    pickrs.description && def.descriptionColor && pickrs.description.setColor(def.descriptionColor);
+    pickrs.value       && def.valueColor       && pickrs.value.setColor(def.valueColor);
+    pickrs.quantity    && def.quantityColor    && pickrs.quantity.setColor(def.quantityColor);
   }
 
   // ─── Gather form data ──────────────────────────────────────────────
   function getCustom() {
     return {
       id:               _id,
-      addToFilters:     chkAddFilter.checked,
+      showInFilters:    chkAddFilter.checked,
       name:             fields.fldName.value.trim(),
       nameColor:        getPickrHexColor(pickrs.name),
       itemType:         fields.fldType.value,
@@ -187,6 +152,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     };
   }
 
+  // ─── Form submission ───────────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit?.(getCustom());
@@ -208,4 +174,3 @@ export function createItemFormController({ onCancel, onSubmit, onDelete, onField
     getCustom
   };
 }
- 

@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.7 — wire onFieldChange via form 'input' event
+// @version: 2.8 — DRY header + buttons via shared FormControllerShell
 
 import { createPickr }            from "../../pickrManager.js";
 import { getPickrHexColor }       from "../../../utils/colorUtils.js";
@@ -7,6 +7,7 @@ import { createChestForm }        from "../builders/chestFormBuilder.js";
 import { createIcon }             from "../../../utils/iconUtils.js";
 import { loadItemDefinitions }    from "../../../services/itemDefinitionsService.js";
 import { createModal, openModal, closeModal } from "../../uiKit.js";
+import { createFormControllerHeader }          from "../../components/formControllerShell.js";
 
 /**
  * Chest-definition form controller.
@@ -23,58 +24,34 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
   let _id = null;
   let itemMap = [];
 
+  // ─── Shared header + buttons ───────────────────────────────────────
+  const {
+    container: subheadingWrap,
+    subheading,
+    setDeleteVisible
+  } = createFormControllerHeader({
+    title:    "Add Chest Type",
+    hasFilter: false,
+    onCancel: () => {
+      reset();
+      onCancel?.();
+    },
+    onDelete: () => {
+      if (_id && confirm("Delete this chest type?")) {
+        onDelete?.(_id);
+      }
+    }
+  });
+
+  // hide Delete button in "Add" mode
+  setDeleteVisible(false);
+  form.prepend(subheadingWrap);
+
   async function ensureAllItems() {
     if (!itemMap.length) {
       itemMap = await loadItemDefinitions(db);
     }
   }
-
-  // ─── Header + Buttons ─────────────────────────────────────────────
-  const subheadingWrap = document.createElement("div");
-  Object.assign(subheadingWrap.style, {
-    display:        "flex",
-    justifyContent: "space-between",
-    alignItems:     "center"
-  });
-
-  const subheading = document.createElement("h3");
-  subheading.textContent = "Add Chest Type";
-  subheadingWrap.appendChild(subheading);
-
-  const buttonRow = document.createElement("div");
-  buttonRow.className = "floating-buttons";
-
-  const btnSave = document.createElement("button");
-  btnSave.type        = "submit";
-  btnSave.className   = "ui-button";
-  btnSave.textContent = "Save";
-
-  const btnClear = document.createElement("button");
-  btnClear.type        = "button";
-  btnClear.className   = "ui-button";
-  btnClear.textContent = "Clear";
-  btnClear.onclick     = () => {
-    reset();
-    onCancel?.();
-  };
-
-  const btnDelete = document.createElement("button");
-  btnDelete.type        = "button";
-  btnDelete.className   = "ui-button-delete";
-  btnDelete.title       = "Delete this chest type";
-  btnDelete.style.width = "28px";
-  btnDelete.style.height= "28px";
-  btnDelete.appendChild(createIcon("trash"));
-  btnDelete.hidden = true;
-  btnDelete.onclick = () => {
-    if (_id && confirm("Delete this chest type?")) {
-      onDelete?.(_id);
-    }
-  };
-
-  buttonRow.append(btnSave, btnClear, btnDelete);
-  subheadingWrap.appendChild(buttonRow);
-  form.prepend(subheadingWrap);
 
   // ─── Pickr for Description ────────────────────────────────────────
   function initPickrs() {
@@ -199,10 +176,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     fields.fldSize.value     = "Small";
     fields.fldCategory.value = "Normal";
 
-    subheading.textContent  = "Add Chest Type";
-    btnDelete.hidden        = true;
-    btnClear.textContent    = "Clear";
-
+    subheading.textContent   = "Add Chest Type";
+    setDeleteVisible(false);
     initPickrs();
     pickrs.desc?.setColor("#E5E6E8");
     fields.extraInfo.setLines([], false);
@@ -225,9 +200,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     fields.fldDesc.value        = def.description || "";
     fields.extraInfo.setLines(def.extraLines || [], false);
 
-    subheading.textContent  = "Edit Chest Type";
-    btnDelete.hidden        = false;
-    btnClear.textContent    = "Cancel";
+    subheading.textContent   = "Edit Chest Type";
+    setDeleteVisible(true);
 
     initPickrs();
     def.descriptionColor && pickrs.desc.setColor(def.descriptionColor);
