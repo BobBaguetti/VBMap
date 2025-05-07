@@ -27,8 +27,6 @@ export function createDefinitionModal({
     id,
     title,
     size: "large",
-    withPreview,
-    previewType,
     layoutOptions,
     onClose: () => shell.close()
   });
