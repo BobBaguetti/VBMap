@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/definitionModalShell.js
-// @version: 5.7 — re-enable floating scrollbars in the body
+// @version: 5.8 — remove horizontal padding so content sits flush
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }              from "../uiKit.js";
@@ -83,7 +83,7 @@ export function createDefinitionModalShell({
   Object.assign(bodyWrap.style, {
     flex:      "1 1 auto",
     overflowY: "auto",
-    padding:   "1rem",
+    padding:   "0",        // ← removed horizontal (and vertical) padding
     boxSizing: "border-box"
   });
 
