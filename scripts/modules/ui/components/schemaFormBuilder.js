@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/schemaFormBuilder.js
-// @version: 1.1 - integrated createColorPreview for color fields
+// @version: 1.2 – guard against setting .type on textareas
 
 import {
   createTextField,
@@ -80,14 +80,17 @@ export function createSchemaFormController(schema, { onCancel, onDelete, onSubmi
 
     // Color picker fields
     if (fieldDef.pickr) {
-      // Convert the visible input to hidden for hex value
-      input.type = "hidden";
-      input.name = fieldDef.key;
+      // Only hide if this is an <input>
+      if (input.tagName === "INPUT") {
+        input.type = "hidden";
+        input.name = fieldDef.key;
+      }
 
       // Insert the color preview widget next to the label
       const previewEl = createColorPreview({
         initial: fieldDef.default || "#E5E6E8",
         onChange: hex => {
+          // always write to input.value even if hidden
           input.value = hex;
           form.dispatchEvent(new Event("input", { bubbles: true }));
         }
