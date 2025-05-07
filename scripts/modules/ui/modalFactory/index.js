@@ -1,115 +1,102 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 11
+// @version: 12
 
-import { createDefinitionModalShell } from "../components/definitionModalShell.js";
-import { createPickr }               from "../pickrManager.js";
-import { createExtraInfoField }       from "../forms/universalForm.js";
+import { createDefinitionModalShell }    from "../components/definitionModalShell.js";
+import { createDefinitionListManager }   from "../utils/definitionListManager.js";
+import { createPickr }                   from "../pickrManager.js";
+import { createExtraInfoField }          from "../forms/universalForm.js";
 
 /**
- * Generic modal factory using your modal shell + schema-driven form.
- *
- * schema: array of { name, label, type, extraInfo?, colorPicker?, optionsService?, required?, min?, step? }
- * loadFn: () => Promise<[defs]>
- * saveFn: def => Promise
- * deleteFn: id => Promise
- * onCollect/onPopulate/onInit: hooks
+ * Fully-generic, 1:1 recreation of your old definition modals.
  */
 export function createDefinitionModal({
   id, title, schema,
   loadFn, saveFn, deleteFn,
-  withPreview = false,
   previewType = null,
   layoutOptions = ["row","stacked","gallery"],
   onInit, onPopulate, onCollect
 }) {
-  // instantiate shell
+  // 1) Shell
   const shell = createDefinitionModalShell({
-    id,
-    title,
+    id, title,
     size: "large",
     layoutOptions,
     onClose: () => shell.close()
   });
+  const { bodyWrap } = shell;
 
-  const { modal, bodyWrap, header } = shell;
-  let listEl, formEl;
-  let currentDefs = [], editing = {};
+  // 2) Left + Right panels
+  const leftPanel = document.createElement("div");
+  leftPanel.style.flex = "0 0 220px";
+  leftPanel.style.display = "flex";
+  leftPanel.style.flexDirection = "column";
+  leftPanel.style.marginRight = "12px";
+
+  const listContainer = document.createElement("div");
+  leftPanel.appendChild(listContainer);
+
+  const rightPanel = document.createElement("div");
+  rightPanel.style.flex = "1 1 auto";
+  rightPanel.style.overflowY = "auto";
+
+  bodyWrap.innerHTML = "";  
+  bodyWrap.style.display = "flex";
+  bodyWrap.append(leftPanel, rightPanel);
+
+  // 3) Definition List Manager (restores search + layout + entries UI)
+  const listManager = createDefinitionListManager({
+    container: listContainer,
+    getDefinitions: () => definitions,
+    onEntryClick: populate,
+    onDelete: async id => {
+      await deleteFn(id);
+      await refreshList();
+    },
+    getCurrentLayout: () => listManagerLayout
+  });
+
+  let listManagerLayout = layoutOptions[0];
+
+  // Watch layout switcher in shell header
+  shell.layoutSwitcher.onChange = newLayout => {
+    listManagerLayout = newLayout;
+    listManager.setLayout(newLayout);
+  };
+
+  // 4) Form
+  const formEl = document.createElement("form");
+  formEl.className = "def-form";
+  rightPanel.appendChild(formEl);
+
+  // Save/Delete buttons
+  const btnRow = document.createElement("div");
+  btnRow.className = "field-row";
+  btnRow.style.justifyContent = "flex-end";
+  const saveBtn = document.createElement("button");
+  saveBtn.type = "button"; saveBtn.textContent = "Save";
+  saveBtn.addEventListener("click", onSave);
+  btnRow.appendChild(saveBtn);
+  if (deleteFn) {
+    const delBtn = document.createElement("button");
+    delBtn.type = "button"; delBtn.textContent = "Delete";
+    delBtn.addEventListener("click", onDelete);
+    btnRow.appendChild(delBtn);
+  }
+  formEl.appendChild(btnRow);
+
+  // 5) State
+  let definitions = [];
+  let editing = {};
   const extraInfoMap = {};
 
-  // build the two panels inside bodyWrap: left = list+search, right = form
-  const leftPanel = document.createElement("div");
-  leftPanel.className = "def-shell-list";
-  Object.assign(leftPanel.style, { flex: "0 0 200px", overflowY: "auto" });
-
-  // search input
-  const search = document.createElement("input");
-  search.type = "search";
-  search.placeholder = "Search…";
-  search.className = "ui-input";
-  search.style.width = "100%";
-  search.style.marginBottom = "8px";
-  leftPanel.appendChild(search);
-
-  // list container
-  listEl = document.createElement("div");
-  leftPanel.appendChild(listEl);
-
-  // toolbar
-  const toolbar = document.createElement("div");
-  toolbar.className = "def-shell-toolbar";
-  toolbar.style.marginTop = "8px";
-  const newBtn = document.createElement("button");
-  newBtn.textContent = "+ New";
-  newBtn.className = "ui-button";
-  toolbar.appendChild(newBtn);
-  leftPanel.appendChild(toolbar);
-
-  // form panel
-  formEl = document.createElement("div");
-  formEl.className = "def-shell-form";
-  formEl.style.flex = "1 1 auto";
-  formEl.style.overflowY = "auto";
-  formEl = document.createElement("form");
-  formEl.className = "def-form";
-
-  // layout panels
-  const container = document.createElement("div");
-  container.style.display = "flex";
-  container.style.height = "100%";
-  container.append(leftPanel, formEl);
-  bodyWrap.appendChild(container);
-
-  // Hook up search & new
-  search.addEventListener("input", filterList);
-  newBtn.addEventListener("click", () => populate({}));
-
-  // load definitions, render list
+  // 6) Core routines
   async function refreshList() {
-    currentDefs = await loadFn();
-    renderList();
-  }
-
-  function renderList() {
-    listEl.innerHTML = "";
-    const q = (search.value || "").toLowerCase();
-    currentDefs
-      .filter(d => d.name.toLowerCase().includes(q))
-      .forEach(def => {
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.textContent = def.name;
-        btn.className = "ui-button def-list-entry";
-        btn.onclick = () => populate(def);
-        listEl.appendChild(btn);
-      });
-  }
-
-  function filterList() {
-    renderList();
+    definitions = await loadFn();
+    listManager.refresh();
   }
 
   function clearForm() {
-    formEl.innerHTML = "";
+    formEl.querySelectorAll(".field-row:not(:last-child)").forEach(r => r.remove());
     Object.keys(extraInfoMap).forEach(k => delete extraInfoMap[k]);
   }
 
@@ -120,80 +107,47 @@ export function createDefinitionModal({
     schema.forEach(field => {
       const row = document.createElement("div");
       row.className = "field-row";
-      // label
+
       const label = document.createElement("label");
       label.textContent = field.label;
       row.appendChild(label);
 
-      let input, extraInfoApi;
-
+      let input, extraApi;
       if (field.extraInfo) {
         const { row: infoRow, extraInfo } = createExtraInfoField({ withDividers: false });
-        extraInfoMap[field.name] = extraInfo;
+        extraApi = extraInfo;
+        extraInfoMap[field.name] = extraApi;
         row.appendChild(infoRow);
       } else {
-        switch (field.type) {
-          case "textarea":
-            input = document.createElement("textarea");
-            input.value = editing[field.name] || "";
-            break;
-          case "checkbox":
-            input = document.createElement("input");
-            input.type = "checkbox";
-            input.checked = Boolean(editing[field.name]);
-            break;
-          case "multiselect":
-            input = document.createElement("select");
-            input.multiple = true;
-            field.optionsService().then(opts => {
-              opts.forEach(o => {
-                const oEl = document.createElement("option");
-                oEl.value = o.id;
-                oEl.textContent = o.name;
-                if ((editing[field.name]||[]).includes(o.id)) oEl.selected = true;
-                input.appendChild(oEl);
-              });
-            });
-            break;
-          default:
-            input = document.createElement("input");
-            input.type = field.type;
-            input.value = editing[field.name] || "";
-        }
-        row.appendChild(input);
-      }
-
-      // common
-      if (input) {
+        input = document.createElement(field.type === "textarea" ? "textarea" : "input");
+        if (field.type !== "textarea") input.type = field.type;
+        if (field.type === "checkbox") input.checked = Boolean(editing[field.name]);
+        else input.value = editing[field.name] || "";
         input.name = field.name;
-        if (field.required) input.required = true;
-        if (field.min!=null) input.min = field.min;
-        if (field.step!=null) input.step = field.step;
+        row.appendChild(input);
+
         if (field.colorPicker) {
           const pickr = createPickr(`#${input.id||input.name}`);
-          pickr.on("change", ()=> formEl.dispatchEvent(new Event("input",{bubbles:true})));
-          pickr.on("save",   ()=> formEl.dispatchEvent(new Event("input",{bubbles:true})));
+          pickr.on("change", () => formEl.dispatchEvent(new Event("input",{bubbles:true})));
+          pickr.on("save",   () => formEl.dispatchEvent(new Event("input",{bubbles:true})));
         }
       }
 
-      formEl.appendChild(row);
-
-      // populate extra info
-      if (field.extraInfo && extraInfoMap[field.name]) {
-        extraInfoMap[field.name].setLines(editing[field.name]||[], false);
-      }
+      formEl.insertBefore(row, btnRow);
+      if (extraApi) extraApi.setLines(editing[field.name]||[], false);
     });
+
+    onPopulate?.(formEl, editing);
   }
 
   function collect() {
     const data = {};
     Array.from(formEl.elements).forEach(el => {
       if (!el.name) return;
-      if (el.type === "checkbox") data[el.name]=el.checked;
-      else if (el.multiple)        data[el.name]=Array.from(el.selectedOptions).map(o=>o.value);
-      else                         data[el.name]=el.value;
+      if (el.type === "checkbox") data[el.name] = el.checked;
+      else data[el.name] = el.value;
     });
-    Object.entries(extraInfoMap).forEach(([k,api])=> {
+    Object.entries(extraInfoMap).forEach(([k,api]) => {
       data[k] = api.getLines();
     });
     Object.assign(data, onCollect?.(formEl)||{});
@@ -204,7 +158,9 @@ export function createDefinitionModal({
   async function onSave() {
     await saveFn(collect());
     await refreshList();
+    listManager.refresh();
   }
+
   async function onDelete() {
     if (!editing.id) return;
     await deleteFn(editing.id);
@@ -212,27 +168,14 @@ export function createDefinitionModal({
     clearForm();
   }
 
-  // add save/delete buttons below form
-  const btnRow = document.createElement("div");
-  btnRow.className = "field-row";
-  btnRow.style.justifyContent="flex-end";
-  const saveBtn = document.createElement("button");
-  saveBtn.type="button"; saveBtn.textContent="Save"; saveBtn.onclick=onSave;
-  btnRow.appendChild(saveBtn);
-  if (deleteFn) {
-    const delBtn = document.createElement("button");
-    delBtn.type="button"; delBtn.textContent="Delete"; delBtn.onclick=onDelete;
-    btnRow.append(delBtn);
-  }
-  formEl.appendChild(btnRow);
-
-  // initial load
-  refreshList();
-
-  onInit?.(modal);
-
+  // Public API
   return {
-    open: shell.open,
-    close: shell.close
+    open: async () => {
+      await refreshList();
+      listManager.refresh();
+      populate({});    // default to new
+      shell.open();
+    },
+    close: () => shell.close()
   };
 }
