@@ -186,8 +186,6 @@ export async function setupSidebar(
 
   [
     ["Manage Items",       () => initItemDefinitionsModal(db).open()],
-    ["Manage Quests",      () => initQuestDefinitionsModal(db).open()],
-    ["Manage NPCs",        () => initNpcDefinitionsModal(db).open()],
     ["Manage Chest Types", () => initChestDefinitionsModal(db).open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
