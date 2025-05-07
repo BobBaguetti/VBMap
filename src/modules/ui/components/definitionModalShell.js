@@ -1,10 +1,11 @@
 // @file: src/modules/ui/components/definitionModalShell.js
-// @version: 4 — unified header toolbar, search input, layout switcher, preview, close-button, and color-picker wiring
+// @version: 4.1 — fixed pickrManager import path
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }              from "../uiKit.js";
 import { createPreviewPanel }                from "../preview/createPreviewPanel.js";
-import { createPickrForInput }               from "../../pickrManager.js";
+// Correct path to pickrManager
+import { createPickrForInput }               from "../pickrManager.js";
 
 export function createDefinitionModalShell({
   id,
@@ -16,7 +17,6 @@ export function createDefinitionModalShell({
   searchable = false,
   onClose = () => {}
 }) {
-  // Build the base modal
   const { modal, content, header } = createModal({
     id,
     title,
@@ -31,14 +31,12 @@ export function createDefinitionModalShell({
     }
   });
 
-  // Ensure header is flex container
+  // Flex header for title, toolbar, and close
   header.style.display = "flex";
   header.style.alignItems = "center";
   header.style.justifyContent = "space-between";
 
-  // Left side: title is already in place
-
-  // Middle toolbar container
+  // Toolbar container
   const toolbar = document.createElement("div");
   toolbar.classList.add("modal__toolbar");
   toolbar.style.display = "flex";
@@ -64,7 +62,7 @@ export function createDefinitionModalShell({
 
   header.appendChild(toolbar);
 
-  // Right side: createPreviewPanel toggle and close button
+  // Preview panel toggle
   let previewApi, showPreview;
   if (withPreview && previewType) {
     const previewContainer = document.createElement("div");
@@ -85,19 +83,18 @@ export function createDefinitionModalShell({
     };
   }
 
-  // Close button
+  // Close button (always rightmost)
   const closeBtn = document.createElement("button");
   closeBtn.classList.add("modal__close");
+  closeBtn.type = "button";
   closeBtn.innerHTML = "&times;";
-  closeBtn.type      = "button";
   closeBtn.addEventListener("click", () => {
     if (withPreview && previewApi) previewApi.hide();
     closeModal(modal);
   });
   header.appendChild(closeBtn);
 
-  // Content area is ready
-  // Export helpers
+  // Expose API
   return {
     modal,
     header,
