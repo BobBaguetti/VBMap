@@ -1,9 +1,10 @@
 // @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 10.3
+// @version: 10.4
 
-import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
-import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
+import { loadItemDefinitions } from "../services/itemDefinitionsService.js";
+// We assume script.js attaches these to window:
+const itemModal  = window.itemModal;
+const chestModal = window.chestModal;
 
 export async function setupSidebar(
   map, layers, allMarkers, db,
@@ -43,7 +44,8 @@ export async function setupSidebar(
   settingsSect.querySelectorAll("label").forEach(l => l.remove());
 
   const groupingLabel = document.createElement("label");
-  groupingLabel.innerHTML = `<input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span>`;
+  groupingLabel.innerHTML =
+    `<input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span>`;
   settingsSect.appendChild(groupingLabel);
   const groupingCb = document.getElementById("enable-grouping");
   groupingCb.checked = false;
@@ -53,7 +55,8 @@ export async function setupSidebar(
   });
 
   const smallLabel = document.createElement("label");
-  smallLabel.innerHTML = `<input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span>`;
+  smallLabel.innerHTML =
+    `<input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span>`;
   settingsSect.appendChild(smallLabel);
   const smallCb = document.getElementById("toggle-small-markers");
   smallCb.checked = false;
@@ -87,15 +90,17 @@ export async function setupSidebar(
         if (itemCb && !itemCb.checked) itemVisible = false;
       }
 
-      const shouldShow = matchesPvE
-                       && matchesName
-                       && mainVisible
-                       && itemVisible;
+      const shouldShow =
+        matchesPvE &&
+        matchesName &&
+        mainVisible &&
+        itemVisible;
       const layerGroup = layers[data.type];
       if (!layerGroup) return;
 
-      shouldShow ? layerGroup.addLayer(markerObj)
-                 : layerGroup.removeLayer(markerObj);
+      shouldShow
+        ? layerGroup.addLayer(markerObj)
+        : layerGroup.removeLayer(markerObj);
     });
   }
 
@@ -108,7 +113,8 @@ export async function setupSidebar(
   // ─── Add “Chests” Toggle ─────────────────────────────────────────
   const mainGroup = document.querySelector("#main-filters .toggle-group");
   const chestLabel = document.createElement("label");
-  chestLabel.innerHTML = `<input type="checkbox" checked data-layer="Chest"/><span>Chests</span>`;
+  chestLabel.innerHTML =
+    `<input type="checkbox" checked data-layer="Chest"/><span>Chests</span>`;
   mainGroup.append(chestLabel);
   chestLabel.querySelector("input")
     .addEventListener("change", filterMarkers);
@@ -133,9 +139,6 @@ export async function setupSidebar(
   }
   await loadItemFilters();
 
-  // ─── Enemy Filters (removed) ──────────────────────────────────────
-  // no NPC/Quest filters here anymore
-
   // ─── Admin Tools ──────────────────────────────────────────────────
   sidebar.querySelector(".admin-header")?.remove();
   sidebar.querySelector("#sidebar-admin-tools")?.remove();
@@ -151,12 +154,20 @@ export async function setupSidebar(
   adminWrap.style.display = "none";
 
   [
-    ["Manage Items",  () => initItemDefinitionsModal(db).open()],
-    ["Manage Chests", () => initChestDefinitionsModal(db).open()]
+    ["Manage Items", () => {
+      console.log("Sidebar: Manage Items clicked");
+      if (itemModal) itemModal.open();
+      else console.error("itemModal is undefined");
+    }],
+    ["Manage Chests", () => {
+      console.log("Sidebar: Manage Chests clicked");
+      if (chestModal) chestModal.open();
+      else console.error("chestModal is undefined");
+    }]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;
-    btn.onclick     = fn;
+    btn.addEventListener("click", fn);
     adminWrap.appendChild(btn);
   });
 
