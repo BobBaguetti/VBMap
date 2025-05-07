@@ -1,9 +1,9 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 3
+// @version: 4
 
 import { makeDraggable, positionModal, hideContextMenu } from "../uiManager.js";
-import { initPickr } from "../pickrManager.js";            // your Pickr setup
-import { initExtraInfo } from "../forms/universalForm.js"; // your extra-info UI
+import { initPickr } from "../pickrManager.js"; // your Pickr setup
+import { createExtraInfoField } from "../forms/universalForm.js";
 
 /**
  * Creates a fully generic definition modal.
@@ -125,48 +125,56 @@ export function createDefinitionModal({
       label.textContent = field.label;
       wrapper.appendChild(label);
 
-      // Input element
-      let input;
-      switch (field.type) {
-        case "textarea":
-          input = document.createElement("textarea");
-          break;
-        case "multiselect":
-          input = document.createElement("select");
-          input.multiple = true;
-          field.optionsService().then(opts => {
-            opts.forEach(o => {
-              const opt = document.createElement("option");
-              opt.value = o.id;
-              opt.textContent = o.name;
-              if ((editing[field.name] || []).includes(o.id)) opt.selected = true;
-              input.appendChild(opt);
+      let input, extraInfoObj;
+
+      // Handle extra-info fields first, since they render a custom textarea
+      if (field.extraInfo) {
+        const { row, extraInfo } = createExtraInfoField({ withDividers: false });
+        extraInfoObj = extraInfo;
+        wrapper.appendChild(row);
+        input = extraInfo.getInputElement(); // assume the extra-info API provides this
+      } else {
+        // Normal input element
+        switch (field.type) {
+          case "textarea":
+            input = document.createElement("textarea");
+            input.value = editing[field.name] ?? "";
+            break;
+          case "multiselect":
+            input = document.createElement("select");
+            input.multiple = true;
+            field.optionsService().then(opts => {
+              opts.forEach(o => {
+                const opt = document.createElement("option");
+                opt.value = o.id;
+                opt.textContent = o.name;
+                if ((editing[field.name] || []).includes(o.id)) opt.selected = true;
+                input.appendChild(opt);
+              });
             });
-          });
-          break;
-        case "checkbox":
-          input = document.createElement("input");
-          input.type = "checkbox";
-          input.checked = Boolean(editing[field.name]);
-          break;
-        default:
-          input = document.createElement("input");
-          input.type = field.type;
-          input.value = editing[field.name] ?? "";
+            break;
+          case "checkbox":
+            input = document.createElement("input");
+            input.type = "checkbox";
+            input.checked = Boolean(editing[field.name]);
+            break;
+          default:
+            input = document.createElement("input");
+            input.type = field.type;
+            input.value = editing[field.name] ?? "";
+        }
+        wrapper.appendChild(input);
       }
+
+      // Common attributes
       if (field.required) input.required = true;
       if (field.min != null) input.min = field.min;
       if (field.step != null) input.step = field.step;
       input.name = field.name;
-      wrapper.appendChild(input);
 
       // Color picker
       if (field.colorPicker) {
         initPickr(input);
-      }
-      // Extra-info UI
-      if (field.extraInfo) {
-        initExtraInfo(wrapper, editing[field.name] || "");
       }
 
       // For loot-pool: add cog + wrapper
@@ -180,13 +188,18 @@ export function createDefinitionModal({
         cog.type = "button";
         cog.className = "loot-pool-cog";
         cog.innerHTML = "⚙";
-        // can wire up the old picker-open logic here if needed
+        // wire up your picker-open logic here if needed
         poolWrap.appendChild(cog);
 
         wrapper.appendChild(poolWrap);
       }
 
       formEl.appendChild(wrapper);
+
+      // If extraInfo, populate its content
+      if (field.extraInfo && extraInfoObj) {
+        extraInfoObj.setLines(editing[field.name] || "");
+      }
     });
 
     onPopulate?.(formEl, editing);
