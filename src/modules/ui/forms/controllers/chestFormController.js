@@ -1,12 +1,15 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.12 — use shared listPicker for loot‐pool selection
+// @version: 2.13 — use shared formLogic for reset/populate/getCustom
 
-import { getPickrHexColor }                          from "../../../utils/colorUtils.js";
-import { createChestForm }                           from "../builders/chestFormBuilder.js";
-import { createFormControllerHeader, wireFormEvents }from "../../components/formControllerShell.js";
-import { initFormPickrs }                            from "../../components/formPickrManager.js";
-import { pickItems }                                 from "../../components/listPicker.js";
-import { loadItemDefinitions }                       from "../../../services/itemDefinitionsService.js";
+import { createChestForm }                        from "../builders/chestFormBuilder.js";
+import {
+  createFormControllerHeader,
+  wireFormEvents
+}                                                 from "../../components/formControllerShell.js";
+import { initFormPickrs }                         from "../../components/formPickrManager.js";
+import { pickItems }                              from "../../components/listPicker.js";
+import { createFormLogic }                        from "../formLogicFactory.js";
+import { loadItemDefinitions }                    from "../../../services/itemDefinitionsService.js";
 
 /**
  * Chest‐definition form controller.
@@ -23,10 +26,13 @@ export function createChestFormController(
     subheading,
     setDeleteVisible
   } = createFormControllerHeader({
-    title:    "Add Chest Type",
+    title:     "Add Chest Type",
     hasFilter: false,
-    onCancel: () => onCancel?.(),
-    onDelete: () => {
+    onCancel:  () => {
+      reset();
+      onCancel?.();
+    },
+    onDelete:  () => {
       if (_id && confirm("Delete this chest type?")) {
         onDelete?.(_id);
       }
@@ -40,7 +46,7 @@ export function createChestFormController(
     description: fields.colorDesc
   });
 
-  // ─── Loot-pool picker (uses shared listPicker) ───────────────────
+  // ─── Loot‐pool picker & chips ────────────────────────────────────
   let itemMap = [];
   async function ensureAllItems() {
     if (!itemMap.length) {
@@ -82,57 +88,61 @@ export function createChestFormController(
     onFieldChange?.(getCustom());
   };
 
-  // ─── Internal state ───────────────────────────────────────────────
+  // ─── Shared reset/populate/getCustom ─────────────────────────────
+  const {
+    reset: baseReset,
+    populate: basePopulate,
+    getCustom: baseGetCustom
+  } = createFormLogic({
+    form,
+    fields,
+    pickrs,
+    // no checkboxField for chest
+    extraInfoField: fields.extraInfo,
+    properties: {
+      // map form fields to definition props
+      fieldProps: {
+        fldName:     "name",
+        fldSize:     "size",
+        fldCategory: "category",
+        fldIconUrl:  "iconUrl",
+        fldSubtext:  "subtext",
+        fldDesc:     "description"
+      },
+      pickrProps: {
+        description: "descriptionColor"
+      }
+    },
+    defaults: {
+      fldSize:     "Small",
+      fldCategory: "Normal"
+    }
+  });
+
   let _id = null;
 
-  // ─── Reset / Add mode ─────────────────────────────────────────────
   function reset() {
-    form.reset();
-    _id = null;
-    fields.lootPool.length = 0;
+    baseReset();
     renderChips();
-    fields.fldSize.value     = "Small";
-    fields.fldCategory.value = "Normal";
-    subheading.textContent   = "Add Chest Type";
+    subheading.textContent = "Add Chest Type";
     setDeleteVisible(false);
-    pickrs.description?.setColor("#E5E6E8");
-    fields.extraInfo.setLines([], false);
     onFieldChange?.(getCustom());
   }
 
-  // ─── Populate / Edit mode ─────────────────────────────────────────
   function populate(def) {
-    form.reset();
+    basePopulate(def);
     _id = def.id || null;
-    fields.fldName.value        = def.name    || "";
-    fields.fldSize.value        = def.size    || "Small";
-    fields.fldCategory.value    = def.category|| "Normal";
-    fields.fldIconUrl.value     = def.iconUrl || "";
-    fields.fldSubtext.value     = def.subtext || "";
-    fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool||[]));
+    fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool || []));
     renderChips();
-    fields.fldDesc.value        = def.description || "";
-    fields.extraInfo.setLines(def.extraLines || [], false);
-    subheading.textContent      = _id ? "Edit Chest Type" : "Add Chest Type";
+    subheading.textContent = _id ? "Edit Chest Type" : "Add Chest Type";
     setDeleteVisible(!!_id);
-    pickrs.description?.setColor(def.descriptionColor);
     onFieldChange?.(getCustom());
   }
 
-  // ─── Gather form data ─────────────────────────────────────────────
   function getCustom() {
-    return {
-      id:               _id,
-      name:             fields.fldName.value.trim(),
-      size:             fields.fldSize.value,
-      category:         fields.fldCategory.value,
-      iconUrl:          fields.fldIconUrl.value.trim(),
-      subtext:          fields.fldSubtext.value.trim(),
-      lootPool:         [...fields.lootPool],
-      description:      fields.fldDesc.value.trim(),
-      descriptionColor: getPickrHexColor(pickrs.description),
-      extraLines:       fields.extraInfo.getLines()
-    };
+    const out = baseGetCustom();
+    out.lootPool = [...fields.lootPool];
+    return out;
   }
 
   // ─── Wire submit & live‐preview events ───────────────────────────
@@ -144,13 +154,11 @@ export function createChestFormController(
     populate,
     getCustom,
     getCurrentPayload: getCustom,
-
-    // For re-wiring Pickr after insertion
     initPickrs() {
-      Object.assign(pickrs, initFormPickrs(form, {
-        description: fields.colorDesc
-      }));
+      Object.assign(
+        pickrs,
+        initFormPickrs(form, { description: fields.colorDesc })
+      );
     }
   };
 }
- 
