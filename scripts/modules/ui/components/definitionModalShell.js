@@ -1,86 +1,75 @@
-// @file: /scripts/modules/ui/components/definitionModalShell.js
-// @version: 4.2 – added toolbar & layoutOptions support
+// @file: /scripts/modules/ui/components/definitionModalShell.js 
+// @version: 3 — suppressed auto-show of preview, now shows only on open
 
-import { createModalCore }      from "./modalCore.js";
-import { createLayoutSwitcher } from "./layoutSwitcher.js";
-import { createPreviewPanel }   from "../preview/createPreviewPanel.js";
+import { createModal, closeModal, openModal } from "../uiKit.js";
+import { createLayoutSwitcher } from "../uiKit.js";
+import { createPreviewPanel } from "../preview/createPreviewPanel.js";
 
-/**
- * Shell factory for all “definitions” modals.
- *
- * @param {object} opts
- * @param {string} opts.id
- * @param {string} opts.title
- * @param {string} [opts.size]
- * @param {boolean} [opts.withPreview]
- * @param {string|null} [opts.previewType]
- * @param {boolean} [opts.withDivider]
- * @param {Function} [opts.onClose]
- * @param {Array<{icon?:string,label:string,onClick:()=>void}>} [opts.toolbar]
- * @param {Array<string>} [opts.layoutOptions]
- */
 export function createDefinitionModalShell({
   id,
   title,
   size = "large",
   withPreview = false,
   previewType = null,
-  withDivider = true,
-  onClose = () => {},
-  toolbar = [],
-  layoutOptions = ["row", "stacked", "gallery"]
+  layoutOptions = ["row", "stacked", "gallery"],
+  onClose = () => {}
 }) {
-  // 1) Core modal
-  const { modal, content, header, open, close } = createModalCore({
+  const { modal, content, header } = createModal({
     id,
     title,
     size,
     backdrop: true,
     draggable: false,
-    withDivider,
-    onClose
+    withDivider: true,
+    onClose: () => {
+      onClose();
+      if (withPreview) previewApi?.hide();
+      closeModal(modal);
+    }
   });
 
-  modal.classList.add("admin-only");
-
-  // 2) Toolbar buttons (insert before layout switcher)
-  if (Array.isArray(toolbar) && toolbar.length) {
-    const tb = document.createElement("div");
-    tb.className = "modal-toolbar";
-    toolbar.forEach(btnCfg => {
-      const btn = document.createElement("button");
-      btn.type = "button";
-      btn.textContent = btnCfg.label;
-      if (btnCfg.icon) btn.classList.add(`icon-${btnCfg.icon}`);
-      btn.onclick = btnCfg.onClick;
-      tb.appendChild(btn);
-    });
-    header.appendChild(tb);
-  }
-
-  // 3) Layout switcher
-  let listApi;
+  // Header layout switcher
   const layoutSwitcher = createLayoutSwitcher({
-    available:   layoutOptions,
+    available: layoutOptions,
     defaultView: layoutOptions[0],
-    onChange:    v => listApi?.setLayout(v)
+    onChange: () => {}
   });
   header.appendChild(layoutSwitcher);
 
-  // 4) Body wrapper
+  // Body wrapper
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
-    display:       "flex",
+    display: "flex",
     flexDirection: "column",
-    flex:          "1 1 auto",
-    minHeight:     "0"
+    flex: "1 1 auto",
+    minHeight: "0"
   });
   content.appendChild(bodyWrap);
 
-  // 5) Preview panel
   let previewApi = null;
+  let showPreview = null;
+
   if (withPreview && previewType) {
-    previewApi = createPreviewPanel(previewType);
+    const previewPanel = document.createElement("div");
+    previewPanel.style.zIndex = "1101";
+    document.body.appendChild(previewPanel);
+
+    previewApi = createPreviewPanel(previewType, previewPanel);
+
+    const positionPreview = () => {
+      const mc = modal.querySelector(".modal-content")?.getBoundingClientRect();
+      const pr = previewPanel.getBoundingClientRect();
+      if (mc) {
+        previewPanel.style.position = "absolute";
+        previewPanel.style.left   = `${mc.right + 30}px`;
+        previewPanel.style.top    = `${mc.top + (mc.height/2) - (pr.height/2)}px`;
+      }
+    };
+
+    showPreview = () => {
+      positionPreview();
+      previewApi.show();
+    };
   }
 
   return {
@@ -88,16 +77,15 @@ export function createDefinitionModalShell({
     header,
     content,
     bodyWrap,
-    open,
+    layoutSwitcher,
+    previewApi,
+    open: () => {
+      openModal(modal);
+      if (withPreview && showPreview) showPreview();
+    },
     close: () => {
-      if (previewApi) previewApi.hide();
-      close();
-    },
-    get previewApi() {
-      return previewApi;
-    },
-    set listApi(api) {
-      listApi = api;
+      if (withPreview && previewApi) previewApi.hide();
+      closeModal(modal);
     }
   };
 }

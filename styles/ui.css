@@ -234,8 +234,3 @@
   
   /* Hide any element that carries the HTML "hidden" attribute */
 [hidden] { display: none !important; }
-
-
-.form-subheader .subheader-btnrow {
-  margin-left: auto;          /* pushes buttons to the right */
-}

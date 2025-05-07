@@ -1,5 +1,5 @@
-// @version: 3.1
-// @file: /scripts/modules/ui/forms/universalForm.js
+// @version: 3
+// @file: /scripts/modules/ui/forms/universalForm.js 
 
 import {
   createTextField,
@@ -8,7 +8,7 @@ import {
   createImageField,
   createVideoField,
   createExtraInfoBlock
-} from "../components/fieldBuilders.js";
+} from "../../ui/uiKit.js";
 
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 
@@ -17,26 +17,21 @@ export function createNameField(id = "fld-name") {
 }
 
 export function createTypeField(id = "fld-type") {
-  return createDropdownField(
-    "Type:",
-    id,
-    [
-      { value: "Door", label: "Door" },
-      { value: "Extraction Portal", label: "Extraction Portal" },
-      { value: "Item", label: "Item" },
-      { value: "Teleport", label: "Teleport" },
-      { value: "Spawn Point", label: "Spawn Point" }
-    ],
-    { showColor: false }
-  );
+  return createDropdownField("Type:", id, [
+    { value: "Door", label: "Door" },
+    { value: "Extraction Portal", label: "Extraction Portal" },
+    { value: "Item", label: "Item" },
+    { value: "Teleport", label: "Teleport" },
+    { value: "Spawn Point", label: "Spawn Point" }
+  ], { showColor: false });
 }
 
 export function createItemTypeField(id = "fld-item-type") {
   return createDropdownField("Item Type:", id, [
     { value: "Crafting Material", label: "Crafting Material" },
-    { value: "Special",           label: "Special" },
-    { value: "Consumable",        label: "Consumable" },
-    { value: "Quest",             label: "Quest" }
+    { value: "Special", label: "Special" },
+    { value: "Consumable", label: "Consumable" },
+    { value: "Quest", label: "Quest" } 
   ]);
 }
 
@@ -53,8 +48,8 @@ export function createExtraInfoField({ withDividers = false } = {}) {
   }
 
   const container = document.createElement("div");
-  const hrAbove   = document.createElement("hr");
-  const hrBelow   = document.createElement("hr");
+  const hrAbove = document.createElement("hr");
+  const hrBelow = document.createElement("hr");
   container.append(hrAbove, row, hrBelow);
 
   return { row: container, extraInfo: extra };
@@ -63,11 +58,11 @@ export function createExtraInfoField({ withDividers = false } = {}) {
 export function createImageFieldSet() {
   const imgS = createImageField("Image S:", "fld-img-s");
   const imgL = createImageField("Image L:", "fld-img-l");
-  const vid  = createVideoField("Video:",   "fld-vid");
+  const vid = createVideoField("Video:", "fld-vid");
   return {
     rowImgS: imgS.row, fldImgS: imgS.input,
     rowImgL: imgL.row, fldImgL: imgL.input,
-    rowVid:  vid.row,  fldVid:  vid.input
+    rowVid: vid.row, fldVid: vid.input
   };
 }
 
@@ -81,11 +76,11 @@ export function createQuantityField(id = "fld-quantity") {
 
 export function createRarityField(id = "fld-rarity") {
   return createDropdownField("Rarity:", id, [
-    { value: "",           label: "Select Rarity" },
-    { value: "common",     label: "Common" },
-    { value: "uncommon",   label: "Uncommon" },
-    { value: "rare",       label: "Rare" },
-    { value: "epic",       label: "Epic" },
-    { value: "legendary",  label: "Legendary" }
+    { value: "", label: "Select Rarity" },
+    { value: "common", label: "Common" },
+    { value: "uncommon", label: "Uncommon" },
+    { value: "rare", label: "Rare" },
+    { value: "epic", label: "Epic" },
+    { value: "legendary", label: "Legendary" }
   ]);
 }

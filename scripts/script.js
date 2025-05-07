@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.14 – removed quest modal & scrollUtils imports
+// @version: 7.12 – merge in definition fields without overwriting marker.id
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -15,7 +15,7 @@ import {
   upsertMarker,
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
-} from "./modules/services/markerService.js";
+} from "./modules/services/firebaseService.js";
 
 import { subscribeChestDefinitions } from "./modules/services/chestDefinitionsService.js";
 
@@ -26,13 +26,14 @@ import {
   renderChestPopup
 } from "./modules/map/markerManager.js";
 
-import { initItemDefinitionsModal }   from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal }  from "./modules/ui/modals/chestDefinitionsModal.js";
-import { initMarkerModal }            from "./modules/ui/modals/markerModal.js";
-import { initCopyPasteManager }       from "./modules/map/copyPasteManager.js";
-import { setupSidebar }               from "./modules/sidebar/sidebarManager.js";
-import { subscribeItemDefinitions }   from "./modules/services/itemDefinitionsService.js";
-import { initAdminAuth }              from "./authSetup.js";
+import { initItemDefinitionsModal }  from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initMarkerModal }           from "./modules/ui/modals/markerModal.js";
+import { initCopyPasteManager }      from "./modules/map/copyPasteManager.js";
+import { setupSidebar }              from "./modules/sidebar/sidebarManager.js";
+import { subscribeItemDefinitions }  from "./modules/services/itemDefinitionsService.js";
+import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
+import { activateFloatingScrollbars }from "./modules/utils/scrollUtils.js";
+import { initAdminAuth }             from "./authSetup.js";
 
 /* ───────────────────────── Firebase & Map ───────────────────────── */
 const app   = initializeApp(firebaseConfig);
@@ -88,12 +89,14 @@ onAuthStateChanged(auth, async user => {
 
     /* ───── subscribe to markers ───────────────────────────────── */
     subscribeMarkers(db, markers => {
+      // clear existing
       allMarkers.forEach(({ markerObj }) => {
         markerObj.remove();
         clusterItemLayer.removeLayer(markerObj);
       });
       allMarkers.length = 0;
 
+      // re-add each
       markers.forEach(data => addMarker(data, callbacks));
       loadItemFilters().then(filterMarkers);
     });
@@ -109,6 +112,7 @@ onAuthStateChanged(auth, async user => {
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.predefinedItemId) {
           const def = itemDefMap[data.predefinedItemId] || {};
+          // only merge in def’s fields, not its `id`
           const { id: _ignored, ...defFields } = def;
           Object.assign(data, defFields);
 
@@ -116,8 +120,8 @@ onAuthStateChanged(auth, async user => {
           markerObj.setPopupContent(renderPopup(data));
           if (isAdmin) firebaseUpdateMarker(db, data).catch(() => {});
         } else if (data.type === "Chest") {
-          const def     = chestDefMap[data.chestTypeId] || { lootPool: [] };
-          const fullDef = {
+          const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
+          const fullDef  = {
             ...def,
             lootPool: (def.lootPool || [])
               .map(id => itemDefMap[id])
@@ -138,10 +142,11 @@ onAuthStateChanged(auth, async user => {
 /* ─────────────────── Marker & Definition Modals ─────────────────── */
 const markerForm = initMarkerModal(db);
 const itemModal  = initItemDefinitionsModal(db);
-const chestModal = initChestDefinitionsModal(db);
+const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
+  // single, deterministic write
   await upsertMarker(db, data);
 }
 
@@ -152,8 +157,8 @@ function addMarker(data, cbs = {}) {
   const isAdmin = document.body.classList.contains("is-admin");
 
   if (data.type === "Chest") {
-    const def     = chestDefMap[data.chestTypeId] || { lootPool: [] };
-    const fullDef = {
+    const def      = chestDefMap[data.chestTypeId] || { lootPool: [] };
+    const fullDef  = {
       ...def,
       lootPool: (def.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
     };
@@ -195,6 +200,7 @@ const callbacks = {
   onCopy: (_, d) => copyMgr.startCopy(d),
 
   onDragEnd: (_, d) => {
+    // update only the existing marker ID
     firebaseUpdateMarker(db, d).catch(() => {});
   },
 
@@ -208,7 +214,7 @@ const callbacks = {
   }
 };
 
-/* ───────────────── Context-menu & cleanup ─────────────────────── */
+/* ───────────────── Context-menu & scrollbars ─────────────────────── */
 map.on("contextmenu", evt => {
   if (!document.body.classList.contains("is-admin")) return;
   showContextMenu(
@@ -232,3 +238,5 @@ document.addEventListener("click", e => {
     cm.style.display = "none";
   }
 });
+
+document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);

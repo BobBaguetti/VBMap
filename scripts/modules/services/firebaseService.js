@@ -1,4 +1,4 @@
-// @file: /scripts/modules/services/markerService.js
+// @file: /scripts/modules/services/firebaseService.js
 // @version: 6.2 – removed debug logging
 
 import { initializeApp } from "firebase/app";
@@ -45,6 +45,8 @@ export function subscribeMarkers(db, onUpdate) {
 
 /**
  * Add a new marker with a random ID.
+ * (We’re keeping this for backwards compatibility, but you
+ * should now use upsertMarker for creation to avoid dupes.)
  */
 export async function addMarker(db, markerData) {
   const docRef = await addDoc(collection(db, "markers"), markerData);
@@ -53,6 +55,7 @@ export async function addMarker(db, markerData) {
 
 /**
  * Create or overwrite a marker doc with a deterministic ID based on coords.
+ * This prevents duplicates at the same latitude/longitude.
  */
 export async function upsertMarker(db, markerData) {
   const [lat, lng] = markerData.coords;

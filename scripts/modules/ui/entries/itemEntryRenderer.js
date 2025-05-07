@@ -1,48 +1,57 @@
-// @file: /scripts/modules/ui/entries/itemEntryRenderer.js
-// @version: 1.3 – fixed iconUtils import path
+// @version: 1
+// @file: /scripts/modules/utils/itemEntryRenderer.js 
 
-import { createIcon } from "../../utils/domUtils.js";
+import { createIcon } from "../../utils/iconUtils.js";
 
 /**
- * Renders a single item definition entry in the list.
+ * Builds an item entry DOM element.
  *
- * @param {Object} def            – The item definition object
- * @param {string} layout         – One of "row", "stacked", or "gallery"
- * @param {Function} onClick      – Callback when the entry is clicked
- * @param {Function} onDelete     – Callback when the delete button is clicked
- * @returns {HTMLElement}         – The rendered entry element
+ * @param {Object} def – item definition
+ * @param {string} layout – "row" | "stacked" | "gallery"
+ * @param {(id: string) => void} onClick
+ * @param {(id: string) => void} onDelete
+ * @returns {HTMLElement}
  */
-export function renderItemEntry(def, layout, onClick, onDelete) {
+export function renderItemEntry(def, layout = "row", onClick, onDelete) {
   const entry = document.createElement("div");
   entry.className = `item-def-entry layout-${layout}`;
 
+  const valueHtml = def.value
+    ? `<div class="entry-value">${def.value} ${createIcon("coins", { inline: true }).outerHTML}</div>`
+    : "";
+
+  const quantityHtml = def.quantity
+    ? `<div class="entry-quantity">x${def.quantity}</div>`
+    : "";
+
+  const deleteBtn = document.createElement("button");
+  deleteBtn.className = "entry-delete ui-button-delete";
+  deleteBtn.title = "Delete this item";
+  deleteBtn.appendChild(createIcon("trash"));
+  deleteBtn.onclick = (e) => {
+    e.stopPropagation();
+    if (def.id && confirm(`Are you sure you want to delete "${def.name}"?`)) {
+      onDelete(def.id);
+    }
+  };
+
   entry.innerHTML = `
-    <div class="entry-header">${def.name || "Unnamed Item"}</div>
+    <div class="entry-name">${def.name}</div>
     <div class="entry-meta">
-      ${def.itemType ? `<span class="meta-type">${def.itemType}</span>` : ""}
-      ${def.rarity ? `<span class="meta-rarity" style="color:${def.rarityColor || ""}">${def.rarity}</span>` : ""}
+      <span class="entry-type" style="color: ${def.itemTypeColor || "#bbb"}">${def.itemType || "—"}</span> –
+      <span class="entry-rarity" style="color: ${def.rarityColor || "#bbb"}">${def.rarity?.toUpperCase() || "—"}</span>
+    </div>
+    <div class="entry-description">${def.description || ""}</div>
+    <div class="entry-details">
+      ${valueHtml}
+      ${quantityHtml}
     </div>
   `;
 
-  // Delete button
-  if (onDelete) {
-    const btn = document.createElement("button");
-    btn.type = "button";
-    btn.className = "entry-delete ui-button-delete";
-    btn.innerHTML = createIcon("trash", { inline: true }).outerHTML;
-    btn.onclick = e => {
-      e.stopPropagation();
-      if (def.id && confirm(`Delete "${def.name || def.id}"?`)) {
-        onDelete(def.id);
-      }
-    };
-    entry.appendChild(btn);
-  }
-
-  // Click handler
-  if (onClick) {
-    entry.addEventListener("click", () => onClick(def));
-  }
+  entry.appendChild(deleteBtn);
+  entry.addEventListener("click", () => {
+    if (def.id) onClick(def);
+  });
 
   return entry;
 }

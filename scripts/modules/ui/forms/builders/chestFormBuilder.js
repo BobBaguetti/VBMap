@@ -1,72 +1,115 @@
 // @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.3 – updated imports to use fieldBuilders.js
-
-import {
-  createTextField,
-  createDropdownField
-} from "../../components/fieldBuilders.js";
+// @version: 1.5 – add size & category fields, keep description color swatch
 
 import {
   createDescriptionField,
   createExtraInfoField
 } from "../universalForm.js";
 
-/**
- * Build the chest form.
- *
- * @param {string} [idPrefix="chest"]
- * @returns {{ form: HTMLFormElement, fields: Object }}
- */
-export function createChestForm(idPrefix = "chest") {
+export function createChestForm() {
   const form = document.createElement("form");
-  form.id = `${idPrefix}-form`;
+  form.id = "chest-form";
 
-  // Name
-  const { row: rowName, input: fldName } =
-    createTextField("Name:", `fld-${idPrefix}-name`);
+  // — Name —
+  const rowName = document.createElement("div");
+  rowName.classList.add("field-row");
+  const lblName = document.createElement("label");
+  lblName.htmlFor = "fld-chest-name";
+  lblName.textContent = "Name";
+  const fldName = document.createElement("input");
+  fldName.type = "text";
+  fldName.id   = "fld-chest-name";
+  rowName.append(lblName, fldName);
 
-  // Size
-  const sizeOpts = ["Small", "Medium", "Large"].map(o => ({ value: o, label: o }));
-  const { row: rowSize, select: fldSize } =
-    createDropdownField("Size:", `fld-${idPrefix}-size`, sizeOpts, { showColor: false });
+  // — Size —
+  const rowSize = document.createElement("div");
+  rowSize.classList.add("field-row");
+  const lblSize = document.createElement("label");
+  lblSize.htmlFor = "fld-chest-size";
+  lblSize.textContent = "Size";
+  const fldSize = document.createElement("select");
+  fldSize.id = "fld-chest-size";
+  ["Small", "Medium", "Large"].forEach(opt => {
+    const o = document.createElement("option");
+    o.value = opt;
+    o.textContent = opt;
+    fldSize.appendChild(o);
+  });
+  rowSize.append(lblSize, fldSize);
 
-  // Category
-  const catOpts = ["Normal", "Dragonvault"].map(o => ({ value: o, label: o }));
-  const { row: rowCat, select: fldCategory } =
-    createDropdownField("Category:", `fld-${idPrefix}-category`, catOpts, { showColor: false });
+  // — Category —
+  const rowCat = document.createElement("div");
+  rowCat.classList.add("field-row");
+  const lblCat = document.createElement("label");
+  lblCat.htmlFor = "fld-chest-category";
+  lblCat.textContent = "Category";
+  const fldCategory = document.createElement("select");
+  fldCategory.id = "fld-chest-category";
+  ["Normal", "Dragonvault"].forEach(opt => {
+    const o = document.createElement("option");
+    o.value = opt;
+    o.textContent = opt;
+    fldCategory.appendChild(o);
+  });
+  rowCat.append(lblCat, fldCategory);
 
-  // Icon URL
-  const { row: rowIcon, input: fldIcon } =
-    createTextField("Icon URL:", `fld-${idPrefix}-icon`);
+  // — Icon URL —
+  const rowIcon = document.createElement("div");
+  rowIcon.classList.add("field-row");
+  const lblIcon = document.createElement("label");
+  lblIcon.htmlFor = "fld-chest-icon";
+  lblIcon.textContent = "Icon URL";
+  const fldIcon = document.createElement("input");
+  fldIcon.type = "text";
+  fldIcon.id   = "fld-chest-icon";
+  rowIcon.append(lblIcon, fldIcon);
 
-  // Subtext
-  const { row: rowSub, input: fldSubtext } =
-    createTextField("Subtext:", `fld-${idPrefix}-subtext`);
+  // — Subtext —
+  const rowSub = document.createElement("div");
+  rowSub.classList.add("field-row");
+  const lblSub = document.createElement("label");
+  lblSub.htmlFor = "fld-chest-subtext";
+  lblSub.textContent = "Subtext";
+  const fldSub = document.createElement("input");
+  fldSub.type = "text";
+  fldSub.id   = "fld-chest-subtext";
+  rowSub.append(lblSub, fldSub);
 
-  // Loot Pool (chips + picker button; wired by controller)
+  // — Loot Pool —
   const rowLoot = document.createElement("div");
-  rowLoot.className = "field-row";
+  rowLoot.classList.add("field-row");
   const lblLoot = document.createElement("label");
   lblLoot.textContent = "Loot Pool";
   const chipContainer = document.createElement("div");
-  chipContainer.className = "loot-pool-chips";
-  chipContainer.id = `fld-${idPrefix}-loot-chips`;
-  const openPickerBtn = document.createElement("button");
-  openPickerBtn.type = "button";
-  openPickerBtn.className = "ui-button";
-  openPickerBtn.textContent = "⚙︎";
-  openPickerBtn.title = "Edit Loot Pool";
-  rowLoot.append(lblLoot, chipContainer, openPickerBtn);
+  chipContainer.classList.add("loot-pool-chips");
+  chipContainer.id = "fld-chest-loot-chips";
+  Object.assign(chipContainer.style, {
+    flex:     "1",
+    display:  "flex",
+    flexWrap: "wrap",
+    gap:      "4px"
+  });
+  const openLootPicker = document.createElement("button");
+  openLootPicker.type = "button";
+  openLootPicker.className = "ui-button";
+  openLootPicker.textContent = "⚙︎";
+  openLootPicker.title = "Edit Loot Pool";
+  rowLoot.append(lblLoot, chipContainer, openLootPicker);
 
-  // Description + color swatch
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
-    createDescriptionField(`fld-${idPrefix}-description`);
+  // — Description —
+  const {
+    row: rowDesc,
+    textarea: fldDesc,
+    colorBtn: colorDesc
+  } = createDescriptionField();
+  colorDesc.id = "fld-chest-desc-color";
+  colorDesc.classList.add("color-swatch");
 
-  // Extra Info rows
+  // — Extra Info —
   const { row: rowExtras, extraInfo } =
     createExtraInfoField({ withDividers: true });
 
-  // Assemble form fields
+  // assemble the form in logical order
   form.append(
     rowName,
     rowSize,
@@ -84,14 +127,15 @@ export function createChestForm(idPrefix = "chest") {
       fldName,
       fldSize,
       fldCategory,
-      fldIcon,
-      fldSubtext,
-      lootPool: [],
+      fldIconUrl:  fldIcon,
+      fldSubtext:  fldSub,
+      lootPool:    [],
+      openLootPicker,
       chipContainer,
-      openLootPicker: openPickerBtn,
       fldDesc,
       colorDesc,
-      extraInfo
+      extraInfo,
+      rowExtras
     }
   };
 }

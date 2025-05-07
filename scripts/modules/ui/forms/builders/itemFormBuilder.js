@@ -1,68 +1,76 @@
+// @version: 5.1
 // @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
-// @version: 3.3 – updated imports to use fieldBuilders.js
 
 import {
-  createTextField,
-  createDropdownField
-} from "../../components/fieldBuilders.js";
-
-import {
+  createNameField,
+  createItemTypeField,
+  createRarityField,
   createDescriptionField,
+  createValueField,
+  createQuantityField,
+  createImageFieldSet,
   createExtraInfoField
 } from "../universalForm.js";
 
-/**
- * Build the item form.
- *
- * @param {string} [idPrefix="item"]
- * @returns {{ form: HTMLFormElement, fields: Object }}
- */
-export function createItemForm(idPrefix = "item") {
+export function createItemForm() {
   const form = document.createElement("form");
-  form.id = `${idPrefix}-form`;
+  form.id = "item-form";
 
   // Name
-  const { row: rowName, input: fldName } =
-    createTextField("Name:", `fld-${idPrefix}-name`);
+  const { row: rowName, input: fldName, colorBtn: colorName } = createNameField();
+  colorName.id = "fld-name-color";
+  colorName.classList.add("color-swatch");
 
   // Item Type
-  const typeOpts = [
-    { value: "", label: "" },
-    { value: "Crafting Material", label: "Crafting Material" },
-    { value: "Special", label: "Special" },
-    { value: "Consumable", label: "Consumable" },
-    { value: "Quest", label: "Quest" }
-  ];
-  const { row: rowType, select: fldType, colorBtn: colorType } =
-    createDropdownField("Item Type:", `fld-${idPrefix}-type`, typeOpts);
+  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField();
+  // insert placeholder
+  const placeholderType = document.createElement("option");
+  placeholderType.value = "";
+  placeholderType.disabled = true;
+  placeholderType.selected = true;
+  placeholderType.textContent = "Select Item Type";
+  fldType.insertBefore(placeholderType, fldType.firstChild);
+
+  colorType.id = "fld-item-type-color";
+  colorType.classList.add("color-swatch");
 
   // Rarity
-  const rarityOpts = [
-    { value: "", label: "" },
-    { value: "Common", label: "Common" },
-    { value: "Uncommon", label: "Uncommon" },
-    { value: "Rare", label: "Rare" }
-  ];
-  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } =
-    createDropdownField("Rarity:", `fld-${idPrefix}-rarity`, rarityOpts);
+  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField();
+  // insert placeholder
+  const placeholderRarity = document.createElement("option");
+  placeholderRarity.value = "";
+  placeholderRarity.disabled = true;
+  placeholderRarity.selected = true;
+  placeholderRarity.textContent = "Select Rarity";
+  fldRarity.insertBefore(placeholderRarity, fldRarity.firstChild);
 
-  // Description + color swatch
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
-    createDescriptionField(`fld-${idPrefix}-description`);
+  colorRarity.id = "fld-rarity-color";
+  colorRarity.classList.add("color-swatch");
 
-  // Extra Info rows
-  const { row: rowExtras, extraInfo } =
-    createExtraInfoField({ withDividers: true });
+  // Description
+  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField();
+  colorDesc.id = "fld-desc-item-color";
+  colorDesc.classList.add("color-swatch");
+
+  // Extra Info (no color swatch here)
+  const { row: rowExtras, extraInfo } = createExtraInfoField({ withDividers: true });
 
   // Value
-  const { row: rowValue, input: fldValue, colorBtn: colorValue } =
-    createTextField("Value:", `fld-${idPrefix}-value`);
+  const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField();
+  colorValue.id = "fld-value-color";
+  colorValue.classList.add("color-swatch");
 
   // Quantity
-  const { row: rowQty, input: fldQty, colorBtn: colorQty } =
-    createTextField("Quantity:", `fld-${idPrefix}-quantity`);
+  const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField();
+  colorQty.id = "fld-quantity-color";
+  colorQty.classList.add("color-swatch");
 
-  // Assemble form fields
+  // Images
+  const {
+    rowImgS, fldImgS,
+    rowImgL, fldImgL
+  } = createImageFieldSet();
+
   form.append(
     rowName,
     rowType,
@@ -70,24 +78,26 @@ export function createItemForm(idPrefix = "item") {
     rowDesc,
     rowExtras,
     rowValue,
-    rowQty
+    rowQty,
+    rowImgS,
+    rowImgL
   );
 
   return {
     form,
     fields: {
-      fldName,
-      fldType,
-      fldRarity,
-      fldDesc,
+      fldName, colorName,
+      fldType, colorType,
+      fldRarity, colorRarity,
+      fldDesc, colorDesc,
+      fldValue, colorValue,
+      fldQty, colorQty,
+      fldImgS, fldImgL,
       extraInfo,
-      fldValue,
-      fldQty,
-      colorType,
-      colorRarity,
-      colorDesc,
-      colorValue,
-      colorQty
+      rowExtras,
+      rowValue,
+      rowQty
     }
   };
 }
+ 

@@ -1,56 +1,50 @@
+// comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed
 // @file: /scripts/modules/ui/preview/createPreviewPanel.js
-// @version: 1.2 – switched to named export for createPreviewPanel
+// @version: 6
 
-import { makePreviewPanelFactory } from "../../utils/previewPanelFactory.js";
-
-// Configure preview factories for each supported type
-const previewFactories = {
-  item: makePreviewPanelFactory({
-    containerIdClass: "item-preview-panel",
-    headerHtml: def => `
-      <div class="preview-header-item">
-        <img src="${def.imageSmall||""}" onerror="this.style.display='none'" />
-        <span>${def.name||"Item"}</span>
-      </div>`,
-    statsHtml: def => `
-      ${def.itemType ? `<strong>${def.itemType}</strong>` : ""}
-      ${def.rarity ? `<em>${def.rarity}</em>` : ""}
-      ${def.value ? `Value: ${def.value}` : ""}`
-  }),
-
-  chest: makePreviewPanelFactory({
-    containerIdClass: "chest-preview-panel",
-    headerHtml: def => `
-      <div class="preview-header-chest">
-        <img src="${def.iconUrl||""}" onerror="this.style.display='none'" />
-        <span>${def.name||"Chest"}</span>
-      </div>`,
-    statsHtml: def => `
-      Category: ${def.category||"Normal"}<br/>
-      Size: ${def.size||"Small"}`
-  })
-};
+import { createItemPreviewPanel } from "./itemPreview.js";
+import { createQuestPreviewPanel } from "./questPreview.js";
+import { createNpcPreviewPanel } from "./npcPreview.js";
+import { createChestPreviewPanel } from "./chestPreview.js";
 
 /**
- * Create a preview panel for the given type.
- * @param {"item"|"chest"} type
+ * Factory function that returns the appropriate preview panel API
+ * based on the provided type.
+ *
+ * @param {string} type - One of "item", "quest", "npc", or "chest".
+ * @param {HTMLElement|null} mountTo - Optional existing container.
+ * @returns {{ container: HTMLElement, setFromDefinition: Function, show: Function, hide: Function }}
  */
-export function createPreviewPanel(type) {
-  const factory = previewFactories[type];
-  if (!factory) {
-    console.warn(`No preview factory for type "${type}"`);
-    return {
-      setFromDefinition: () => {},
-      show: () => {},
-      hide: () => {}
-    };
+export function createPreviewPanel(type, mountTo = null) {
+  // Create or reuse container
+  const container = mountTo || document.createElement("div");
+  container.style.zIndex = 10000;
+  if (!mountTo) document.body.appendChild(container);
+
+  let api;
+  switch (type) {
+    case "item":
+      api = createItemPreviewPanel(container);
+      break;
+    case "quest":
+      container.innerHTML = "";
+      api = createQuestPreviewPanel(container);
+      break;
+    case "npc":
+      container.innerHTML = "";
+      api = createNpcPreviewPanel(container);
+      break;
+    case "chest":
+      // clear any previous content
+      container.innerHTML = "";
+      // use chest-specific preview
+      api = createChestPreviewPanel(container);
+      break;
+    default:
+      throw new Error(`Unknown preview panel type: ${type}`);
   }
 
-  // Create a hidden container and attach to body
-  const container = document.createElement("div");
-  document.body.appendChild(container);
-
-  const panelApi = factory(container);
-  panelApi.hide();
-  return panelApi;
+  // Attach container reference for modals to position
+  api.container = container;
+  return api;
 }
