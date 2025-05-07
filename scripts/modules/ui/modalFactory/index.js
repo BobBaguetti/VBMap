@@ -1,25 +1,23 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 7
+// @version: 8
 
 import { createModal, openModal, closeModal } from "../uiKit.js";
 import { createPickr }                        from "../pickrManager.js";
-import { createExtraInfoField }               from "../forms/universalForm.js";  // correct import
+import { createExtraInfoField }               from "../forms/universalForm.js";
 
-/**
- * Creates a fully generic definition modal using your UI-kit’s createModal.
- */
 export function createDefinitionModal({
   id, title, schema,
   loadFn, saveFn, deleteFn,
   onInit, onPopulate, onCollect
 }) {
   let modalEl, contentEl, headerEl;
+  let listEl, formEl;
   let currentDefs = [], editing = {};
 
   function ensureModal() {
-    if (modalEl) return { modalEl, contentEl, headerEl };
+    if (modalEl) return { modalEl, contentEl, headerEl, listEl, formEl };
 
-    const { modal, content, header } = createModal({
+    const parts = createModal({
       id,
       title,
       size: "large",
@@ -28,26 +26,27 @@ export function createDefinitionModal({
       withDivider: true,
       onClose: () => close()
     });
-    modalEl   = modal;
-    contentEl = content;
-    headerEl  = header;
+    modalEl   = parts.modal;
+    contentEl = parts.content;
+    headerEl  = parts.header;
 
-    // List container
-    const listEl = document.createElement("div");
+    // Create and append the definitions list
+    listEl = document.createElement("div");
     listEl.className = "def-list";
     contentEl.appendChild(listEl);
 
-    // Form container
-    const formEl = document.createElement("form");
+    // Create and append the form container
+    formEl = document.createElement("form");
     formEl.className = "def-form";
     contentEl.appendChild(formEl);
 
     onInit?.(modalEl);
+
     return { modalEl, contentEl, headerEl, listEl, formEl };
   }
 
   async function open() {
-    const { modalEl } = ensureModal();
+    ensureModal();
     await refreshList();
     openModal(modalEl);
   }
@@ -57,7 +56,7 @@ export function createDefinitionModal({
   }
 
   async function refreshList() {
-    const { listEl } = ensureModal();
+    ensureModal();
     currentDefs = await loadFn();
     listEl.innerHTML = "";
 
@@ -68,6 +67,7 @@ export function createDefinitionModal({
       btn.addEventListener("click", () => populate(def));
       listEl.appendChild(btn);
     });
+
     const newBtn = document.createElement("button");
     newBtn.type = "button";
     newBtn.textContent = "+ New";
@@ -76,12 +76,12 @@ export function createDefinitionModal({
   }
 
   function clearForm() {
-    const { formEl } = ensureModal();
+    ensureModal();
     formEl.innerHTML = "";
   }
 
   function populate(def) {
-    const { formEl } = ensureModal();
+    ensureModal();
     editing = { ...def };
     clearForm();
 
@@ -96,7 +96,6 @@ export function createDefinitionModal({
       let input, extraInfoApi;
 
       if (field.extraInfo) {
-        // use the exported createExtraInfoField
         const { row: infoRow, extraInfo } = createExtraInfoField({ withDividers: false });
         extraInfoApi = extraInfo;
         row.appendChild(infoRow);
@@ -136,13 +135,13 @@ export function createDefinitionModal({
         }
       }
 
-      // common attributes
+      // Common attributes
       input.name = field.name;
       if (field.required) input.required = true;
       if (field.min != null) input.min = field.min;
       if (field.step != null) input.step = field.step;
 
-      // colorPicker support
+      // Color picker
       if (field.colorPicker) {
         const pickr = createPickr(`#${input.id || input.name}`);
         pickr.on("change", () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
@@ -151,7 +150,7 @@ export function createDefinitionModal({
 
       formEl.appendChild(row);
 
-      // populate extraInfo initial lines
+      // Populate extra-info
       if (extraInfoApi) {
         extraInfoApi.setLines(editing[field.name] || [], false);
       }
@@ -161,7 +160,7 @@ export function createDefinitionModal({
   }
 
   function collect() {
-    const { formEl } = ensureModal();
+    ensureModal();
     const data = {};
     Array.from(formEl.elements).forEach(el => {
       if (!el.name) return;
