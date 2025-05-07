@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/definitionModalShell.js
-// @version: 5.4 — resilient close-button lookup by text/aria-label
+// @version: 5.5 — correctly select and re-append the span.close element
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }              from "../uiKit.js";
@@ -12,7 +12,7 @@ export function createDefinitionModalShell({
   layoutOptions = ["row", "stacked", "gallery"],
   onClose = () => {}
 }) {
-  // 1) build base modal
+  // 1) build the base modal and get header
   const { modal, content, header } = createModal({
     id,
     title,
@@ -26,16 +26,13 @@ export function createDefinitionModalShell({
     }
   });
 
-  // 2) find the “×” button by text or aria-label
-  let closeBtn = Array.from(header.querySelectorAll("button")).find(b => {
-    return b.textContent.trim() === "×"
-        || b.getAttribute("aria-label") === "Close";
-  });
+  // 2) grab the span.close element (the ×) before we clear header
+  const closeBtn = header.querySelector(".close");
 
-  // 3) clear header so we can rebuild two sides
+  // 3) clear header and rebuild two sections
   header.innerHTML = "";
 
-  // 4) Left side: title
+  // 4) Left: the title
   const left = document.createElement("div");
   left.style.flex = "1";
   left.style.display = "flex";
@@ -45,13 +42,13 @@ export function createDefinitionModalShell({
   titleEl.style.margin = 0;
   left.appendChild(titleEl);
 
-  // 5) Right side: controls
+  // 5) Right: layout switcher, search, then close
   const right = document.createElement("div");
   right.style.display = "flex";
   right.style.alignItems = "center";
   right.style.gap = "8px";
 
-  // a) layout switcher
+  // a) layout buttons
   const layoutSwitcher = createLayoutSwitcher({
     available:   layoutOptions,
     defaultView: layoutOptions[0],
@@ -59,7 +56,7 @@ export function createDefinitionModalShell({
   });
   right.appendChild(layoutSwitcher);
 
-  // b) optional search
+  // b) optional search input
   if (searchable) {
     const search = document.createElement("input");
     search.type        = "search";
@@ -68,16 +65,22 @@ export function createDefinitionModalShell({
     right.appendChild(search);
   }
 
-  // c) re-append the close button last
+  // c) re-attach the original close <span>
   if (closeBtn) {
     right.appendChild(closeBtn);
   }
 
-  // 6) assemble header
+  // 6) finalize header layout
   header.style.display        = "flex";
   header.style.alignItems     = "center";
   header.style.justifyContent = "space-between";
   header.append(left, right);
 
-  return { modal, header, content, open: () => openModal(modal), close: () => closeModal(modal) };
+  return {
+    modal,
+    header,
+    content,
+    open:  () => openModal(modal),
+    close: () => closeModal(modal)
+  };
 }
