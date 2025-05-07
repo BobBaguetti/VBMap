@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/definitionModalShell.js
-// @version: 5.2 — two-column header: [Title] … [Switcher • Search • Close]
+// @version: 5.3 — use correct selector for the close “×” button
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }              from "../uiKit.js";
@@ -12,7 +12,7 @@ export function createDefinitionModalShell({
   layoutOptions = ["row", "stacked", "gallery"],
   onClose = () => {}
 }) {
-  // 1) Base modal & raw header
+  // 1) Build base modal & grab header
   const { modal, content, header } = createModal({
     id,
     title,
@@ -26,14 +26,13 @@ export function createDefinitionModalShell({
     }
   });
 
-  // 2) Grab and remove the auto-close button
-  const closeBtn = header.querySelector(".modal__close");
-  if (closeBtn) header.removeChild(closeBtn);
+  // 2) Locate the injected close-button (class "close" inside header)
+  const closeBtn = header.querySelector("button.close");
 
-  // 3) Clear out the header to rebuild
+  // 3) Wipe out header contents so we can rebuild two columns
   header.innerHTML = "";
 
-  // 4) Left side: title
+  // 4) Left-side: title
   const left = document.createElement("div");
   left.style.flex = "1";
   left.style.display = "flex";
@@ -43,7 +42,7 @@ export function createDefinitionModalShell({
   titleEl.style.margin = 0;
   left.appendChild(titleEl);
 
-  // 5) Right side: controls
+  // 5) Right-side: controls
   const right = document.createElement("div");
   right.style.display = "flex";
   right.style.alignItems = "center";
@@ -57,7 +56,7 @@ export function createDefinitionModalShell({
   });
   right.appendChild(layoutSwitcher);
 
-  // 5b) Optional search
+  // 5b) Optional search box
   if (searchable) {
     const search = document.createElement("input");
     search.type        = "search";
@@ -66,12 +65,12 @@ export function createDefinitionModalShell({
     right.appendChild(search);
   }
 
-  // 5c) Re-append the close button, last
+  // 5c) Re-append the close button at far right
   if (closeBtn) {
     right.appendChild(closeBtn);
   }
 
-  // 6) Assemble header
+  // 6) Final header assembly
   header.style.display        = "flex";
   header.style.alignItems     = "center";
   header.style.justifyContent = "space-between";
