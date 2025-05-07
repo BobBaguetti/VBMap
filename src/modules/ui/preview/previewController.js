@@ -1,13 +1,13 @@
 // @file: src/modules/ui/preview/previewController.js
-// @version: 1.2 — auto‐binds form inputs in the modal to live preview updates
+// @version: 1.3 — live-preview reads form values instead of relying on previewApi internals
 
 import { createPreviewPanel } from "./createPreviewPanel.js";
 
 /**
  * Encapsulates preview panel creation, positioning, show/hide,
- * *and* auto‐wires form inputs inside your modal to call show(data).
+ * and live-wiring to form inputs by reading form data.
  *
- * @param {string} type  — preview type, e.g. "item" or "chest"
+ * @param {string} type — "item" or "chest"
  */
 export function createPreviewController(type) {
   // 1) panel container
@@ -15,45 +15,30 @@ export function createPreviewController(type) {
   container.style.zIndex = "1101";
   document.body.appendChild(container);
 
-  // 2) raw preview API
+  // 2) panel API
   const previewApi = createPreviewPanel(type, container);
 
-  // 3) helper to get modal & form
+  // 3) helper to find the modal's form
   function findForm() {
-    // assumes your modal id is `${type}-definitions-modal`
     const modal = document.getElementById(`${type}-definitions-modal`);
-    return modal ? modal.querySelector("form") : null;
+    return modal?.querySelector("form");
   }
 
-  // 4) attach live‐update wiring once
-  let wired = false;
-  function wireLivePreview() {
-    if (wired) return;
+  // 4) function to read form into data object
+  function getFormData() {
     const form = findForm();
-    if (!form) return;
-
-    const onChange = () => {
-      // read payload from previewApi’s underlying setter
-      const data = previewApi.getCurrentDefinition
-        ? previewApi.getCurrentDefinition()
-        : {}; // fallback, previewApi.setFromDefinition already stores last def
-      previewApi.setFromDefinition(data);
-      positionAndShow(data);
-    };
-
-    form.querySelectorAll("input, select, textarea").forEach(el => {
-      const evt = el.tagName === "SELECT" ? "change" : "input";
-      el.addEventListener(evt, onChange);
-    });
-    wired = true;
+    if (!form) return {};
+    const fd = new FormData(form);
+    // For checkbox fields (addToFilters), FormData omits unchecked—handle if needed
+    return Object.fromEntries(fd.entries());
   }
 
-  // 5) positioning + show logic
+  // 5) position & show logic
   function positionAndShow(data) {
     previewApi.setFromDefinition(data);
     previewApi.show();
 
-    // now measure & position centred
+    // now that content is rendered, measure & position
     const mc = document.querySelector(".modal-content")?.getBoundingClientRect();
     const pr = container.getBoundingClientRect();
     if (mc && pr.height) {
@@ -61,14 +46,34 @@ export function createPreviewController(type) {
       container.style.left     = `${mc.right + 30}px`;
       container.style.top      = `${mc.top + (mc.height/2) - (pr.height/2)}px`;
     }
-
-    // ensure live‐wiring is in place
-    wireLivePreview();
   }
 
+  // 6) wire live updates once
+  let wired = false;
+  function wireLivePreview() {
+    if (wired) return;
+    const form = findForm();
+    if (!form) return;
+
+    const handler = () => {
+      const data = getFormData();
+      positionAndShow(data);
+    };
+
+    form.querySelectorAll("input, select, textarea").forEach(el => {
+      const evt = el.tagName === "SELECT" ? "change" : "input";
+      el.addEventListener(evt, handler);
+    });
+
+    wired = true;
+  }
+
+  // 7) public show/hide
   return {
-    previewApi,
-    show: positionAndShow,
+    show(data) {
+      positionAndShow(data);
+      wireLivePreview();
+    },
     hide: () => previewApi.hide()
   };
 }
