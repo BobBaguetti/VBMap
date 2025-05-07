@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.12 — reorder initPickrs() and reset() in open()
+// @version: 1.11 — wire in formApi.initPickrs() after form inject
 
 import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
 import { createDefListContainer }      from "../../utils/listUtils.js";
@@ -100,11 +100,15 @@ export function initItemDefinitionsModal(db) {
         }
       }
 
-      // on each open: load list, show modal, wire & reset pickrs, then preview
+      // on each open
+      formApi.reset();
       await refreshList();
+
       openShell();
-      formApi.initPickrs();   // wire real Pickr instances
-      formApi.reset();        // reset fields + Pickr swatches
+
+      // ⬇ wire Pickr swatches now that form is in DOM
+      formApi.initPickrs();
+
       showPreview({});
     }
   };
