@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 3.4 – complete logic with previewType integrated
+// @version: 3.5 – single header search + subheader only, no in-body search
 
 import { createDefinitionModalShell } from "./definitionModalShell.js";
 import { buildModalHeader }         from "./modalHeader.js";
@@ -9,22 +9,6 @@ import { defaultSearchPlaceholder }  from "./modalDefaults.js";
 
 /**
  * Builds a full CRUD modal with consistent shell, list, preview, and form.
- *
- * @param {object} config
- * @param {string} config.id
- * @param {string} config.title
- * @param {"item"|"chest"} [config.previewType]
- * @param {Firestore} config.db
- * @param {() => Promise<Array>} config.loadDefs
- * @param {(db,id,payload) => Promise} config.saveDef
- * @param {(db,id,payload) => Promise} config.updateDef
- * @param {(db,id) => Promise} config.deleteDef
- * @param {(cb) => Function} [config.subscribeDefs]
- * @param {(callbacks) => Object} config.createFormController
- * @param {Function} config.renderEntry
- * @param {Function} [config.enhanceHeader]
- * @param {Array} [config.toolbar]
- * @param {Array<string>} [config.layoutOptions]
  */
 export function createDefinitionsModal(config) {
   const {
@@ -63,7 +47,7 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) Core shell with preview support
+    // 1) Create shell (with preview)
     shell = createDefinitionModalShell({
       id,
       title,
@@ -75,26 +59,17 @@ export function createDefinitionsModal(config) {
     });
     const { header, bodyWrap } = shell;
 
-    // 2) Search input
-    const searchContainer = document.createElement("div");
-    searchContainer.className = "modal-search";
+    // 2) Build header (toolbar + layout)
+    buildModalHeader(header, { toolbar, layoutOptions, onLayoutChange: v => listApi?.setLayout(v) });
+
+    // 3) Single header search
     const searchInput = document.createElement("input");
-    searchInput.type = "search";
+    searchInput.type        = "search";
     searchInput.placeholder = defaultSearchPlaceholder;
-    searchInput.className = "ui-input";
-    searchContainer.appendChild(searchInput);
+    searchInput.className   = "ui-input modal-search";
+    header.appendChild(searchInput);
 
-    // 3) Build header
-    buildModalHeader(header, {
-      title,
-      toolbar,
-      layoutOptions,
-      onLayoutChange: view => listApi.setLayout(view),
-      searchEl: searchContainer
-    });
-    enhanceHeader?.(header, { shell, formApi });
-
-    // 4) Form controller + sub-header
+    // 4) Add/Edit subheader (Save/Clear/Delete)
     formApi = createFormController({
       onCancel: async () => {
         formApi.reset();
@@ -120,14 +95,15 @@ export function createDefinitionsModal(config) {
     });
     const subHeaderEl = formApi.getSubHeaderElement();
     subHeaderEl.classList.add("modal-subheader");
+    header.appendChild(subHeaderEl);
 
-    // 5) Body: list + divider + sub-header
+    enhanceHeader?.(header, { shell, formApi });
+
+    // 5) Definition list (no built-in search)
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
-    bodyWrap.appendChild(subHeaderEl);
 
-    // 6) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -150,12 +126,12 @@ export function createDefinitionsModal(config) {
     });
     shell.listApi = listApi;
 
-    // 7) Wire up search filtering
+    // 6) Wire header search into the list
     searchInput.addEventListener("input", () => {
       listApi.refresh(definitions);
     });
 
-    // 8) Append form and hook live preview
+    // 7) Attach form + live preview
     previewApi = shell.previewApi;
     formApi.form.classList.add("ui-scroll-float");
     bodyWrap.appendChild(formApi.form);
@@ -167,7 +143,7 @@ export function createDefinitionsModal(config) {
       }
     });
 
-    // No footer by design
+    // no footer
   }
 
   return {
