@@ -1,11 +1,14 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 3.7 – removed stray in-body search row
+// @version: 3.8 – single header search only
 
 import { createDefinitionModalShell } from "./definitionModalShell.js";
 import { buildModalHeader }         from "./modalHeader.js";
-import { createDefListContainer, createSearchRow } from "../../utils/listUtils.js";
+import {
+  createDefListContainer,
+  createSearchRow
+} from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "./definitionListManager.js";
-import { defaultSearchPlaceholder }  from "./modalDefaults.js";
+import { defaultSearchPlaceholder }    from "./modalDefaults.js";
 
 /**
  * Builds a full CRUD modal with consistent shell, list, preview, and form.
@@ -59,14 +62,14 @@ export function createDefinitionsModal(config) {
     });
     const { header, bodyWrap } = shell;
 
-    // 2) Header: toolbar + layout only
+    // 2) Header: toolbar + layout
     buildModalHeader(header, {
       toolbar,
       layoutOptions,
       onLayoutChange: v => listApi?.setLayout(v)
     });
 
-    // 3) Header: wired search
+    // 3) Header: one single wired search
     const { row: searchRow, input: searchInput } = createSearchRow(
       `${id}-search`,
       defaultSearchPlaceholder
@@ -104,7 +107,7 @@ export function createDefinitionsModal(config) {
 
     enhanceHeader?.(header, { shell, formApi });
 
-    // 5) Body: list + divider (NO search here)
+    // 5) Body: definition list + divider (no search here)
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
@@ -131,7 +134,7 @@ export function createDefinitionsModal(config) {
     });
     shell.listApi = listApi;
 
-    // 6) Wire header search into the list
+    // 6) Wire header search to list filtering
     searchInput.addEventListener("input", () => {
       listApi.refresh(definitions);
     });
