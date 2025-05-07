@@ -1,10 +1,10 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 12.1
+// @version: 12.2
 
-import { createDefinitionModalShell }  from "../components/definitionModalShell.js";
-import { createDefinitionListManager } from "../components/definitionListManager.js";  // ← fixed path
-import { createPickr }                from "../pickrManager.js";
-import { createExtraInfoField }       from "../forms/universalForm.js";
+import { createDefinitionModalShell }    from "../components/definitionModalShell.js";
+import { createDefinitionListManager }   from "../components/definitionListManager.js";
+import { createPickr }                   from "../pickrManager.js";
+import { createExtraInfoField }          from "../forms/universalForm.js";
 
 /**
  * Fully-generic, 1:1 recreation of your old definition modals.
@@ -12,7 +12,6 @@ import { createExtraInfoField }       from "../forms/universalForm.js";
 export function createDefinitionModal({
   id, title, schema,
   loadFn, saveFn, deleteFn,
-  previewType = null,
   layoutOptions = ["row","stacked","gallery"],
   onInit, onPopulate, onCollect
 }) {
@@ -25,13 +24,12 @@ export function createDefinitionModal({
   });
   const { bodyWrap } = shell;
 
-  // 2) Left + Right panels
+  // 2) Prepare panels
   const leftPanel = document.createElement("div");
   leftPanel.style.flex = "0 0 220px";
   leftPanel.style.display = "flex";
   leftPanel.style.flexDirection = "column";
   leftPanel.style.marginRight = "12px";
-
   const listContainer = document.createElement("div");
   leftPanel.appendChild(listContainer);
 
@@ -39,11 +37,17 @@ export function createDefinitionModal({
   rightPanel.style.flex = "1 1 auto";
   rightPanel.style.overflowY = "auto";
 
-  bodyWrap.innerHTML = "";  
+  bodyWrap.innerHTML = "";
   bodyWrap.style.display = "flex";
   bodyWrap.append(leftPanel, rightPanel);
 
-  // 3) Definition List Manager (restores search + layout + entries UI)
+  // 3) State
+  let definitions = [];
+  let editing = {};
+  let listManagerLayout = layoutOptions[0];       // ← initialize BEFORE listManager
+  const extraInfoMap = {};
+
+  // 4) Definition List Manager (search, styling, layout toggle)
   const listManager = createDefinitionListManager({
     container: listContainer,
     getDefinitions: () => definitions,
@@ -51,24 +55,23 @@ export function createDefinitionModal({
     onDelete: async id => {
       await deleteFn(id);
       await refreshList();
+      listManager.refresh();
     },
     getCurrentLayout: () => listManagerLayout
   });
 
-  let listManagerLayout = layoutOptions[0];
-
-  // Watch layout switcher in shell header
+  // Wire up the shell’s layout switcher control
   shell.layoutSwitcher.onChange = newLayout => {
     listManagerLayout = newLayout;
     listManager.setLayout(newLayout);
   };
 
-  // 4) Form
+  // 5) Form setup
   const formEl = document.createElement("form");
   formEl.className = "def-form";
   rightPanel.appendChild(formEl);
 
-  // Save/Delete buttons
+  // Save/Delete row
   const btnRow = document.createElement("div");
   btnRow.className = "field-row";
   btnRow.style.justifyContent = "flex-end";
@@ -84,12 +87,7 @@ export function createDefinitionModal({
   }
   formEl.appendChild(btnRow);
 
-  // 5) State
-  let definitions = [];
-  let editing = {};
-  const extraInfoMap = {};
-
-  // 6) Core routines
+  // 6) Core functions
   async function refreshList() {
     definitions = await loadFn();
     listManager.refresh();
@@ -115,8 +113,7 @@ export function createDefinitionModal({
       let input, extraApi;
       if (field.extraInfo) {
         const { row: infoRow, extraInfo } = createExtraInfoField({ withDividers: false });
-        extraApi = extraInfo;
-        extraInfoMap[field.name] = extraApi;
+        extraInfoMap[field.name] = extraInfo;
         row.appendChild(infoRow);
       } else {
         input = document.createElement(field.type === "textarea" ? "textarea" : "input");
@@ -128,13 +125,16 @@ export function createDefinitionModal({
 
         if (field.colorPicker) {
           const pickr = createPickr(`#${input.id||input.name}`);
-          pickr.on("change", () => formEl.dispatchEvent(new Event("input",{bubbles:true})));
-          pickr.on("save",   () => formEl.dispatchEvent(new Event("input",{bubbles:true})));
+          pickr.on("change", ()=> formEl.dispatchEvent(new Event("input",{bubbles:true})));
+          pickr.on("save",   ()=> formEl.dispatchEvent(new Event("input",{bubbles:true})));
         }
       }
 
       formEl.insertBefore(row, btnRow);
-      if (extraApi) extraApi.setLines(editing[field.name]||[], false);
+
+      if (field.extraInfo && extraInfoMap[field.name]) {
+        extraInfoMap[field.name].setLines(editing[field.name]||[], false);
+      }
     });
 
     onPopulate?.(formEl, editing);
@@ -144,10 +144,10 @@ export function createDefinitionModal({
     const data = {};
     Array.from(formEl.elements).forEach(el => {
       if (!el.name) return;
-      if (el.type === "checkbox") data[el.name] = el.checked;
-      else data[el.name] = el.value;
+      if (el.type === "checkbox") data[el.name]=el.checked;
+      else data[el.name]=el.value;
     });
-    Object.entries(extraInfoMap).forEach(([k,api]) => {
+    Object.entries(extraInfoMap).forEach(([k,api])=> {
       data[k] = api.getLines();
     });
     Object.assign(data, onCollect?.(formEl)||{});
@@ -158,22 +158,20 @@ export function createDefinitionModal({
   async function onSave() {
     await saveFn(collect());
     await refreshList();
-    listManager.refresh();
   }
 
   async function onDelete() {
     if (!editing.id) return;
     await deleteFn(editing.id);
     await refreshList();
-    clearForm();
   }
 
-  // Public API
+  // 7) Public API
   return {
     open: async () => {
       await refreshList();
       listManager.refresh();
-      populate({});    // default to new
+      populate({});   // default to blank/new
       shell.open();
     },
     close: () => shell.close()
