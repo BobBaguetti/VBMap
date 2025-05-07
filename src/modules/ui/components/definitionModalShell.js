@@ -1,9 +1,10 @@
-// @file: /scripts/modules/ui/components/definitionModalShell.js 
-// @version: 3 — suppressed auto-show of preview, now shows only on open
+// @file: src/modules/ui/components/definitionModalShell.js
+// @version: 4 — unified header toolbar, search input, layout switcher, preview, close-button, and color-picker wiring
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
-import { createLayoutSwitcher } from "../uiKit.js";
-import { createPreviewPanel } from "../preview/createPreviewPanel.js";
+import { createLayoutSwitcher }              from "../uiKit.js";
+import { createPreviewPanel }                from "../preview/createPreviewPanel.js";
+import { createPickrForInput }               from "../../pickrManager.js";
 
 export function createDefinitionModalShell({
   id,
@@ -12,8 +13,10 @@ export function createDefinitionModalShell({
   withPreview = false,
   previewType = null,
   layoutOptions = ["row", "stacked", "gallery"],
+  searchable = false,
   onClose = () => {}
 }) {
+  // Build the base modal
   const { modal, content, header } = createModal({
     id,
     title,
@@ -28,55 +31,77 @@ export function createDefinitionModalShell({
     }
   });
 
-  // Header layout switcher
+  // Ensure header is flex container
+  header.style.display = "flex";
+  header.style.alignItems = "center";
+  header.style.justifyContent = "space-between";
+
+  // Left side: title is already in place
+
+  // Middle toolbar container
+  const toolbar = document.createElement("div");
+  toolbar.classList.add("modal__toolbar");
+  toolbar.style.display = "flex";
+  toolbar.style.alignItems = "center";
+  toolbar.style.gap = "8px";
+
+  // Layout switcher
   const layoutSwitcher = createLayoutSwitcher({
-    available: layoutOptions,
+    available:   layoutOptions,
     defaultView: layoutOptions[0],
-    onChange: () => {}
+    onChange:    () => {}
   });
-  header.appendChild(layoutSwitcher);
+  toolbar.appendChild(layoutSwitcher);
 
-  // Body wrapper
-  const bodyWrap = document.createElement("div");
-  Object.assign(bodyWrap.style, {
-    display: "flex",
-    flexDirection: "column",
-    flex: "1 1 auto",
-    minHeight: "0"
-  });
-  content.appendChild(bodyWrap);
+  // Optional search input
+  if (searchable) {
+    const search = document.createElement("input");
+    search.type        = "search";
+    search.placeholder = "Search…";
+    search.classList.add("modal__search");
+    toolbar.appendChild(search);
+  }
 
-  let previewApi = null;
-  let showPreview = null;
+  header.appendChild(toolbar);
 
+  // Right side: createPreviewPanel toggle and close button
+  let previewApi, showPreview;
   if (withPreview && previewType) {
-    const previewPanel = document.createElement("div");
-    previewPanel.style.zIndex = "1101";
-    document.body.appendChild(previewPanel);
+    const previewContainer = document.createElement("div");
+    previewContainer.style.zIndex = "1101";
+    document.body.appendChild(previewContainer);
 
-    previewApi = createPreviewPanel(previewType, previewPanel);
-
-    const positionPreview = () => {
-      const mc = modal.querySelector(".modal-content")?.getBoundingClientRect();
-      const pr = previewPanel.getBoundingClientRect();
-      if (mc) {
-        previewPanel.style.position = "absolute";
-        previewPanel.style.left   = `${mc.right + 30}px`;
-        previewPanel.style.top    = `${mc.top + (mc.height/2) - (pr.height/2)}px`;
-      }
-    };
+    previewApi = createPreviewPanel(previewType, previewContainer);
 
     showPreview = () => {
-      positionPreview();
+      const mc = modal.querySelector(".modal-content")?.getBoundingClientRect();
+      const pr = previewContainer.getBoundingClientRect();
+      if (mc) {
+        previewContainer.style.position = "absolute";
+        previewContainer.style.left     = `${mc.right + 30}px`;
+        previewContainer.style.top      = `${mc.top + (mc.height/2) - (pr.height/2)}px`;
+      }
       previewApi.show();
     };
   }
 
+  // Close button
+  const closeBtn = document.createElement("button");
+  closeBtn.classList.add("modal__close");
+  closeBtn.innerHTML = "&times;";
+  closeBtn.type      = "button";
+  closeBtn.addEventListener("click", () => {
+    if (withPreview && previewApi) previewApi.hide();
+    closeModal(modal);
+  });
+  header.appendChild(closeBtn);
+
+  // Content area is ready
+  // Export helpers
   return {
     modal,
     header,
     content,
-    bodyWrap,
     layoutSwitcher,
     previewApi,
     open: () => {
@@ -88,4 +113,13 @@ export function createDefinitionModalShell({
       closeModal(modal);
     }
   };
+}
+
+/**
+ * Initialize color-pickers on any input with [data-color-picker]
+ */
+export function initModalColorPickers(containerEl) {
+  containerEl
+    .querySelectorAll("[data-color-picker]")
+    .forEach(input => createPickrForInput(input));
 }
