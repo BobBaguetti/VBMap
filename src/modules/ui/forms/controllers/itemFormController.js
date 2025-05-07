@@ -1,5 +1,5 @@
-// @file: /scripts/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.36 – delete button hidden in Add mode via HTML "hidden" attribute
+// @file: src/modules/ui/forms/controllers/itemFormController.js
+// @version: 4.37 — added onFieldChange wiring to inputs/selects/textareas
 
 import { createPickr }                         from "../../pickrManager.js";
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
@@ -8,9 +8,15 @@ import { createIcon }                          from "../../../utils/iconUtils.js
 
 /**
  * Creates a controller around a form layout for item definitions.
- * Handles wiring, reset, populate, and getCustom logic.
+ * Handles wiring, reset, populate, live preview hooks, and getCustom logic.
+ *
+ * @param {object} callbacks
+ * @param {function} callbacks.onCancel
+ * @param {function} callbacks.onSubmit
+ * @param {function} callbacks.onDelete
+ * @param {function} [callbacks.onFieldChange]  — called with getCustom() on any field change
  */
-export function createItemFormController({ onCancel, onSubmit, onDelete }) {
+export function createItemFormController({ onCancel, onSubmit, onDelete, onFieldChange }) {
   const { form, fields } = createItemForm();
   const pickrs = {};
   let _id = null;
@@ -23,12 +29,10 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     alignItems:     "center"
   });
 
-  // Title
   const subheading = document.createElement("h3");
   subheading.textContent = "Add Item";
   subheadingWrap.appendChild(subheading);
 
-  // "Add to filters" checkbox inline
   const chkAddFilter = document.createElement("input");
   chkAddFilter.type = "checkbox";
   chkAddFilter.id   = "fld-add-to-filters";
@@ -44,7 +48,6 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   filterContainer.append(lblAddFilter, chkAddFilter);
   subheadingWrap.appendChild(filterContainer);
 
-  // Button row
   const buttonRow = document.createElement("div");
   buttonRow.className = "floating-buttons";
 
@@ -66,7 +69,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.hidden = true; // hidden in Add mode by default
+  btnDelete.hidden = true;
   btnDelete.onclick = () => {
     if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
       onDelete?.(_id);
@@ -128,7 +131,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     fields.extraInfo.setLines([], false);
     _id = null;
     subheading.textContent  = "Add Item";
-    btnDelete.hidden        = true;  // hide in Add
+    btnDelete.hidden        = true;
     btnClear.textContent    = "Clear";
     Object.values(pickrs).forEach(p => p.setColor("#E5E6E8"));
   }
@@ -149,7 +152,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     _id = def.id || null;
 
     subheading.textContent  = "Edit Item";
-    btnDelete.hidden        = false; // show in Edit
+    btnDelete.hidden        = false;
     btnClear.textContent    = "Cancel";
 
     initPickrs();
@@ -184,6 +187,18 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     };
   }
 
+  // ─── Live‐preview wiring ───────────────────────────────────────────
+  Array.from(form.elements).forEach(el => {
+    if (!["INPUT","SELECT","TEXTAREA"].includes(el.tagName)) return;
+    const evt = el.tagName === "SELECT" ? "change" : "input";
+    el.addEventListener(evt, () => {
+      if (typeof onFieldChange === "function") {
+        onFieldChange(getCustom());
+      }
+    });
+  });
+
+  // ─── Form submission ───────────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit?.(getCustom());
@@ -194,8 +209,7 @@ export function createItemFormController({ onCancel, onSubmit, onDelete }) {
     reset,
     populate,
     initPickrs,
-    // alias for preview wiring
-    getCurrentPayload: getCustom,
-    getCustom
+    getCustom,
+    getCurrentPayload: getCustom
   };
 }

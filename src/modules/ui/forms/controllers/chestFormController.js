@@ -1,5 +1,5 @@
-// @file:    /scripts/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.5 – wire in size & category fields
+// @file: src/modules/ui/forms/controllers/chestFormController.js
+// @version: 2.6 — added onFieldChange wiring to inputs/selects/textareas
 
 import { createPickr }            from "../../pickrManager.js";
 import { getPickrHexColor }       from "../../../utils/colorUtils.js";
@@ -10,12 +10,24 @@ import { createModal, openModal, closeModal } from "../../uiKit.js";
 
 /**
  * Chest-definition form controller.
- * Mirrors itemFormController behaviour (buttons, reset, populate, pickrs, etc).
+ *
+ * @param {object} callbacks
+ * @param {function} callbacks.onCancel
+ * @param {function} callbacks.onSubmit
+ * @param {function} callbacks.onDelete
+ * @param {function} [callbacks.onFieldChange] — called with getCustom() on any field change
  */
-export function createChestFormController({ onCancel, onSubmit, onDelete }, db) {
+export function createChestFormController({ onCancel, onSubmit, onDelete, onFieldChange }, db) {
   const { form, fields } = createChestForm();
   const pickrs = {};
-  let _id = null; // current document ID or null (Add mode)
+  let _id = null;
+  let itemMap = [];
+
+  async function ensureAllItems() {
+    if (!itemMap.length) {
+      itemMap = await loadItemDefinitions(db);
+    }
+  }
 
   // ─── Header + Buttons ─────────────────────────────────────────────
   const subheadingWrap = document.createElement("div");
@@ -53,7 +65,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   btnDelete.style.width = "28px";
   btnDelete.style.height= "28px";
   btnDelete.appendChild(createIcon("trash"));
-  btnDelete.hidden = true; // hidden in Add mode by default
+  btnDelete.hidden = true;
   btnDelete.onclick = () => {
     if (_id && confirm("Delete this chest type?")) {
       onDelete?.(_id);
@@ -62,6 +74,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
 
   buttonRow.append(btnSave, btnClear, btnDelete);
   subheadingWrap.appendChild(buttonRow);
+
   form.prepend(subheadingWrap);
 
   // ─── Pickr for Description ────────────────────────────────────────
@@ -75,14 +88,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   }
   initPickrs();
 
-  // ─── Loot-pool picker modal ───────────────────────────────────────
+  // ─── Loot-pool picker ─────────────────────────────────────────────
   let pickerModal, pickerContent, pickerSearch, pickerList;
-  let allItems = [];
-
-  async function ensureAllItems() {
-    if (!allItems.length) allItems = await loadItemDefinitions(db);
-  }
-
   async function buildPicker() {
     if (pickerModal) return;
     const { modal, header, content } = createModal({
@@ -119,6 +126,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     save.onclick = savePicker;
     btnRow.append(cancel, save);
     pickerContent.appendChild(btnRow);
+
     pickerSearch.addEventListener("input", filterList);
   }
 
@@ -134,7 +142,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     await buildPicker();
     await ensureAllItems();
     pickerList.innerHTML = "";
-    allItems.forEach(item => {
+    itemMap.forEach(item => {
       const row = document.createElement("div");
       Object.assign(row.style, { display:"flex", alignItems:"center", padding:"4px 0" });
       const cb = document.createElement("input");
@@ -146,7 +154,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
       row.append(cb, lbl);
       pickerList.appendChild(row);
     });
-    pickerSearch.value=""; filterList();
+    pickerSearch.value = "";
+    filterList();
     openModal(pickerModal);
   }
 
@@ -162,7 +171,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
   function renderChips() {
     fields.chipContainer.innerHTML = "";
     fields.lootPool.forEach(id => {
-      const def = allItems.find(i => i.id===id) || { name:id };
+      const def = itemMap.find(i => i.id===id) || { name:id };
       const chip = document.createElement("span");
       chip.className="loot-pool-chip";
       chip.textContent = def.name;
@@ -171,6 +180,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
       x.onclick = () => {
         fields.lootPool.splice(fields.lootPool.indexOf(id),1);
         renderChips();
+        if (typeof onFieldChange === "function") onFieldChange(getCustom());
       };
       chip.append(x);
       fields.chipContainer.append(chip);
@@ -186,7 +196,6 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     fields.lootPool.length = 0;
     renderChips();
 
-    // reset new fields
     fields.fldSize.value     = "Small";
     fields.fldCategory.value = "Normal";
 
@@ -197,6 +206,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     initPickrs();
     pickrs.desc?.setColor("#E5E6E8");
     fields.extraInfo.setLines([], false);
+
+    if (typeof onFieldChange === "function") onFieldChange(getCustom());
   }
 
   function populate(def) {
@@ -220,6 +231,8 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
 
     initPickrs();
     def.descriptionColor && pickrs.desc.setColor(def.descriptionColor);
+
+    if (typeof onFieldChange === "function") onFieldChange(getCustom());
   }
 
   function getCustom() {
@@ -238,6 +251,18 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     };
   }
 
+  // ─── Live‐preview wiring for simple fields ─────────────────────────
+  Array.from(form.elements).forEach(el => {
+    if (!["INPUT","SELECT","TEXTAREA"].includes(el.tagName)) return;
+    const evt = el.tagName === "SELECT" ? "change" : "input";
+    el.addEventListener(evt, () => {
+      if (typeof onFieldChange === "function") {
+        onFieldChange(getCustom());
+      }
+    });
+  });
+
+  // ─── Form submission ───────────────────────────────────────────────
   form.addEventListener("submit", async e => {
     e.preventDefault();
     await onSubmit?.(getCustom());
@@ -248,8 +273,7 @@ export function createChestFormController({ onCancel, onSubmit, onDelete }, db) 
     reset,
     populate,
     initPickrs,
-    // alias for preview wiring
-    getCurrentPayload: getCustom,
-    getCustom
+    getCustom,
+    getCurrentPayload: getCustom
   };
 }
