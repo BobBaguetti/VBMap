@@ -1,5 +1,5 @@
 // @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 10.2
+// @version: 10.3
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
@@ -133,6 +133,9 @@ export async function setupSidebar(
   }
   await loadItemFilters();
 
+  // ─── Enemy Filters (removed) ──────────────────────────────────────
+  // no NPC/Quest filters here anymore
+
   // ─── Admin Tools ──────────────────────────────────────────────────
   sidebar.querySelector(".admin-header")?.remove();
   sidebar.querySelector("#sidebar-admin-tools")?.remove();
@@ -148,8 +151,8 @@ export async function setupSidebar(
   adminWrap.style.display = "none";
 
   [
-    ["Manage Items",       () => initItemDefinitionsModal(db).open()],
-    ["Manage Chests",      () => initChestDefinitionsModal(db).open()]
+    ["Manage Items",  () => initItemDefinitionsModal(db).open()],
+    ["Manage Chests", () => initChestDefinitionsModal(db).open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;
