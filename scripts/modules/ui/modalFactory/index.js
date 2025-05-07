@@ -1,9 +1,9 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 6
+// @version: 7
 
 import { createModal, openModal, closeModal } from "../uiKit.js";
 import { createPickr }                        from "../pickrManager.js";
-import { createExtraInfoBlock }               from "../forms/universalForm.js";
+import { createExtraInfoField }               from "../forms/universalForm.js";  // correct import
 
 /**
  * Creates a fully generic definition modal using your UI-kit’s createModal.
@@ -19,8 +19,7 @@ export function createDefinitionModal({
   function ensureModal() {
     if (modalEl) return { modalEl, contentEl, headerEl };
 
-    // Use your UI-kit to build the backdrop, header, close button, sizing, etc.
-    const modalParts = createModal({
+    const { modal, content, header } = createModal({
       id,
       title,
       size: "large",
@@ -29,27 +28,25 @@ export function createDefinitionModal({
       withDivider: true,
       onClose: () => close()
     });
-    modalEl   = modalParts.modal;
-    contentEl = modalParts.content;   // the .modal-content container
-    headerEl  = modalParts.header;
+    modalEl   = modal;
+    contentEl = content;
+    headerEl  = header;
 
-    // Container for the list of definitions
+    // List container
     const listEl = document.createElement("div");
     listEl.className = "def-list";
     contentEl.appendChild(listEl);
 
-    // Form element
+    // Form container
     const formEl = document.createElement("form");
     formEl.className = "def-form";
     contentEl.appendChild(formEl);
 
-    // Attach hooks
     onInit?.(modalEl);
-
     return { modalEl, contentEl, headerEl, listEl, formEl };
   }
 
-  async function open(event) {
+  async function open() {
     const { modalEl } = ensureModal();
     await refreshList();
     openModal(modalEl);
@@ -71,7 +68,6 @@ export function createDefinitionModal({
       btn.addEventListener("click", () => populate(def));
       listEl.appendChild(btn);
     });
-
     const newBtn = document.createElement("button");
     newBtn.type = "button";
     newBtn.textContent = "+ New";
@@ -90,7 +86,6 @@ export function createDefinitionModal({
     clearForm();
 
     schema.forEach(field => {
-      // wrapper row
       const row = document.createElement("div");
       row.className = "field-row";
 
@@ -98,14 +93,14 @@ export function createDefinitionModal({
       label.textContent = field.label;
       row.appendChild(label);
 
-      let input, extraInfo;
+      let input, extraInfoApi;
 
-      // extraInfo fields use your UI-kit block
       if (field.extraInfo) {
-        const block = createExtraInfoBlock();
-        extraInfo = block;
-        row.appendChild(block.block);
-        input = block.block.querySelector("input") || block.block.querySelector("textarea");
+        // use the exported createExtraInfoField
+        const { row: infoRow, extraInfo } = createExtraInfoField({ withDividers: false });
+        extraInfoApi = extraInfo;
+        row.appendChild(infoRow);
+        input = infoRow.querySelector("input") || infoRow.querySelector("textarea");
       } else {
         switch (field.type) {
           case "textarea":
@@ -141,13 +136,13 @@ export function createDefinitionModal({
         }
       }
 
-      // common attrs
+      // common attributes
       input.name = field.name;
       if (field.required) input.required = true;
       if (field.min != null) input.min = field.min;
       if (field.step != null) input.step = field.step;
 
-      // colorPicker fields
+      // colorPicker support
       if (field.colorPicker) {
         const pickr = createPickr(`#${input.id || input.name}`);
         pickr.on("change", () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
@@ -156,9 +151,9 @@ export function createDefinitionModal({
 
       formEl.appendChild(row);
 
-      // populate extraInfo lines
-      if (extraInfo) {
-        extraInfo.setLines(editing[field.name] || []);
+      // populate extraInfo initial lines
+      if (extraInfoApi) {
+        extraInfoApi.setLines(editing[field.name] || [], false);
       }
     });
 
@@ -170,13 +165,9 @@ export function createDefinitionModal({
     const data = {};
     Array.from(formEl.elements).forEach(el => {
       if (!el.name) return;
-      if (el.type === "checkbox") {
-        data[el.name] = el.checked;
-      } else if (el.multiple) {
-        data[el.name] = Array.from(el.selectedOptions).map(o => o.value);
-      } else {
-        data[el.name] = el.value;
-      }
+      if (el.type === "checkbox") data[el.name] = el.checked;
+      else if (el.multiple)        data[el.name] = Array.from(el.selectedOptions).map(o => o.value);
+      else                         data[el.name] = el.value;
     });
     Object.assign(data, onCollect?.(formEl) || {});
     if (editing.id) data.id = editing.id;
@@ -184,8 +175,7 @@ export function createDefinitionModal({
   }
 
   async function onSave() {
-    const payload = collect();
-    await saveFn(payload);
+    await saveFn(collect());
     await refreshList();
   }
 
