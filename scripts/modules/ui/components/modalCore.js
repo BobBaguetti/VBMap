@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/modalCore.js
-// @version: 2.2 – backdrop-click & ESC fixes
+// @version: 2.3 – debug logging for backdrop & ESC
 // ⚠️ Do not remove or alter these comments without updating the adjacent code.
 
 export function createModalCore({
@@ -17,7 +17,7 @@ export function createModalCore({
   modal.setAttribute("aria-modal", "true");
   if (ariaLabel) modal.setAttribute("aria-label", ariaLabel);
   Object.assign(modal.style, {
-    display: backdrop ? "none" : "none",
+    display: "none",
     backgroundColor: backdrop ? "rgba(0,0,0,0.5)" : "transparent",
     position: "fixed",
     top: "0",
@@ -52,7 +52,10 @@ export function createModalCore({
       });
 
   // Prevent clicks inside content from bubbling to modal
-  content.addEventListener("click", e => e.stopPropagation());
+  content.addEventListener("click", e => {
+    console.log("[modalCore] content click – stopPropagation");
+    e.stopPropagation();
+  });
 
   // Header placeholder
   const header = document.createElement("div");
@@ -62,14 +65,20 @@ export function createModalCore({
   modal.appendChild(content);
   document.body.appendChild(modal);
 
-  // === EVENTS ===
+  // === EVENTS with debug logs ===
   function onBackdropClick() {
+    console.log("[modalCore] backdrop clicked");
     close();
   }
 
   function onKeydown(e) {
-    if (e.key === "Escape") close();
-    else if (e.key === "Tab") trapFocus(e);
+    console.log("[modalCore] keydown:", e.key);
+    if (e.key === "Escape") {
+      console.log("[modalCore] Escape detected – closing");
+      close();
+    } else if (e.key === "Tab") {
+      trapFocus(e);
+    }
   }
 
   function trapFocus(e) {
@@ -91,43 +100,15 @@ export function createModalCore({
   // === OPEN / CLOSE ===
   let lastFocused = null;
   function open() {
+    console.log("[modalCore] open()");
     lastFocused = document.activeElement;
     document.body.style.overflow = "hidden";
 
-    // show
     modal.style.display = "block";
 
-    // wire events
     modal.addEventListener("click", onBackdropClick);
     document.addEventListener("keydown", onKeydown);
 
-    // focus into modal
     setTimeout(() => {
       const target = content.querySelector("input, button, [tabindex]") || content;
-      target.focus();
-    }, 0);
-  }
-
-  function close() {
-    modal.style.display = "none";
-
-    // cleanup events
-    modal.removeEventListener("click", onBackdropClick);
-    document.removeEventListener("keydown", onKeydown);
-
-    document.body.style.overflow = "";
-    lastFocused?.focus?.();
-    onClose?.();
-  }
-
-  function openAt(x, y) {
-    open();
-    Object.assign(content.style, {
-      top: `${y}px`,
-      left: `${x}px`,
-      transform: `translate(0, 0)`,
-    });
-  }
-
-  return { modal, header, content, open, close, openAt };
-}
+      target.focus
