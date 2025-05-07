@@ -126,8 +126,6 @@ export function initChestDefinitionsModal(db) {
       await refreshList();
 
       openShell();
-      // removed formApi.initPickrs()
-      initModalPickrs(content);
       showPreview({ lootPool: [] });
     }
   };

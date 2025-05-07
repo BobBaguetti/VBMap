@@ -106,7 +106,6 @@ export function initItemDefinitionsModal(db) {
       await refreshList();
 
       openShell();
-      initModalPickrs(content);
       showPreview({});
     }
   };
