@@ -1,5 +1,5 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 9
+// @version: 10
 
 import { createModal, openModal, closeModal } from "../uiKit.js";
 import { createPickr }                        from "../pickrManager.js";
@@ -13,6 +13,7 @@ export function createDefinitionModal({
   let modalEl, contentEl, headerEl;
   let listEl, formEl;
   let currentDefs = [], editing = {};
+  const extraInfoMap = {}; // name->api
 
   function ensureModal() {
     if (modalEl) return { modalEl, contentEl, headerEl, listEl, formEl };
@@ -30,12 +31,10 @@ export function createDefinitionModal({
     contentEl = parts.content;
     headerEl  = parts.header;
 
-    // Definitions list
     listEl = document.createElement("div");
     listEl.className = "def-list";
     contentEl.appendChild(listEl);
 
-    // Form container
     formEl = document.createElement("form");
     formEl.className = "def-form";
     contentEl.appendChild(formEl);
@@ -47,8 +46,7 @@ export function createDefinitionModal({
   async function open() {
     ensureModal();
     await refreshList();
-    // Auto-open the “New” form
-    populate({});
+    populate({});       // auto-open "New"
     openModal(modalEl);
   }
 
@@ -79,6 +77,8 @@ export function createDefinitionModal({
   function clearForm() {
     ensureModal();
     formEl.innerHTML = "";
+    // clear previous extraInfos
+    Object.keys(extraInfoMap).forEach(k => delete extraInfoMap[k]);
   }
 
   function populate(def) {
@@ -94,13 +94,13 @@ export function createDefinitionModal({
       label.textContent = field.label;
       row.appendChild(label);
 
-      let input, extraInfoApi;
-
+      let input; 
       if (field.extraInfo) {
+        // custom extra-info UI
         const { row: infoRow, extraInfo } = createExtraInfoField({ withDividers: false });
-        extraInfoApi = extraInfo;
+        extraInfoMap[field.name] = extraInfo;
         row.appendChild(infoRow);
-        input = infoRow.querySelector("input") || infoRow.querySelector("textarea");
+        // no `input` assignment here
       } else {
         switch (field.type) {
           case "textarea":
@@ -136,21 +136,25 @@ export function createDefinitionModal({
         }
       }
 
-      input.name = field.name;
-      if (field.required) input.required = true;
-      if (field.min != null) input.min = field.min;
-      if (field.step != null) input.step = field.step;
+      // for normal inputs, assign attributes
+      if (input) {
+        input.name = field.name;
+        if (field.required) input.required = true;
+        if (field.min != null) input.min = field.min;
+        if (field.step != null) input.step = field.step;
 
-      if (field.colorPicker) {
-        const pickr = createPickr(`#${input.id || input.name}`);
-        pickr.on("change", () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
-        pickr.on("save",   () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
+        if (field.colorPicker) {
+          const pickr = createPickr(`#${input.id || input.name}`);
+          pickr.on("change", () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
+          pickr.on("save",   () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
+        }
       }
 
       formEl.appendChild(row);
 
-      if (extraInfoApi) {
-        extraInfoApi.setLines(editing[field.name] || [], false);
+      // populate extra-info if present
+      if (field.extraInfo && extraInfoMap[field.name]) {
+        extraInfoMap[field.name].setLines(editing[field.name] || [], false);
       }
     });
 
@@ -160,12 +164,18 @@ export function createDefinitionModal({
   function collect() {
     ensureModal();
     const data = {};
+    // collect normal fields
     Array.from(formEl.elements).forEach(el => {
       if (!el.name) return;
       if (el.type === "checkbox") data[el.name] = el.checked;
       else if (el.multiple)        data[el.name] = Array.from(el.selectedOptions).map(o => o.value);
       else                         data[el.name] = el.value;
     });
+    // collect extraInfo fields
+    Object.entries(extraInfoMap).forEach(([name, api]) => {
+      data[name] = api.getLines();
+    });
+
     Object.assign(data, onCollect?.(formEl) || {});
     if (editing.id) data.id = editing.id;
     return data;
