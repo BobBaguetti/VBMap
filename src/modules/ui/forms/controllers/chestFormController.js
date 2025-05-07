@@ -1,13 +1,16 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.9 — DRY form event wiring via shared shell
+// @version: 2.10 — Pickr wiring via shared formPickrManager
 
-import { createPickr }            from "../../pickrManager.js";
-import { getPickrHexColor }       from "../../../utils/colorUtils.js";
-import { createChestForm }        from "../builders/chestFormBuilder.js";
-import { createIcon }             from "../../../utils/iconUtils.js";
-import { loadItemDefinitions }    from "../../../services/itemDefinitionsService.js";
-import { createModal, openModal, closeModal } from "../../uiKit.js";
-import { createFormControllerHeader, wireFormEvents } from "../../components/formControllerShell.js";
+import { getPickrHexColor }                          from "../../../utils/colorUtils.js";
+import { createChestForm }                           from "../builders/chestFormBuilder.js";
+import { createIcon }                                from "../../../utils/iconUtils.js";
+import { loadItemDefinitions }                       from "../../../services/itemDefinitionsService.js";
+import { createModal, openModal, closeModal }        from "../../uiKit.js";
+import {
+  createFormControllerHeader,
+  wireFormEvents
+}                                                    from "../../components/formControllerShell.js";
+import { initFormPickrs }                            from "../../components/formPickrManager.js";
 
 /**
  * Chest-definition form controller.
@@ -16,13 +19,13 @@ import { createFormControllerHeader, wireFormEvents } from "../../components/for
  * @param {function} callbacks.onCancel
  * @param {function} callbacks.onSubmit
  * @param {function} callbacks.onDelete
- * @param {function} [callbacks.onFieldChange] — called with getCustom() on any field change
+ * @param {function} [callbacks.onFieldChange]
  */
-export function createChestFormController({ onCancel, onSubmit, onDelete, onFieldChange }, db) {
+export function createChestFormController(
+  { onCancel, onSubmit, onDelete, onFieldChange },
+  db
+) {
   const { form, fields } = createChestForm();
-  const pickrs = {};
-  let _id = null;
-  let itemMap = [];
 
   // ─── Shared header + buttons ───────────────────────────────────────
   const {
@@ -30,13 +33,13 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     subheading,
     setDeleteVisible
   } = createFormControllerHeader({
-    title:     "Add Chest Type",
-    hasFilter: false,
-    onCancel:  () => {
+    title:    "Add Chest Type",
+    hasFilter:false,
+    onCancel: () => {
       reset();
       onCancel?.();
     },
-    onDelete:  () => {
+    onDelete: () => {
       if (_id && confirm("Delete this chest type?")) {
         onDelete?.(_id);
       }
@@ -45,35 +48,38 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
+  // ─── Shared Pickr wiring ───────────────────────────────────────────
+  const pickrs = initFormPickrs(form, {
+    description: fields.colorDesc
+  });
+
+  // ─── Loot-pool picker setup ────────────────────────────────────────
+  let pickerModal, pickerContent, pickerSearch, pickerList;
+  let itemMap = [];
+
   async function ensureAllItems() {
     if (!itemMap.length) {
       itemMap = await loadItemDefinitions(db);
     }
   }
 
-  // ─── Pickr for Description ────────────────────────────────────────
-  function initPickrs() {
-    if (pickrs.desc || !document.body.contains(fields.colorDesc)) return;
-    pickrs.desc = createPickr(`#${fields.colorDesc.id}`);
-    const redispatch = () =>
-      form.dispatchEvent(new Event("input", { bubbles: true }));
-    pickrs.desc.on("change", redispatch).on("save", redispatch);
-    fields.colorDesc.addEventListener("click", () => pickrs.desc.show());
+  function filterList() {
+    const q = pickerSearch.value.toLowerCase();
+    pickerList.childNodes.forEach(row => {
+      const txt = row.querySelector("label").textContent.toLowerCase();
+      row.style.display = txt.includes(q) ? "" : "none";
+    });
   }
-  initPickrs();
-
-  // ─── Loot-pool picker ─────────────────────────────────────────────
-  let pickerModal, pickerContent, pickerSearch, pickerList;
 
   async function buildPicker() {
     if (pickerModal) return;
     const { modal, header, content } = createModal({
-      id: "chest-loot-picker",
-      title: "Select Loot Pool Items",
-      size: "small",
-      backdrop: true,
+      id:          "chest-loot-picker",
+      title:       "Select Loot Pool Items",
+      size:        "small",
+      backdrop:    true,
       withDivider: true,
-      onClose: () => closeModal(modal)
+      onClose:     () => closeModal(modal)
     });
     pickerModal   = modal;
     pickerContent = content;
@@ -87,30 +93,26 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     Object.assign(pickerList.style, {
       maxHeight: "200px",
       overflowY: "auto",
-      margin: "8px 0"
+      margin:    "8px 0"
     });
     pickerContent.appendChild(pickerList);
 
     const btnRow = document.createElement("div");
     btnRow.style.textAlign = "right";
     const cancel = document.createElement("button");
-    cancel.type="button"; cancel.className="ui-button"; cancel.textContent="Cancel";
-    cancel.onclick = () => closeModal(pickerModal);
+    cancel.type        = "button";
+    cancel.className   = "ui-button";
+    cancel.textContent = "Cancel";
+    cancel.onclick     = () => closeModal(pickerModal);
     const save = document.createElement("button");
-    save.type="button"; save.className="ui-button"; save.textContent="Save";
-    save.onclick = savePicker;
+    save.type        = "button";
+    save.className   = "ui-button";
+    save.textContent = "Save";
+    save.onclick     = savePicker;
     btnRow.append(cancel, save);
     pickerContent.appendChild(btnRow);
 
     pickerSearch.addEventListener("input", filterList);
-  }
-
-  function filterList() {
-    const q = pickerSearch.value.toLowerCase();
-    pickerList.childNodes.forEach(row => {
-      const txt = row.querySelector("label").textContent.toLowerCase();
-      row.style.display = txt.includes(q) ? "" : "none";
-    });
   }
 
   async function openPicker() {
@@ -119,11 +121,16 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     pickerList.innerHTML = "";
     itemMap.forEach(item => {
       const row = document.createElement("div");
-      Object.assign(row.style, { display:"flex", alignItems:"center", padding:"4px 0" });
+      Object.assign(row.style, {
+        display:    "flex",
+        alignItems: "center",
+        padding:    "4px 0"
+      });
       const cb = document.createElement("input");
-      cb.type="checkbox"; cb.value=item.id;
+      cb.type = "checkbox";
+      cb.value = item.id;
       cb.checked = fields.lootPool.includes(item.id);
-      cb.style.marginRight="8px";
+      cb.style.marginRight = "8px";
       const lbl = document.createElement("label");
       lbl.textContent = item.name;
       row.append(cb, lbl);
@@ -146,14 +153,15 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
   function renderChips() {
     fields.chipContainer.innerHTML = "";
     fields.lootPool.forEach(id => {
-      const def = itemMap.find(i => i.id===id) || { name:id };
+      const def = itemMap.find(i => i.id === id) || { name: id };
       const chip = document.createElement("span");
-      chip.className="loot-pool-chip";
+      chip.className = "loot-pool-chip";
       chip.textContent = def.name;
       const x = document.createElement("span");
-      x.className="remove-chip"; x.textContent="×";
-      x.onclick = () => {
-        fields.lootPool.splice(fields.lootPool.indexOf(id),1);
+      x.className   = "remove-chip";
+      x.textContent = "×";
+      x.onclick     = () => {
+        fields.lootPool.splice(fields.lootPool.indexOf(id), 1);
         renderChips();
       };
       chip.append(x);
@@ -163,7 +171,9 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
 
   fields.openLootPicker.onclick = openPicker;
 
-  // ─── Reset / Populate / Get form data ──────────────────────────────
+  // ─── Reset / Populate / Get Custom Payload ─────────────────────────
+  let _id = null;
+
   function reset() {
     form.reset();
     _id = null;
@@ -173,9 +183,9 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     fields.fldCategory.value = "Normal";
     subheading.textContent   = "Add Chest Type";
     setDeleteVisible(false);
-    initPickrs();
-    pickrs.desc?.setColor("#E5E6E8");
+    pickrs.description?.setColor("#E5E6E8");
     fields.extraInfo.setLines([], false);
+    onFieldChange?.(getCustom());
   }
 
   function populate(def) {
@@ -192,12 +202,11 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
     fields.extraInfo.setLines(def.extraLines || [], false);
     subheading.textContent      = "Edit Chest Type";
     setDeleteVisible(true);
-    initPickrs();
-    def.descriptionColor && pickrs.desc.setColor(def.descriptionColor);
+    pickrs.description?.setColor(def.descriptionColor);
+    onFieldChange?.(getCustom());
   }
 
   function getCustom() {
-    initPickrs();
     return {
       id:               _id,
       name:             fields.fldName.value.trim(),
@@ -207,20 +216,19 @@ export function createChestFormController({ onCancel, onSubmit, onDelete, onFiel
       subtext:          fields.fldSubtext.value.trim(),
       lootPool:         [...fields.lootPool],
       description:      fields.fldDesc.value.trim(),
-      descriptionColor: getPickrHexColor(pickrs.desc),
+      descriptionColor: getPickrHexColor(pickrs.description),
       extraLines:       fields.extraInfo.getLines()
     };
   }
 
-  // ─── Wire form submission & live‐preview events ───────────────────
+  // ─── Wire form submission & live‐preview hooks ───────────────────
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
     form,
     reset,
     populate,
-    initPickrs,
-    getCurrentPayload: getCustom,
-    getCustom
+    getCustom,
+    getCurrentPayload: getCustom
   };
 }
