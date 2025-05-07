@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.8 — pass onFieldChange to form controller for live preview
+// @version: 1.9 — wired shell header search into listApi.filter()
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
@@ -39,12 +39,12 @@ export function initChestDefinitionsModal(db) {
     async open() {
       if (!modal) {
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
-          id:            "chest-definitions-modal",
-          title:         "Manage Chest Types",
-          size:          "large",
-          searchable:    false,
+          id:         "chest-definitions-modal",
+          title:      "Manage Chest Types",
+          size:       "large",
+          searchable: true,    // now using shell search
           layoutOptions: ["row","gallery","stacked"],
-          onClose:       () => hidePreview()
+          onClose:    () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
@@ -53,7 +53,7 @@ export function initChestDefinitionsModal(db) {
         showPreview = preview.show;
         hidePreview = preview.hide;
 
-        // list & form (pass showPreview as onFieldChange)
+        // list & form
         const listContainer = createDefListContainer("chest-def-list");
         formApi = createChestFormController({
           onCancel: async () => {
@@ -77,7 +77,6 @@ export function initChestDefinitionsModal(db) {
             showPreview({ lootPool: [] });
           },
           onFieldChange: data => {
-            // rehydrate lootPool items
             const merged = {
               ...data,
               lootPool: (data.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
@@ -86,7 +85,6 @@ export function initChestDefinitionsModal(db) {
           }
         }, db);
 
-        // assemble
         header.append(...listContainer.querySelectorAll(".list-header"));
         content.append(
           listContainer,
@@ -112,6 +110,14 @@ export function initChestDefinitionsModal(db) {
             await refreshList();
           }
         });
+
+        // ─── NEW: Hook shell header search to filter list ────────────
+        const shellSearch = modal.querySelector(".modal__search");
+        if (shellSearch) {
+          shellSearch.addEventListener("input", () => {
+            listApi.filter(shellSearch.value);
+          });
+        }
       }
 
       // each open
@@ -127,4 +133,3 @@ export function initChestDefinitionsModal(db) {
     }
   };
 }
- 

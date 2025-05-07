@@ -1,16 +1,16 @@
-// @version: 5 
-// @file: /scripts/modules/utils/definitionListManager.js
+// @file: src/modules/ui/components/definitionListManager.js
+// @version: 6.0 — no internal search, external filter API
 
 import { renderItemEntry } from "../entries/itemEntryRenderer.js";
 
 /**
- * Creates and manages a sortable, searchable definition list.
+ * Creates and manages a sortable, filterable definition list.
  *
  * @param {Object} options
- * @param {HTMLElement} options.container
- * @param {() => Array} options.getDefinitions
- * @param {(def: Object) => void} options.onEntryClick
- * @param {(id: string) => Promise<void>} options.onDelete
+ * @param {HTMLElement} options.container      — the <div> that will hold entries
+ * @param {() => Array}   options.getDefinitions — function returning all defs
+ * @param {(def:Object) => void} options.onEntryClick
+ * @param {(id:string) => Promise<void>} options.onDelete
  * @param {() => string} [options.getCurrentLayout]
  */
 export function createDefinitionListManager({
@@ -20,11 +20,12 @@ export function createDefinitionListManager({
   onDelete,
   getCurrentLayout = () => "row"
 }) {
-  let layout = getCurrentLayout();
+  let layout    = getCurrentLayout();
+  let filterTerm = "";
 
   function render() {
     const data = getDefinitions();
-    const q = searchInput.value.trim().toLowerCase();
+    const q = filterTerm.trim().toLowerCase();
 
     const filtered = data.filter(d =>
       d.name?.toLowerCase().includes(q)
@@ -39,21 +40,19 @@ export function createDefinitionListManager({
     });
   }
 
-  const header = document.createElement("div");
-  header.className = "list-header";
-
-  const searchInput = document.createElement("input");
-  searchInput.className = "ui-input";
-  searchInput.placeholder = "Search items...";
-  searchInput.addEventListener("input", render);
-  header.appendChild(searchInput);
-
-  container.parentNode.insertBefore(header, container);
-
   return {
+    /** Refresh the list (e.g. after data changes) */
     refresh: render,
-    setLayout: newLayout => {
+
+    /** Change layout: "row", "gallery", etc. */
+    setLayout(newLayout) {
       layout = newLayout;
+      render();
+    },
+
+    /** Set the current filter term (from an external search box) */
+    filter(term) {
+      filterTerm = term || "";
       render();
     }
   };

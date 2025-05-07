@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.8 — pass onFieldChange to form controller for live preview
+// @version: 1.9 — wired shell header search into listApi.filter()
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
@@ -30,12 +30,12 @@ export function initItemDefinitionsModal(db) {
     async open() {
       if (!modal) {
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
-          id:            "item-definitions-modal",
-          title:         "Manage Items",
-          size:          "large",
-          searchable:    false,
+          id:         "item-definitions-modal",
+          title:      "Manage Items",
+          size:       "large",
+          searchable: true,    // now using shell search
           layoutOptions: ["row","gallery","stacked"],
-          onClose:       () => hidePreview()
+          onClose:    () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
@@ -44,7 +44,7 @@ export function initItemDefinitionsModal(db) {
         showPreview = preview.show;
         hidePreview = preview.hide;
 
-        // list & form (pass showPreview as onFieldChange)
+        // list & form
         const listContainer = createDefListContainer("item-def-list");
         formApi = createItemFormController({
           onCancel: async () => {
@@ -71,7 +71,6 @@ export function initItemDefinitionsModal(db) {
           onFieldChange: data => showPreview(data)
         }, db);
 
-        // assemble
         header.append(...listContainer.querySelectorAll(".list-header"));
         content.append(
           listContainer,
@@ -79,6 +78,7 @@ export function initItemDefinitionsModal(db) {
           formApi.form
         );
 
+        // list manager
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
@@ -92,6 +92,14 @@ export function initItemDefinitionsModal(db) {
             await refreshList();
           }
         });
+
+        // ─── NEW: Hook shell header search to filter list ────────────
+        const shellSearch = modal.querySelector(".modal__search");
+        if (shellSearch) {
+          shellSearch.addEventListener("input", () => {
+            listApi.filter(shellSearch.value);
+          });
+        }
       }
 
       // each open
