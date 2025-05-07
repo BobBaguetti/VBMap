@@ -1,10 +1,12 @@
 // @file: /scripts/modules/ui/components/definitionModalShell.js
-// @version: 5.0 – uses shared modalHeader.js
+// @version: 5.1 – restored previewApi support
 
-import { createModalCore }    from "./modalCore.js";
-import { buildModalHeader }   from "./modalHeader.js";
-import { defaultToolbar }     from "./modalToolbar.js";
-import { defaultLayoutOptions } from "./modalDefaults.js"; // or move layoutOptions into modalToolbar.js if desired
+import { createModalCore }      from "./modalCore.js";
+import { buildModalHeader }     from "./modalHeader.js";
+import { defaultToolbar }       from "./modalToolbar.js";
+import { defaultLayoutOptions } from "./modalDefaults.js";
+import { createLayoutSwitcher } from "./layoutSwitcher.js";
+import { createPreviewPanel }   from "../preview/createPreviewPanel.js";
 
 /**
  * Shell factory for all “definitions” modals.
@@ -17,6 +19,8 @@ import { defaultLayoutOptions } from "./modalDefaults.js"; // or move layoutOpti
  * @param {Function} [opts.onClose]
  * @param {Array} [opts.toolbar]
  * @param {Array<string>} [opts.layoutOptions]
+ * @param {boolean} [opts.withPreview]
+ * @param {string|null} [opts.previewType]
  */
 export function createDefinitionModalShell({
   id,
@@ -25,7 +29,9 @@ export function createDefinitionModalShell({
   withDivider = true,
   onClose = () => {},
   toolbar = defaultToolbar,
-  layoutOptions = defaultLayoutOptions
+  layoutOptions = defaultLayoutOptions,
+  withPreview = true,
+  previewType = null
 }) {
   // 1) Core modal
   const { modal, header, content, open, close } = createModalCore({
@@ -37,19 +43,9 @@ export function createDefinitionModalShell({
     withDivider,
     onClose
   });
-
   modal.classList.add("admin-only");
 
-  // 2) Build header with shared helper
-  buildModalHeader(header, {
-    title,
-    toolbar,
-    layoutOptions,
-    onLayoutChange: view => shell.listApi?.setLayout(view),
-    // searchEl and subHeaderEl get wired later in the factory
-  });
-
-  // 3) Body wrapper
+  // 2) Body wrapper
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
     display:       "flex",
@@ -59,18 +55,49 @@ export function createDefinitionModalShell({
   });
   content.appendChild(bodyWrap);
 
-  return {
+  // 3) Preview panel
+  let previewApi = null;
+  if (withPreview && previewType) {
+    previewApi = createPreviewPanel(previewType);
+  }
+
+  // 4) Layout switcher (needs to go in header after toolbar)
+  let listApi;
+  const layoutSwitcher = createLayoutSwitcher({
+    available:   layoutOptions,
+    defaultView: layoutOptions[0],
+    onChange:    v => listApi?.setLayout(v)
+  });
+
+  // 5) Build header with shared helper
+  buildModalHeader(header, {
+    title,
+    toolbar,
+    layoutOptions,
+    onLayoutChange: v => listApi?.setLayout(v),
+    // searchEl and subHeaderEl are wired later
+  });
+  // insert layout switcher after header content
+  header.appendChild(layoutSwitcher);
+
+  // API object to return
+  const api = {
     modal,
     header,
     content,
     bodyWrap,
     open,
     close: () => {
+      previewApi?.hide();
       close();
     },
-    set listApi(api) {
-      // allow factory to wire layout change callback
-      this._listApi = api;
+    get previewApi() {
+      return previewApi;
+    },
+    set listApi(x) {
+      listApi = x;
     }
   };
+
+  return api;
 }

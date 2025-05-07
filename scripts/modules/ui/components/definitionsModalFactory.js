@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 3.3 – footer removed, sub-header remains
+// @version: 3.4 – complete logic with previewType integrated
 
 import { createDefinitionModalShell } from "./definitionModalShell.js";
 import { buildModalHeader }         from "./modalHeader.js";
@@ -9,6 +9,22 @@ import { defaultSearchPlaceholder }  from "./modalDefaults.js";
 
 /**
  * Builds a full CRUD modal with consistent shell, list, preview, and form.
+ *
+ * @param {object} config
+ * @param {string} config.id
+ * @param {string} config.title
+ * @param {"item"|"chest"} [config.previewType]
+ * @param {Firestore} config.db
+ * @param {() => Promise<Array>} config.loadDefs
+ * @param {(db,id,payload) => Promise} config.saveDef
+ * @param {(db,id,payload) => Promise} config.updateDef
+ * @param {(db,id) => Promise} config.deleteDef
+ * @param {(cb) => Function} [config.subscribeDefs]
+ * @param {(callbacks) => Object} config.createFormController
+ * @param {Function} config.renderEntry
+ * @param {Function} [config.enhanceHeader]
+ * @param {Array} [config.toolbar]
+ * @param {Array<string>} [config.layoutOptions]
  */
 export function createDefinitionsModal(config) {
   const {
@@ -47,12 +63,14 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) Core shell & header
+    // 1) Core shell with preview support
     shell = createDefinitionModalShell({
       id,
       title,
       toolbar,
       layoutOptions,
+      withPreview: true,
+      previewType,
       onClose: () => previewApi?.hide()
     });
     const { header, bodyWrap } = shell;
@@ -74,7 +92,7 @@ export function createDefinitionsModal(config) {
       onLayoutChange: view => listApi.setLayout(view),
       searchEl: searchContainer
     });
-    enhanceHeader?.(header, { shell });
+    enhanceHeader?.(header, { shell, formApi });
 
     // 4) Form controller + sub-header
     formApi = createFormController({
@@ -132,19 +150,24 @@ export function createDefinitionsModal(config) {
     });
     shell.listApi = listApi;
 
-    // 7) Search wiring
-    searchInput.addEventListener("input", () => listApi.refresh(definitions));
+    // 7) Wire up search filtering
+    searchInput.addEventListener("input", () => {
+      listApi.refresh(definitions);
+    });
 
-    // 8) Form and preview
+    // 8) Append form and hook live preview
     previewApi = shell.previewApi;
     formApi.form.classList.add("ui-scroll-float");
     bodyWrap.appendChild(formApi.form);
     formApi.form.addEventListener("input", () => {
       const live = formApi.getCurrent();
-      if (live) previewApi.setFromDefinition(live), previewApi.show();
+      if (live) {
+        previewApi.setFromDefinition(live);
+        previewApi.show();
+      }
     });
 
-    // *** Footer is removed per request ***
+    // No footer by design
   }
 
   return {
