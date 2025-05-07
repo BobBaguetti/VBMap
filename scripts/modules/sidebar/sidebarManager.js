@@ -1,5 +1,5 @@
 // @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 10.5
+// @version: 10.2
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
@@ -10,11 +10,6 @@ export async function setupSidebar(
   { enableGrouping, disableGrouping }
 ) {
   console.log("[sidebar] setupSidebar() running");
-
-  // Instantiate modals here
-  const itemModal  = initItemDefinitionsModal(db);
-  const chestModal = initChestDefinitionsModal(db);
-
   const searchBar     = document.getElementById("search-bar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebar       = document.getElementById("sidebar");
@@ -48,8 +43,7 @@ export async function setupSidebar(
   settingsSect.querySelectorAll("label").forEach(l => l.remove());
 
   const groupingLabel = document.createElement("label");
-  groupingLabel.innerHTML =
-    `<input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span>`;
+  groupingLabel.innerHTML = `<input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span>`;
   settingsSect.appendChild(groupingLabel);
   const groupingCb = document.getElementById("enable-grouping");
   groupingCb.checked = false;
@@ -59,8 +53,7 @@ export async function setupSidebar(
   });
 
   const smallLabel = document.createElement("label");
-  smallLabel.innerHTML =
-    `<input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span>`;
+  smallLabel.innerHTML = `<input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span>`;
   settingsSect.appendChild(smallLabel);
   const smallCb = document.getElementById("toggle-small-markers");
   smallCb.checked = false;
@@ -80,8 +73,7 @@ export async function setupSidebar(
       const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
       let mainVisible = true;
-      document
-        .querySelectorAll("#main-filters .toggle-group input")
+      document.querySelectorAll("#main-filters .toggle-group input")
         .forEach(cb => {
           if (data.type === cb.dataset.layer && !cb.checked)
             mainVisible = false;
@@ -95,17 +87,15 @@ export async function setupSidebar(
         if (itemCb && !itemCb.checked) itemVisible = false;
       }
 
-      const shouldShow =
-        matchesPvE &&
-        matchesName &&
-        mainVisible &&
-        itemVisible;
+      const shouldShow = matchesPvE
+                       && matchesName
+                       && mainVisible
+                       && itemVisible;
       const layerGroup = layers[data.type];
       if (!layerGroup) return;
 
-      shouldShow
-        ? layerGroup.addLayer(markerObj)
-        : layerGroup.removeLayer(markerObj);
+      shouldShow ? layerGroup.addLayer(markerObj)
+                 : layerGroup.removeLayer(markerObj);
     });
   }
 
@@ -117,12 +107,10 @@ export async function setupSidebar(
 
   // ─── Add “Chests” Toggle ─────────────────────────────────────────
   const mainGroup = document.querySelector("#main-filters .toggle-group");
-  const chestLabelChk = document.createElement("label");
-  chestLabelChk.innerHTML =
-    `<input type="checkbox" checked data-layer="Chest"/><span>Chests</span>`;
-  mainGroup.append(chestLabelChk);
-  chestLabelChk
-    .querySelector("input")
+  const chestLabel = document.createElement("label");
+  chestLabel.innerHTML = `<input type="checkbox" checked data-layer="Chest"/><span>Chests</span>`;
+  mainGroup.append(chestLabel);
+  chestLabel.querySelector("input")
     .addEventListener("change", filterMarkers);
 
   // ─── Item Filters ─────────────────────────────────────────────────
@@ -130,20 +118,18 @@ export async function setupSidebar(
   async function loadItemFilters() {
     itemFilterList.innerHTML = "";
     const defs = await loadItemDefinitions(db);
-    defs
-      .filter(d => d.showInFilters)
-      .forEach(d => {
-        const label = document.createElement("label");
-        const cb    = document.createElement("input");
-        cb.type           = "checkbox";
-        cb.checked        = true;
-        cb.dataset.itemId = d.id;
-        const span = document.createElement("span");
-        span.textContent = d.name;
-        label.append(cb, span);
-        itemFilterList.append(label);
-        cb.addEventListener("change", filterMarkers);
-      });
+    defs.filter(d => d.showInFilters).forEach(d => {
+      const label = document.createElement("label");
+      const cb    = document.createElement("input");
+      cb.type           = "checkbox";
+      cb.checked        = true;
+      cb.dataset.itemId = d.id;
+      const span = document.createElement("span");
+      span.textContent = d.name;
+      label.append(cb, span);
+      itemFilterList.append(label);
+      cb.addEventListener("change", filterMarkers);
+    });
   }
   await loadItemFilters();
 
@@ -162,12 +148,12 @@ export async function setupSidebar(
   adminWrap.style.display = "none";
 
   [
-    ["Manage Items",  () => { console.log("Manage Items clicked"); itemModal.open(); }],
-    ["Manage Chests", () => { console.log("Manage Chests clicked"); chestModal.open(); }]
+    ["Manage Items",       () => initItemDefinitionsModal(db).open()],
+    ["Manage Chests",      () => initChestDefinitionsModal(db).open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;
-    btn.addEventListener("click", fn);
+    btn.onclick     = fn;
     adminWrap.appendChild(btn);
   });
 

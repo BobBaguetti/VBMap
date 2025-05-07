@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 4 – exposing modals on window for sidebar
+// @version: 2 – merge in definition fields without overwriting marker.id
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -26,14 +26,13 @@ import {
   renderChestPopup
 } from "./modules/map/markerManager.js";
 
-import { initItemDefinitionsModal }   from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal }  from "./modules/ui/modals/chestDefinitionsModal.js";
-import { initMarkerModal }            from "./modules/ui/modals/markerModal.js";
-import { initCopyPasteManager }       from "./modules/map/copyPasteManager.js";
-import { setupSidebar }               from "./modules/sidebar/sidebarManager.js";
-import { subscribeItemDefinitions }   from "./modules/services/itemDefinitionsService.js";
-import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js";
-import { initAdminAuth }              from "./authSetup.js";
+import { initItemDefinitionsModal }  from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initMarkerModal }           from "./modules/ui/modals/markerModal.js";
+import { initCopyPasteManager }      from "./modules/map/copyPasteManager.js";
+import { setupSidebar }              from "./modules/sidebar/sidebarManager.js";
+import { subscribeItemDefinitions }  from "./modules/services/itemDefinitionsService.js";
+import { activateFloatingScrollbars }from "./modules/utils/scrollUtils.js";
+import { initAdminAuth }             from "./authSetup.js";
 
 /* ───────────────────────── Firebase & Map ───────────────────────── */
 const app   = initializeApp(firebaseConfig);
@@ -139,13 +138,8 @@ onAuthStateChanged(auth, async user => {
 });
 
 /* ─────────────────── Marker & Definition Modals ─────────────────── */
-const markerForm  = initMarkerModal(db);
-const itemModal   = initItemDefinitionsModal(db);
-const chestModal  = initChestDefinitionsModal(db);
-
-// expose to sidebar
-window.itemModal  = itemModal;
-window.chestModal = chestModal;
+const markerForm = initMarkerModal(db);
+const itemModal  = initItemDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
