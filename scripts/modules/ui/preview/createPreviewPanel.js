@@ -3,8 +3,6 @@
 // @version: 6
 
 import { createItemPreviewPanel } from "./itemPreview.js";
-import { createQuestPreviewPanel } from "./questPreview.js";
-import { createNpcPreviewPanel } from "./npcPreview.js";
 import { createChestPreviewPanel } from "./chestPreview.js";
 
 /**
@@ -25,14 +23,6 @@ export function createPreviewPanel(type, mountTo = null) {
   switch (type) {
     case "item":
       api = createItemPreviewPanel(container);
-      break;
-    case "quest":
-      container.innerHTML = "";
-      api = createQuestPreviewPanel(container);
-      break;
-    case "npc":
-      container.innerHTML = "";
-      api = createNpcPreviewPanel(container);
       break;
     case "chest":
       // clear any previous content
