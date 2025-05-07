@@ -1,15 +1,9 @@
 // @file: src/modules/ui/components/definitionModalShell.js
-// @version: 5.1 — dark‐style header search, and move close button to end
+// @version: 5.2 — two-column header: [Title] … [Switcher • Search • Close]
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }              from "../uiKit.js";
 
-/**
- * Shared modal shell:
- *  - uses uiKit.createModal (which injects its own close-button and backdrop)
- *  - header with title, layout switcher, optional search input
- *  - single close button always at far right
- */
 export function createDefinitionModalShell({
   id,
   title,
@@ -18,7 +12,7 @@ export function createDefinitionModalShell({
   layoutOptions = ["row", "stacked", "gallery"],
   onClose = () => {}
 }) {
-  // build the base modal (uiKit handles close button & backdrop)
+  // 1) Base modal & raw header
   const { modal, content, header } = createModal({
     id,
     title,
@@ -32,41 +26,56 @@ export function createDefinitionModalShell({
     }
   });
 
-  // arrange header as flex row
-  header.style.display        = "flex";
-  header.style.alignItems     = "center";
-  header.style.justifyContent = "space-between";
+  // 2) Grab and remove the auto-close button
+  const closeBtn = header.querySelector(".modal__close");
+  if (closeBtn) header.removeChild(closeBtn);
 
-  // build toolbar (layout switcher + optional search)
-  const toolbar = document.createElement("div");
-  toolbar.style.display    = "flex";
-  toolbar.style.alignItems = "center";
-  toolbar.style.gap        = "8px";
+  // 3) Clear out the header to rebuild
+  header.innerHTML = "";
 
-  // layout switcher buttons
+  // 4) Left side: title
+  const left = document.createElement("div");
+  left.style.flex = "1";
+  left.style.display = "flex";
+  left.style.alignItems = "center";
+  const titleEl = document.createElement("h2");
+  titleEl.textContent = title;
+  titleEl.style.margin = 0;
+  left.appendChild(titleEl);
+
+  // 5) Right side: controls
+  const right = document.createElement("div");
+  right.style.display = "flex";
+  right.style.alignItems = "center";
+  right.style.gap = "8px";
+
+  // 5a) Layout switcher
   const layoutSwitcher = createLayoutSwitcher({
     available:   layoutOptions,
     defaultView: layoutOptions[0],
     onChange:    () => {}
   });
-  toolbar.appendChild(layoutSwitcher);
+  right.appendChild(layoutSwitcher);
 
+  // 5b) Optional search
   if (searchable) {
     const search = document.createElement("input");
     search.type        = "search";
     search.placeholder = "Search…";
-    search.classList.add("modal__search", "ui-input"); 
-    // ensure dark mode styling from ui-input
-    toolbar.appendChild(search);
+    search.classList.add("modal__search", "ui-input");
+    right.appendChild(search);
   }
 
-  // inject toolbar immediately after title but before close-button
-  // remove existing close-button and reappend after toolbar
-  const closeBtn = header.querySelector(".modal__close");
-  header.appendChild(toolbar);
+  // 5c) Re-append the close button, last
   if (closeBtn) {
-    header.appendChild(closeBtn);
+    right.appendChild(closeBtn);
   }
+
+  // 6) Assemble header
+  header.style.display        = "flex";
+  header.style.alignItems     = "center";
+  header.style.justifyContent = "space-between";
+  header.append(left, right);
 
   return {
     modal,
