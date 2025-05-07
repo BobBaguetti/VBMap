@@ -1,18 +1,21 @@
 // @file: /scripts/modules/ui/forms/markerForm.js
-// @version: 11.4 – fixed imports to match current fieldBuilders & universalForm
+// @version: 11.3 – fixed createPickr import path
 
 import {
-  createTextField,
-  createDropdownField,
-  createTextAreaField,
-  createImageField
-} from "../components/fieldBuilders.js";
-
-import {
+  createNameField,
+  createRarityField,
+  createItemTypeField,
+  createDescriptionField,
   createExtraInfoField
 } from "./universalForm.js";
 
+import {
+  createImageField,
+  createVideoField
+} from "../components/fieldBuilders.js";
+
 import { createPickr } from "../components/pickrUtils.js";
+
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
 export function createMarkerForm() {
@@ -20,49 +23,22 @@ export function createMarkerForm() {
   form.id = "marker-form";
 
   // Build fields
-  const { row: rowName, input: fldName } =
-    createTextField("marker-fld-name", "Name:");
-  const colorName = document.createElement("span"); // placeholder for pickr
-  rowName.appendChild(colorName);
-
-  const { row: rowRarity, select: fldRarity } =
-    createDropdownField("marker-fld-rarity", "Rarity:", [
-      { value: "",          label: "Select Rarity" },
-      { value: "common",    label: "Common" },
-      { value: "uncommon",  label: "Uncommon" },
-      { value: "rare",      label: "Rare" },
-      { value: "epic",      label: "Epic" },
-      { value: "legendary", label: "Legendary" }
-    ]);
-  const colorRarity = document.createElement("span");
-  rowRarity.appendChild(colorRarity);
-
-  const { row: rowItemType, select: fldItemType } =
-    createDropdownField("marker-fld-item-type", "Item Type:", [
-      { value: "",                   label: "Select Type" },
-      { value: "Crafting Material",  label: "Crafting Material" },
-      { value: "Special",            label: "Special" },
-      { value: "Consumable",         label: "Consumable" },
-      { value: "Quest",              label: "Quest" }
-    ]);
-  const colorItemType = document.createElement("span");
-  rowItemType.appendChild(colorItemType);
-
-  const { row: rowDesc, textarea: fldDesc } =
-    createTextAreaField("marker-fld-desc-item", "Description:");
-  const colorDesc = document.createElement("span");
-  rowDesc.appendChild(colorDesc);
-
+  const { row: rowName, input: fldName, colorBtn: colorName } =
+    createNameField("marker-fld-name");
+  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } =
+    createRarityField("marker-fld-rarity");
+  const { row: rowItemType, select: fldItemType, colorBtn: colorItemType } =
+    createItemTypeField("marker-fld-item-type");
+  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
+    createDescriptionField("marker-fld-desc-item");
   const { row: rowExtra, extraInfo } =
     createExtraInfoField({ withDividers: true });
-
   const { row: rowImgS, input: fldImgS } =
-    createImageField("marker-fld-img-s", "Image S:");
+    createImageField("Image S:", "marker-fld-img-s");
   const { row: rowImgL, input: fldImgL } =
-    createImageField("marker-fld-img-l", "Image L:");
-  // Video URL as plain text field
+    createImageField("Image L:", "marker-fld-img-l");
   const { row: rowVid, input: fldVid } =
-    createTextField("marker-fld-vid", "Video URL:", "url");
+    createVideoField("Video:", "marker-fld-vid");
 
   // Spacing tweaks
   rowRarity.classList.add("item-gap");
@@ -83,19 +59,18 @@ export function createMarkerForm() {
 
   // Pickr setup
   const pickrs = new Map();
-  const targets = [colorName, colorRarity, colorItemType, colorDesc];
+  const pickrTargets = [colorName, colorRarity, colorItemType, colorDesc];
 
   function initPickrs() {
-    targets.forEach(el => {
+    pickrTargets.forEach(el => {
       if (!pickrs.has(el)) {
-        el.id = el.id || `pickr-${Math.random().toString(36).slice(2,8)}`;
         pickrs.set(el, createPickr(`#${el.id}`));
       }
     });
   }
 
-  const safe = (v, f = "") => v ?? f;
-  const getColor = (el, fallback) =>
+  const safe = (val, fallback = "") => val ?? fallback;
+  const getColor = (el, fallback = "#E5E6E8") =>
     pickrs.get(el)?.getColor()?.toHEXA()?.toString() || fallback;
 
   function setFromDefinition(def = {}) {
@@ -111,9 +86,7 @@ export function createMarkerForm() {
 
     fldItemType.value = safe(def.itemType);
     pickrs.get(colorItemType)?.setColor(
-      def.itemTypeColor ||
-      itemTypeColors[fldItemType.value] ||
-      "#E5E6E8"
+      def.itemTypeColor || itemTypeColors[fldItemType.value] || "#E5E6E8"
     );
 
     fldDesc.value = safe(def.description);
@@ -145,13 +118,13 @@ export function createMarkerForm() {
   function getCustom() {
     return {
       name:             fldName.value.trim(),
-      nameColor:        getColor(colorName, "#E5E6E8"),
+      nameColor:        getColor(colorName),
       rarity:           fldRarity.value,
-      rarityColor:      getColor(colorRarity, "#E5E6E8"),
+      rarityColor:      getColor(colorRarity),
       itemType:         fldItemType.value,
-      itemTypeColor:    getColor(colorItemType, "#E5E6E8"),
+      itemTypeColor:    getColor(colorItemType),
       description:      fldDesc.value.trim(),
-      descriptionColor: getColor(colorDesc, "#E5E6E8"),
+      descriptionColor: getColor(colorDesc),
       extraLines:       extraInfo.getLines(),
       imageSmall:       fldImgS.value.trim(),
       imageBig:         fldImgL.value.trim(),

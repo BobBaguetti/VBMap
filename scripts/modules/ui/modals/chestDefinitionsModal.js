@@ -1,38 +1,34 @@
-// chestDefinitionsModal.js
-import { createDefinitionsModal } from '../definitionsModalFactory.js';
-import { chestDefinitionsService } from '../../services/chestDefinitionsService.js';
-export async function showChestModal() {
-  await createDefinitionsModal({
-    entityName: 'Chest',
-    loadAll:    () => chestDefinitionsService.loadAll(),
-    renderEntryRow(chest, onSelect) {
-      const row = document.createElement('div');
-      row.className = 'def-row';
-      row.innerHTML = `
-        <strong>${chest.name}</strong>
-        <span>${chest.chestType}</span>
-        <span>${chest.size}</span>
-        <span>${chest.description.slice(0,40)}…</span>
-      `;
-      row.addEventListener('click', () => onSelect(chest));
-      return row;
-    },
-    fields: [
-      { key:'name',      label:'Name', type:'text' },
-      { key:'chestType', label:'Type', type:'select', options:['Normal','Dragonvault'] },
-      { key:'size',      label:'Size', type:'select', options:['Small','Medium','Large'] },
-      { key:'description', label:'Description', type:'textarea' },
-      { key:'imageS',    label:'Image S URL', type:'text' },
-      { key:'imageL',    label:'Image L URL', type:'text' },
-    ],
-    renderPreview(data) {
-      return `
-        <img src="${data.imageL}" style="max-width:100%" />
-        <h3>${data.name}</h3>
-        <p>${data.description}</p>
-      `;
-    },
-    save:   data => chestDefinitionsService.upsert(data),
-    delete: id   => chestDefinitionsService.delete(id),
+// @file: /scripts/modules/ui/modals/chestDefinitionsModal.js
+// @version: 1.0 – migrate to createDefinitionsModal + schemaFormController
+
+import { createDefinitionsModal } from "../components/definitionsModalFactory.js";
+import chestSchema from "../forms/schemas/chestSchema.js";
+import { createSchemaFormController } from "../components/schemaFormBuilder.js";
+
+import {
+  loadChestDefinitions,
+  saveChestDefinition,
+  updateChestDefinition,
+  deleteChestDefinition,
+  subscribeChestDefinitions
+} from "../../services/chestDefinitionsService.js";
+
+import { renderChestEntry } from "../entries/chestEntryRenderer.js";
+
+export function initChestDefinitionsModal(db) {
+  return createDefinitionsModal({
+    id:           "chest-definitions-modal",
+    title:        "Manage Chest Types",
+    previewType:  "chest",
+    db,
+    loadDefs:     () => loadChestDefinitions(db),
+    saveDef:      (db, id, payload) => saveChestDefinition(db, id, payload),
+    updateDef:    (db, id, payload) => updateChestDefinition(db, id, payload),
+    deleteDef:    (db, id)         => deleteChestDefinition(db, id),
+    subscribeDefs: cb               => subscribeChestDefinitions(db, cb),
+    createFormController: callbacks =>
+      createSchemaFormController(chestSchema, db, callbacks),
+    renderEntry:  (def, layout, callbacks) =>
+      renderChestEntry(def, layout, callbacks)
   });
 }

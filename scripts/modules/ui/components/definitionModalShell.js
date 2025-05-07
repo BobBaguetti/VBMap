@@ -1,10 +1,7 @@
 // @file: /scripts/modules/ui/components/definitionModalShell.js
-// @version: 5.1 – restored previewApi support
+// @version: 4.2 – added toolbar & layoutOptions support
 
 import { createModalCore }      from "./modalCore.js";
-import { buildModalHeader }     from "./modalHeader.js";
-import { defaultToolbar }       from "./modalToolbar.js";
-import { defaultLayoutOptions } from "./modalDefaults.js";
 import { createLayoutSwitcher } from "./layoutSwitcher.js";
 import { createPreviewPanel }   from "../preview/createPreviewPanel.js";
 
@@ -15,26 +12,26 @@ import { createPreviewPanel }   from "../preview/createPreviewPanel.js";
  * @param {string} opts.id
  * @param {string} opts.title
  * @param {string} [opts.size]
- * @param {boolean} [opts.withDivider]
- * @param {Function} [opts.onClose]
- * @param {Array} [opts.toolbar]
- * @param {Array<string>} [opts.layoutOptions]
  * @param {boolean} [opts.withPreview]
  * @param {string|null} [opts.previewType]
+ * @param {boolean} [opts.withDivider]
+ * @param {Function} [opts.onClose]
+ * @param {Array<{icon?:string,label:string,onClick:()=>void}>} [opts.toolbar]
+ * @param {Array<string>} [opts.layoutOptions]
  */
 export function createDefinitionModalShell({
   id,
   title,
   size = "large",
+  withPreview = false,
+  previewType = null,
   withDivider = true,
   onClose = () => {},
-  toolbar = defaultToolbar,
-  layoutOptions = defaultLayoutOptions,
-  withPreview = true,
-  previewType = null
+  toolbar = [],
+  layoutOptions = ["row", "stacked", "gallery"]
 }) {
   // 1) Core modal
-  const { modal, header, content, open, close } = createModalCore({
+  const { modal, content, header, open, close } = createModalCore({
     id,
     title,
     size,
@@ -43,9 +40,34 @@ export function createDefinitionModalShell({
     withDivider,
     onClose
   });
+
   modal.classList.add("admin-only");
 
-  // 2) Body wrapper
+  // 2) Toolbar buttons (insert before layout switcher)
+  if (Array.isArray(toolbar) && toolbar.length) {
+    const tb = document.createElement("div");
+    tb.className = "modal-toolbar";
+    toolbar.forEach(btnCfg => {
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = btnCfg.label;
+      if (btnCfg.icon) btn.classList.add(`icon-${btnCfg.icon}`);
+      btn.onclick = btnCfg.onClick;
+      tb.appendChild(btn);
+    });
+    header.appendChild(tb);
+  }
+
+  // 3) Layout switcher
+  let listApi;
+  const layoutSwitcher = createLayoutSwitcher({
+    available:   layoutOptions,
+    defaultView: layoutOptions[0],
+    onChange:    v => listApi?.setLayout(v)
+  });
+  header.appendChild(layoutSwitcher);
+
+  // 4) Body wrapper
   const bodyWrap = document.createElement("div");
   Object.assign(bodyWrap.style, {
     display:       "flex",
@@ -55,49 +77,27 @@ export function createDefinitionModalShell({
   });
   content.appendChild(bodyWrap);
 
-  // 3) Preview panel
+  // 5) Preview panel
   let previewApi = null;
   if (withPreview && previewType) {
     previewApi = createPreviewPanel(previewType);
   }
 
-  // 4) Layout switcher (needs to go in header after toolbar)
-  let listApi;
-  const layoutSwitcher = createLayoutSwitcher({
-    available:   layoutOptions,
-    defaultView: layoutOptions[0],
-    onChange:    v => listApi?.setLayout(v)
-  });
-
-  // 5) Build header with shared helper
-  buildModalHeader(header, {
-    title,
-    toolbar,
-    layoutOptions,
-    onLayoutChange: v => listApi?.setLayout(v),
-    // searchEl and subHeaderEl are wired later
-  });
-  // insert layout switcher after header content
-  header.appendChild(layoutSwitcher);
-
-  // API object to return
-  const api = {
+  return {
     modal,
     header,
     content,
     bodyWrap,
     open,
     close: () => {
-      previewApi?.hide();
+      if (previewApi) previewApi.hide();
       close();
     },
     get previewApi() {
       return previewApi;
     },
-    set listApi(x) {
-      listApi = x;
+    set listApi(api) {
+      listApi = api;
     }
   };
-
-  return api;
 }

@@ -1,43 +1,33 @@
 // @file: /scripts/modules/ui/preview/createPreviewPanel.js
-// @version: 1.3 – now uses shared previewHeader & previewStats components
+// @version: 1.2 – switched to named export for createPreviewPanel
 
 import { makePreviewPanelFactory } from "../../utils/previewPanelFactory.js";
-import { renderPreviewHeader }   from "../components/previewHeader.js";
-import { renderPreviewStats }    from "../components/previewStats.js";
 
-/**
- * Configure preview factories for each supported type.
- */
+// Configure preview factories for each supported type
 const previewFactories = {
   item: makePreviewPanelFactory({
     containerIdClass: "item-preview-panel",
-    headerHtml: def =>
-      renderPreviewHeader({
-        iconUrl:   def.imageSmall || "",
-        title:     def.name || "Item",
-        titleClass: "item-header"
-      }),
-    statsHtml: def =>
-      renderPreviewStats({
-        Type:   def.itemType || "",
-        Rarity: def.rarity  || "",
-        Value:  def.value   != null ? def.value : ""
-      })
+    headerHtml: def => `
+      <div class="preview-header-item">
+        <img src="${def.imageSmall||""}" onerror="this.style.display='none'" />
+        <span>${def.name||"Item"}</span>
+      </div>`,
+    statsHtml: def => `
+      ${def.itemType ? `<strong>${def.itemType}</strong>` : ""}
+      ${def.rarity ? `<em>${def.rarity}</em>` : ""}
+      ${def.value ? `Value: ${def.value}` : ""}`
   }),
 
   chest: makePreviewPanelFactory({
     containerIdClass: "chest-preview-panel",
-    headerHtml: def =>
-      renderPreviewHeader({
-        iconUrl:   def.iconUrl || "",
-        title:     def.name    || "Chest",
-        titleClass: "chest-header"
-      }),
-    statsHtml: def =>
-      renderPreviewStats({
-        Category: def.category || "",
-        Size:     def.size     || ""
-      })
+    headerHtml: def => `
+      <div class="preview-header-chest">
+        <img src="${def.iconUrl||""}" onerror="this.style.display='none'" />
+        <span>${def.name||"Chest"}</span>
+      </div>`,
+    statsHtml: def => `
+      Category: ${def.category||"Normal"}<br/>
+      Size: ${def.size||"Small"}`
   })
 };
 
@@ -51,8 +41,8 @@ export function createPreviewPanel(type) {
     console.warn(`No preview factory for type "${type}"`);
     return {
       setFromDefinition: () => {},
-      show:              () => {},
-      hide:              () => {}
+      show: () => {},
+      hide: () => {}
     };
   }
 

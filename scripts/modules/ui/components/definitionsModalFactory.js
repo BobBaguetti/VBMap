@@ -1,175 +1,209 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 1.2 – complete layout per mockup, fields + preview driven
-// ⚠️ Do not remove or alter these comments without updating the adjacent code.
+// @version: 3.0 – unified toolbar, search‐in‐header & default layout options
 
-import { createModalCore }   from './modalCore.js';
-import { createModalShell }  from './modalShell.js';
-import { createSearchRow }   from './modalToolbar.js';
-import { buildSubHeader }    from './subHeaderBuilder.js';
-import { createPreviewPanel } from '../preview/createPreviewPanel.js';
+import { createDefinitionModalShell }   from "./definitionModalShell.js";
+import { createDefListContainer }       from "../../utils/listUtils.js";
+import { createDefinitionListManager }  from "./definitionListManager.js";
+import { defaultToolbar, defaultLayoutOptions } from "./modalDefaults.js";
 
 /**
- * Builds and opens a “Manage X” modal with:
- * - header (title, search, close)
- * - entry list (zebra striped, delete hooks)
- * - add/edit subheader (Create/Save/Clear/Delete toggles)
- * - schema-driven form area
- * - live preview pane
- *
- * @param {object} cfg
- * @param {string} cfg.entityName
- * @param {() => Promise<object[]>} cfg.loadAll
- * @param {(item, onSelect) => HTMLElement} cfg.renderEntryRow
- * @param {{ key, label, type, pickr?, options? }[]} cfg.fields
- * @param {(data) => HTMLElement|string} cfg.renderPreview
- * @param {(data) => Promise} cfg.save
- * @param {(id) => Promise} cfg.delete
+ * @typedef DefinitionModalConfig
+ * @property {string} id
+ * @property {string} title
+ * @property {string|null} [previewType]
+ * @property {object} db
+ * @property {() => Promise<Array<Object>>} loadDefs
+ * @property {(db:object, id:string|null, payload:Object) => Promise<Object>} saveDef
+ * @property {(db:object, id:string, payload:Object) => Promise<Object>} updateDef
+ * @property {(db:object, id:string) => Promise<void>} deleteDef
+ * @property {(callback: (defs:Array<Object>) => void) => () => void} [subscribeDefs]
+ * @property {(callbacks:Object) => {
+ *   form: HTMLFormElement,
+ *   fields: Object,
+ *   reset(): void,
+ *   populate(def:Object): void,
+ *   getCurrent(): Object,
+ *   getSubHeaderElement(): HTMLElement,
+ *   initPickrs?(): void
+ * }} createFormController
+ * @property {(def:Object, layout:string, callbacks:Object) => HTMLElement} renderEntry
+ * @property {(headerEl:HTMLElement, api:Object) => void} [enhanceHeader]
+ * @property {Array<{ icon?: string, label: string, onClick: () => void }>} [toolbar]
+ * @property {Array<string>} [layoutOptions]
  */
-export async function createDefinitionsModal(cfg) {
-  // 1) create modal core + shell
-  const core = createModalCore({
-    id: `${cfg.entityName.toLowerCase()}-modal`,
-    size: 'large',
-    backdrop: true,
-  });
-  createModalShell(core, {
-    title: `Manage ${cfg.entityName}s`,
-    withDivider: true,
-  });
 
-  // 2) search bar in header
-  const searchInput = createSearchRow(txt => {
-    // placeholder: filter entries
-    listItems.forEach(row => {
-      const text = row.textContent.toLowerCase();
-      row.style.display = text.includes(txt.toLowerCase()) ? '' : 'none';
-    });
-  });
-  core.header.appendChild(searchInput);
+/**
+ * Builds a full CRUD modal with consistent shell, list, preview, and form.
+ * Exposes:
+ *   - open(): Promise<void>
+ *   - refresh(): Promise<void>
+ *   - destroy(): void
+ */
+export function createDefinitionsModal(config) {
+  const {
+    id,
+    title,
+    previewType = null,
+    db,
+    loadDefs,
+    saveDef,
+    updateDef,
+    deleteDef,
+    subscribeDefs,
+    createFormController,
+    renderEntry,
+    enhanceHeader,
+    // apply defaults if none provided
+    toolbar = defaultToolbar,
+    layoutOptions = defaultLayoutOptions
+  } = config;
 
-  // 3) entry list container
-  const listContainer = document.createElement('div');
-  listContainer.className = 'definition-list';
-  core.content.appendChild(listContainer);
+  let shell, listApi, formApi, previewApi, unsubscribe;
+  let definitions = [];
 
-  // 4) divider under list
-  const hr = document.createElement('hr');
-  core.content.appendChild(hr);
-
-  // 5) sub-header (Add/Edit controls)
-  let mode = 'add'; // or 'edit'
-  const subHdr = buildSubHeader({
-    entityName: cfg.entityName,
-    onCreate: () => switchMode('add'),
-    onSave:   () => handleSave(),
-    onCancel: () => switchMode('add'),
-    onDelete: () => handleDelete(),
-    onToggleFilter: checked => {
-      // hook for “Add Filter” toggle
-    }
-  });
-  core.content.appendChild(subHdr);
-
-  // 6) form area
-  const formEl = document.createElement('form');
-  formEl.className = 'definition-form';
-  core.content.appendChild(formEl);
-
-  // 7) preview panel on right
-  const previewApi = createPreviewPanel(core.content, cfg.renderPreview);
-
-  // internal state
-  let listItems = [];
-  let currentData = {};
-
-  // helpers
-  function switchMode(newMode, data) {
-    mode = newMode;
-    buildSubHeaderActions(subHdr, mode);
-    formEl.innerHTML = '';
-    if (mode === 'edit') {
-      currentData = data;
-      populateForm(data);
-    } else {
-      currentData = {};
-    }
-    previewApi.update(currentData);
+  async function refreshDefinitions() {
+    definitions = await loadDefs();
+    listApi.refresh(definitions);
   }
 
-  function buildSubHeaderActions(container, mode) {
-    // show/hide Create vs Save/Cancel/Delete
-    container.querySelectorAll('[data-role]').forEach(btn => {
-      const roles = btn.getAttribute('data-role').split(',');
-      btn.style.display = roles.includes(mode) ? '' : 'none';
+  function startSubscription() {
+    if (typeof subscribeDefs !== "function") return;
+    unsubscribe?.();
+    unsubscribe = subscribeDefs(newDefs => {
+      definitions = newDefs;
+      listApi.refresh(definitions);
     });
-    // update title text
-    container.querySelector('.subheader-title').textContent =
-      (mode === 'add' ? 'Add ' : 'Edit ') + cfg.entityName;
   }
 
-  function populateForm(data) {
-    cfg.fields.forEach(f => {
-      const wrapper = document.createElement('div');
-      wrapper.className = 'form-field';
-      const label = document.createElement('label');
-      label.textContent = f.label;
-      let input;
-      if (f.type === 'select') {
-        input = document.createElement('select');
-        f.options.forEach(opt => {
-          const o = document.createElement('option');
-          o.value = opt;
-          o.textContent = opt;
-          input.appendChild(o);
-        });
-      } else if (f.type === 'textarea') {
-        input = document.createElement('textarea');
-      } else {
-        input = document.createElement('input');
-        input.type = f.type;
+  async function buildIfNeeded() {
+    if (shell) return;
+
+    // 1) Create the modal shell with toolbar & layout toggles
+    shell = createDefinitionModalShell({
+      id,
+      title,
+      toolbar,
+      withPreview: true,
+      previewType,
+      layoutOptions
+    });
+    const { header, bodyWrap } = shell;
+
+    // 2) Instantiate form controller
+    formApi = createFormController({
+      onCancel: async () => {
+        formApi.reset();
+        previewApi.setFromDefinition({});
+        previewApi.show();
+      },
+      onDelete: async defId => {
+        await deleteDef(db, defId);
+        await refreshDefinitions();
+        formApi.reset();
+        previewApi.setFromDefinition({});
+        previewApi.show();
+      },
+      onSubmit: async payload => {
+        if (payload.id) {
+          await updateDef(db, payload.id, payload);
+        } else {
+          await saveDef(db, null, payload);
+        }
+        await refreshDefinitions();
+        formApi.reset();
+        previewApi.setFromDefinition({});
+        previewApi.show();
       }
-      input.name = f.key;
-      if (data[f.key] != null) input.value = data[f.key];
-      input.addEventListener('input', () => {
-        currentData[f.key] = input.value;
-        previewApi.update(currentData);
-      });
-      wrapper.append(label, input);
-      formEl.appendChild(wrapper);
     });
-  }
 
-  async function handleSave() {
-    await cfg.save(currentData);
-    await reloadList();
-    switchMode('add');
-  }
+    // 3) Pull sub-header into the modal header
+    const subHeader = formApi.getSubHeaderElement();
+    if (subHeader) {
+      subHeader.style.marginLeft = "auto";
+      header.appendChild(subHeader);
+    } else {
+      console.warn(`Sub-header not found for modal '${id}'.`);
+    }
 
-  async function handleDelete() {
-    if (!currentData.id) return;
-    await cfg.delete(currentData.id);
-    await reloadList();
-    switchMode('add');
-  }
+    // 4) Build & insert the list container + search row will be generated by listManager
+    const listContainer = createDefListContainer(`${id}-list`);
+    bodyWrap.appendChild(listContainer);
+    bodyWrap.appendChild(document.createElement("hr"));
 
-  async function reloadList() {
-    listContainer.innerHTML = '';
-    const data = await cfg.loadAll();
-    listItems = data.map(item => {
-      const row = cfg.renderEntryRow(item, () => {
-        switchMode('edit', item);
-      });
-      listContainer.appendChild(row);
-      return row;
+    // 5) Insert the form element
+    previewApi = shell.previewApi;
+    formApi.form.classList.add("ui-scroll-float");
+    bodyWrap.appendChild(formApi.form);
+
+    // 6) Live preview on form input
+    formApi.form.addEventListener("input", () => {
+      const live = formApi.getCurrent();
+      if (live) {
+        previewApi.setFromDefinition(live);
+        previewApi.show();
+      }
     });
-    // reset search
-    searchInput.querySelector('input').value = '';
+
+    // 7) Wire up the definitions list manager
+    listApi = createDefinitionListManager({
+      container:      listContainer,
+      getDefinitions: () => definitions,
+      renderEntry,
+      onEntryClick: async def => {
+        formApi.populate(def);
+        previewApi.setFromDefinition(def);
+        previewApi.show();
+        _showEditButtons();
+      },
+      onDelete: async defId => {
+        await deleteDef(db, defId);
+        await refreshDefinitions();
+        formApi.reset();
+        previewApi.setFromDefinition({});
+        previewApi.show();
+        _showAddButtons();
+      }
+    });
+
+    // 8) Move the auto‐inserted search bar into header (to the right of toolbar)
+    const generatedSearch = bodyWrap.querySelector(".list-search");
+    if (generatedSearch) {
+      generatedSearch.style.margin = "0 0 0 auto";
+      header.appendChild(generatedSearch);
+    }
+
+    // 9) Allow any extra header controls
+    enhanceHeader?.(header, { shell, formApi });
   }
 
-  // initial population
-  await reloadList();
-  switchMode('add');
+  function _showAddButtons() {
+    formApi.showAdd?.();
+  }
 
-  core.open();
-  return core;
+  function _showEditButtons() {
+    formApi.showEdit?.();
+  }
+
+  return {
+    async open() {
+      await buildIfNeeded();
+
+      // subscribe or one‐time load
+      if (subscribeDefs) startSubscription();
+      else await refreshDefinitions();
+
+      formApi.reset();
+      shell.open();
+      formApi.initPickrs?.();
+      previewApi.setFromDefinition({});
+      requestAnimationFrame(() => previewApi.show());
+    },
+
+    refresh: refreshDefinitions,
+
+    destroy: () => {
+      unsubscribe?.();
+      shell?.close?.();
+    }
+  };
 }

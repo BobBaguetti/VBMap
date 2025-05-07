@@ -99,23 +99,20 @@
   margin: 0;
 }
 
-/* 8) Removed legacy color-btn styling */
-/* .modal-content .color-btn { display: none; } */
-
-/* 9) Inline color-preview swatch */
-.modal-content .field-row .color-preview {
-  width: 20px;
-  height: 20px;
+/* 8) Color-picker & remove-line buttons */
+.modal-content .color-btn {
+  margin-left: 8px !important;
+  flex: 0 0 19px;
+  width: 19px; height: 19px;
   border: 1px solid #555;
-  margin-left: 8px;
-  vertical-align: middle;
-  display: inline-block;
+  border-radius: 2px;
   cursor: pointer;
-  border-radius: 3px;
-  background-color: var(--default-pickr-color, #E5E6E8);
+}
+.modal-content .field-row button.ui-button {
+  margin-left: 8px;
 }
 
-/* 10) Extra-row layout tweaks */
+/* 9) Extra-row layout tweaks */
 .modal-content .field-row.extra-row {
   align-items: flex-start;
 }
@@ -134,19 +131,19 @@
   padding: 6px 12px;
 }
 
-/* 11) Dividers around Extra Info */
+/* 10) Dividers around Extra Info */
 .modal-content hr {
   border: none;
   border-top: 2px solid #444;
   margin: 6px 0;
 }
 
-/* 12) Extra bottom space for item-specific group */
+/* 11) Extra bottom space for item-specific group */
 .modal-content .item-gap {
   margin-bottom: 8px !important;
 }
 
-/* 13) Zebra-striped entry styling for definition lists */
+/* 12) Zebra-striped entry styling for definition lists */
 .item-def-entry {
   padding: 6px 10px;
   border-bottom: 1px solid #333;
@@ -167,15 +164,4 @@
   font-style: italic;
   color: #aaa;
   margin-top: 2px;
-}
-
-
-/* Push the close “×” to the far right */
-.modal-header {
-  display: flex;
-  align-items: center;
-}
-.modal-header .close {
-  order: 99;
-  margin-left: auto;
 }

@@ -1,142 +1,150 @@
 // @file: /scripts/modules/ui/components/modalCore.js
-// @version: 1.1 – low-level modal container, backdrop, ESC, focus-trap
-// ⚠️ Do not remove or alter these comments without updating the adjacent code.
+// @version: 1.0 – consolidated modal creation & lifecycle
 
-/**
- * Creates the bare modal element with backdrop, ESC-to-close, focus trapping,
- * and exposes open/close/openAt methods. Includes a header placeholder div
- * for title/search injection.
- *
- * @param {object} options
- * @param {string} options.id           – DOM id for the modal container
- * @param {'small'|'large'} [options.size='small'] – size variant
- * @param {boolean} [options.backdrop=true]        – whether to show a dark backdrop
- * @param {() => void} [options.onClose]           – callback after modal closes
- * @returns {{
-*   modal: HTMLElement,
-*   header: HTMLElement,
-*   content: HTMLElement,
-*   open: () => void,
-*   close: () => void,
-*   openAt: (x: number, y: number) => void
-* }}
-*/
+// Keep track of modals we've attached lifecycle to
+const _lifecycleAttached = new WeakSet();
+
+function attachLifecycle(modal, onClose) {
+  if (_lifecycleAttached.has(modal)) return;
+  _lifecycleAttached.add(modal);
+
+  const prevFocus = document.activeElement;
+  const scrollY   = window.scrollY;
+  document.documentElement.style.overflow = "hidden";
+
+  function cleanup() {
+    document.documentElement.style.overflow = "";
+    window.scrollTo(0, scrollY);
+    prevFocus?.focus?.();
+    onClose?.();
+  }
+
+  modal.addEventListener("close", cleanup, { once: true });
+  // Close on ESC
+  modal.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      close();
+    }
+  });
+}
+
 export function createModalCore({
- id,
- size = 'small',
- backdrop = true,
- onClose,
+  id,
+  title,
+  size = "small",
+  backdrop = true,
+  withDivider = false,
+  draggable = false,
+  onClose
 }) {
- // --- 1) Build DOM ---
- const modal = document.createElement('div');
- modal.id = id;
- modal.classList.add('modal', `modal-${size}`);
- Object.assign(modal.style, {
-   display: 'none',
-   position: 'fixed',
-   top: '0',
-   left: '0',
-   right: '0',
-   bottom: '0',
-   backgroundColor: backdrop ? 'rgba(0,0,0,0.5)' : 'transparent',
-   zIndex: '9999',
- });
- modal.tabIndex = -1;
+  // 1) build DOM structure
+  const modal = document.createElement("div");
+  modal.className = `modal modal-${size}`;
+  modal.id        = id;
+  modal.style.cssText = `
+    display: none;
+    background-color: ${backdrop ? "rgba(0,0,0,0.5)" : "transparent"};
+    z-index: 9999;
+  `;
+  modal.tabIndex = -1;
 
- const content = document.createElement('div');
- content.classList.add('modal-content');
- Object.assign(content.style, {
-   width: size === 'large' ? '600px' : '360px',
-   maxWidth: '95%',
-   margin: 'auto',
-   position: 'relative',
-   top: size === 'large' ? '50%' : '20%',
-   transform: size === 'large' ? 'translateY(-50%)' : 'translateY(0)',
-   backgroundColor: '#fff',
-   outline: 'none',
- });
+  const content = document.createElement("div");
+  content.className = "modal-content";
+  content.style.zIndex = 10000;
+  if (size === "large") {
+    Object.assign(content.style, {
+      position:      "fixed",
+      top:           "50%",
+      left:          "50%",
+      transform:     "translate(-50%,-50%)",
+      maxWidth:      "550px",
+      maxHeight:     "90vh",
+      display:       "flex",
+      flexDirection: "column",
+      overflow:      "hidden"
+    });
+  } else {
+    Object.assign(content.style, {
+      position: "absolute",
+      width:    "350px",
+      maxWidth: "100%"
+    });
+  }
 
- // Prevent clicks inside from closing
- content.addEventListener('click', e => e.stopPropagation());
+  const header = document.createElement("div");
+  header.className = "modal-header";
+  header.style.cursor = draggable ? "move" : "default";
 
- // Header placeholder
- const header = document.createElement('div');
- header.classList.add('modal-header');
- content.appendChild(header);
+  const titleEl = document.createElement("h2");
+  titleEl.textContent = title;
 
- modal.appendChild(content);
- document.body.appendChild(modal);
+  const closeBtn = document.createElement("span");
+  closeBtn.className = "close";
+  closeBtn.innerHTML = "&times;";
+  closeBtn.onclick = () => close();
 
- // --- 2) Focus trapping & lifecycle ---
- let lastFocused = null;
- function trapFocus(e) {
-   const focusable = modal.querySelectorAll(
-     'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])'
-   );
-   if (!focusable.length) return;
-   const first = focusable[0];
-   const last = focusable[focusable.length - 1];
-   if (e.key === 'Tab') {
-     if (e.shiftKey && document.activeElement === first) {
-       e.preventDefault();
-       last.focus();
-     } else if (!e.shiftKey && document.activeElement === last) {
-       e.preventDefault();
-       first.focus();
-     }
-   }
- }
+  header.append(titleEl, closeBtn);
+  content.append(header);
+  if (withDivider) content.append(document.createElement("hr"));
 
- function handleKeydown(e) {
-   if (e.key === 'Escape') {
-     close();
-   } else if (e.key === 'Tab') {
-     trapFocus(e);
-   }
- }
+  modal.append(content);
+  document.body.append(modal);
 
- function handleBackdropClick() {
-   close();
- }
+  // 2) backdrop‐click closes
+  modal.addEventListener("click", e => {
+    if (e.target === modal) close();
+  });
 
- // --- 3) Open/Close methods ---
- function open() {
-   lastFocused = document.activeElement;
-   document.body.style.overflow = 'hidden';
+  // 3) draggable (small modals only)
+  if (draggable && size !== "large") {
+    let dragging = false, ox = 0, oy = 0;
+    header.addEventListener("mousedown", e => {
+      dragging = true;
+      const rect = content.getBoundingClientRect();
+      ox = e.clientX - rect.left;
+      oy = e.clientY - rect.top;
+      document.addEventListener("mousemove", onDrag);
+      document.addEventListener("mouseup", e => {
+        dragging = false;
+        document.removeEventListener("mousemove", onDrag);
+      }, { once: true });
+    });
+    function onDrag(e) {
+      if (!dragging) return;
+      Object.assign(content.style, {
+        position: "absolute",
+        left:     `${e.clientX - ox}px`,
+        top:      `${e.clientY - oy}px`
+      });
+    }
+  }
 
-   modal.style.display = 'block';
-   modal.focus();
+  // 4) open/close logic
+  function open() {
+    modal.style.display = "block";
+    modal.focus();
+    attachLifecycle(modal, onClose);
+  }
+  function close() {
+    modal.style.display = "none";
+    modal.dispatchEvent(new Event("close"));
+  }
+  function openAt(evt) {
+    open();
+    const { width, height } = content.getBoundingClientRect();
+    Object.assign(content.style, {
+      position: "absolute",
+      left:     `${evt.pageX - width}px`,
+      top:      `${evt.pageY - height / 2}px`
+    });
+  }
 
-   modal.addEventListener('click', handleBackdropClick);
-   document.addEventListener('keydown', handleKeydown);
-
-   // focus first focusable inside after render
-   setTimeout(() => {
-     const target = content.querySelector('input, button, [tabindex]') || content;
-     target.focus();
-   }, 0);
- }
-
- function close() {
-   modal.style.display = 'none';
-
-   modal.removeEventListener('click', handleBackdropClick);
-   document.removeEventListener('keydown', handleKeydown);
-
-   document.body.style.overflow = '';
-   lastFocused?.focus?.();
-   onClose?.();
- }
-
- function openAt(x, y) {
-   open();
-   Object.assign(content.style, {
-     position: 'absolute',
-     left: `${x}px`,
-     top: `${y}px`,
-     transform: 'translate(0, 0)',
-   });
- }
-
- return { modal, header, content, open, close, openAt };
+  return {
+    modal,
+    header,
+    content,
+    open,
+    close,
+    openAt
+  };
 }

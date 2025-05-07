@@ -1,106 +1,91 @@
-// @version: 3.2
+// @version: 3.1
 // @file: /scripts/modules/ui/forms/universalForm.js
 
 import {
   createTextField,
   createDropdownField,
-  createTextAreaField,
-  createImageField
+  createTextareaFieldWithColor,
+  createImageField,
+  createVideoField,
+  createExtraInfoBlock
 } from "../components/fieldBuilders.js";
+
 import { createTopAlignedFieldRow } from "../../utils/formUtils.js";
 
-/**
- * Name field.
- */
-export function createNameField() {
-  const { row, input } = createTextField("name", "Name:");
-  return { row, input };
+export function createNameField(id = "fld-name") {
+  return createTextField("Name:", id);
 }
 
-/**
- * Type field (map markers).
- */
-export function createTypeField() {
-  const opts = [
-    { value: "Door", label: "Door" },
-    { value: "Extraction Portal", label: "Extraction Portal" },
-    { value: "Item", label: "Item" },
-    { value: "Teleport", label: "Teleport" },
-    { value: "Spawn Point", label: "Spawn Point" },
-    { value: "Chest", label: "Chest" }
-  ];
-  const { row, select } = createDropdownField("type", "Type:", opts);
-  return { row, select };
+export function createTypeField(id = "fld-type") {
+  return createDropdownField(
+    "Type:",
+    id,
+    [
+      { value: "Door", label: "Door" },
+      { value: "Extraction Portal", label: "Extraction Portal" },
+      { value: "Item", label: "Item" },
+      { value: "Teleport", label: "Teleport" },
+      { value: "Spawn Point", label: "Spawn Point" }
+    ],
+    { showColor: false }
+  );
 }
 
-/**
- * Description field.
- */
-export function createDescriptionField() {
-  const { row, textarea } = createTextAreaField("description", "Description:");
-  return { row, textarea };
+export function createItemTypeField(id = "fld-item-type") {
+  return createDropdownField("Item Type:", id, [
+    { value: "Crafting Material", label: "Crafting Material" },
+    { value: "Special",           label: "Special" },
+    { value: "Consumable",        label: "Consumable" },
+    { value: "Quest",             label: "Quest" }
+  ]);
 }
 
-/**
- * Extra Info section.
- * (This is a simple block you can append rows into.)
- */
+export function createDescriptionField(id = "fld-desc-item") {
+  return createTextareaFieldWithColor("Description:", id);
+}
+
 export function createExtraInfoField({ withDividers = false } = {}) {
-  const block = document.createElement("div");
-  block.className = "extra-info-block";
-  const row = createTopAlignedFieldRow("Extra Info:", block);
+  const extra = createExtraInfoBlock();
+  const row = createTopAlignedFieldRow("Extra Info:", extra.block);
 
   if (!withDividers) {
-    return { row, extraInfo: { block } };
+    return { row, extraInfo: extra };
   }
+
   const container = document.createElement("div");
-  const hr1 = document.createElement("hr");
-  const hr2 = document.createElement("hr");
-  container.append(hr1, row, hr2);
-  return { row: container, extraInfo: { block } };
+  const hrAbove   = document.createElement("hr");
+  const hrBelow   = document.createElement("hr");
+  container.append(hrAbove, row, hrBelow);
+
+  return { row: container, extraInfo: extra };
 }
 
-/**
- * Image & Video fields.
- */
 export function createImageFieldSet() {
-  const { row: rowImgS, input: fldImgS } = createImageField("imageSmall", "Image (small):");
-  const { row: rowImgL, input: fldImgL } = createImageField("imageLarge", "Image (large):");
-
-  // simple URL field for video
-  const { row: rowVid, input: fldVid } = createTextField("videoUrl", "Video URL:", "url");
-
-  return { rowImgS, fldImgS, rowImgL, fldImgL, rowVid, fldVid };
+  const imgS = createImageField("Image S:", "fld-img-s");
+  const imgL = createImageField("Image L:", "fld-img-l");
+  const vid  = createVideoField("Video:",   "fld-vid");
+  return {
+    rowImgS: imgS.row, fldImgS: imgS.input,
+    rowImgL: imgL.row, fldImgL: imgL.input,
+    rowVid:  vid.row,  fldVid:  vid.input
+  };
 }
 
-/**
- * Value field.
- */
-export function createValueField() {
-  const { row, input } = createTextField("value", "Value:");
-  return { row, input };
+export function createValueField(id = "fld-value") {
+  return createTextField("Value:", id);
 }
 
-/**
- * Quantity field.
- */
-export function createQuantityField() {
-  const { row, input } = createTextField("quantity", "Quantity:");
-  return { row, input };
+export function createQuantityField(id = "fld-quantity") {
+  return createTextField("Quantity:", id);
 }
 
-/**
- * Rarity field.
- */
-export function createRarityField() {
-  const opts = [
-    { value: "", label: "Select Rarity" },
-    { value: "common", label: "Common" },
-    { value: "uncommon", label: "Uncommon" },
-    { value: "rare", label: "Rare" },
-    { value: "epic", label: "Epic" },
-    { value: "legendary", label: "Legendary" }
-  ];
-  const { row, select } = createDropdownField("rarity", "Rarity:", opts);
-  return { row, select };
+export function createRarityField(id = "fld-rarity") {
+  return createDropdownField("Rarity:", id, [
+    { value: "",           label: "Select Rarity" },
+    { value: "common",     label: "Common" },
+    { value: "uncommon",   label: "Uncommon" },
+    { value: "rare",       label: "Rare" },
+    { value: "epic",       label: "Epic" },
+    { value: "legendary",  label: "Legendary" }
+  ]);
 }
