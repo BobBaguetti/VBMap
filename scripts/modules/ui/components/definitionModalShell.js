@@ -1,5 +1,5 @@
 // @file: /scripts/modules/ui/components/definitionModalShell.js
-// @version: 4 — removed previewPanel support
+// @version: 5 — expose layoutSwitcher
 
 import { createModal, closeModal, openModal } from "../uiKit.js";
 import { createLayoutSwitcher }               from "../uiKit.js";
@@ -47,6 +47,7 @@ export function createDefinitionModalShell({
     header,
     content,
     bodyWrap,
+    layoutSwitcher,        // now exposed
     open: () => openModal(modal),
     close: () => closeModal(modal)
   };
