@@ -168,3 +168,14 @@
   color: #aaa;
   margin-top: 2px;
 }
+
+
+/* Push the close “×” to the far right */
+.modal-header {
+  display: flex;
+  align-items: center;
+}
+.modal-header .close {
+  order: 99;
+  margin-left: auto;
+}

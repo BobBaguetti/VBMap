@@ -1,11 +1,11 @@
 // @file: /scripts/modules/ui/components/definitionsModalFactory.js
-// @version: 3.5 – single header search + subheader only, no in-body search
+// @version: 3.6 – single wired search in header
 
 import { createDefinitionModalShell } from "./definitionModalShell.js";
 import { buildModalHeader }         from "./modalHeader.js";
 import { createDefListContainer }    from "../../utils/listUtils.js";
 import { createDefinitionListManager } from "./definitionListManager.js";
-import { defaultSearchPlaceholder }  from "./modalDefaults.js";
+import { createSearchRow }           from "../../utils/listUtils.js";
 
 /**
  * Builds a full CRUD modal with consistent shell, list, preview, and form.
@@ -47,7 +47,7 @@ export function createDefinitionsModal(config) {
   async function buildIfNeeded() {
     if (shell) return;
 
-    // 1) Create shell (with preview)
+    // 1) Core shell + preview
     shell = createDefinitionModalShell({
       id,
       title,
@@ -59,17 +59,22 @@ export function createDefinitionsModal(config) {
     });
     const { header, bodyWrap } = shell;
 
-    // 2) Build header (toolbar + layout)
-    buildModalHeader(header, { toolbar, layoutOptions, onLayoutChange: v => listApi?.setLayout(v) });
+    // 2) Header: toolbar + layout only
+    buildModalHeader(header, {
+      toolbar,
+      layoutOptions,
+      onLayoutChange: v => listApi?.setLayout(v)
+    });
 
-    // 3) Single header search
-    const searchInput = document.createElement("input");
-    searchInput.type        = "search";
-    searchInput.placeholder = defaultSearchPlaceholder;
-    searchInput.className   = "ui-input modal-search";
-    header.appendChild(searchInput);
+    // 3) Header: searchRow (wired)
+    const { row: searchRow, input: searchInput } = createSearchRow(
+      `${id}-search`,
+      "Search…"
+    );
+    searchRow.classList.add("modal-search");
+    header.appendChild(searchRow);
 
-    // 4) Add/Edit subheader (Save/Clear/Delete)
+    // 4) Header: Add/Edit sub-header
     formApi = createFormController({
       onCancel: async () => {
         formApi.reset();
@@ -99,7 +104,7 @@ export function createDefinitionsModal(config) {
 
     enhanceHeader?.(header, { shell, formApi });
 
-    // 5) Definition list (no built-in search)
+    // 5) Body: list + divider
     const listContainer = createDefListContainer(`${id}-list`);
     bodyWrap.appendChild(listContainer);
     bodyWrap.appendChild(document.createElement("hr"));
@@ -122,7 +127,7 @@ export function createDefinitionsModal(config) {
         previewApi.show();
         formApi.showAdd?.();
       },
-      showSearch: false
+      showSearch: false  // we use our header search instead
     });
     shell.listApi = listApi;
 
@@ -131,7 +136,7 @@ export function createDefinitionsModal(config) {
       listApi.refresh(definitions);
     });
 
-    // 7) Attach form + live preview
+    // 7) Body: form + live preview
     previewApi = shell.previewApi;
     formApi.form.classList.add("ui-scroll-float");
     bodyWrap.appendChild(formApi.form);
