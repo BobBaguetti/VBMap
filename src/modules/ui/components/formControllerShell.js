@@ -1,7 +1,7 @@
 // @file: src/modules/ui/components/formControllerShell.js
-// @version: 1.0 — shared header + button‐row for item/chest forms
+// @version: 1.1 — correct import path for createIcon
 
-import { createIcon } from "../../../utils/iconUtils.js";
+import { createIcon } from "../utils/iconUtils.js";
 
 /**
  * Builds the H3 subheading + floating-buttons row.
