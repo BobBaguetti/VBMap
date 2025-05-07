@@ -1,10 +1,10 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 12
+// @version: 12.1
 
-import { createDefinitionModalShell }    from "../components/definitionModalShell.js";
-import { createDefinitionListManager }   from "../../utils/definitionListManager.js";
-import { createPickr }                   from "../pickrManager.js";
-import { createExtraInfoField }          from "../forms/universalForm.js";
+import { createDefinitionModalShell }  from "../components/definitionModalShell.js";
+import { createDefinitionListManager } from "../components/definitionListManager.js";  // ← fixed path
+import { createPickr }                from "../pickrManager.js";
+import { createExtraInfoField }       from "../forms/universalForm.js";
 
 /**
  * Fully-generic, 1:1 recreation of your old definition modals.
