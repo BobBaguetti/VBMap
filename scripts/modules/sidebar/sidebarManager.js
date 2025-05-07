@@ -1,11 +1,8 @@
 // @file: /scripts/modules/sidebar/sidebarManager.js
-// @version: 10.1 
+// @version: 10.2
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
-import { loadNpcDefinitions }        from "../services/npcDefinitionsService.js";
 import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
-import { initQuestDefinitionsModal } from "../ui/modals/questDefinitionsModal.js";
-import { initNpcDefinitionsModal }   from "../ui/modals/npcDefinitionsModal.js";
 import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
 
 export async function setupSidebar(
@@ -72,8 +69,7 @@ export async function setupSidebar(
     const pveOn     = document.getElementById("toggle-pve")?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      const isNpc       = data.type === "npc";
-      const matchesPvE  = pveOn || !isNpc;
+      const matchesPvE  = pveOn || data.type !== "Item";
       const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
       let mainVisible = true;
@@ -91,18 +87,10 @@ export async function setupSidebar(
         if (itemCb && !itemCb.checked) itemVisible = false;
       }
 
-      let enemyVisible = true;
-      if (isNpc) {
-        const enemyCb = document.querySelector(
-          `#enemy-filter-list input[data-enemy-id="${data.id}"]`
-        );
-        if (enemyCb && !enemyCb.checked) enemyVisible = false;
-      }
-
       const shouldShow = matchesPvE
                        && matchesName
                        && mainVisible
-                       && (isNpc ? enemyVisible : itemVisible);
+                       && itemVisible;
       const layerGroup = layers[data.type];
       if (!layerGroup) return;
 
@@ -145,31 +133,6 @@ export async function setupSidebar(
   }
   await loadItemFilters();
 
-  // ─── Enemy Filters ────────────────────────────────────────────────
-  const enemyWrap = document.createElement("div");
-  enemyWrap.className = "filter-group";
-  enemyWrap.innerHTML = `<h3>Enemies</h3><div class="toggle-group" id="enemy-filter-list"></div>`;
-  document.getElementById("item-filters").after(enemyWrap);
-
-  const enemyFilterList = document.getElementById("enemy-filter-list");
-  async function loadEnemyFilters() {
-    enemyFilterList.innerHTML = "";
-    const npcs = await loadNpcDefinitions(db);
-    npcs.forEach(d => {
-      const label = document.createElement("label");
-      const cb    = document.createElement("input");
-      cb.type            = "checkbox";
-      cb.checked         = true;
-      cb.dataset.enemyId = d.id;
-      const span = document.createElement("span");
-      span.textContent = d.name;
-      label.append(cb, span);
-      enemyFilterList.append(label);
-      cb.addEventListener("change", filterMarkers);
-    });
-  }
-  await loadEnemyFilters();
-
   // ─── Admin Tools ──────────────────────────────────────────────────
   sidebar.querySelector(".admin-header")?.remove();
   sidebar.querySelector("#sidebar-admin-tools")?.remove();
@@ -186,7 +149,7 @@ export async function setupSidebar(
 
   [
     ["Manage Items",       () => initItemDefinitionsModal(db).open()],
-    ["Manage Chest Types", () => initChestDefinitionsModal(db).open()]
+    ["Manage Chests",      () => initChestDefinitionsModal(db).open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;
@@ -196,7 +159,6 @@ export async function setupSidebar(
 
   sidebar.appendChild(adminWrap);
 
-  // Show admin tools if body already has the class
   if (document.body.classList.contains("is-admin")) {
     adminHeader.style.display = "";
     adminWrap.style.display   = "";
