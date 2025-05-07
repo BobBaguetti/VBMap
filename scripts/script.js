@@ -1,5 +1,5 @@
 // @file: scripts/script.js
-// @version: 7.12 – merge in definition fields without overwriting marker.id
+// @version: 2 – merge in definition fields without overwriting marker.id
 
 import { initializeApp } from "firebase/app";
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
@@ -31,7 +31,6 @@ import { initMarkerModal }           from "./modules/ui/modals/markerModal.js";
 import { initCopyPasteManager }      from "./modules/map/copyPasteManager.js";
 import { setupSidebar }              from "./modules/sidebar/sidebarManager.js";
 import { subscribeItemDefinitions }  from "./modules/services/itemDefinitionsService.js";
-import { initQuestDefinitionsModal } from "./modules/ui/modals/questDefinitionsModal.js";
 import { activateFloatingScrollbars }from "./modules/utils/scrollUtils.js";
 import { initAdminAuth }             from "./authSetup.js";
 
@@ -112,7 +111,6 @@ onAuthStateChanged(auth, async user => {
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.predefinedItemId) {
           const def = itemDefMap[data.predefinedItemId] || {};
-          // only merge in def’s fields, not its `id`
           const { id: _ignored, ...defFields } = def;
           Object.assign(data, defFields);
 
@@ -142,7 +140,6 @@ onAuthStateChanged(auth, async user => {
 /* ─────────────────── Marker & Definition Modals ─────────────────── */
 const markerForm = initMarkerModal(db);
 const itemModal  = initItemDefinitionsModal(db);
-const questModal = initQuestDefinitionsModal(db);
 
 /* ─────────────── Create & Persist helper ────────────────────────── */
 async function addAndPersist(data) {
