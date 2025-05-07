@@ -1,11 +1,11 @@
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.3 — shell without preview, shell search disabled, own preview only
+// @version: 1.4 — uses previewController to shrink modal code
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
 import { createDefListContainer }     from "../../utils/listUtils.js";
 import { createDefinitionListManager }from "../components/definitionListManager.js";
-import { createPreviewPanel }         from "../preview/createPreviewPanel.js";
+import { createPreviewController }    from "../preview/previewController.js";
 
 import {
   loadChestDefinitions,
@@ -17,8 +17,9 @@ import {
 import { createChestFormController } from "../forms/controllers/chestFormController.js";
 
 export function initChestDefinitionsModal(db) {
-  let listApi, formApi, previewApi, definitions = [];
+  let listApi, formApi, definitions = [];
   let modal, header, content, openShell;
+  let showPreview, hidePreview;
   let itemMap = {};
 
   async function ensureItemMap() {
@@ -37,34 +38,35 @@ export function initChestDefinitionsModal(db) {
   return {
     async open() {
       if (!modal) {
-        // build the shell (no built-in preview, disable shell search)
+        // build the shell (no built-in preview, disable its search)
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
           id:            "chest-definitions-modal",
           title:         "Manage Chest Types",
           size:          "large",
           searchable:    false,
           layoutOptions: ["row", "gallery", "stacked"],
-          onClose:       () => previewApi?.hide()
+          onClose:       () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
-        // your own preview panel
-        previewApi = createPreviewPanel("chest");
+        // set up preview controller
+        const preview = createPreviewController("chest");
+        showPreview = preview.show;
+        hidePreview = preview.hide;
+        hidePreview();
 
         // list & form
         const listContainer = createDefListContainer("chest-def-list");
         formApi = createChestFormController({
           onCancel: async () => {
             formApi.reset();
-            previewApi.setFromDefinition({ lootPool: [] });
-            previewApi.show();
+            showPreview({ lootPool: [] });
           },
           onDelete: async id => {
             await deleteChestDefinition(db, id);
             await refreshList();
             formApi.reset();
-            previewApi.setFromDefinition({ lootPool: [] });
-            previewApi.show();
+            showPreview({ lootPool: [] });
           },
           onSubmit: async payload => {
             if (payload.id) {
@@ -74,12 +76,11 @@ export function initChestDefinitionsModal(db) {
             }
             await refreshList();
             formApi.reset();
-            previewApi.setFromDefinition({ lootPool: [] });
-            previewApi.show();
+            showPreview({ lootPool: [] });
           }
         }, db);
 
-        // assemble
+        // assemble modal content
         header.append(...listContainer.querySelectorAll(".list-header"));
         content.append(
           listContainer,
@@ -94,32 +95,28 @@ export function initChestDefinitionsModal(db) {
           onEntryClick: async def => {
             await ensureItemMap();
             formApi.populate(def);
-            previewApi.setFromDefinition({
+            showPreview({
               ...def,
               lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
             });
-            previewApi.show();
           },
           onDelete: async id => {
             await deleteChestDefinition(db, id);
             await refreshList();
           }
         });
-
-        previewApi.hide();
       }
 
-      // each open
+      // on each open
       formApi.reset();
       await ensureItemMap();
       await refreshList();
 
-      openShell();               // show modal
-      formApi.initPickrs();      // wire per-form pickrManager
-      initModalPickrs(content);  // init any color-swatch buttons inside
+      openShell();
+      formApi.initPickrs();
+      initModalPickrs(content);
 
-      previewApi.setFromDefinition({ lootPool: [] });
-      previewApi.show();
+      showPreview({ lootPool: [] });
     }
   };
 }

@@ -1,11 +1,11 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.3 — shell without preview, shell search disabled, own preview only
+// @version: 1.4 — uses previewController to shrink modal code
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
 import { createDefListContainer }     from "../../utils/listUtils.js";
 import { createDefinitionListManager }from "../components/definitionListManager.js";
-import { createPreviewPanel }         from "../preview/createPreviewPanel.js";
+import { createPreviewController }    from "../preview/previewController.js";
 
 import {
   loadItemDefinitions,
@@ -17,8 +17,9 @@ import {
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
 
 export function initItemDefinitionsModal(db) {
-  let listApi, formApi, previewApi, definitions = [];
+  let listApi, formApi, definitions = [];
   let modal, header, content, openShell;
+  let showPreview, hidePreview;
 
   async function refreshList() {
     definitions = await loadItemDefinitions(db);
@@ -28,34 +29,35 @@ export function initItemDefinitionsModal(db) {
   return {
     async open() {
       if (!modal) {
-        // build the shell (no built-in preview, disable shell search)
+        // build the shell (no built-in preview, disable its search)
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
           id:            "item-definitions-modal",
           title:         "Manage Items",
           size:          "large",
           searchable:    false,
           layoutOptions: ["row", "gallery", "stacked"],
-          onClose:       () => previewApi?.hide()
+          onClose:       () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
-        // create your own preview panel
-        previewApi = createPreviewPanel("item");
+        // set up preview controller
+        const preview = createPreviewController("item");
+        showPreview = preview.show;
+        hidePreview = preview.hide;
+        hidePreview();
 
-        // build list & form
+        // list & form
         const listContainer = createDefListContainer("item-def-list");
         formApi = createItemFormController({
           onCancel: async () => {
             formApi.reset();
-            previewApi.setFromDefinition({});
-            previewApi.show();
+            showPreview({});
           },
           onDelete: async id => {
             await deleteItemDefinition(db, id);
             await refreshList();
             formApi.reset();
-            previewApi.setFromDefinition({});
-            previewApi.show();
+            showPreview({});
           },
           onSubmit: async payload => {
             payload.showInFilters = payload.addToFilters;
@@ -66,12 +68,11 @@ export function initItemDefinitionsModal(db) {
             }
             await refreshList();
             formApi.reset();
-            previewApi.setFromDefinition({});
-            previewApi.show();
+            showPreview({});
           }
         }, db);
 
-        // assemble
+        // assemble modal content
         header.append(...listContainer.querySelectorAll(".list-header"));
         content.append(
           listContainer,
@@ -86,28 +87,24 @@ export function initItemDefinitionsModal(db) {
           onEntryClick: def => {
             formApi.populate(def);
             formApi.initPickrs();
-            previewApi.setFromDefinition(def);
-            previewApi.show();
+            showPreview(def);
           },
           onDelete: async id => {
             await deleteItemDefinition(db, id);
             await refreshList();
           }
         });
-
-        previewApi.hide();
       }
 
-      // each open
+      // on each open
       formApi.reset();
       await refreshList();
 
-      openShell();               // show modal
-      formApi.initPickrs();      // wire per-form pickrManager
-      initModalPickrs(content);  // init any color-swatch buttons inside
+      openShell();
+      formApi.initPickrs();
+      initModalPickrs(content);
 
-      previewApi.setFromDefinition({});
-      previewApi.show();
+      showPreview({});
     }
   };
 }
