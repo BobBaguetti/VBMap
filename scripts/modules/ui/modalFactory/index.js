@@ -1,5 +1,5 @@
 // @file: scripts/modules/ui/modalFactory/index.js
-// @version: 8
+// @version: 9
 
 import { createModal, openModal, closeModal } from "../uiKit.js";
 import { createPickr }                        from "../pickrManager.js";
@@ -30,24 +30,25 @@ export function createDefinitionModal({
     contentEl = parts.content;
     headerEl  = parts.header;
 
-    // Create and append the definitions list
+    // Definitions list
     listEl = document.createElement("div");
     listEl.className = "def-list";
     contentEl.appendChild(listEl);
 
-    // Create and append the form container
+    // Form container
     formEl = document.createElement("form");
     formEl.className = "def-form";
     contentEl.appendChild(formEl);
 
     onInit?.(modalEl);
-
     return { modalEl, contentEl, headerEl, listEl, formEl };
   }
 
   async function open() {
     ensureModal();
     await refreshList();
+    // Auto-open the “New” form
+    populate({});
     openModal(modalEl);
   }
 
@@ -135,13 +136,11 @@ export function createDefinitionModal({
         }
       }
 
-      // Common attributes
       input.name = field.name;
       if (field.required) input.required = true;
       if (field.min != null) input.min = field.min;
       if (field.step != null) input.step = field.step;
 
-      // Color picker
       if (field.colorPicker) {
         const pickr = createPickr(`#${input.id || input.name}`);
         pickr.on("change", () => formEl.dispatchEvent(new Event("input", { bubbles: true })));
@@ -150,7 +149,6 @@ export function createDefinitionModal({
 
       formEl.appendChild(row);
 
-      // Populate extra-info
       if (extraInfoApi) {
         extraInfoApi.setLines(editing[field.name] || [], false);
       }
