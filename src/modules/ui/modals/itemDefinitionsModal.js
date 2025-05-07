@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.6 — live‐update wired per‐field
+// @version: 1.7 — fixed selector for itemType live‐update
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
@@ -30,12 +30,12 @@ export function initItemDefinitionsModal(db) {
     async open() {
       if (!modal) {
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
-          id:            "item-definitions-modal",
-          title:         "Manage Items",
-          size:          "large",
-          searchable:    false,
-          layoutOptions: ["row","gallery","stacked"],
-          onClose:       () => hidePreview()
+          id:         "item-definitions-modal",
+          title:      "Manage Items",
+          size:       "large",
+          searchable: false,
+          layoutOptions:["row","gallery","stacked"],
+          onClose:    () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
@@ -108,7 +108,7 @@ export function initItemDefinitionsModal(db) {
       // live‐update specific fields
       const fields = [
         formApi.form.querySelector('input[name="name"]'),
-        formApi.form.querySelector('select[name="type"]'),
+        formApi.form.querySelector('select[name="itemType"]'),  // was "type"
         formApi.form.querySelector('select[name="rarity"]'),
         formApi.form.querySelector('textarea[name="description"]')
       ];

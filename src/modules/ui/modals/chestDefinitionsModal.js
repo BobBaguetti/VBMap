@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.6 — live‐update wired per‐field
+// @version: 1.7 — ensure selectors match your chest form fields
 
 import { createDefinitionModalShell } from "../components/definitionModalShell.js";
 import { initModalPickrs }            from "../pickrManager.js";
@@ -39,12 +39,12 @@ export function initChestDefinitionsModal(db) {
     async open() {
       if (!modal) {
         ({ modal, header, content, open: openShell } = createDefinitionModalShell({
-          id:            "chest-definitions-modal",
-          title:         "Manage Chest Types",
-          size:          "large",
-          searchable:    false,
-          layoutOptions: ["row","gallery","stacked"],
-          onClose:       () => hidePreview()
+          id:         "chest-definitions-modal",
+          title:      "Manage Chest Types",
+          size:       "large",
+          searchable: false,
+          layoutOptions:["row","gallery","stacked"],
+          onClose:    () => hidePreview()
         }));
         modal.classList.add("admin-only");
 
@@ -94,7 +94,6 @@ export function initChestDefinitionsModal(db) {
             await ensureItemMap();
             formApi.populate(def);
             formApi.initPickrs();
-            // rebuild fullDef for preview
             const fullDef = {
               ...def,
               lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
