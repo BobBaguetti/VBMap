@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.1 — corrected import path for definitionModalShell
+// @version: 1.2 — corrected open(), removed shell searchbar, reordered pickr init
 
 import { createDefinitionModalShell, initModalColorPickers } from "../components/definitionModalShell.js";
 import { createDefListContainer }      from "../../utils/listUtils.js";
@@ -17,14 +17,14 @@ import { createChestFormController }   from "../forms/controllers/chestFormContr
 
 export function initChestDefinitionsModal(db) {
   let listApi, formApi, previewApi, definitions = [];
-  let modal, header, content;
+  let modal, header, content, open;
   let itemMap = {};
 
   async function ensureItemMap() {
     if (!Object.keys(itemMap).length) {
       const items = await import("../../services/itemDefinitionsService.js")
                          .then(m => m.loadItemDefinitions(db));
-      itemMap = Object.fromEntries(items.map(i => [i.id,i]));
+      itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
   }
 
@@ -36,16 +36,16 @@ export function initChestDefinitionsModal(db) {
   return {
     async open() {
       if (!modal) {
-        // 1) build shell
-        ({ modal, header, content } = createDefinitionModalShell({
-          id:         "chest-definitions-modal",
-          title:      "Manage Chest Types",
-          size:        "large",
-          withPreview: true,
-          previewType: "chest",
-          layoutOptions: ["row","gallery","stacked"],
-          searchable: true,
-          onClose: () => previewApi?.hide()
+        // 1) build shell (disable its built-in searchbar)
+        ({ modal, header, content, open } = createDefinitionModalShell({
+          id:            "chest-definitions-modal",
+          title:         "Manage Chest Types",
+          size:          "large",
+          withPreview:   true,
+          previewType:   "chest",
+          layoutOptions: ["row", "gallery", "stacked"],
+          searchable:    false, // use list's search
+          onClose:       () => previewApi?.hide()
         }));
         modal.classList.add("admin-only");
 
@@ -78,7 +78,7 @@ export function initChestDefinitionsModal(db) {
           }
         }, db);
 
-        // 3) assemble
+        // 3) assemble into modal
         header.append(...listContainer.querySelectorAll(".list-header"));
         content.append(
           listContainer,
@@ -95,7 +95,7 @@ export function initChestDefinitionsModal(db) {
             formApi.populate(def);
             previewApi.setFromDefinition({
               ...def,
-              lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean)
+              lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
             });
             previewApi.show();
           },
@@ -109,13 +109,18 @@ export function initChestDefinitionsModal(db) {
         previewApi.hide();
       }
 
-      // every open…
+      // every time we open:
       formApi.reset();
       await ensureItemMap();
       await refreshList();
-      modal.open();
-      initModalColorPickers(content);
+
+      // use shell's open()
+      open();
+
+      // initialize form color-pickers after form fields exist
       formApi.initPickrs();
+      initModalColorPickers(content);
+
       requestAnimationFrame(() => {
         previewApi.setFromDefinition({ lootPool: [] });
         previewApi.show();
