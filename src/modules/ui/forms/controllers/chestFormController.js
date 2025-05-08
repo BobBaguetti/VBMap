@@ -1,23 +1,28 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.21 — add icon rendering to loot-pool chips
+// @version: 2.21 — add icon rendering to loot-pool chips (import paths fixed)
 
-import { getPickrHexColor }                from "../../utils/colorUtils.js";
+/**
+ * Creates the controller for the chest-definition form.
+ * Handles wiring header, pickrs, state, and loot-pool chip list.
+ */
+
+// Adjusted paths to match repo layout
+import { getPickrHexColor }        from "../../../utils/colorUtils.js";
 import {
   CHEST_RARITY,
   rarityColors,
   defaultNameColor
-}                                          from "../../map/markerManager.js";
-import { createChestForm }                 from "../builders/chestFormBuilder.js";
+}                                    from "../../../map/markerManager.js";
+import { createChestForm }           from "../builders/chestFormBuilder.js";
 import {
   createFormControllerHeader,
   wireFormEvents
-}                                          from "../components/formControllerShell.js";
-import { initFormPickrs }                  from "../components/formPickrManager.js";
-import { createFormState }                 from "../components/formStateManager.js";
-import { pickItems }                       from "../components/listPicker.js";
-// ← updated import to match your new chipListManager API:
-import { createChipList }                  from "../components/chipListManager.js";
-import { loadItemDefinitions }             from "../../../modules/services/itemDefinitionsService.js";
+}                                    from "../../components/formControllerShell.js";
+import { initFormPickrs }            from "../../components/formPickrManager.js";
+import { createFormState }           from "../../components/formStateManager.js";
+import { pickItems }                 from "../../components/listPicker.js";
+import { createChipList }            from "../../components/chipListManager.js";
+import { loadItemDefinitions }       from "../../../services/itemDefinitionsService.js";
 
 export function createChestFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },
@@ -71,7 +76,6 @@ export function createChestFormController(
   }
 
   // ─── Shared chip-list manager for loot-pool ────────────────────
-  // we defer initial render until after items are loaded
   const chipManager = createChipList({
     container:   fields.chipContainer,
     listArray:   fields.lootPool,
@@ -79,7 +83,6 @@ export function createChestFormController(
       const def = itemMap.find(i => i.id === id) || { name: id };
       return def.name;
     },
-    // new: render each chip’s icon from the item’s small-image URL
     renderIcon: id => {
       const def = itemMap.find(i => i.id === id) || {};
       return def.imageSmall || "";
@@ -90,9 +93,7 @@ export function createChestFormController(
   // ─── Loot-pool picker button ───────────────────────────────────
   fields.openLootPicker.onclick = async () => {
     await ensureAllItems();
-    // now that itemMap is populated, render the chips (with names/icons)
     chipManager.render();
-
     let chosen;
     try {
       chosen = await pickItems({
@@ -161,7 +162,6 @@ export function createChestFormController(
     _id = null;
     fields.extraInfo.setLines([], false);
     _reset();
-    // ensure chips render after reset
     chipManager.render();
     applySizeCategoryColor();
   }
@@ -170,7 +170,6 @@ export function createChestFormController(
     _id = def.id || null;
     _populate(def);
     fields.extraInfo.setLines(def.extraLines || [], false);
-    // populate and render chips with icons
     chipManager.render();
     applySizeCategoryColor();
   }
