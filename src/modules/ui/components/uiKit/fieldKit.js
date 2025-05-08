@@ -84,3 +84,14 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
   row.append(btnSave, btnCancel);
   return row;
 }
+
+/**
+ * Create a simple text input for video URLs.
+ */
+export function createVideoField(labelText, id) {
+  const input = document.createElement("input");
+  input.id   = id;
+  input.type = "text";
+  const row = createFieldRow(labelText, input);
+  return { row, input };
+}
