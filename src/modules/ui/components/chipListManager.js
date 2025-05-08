@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/chipListManager.js
-// @version: 1.1 — enhanced for dark-mode styling, icons, and drag handles
+// @version: 1.2 — added drag-and-drop reordering with grab handles
 
 /**
  * Creates a chip-list UI inside a container, backed by a mutable array.
@@ -15,7 +15,7 @@
  *        Given an item, returns the image URL to show inside the chip.
  *        If omitted, no icon is rendered.
  * @param {function(Array<any>): void} [opts.onChange]
- *        Called with the updated array whenever a chip is removed.
+ *        Called with the updated array whenever chips change.
  */
 export function createChipList(opts) {
   const { container, listArray, renderLabel, renderIcon, onChange } = opts;
@@ -23,28 +23,60 @@ export function createChipList(opts) {
   // ensure we have the styled wrapper
   container.classList.add('chip-list-container');
 
+  let dragSrcIndex = null;
+
+  function handleDragStart(e, idx) {
+    dragSrcIndex = idx;
+    e.dataTransfer.effectAllowed = 'move';
+    // for Firefox
+    e.dataTransfer.setData('text/plain', '');
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  }
+
+  function handleDrop(e, idx) {
+    e.stopPropagation();
+    if (dragSrcIndex === null || dragSrcIndex === idx) return false;
+
+    // reorder array
+    const [moved] = listArray.splice(dragSrcIndex, 1);
+    listArray.splice(idx, 0, moved);
+    if (onChange) onChange([...listArray]);
+    render();
+    return false;
+  }
+
   function render() {
-    // clear existing chips
     container.innerHTML = '';
 
-    // render each element in the backing array
     listArray.forEach((item, idx) => {
-      // create the chip wrapper
       const chip = document.createElement('div');
       chip.classList.add('loot-pool-chip');
+      chip.setAttribute('draggable', 'true');
+
+      // grab-handle
+      const handle = document.createElement('span');
+      handle.classList.add('chip-handle');
+      handle.textContent = '≡';
+      handle.title = 'Drag to reorder';
+      chip.appendChild(handle);
 
       // optional icon
       if (renderIcon) {
-        const iconUrl = renderIcon(item);
-        if (iconUrl) {
+        const url = renderIcon(item);
+        if (url) {
           const img = document.createElement('img');
-          img.src = iconUrl;
+          img.src = url;
           img.classList.add('chip-icon');
           chip.appendChild(img);
         }
       }
 
-      // label text
+      // label
       const text = document.createTextNode(renderLabel(item));
       chip.appendChild(text);
 
@@ -61,7 +93,11 @@ export function createChipList(opts) {
       };
       chip.appendChild(btn);
 
-      // add to container
+      // drag events
+      chip.addEventListener('dragstart', e => handleDragStart(e, idx));
+      chip.addEventListener('dragover', handleDragOver);
+      chip.addEventListener('drop', e => handleDrop(e, idx));
+
       container.appendChild(chip);
     });
   }
@@ -69,6 +105,5 @@ export function createChipList(opts) {
   // initial render
   render();
 
-  // expose re-render method if the array is replaced wholesale
   return { render };
 }
