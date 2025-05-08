@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.17 — remove obsolete fields (iconUrl, subtext) and align with builder
+// @version: 2.18 — wire name-color pickr & preview icon
 
 import { getPickrHexColor }                       from "../../../utils/colorUtils.js";
 import { createChestForm }                        from "../builders/chestFormBuilder.js";
@@ -19,7 +19,7 @@ export function createChestFormController(
 ) {
   const { form, fields } = createChestForm();
 
-  // Header + Buttons
+  // ─── Header + Buttons ─────────────────────────────────────────────
   const {
     container: subheadingWrap,
     subheading,
@@ -37,13 +37,13 @@ export function createChestFormController(
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
-  // Pickr wiring (now includes name)
+  // ─── Pickr wiring ─────────────────────────────────────────────────
   const pickrs = initFormPickrs(form, {
-    name:        fields.colorName,
+    name:        fields.colorName,   // name swatch
     description: fields.colorDesc
   });
 
-  // Prep item definitions for label lookup
+  // ─── Prep items for loot-pool labels ──────────────────────────────
   let itemMap = [];
   async function ensureAllItems() {
     if (!itemMap.length) {
@@ -51,18 +51,15 @@ export function createChestFormController(
     }
   }
 
-  // Shared chip-list manager for loot-pool
+  // ─── Shared chip-list manager for loot-pool ───────────────────────
   const chipManager = createChipListManager({
     container:   fields.chipContainer,
     listArray:   fields.lootPool,
-    renderLabel: id => {
-      const def = itemMap.find(i => i.id === id) || { name: id };
-      return def.name;
-    },
+    renderLabel: id => (itemMap.find(i => i.id === id) || { name: id }).name,
     onChange:    () => onFieldChange?.(getCustom())
   });
 
-  // Loot-pool picker button
+  // ─── Loot-pool picker button ──────────────────────────────────────
   fields.openLootPicker.onclick = async () => {
     await ensureAllItems();
     let chosen;
@@ -81,12 +78,13 @@ export function createChestFormController(
     onFieldChange?.(getCustom());
   };
 
-  // Internal state & payload
+  // ─── Internal state & payload getter ─────────────────────────────
   let _id = null;
   function getCustom() {
     return {
       id:               _id,
       name:             fields.fldName.value.trim(),
+      nameColor:        getPickrHexColor(pickrs.name),
       size:             fields.fldSize.value,
       category:         fields.fldCategory.value,
       lootPool:         [...fields.lootPool],
@@ -94,12 +92,11 @@ export function createChestFormController(
       descriptionColor: getPickrHexColor(pickrs.description),
       extraLines:       fields.extraInfo.getLines(),
       imageSmall:       fields.fldImgS.value.trim(),
-      imageLarge:       fields.fldImgL.value.trim(),
-      nameColor:        getPickrHexColor(pickrs.name)    // include name color in payload if needed
+      imageLarge:       fields.fldImgL.value.trim()
     };
   }
 
-  // Shared reset & populate
+  // ─── Shared reset & populate via formStateManager ───────────────
   const { reset: _reset, populate: _populate } = createFormState({
     form,
     fields: {
@@ -111,9 +108,13 @@ export function createChestFormController(
     defaultFieldKeys: ["name", "description"],
     defaultValues:    { size: "Small", category: "Normal" },
     pickrs,
-    pickrClearKeys:   ["name", "description"],      // clear name & description pickrs on reset
+    pickrClearKeys:   ["name", "description"],
     chipLists: [
-      { fieldArray: fields.lootPool, renderFn: () => chipManager.render(), defKey: "lootPool" }
+      {
+        fieldArray: fields.lootPool,
+        renderFn:   () => chipManager.render(),
+        defKey:     "lootPool"
+      }
     ],
     subheading,
     setDeleteVisible,
@@ -123,7 +124,7 @@ export function createChestFormController(
     onFieldChange
   });
 
-  // wrap reset/populate to include chip rendering & extra-info & ID
+  // ─── wrap reset/populate to include chips, pickr, ID ────────────
   function reset() {
     _id = null;
     fields.extraInfo.setLines([], false);
@@ -134,14 +135,13 @@ export function createChestFormController(
   function populate(def) {
     _id = def.id || null;
     _populate(def);
-    // restore extra-info lines after core populate
     fields.extraInfo.setLines(def.extraLines || [], false);
     chipManager.render();
-    // set name color pickr to saved color
+    // restore saved name color
     if (def.nameColor) pickrs.name.setColor(def.nameColor);
   }
 
-  // Wire submission & live-preview
+  // ─── Wire submit & live-preview ─────────────────────────────────
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
