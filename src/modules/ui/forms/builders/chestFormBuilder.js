@@ -1,55 +1,46 @@
 // @file: src/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.1 — use fieldKit for all fields
+// @version: 2.2 — use textarea factory; fix extra-info row
 
 import {
   createFieldRow,
   createTextField,
   createDropdownField,
   createImageField,
+  createTextareaFieldWithColor,
   createExtraInfoBlock
 } from "../../components/uiKit/fieldKit.js";
-import { createLayoutSwitcher } from "../../components/uiKit/layoutSwitcher.js";
 
 export function createChestForm() {
   const form = document.createElement("form");
   form.className = "chest-form";
 
-  // Header rows are added by the controller shell, so here we start the body:
   const body = document.createElement("div");
   body.className = "form-body";
 
-  // Name
+  // — Name —
   const { row: nameRow, input: nameInput } = createTextField("Name", "fld-chest-name");
   body.appendChild(nameRow);
 
-  // Category & Size (side by side)
+  // — Category & Size —
   const { row: categoryRow, select: categorySelect } = createDropdownField(
     "Category",
     "fld-chest-category",
-    [
-      { value: "Normal", label: "Normal" },
-      { value: "Rare",     label: "Rare" },
-      { value: "Legendary",label: "Legendary" }
-    ],
+    [{ value: "Normal", label: "Normal" }, { value: "Dragonvault", label: "Dragonvault" }],
     { showColor: false }
   );
   const { row: sizeRow, select: sizeSelect } = createDropdownField(
     "Size",
     "fld-chest-size",
-    [
-      { value: "Small",  label: "Small" },
-      { value: "Medium", label: "Medium" },
-      { value: "Large",  label: "Large" }
-    ],
+    [{ value: "Small", label: "Small" }, { value: "Medium", label: "Medium" }, { value: "Large", label: "Large" }],
     { showColor: false }
   );
   const duo = document.createElement("div");
   duo.style.display = "flex";
-  duo.style.gap     = "1rem";
+  duo.style.gap = "1rem";
   duo.append(categoryRow, sizeRow);
   body.appendChild(duo);
 
-  // Loot Pool (with picker button)
+  // — Loot Pool —
   const lootLabel = document.createElement("label");
   lootLabel.textContent = "Loot Pool";
   const pickerBtn = document.createElement("button");
@@ -65,27 +56,28 @@ export function createChestForm() {
   body.appendChild(lootRow);
   body.appendChild(chipContainer);
 
-  // Description
-  const { row: descRow, textarea: descArea } = createTextField("Description", "fld-chest-desc");
-  descArea.tagName = "TEXTAREA";
-  body.appendChild(descRow);
+  // — Description —
+  const {
+    row: rowDesc,
+    textarea: fldDesc,
+    colorBtn: colorDesc
+  } = createTextareaFieldWithColor("Description", "fld-chest-desc");
+  // match existing ID/class conventions
+  colorDesc.id = "fld-chest-desc-color";
+  body.appendChild(rowDesc);
 
-  // Extra Info
+  // — Extra Info —
   const extraInfo = createExtraInfoBlock();
-  const extraRow = document.createElement("div");
-  extraRow.className = "field-row";
-  const extraLabel = document.createElement("label");
-  extraLabel.textContent = "Extra Info";
-  extraRow.append(extraLabel, extraInfo.block);
+  const extraRow = createFieldRow("Extra Info", extraInfo.block);
   body.appendChild(extraRow);
 
-  // Image S & L
+  // — Image S & L —
   const { row: imgSRow, input: imgSInput } = createImageField("Image S", "fld-chest-img-s");
   const { row: imgLRow, input: imgLInput } = createImageField("Image L", "fld-chest-img-l");
   body.appendChild(imgSRow);
   body.appendChild(imgLRow);
 
-  // Wrap up
+  // assemble form
   form.appendChild(body);
 
   return {
@@ -96,7 +88,8 @@ export function createChestForm() {
       fldSize:        sizeSelect,
       openLootPicker: pickerBtn,
       chipContainer,
-      fldDesc:        descArea,
+      fldDesc,
+      colorDesc,
       extraInfo,
       fldImgS:        imgSInput,
       fldImgL:        imgLInput
