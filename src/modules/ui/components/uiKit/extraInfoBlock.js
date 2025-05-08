@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.0 — dynamic extra‐info rows
+// @version: 1.1 — wire Pickr after DOM insert
 
 import { createPickr } from "../../pickrManager.js";
 
@@ -12,6 +12,7 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
   btnAdd.type = "button";
   btnAdd.textContent = "+";
   btnAdd.className = "ui-button";
+
   wrap.append(lineWrap, btnAdd);
 
   let lines = [];
@@ -32,20 +33,11 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
         wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       };
 
+      // Build the color button element
       const color = document.createElement("div");
       color.className = "color-btn color-swatch";
       color.id = `extra-color-${i}`;
       color.style.marginLeft = "5px";
-
-      const pickr = createPickr(`#${color.id}`);
-      pickr.on("change", c => {
-        line.color = c.toHEXA().toString();
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
-      });
-      pickr.on("save", c => {
-        line.color = c.toHEXA().toString();
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
-      });
 
       const btnRemove = document.createElement("button");
       btnRemove.type = "button";
@@ -58,9 +50,21 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
         wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       };
 
+      // Append in this order: input, color, remove-button
       row.append(input, color);
       if (!readonly) row.append(btnRemove);
       lineWrap.append(row);
+
+      // Now that 'color' is in the DOM, attach Pickr to it
+      const pickr = createPickr(`#${color.id}`);
+      pickr.on("change", c => {
+        line.color = c.toHEXA().toString();
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      pickr.on("save", c => {
+        line.color = c.toHEXA().toString();
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      });
     });
   }
 

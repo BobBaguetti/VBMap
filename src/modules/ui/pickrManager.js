@@ -1,5 +1,5 @@
-// @file: /scripts/modules/ui/pickrManager.js
-// @version: 2.1 — suppress missing-element warnings
+// @file: /src/modules/ui/pickrManager.js
+// @version: 2 
 
 // Holds all active Pickr instances so destroyAllPickrs can clean them up
 const activePickrs = [];
@@ -11,8 +11,7 @@ const activePickrs = [];
 export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
   const el = document.querySelector(targetSelector);
   if (!el) {
--    console.warn(`Pickr target ${targetSelector} not found`);
-    // silently fall back if the element isn’t in the DOM yet
+    console.warn(`Pickr target ${targetSelector} not found`);
     return {
       on: () => {},
       setColor: () => {},
