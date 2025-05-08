@@ -1,11 +1,12 @@
 // @file: src/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 1.7 — use fieldKit & extraInfoBlock; reorder image fields
+// @version: 2.3 — DRY fieldKit + correct loot-pool & extra-info wiring
 
 import {
   createTextField,
   createDropdownField,
   createTextareaFieldWithColor,
-  createImageField
+  createImageField,
+  createFieldRow
 } from "../../components/uiKit/fieldKit.js";
 import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";
 
@@ -23,7 +24,7 @@ export function createChestForm() {
       "Category",
       "fld-chest-category",
       [
-        { value: "Normal",    label: "Normal"    },
+        { value: "Normal",     label: "Normal"     },
         { value: "Dragonvault", label: "Dragonvault" }
       ],
       { showColor: false }
@@ -43,7 +44,7 @@ export function createChestForm() {
     );
 
   // — Loot Pool —
-  // (controller will wire up chipContainer & cog button)
+  // exactly the markup your controller expects:
   const rowLoot = document.createElement("div");
   rowLoot.className = "field-row loot-pool-row";
   const lblLoot = document.createElement("label");
@@ -53,7 +54,7 @@ export function createChestForm() {
   const chipContainer = document.createElement("div");
   chipContainer.className = "loot-pool-chip-container";
   const btnCog = document.createElement("button");
-  btnCog.type = "button";
+  btnCog.type      = "button";
   btnCog.className = "loot-pool-cog";
   btnCog.innerHTML = "⚙️";
   lootWrapper.append(chipContainer, btnCog);
@@ -65,9 +66,12 @@ export function createChestForm() {
     textarea: fldDesc,
     colorBtn: colorDesc
   } = createTextareaFieldWithColor("Description", "fld-chest-desc");
+  colorDesc.id = "fld-chest-desc-color";
 
   // — Extra Info —
+  // use fieldKit’s dedicated block, but wrap in a field-row so scrollbars + layout match
   const extraInfo = createExtraInfoBlock();
+  const rowExtras = createFieldRow("Extra Info", extraInfo.block);
 
   // — Image S & L —
   const { row: rowImgS, input: fldImgS } =
@@ -75,14 +79,14 @@ export function createChestForm() {
   const { row: rowImgL, input: fldImgL } =
     createImageField("Image L", "fld-chest-img-l");
 
-  // Append in the desired order
+  // — Assemble in your exact desired order —
   form.append(
     rowName,
     rowCategory,
     rowSize,
-    rowLoot,
+    rowLoot,       // loot-pool markup matched
     rowDesc,
-    extraInfo.block,
+    rowExtras,     // wrapped extra-info
     rowImgS,
     rowImgL
   );
@@ -93,9 +97,9 @@ export function createChestForm() {
       fldName,
       fldCategory,
       fldSize,
-      lootPool: [],
-      chipContainer,
-      openLootPicker: btnCog,
+      lootPool:         [],        // for your controller
+      chipContainer,               // for your controller
+      openLootPicker:   btnCog,
       fldDesc,
       colorDesc,
       extraInfo,

@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.16 — use shared chipListManager for loot-pool chips
+// @version: 2.17 — remove obsolete fields (iconUrl, subtext) and align with builder
 
 import { getPickrHexColor }                       from "../../../utils/colorUtils.js";
 import { createChestForm }                        from "../builders/chestFormBuilder.js";
@@ -88,12 +88,12 @@ export function createChestFormController(
       name:             fields.fldName.value.trim(),
       size:             fields.fldSize.value,
       category:         fields.fldCategory.value,
-      iconUrl:          fields.fldIconUrl.value.trim(),
-      subtext:          fields.fldSubtext.value.trim(),
       lootPool:         [...fields.lootPool],
       description:      fields.fldDesc.value.trim(),
       descriptionColor: getPickrHexColor(pickrs.description),
-      extraLines:       fields.extraInfo.getLines()
+      extraLines:       fields.extraInfo.getLines(),
+      imageSmall:       fields.fldImgS.value.trim(),
+      imageLarge:       fields.fldImgL.value.trim()
     };
   }
 
@@ -104,8 +104,6 @@ export function createChestFormController(
       name:        fields.fldName,
       size:        fields.fldSize,
       category:    fields.fldCategory,
-      iconUrl:     fields.fldIconUrl,
-      subtext:     fields.fldSubtext,
       description: fields.fldDesc
     },
     defaultFieldKeys: ["name", "description"],
