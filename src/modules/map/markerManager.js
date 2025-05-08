@@ -121,27 +121,30 @@ export function renderChestPopup(typeDef) {
   const rarityColor = rarityColors[key] || defaultNameColor;
 
   // 2) Header (icon + Name, Category, Rarity)
-  const bigImg = typeDef.iconUrl
-    ? `<img src="${typeDef.iconUrl}" class="popup-image"
+  const bigImg = typeDef.imageSmall || typeDef.imageLarge
+    ? `<img src="${typeDef.imageSmall||typeDef.imageLarge}" class="popup-image"
              style="border-color:${rarityColor}"
              onerror="this.style.display='none'">`
     : "";
 
+  // pick custom nameColor if set, otherwise use the rarity color
+  const titleColor = typeDef.nameColor || rarityColor;
+
   const nameHTML = `
-    <div class="popup-name" style="color:${rarityColor};">
-      ${typeDef.name}
+    <div class="popup-name" style="color:${titleColor};">
+      ${typeDef.name || ""}
     </div>`;
+
   const typeHTML = `<div class="popup-type">${cat}</div>`;
   const rarityHTML = `
     <div class="popup-rarity" style="color:${rarityColor};">
       ${rarityLabel}
     </div>`;
 
-  // 3) Loot grid (5 columns, fill first row to always show 5)
+  // 3) Loot grid
   const COLS = 5;
   const pool = typeDef.lootPool || [];
   let cells = "";
-
   pool.forEach((it, idx) => {
     const clr = it.rarityColor
       || rarityColors[(it.rarity||"").toLowerCase()]
@@ -158,7 +161,6 @@ export function renderChestPopup(typeDef) {
       cells += `<div class="chest-slot" data-index=""></div>`;
     }
   }
-
   const lootBox = `
     <div class="popup-info-box loot-box">
       <div class="chest-grid" style="--cols:${COLS};">
@@ -166,18 +168,20 @@ export function renderChestPopup(typeDef) {
       </div>
     </div>`;
 
-  // 4) Description & extra-info (with user-picked colors + divider)
+  // 4) Description & extra-info
   const descHTML = typeDef.description
     ? `<p class="popup-desc" style="color:${typeDef.descriptionColor||defaultNameColor};">
          ${typeDef.description}
        </p>`
     : "";
+
   const extraHTML = (typeDef.extraLines||[])
     .map(l => `
       <p class="popup-extra-line" style="color:${l.color||defaultNameColor};">
         ${l.text}
       </p>`)
     .join("");
+
   const textBox = (descHTML||extraHTML)
     ? `<div class="popup-info-box">
          ${descHTML}
