@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.19 — reset nameColor on category/size change
+// @version: 2.20 — populate imageSmall & imageLarge fields on edit
 
 import { getPickrHexColor }                from "../../../utils/colorUtils.js";
 import {
@@ -126,12 +126,14 @@ export function createChestFormController(
       name:        fields.fldName,
       category:    fields.fldCategory,
       size:        fields.fldSize,
-      description: fields.fldDesc
+      description: fields.fldDesc,
+      imageSmall:  fields.fldImgS,
+      imageLarge:  fields.fldImgL
     },
-    defaultFieldKeys: ["name", "description"],
-    defaultValues:    { size: "Small", category: "Normal" },
+    defaultFieldKeys:    ["name", "description", "imageSmall", "imageLarge"],
+    defaultValues:       { size: "Small", category: "Normal" },
     pickrs,
-    pickrClearKeys:   ["name", "description"],
+    pickrClearKeys:      ["name", "description"],
     chipLists: [
       {
         fieldArray: fields.lootPool,
@@ -152,7 +154,6 @@ export function createChestFormController(
     fields.extraInfo.setLines([], false);
     _reset();
     chipManager.render();
-    // reapply default color
     applySizeCategoryColor();
   }
 
@@ -161,7 +162,6 @@ export function createChestFormController(
     _populate(def);
     fields.extraInfo.setLines(def.extraLines || [], false);
     chipManager.render();
-    // reapply based on loaded values
     applySizeCategoryColor();
   }
 
