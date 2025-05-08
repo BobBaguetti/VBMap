@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.2 — defer initial pickr.setColor to next tick
+// @version: 1.3 — attach Pickr instance to line for correct getLines()
 
 import { createPickr } from "../../pickrManager.js";
 
@@ -55,6 +55,7 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
 
       // ─── Pickr wiring ──────────────────────────────────────────
       const pickr = createPickr(`#${color.id}`);
+      line._pickr = pickr;  // ← attach instance for getLines()
 
       // initialize pickr *after* its DOM root exists
       setTimeout(() => {
