@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.2 — initialize pickr to existing line.color
+// @version: 1.2 — defer initial pickr.setColor to next tick
 
 import { createPickr } from "../../pickrManager.js";
 
@@ -11,7 +11,7 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
   btnAdd.textContent = "+";
-  btnAdd.className = "ui-button";
+  btnAdd.classList.add("ui-button");
 
   wrap.append(lineWrap, btnAdd);
 
@@ -34,7 +34,7 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
       };
 
       const color = document.createElement("div");
-      color.className = "color-btn color-swatch";
+      color.className = "color-btn";
       color.id = `extra-color-${i}`;
       color.style.marginLeft = "5px";
 
@@ -50,21 +50,23 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
       };
 
       row.append(input, color);
-      if (!readonly) row.append(btnRemove);
-      lineWrap.append(row);
+      if (!readonly) row.appendChild(btnRemove);
+      lineWrap.appendChild(row);
 
       // ─── Pickr wiring ──────────────────────────────────────────
       const pickr = createPickr(`#${color.id}`);
 
-      // initialize pickr with the existing line.color
-      pickr.setColor(line.color || defaultColor);
+      // initialize pickr *after* its DOM root exists
+      setTimeout(() => {
+        pickr.setColor(line.color || defaultColor);
+      }, 0);
 
-      pickr.on("change", c => {
-        line.color = c.toHEXA().toString();
+      pickr.on("change", colorObj => {
+        line.color = colorObj.toHEXA().toString();
         wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       });
-      pickr.on("save", c => {
-        line.color = c.toHEXA().toString();
+      pickr.on("save", colorObj => {
+        line.color = colorObj.toHEXA().toString();
         wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       });
     });
@@ -78,14 +80,14 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
 
   return {
     block: wrap,
-    getLines: () => lines.map(l => ({ text: l.text, color: l.color })),
+    getLines: () => lines.map(l => ({
+      text: l.text,
+      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
+    })),
     setLines: (newLines, isReadonly = false) => {
-      lines = newLines.map(l => ({
-        text:  l.text || "",
-        color: l.color || defaultColor
-      }));
+      lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
       render();
-      btnAdd.style.display = isReadonly ? "none" : "";
+      if (isReadonly) btnAdd.style.display = "none";
     }
   };
 }
