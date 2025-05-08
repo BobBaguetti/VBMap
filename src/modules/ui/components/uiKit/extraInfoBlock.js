@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.1 — wire Pickr after DOM insert
+// @version: 1.2 — initialize pickr to existing line.color
 
 import { createPickr } from "../../pickrManager.js";
 
@@ -33,7 +33,6 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
         wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       };
 
-      // Build the color button element
       const color = document.createElement("div");
       color.className = "color-btn color-swatch";
       color.id = `extra-color-${i}`;
@@ -50,13 +49,16 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
         wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       };
 
-      // Append in this order: input, color, remove-button
       row.append(input, color);
       if (!readonly) row.append(btnRemove);
       lineWrap.append(row);
 
-      // Now that 'color' is in the DOM, attach Pickr to it
+      // ─── Pickr wiring ──────────────────────────────────────────
       const pickr = createPickr(`#${color.id}`);
+
+      // initialize pickr with the existing line.color
+      pickr.setColor(line.color || defaultColor);
+
       pickr.on("change", c => {
         line.color = c.toHEXA().toString();
         wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
@@ -78,7 +80,10 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
     block: wrap,
     getLines: () => lines.map(l => ({ text: l.text, color: l.color })),
     setLines: (newLines, isReadonly = false) => {
-      lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
+      lines = newLines.map(l => ({
+        text:  l.text || "",
+        color: l.color || defaultColor
+      }));
       render();
       btnAdd.style.display = isReadonly ? "none" : "";
     }
