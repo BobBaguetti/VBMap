@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.44 — fix populate mapping to def keys
+// @version: 4.45 — fix extra-info populate ordering
 
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
 import { createItemForm }                      from "../builders/itemFormBuilder.js";
@@ -29,11 +29,11 @@ export function createItemFormController({
     filterCheckbox: chkAddFilter,
     setDeleteVisible
   } = createFormControllerHeader({
-    title:    "Add Item",
+    title:     "Add Item",
     hasFilter: true,
     onFilter:  () => onFieldChange?.(getCustom()),
     onCancel,
-    onDelete: () => {
+    onDelete:  () => {
       if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
         onDelete?.(_id);
       }
@@ -98,7 +98,6 @@ export function createItemFormController({
   // ─── Shared reset & populate via formStateManager ────────────────
   const { reset: _reset, populate: _populate } = createFormState({
     form,
-    // map your def‐keys to the actual input elements:
     fields: {
       name:        fields.fldName,
       itemType:    fields.fldType,
@@ -127,7 +126,7 @@ export function createItemFormController({
     onFieldChange
   });
 
-  // wrap reset/populate to also clear extras & ID
+  // ─── Wrap reset/populate to include extra-info & ID ───────────────
   function reset() {
     chkAddFilter.checked = false;
     fields.extraInfo.setLines([], false);
@@ -137,9 +136,10 @@ export function createItemFormController({
 
   function populate(def) {
     _id = def.id || null;
-    chkAddFilter.checked = !!def.showInFilters;
-    fields.extraInfo.setLines(def.extraLines || [], false);
     _populate(def);
+    chkAddFilter.checked = !!def.showInFilters;
+    // **restore extra-info lines after core populate**
+    fields.extraInfo.setLines(def.extraLines || [], false);
   }
 
   // ─── Wire submission & live preview ───────────────────────────────

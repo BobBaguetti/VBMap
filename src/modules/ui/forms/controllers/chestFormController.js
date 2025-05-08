@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.14 — fix populate mapping to def keys
+// @version: 2.15 — fix extra-info populate ordering
 
 import { getPickrHexColor }                       from "../../../utils/colorUtils.js";
 import { createChestForm }                        from "../builders/chestFormBuilder.js";
@@ -24,10 +24,10 @@ export function createChestFormController(
     subheading,
     setDeleteVisible
   } = createFormControllerHeader({
-    title:    "Add Chest Type",
+    title:     "Add Chest Type",
     hasFilter: false,
-    onCancel: () => onCancel?.(),
-    onDelete: () => {
+    onCancel:  () => onCancel?.(),
+    onDelete:  () => {
       if (_id && confirm("Delete this chest type?")) {
         onDelete?.(_id);
       }
@@ -140,8 +140,9 @@ export function createChestFormController(
 
   function populate(def) {
     _id = def.id || null;
-    fields.extraInfo.setLines(def.extraLines || [], false);
     _populate(def);
+    // **restore extra-info lines after core populate**
+    fields.extraInfo.setLines(def.extraLines || [], false);
     renderChips();
   }
 
