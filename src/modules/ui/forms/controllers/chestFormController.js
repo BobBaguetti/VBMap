@@ -6,7 +6,7 @@ import {
   CHEST_RARITY,
   rarityColors,
   defaultNameColor
-}                                          from "../../map/markerManager.js";
+}                                          from "../../../map/markerManager.js";
 import { createChestForm }                 from "../builders/chestFormBuilder.js";
 import {
   createFormControllerHeader,
