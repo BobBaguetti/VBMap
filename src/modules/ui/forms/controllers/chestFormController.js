@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.15 — fix extra-info populate ordering
+// @version: 2.16 — use shared chipListManager for loot-pool chips
 
 import { getPickrHexColor }                       from "../../../utils/colorUtils.js";
 import { createChestForm }                        from "../builders/chestFormBuilder.js";
@@ -10,6 +10,7 @@ import {
 import { initFormPickrs }                         from "../../components/formPickrManager.js";
 import { createFormState }                        from "../../components/formStateManager.js";
 import { pickItems }                              from "../../components/listPicker.js";
+import { createChipListManager }                  from "../../components/chipListManager.js";
 import { loadItemDefinitions }                    from "../../../services/itemDefinitionsService.js";
 
 export function createChestFormController(
@@ -41,34 +42,26 @@ export function createChestFormController(
     description: fields.colorDesc
   });
 
-  // Loot-pool picker
+  // Prep item definitions for label lookup
   let itemMap = [];
   async function ensureAllItems() {
     if (!itemMap.length) {
       itemMap = await loadItemDefinitions(db);
     }
   }
-  function renderChips() {
-    fields.chipContainer.innerHTML = "";
-    fields.lootPool.forEach(id => {
-      const def = itemMap.find(i => i.id === id) || { name: id };
-      const chip = document.createElement("span");
-      chip.className = "loot-pool-chip";
-      chip.textContent = def.name;
-      const x = document.createElement("span");
-      x.className   = "remove-chip";
-      x.textContent = "×";
-      x.onclick     = () => {
-        fields.lootPool.splice(fields.lootPool.indexOf(id), 1);
-        renderChips();
-        onFieldChange?.(getCustom());
-      };
-      chip.append(x);
-      fields.chipContainer.append(chip);
-    });
-  }
-  renderChips();
 
+  // Shared chip-list manager for loot-pool
+  const chipManager = createChipListManager({
+    container:   fields.chipContainer,
+    listArray:   fields.lootPool,
+    renderLabel: id => {
+      const def = itemMap.find(i => i.id === id) || { name: id };
+      return def.name;
+    },
+    onChange:    () => onFieldChange?.(getCustom())
+  });
+
+  // Loot-pool picker button
   fields.openLootPicker.onclick = async () => {
     await ensureAllItems();
     let chosen;
@@ -83,7 +76,7 @@ export function createChestFormController(
       return; // user cancelled
     }
     fields.lootPool.splice(0, fields.lootPool.length, ...chosen);
-    renderChips();
+    chipManager.render();
     onFieldChange?.(getCustom());
   };
 
@@ -120,7 +113,7 @@ export function createChestFormController(
     pickrs,
     pickrClearKeys:   ["description"],
     chipLists: [
-      { fieldArray: fields.lootPool, renderFn: renderChips, defKey: "lootPool" }
+      { fieldArray: fields.lootPool, renderFn: () => chipManager.render(), defKey: "lootPool" }
     ],
     subheading,
     setDeleteVisible,
@@ -135,15 +128,15 @@ export function createChestFormController(
     _id = null;
     fields.extraInfo.setLines([], false);
     _reset();
-    renderChips();
+    chipManager.render();
   }
 
   function populate(def) {
     _id = def.id || null;
     _populate(def);
-    // **restore extra-info lines after core populate**
+    // restore extra-info lines after core populate
     fields.extraInfo.setLines(def.extraLines || [], false);
-    renderChips();
+    chipManager.render();
   }
 
   // Wire submission & live-preview
@@ -163,4 +156,3 @@ export function createChestFormController(
     }
   };
 }
- 
