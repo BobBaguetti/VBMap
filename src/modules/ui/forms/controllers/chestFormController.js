@@ -1,7 +1,12 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.18 — wire in name-color Pickr & support image fields for preview
+// @version: 2.19 — reset nameColor on category/size change
 
 import { getPickrHexColor }                from "../../../utils/colorUtils.js";
+import {
+  CHEST_RARITY,
+  rarityColors,
+  defaultNameColor
+}                                          from "../../map/markerManager.js";
 import { createChestForm }                 from "../builders/chestFormBuilder.js";
 import {
   createFormControllerHeader,
@@ -35,14 +40,30 @@ export function createChestFormController(
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
+  // ─── Auto‐apply nameColor on category/size change ─────────────────
+  function applySizeCategoryColor() {
+    const cat = fields.fldCategory.value || "Normal";
+    const sz  = fields.fldSize.value     || "Small";
+    const key = CHEST_RARITY[cat]?.[sz]   || "common";
+    const col = rarityColors[key]         || defaultNameColor;
+    if (pickrs.name) {
+      pickrs.name.setColor(col);
+      form.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+  fields.fldCategory.addEventListener("change", applySizeCategoryColor);
+  fields.fldSize    .addEventListener("change", applySizeCategoryColor);
+
   // ─── Pickr wiring ──────────────────────────────────────────────
-  // now includes name + description
   const pickrs = initFormPickrs(form, {
     name:        fields.colorName,
     description: fields.colorDesc
   });
 
-  // Prepare items for loot-pool labels
+  // seed initial name color
+  applySizeCategoryColor();
+
+  // Prep item definitions for label lookup
   let itemMap = [];
   async function ensureAllItems() {
     if (!itemMap.length) {
@@ -80,7 +101,7 @@ export function createChestFormController(
     onFieldChange?.(getCustom());
   };
 
-  // ─── Internal state & payload ────────────────────────────────
+  // Internal state & payload
   let _id = null;
   function getCustom() {
     return {
@@ -107,10 +128,10 @@ export function createChestFormController(
       size:        fields.fldSize,
       description: fields.fldDesc
     },
-    defaultFieldKeys: ["name","description"],
+    defaultFieldKeys: ["name", "description"],
     defaultValues:    { size: "Small", category: "Normal" },
     pickrs,
-    pickrClearKeys:   ["name","description"],
+    pickrClearKeys:   ["name", "description"],
     chipLists: [
       {
         fieldArray: fields.lootPool,
@@ -131,13 +152,17 @@ export function createChestFormController(
     fields.extraInfo.setLines([], false);
     _reset();
     chipManager.render();
+    // reapply default color
+    applySizeCategoryColor();
   }
 
   function populate(def) {
     _id = def.id || null;
     _populate(def);
-    fields.extraInfo.setLines(def.extraLines||[], false);
+    fields.extraInfo.setLines(def.extraLines || [], false);
     chipManager.render();
+    // reapply based on loaded values
+    applySizeCategoryColor();
   }
 
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
