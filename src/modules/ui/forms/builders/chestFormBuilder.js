@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.4 — add name color swatch and expose it to controller
+// @version: 2.4 — wire up name-color swatch
 
 import {
   createTextField,
@@ -14,49 +14,44 @@ export function createChestForm() {
   const form = document.createElement("form");
   form.id = "chest-form";
 
-  // — Name (with color swatch) —
+  // — Name —
   const {
     row: rowName,
     input: fldName,
-    colorBtn: colorName
+    colorBtn: colorName   // <–– pull in the color swatch
   } = createTextField("Name", "fld-chest-name");
-  // give it the “color-swatch” class so initFormPickrs picks it up
-  colorName.classList.add("color-swatch");
+  // give it our standard “color-swatch” & a stable ID
   colorName.id = "fld-chest-name-color";
+  colorName.classList.add("color-swatch");
 
   // — Category —
   const { row: rowCategory, select: fldCategory } =
-    createDropdownField(
-      "Category",
-      "fld-chest-category",
-      [
-        { value: "Normal",     label: "Normal"     },
-        { value: "Dragonvault", label: "Dragonvault" }
-      ],
-      { showColor: false }
-    );
+    createDropdownField("Category", "fld-chest-category", [
+      { value: "Normal",     label: "Normal"     },
+      { value: "Dragonvault", label: "Dragonvault" }
+    ], { showColor: false });
 
   // — Size —
   const { row: rowSize, select: fldSize } =
-    createDropdownField(
-      "Size",
-      "fld-chest-size",
-      [
-        { value: "Small",  label: "Small"  },
-        { value: "Medium", label: "Medium" },
-        { value: "Large",  label: "Large"  }
-      ],
-      { showColor: false }
-    );
+    createDropdownField("Size", "fld-chest-size", [
+      { value: "Small",  label: "Small"  },
+      { value: "Medium", label: "Medium" },
+      { value: "Large",  label: "Large"  }
+    ], { showColor: false });
 
   // — Loot Pool —
   const rowLoot = document.createElement("div");
   rowLoot.className = "field-row loot-pool-row";
-  const lblLoot = document.createElement("label"); lblLoot.textContent = "Loot Pool";
-  const lootWrapper = document.createElement("div"); lootWrapper.className = "loot-pool-wrapper";
-  const chipContainer = document.createElement("div"); chipContainer.className = "loot-pool-chip-container";
+  const lblLoot = document.createElement("label");
+  lblLoot.textContent = "Loot Pool";
+  const lootWrapper = document.createElement("div");
+  lootWrapper.className = "loot-pool-wrapper";
+  const chipContainer = document.createElement("div");
+  chipContainer.className = "loot-pool-chip-container";
   const btnCog = document.createElement("button");
-  btnCog.type = "button"; btnCog.className = "loot-pool-cog"; btnCog.innerHTML = "⚙️";
+  btnCog.type      = "button";
+  btnCog.className = "loot-pool-cog";
+  btnCog.innerHTML = "⚙️";
   lootWrapper.append(chipContainer, btnCog);
   rowLoot.append(lblLoot, lootWrapper);
 
@@ -73,12 +68,9 @@ export function createChestForm() {
   const rowExtras = createFieldRow("Extra Info", extraInfo.block);
 
   // — Image S & L —
-  const { row: rowImgS, input: fldImgS } =
-    createImageField("Image S", "fld-chest-img-s");
-  const { row: rowImgL, input: fldImgL } =
-    createImageField("Image L", "fld-chest-img-l");
+  const { row: rowImgS, input: fldImgS } = createImageField("Image S", "fld-chest-img-s");
+  const { row: rowImgL, input: fldImgL } = createImageField("Image L", "fld-chest-img-l");
 
-  // — Assemble in order —
   form.append(
     rowName,
     rowCategory,
@@ -94,12 +86,12 @@ export function createChestForm() {
     form,
     fields: {
       fldName,
-      colorName,      // expose color swatch
+      colorName,    // <–– expose it for the controller
       fldCategory,
       fldSize,
-      lootPool:        [],
+      lootPool:         [],
       chipContainer,
-      openLootPicker:  btnCog,
+      openLootPicker:   btnCog,
       fldDesc,
       colorDesc,
       extraInfo,
