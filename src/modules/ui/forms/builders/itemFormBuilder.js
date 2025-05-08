@@ -1,5 +1,5 @@
 // @version: 5.1
-// @file: /scripts/modules/ui/forms/builders/itemFormBuilder.js
+// @file: /src/modules/ui/forms/builders/itemFormBuilder.js
 
 import {
   createNameField,

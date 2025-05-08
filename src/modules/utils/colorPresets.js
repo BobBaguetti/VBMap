@@ -1,5 +1,5 @@
 // @version: 2
-// @file: /scripts/modules/utils/colorPresets.js
+// @file: /src/modules/utils/colorPresets.js
 
 /**
  * Default color for names when none is specified or on reset.

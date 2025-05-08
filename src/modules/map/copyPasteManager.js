@@ -1,4 +1,4 @@
-// @file:    /scripts/modules/map/copyPasteManager.js
+// @file:    /src/modules/map/copyPasteManager.js
 // @version: 1   The current file version is 1. Increase by 1 every time you update anything.
 
 // Clipboard copy‑/paste manager with a ghost preview marker that stays active

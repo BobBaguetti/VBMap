@@ -1,4 +1,4 @@
-// @file: /scripts/modules/sidebar/sidebarManager.js
+// @file: /src/modules/sidebar/sidebarManager.js
 // @version: 10.2
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";

@@ -1,4 +1,4 @@
-// @file: /scripts/modules/services/chestDefinitionsService.js
+// @file: /src/modules/services/chestDefinitionsService.js
 // @version: 1.1 – added size & category to definition schema
 
 /**

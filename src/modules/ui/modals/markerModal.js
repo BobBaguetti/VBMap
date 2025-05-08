@@ -1,4 +1,4 @@
-// @file: /scripts/modules/ui/modals/markerModal.js
+// @file: /src/modules/ui/modals/markerModal.js
 // @version: 20.3 – point chest dropdown at chestDefinitionsService.js 
 
 import {

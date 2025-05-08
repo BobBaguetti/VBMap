@@ -1,5 +1,5 @@
 // @version: 1
-// @file: /scripts/modules/ui/components/layoutSwitcher.js
+// @file: /src/modules/ui/components/layoutSwitcher.js
 
 export function createLayoutSwitcher({ available, defaultView, onChange }) {
   const wrapper = document.createElement("div");

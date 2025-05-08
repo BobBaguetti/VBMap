@@ -1,4 +1,4 @@
-// @file: /scripts/modules/ui/forms/builders/chestFormBuilder.js
+// @file: /src/modules/ui/forms/builders/chestFormBuilder.js
 // @version: 1.5 – add size & category fields, keep description color swatch
 
 import {

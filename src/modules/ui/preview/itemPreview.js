@@ -1,4 +1,4 @@
-// @file: /scripts/modules/ui/preview/itemPreview.js
+// @file: /src/modules/ui/preview/itemPreview.js
 // @version: 5 – uses shared preview-panel CSS
 
 import { renderPopup } from "../../map/markerManager.js";

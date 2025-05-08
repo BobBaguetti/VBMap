@@ -1,4 +1,4 @@
-// @file: /scripts/modules/ui/preview/chestPreview.js
+// @file: /src/modules/ui/preview/chestPreview.js
 // @version: 4 – now identical in-modal behaviour to item preview
 
 import { renderChestPopup } from "../../map/markerManager.js";

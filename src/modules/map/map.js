@@ -1,4 +1,4 @@
-// @file:    /scripts/modules/map/map.js
+// @file:    /src/modules/map/map.js
 // @version: 1 
 
 export function initializeMap() {

@@ -1,4 +1,4 @@
-// @file: /scripts/authSetup.js
+// @file: /src/authSetup.js
 // @version: 6 – with diagnostics 
 
 import {

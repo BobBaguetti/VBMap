@@ -1,5 +1,5 @@
 // @version: 2
-// @file: /scripts/modules/ui/formUtils.js
+// @file: /src/modules/ui/formUtils.js
 
 /**
  * Creates a top-aligned label + content field row.

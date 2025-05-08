@@ -1,5 +1,5 @@
 // @version: 3
-// @file: /scripts/modules/ui/forms/universalForm.js 
+// @file: /src/modules/ui/forms/universalForm.js 
 
 import {
   createTextField,

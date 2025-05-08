@@ -1,5 +1,5 @@
 // @version: 1
-// @file: /scripts/modules/utils/itemEntryRenderer.js 
+// @file: /src/modules/utils/itemEntryRenderer.js 
 
 import { createIcon } from "../../utils/iconUtils.js";
 

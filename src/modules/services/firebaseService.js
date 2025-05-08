@@ -1,4 +1,4 @@
-// @file: /scripts/modules/services/firebaseService.js
+// @file: /src/modules/services/firebaseService.js
 // @version: 6.2 – removed debug logging
 
 import { initializeApp } from "firebase/app";
