@@ -356,3 +356,5 @@ export function createMarker(m, map, layers, ctxMenu, callbacks={}, isAdmin=fals
 
   return markerObj;
 }
+
+export { CHEST_RARITY, rarityColors, defaultNameColor };
