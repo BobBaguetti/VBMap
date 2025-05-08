@@ -37,8 +37,9 @@ export function createChestFormController(
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
-  // Pickr wiring
+  // Pickr wiring (now includes name)
   const pickrs = initFormPickrs(form, {
+    name:        fields.colorName,
     description: fields.colorDesc
   });
 
@@ -93,7 +94,8 @@ export function createChestFormController(
       descriptionColor: getPickrHexColor(pickrs.description),
       extraLines:       fields.extraInfo.getLines(),
       imageSmall:       fields.fldImgS.value.trim(),
-      imageLarge:       fields.fldImgL.value.trim()
+      imageLarge:       fields.fldImgL.value.trim(),
+      nameColor:        getPickrHexColor(pickrs.name)    // include name color in payload if needed
     };
   }
 
@@ -109,7 +111,7 @@ export function createChestFormController(
     defaultFieldKeys: ["name", "description"],
     defaultValues:    { size: "Small", category: "Normal" },
     pickrs,
-    pickrClearKeys:   ["description"],
+    pickrClearKeys:   ["name", "description"],      // clear name & description pickrs on reset
     chipLists: [
       { fieldArray: fields.lootPool, renderFn: () => chipManager.render(), defKey: "lootPool" }
     ],
@@ -121,7 +123,7 @@ export function createChestFormController(
     onFieldChange
   });
 
-  // wrap reset/populate to include chip rendering & ID
+  // wrap reset/populate to include chip rendering & extra-info & ID
   function reset() {
     _id = null;
     fields.extraInfo.setLines([], false);
@@ -135,6 +137,8 @@ export function createChestFormController(
     // restore extra-info lines after core populate
     fields.extraInfo.setLines(def.extraLines || [], false);
     chipManager.render();
+    // set name color pickr to saved color
+    if (def.nameColor) pickrs.name.setColor(def.nameColor);
   }
 
   // Wire submission & live-preview
@@ -149,7 +153,10 @@ export function createChestFormController(
     initPickrs() {
       Object.assign(
         pickrs,
-        initFormPickrs(form, { description: fields.colorDesc })
+        initFormPickrs(form, {
+          name:        fields.colorName,
+          description: fields.colorDesc
+        })
       );
     }
   };

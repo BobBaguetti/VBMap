@@ -15,7 +15,7 @@ export function createChestForm() {
   form.id = "chest-form";
 
   // — Name —
-  const { row: rowName, input: fldName } =
+  const { row: rowName, input: fldName, colorBtn: colorName } =
     createTextField("Name", "fld-chest-name");
 
   // — Category —
@@ -44,7 +44,6 @@ export function createChestForm() {
     );
 
   // — Loot Pool —
-  // exactly the markup your controller expects:
   const rowLoot = document.createElement("div");
   rowLoot.className = "field-row loot-pool-row";
   const lblLoot = document.createElement("label");
@@ -69,9 +68,12 @@ export function createChestForm() {
   colorDesc.id = "fld-chest-desc-color";
 
   // — Extra Info —
-  // use fieldKit’s dedicated block, but wrap in a field-row so scrollbars + layout match
   const extraInfo = createExtraInfoBlock();
-  const rowExtras = createFieldRow("Extra Info", extraInfo.block);
+  const rowExtras = document.createElement("div");
+  rowExtras.className = "field-row";
+  const lblExtras = document.createElement("label");
+  lblExtras.textContent = "Extra Info";
+  rowExtras.append(lblExtras, extraInfo.block);
 
   // — Image S & L —
   const { row: rowImgS, input: fldImgS } =
@@ -84,9 +86,9 @@ export function createChestForm() {
     rowName,
     rowCategory,
     rowSize,
-    rowLoot,       // loot-pool markup matched
+    rowLoot,
     rowDesc,
-    rowExtras,     // wrapped extra-info
+    rowExtras,
     rowImgS,
     rowImgL
   );
@@ -95,6 +97,7 @@ export function createChestForm() {
     form,
     fields: {
       fldName,
+      colorName,
       fldCategory,
       fldSize,
       lootPool:         [],        // for your controller
