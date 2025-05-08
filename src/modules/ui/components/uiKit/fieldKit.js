@@ -1,10 +1,10 @@
 // @file: src/modules/ui/components/uiKit/fieldKit.js
-// @version: 1.0 — form‐field builders
+// @version: 1.1 — add extraInfo export
 
 import { createPickr } from "../../pickrManager.js";
 
 export function createFieldRow(labelText, inputEl) {
-  const row   = document.createElement("div");
+  const row = document.createElement("div");
   row.className = "field-row";
   const label = document.createElement("label");
   label.textContent = labelText;
@@ -15,12 +15,12 @@ export function createFieldRow(labelText, inputEl) {
 export function createColorButton(id) {
   const btn = document.createElement("div");
   btn.className = "color-btn color-swatch";
-  btn.id        = id;
+  btn.id = id;
   return btn;
 }
 
 export function createColorFieldRow(labelText, inputEl, colorId) {
-  const row   = document.createElement("div");
+  const row = document.createElement("div");
   row.className = "field-row";
   const label = document.createElement("label");
   label.textContent = labelText;
@@ -31,7 +31,7 @@ export function createColorFieldRow(labelText, inputEl, colorId) {
 
 export function createTextField(labelText, id) {
   const input = document.createElement("input");
-  input.id    = id;
+  input.id = id;
   input.className = "ui-input";
   const { row, colorBtn } = createColorFieldRow(labelText, input, `${id}-color`);
   return { row, input, colorBtn };
@@ -39,7 +39,7 @@ export function createTextField(labelText, id) {
 
 export function createTextareaFieldWithColor(labelText, id) {
   const textarea = document.createElement("textarea");
-  textarea.id    = id;
+  textarea.id = id;
   const { row, colorBtn } = createColorFieldRow(labelText, textarea, `${id}-color`);
   return { row, textarea, colorBtn };
 }
@@ -61,7 +61,7 @@ export function createDropdownField(labelText, id, options = [], { showColor = t
 
 export function createImageField(labelText, id) {
   const input = document.createElement("input");
-  input.id   = id;
+  input.id = id;
   input.type = "text";
   const row = createFieldRow(labelText, input);
   return { row, input };
@@ -72,15 +72,18 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
   row.className = "field-row";
   row.style.justifyContent = "center";
   row.style.marginTop = "10px";
+
   const btnSave = document.createElement("button");
-  btnSave.type  = "submit";
+  btnSave.type = "submit";
   btnSave.className = "ui-button";
   btnSave.textContent = saveText;
+
   const btnCancel = document.createElement("button");
-  btnCancel.type  = "button";
+  btnCancel.type = "button";
   btnCancel.className = "ui-button";
   btnCancel.textContent = cancelText;
   btnCancel.onclick = onCancel;
+
   row.append(btnSave, btnCancel);
   return row;
 }
@@ -90,8 +93,11 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
  */
 export function createVideoField(labelText, id) {
   const input = document.createElement("input");
-  input.id   = id;
+  input.id = id;
   input.type = "text";
   const row = createFieldRow(labelText, input);
   return { row, input };
 }
+
+// Re-export the extra-info block factory
+export { createExtraInfoBlock } from "./extraInfoBlock.js";
