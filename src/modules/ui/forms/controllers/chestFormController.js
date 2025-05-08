@@ -1,32 +1,33 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.12 — use shared listPicker for loot‐pool selection
+// @version: 2.13 — DRY reset/populate via shared formStateManager
 
 import { getPickrHexColor }                          from "../../../utils/colorUtils.js";
 import { createChestForm }                           from "../builders/chestFormBuilder.js";
-import { createFormControllerHeader, wireFormEvents }from "../../components/formControllerShell.js";
+import {
+  createFormControllerHeader,
+  wireFormEvents
+}                                                    from "../../components/formControllerShell.js";
 import { initFormPickrs }                            from "../../components/formPickrManager.js";
+import { createFormState }                           from "../../components/formStateManager.js";
 import { pickItems }                                 from "../../components/listPicker.js";
 import { loadItemDefinitions }                       from "../../../services/itemDefinitionsService.js";
 
-/**
- * Chest‐definition form controller.
- */
 export function createChestFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },
   db
 ) {
   const { form, fields } = createChestForm();
 
-  // ─── Shared header + buttons ─────────────────────────────────────
+  // ─── Header + Buttons ───────────────────────────────────────────────
   const {
     container: subheadingWrap,
     subheading,
     setDeleteVisible
   } = createFormControllerHeader({
-    title:    "Add Chest Type",
+    title:     "Add Chest Type",
     hasFilter: false,
-    onCancel: () => onCancel?.(),
-    onDelete: () => {
+    onCancel:  () => onCancel?.(),
+    onDelete:  () => {
       if (_id && confirm("Delete this chest type?")) {
         onDelete?.(_id);
       }
@@ -35,12 +36,12 @@ export function createChestFormController(
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
-  // ─── Shared Pickr wiring ─────────────────────────────────────────
+  // ─── Pickr wiring ───────────────────────────────────────────────────
   const pickrs = initFormPickrs(form, {
     description: fields.colorDesc
   });
 
-  // ─── Loot-pool picker (uses shared listPicker) ───────────────────
+  // ─── Loot-pool picker using shared listPicker ───────────────────────
   let itemMap = [];
   async function ensureAllItems() {
     if (!itemMap.length) {
@@ -71,55 +72,24 @@ export function createChestFormController(
 
   fields.openLootPicker.onclick = async () => {
     await ensureAllItems();
-    const chosen = await pickItems({
-      title:    "Select Loot Pool Items",
-      items:    itemMap,
-      selected: fields.lootPool,
-      labelKey: "name"
-    });
+    let chosen;
+    try {
+      chosen = await pickItems({
+        title:    "Select Loot Pool Items",
+        items:    itemMap,
+        selected: fields.lootPool,
+        labelKey: "name"
+      });
+    } catch {
+      return; // user cancelled
+    }
     fields.lootPool.splice(0, fields.lootPool.length, ...chosen);
     renderChips();
     onFieldChange?.(getCustom());
   };
 
-  // ─── Internal state ───────────────────────────────────────────────
+  // ─── Internal state & payload getter ───────────────────────────────
   let _id = null;
-
-  // ─── Reset / Add mode ─────────────────────────────────────────────
-  function reset() {
-    form.reset();
-    _id = null;
-    fields.lootPool.length = 0;
-    renderChips();
-    fields.fldSize.value     = "Small";
-    fields.fldCategory.value = "Normal";
-    subheading.textContent   = "Add Chest Type";
-    setDeleteVisible(false);
-    pickrs.description?.setColor("#E5E6E8");
-    fields.extraInfo.setLines([], false);
-    onFieldChange?.(getCustom());
-  }
-
-  // ─── Populate / Edit mode ─────────────────────────────────────────
-  function populate(def) {
-    form.reset();
-    _id = def.id || null;
-    fields.fldName.value        = def.name    || "";
-    fields.fldSize.value        = def.size    || "Small";
-    fields.fldCategory.value    = def.category|| "Normal";
-    fields.fldIconUrl.value     = def.iconUrl || "";
-    fields.fldSubtext.value     = def.subtext || "";
-    fields.lootPool.splice(0, fields.lootPool.length, ...(def.lootPool||[]));
-    renderChips();
-    fields.fldDesc.value        = def.description || "";
-    fields.extraInfo.setLines(def.extraLines || [], false);
-    subheading.textContent      = _id ? "Edit Chest Type" : "Add Chest Type";
-    setDeleteVisible(!!_id);
-    pickrs.description?.setColor(def.descriptionColor);
-    onFieldChange?.(getCustom());
-  }
-
-  // ─── Gather form data ─────────────────────────────────────────────
   function getCustom() {
     return {
       id:               _id,
@@ -135,7 +105,48 @@ export function createChestFormController(
     };
   }
 
-  // ─── Wire submit & live‐preview events ───────────────────────────
+  // ─── Shared reset & populate via formStateManager ────────────────
+  const { reset: _reset, populate: _populate } = createFormState({
+    form,
+    fields: {
+      fldName:     fields.fldName,
+      fldSize:     fields.fldSize,
+      fldCategory: fields.fldCategory,
+      fldIconUrl:  fields.fldIconUrl,
+      fldSubtext:  fields.fldSubtext,
+      fldDesc:     fields.fldDesc
+    },
+    defaultFieldKeys: ["fldName", "fldDesc"],
+    defaultValues:    { fldSize: "Small", fldCategory: "Normal" },
+    pickrs,
+    pickrClearKeys:   ["description"],
+    chipLists: [
+      { fieldArray: fields.lootPool, renderFn: renderChips, defKey: "lootPool" }
+    ],
+    subheading,
+    setDeleteVisible,
+    addTitle:  "Add Chest Type",
+    editTitle: "Edit Chest Type",
+    getCustom,
+    onFieldChange
+  });
+
+  // wrap reset & populate to include chip rendering
+  function reset() {
+    _id = null;
+    fields.extraInfo.setLines([], false);
+    _reset();
+    renderChips();
+  }
+
+  function populate(def) {
+    _id = def.id || null;
+    fields.extraInfo.setLines(def.extraLines || [], false);
+    _populate(def);
+    renderChips();
+  }
+
+  // ─── Wire submission & live‐preview events ─────────────────────────
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
@@ -144,13 +155,12 @@ export function createChestFormController(
     populate,
     getCustom,
     getCurrentPayload: getCustom,
-
-    // For re-wiring Pickr after insertion
+    // for re-wiring Pickr after insertion into DOM
     initPickrs() {
-      Object.assign(pickrs, initFormPickrs(form, {
-        description: fields.colorDesc
-      }));
+      Object.assign(
+        pickrs,
+        initFormPickrs(form, { description: fields.colorDesc })
+      );
     }
   };
 }
- 
