@@ -1,16 +1,16 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.13 — DRY reset/populate via shared formStateManager
+// @version: 2.14 — fix populate mapping to def keys
 
-import { getPickrHexColor }                          from "../../../utils/colorUtils.js";
-import { createChestForm }                           from "../builders/chestFormBuilder.js";
+import { getPickrHexColor }                       from "../../../utils/colorUtils.js";
+import { createChestForm }                        from "../builders/chestFormBuilder.js";
 import {
   createFormControllerHeader,
   wireFormEvents
-}                                                    from "../../components/formControllerShell.js";
-import { initFormPickrs }                            from "../../components/formPickrManager.js";
-import { createFormState }                           from "../../components/formStateManager.js";
-import { pickItems }                                 from "../../components/listPicker.js";
-import { loadItemDefinitions }                       from "../../../services/itemDefinitionsService.js";
+}                                                 from "../../components/formControllerShell.js";
+import { initFormPickrs }                         from "../../components/formPickrManager.js";
+import { createFormState }                        from "../../components/formStateManager.js";
+import { pickItems }                              from "../../components/listPicker.js";
+import { loadItemDefinitions }                    from "../../../services/itemDefinitionsService.js";
 
 export function createChestFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },
@@ -18,16 +18,16 @@ export function createChestFormController(
 ) {
   const { form, fields } = createChestForm();
 
-  // ─── Header + Buttons ───────────────────────────────────────────────
+  // Header + Buttons
   const {
     container: subheadingWrap,
     subheading,
     setDeleteVisible
   } = createFormControllerHeader({
-    title:     "Add Chest Type",
+    title:    "Add Chest Type",
     hasFilter: false,
-    onCancel:  () => onCancel?.(),
-    onDelete:  () => {
+    onCancel: () => onCancel?.(),
+    onDelete: () => {
       if (_id && confirm("Delete this chest type?")) {
         onDelete?.(_id);
       }
@@ -36,19 +36,18 @@ export function createChestFormController(
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
-  // ─── Pickr wiring ───────────────────────────────────────────────────
+  // Pickr wiring
   const pickrs = initFormPickrs(form, {
     description: fields.colorDesc
   });
 
-  // ─── Loot-pool picker using shared listPicker ───────────────────────
+  // Loot-pool picker
   let itemMap = [];
   async function ensureAllItems() {
     if (!itemMap.length) {
       itemMap = await loadItemDefinitions(db);
     }
   }
-
   function renderChips() {
     fields.chipContainer.innerHTML = "";
     fields.lootPool.forEach(id => {
@@ -88,7 +87,7 @@ export function createChestFormController(
     onFieldChange?.(getCustom());
   };
 
-  // ─── Internal state & payload getter ───────────────────────────────
+  // Internal state & payload
   let _id = null;
   function getCustom() {
     return {
@@ -105,19 +104,19 @@ export function createChestFormController(
     };
   }
 
-  // ─── Shared reset & populate via formStateManager ────────────────
+  // Shared reset & populate
   const { reset: _reset, populate: _populate } = createFormState({
     form,
     fields: {
-      fldName:     fields.fldName,
-      fldSize:     fields.fldSize,
-      fldCategory: fields.fldCategory,
-      fldIconUrl:  fields.fldIconUrl,
-      fldSubtext:  fields.fldSubtext,
-      fldDesc:     fields.fldDesc
+      name:        fields.fldName,
+      size:        fields.fldSize,
+      category:    fields.fldCategory,
+      iconUrl:     fields.fldIconUrl,
+      subtext:     fields.fldSubtext,
+      description: fields.fldDesc
     },
-    defaultFieldKeys: ["fldName", "fldDesc"],
-    defaultValues:    { fldSize: "Small", fldCategory: "Normal" },
+    defaultFieldKeys: ["name", "description"],
+    defaultValues:    { size: "Small", category: "Normal" },
     pickrs,
     pickrClearKeys:   ["description"],
     chipLists: [
@@ -131,7 +130,7 @@ export function createChestFormController(
     onFieldChange
   });
 
-  // wrap reset & populate to include chip rendering
+  // wrap reset/populate to include chip rendering & ID
   function reset() {
     _id = null;
     fields.extraInfo.setLines([], false);
@@ -146,7 +145,7 @@ export function createChestFormController(
     renderChips();
   }
 
-  // ─── Wire submission & live‐preview events ─────────────────────────
+  // Wire submission & live-preview
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
@@ -155,7 +154,6 @@ export function createChestFormController(
     populate,
     getCustom,
     getCurrentPayload: getCustom,
-    // for re-wiring Pickr after insertion into DOM
     initPickrs() {
       Object.assign(
         pickrs,

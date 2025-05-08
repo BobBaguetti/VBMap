@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/itemFormController.js
-// @version: 4.43 — DRY reset/populate via shared formStateManager
+// @version: 4.44 — fix populate mapping to def keys
 
 import { getPickrHexColor, applyColorPresets } from "../../../utils/colorUtils.js";
 import { createItemForm }                      from "../builders/itemFormBuilder.js";
@@ -31,7 +31,7 @@ export function createItemFormController({
   } = createFormControllerHeader({
     title:    "Add Item",
     hasFilter: true,
-    onFilter:  checked => onFieldChange?.(getCustom()),
+    onFilter:  () => onFieldChange?.(getCustom()),
     onCancel,
     onDelete: () => {
       if (_id != null && confirm(`Delete "${fields.fldName.value}"?`)) {
@@ -52,7 +52,7 @@ export function createItemFormController({
     quantity:    fields.colorQty
   });
 
-  // ─── Sync default colors when type/rarity change ───────────────────
+  // ─── Auto‐apply presets on type/rarity change ───────────────────────
   function applyPresetsAndRefresh() {
     if (!fields.fldType.value || !fields.fldRarity.value) return;
     const tmp = {
@@ -71,10 +71,8 @@ export function createItemFormController({
   fields.fldType .addEventListener("change", applyPresetsAndRefresh);
   fields.fldRarity.addEventListener("change", applyPresetsAndRefresh);
 
-  // ─── Internal state ────────────────────────────────────────────────
+  // ─── Internal state & payload getter ───────────────────────────────
   let _id = null;
-
-  // ─── Gather form data ──────────────────────────────────────────────
   function getCustom() {
     return {
       id:               _id,
@@ -100,23 +98,27 @@ export function createItemFormController({
   // ─── Shared reset & populate via formStateManager ────────────────
   const { reset: _reset, populate: _populate } = createFormState({
     form,
+    // map your def‐keys to the actual input elements:
     fields: {
-      fldName: fields.fldName,
-      fldType: fields.fldType,
-      fldRarity: fields.fldRarity,
-      fldDesc: fields.fldDesc,
-      fldValue: fields.fldValue,
-      fldQty: fields.fldQty,
-      fldImgS: fields.fldImgS,
-      fldImgL: fields.fldImgL
+      name:        fields.fldName,
+      itemType:    fields.fldType,
+      rarity:      fields.fldRarity,
+      description: fields.fldDesc,
+      value:       fields.fldValue,
+      quantity:    fields.fldQty,
+      imageSmall:  fields.fldImgS,
+      imageLarge:  fields.fldImgL
     },
     defaultFieldKeys: [
-      "fldName","fldType","fldRarity",
-      "fldDesc","fldValue","fldQty",
-      "fldImgS","fldImgL"
+      "name","itemType","rarity",
+      "description","value","quantity",
+      "imageSmall","imageLarge"
     ],
     pickrs,
-    pickrClearKeys: ["name","itemType","rarity","description","value","quantity"],
+    pickrClearKeys: [
+      "name","itemType","rarity",
+      "description","value","quantity"
+    ],
     subheading,
     setDeleteVisible,
     addTitle:  "Add Item",
@@ -125,7 +127,7 @@ export function createItemFormController({
     onFieldChange
   });
 
-  // Wrap reset/populate to also handle filter + extraInfo
+  // wrap reset/populate to also clear extras & ID
   function reset() {
     chkAddFilter.checked = false;
     fields.extraInfo.setLines([], false);
@@ -140,21 +142,25 @@ export function createItemFormController({
     _populate(def);
   }
 
-  // ─── Wire form submission & live preview ─────────────────────────
+  // ─── Wire submission & live preview ───────────────────────────────
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   return {
     form,
     reset,
     populate,
-    initPickrs: () => Object.assign(pickrs, initFormPickrs(form, {
-      name:        fields.colorName,
-      itemType:    fields.colorType,
-      rarity:      fields.colorRarity,
-      description: fields.colorDesc,
-      value:       fields.colorValue,
-      quantity:    fields.colorQty
-    })),
+    initPickrs: () =>
+      Object.assign(
+        pickrs,
+        initFormPickrs(form, {
+          name:        fields.colorName,
+          itemType:    fields.colorType,
+          rarity:      fields.colorRarity,
+          description: fields.colorDesc,
+          value:       fields.colorValue,
+          quantity:    fields.colorQty
+        })
+      ),
     getCustom,
     getCurrentPayload: getCustom
   };
