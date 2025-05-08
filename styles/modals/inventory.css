@@ -12,7 +12,8 @@
   max-height: 200px;
   overflow-y: auto;
 
-  /* ensure you see the box even on dark backgrounds */
+  /* full width like other form controls */
+  width: 100%;
   box-shadow: inset 0 0 0 1px var(--ui-border-color, #444);
 }
 
@@ -25,6 +26,10 @@
   border-radius: 2px;
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
+
+  /* make all chips the same minimum size */
+  min-width: 8ch;
+  justify-content: space-between;
 }
 
 /* Grab handle styling */
@@ -45,7 +50,6 @@
 
 /* “×” remove-chip button */
 .loot-pool-chip .remove-chip {
-  margin-left: 0.5rem;
   background: none;
   border: none;
   cursor: pointer;
