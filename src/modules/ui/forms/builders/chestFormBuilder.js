@@ -1,60 +1,64 @@
 // @file: src/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.2 — use textarea factory; fix extra-info row
+// @version: 2.3 — DRY fieldKit + correct loot-pool & extra-info wiring
 
 import {
-  createFieldRow,
   createTextField,
   createDropdownField,
-  createImageField,
   createTextareaFieldWithColor,
-  createExtraInfoBlock
+  createImageField,
+  createFieldRow
 } from "../../components/uiKit/fieldKit.js";
+import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";
 
 export function createChestForm() {
   const form = document.createElement("form");
-  form.className = "chest-form";
-
-  const body = document.createElement("div");
-  body.className = "form-body";
+  form.id = "chest-form";
 
   // — Name —
-  const { row: nameRow, input: nameInput } = createTextField("Name", "fld-chest-name");
-  body.appendChild(nameRow);
+  const { row: rowName, input: fldName } =
+    createTextField("Name", "fld-chest-name");
 
-  // — Category & Size —
-  const { row: categoryRow, select: categorySelect } = createDropdownField(
-    "Category",
-    "fld-chest-category",
-    [{ value: "Normal", label: "Normal" }, { value: "Dragonvault", label: "Dragonvault" }],
-    { showColor: false }
-  );
-  const { row: sizeRow, select: sizeSelect } = createDropdownField(
-    "Size",
-    "fld-chest-size",
-    [{ value: "Small", label: "Small" }, { value: "Medium", label: "Medium" }, { value: "Large", label: "Large" }],
-    { showColor: false }
-  );
-  const duo = document.createElement("div");
-  duo.style.display = "flex";
-  duo.style.gap = "1rem";
-  duo.append(categoryRow, sizeRow);
-  body.appendChild(duo);
+  // — Category —
+  const { row: rowCategory, select: fldCategory } =
+    createDropdownField(
+      "Category",
+      "fld-chest-category",
+      [
+        { value: "Normal",     label: "Normal"     },
+        { value: "Dragonvault", label: "Dragonvault" }
+      ],
+      { showColor: false }
+    );
+
+  // — Size —
+  const { row: rowSize, select: fldSize } =
+    createDropdownField(
+      "Size",
+      "fld-chest-size",
+      [
+        { value: "Small",  label: "Small"  },
+        { value: "Medium", label: "Medium" },
+        { value: "Large",  label: "Large"  }
+      ],
+      { showColor: false }
+    );
 
   // — Loot Pool —
-  const lootLabel = document.createElement("label");
-  lootLabel.textContent = "Loot Pool";
-  const pickerBtn = document.createElement("button");
-  pickerBtn.type = "button";
-  pickerBtn.className = "ui-button";
-  pickerBtn.textContent = "⚙️";
-  pickerBtn.id = "fld-open-loot-picker";
+  // exactly the markup your controller expects:
+  const rowLoot = document.createElement("div");
+  rowLoot.className = "field-row loot-pool-row";
+  const lblLoot = document.createElement("label");
+  lblLoot.textContent = "Loot Pool";
+  const lootWrapper = document.createElement("div");
+  lootWrapper.className = "loot-pool-wrapper";
   const chipContainer = document.createElement("div");
-  chipContainer.className = "loot-pool-chips";
-  const lootRow = document.createElement("div");
-  lootRow.className = "field-row";
-  lootRow.append(lootLabel, pickerBtn);
-  body.appendChild(lootRow);
-  body.appendChild(chipContainer);
+  chipContainer.className = "loot-pool-chip-container";
+  const btnCog = document.createElement("button");
+  btnCog.type      = "button";
+  btnCog.className = "loot-pool-cog";
+  btnCog.innerHTML = "⚙️";
+  lootWrapper.append(chipContainer, btnCog);
+  rowLoot.append(lblLoot, lootWrapper);
 
   // — Description —
   const {
@@ -62,37 +66,45 @@ export function createChestForm() {
     textarea: fldDesc,
     colorBtn: colorDesc
   } = createTextareaFieldWithColor("Description", "fld-chest-desc");
-  // match existing ID/class conventions
   colorDesc.id = "fld-chest-desc-color";
-  body.appendChild(rowDesc);
 
   // — Extra Info —
+  // use fieldKit’s dedicated block, but wrap in a field-row so scrollbars + layout match
   const extraInfo = createExtraInfoBlock();
-  const extraRow = createFieldRow("Extra Info", extraInfo.block);
-  body.appendChild(extraRow);
+  const rowExtras = createFieldRow("Extra Info", extraInfo.block);
 
   // — Image S & L —
-  const { row: imgSRow, input: imgSInput } = createImageField("Image S", "fld-chest-img-s");
-  const { row: imgLRow, input: imgLInput } = createImageField("Image L", "fld-chest-img-l");
-  body.appendChild(imgSRow);
-  body.appendChild(imgLRow);
+  const { row: rowImgS, input: fldImgS } =
+    createImageField("Image S", "fld-chest-img-s");
+  const { row: rowImgL, input: fldImgL } =
+    createImageField("Image L", "fld-chest-img-l");
 
-  // assemble form
-  form.appendChild(body);
+  // — Assemble in your exact desired order —
+  form.append(
+    rowName,
+    rowCategory,
+    rowSize,
+    rowLoot,       // loot-pool markup matched
+    rowDesc,
+    rowExtras,     // wrapped extra-info
+    rowImgS,
+    rowImgL
+  );
 
   return {
     form,
     fields: {
-      fldName:        nameInput,
-      fldCategory:    categorySelect,
-      fldSize:        sizeSelect,
-      openLootPicker: pickerBtn,
-      chipContainer,
+      fldName,
+      fldCategory,
+      fldSize,
+      lootPool:         [],        // for your controller
+      chipContainer,               // for your controller
+      openLootPicker:   btnCog,
       fldDesc,
       colorDesc,
       extraInfo,
-      fldImgS:        imgSInput,
-      fldImgL:        imgLInput
+      fldImgS,
+      fldImgL
     }
   };
 }
