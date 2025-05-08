@@ -1,9 +1,10 @@
 // @file: /src/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 1.5 – add size & category fields, keep description color swatch
+// @version: 1.6 — remove iconUrl/subtext; reorder image fields
 
 import {
   createDescriptionField,
-  createExtraInfoField
+  createExtraInfoField,
+  createImageField
 } from "../universalForm.js";
 
 export function createChestForm() {
@@ -21,22 +22,6 @@ export function createChestForm() {
   fldName.id   = "fld-chest-name";
   rowName.append(lblName, fldName);
 
-  // — Size —
-  const rowSize = document.createElement("div");
-  rowSize.classList.add("field-row");
-  const lblSize = document.createElement("label");
-  lblSize.htmlFor = "fld-chest-size";
-  lblSize.textContent = "Size";
-  const fldSize = document.createElement("select");
-  fldSize.id = "fld-chest-size";
-  ["Small", "Medium", "Large"].forEach(opt => {
-    const o = document.createElement("option");
-    o.value = opt;
-    o.textContent = opt;
-    fldSize.appendChild(o);
-  });
-  rowSize.append(lblSize, fldSize);
-
   // — Category —
   const rowCat = document.createElement("div");
   rowCat.classList.add("field-row");
@@ -53,89 +38,97 @@ export function createChestForm() {
   });
   rowCat.append(lblCat, fldCategory);
 
-  // — Icon URL —
-  const rowIcon = document.createElement("div");
-  rowIcon.classList.add("field-row");
-  const lblIcon = document.createElement("label");
-  lblIcon.htmlFor = "fld-chest-icon";
-  lblIcon.textContent = "Icon URL";
-  const fldIcon = document.createElement("input");
-  fldIcon.type = "text";
-  fldIcon.id   = "fld-chest-icon";
-  rowIcon.append(lblIcon, fldIcon);
-
-  // — Subtext —
-  const rowSub = document.createElement("div");
-  rowSub.classList.add("field-row");
-  const lblSub = document.createElement("label");
-  lblSub.htmlFor = "fld-chest-subtext";
-  lblSub.textContent = "Subtext";
-  const fldSub = document.createElement("input");
-  fldSub.type = "text";
-  fldSub.id   = "fld-chest-subtext";
-  rowSub.append(lblSub, fldSub);
+  // — Size —
+  const rowSize = document.createElement("div");
+  rowSize.classList.add("field-row");
+  const lblSize = document.createElement("label");
+  lblSize.htmlFor = "fld-chest-size";
+  lblSize.textContent = "Size";
+  const fldSize = document.createElement("select");
+  fldSize.id = "fld-chest-size";
+  ["Small", "Medium", "Large"].forEach(opt => {
+    const o = document.createElement("option");
+    o.value = opt;
+    o.textContent = opt;
+    fldSize.appendChild(o);
+  });
+  rowSize.append(lblSize, fldSize);
 
   // — Loot Pool —
   const rowLoot = document.createElement("div");
-  rowLoot.classList.add("field-row");
+  rowLoot.classList.add("field-row", "loot-pool-row");
   const lblLoot = document.createElement("label");
   lblLoot.textContent = "Loot Pool";
+  // we'll wire up the chip container + cog button in the controller
+  const lootWrapper = document.createElement("div");
+  lootWrapper.className = "loot-pool-wrapper";
   const chipContainer = document.createElement("div");
-  chipContainer.classList.add("loot-pool-chips");
-  chipContainer.id = "fld-chest-loot-chips";
-  Object.assign(chipContainer.style, {
-    flex:     "1",
-    display:  "flex",
-    flexWrap: "wrap",
-    gap:      "4px"
-  });
-  const openLootPicker = document.createElement("button");
-  openLootPicker.type = "button";
-  openLootPicker.className = "ui-button";
-  openLootPicker.textContent = "⚙︎";
-  openLootPicker.title = "Edit Loot Pool";
-  rowLoot.append(lblLoot, chipContainer, openLootPicker);
+  chipContainer.className = "loot-pool-chip-container";
+  const btnCog = document.createElement("button");
+  btnCog.type = "button";
+  btnCog.className = "loot-pool-cog";
+  btnCog.innerHTML = "⚙️";
+  lootWrapper.append(chipContainer, btnCog);
+  rowLoot.append(lblLoot, lootWrapper);
 
   // — Description —
-  const {
-    row: rowDesc,
-    textarea: fldDesc,
-    colorBtn: colorDesc
-  } = createDescriptionField();
+  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
+    createDescriptionField();
   colorDesc.id = "fld-chest-desc-color";
   colorDesc.classList.add("color-swatch");
 
   // — Extra Info —
-  const { row: rowExtras, extraInfo } =
-    createExtraInfoField({ withDividers: true });
+  const { row: rowExtras, extraInfo } = createExtraInfoField({ withDividers: true });
 
-  // assemble the form in logical order
+  // — Image S & L —
+  const rowImgS = document.createElement("div");
+  rowImgS.classList.add("field-row");
+  const lblImgS = document.createElement("label");
+  lblImgS.htmlFor = "fld-chest-img-s";
+  lblImgS.textContent = "Image S";
+  const fldImgS = document.createElement("input");
+  fldImgS.type = "text";
+  fldImgS.id   = "fld-chest-img-s";
+  rowImgS.append(lblImgS, fldImgS);
+
+  const rowImgL = document.createElement("div");
+  rowImgL.classList.add("field-row");
+  const lblImgL = document.createElement("label");
+  lblImgL.htmlFor = "fld-chest-img-l";
+  lblImgL.textContent = "Image L";
+  const fldImgL = document.createElement("input");
+  fldImgL.type = "text";
+  fldImgL.id   = "fld-chest-img-l";
+  rowImgL.append(lblImgL, fldImgL);
+
+  // Append in final, specified order:
   form.append(
     rowName,
-    rowSize,
     rowCat,
-    rowIcon,
-    rowSub,
+    rowSize,
     rowLoot,
     rowDesc,
-    rowExtras
+    rowExtras,
+    rowImgS,
+    rowImgL
   );
 
   return {
     form,
     fields: {
       fldName,
-      fldSize,
       fldCategory,
-      fldIconUrl:  fldIcon,
-      fldSubtext:  fldSub,
-      lootPool:    [],
-      openLootPicker,
+      fldSize,
+      // for controller wiring
+      lootPool:         [],
       chipContainer,
+      openLootPicker:   btnCog,
       fldDesc,
       colorDesc,
       extraInfo,
-      rowExtras
+      rowExtras,
+      fldImgS,
+      fldImgL
     }
   };
 }
