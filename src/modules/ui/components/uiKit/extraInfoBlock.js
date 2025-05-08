@@ -1,7 +1,7 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
 // @version: 1.0 — dynamic extra‐info rows
 
-import { createPickr } from "../pickrManager.js";
+import { createPickr } from "../../pickrManager.js";
 
 export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = false } = {}) {
   const wrap = document.createElement("div");

@@ -1,7 +1,7 @@
 // @file: src/modules/ui/components/uiKit/fieldKit.js
 // @version: 1.0 — form‐field builders
 
-import { createPickr } from "../pickrManager.js";
+import { createPickr } from "../../pickrManager.js";
 
 export function createFieldRow(labelText, inputEl) {
   const row   = document.createElement("div");
