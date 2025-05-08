@@ -1,22 +1,23 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.20 — populate imageSmall & imageLarge fields on edit
+// @version: 2.21 — add icon rendering to loot-pool chips
 
-import { getPickrHexColor }                from "../../../utils/colorUtils.js";
+import { getPickrHexColor }                from "../../utils/colorUtils.js";
 import {
   CHEST_RARITY,
   rarityColors,
   defaultNameColor
-}                                          from "../../../map/markerManager.js";
+}                                          from "../../map/markerManager.js";
 import { createChestForm }                 from "../builders/chestFormBuilder.js";
 import {
   createFormControllerHeader,
   wireFormEvents
-}                                          from "../../components/formControllerShell.js";
-import { initFormPickrs }                  from "../../components/formPickrManager.js";
-import { createFormState }                 from "../../components/formStateManager.js";
-import { pickItems }                       from "../../components/listPicker.js";
-import { createChipListManager }           from "../../components/chipListManager.js";
-import { loadItemDefinitions }             from "../../../services/itemDefinitionsService.js";
+}                                          from "../components/formControllerShell.js";
+import { initFormPickrs }                  from "../components/formPickrManager.js";
+import { createFormState }                 from "../components/formStateManager.js";
+import { pickItems }                       from "../components/listPicker.js";
+// ← updated import to match your new chipListManager API:
+import { createChipList }                  from "../components/chipListManager.js";
+import { loadItemDefinitions }             from "../../../modules/services/itemDefinitionsService.js";
 
 export function createChestFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },
@@ -59,11 +60,9 @@ export function createChestFormController(
     name:        fields.colorName,
     description: fields.colorDesc
   });
-
-  // seed initial name color
   applySizeCategoryColor();
 
-  // Prep item definitions for label lookup
+  // ─── Prepare item definitions for label & icon lookup ─────────
   let itemMap = [];
   async function ensureAllItems() {
     if (!itemMap.length) {
@@ -71,20 +70,29 @@ export function createChestFormController(
     }
   }
 
-  // Shared chip-list manager for loot-pool
-  const chipManager = createChipListManager({
+  // ─── Shared chip-list manager for loot-pool ────────────────────
+  // we defer initial render until after items are loaded
+  const chipManager = createChipList({
     container:   fields.chipContainer,
     listArray:   fields.lootPool,
     renderLabel: id => {
       const def = itemMap.find(i => i.id === id) || { name: id };
       return def.name;
     },
+    // new: render each chip’s icon from the item’s small-image URL
+    renderIcon: id => {
+      const def = itemMap.find(i => i.id === id) || {};
+      return def.imageSmall || "";
+    },
     onChange:    () => onFieldChange?.(getCustom())
   });
 
-  // Loot-pool picker button
+  // ─── Loot-pool picker button ───────────────────────────────────
   fields.openLootPicker.onclick = async () => {
     await ensureAllItems();
+    // now that itemMap is populated, render the chips (with names/icons)
+    chipManager.render();
+
     let chosen;
     try {
       chosen = await pickItems({
@@ -119,7 +127,7 @@ export function createChestFormController(
     };
   }
 
-  // ─── Shared reset & populate ────────────────────────────────
+  // ─── Shared reset & populate ──────────────────────────────────
   const { reset: _reset, populate: _populate } = createFormState({
     form,
     fields: {
@@ -153,6 +161,7 @@ export function createChestFormController(
     _id = null;
     fields.extraInfo.setLines([], false);
     _reset();
+    // ensure chips render after reset
     chipManager.render();
     applySizeCategoryColor();
   }
@@ -161,6 +170,7 @@ export function createChestFormController(
     _id = def.id || null;
     _populate(def);
     fields.extraInfo.setLines(def.extraLines || [], false);
+    // populate and render chips with icons
     chipManager.render();
     applySizeCategoryColor();
   }
@@ -184,4 +194,3 @@ export function createChestFormController(
     }
   };
 }
- 
