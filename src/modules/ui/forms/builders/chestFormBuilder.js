@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.5 — reposition loot-pool cog under label
+// @version: 2.6 — use createFieldRow for Loot Pool alignment
 
 import {
   createTextField,
@@ -39,30 +39,22 @@ export function createChestForm() {
     ], { showColor: false });
 
   // — Loot Pool —
-  const rowLoot = document.createElement("div");
-  rowLoot.className = "field-row loot-pool-row";
+  // Build the chip container and cog button
+  const chipContainer = document.createElement("div");
+  chipContainer.className = "loot-pool-chip-container";
 
-  // Label
-  const lblLoot = document.createElement("label");
-  lblLoot.textContent = "Loot Pool";
-  lblLoot.htmlFor = "fld-chest-loot";  // ensure label-for if needed
-
-  // Cog button now goes directly under the label
   const btnCog = document.createElement("button");
   btnCog.type      = "button";
   btnCog.className = "loot-pool-cog open-loot-picker";
   btnCog.innerHTML = "⚙️";
 
-  // Wrapper for chips only
+  // Wrap them together
   const lootWrapper = document.createElement("div");
   lootWrapper.className = "loot-pool-wrapper";
+  lootWrapper.append(chipContainer, btnCog);
 
-  const chipContainer = document.createElement("div");
-  chipContainer.className = "loot-pool-chip-container";
-  lootWrapper.append(chipContainer);
-
-  // Assemble row: label, then cog, then chip wrapper
-  rowLoot.append(lblLoot, btnCog, lootWrapper);
+  // Use the helper so label and field align perfectly
+  const { row: rowLoot } = createFieldRow("Loot Pool", lootWrapper);
 
   // — Description —
   const {
@@ -74,12 +66,13 @@ export function createChestForm() {
 
   // — Extra Info —
   const extraInfo = createExtraInfoBlock();
-  const rowExtras = createFieldRow("Extra Info", extraInfo.block);
+  const { row: rowExtras } = createFieldRow("Extra Info", extraInfo.block);
 
   // — Image S & L —
   const { row: rowImgS, input: fldImgS } = createImageField("Image S", "fld-chest-img-s");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L", "fld-chest-img-l");
 
+  // Append everything
   form.append(
     rowName,
     rowCategory,
@@ -98,9 +91,9 @@ export function createChestForm() {
       colorName,
       fldCategory,
       fldSize,
-      lootPool:         [],
-      chipContainer,
-      openLootPicker:   btnCog,
+      lootPool:       [],
+      chipContainer,    // where chips render
+      openLootPicker:  btnCog,
       fldDesc,
       colorDesc,
       extraInfo,
