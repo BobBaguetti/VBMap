@@ -1,7 +1,7 @@
 // @file: src/modules/sidebar/itemFilters.js
-// @version: 1.0 — item-based filter checkboxes loader
+// @version: 1.1 — fix import path to itemDefinitionsService
 
-import { loadItemDefinitions } from "../modules/services/itemDefinitionsService.js";
+import { loadItemDefinitions } from "../services/itemDefinitionsService.js";
 
 /**
  * Populate the item filter list with checkboxes for each item definition.
