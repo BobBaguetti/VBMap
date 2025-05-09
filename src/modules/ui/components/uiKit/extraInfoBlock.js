@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.4 — add createExtraInfoRow helper
+// @version: 1.5 — fix Pickr init after element append
 
 import { createPickr } from "../../pickrManager.js";
 import { createFieldRow } from "./fieldKit.js";
@@ -48,14 +48,14 @@ export function createExtraInfoBlock({
       colorBtn.id = `extra-line-${idx}-color`;
       row.append(input, colorBtn);
 
-      // attach Pickr
+      // **Append to DOM first, then init Pickr**
+      lineWrap.append(row);
+
       const pickr = createPickr(`#${colorBtn.id}`, ln.color);
       pickr.on("save", clr => {
         ln.color = clr.toHEXA().toString();
         pickr.hide();
       });
-
-      lineWrap.append(row);
     });
   }
 
