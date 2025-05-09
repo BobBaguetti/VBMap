@@ -1,14 +1,12 @@
-// @version: 5.1
+// @version: 6
 // @file: /src/modules/ui/forms/builders/itemFormBuilder.js
 
 import {
-  createNameField,
-  createItemTypeField,
-  createRarityField,
-  createDescriptionField,
-  createValueField,
-  createQuantityField,
-  createImageFieldSet
+  createTextField,
+  createDropdownField,
+  createTextareaFieldWithColor,
+  createImageField,
+  createFieldRow
 } from "../../components/uiKit/fieldKit.js";
 import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";
 
@@ -16,58 +14,68 @@ export function createItemForm() {
   const form = document.createElement("form");
   form.id = "item-form";
 
-  // Name
-  const { row: rowName, input: fldName, colorBtn: colorName } = createNameField();
-  colorName.id = "fld-name-color";
+  // — Name —
+  const { row: rowName, input: fldName, colorBtn: colorName } =
+    createTextField("Name:", "fld-name");
   colorName.classList.add("color-swatch");
 
-  // Item Type
-  const { row: rowType, select: fldType, colorBtn: colorType } = createItemTypeField();
-  // insert placeholder
-  const placeholderType = document.createElement("option");
-  placeholderType.value = "";
-  placeholderType.disabled = true;
-  placeholderType.selected = true;
-  placeholderType.textContent = "Select Item Type";
-  fldType.insertBefore(placeholderType, fldType.firstChild);
-  colorType.id = "fld-item-type-color";
+  // — Item Type —
+  const { row: rowType, select: fldType, colorBtn: colorType } =
+    createDropdownField(
+      "Item Type:",
+      "fld-item-type",
+      [
+        { value: "",               label: "Select Item Type" },
+        { value: "Crafting Material", label: "Crafting Material" },
+        { value: "Special",           label: "Special" },
+        { value: "Consumable",        label: "Consumable" },
+        { value: "Quest",             label: "Quest" }
+      ]
+    );
   colorType.classList.add("color-swatch");
 
-  // Rarity
-  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField();
-  const placeholderRarity = document.createElement("option");
-  placeholderRarity.value = "";
-  placeholderRarity.disabled = true;
-  placeholderRarity.selected = true;
-  placeholderRarity.textContent = "Select Rarity";
-  fldRarity.insertBefore(placeholderRarity, fldRarity.firstChild);
-  colorRarity.id = "fld-rarity-color";
+  // — Rarity —
+  const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } =
+    createDropdownField(
+      "Rarity:",
+      "fld-rarity",
+      [
+        { value: "",         label: "Select Rarity" },
+        { value: "common",   label: "Common" },
+        { value: "uncommon", label: "Uncommon" },
+        { value: "rare",     label: "Rare" },
+        { value: "epic",     label: "Epic" },
+        { value: "legendary",label: "Legendary" }
+      ]
+    );
   colorRarity.classList.add("color-swatch");
 
-  // Description
-  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } = createDescriptionField();
-  colorDesc.id = "fld-desc-item-color";
+  // — Description —
+  const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
+    createTextareaFieldWithColor("Description:", "fld-desc-item");
   colorDesc.classList.add("color-swatch");
 
-  // Extra Info (no color swatch here)
+  // — Extra Info —
   const extraInfo = createExtraInfoBlock({ withDividers: true });
-  const rowExtras = createFieldRow("Extra Info", extraInfo.block);
+  const rowExtras = createFieldRow("Extra Info:", extraInfo.block);
 
-  // Value
-  const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField();
-  colorValue.id = "fld-value-color";
+  // — Value —
+  const { row: rowValue, input: fldValue, colorBtn: colorValue } =
+    createTextField("Value:", "fld-value");
+  fldValue.type = "number";
   colorValue.classList.add("color-swatch");
 
-  // Quantity
-  const { row: rowQty, input: fldQty, colorBtn: colorQty } = createQuantityField();
-  colorQty.id = "fld-quantity-color";
+  // — Quantity —
+  const { row: rowQty, input: fldQty, colorBtn: colorQty } =
+    createTextField("Quantity:", "fld-quantity");
+  fldQty.type = "number";
   colorQty.classList.add("color-swatch");
 
-  // Images
-  const {
-    rowImgS, fldImgS,
-    rowImgL, fldImgL
-  } = createImageFieldSet();
+  // — Images —
+  const { row: rowImgS, input: fldImgS } =
+    createImageField("Image S:", "fld-img-s");
+  const { row: rowImgL, input: fldImgL } =
+    createImageField("Image L:", "fld-img-l");
 
   form.append(
     rowName,
@@ -84,17 +92,15 @@ export function createItemForm() {
   return {
     form,
     fields: {
-      fldName, colorName,
-      fldType, colorType,
+      fldName,   colorName,
+      fldType,   colorType,
       fldRarity, colorRarity,
-      fldDesc, colorDesc,
-      fldValue, colorValue,
-      fldQty, colorQty,
-      fldImgS, fldImgL,
+      fldDesc,   colorDesc,
       extraInfo,
       rowExtras,
-      rowValue,
-      rowQty
+      fldValue,  colorValue, rowValue,
+      fldQty,    colorQty,   rowQty,
+      fldImgS,   fldImgL
     }
   };
 }
