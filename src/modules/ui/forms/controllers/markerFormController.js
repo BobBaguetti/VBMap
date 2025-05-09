@@ -4,7 +4,7 @@
 import { createMarkerFormBuilder } from "../builders/markerFormBuilder.js";
 import { loadItemDefinitions }     from "../../../services/itemDefinitionsService.js";
 import { loadChestDefinitions }    from "../../../services/chestDefinitionsService.js";
-import { createFormButtonRow }     from "../../components/uiKit.js";
+import { createFormButtonRow }     from "../../uiKit.js";
 
 export function createMarkerFormController({ onCancel, onSubmit }, db) {
   const { form, fields, blocks } = createMarkerFormBuilder();
