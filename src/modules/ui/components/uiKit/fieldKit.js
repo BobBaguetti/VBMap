@@ -1,7 +1,8 @@
 // @file: src/modules/ui/components/uiKit/fieldKit.js
-// @version: 1.1 — add extraInfo export
+// @version: 1.2 — add createExtraInfoField
 
 import { createPickr } from "../../pickrManager.js";
+import { createExtraInfoBlock } from "./extraInfoBlock.js";
 
 export function createFieldRow(labelText, inputEl) {
   const row = document.createElement("div");
@@ -99,5 +100,27 @@ export function createVideoField(labelText, id) {
   return { row, input };
 }
 
-// Re-export the extra-info block factory
+/**
+ * Create a top-aligned “Extra Info” field row, with optional <hr> dividers.
+ *
+ * @param {{ withDividers?: boolean }} opts
+ * @returns {{ row: HTMLElement, extraInfo: ReturnType<typeof createExtraInfoBlock> }}
+ */
+export function createExtraInfoField({ withDividers = false } = {}) {
+  const extraInfo = createExtraInfoBlock();
+  const row = createFieldRow("Extra Info:", extraInfo.block);
+  row.style.alignItems = "flex-start";
+
+  if (!withDividers) {
+    return { row, extraInfo };
+  }
+
+  const container = document.createElement("div");
+  const hrAbove   = document.createElement("hr");
+  const hrBelow   = document.createElement("hr");
+  container.append(hrAbove, row, hrBelow);
+  return { row: container, extraInfo };
+}
+
+// Re-export the extra-info block factory for direct use
 export { createExtraInfoBlock } from "./extraInfoBlock.js";

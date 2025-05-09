@@ -1,14 +1,13 @@
-// @version: 6
-// @file: /src/modules/ui/forms/builders/itemFormBuilder.js
+// @file: src/modules/ui/forms/builders/itemFormBuilder.js
+// @version: 7
 
 import {
   createTextField,
   createDropdownField,
   createTextareaFieldWithColor,
   createImageField,
-  createFieldRow
+  createExtraInfoField
 } from "../../components/uiKit/fieldKit.js";
-import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";
 
 export function createItemForm() {
   const form = document.createElement("form");
@@ -25,7 +24,7 @@ export function createItemForm() {
       "Item Type:",
       "fld-item-type",
       [
-        { value: "",               label: "Select Item Type" },
+        { value: "",                label: "Select Item Type" },
         { value: "Crafting Material", label: "Crafting Material" },
         { value: "Special",           label: "Special" },
         { value: "Consumable",        label: "Consumable" },
@@ -55,9 +54,8 @@ export function createItemForm() {
     createTextareaFieldWithColor("Description:", "fld-desc-item");
   colorDesc.classList.add("color-swatch");
 
-  // — Extra Info —
-  const extraInfo = createExtraInfoBlock({ withDividers: true });
-  const rowExtras = createFieldRow("Extra Info:", extraInfo.block);
+  // — Extra Info (with HR dividers & top alignment) —
+  const { row: rowExtras, extraInfo } = createExtraInfoField({ withDividers: true });
 
   // — Value —
   const { row: rowValue, input: fldValue, colorBtn: colorValue } =
@@ -97,7 +95,6 @@ export function createItemForm() {
       fldRarity, colorRarity,
       fldDesc,   colorDesc,
       extraInfo,
-      rowExtras,
       fldValue,  colorValue, rowValue,
       fldQty,    colorQty,   rowQty,
       fldImgS,   fldImgL
