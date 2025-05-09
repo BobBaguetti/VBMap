@@ -1,5 +1,5 @@
+// @version: 1.12
 // @file: src/modules/ui/modals/chestDefinitionsModal.js
-// @version: 1.11 — wire in formApi.initPickrs() after form inject
 
 import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
 import { createDefListContainer }      from "../../utils/listUtils.js";
@@ -76,9 +76,12 @@ export function initChestDefinitionsModal(db) {
             showPreview({ lootPool: [] });
           },
           onFieldChange: data => {
+            // ← FIXED: use spread ...data, not .data
             const merged = {
               ...data,
-              lootPool: (data.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
+              lootPool: (data.lootPool || [])
+                .map(id => itemMap[id])
+                .filter(Boolean)
             };
             showPreview(merged);
           }
@@ -100,7 +103,9 @@ export function initChestDefinitionsModal(db) {
             formApi.populate(def);
             const fullDef = {
               ...def,
-              lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean)
+              lootPool: (def.lootPool || [])
+                .map(id => itemMap[id])
+                .filter(Boolean)
             };
             showPreview(fullDef);
           },
@@ -133,4 +138,3 @@ export function initChestDefinitionsModal(db) {
     }
   };
 }
- 
