@@ -1,15 +1,11 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.8 — dispatch on pickr change/save & restore HR spacing
+// @version: 1.9 — inner rows align with other fields via createFieldRow
 
 import { createPickr } from "../../pickrManager.js";
 import { createFieldRow } from "./fieldKit.js";
 
 /**
  * Builds a block of “extra info” lines with Pickr per line.
- *
- * @param {object} opts
- * @param {string} opts.defaultColor – hex string for new-line swatches
- * @param {boolean} opts.readonly     – hide the “+” button if true
  */
 export function createExtraInfoBlock({
   defaultColor = "#E5E6E8",
@@ -32,34 +28,51 @@ export function createExtraInfoBlock({
   function render() {
     lineWrap.innerHTML = "";
     lines.forEach((ln, idx) => {
-      const row = document.createElement("div");
-      row.className = "extra-info-row";
-
+      // — create the aligned row with blank label —
       const input = document.createElement("input");
       input.type = "text";
+      input.className = "ui-input";
       input.value = ln.text;
       input.addEventListener("input", e => {
         ln.text = e.target.value;
         wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       });
 
+      const row = createFieldRow("", input);
+      row.classList.add("extra-info-row");
+
+      // — color swatch —
       const colorBtn = document.createElement("button");
       colorBtn.type = "button";
       colorBtn.classList.add("color-swatch");
       colorBtn.id = `extra-line-${idx}-color`;
+      row.append(colorBtn);
 
-      // append row, then defer Pickr init so element exists
-      row.append(input, colorBtn);
-      lineWrap.append(row);
-
-      setTimeout(() => {
-        const pickr = createPickr(`#${colorBtn.id}`, ln.color);
-        pickr.on("change", clr => {
-          ln.color = clr.toHEXA().toString();
+      // — remove button —
+      if (!readonly) {
+        const btnRemove = document.createElement("button");
+        btnRemove.type = "button";
+        btnRemove.classList.add("ui-button");
+        btnRemove.textContent = "×";
+        btnRemove.addEventListener("click", () => {
+          lines.splice(idx, 1);
+          render();
           wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
         });
-        pickr.on("save", clr => {
-          ln.color = clr.toHEXA().toString();
+        row.append(btnRemove);
+      }
+
+      lineWrap.append(row);
+
+      // — defer Pickr init until after DOM insertion —
+      setTimeout(() => {
+        const pickr = createPickr(`#${colorBtn.id}`, ln.color);
+        pickr.on("change", c => {
+          ln.color = c.toHEXA().toString();
+          wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+        });
+        pickr.on("save", c => {
+          ln.color = c.toHEXA().toString();
           wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
           pickr.hide();
         });
@@ -75,12 +88,11 @@ export function createExtraInfoBlock({
 
   return {
     block: wrap,
-    getLines: () =>
-      lines.map(l => ({ text: l.text, color: l.color })),
+    getLines: () => lines.map(l => ({ text: l.text, color: l.color })),
     setLines: (newLines = [], makeReadOnly = false) => {
       lines = newLines.map(l => ({
-        text:  l.text   || "",
-        color: l.color  || defaultColor
+        text:  l.text  || "",
+        color: l.color || defaultColor
       }));
       render();
       if (makeReadOnly) btnAdd.style.display = "none";
@@ -89,12 +101,7 @@ export function createExtraInfoBlock({
 }
 
 /**
- * Wraps your extra-info block in <hr>…<hr> and top-aligns the label.
- *
- * @param {object} opts
- * @param {boolean} opts.withDividers – wrap with <hr> above/below
- * @param {string}  opts.defaultColor – passed to createExtraInfoBlock
- * @param {boolean} opts.readonly     – passed to createExtraInfoBlock
+ * Wraps the extra-info block in <hr>…<hr> and top-aligns the label.
  */
 export function createExtraInfoRow({
   withDividers = true,
@@ -114,8 +121,6 @@ export function createExtraInfoRow({
   const container = document.createElement("div");
   const hrTop      = document.createElement("hr");
   const hrBottom   = document.createElement("hr");
-
-  // inline margins to match original spacing
   hrTop.style.margin    = "8px 0";
   hrBottom.style.margin = "8px 0";
 
