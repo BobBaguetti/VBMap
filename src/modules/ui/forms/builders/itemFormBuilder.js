@@ -8,9 +8,9 @@ import {
   createDescriptionField,
   createValueField,
   createQuantityField,
-  createImageFieldSet,
-  createExtraInfoField
-} from "../universalForm.js";
+  createImageFieldSet
+} from "../../components/uiKit/fieldKit.js";
+import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";
 
 export function createItemForm() {
   const form = document.createElement("form");
@@ -30,20 +30,17 @@ export function createItemForm() {
   placeholderType.selected = true;
   placeholderType.textContent = "Select Item Type";
   fldType.insertBefore(placeholderType, fldType.firstChild);
-
   colorType.id = "fld-item-type-color";
   colorType.classList.add("color-swatch");
 
   // Rarity
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } = createRarityField();
-  // insert placeholder
   const placeholderRarity = document.createElement("option");
   placeholderRarity.value = "";
   placeholderRarity.disabled = true;
   placeholderRarity.selected = true;
   placeholderRarity.textContent = "Select Rarity";
   fldRarity.insertBefore(placeholderRarity, fldRarity.firstChild);
-
   colorRarity.id = "fld-rarity-color";
   colorRarity.classList.add("color-swatch");
 
@@ -53,7 +50,8 @@ export function createItemForm() {
   colorDesc.classList.add("color-swatch");
 
   // Extra Info (no color swatch here)
-  const { row: rowExtras, extraInfo } = createExtraInfoField({ withDividers: true });
+  const extraInfo = createExtraInfoBlock({ withDividers: true });
+  const rowExtras = createFieldRow("Extra Info", extraInfo.block);
 
   // Value
   const { row: rowValue, input: fldValue, colorBtn: colorValue } = createValueField();
@@ -100,4 +98,3 @@ export function createItemForm() {
     }
   };
 }
- 
