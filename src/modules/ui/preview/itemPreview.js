@@ -1,7 +1,7 @@
 // @file: /src/modules/ui/preview/itemPreview.js
-// @version: 5 – uses shared preview-panel CSS
+// @version: 5.1 — import renderItemPopup instead of renderPopup
 
-import { renderPopup } from "../../map/markerManager.js";
+import { renderItemPopup } from "../../map/markerManager.js";
 
 export function createItemPreviewPanel(container) {
   container.id = "item-preview-panel";
@@ -13,7 +13,8 @@ export function createItemPreviewPanel(container) {
 
   return {
     setFromDefinition(def) {
-      popupWrapper.innerHTML = def ? renderPopup(def) : "";
+      // use renderItemPopup for the HTML
+      popupWrapper.innerHTML = def ? renderItemPopup(def) : "";
     },
     show() { container.classList.add("visible"); },
     hide() { container.classList.remove("visible"); }
