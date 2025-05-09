@@ -1,16 +1,15 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 20.5 — restore type/predef rows & fieldKit imports
+// @version: 20.6 — restore edit-form ID so CSS gap applies
 
 import {
   createSmallModal,
   openSmallModalAt
-} from "../uiKit.js";  // façade for smallModal.js
+} from "../uiKit.js";
 
-import { loadItemDefinitions }      from "../../services/itemDefinitionsService.js";
-import { loadChestDefinitions }     from "../../services/chestDefinitionsService.js";
-import { createMarkerForm }         from "../forms/markerForm.js";
+import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
+import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";
+import { createMarkerForm }     from "../forms/markerForm.js";
 
-// pull in the dropdown & button helpers from fieldKit
 import {
   createDropdownField,
   createFormButtonRow
@@ -53,8 +52,10 @@ export function initMarkerModal(db) {
     // 1) Build the inner form via the old createMarkerForm
     formApi = createMarkerForm();
     form    = formApi.form;
+    // ✏️ ensure the form has the old ID so the CSS gap rule applies
+    form.id = "edit-form";
 
-    // 2) Manual type selector row
+    // 2) Type selector
     ({ row: rowType, select: fldType } = createDropdownField(
       "Type:", "fld-type",
       [
@@ -67,8 +68,9 @@ export function initMarkerModal(db) {
       ],
       { showColor: false }
     ));
-    // placeholder option
-    fldType.innerHTML = `<option value="" disabled selected>Select type…</option>` + fldType.innerHTML;
+    fldType.innerHTML =
+      `<option value="" disabled selected>Select type…</option>` +
+      fldType.innerHTML;
 
     // 3) Predefined‐Item selector
     ({ row: rowPredefItem, select: fldPredefItem } = createDropdownField(
@@ -88,21 +90,19 @@ export function initMarkerModal(db) {
     );
 
     // 6) Assemble form layout
-    // Insert Type and predefs at the top
     form.insertBefore(rowType, form.firstChild);
     form.insertBefore(rowPredefItem, form.firstChild.nextSibling);
     form.insertBefore(rowChestType, form.firstChild.nextSibling.nextSibling);
-
-    // Finally append buttons at bottom
     form.appendChild(rowButtons);
 
-    // 7) Create the small modal wrapper
+    // 7) Create the small modal wrapper (draggable + divider)
     modalApi = createSmallModal(
       "edit-marker-modal",
       "Edit Marker",
       [form],
       () => modalApi.hide(),
-      true  // draggable
+      true,   // draggable
+      true    // withDivider
     );
     modalApi.root.classList.add("admin-only");
 
@@ -110,11 +110,12 @@ export function initMarkerModal(db) {
     fldType.addEventListener("change", () => {
       const t = fldType.value;
       rowPredefItem.style.display = t === "Item"  ? "flex" : "none";
-      formApi.fields.extraRow.style.display = t !== "Chest" ? "block" : "none";
       rowChestType.style.display  = t === "Chest" ? "flex" : "none";
+      formApi.fields.extraRow.style.display =
+        t !== "Chest" ? "block" : "none";
     });
 
-    // 9) Wire item pick → load into formApi
+    // 9) Wire item‐pick to populate
     fldPredefItem.addEventListener("change", () => {
       const def = itemDefs[fldPredefItem.value] || {};
       formApi.setFromDefinition(def);
@@ -127,13 +128,11 @@ export function initMarkerModal(db) {
     ensureBuilt();
     await Promise.all([refreshItems(), refreshChests()]);
 
-    // reset
     formApi.setFromDefinition({});
     formApi.initPickrs();
     fldPredefItem.value = "";
     fldChestType.value  = "";
 
-    // pre-fill
     fldType.value = data.type;
     fldType.dispatchEvent(new Event("change"));
     if (data.type === "Item" && data.predefinedItemId) {
@@ -148,8 +147,7 @@ export function initMarkerModal(db) {
 
     form.onsubmit = e => {
       e.preventDefault();
-      const out = harvest(data.coords);
-      onSave(markerObj, out, evt);
+      onSave(markerObj, harvest(data.coords), evt);
       modalApi.hide();
     };
   }
@@ -159,7 +157,6 @@ export function initMarkerModal(db) {
     ensureBuilt();
     await Promise.all([refreshItems(), refreshChests()]);
 
-    // reset & type
     formApi.setFromDefinition({});
     formApi.initPickrs();
     fldPredefItem.value = "";
