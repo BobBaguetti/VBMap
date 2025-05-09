@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 2.2 — collapse label row into one column
+// @version: 2.3 — manual label row with no empty cell
 
 import { createPickr } from "../../pickrManager.js";
 import { createFieldRow } from "./fieldKit.js";
@@ -15,21 +15,26 @@ export function createExtraInfoRow({
 
   const hrTop = document.createElement("hr");
   const hrBot = document.createElement("hr");
-  [hrTop, hrBot].forEach(hr => hr.style.margin = "8px 0");
+  hrTop.style.margin = hrBot.style.margin = "8px 0";
 
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
   btnAdd.textContent = "+";
   btnAdd.className = "ui-button";
-  if (readonly) btnAdd.style.display = "none";
-  btnAdd.addEventListener("click", () => {
-    lines.push({ text: "", color: defaultColor });
-    render();
-    dispatchInput();
-  });
+  if (!readonly) {
+    btnAdd.addEventListener("click", () => {
+      lines.push({ text: "", color: defaultColor });
+      render();
+      dispatchInput();
+    });
+  } else {
+    btnAdd.style.display = "none";
+  }
 
   function dispatchInput() {
-    container.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+    container.closest("form")?.dispatchEvent(
+      new Event("input", { bubbles: true })
+    );
   }
 
   function render() {
@@ -37,32 +42,37 @@ export function createExtraInfoRow({
 
     if (withDividers) container.append(hrTop);
 
-    // Label row: single column grid
-    const labelRow = createFieldRow("Extra Info:", document.createElement("span"));
+    // — Label row, manually built —
+    const labelRow = document.createElement("div");
+    labelRow.className = "field-row";
     labelRow.style.alignItems = "flex-start";
-    labelRow.style.gridTemplateColumns = "auto";  // <-- collapse to one column
+    const lbl = document.createElement("label");
+    lbl.textContent = "Extra Info:";
+    labelRow.append(lbl);
     container.append(labelRow);
 
-    // Data lines...
+    // — Each extra‐info line —
     lines.forEach((ln, idx) => {
       const input = document.createElement("input");
       input.type = "text";
       input.className = "ui-input";
       input.value = ln.text;
-      input.addEventListener("input", e => {
-        ln.text = e.target.value;
+      input.addEventListener("input", () => {
+        ln.text = input.value;
         dispatchInput();
       });
 
       const row = createFieldRow("", input);
       row.classList.add("extra-info-row");
 
+      // color swatch
       const colorBtn = document.createElement("button");
       colorBtn.type = "button";
       colorBtn.className = "color-swatch";
       colorBtn.id = `extra-line-${idx}-color`;
       row.append(colorBtn);
 
+      // remove
       if (!readonly) {
         const btnRemove = document.createElement("button");
         btnRemove.type = "button";
@@ -78,6 +88,7 @@ export function createExtraInfoRow({
 
       container.append(row);
 
+      // defer pickr
       setTimeout(() => {
         const pickr = createPickr(`#${colorBtn.id}`, ln.color || defaultColor);
         pickr.on("change", c => {
@@ -92,7 +103,7 @@ export function createExtraInfoRow({
       }, 0);
     });
 
-    // “+” button row
+    // — “+” button row —
     container.append(createFieldRow("", btnAdd));
 
     if (withDividers) container.append(hrBot);
