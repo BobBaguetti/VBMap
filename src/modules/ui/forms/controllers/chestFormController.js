@@ -1,12 +1,11 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.21 — add icon rendering to loot-pool chips (import paths fixed)
+// @version: 2.22 — preload item definitions for initial chip render
 
 /**
  * Creates the controller for the chest-definition form.
  * Handles wiring header, pickrs, state, and loot-pool chip list.
  */
 
-// Adjusted paths to match repo layout
 import { getPickrHexColor }        from "../../../utils/colorUtils.js";
 import {
   CHEST_RARITY,
@@ -90,10 +89,14 @@ export function createChestFormController(
     onChange:    () => onFieldChange?.(getCustom())
   });
 
+  // Preload items & render initial chips so populate reflects names/icons
+  ensureAllItems().then(() => chipManager.render());
+
   // ─── Loot-pool picker button ───────────────────────────────────
   fields.openLootPicker.onclick = async () => {
     await ensureAllItems();
     chipManager.render();
+
     let chosen;
     try {
       chosen = await pickItems({
@@ -166,10 +169,11 @@ export function createChestFormController(
     applySizeCategoryColor();
   }
 
-  function populate(def) {
+  async function populate(def) {
     _id = def.id || null;
     _populate(def);
     fields.extraInfo.setLines(def.extraLines || [], false);
+    await ensureAllItems();
     chipManager.render();
     applySizeCategoryColor();
   }
