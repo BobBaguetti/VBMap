@@ -1,5 +1,5 @@
-// @file: src/modules/ui/forms/builders/itemFormBuilder.js
-// @version: 7
+// @version: 7.1
+// @file: /src/modules/ui/forms/builders/itemFormBuilder.js
 
 import {
   createTextField,
@@ -15,20 +15,20 @@ export function createItemForm() {
 
   // — Name —
   const { row: rowName, input: fldName, colorBtn: colorName } =
-    createTextField("Name:", "fld-name");
+    createTextField("Name", "fld-name");
   colorName.classList.add("color-swatch");
 
   // — Item Type —
   const { row: rowType, select: fldType, colorBtn: colorType } =
     createDropdownField(
-      "Item Type:",
+      "Item Type",
       "fld-item-type",
       [
-        { value: "",                label: "Select Item Type" },
-        { value: "Crafting Material", label: "Crafting Material" },
-        { value: "Special",           label: "Special" },
-        { value: "Consumable",        label: "Consumable" },
-        { value: "Quest",             label: "Quest" }
+        { value: "",                   label: "Select Item Type" },
+        { value: "Crafting Material",  label: "Crafting Material" },
+        { value: "Special",            label: "Special" },
+        { value: "Consumable",         label: "Consumable" },
+        { value: "Quest",              label: "Quest" }
       ]
     );
   colorType.classList.add("color-swatch");
@@ -36,7 +36,7 @@ export function createItemForm() {
   // — Rarity —
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } =
     createDropdownField(
-      "Rarity:",
+      "Rarity",
       "fld-rarity",
       [
         { value: "",         label: "Select Rarity" },
@@ -51,7 +51,7 @@ export function createItemForm() {
 
   // — Description —
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
-    createTextareaFieldWithColor("Description:", "fld-desc-item");
+    createTextareaFieldWithColor("Description", "fld-desc-item");
   colorDesc.classList.add("color-swatch");
 
   // — Extra Info (with HR dividers & top alignment) —
@@ -59,21 +59,21 @@ export function createItemForm() {
 
   // — Value —
   const { row: rowValue, input: fldValue, colorBtn: colorValue } =
-    createTextField("Value:", "fld-value");
+    createTextField("Value", "fld-value");
   fldValue.type = "number";
   colorValue.classList.add("color-swatch");
 
   // — Quantity —
   const { row: rowQty, input: fldQty, colorBtn: colorQty } =
-    createTextField("Quantity:", "fld-quantity");
+    createTextField("Quantity", "fld-quantity");
   fldQty.type = "number";
   colorQty.classList.add("color-swatch");
 
   // — Images —
   const { row: rowImgS, input: fldImgS } =
-    createImageField("Image S:", "fld-img-s");
+    createImageField("Image S", "fld-img-s");
   const { row: rowImgL, input: fldImgL } =
-    createImageField("Image L:", "fld-img-l");
+    createImageField("Image L", "fld-img-l");
 
   form.append(
     rowName,

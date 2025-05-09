@@ -1,5 +1,5 @@
+// @version: 2.6
 // @file: src/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.5
 
 import {
   createTextField,
@@ -51,7 +51,7 @@ export function createChestForm() {
   const rowLoot = document.createElement("div");
   rowLoot.className = "field-row loot-pool-row";
   const lblLoot = document.createElement("label");
-  lblLoot.textContent = "Loot Pool";
+  lblLoot.textContent = "Loot Pool:";  // now consistent with auto-colon
   const lootWrapper = document.createElement("div");
   lootWrapper.className = "loot-pool-wrapper";
   const chipContainer = document.createElement("div");

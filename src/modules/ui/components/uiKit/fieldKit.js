@@ -1,14 +1,22 @@
 // @file: src/modules/ui/components/uiKit/fieldKit.js
-// @version: 1.2 — add createExtraInfoField
+// @version: 1.3 — auto-append colon in labels
 
 import { createPickr } from "../../pickrManager.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
 
+/**
+ * Create a label/input row. Automatically appends a ':' if missing.
+ */
 export function createFieldRow(labelText, inputEl) {
   const row = document.createElement("div");
   row.className = "field-row";
+
   const label = document.createElement("label");
-  label.textContent = labelText;
+  // ensure one trailing colon
+  label.textContent = labelText.endsWith(":")
+    ? labelText
+    : `${labelText}:`;
+
   row.append(label, inputEl);
   return row;
 }
@@ -24,7 +32,9 @@ export function createColorFieldRow(labelText, inputEl, colorId) {
   const row = document.createElement("div");
   row.className = "field-row";
   const label = document.createElement("label");
-  label.textContent = labelText;
+  label.textContent = labelText.endsWith(":")
+    ? labelText
+    : `${labelText}:`;
   const colorBtn = createColorButton(colorId);
   row.append(label, inputEl, colorBtn);
   return { row, inputEl, colorBtn };
@@ -89,9 +99,6 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
   return row;
 }
 
-/**
- * Create a simple text input for video URLs.
- */
 export function createVideoField(labelText, id) {
   const input = document.createElement("input");
   input.id = id;
@@ -108,7 +115,7 @@ export function createVideoField(labelText, id) {
  */
 export function createExtraInfoField({ withDividers = false } = {}) {
   const extraInfo = createExtraInfoBlock();
-  const row = createFieldRow("Extra Info:", extraInfo.block);
+  const row = createFieldRow("Extra Info", extraInfo.block);
   row.style.alignItems = "flex-start";
 
   if (!withDividers) {
@@ -122,6 +129,5 @@ export function createExtraInfoField({ withDividers = false } = {}) {
   return { row: container, extraInfo };
 }
 
-// Re-export the extra-info block factory for direct use
+// also export block factory directly
 export { createExtraInfoBlock } from "./extraInfoBlock.js";
- 
