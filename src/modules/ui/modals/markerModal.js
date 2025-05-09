@@ -1,95 +1,120 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 20.4 — use createSmallModal & openSmallModalAt
+// @version: 20.5 — restore type/predef rows & fieldKit imports
 
 import {
   createSmallModal,
   openSmallModalAt
-} from "../uiKit.js";  // now re-exports smallModal.js
+} from "../uiKit.js";  // façade for smallModal.js
 
-import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
-import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";
-import { createMarkerForm }     from "../forms/markerForm.js";
+import { loadItemDefinitions }      from "../../services/itemDefinitionsService.js";
+import { loadChestDefinitions }     from "../../services/chestDefinitionsService.js";
+import { createMarkerForm }         from "../forms/markerForm.js";
+
+// pull in the dropdown & button helpers from fieldKit
+import {
+  createDropdownField,
+  createFormButtonRow
+} from "../components/uiKit/fieldKit.js";
 
 export function initMarkerModal(db) {
-  let modalApi;        // { root, show, hide }
-  let form, formApi;
+  let modalApi, form, formApi;
   let fldType, fldPredefItem, fldChestType;
-  let rowPredefItem, rowChestType, blockItem;
+  let rowType, rowPredefItem, rowChestType, rowButtons;
   let itemDefs = {}, chestDefs = {};
 
-  // ─── Helpers to load & cache definitions ────────────────────────
-  async function refreshPredefinedItems() {
+  // ── Loaders ───────────────────────────────────────────────────
+  async function refreshItems() {
     if (!fldPredefItem) return;
     const list = await loadItemDefinitions(db);
     itemDefs = Object.fromEntries(list.map(d => [d.id, d]));
     fldPredefItem.innerHTML = `<option value="">None (custom)</option>`;
     list.forEach(d => {
       const o = document.createElement("option");
-      o.value = d.id;
-      o.textContent = d.name;
+      o.value = d.id; o.textContent = d.name;
       fldPredefItem.appendChild(o);
     });
   }
-
-  async function refreshChestTypes() {
+  async function refreshChests() {
     if (!fldChestType) return;
     const list = await loadChestDefinitions(db);
     chestDefs = Object.fromEntries(list.map(d => [d.id, d]));
     fldChestType.innerHTML = `<option value="">Select Chest Type</option>`;
     list.forEach(d => {
       const o = document.createElement("option");
-      o.value = d.id;
-      o.textContent = d.name;
+      o.value = d.id; o.textContent = d.name;
       fldChestType.appendChild(o);
     });
   }
 
-  // ─── Build the small modal & form once ─────────────────────────
+  // ── Build once ─────────────────────────────────────────────────
   function ensureBuilt() {
     if (modalApi) return;
 
-    // Build the form fields
+    // 1) Build the inner form via the old createMarkerForm
     formApi = createMarkerForm();
     form    = formApi.form;
 
-    // Grab references to dynamic rows
-    fldType        = form.querySelector("#marker-fld-type");
-    rowPredefItem  = form.querySelector("#marker-fld-predef-item").closest(".field-row");
-    fldPredefItem  = form.querySelector("#marker-fld-predef-item");
-    rowChestType   = form.querySelector("#marker-fld-predef-chest").closest(".field-row");
-    fldChestType   = form.querySelector("#marker-fld-predef-chest");
+    // 2) Manual type selector row
+    ({ row: rowType, select: fldType } = createDropdownField(
+      "Type:", "fld-type",
+      [
+        { value: "Door",              label: "Door" },
+        { value: "Extraction Portal", label: "Extraction Portal" },
+        { value: "Item",              label: "Item" },
+        { value: "Chest",             label: "Chest" },
+        { value: "Teleport",          label: "Teleport" },
+        { value: "Spawn Point",       label: "Spawn Point" }
+      ],
+      { showColor: false }
+    ));
+    // placeholder option
+    fldType.innerHTML = `<option value="" disabled selected>Select type…</option>` + fldType.innerHTML;
 
-    // Item‐only block (reuse fields from formApi)
-    blockItem = document.createElement("div");
-    blockItem.classList.add("item-gap");
-    blockItem.append(
-      formApi.fields.fldItemType.closest(".field-row"),
-      formApi.fields.fldRarity.closest(".field-row"),
-      formApi.fields.fldDesc.closest(".field-row")
+    // 3) Predefined‐Item selector
+    ({ row: rowPredefItem, select: fldPredefItem } = createDropdownField(
+      "Item:", "fld-predef-item", [], { showColor: false }
+    ));
+
+    // 4) Chest‐Type selector
+    ({ row: rowChestType, select: fldChestType } = createDropdownField(
+      "Chest Type:", "fld-predef-chest", [], { showColor: false }
+    ));
+
+    // 5) Buttons
+    rowButtons = createFormButtonRow(
+      () => modalApi.hide(),
+      "Save",
+      "Cancel"
     );
 
-    // Insert blockItem into form under the type selectors
-    form.insertBefore(blockItem, formApi.fields.extraRow);
+    // 6) Assemble form layout
+    // Insert Type and predefs at the top
+    form.insertBefore(rowType, form.firstChild);
+    form.insertBefore(rowPredefItem, form.firstChild.nextSibling);
+    form.insertBefore(rowChestType, form.firstChild.nextSibling.nextSibling);
 
-    // Create & register the small modal
+    // Finally append buttons at bottom
+    form.appendChild(rowButtons);
+
+    // 7) Create the small modal wrapper
     modalApi = createSmallModal(
-      "edit-marker-modal",     // id
-      "Edit Marker",           // title
-      [form],                  // body nodes
-      () => modalApi.hide(),   // onClose
-      true                     // draggable
+      "edit-marker-modal",
+      "Edit Marker",
+      [form],
+      () => modalApi.hide(),
+      true  // draggable
     );
     modalApi.root.classList.add("admin-only");
 
-    // ─ Type change: show/hide relevant fields ────────────────────
+    // 8) Wire type→visibility
     fldType.addEventListener("change", () => {
       const t = fldType.value;
-      rowPredefItem.style.display = (t === "Item")  ? "flex" : "none";
-      blockItem.style.display     = (t === "Item")  ? "block": "none";
-      rowChestType.style.display  = (t === "Chest") ? "flex" : "none";
+      rowPredefItem.style.display = t === "Item"  ? "flex" : "none";
+      formApi.fields.extraRow.style.display = t !== "Chest" ? "block" : "none";
+      rowChestType.style.display  = t === "Chest" ? "flex" : "none";
     });
 
-    // ─ Predefined‐Item change: populate the Item sub‐form ───────
+    // 9) Wire item pick → load into formApi
     fldPredefItem.addEventListener("change", () => {
       const def = itemDefs[fldPredefItem.value] || {};
       formApi.setFromDefinition(def);
@@ -97,21 +122,20 @@ export function initMarkerModal(db) {
     });
   }
 
-  // ─── Open for editing an existing marker ────────────────────────
+  // ── Open for edit ────────────────────────────────────────────────
   async function openEdit(markerObj, data, evt, onSave) {
     ensureBuilt();
-    await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
+    await Promise.all([refreshItems(), refreshChests()]);
 
-    // Reset form state
-    fldPredefItem.value = "";
-    fldChestType.value  = "";
+    // reset
     formApi.setFromDefinition({});
     formApi.initPickrs();
+    fldPredefItem.value = "";
+    fldChestType.value  = "";
 
-    // Pre-fill type & specific dropdowns
+    // pre-fill
     fldType.value = data.type;
     fldType.dispatchEvent(new Event("change"));
-
     if (data.type === "Item" && data.predefinedItemId) {
       fldPredefItem.value = data.predefinedItemId;
       fldPredefItem.dispatchEvent(new Event("change"));
@@ -120,10 +144,8 @@ export function initMarkerModal(db) {
       fldChestType.value = data.chestTypeId;
     }
 
-    // Position & show modal
     openSmallModalAt(modalApi, evt);
 
-    // Wire submit
     form.onsubmit = e => {
       e.preventDefault();
       const out = harvest(data.coords);
@@ -132,45 +154,43 @@ export function initMarkerModal(db) {
     };
   }
 
-  // ─── Open for creating a new marker ────────────────────────────
+  // ── Open for create ─────────────────────────────────────────────
   async function openCreate(coords, type, evt, onCreate) {
     ensureBuilt();
-    await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
+    await Promise.all([refreshItems(), refreshChests()]);
 
-    // Reset everything
-    fldPredefItem.value = "";
-    fldChestType.value  = "";
+    // reset & type
     formApi.setFromDefinition({});
     formApi.initPickrs();
-
-    fldType.value = type || "";
+    fldPredefItem.value = "";
+    fldChestType.value  = "";
+    fldType.value       = type || "";
     fldType.dispatchEvent(new Event("change"));
 
     openSmallModalAt(modalApi, evt);
 
     form.onsubmit = e => {
       e.preventDefault();
-      const out = harvest(coords);
-      onCreate(out);
+      onCreate(harvest(coords));
       modalApi.hide();
     };
   }
 
-  // ─── Gather form values into a marker payload ────────────────
+  // ── Harvest values ─────────────────────────────────────────────
   function harvest(coords) {
-    const type = fldType.value;
-    if (type === "Chest" && fldChestType.value) {
-      return { type, coords, chestTypeId: fldChestType.value };
+    const t = fldType.value;
+    if (t === "Chest" && fldChestType.value) {
+      return { type: t, coords, chestTypeId: fldChestType.value };
     }
-    if (type === "Item" && fldPredefItem.value) {
+    if (t === "Item" && fldPredefItem.value) {
       return {
-        type,
+        type: t,
         coords,
         predefinedItemId: fldPredefItem.value,
         ...formApi.getCustom()
       };
     }
-    return { type, coords, ...formApi.getCustom() };
+    return { type: t, coords, ...formApi.getCustom() };
   }
 
   return { openEdit, openCreate };
