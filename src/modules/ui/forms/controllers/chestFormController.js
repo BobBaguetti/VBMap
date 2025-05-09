@@ -1,30 +1,34 @@
-// @version: 2.23
+// @version: 2.24
 // @file: src/modules/ui/forms/controllers/chestFormController.js
 
 /**
  * Creates the controller for the chest-definition form.
- * Handles wiring header, pickrs, state, and loot-pool chip list.
+ * Handles wiring header, pickrs, state, and loot-pool chip-list.
  */
-import { getPickrHexColor }      from "../../../utils/colorUtils.js";
+import { getPickrHexColor }    from "../../../utils/colorUtils.js";
 import {
   CHEST_RARITY,
   rarityColors,
   defaultNameColor
-}                                from "../../../map/markerManager.js";
-import { createChestForm }       from "../builders/chestFormBuilder.js";
+}                              from "../../../map/markerManager.js";
+import { createChestForm }     from "../builders/chestFormBuilder.js";
 import {
   createFormControllerHeader,
   wireFormEvents
-}                                from "../../components/formControllerShell.js";
-import { initFormPickrs }        from "../../components/formPickrManager.js";
-import { createFormState }       from "../../components/formStateManager.js";
-import { loadItemDefinitions }   from "../../../services/itemDefinitionsService.js";
+}                              from "../../components/formControllerShell.js";
+import { initFormPickrs }      from "../../components/formPickrManager.js";
+import { createFormState }     from "../../components/formStateManager.js";
+import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 
 export function createChestFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },
   db
 ) {
   const { form, fields } = createChestForm();
+  // fields now includes:
+  //  fields.lootPool (array of IDs)
+  //  fields.getLootPool(), fields.setLootPool(items[])
+  //  fields.allItems (populated below)
 
   // ─── Header + Buttons ────────────────────────────────────────
   const {
@@ -63,18 +67,18 @@ export function createChestFormController(
   });
   applySizeCategoryColor();
 
-  // ─── Prepare item definitions for picker ────────────────────
+  // ─── Load & seed definitions for the Loot Pool picker ───────
   let itemMap = [];
   async function ensureAllItems() {
     if (!itemMap.length) {
       itemMap = await loadItemDefinitions(db);
+      // populate the builder’s items array so the picker shows them
+      fields.allItems.splice(0, fields.allItems.length, ...itemMap);
     }
     return itemMap;
   }
-
-  // ─── Seed initial Loot Pool chips once defs load ─────────────
+  // initial seed: load defs then seed selected chips
   ensureAllItems().then(defs => {
-    // map stored IDs → full objects
     fields.setLootPool(defs.filter(d => fields.lootPool.includes(d.id)));
   });
 
@@ -111,7 +115,6 @@ export function createChestFormController(
     defaultValues:    { size: "Small", category: "Normal" },
     pickrs,
     pickrClearKeys:   ["name", "description"],
-    // no more manual chipLists here
     subheading,
     setDeleteVisible,
     addTitle:  "Add Chest Type",
@@ -124,7 +127,7 @@ export function createChestFormController(
     _id = null;
     fields.extraInfo.setLines([], false);
     _reset();
-    fields.setLootPool([]);            // clear chips
+    fields.setLootPool([]);          // clear chips
     applySizeCategoryColor();
   }
 
@@ -133,11 +136,10 @@ export function createChestFormController(
     _populate(def);
     fields.extraInfo.setLines(def.extraLines || [], false);
     await ensureAllItems();
-    // seed chips from definition
-    const defs = itemMap;
-    fields.setLootPool(def.lootPool
-      .map(id => defs.find(d => d.id === id))
-      .filter(Boolean)
+    // seed selected chips from saved IDs
+    fields.setLootPool(
+      itemMap
+        .filter(d => def.lootPool.includes(d.id))
     );
     applySizeCategoryColor();
   }
