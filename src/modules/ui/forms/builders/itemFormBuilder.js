@@ -1,4 +1,4 @@
-// @version: 7
+// @version: 8
 // @file: /src/modules/ui/forms/builders/itemFormBuilder.js
 
 import {
@@ -47,11 +47,9 @@ export function createItemForm() {
   colorDesc.classList.add("color-swatch");
 
   // — Extra Info (divider + top-aligned) —
-  const {
-    container: extraContainer,
-    block: extraInfo,
-    row: rowExtra
-  } = createExtraInfoRow({ withDividers: true });
+  const extraInfo = createExtraInfoRow({ withDividers: true });
+  const extraContainer = extraInfo.container;
+  const rowExtra       = extraInfo.row;
 
   // — Value —
   const { row: rowValue, input: fldValue, colorBtn: colorValue } =
@@ -87,14 +85,16 @@ export function createItemForm() {
   return {
     form,
     fields: {
-      fldName, colorName,
-      fldType, colorType,
+      fldName,   colorName,
+      fldType,   colorType,
       fldRarity, colorRarity,
-      fldDesc, colorDesc,
-      extraInfo, rowExtra,
+      fldDesc,   colorDesc,
+      // now the full extraInfo object, with setLines/getLines
+      extraInfo,
+      rowExtra,
       fldValue, colorValue, rowValue,
-      fldQty, colorQty, rowQty,
-      fldImgS, fldImgL
+      fldQty,   colorQty,   rowQty,
+      fldImgS,  fldImgL
     }
   };
 }
