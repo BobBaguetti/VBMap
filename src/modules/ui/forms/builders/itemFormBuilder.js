@@ -1,4 +1,4 @@
-// @version: 6
+// @version: 7
 // @file: /src/modules/ui/forms/builders/itemFormBuilder.js
 
 import {
@@ -6,9 +6,8 @@ import {
   createDropdownField,
   createTextareaFieldWithColor,
   createImageField,
-  createFieldRow
+  createExtraInfoRow
 } from "../../components/uiKit/fieldKit.js";
-import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";
 
 export function createItemForm() {
   const form = document.createElement("form");
@@ -21,33 +20,25 @@ export function createItemForm() {
 
   // — Item Type —
   const { row: rowType, select: fldType, colorBtn: colorType } =
-    createDropdownField(
-      "Item Type:",
-      "fld-item-type",
-      [
-        { value: "",               label: "Select Item Type" },
-        { value: "Crafting Material", label: "Crafting Material" },
-        { value: "Special",           label: "Special" },
-        { value: "Consumable",        label: "Consumable" },
-        { value: "Quest",             label: "Quest" }
-      ]
-    );
+    createDropdownField("Item Type:", "fld-item-type", [
+      { value: "", label: "Select Item Type" },
+      { value: "Crafting Material", label: "Crafting Material" },
+      { value: "Special", label: "Special" },
+      { value: "Consumable", label: "Consumable" },
+      { value: "Quest", label: "Quest" }
+    ]);
   colorType.classList.add("color-swatch");
 
   // — Rarity —
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } =
-    createDropdownField(
-      "Rarity:",
-      "fld-rarity",
-      [
-        { value: "",         label: "Select Rarity" },
-        { value: "common",   label: "Common" },
-        { value: "uncommon", label: "Uncommon" },
-        { value: "rare",     label: "Rare" },
-        { value: "epic",     label: "Epic" },
-        { value: "legendary",label: "Legendary" }
-      ]
-    );
+    createDropdownField("Rarity:", "fld-rarity", [
+      { value: "", label: "Select Rarity" },
+      { value: "common", label: "Common" },
+      { value: "uncommon", label: "Uncommon" },
+      { value: "rare", label: "Rare" },
+      { value: "epic", label: "Epic" },
+      { value: "legendary", label: "Legendary" }
+    ]);
   colorRarity.classList.add("color-swatch");
 
   // — Description —
@@ -55,9 +46,12 @@ export function createItemForm() {
     createTextareaFieldWithColor("Description:", "fld-desc-item");
   colorDesc.classList.add("color-swatch");
 
-  // — Extra Info —
-  const extraInfo = createExtraInfoBlock({ withDividers: true });
-  const rowExtras = createFieldRow("Extra Info:", extraInfo.block);
+  // — Extra Info (divider + top-aligned) —
+  const {
+    container: extraContainer,
+    block: extraInfo,
+    row: rowExtra
+  } = createExtraInfoRow({ withDividers: true });
 
   // — Value —
   const { row: rowValue, input: fldValue, colorBtn: colorValue } =
@@ -77,12 +71,13 @@ export function createItemForm() {
   const { row: rowImgL, input: fldImgL } =
     createImageField("Image L:", "fld-img-l");
 
+  // assemble
   form.append(
     rowName,
     rowType,
     rowRarity,
     rowDesc,
-    rowExtras,
+    extraContainer,
     rowValue,
     rowQty,
     rowImgS,
@@ -92,15 +87,14 @@ export function createItemForm() {
   return {
     form,
     fields: {
-      fldName,   colorName,
-      fldType,   colorType,
+      fldName, colorName,
+      fldType, colorType,
       fldRarity, colorRarity,
-      fldDesc,   colorDesc,
-      extraInfo,
-      rowExtras,
-      fldValue,  colorValue, rowValue,
-      fldQty,    colorQty,   rowQty,
-      fldImgS,   fldImgL
+      fldDesc, colorDesc,
+      extraInfo, rowExtra,
+      fldValue, colorValue, rowValue,
+      fldQty, colorQty, rowQty,
+      fldImgS, fldImgL
     }
   };
 }
