@@ -1,7 +1,5 @@
 // @file: src/modules/ui/components/uiKit/modals/smallModal.js
-// @version: 1.1 — small‐modal helper, plus positioning & drag support
-
-import { openModal, closeModal } from "../modalKit.js";
+// @version: 1.2 — fully standalone small-modal helper
 
 /**
  * Create a small, floating modal (no backdrop) that you can position yourself.
@@ -20,17 +18,17 @@ export function createSmallModal(
   onClose = () => {},
   draggable = false
 ) {
-  // root wrapper
+  // Root wrapper
   const root = document.createElement("div");
   root.id = id;
-  root.className = "modal small-modal";  // your .small-modal CSS
+  root.className = "modal small-modal";  // styled via modal.small.css
   Object.assign(root.style, {
     position: "absolute",
     display:  "none",
     zIndex:   "1001"
   });
 
-  // header
+  // Header
   const hdr = document.createElement("div");
   hdr.className = "modal-header";
   hdr.innerHTML = `
@@ -39,13 +37,13 @@ export function createSmallModal(
   `;
   root.appendChild(hdr);
 
-  // body
+  // Body
   const body = document.createElement("div");
   body.className = "modal-body";
   bodies.forEach(el => body.appendChild(el));
   root.appendChild(body);
 
-  // close wiring
+  // Close wiring
   hdr.querySelector(".modal-close-btn")
      .addEventListener("click", () => {
        onClose();
@@ -58,7 +56,7 @@ export function createSmallModal(
     }
   });
 
-  // optional drag
+  // Optional dragging
   if (draggable) {
     makeSmallModalDraggable(root, hdr);
   }
@@ -78,32 +76,39 @@ export function createSmallModal(
 }
 
 /**
- * Position an existing small‐modal next to the click event.
+ * Position an existing small‐modal next to a click event.
+ *
+ * @param {{ root: HTMLElement, show():void }} modalApi
+ * @param {MouseEvent} evt
  */
 export function openSmallModalAt(modalApi, evt) {
-  // modalApi is the { root, show, hide } from createSmallModal
-  // measure content size
   const rect = modalApi.root.getBoundingClientRect();
-  const x = evt.pageX - rect.width - 8;
-  const y = evt.pageY - rect.height / 2;
+  const x    = evt.pageX - rect.width - 8;
+  const y    = evt.pageY - rect.height / 2;
   modalApi.show(x, y);
 }
 
 /**
  * Make a small-modal draggable via its header.
+ *
+ * @param {HTMLElement} modalEl
+ * @param {HTMLElement} handle
  */
 function makeSmallModalDraggable(modalEl, handle) {
   let dragging = false, offsetX = 0, offsetY = 0;
+
   handle.onmousedown = e => {
     dragging = true;
     offsetX  = e.clientX - modalEl.offsetLeft;
     offsetY  = e.clientY - modalEl.offsetTop;
+
     document.onmousemove = e2 => {
       if (!dragging) return;
       modalEl.style.left     = `${e2.clientX - offsetX}px`;
       modalEl.style.top      = `${e2.clientY - offsetY}px`;
       modalEl.style.position = "absolute";
     };
+
     document.onmouseup = () => {
       dragging = false;
       document.onmousemove = null;
