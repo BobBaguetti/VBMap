@@ -54,10 +54,8 @@
   padding: 0;
 }
 
-/* Cog-wheel / picker button */
+/* Cog-wheel / picker button default styling */
 .open-loot-picker {
-  display: block;       /* drop onto its own line */
-  margin-top: 0.25rem;  /* small gap under the label */
   background: none;
   border: none;
   cursor: pointer;
@@ -67,9 +65,34 @@
   padding: 0;
 }
 
-/* Align the “Loot Pool” label to the top of its row */
-/* Change #fldLootPool to your actual input ID, or adjust the selector */
+/* Align the “Loot Pool” label to the top */
+/* Change #fldLootPool if your actual input ID differs */
 label[for="fldLootPool"] {
   align-self: flex-start;
   padding-top: 0.25rem;
+}
+
+/*────────────────────────────────────────────────────────*/
+/* Move cog under the "Loot Pool" label and adjust spacing */
+
+/* Target the form-row wrapper around the Loot Pool field */
+/* Replace .form-row--loot-pool with your actual row class if different */
+.form-row--loot-pool {
+  position: relative;
+  align-items: start; /* label at top */
+}
+
+/* Position the picker button under the label */
+.form-row--loot-pool .open-loot-picker {
+  display: block;
+  position: absolute;
+  top: 1.5em;
+  left: 0;
+  margin: 0;
+  filter: brightness(0) invert(1) !important;
+}
+
+/* Push the chip list down to make room for the cog */
+.form-row--loot-pool .chip-list-container {
+  margin-top: 2.5em;
 }
