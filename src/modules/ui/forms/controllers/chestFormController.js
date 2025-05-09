@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.23 — DOM relocation of the loot-picker under its label
+// @version: 2.24 — removed old DOM-relocation now handled in builder
 
 /**
  * Creates the controller for the chest-definition form.
@@ -29,21 +29,6 @@ export function createChestFormController(
 ) {
   // Build the raw form and grab its fields
   const { form, fields } = createChestForm();
-
-  // ————————————————————————————————————————————————————————
-  // Relocate the loot-picker button under the "Loot Pool" label
-  // fields.openLootPicker is the cog-wheel button created by the builder
-  const pickerBtn = fields.openLootPicker;
-  // Remove it from its original spot
-  if (pickerBtn && pickerBtn.parentNode) {
-    pickerBtn.parentNode.removeChild(pickerBtn);
-  }
-  // Insert it immediately after the "Loot Pool" label
-  const lootLabel = form.querySelector('label[for="fldLootPool"]');
-  if (lootLabel) {
-    lootLabel.insertAdjacentElement('afterend', pickerBtn);
-  }
-  // ————————————————————————————————————————————————————————
 
   // Header + Buttons
   const {
@@ -108,28 +93,26 @@ export function createChestFormController(
   // Preload & initial render
   ensureAllItems().then(() => chipManager.render());
 
-  // ─── Loot-pool picker button (now relocated) ──────────────────
-  if (pickerBtn) {
-    pickerBtn.onclick = async () => {
-      await ensureAllItems();
-      chipManager.render();
+  // ─── Loot-pool picker button wiring ────────────────────────────
+  fields.openLootPicker.onclick = async () => {
+    await ensureAllItems();
+    chipManager.render();
 
-      let chosen;
-      try {
-        chosen = await pickItems({
-          title:    "Select Loot Pool Items",
-          items:    itemMap,
-          selected: fields.lootPool,
-          labelKey: "name"
-        });
-      } catch {
-        return; // user cancelled
-      }
-      fields.lootPool.splice(0, fields.lootPool.length, ...chosen);
-      chipManager.render();
-      onFieldChange?.(getCustom());
-    };
-  }
+    let chosen;
+    try {
+      chosen = await pickItems({
+        title:    "Select Loot Pool Items",
+        items:    itemMap,
+        selected: fields.lootPool,
+        labelKey: "name"
+      });
+    } catch {
+      return; // user cancelled
+    }
+    fields.lootPool.splice(0, fields.lootPool.length, ...chosen);
+    chipManager.render();
+    onFieldChange?.(getCustom());
+  };
 
   // Internal state & payload
   let _id = null;
