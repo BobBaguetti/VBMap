@@ -1,8 +1,7 @@
 // @file: src/modules/map/marker/icons/createCustomIcon.js
-// @version: 1.1 — use global Leaflet instance
+// @version: 1.1 — use global L instead of ESM import
 
-// assumes `<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>` 
-// loads L onto window before your modules run
+// assumes Leaflet is loaded via <script> and exposes window.L
 const L = window.L;
 
 import { defaultNameColor } from "../../../utils/colorPresets.js";
@@ -53,7 +52,7 @@ export function createCustomIcon(m) {
   return L.divIcon({
     html:       wrap.outerHTML,
     className:  "",
-    iconSize:   [size, size],
+    iconSize:  [size, size],
     iconAnchor: [size / 2, size / 2]
   });
 }

@@ -1,7 +1,7 @@
 // @file: src/modules/map/marker/icons/createMarker.js
-// @version: 1.2 — use global L and fix colorPresets import path
+// @version: 1.3 — use global L and fix module imports
 
-// assumes Leaflet is loaded via <script> and exposes window.L
+// Assumes Leaflet is loaded via a <script> tag and exposes window.L
 const L = window.L;
 
 import { renderItemPopup }  from "../popups/itemPopup.js";
@@ -102,8 +102,8 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
     const opts = [];
     if (isAdmin) {
       opts.push(
-        { text: "Edit Marker", action: () => callbacks.onEdit?.(markerObj, m, ev.originalEvent) },
-        { text: "Copy Marker", action: () => callbacks.onCopy?.(markerObj, m, ev.originalEvent) },
+        { text: "Edit Marker",   action: () => callbacks.onEdit?.(markerObj, m, ev.originalEvent) },
+        { text: "Copy Marker",   action: () => callbacks.onCopy?.(markerObj, m, ev.originalEvent) },
         {
           text: markerObj.dragging.enabled() ? "Disable Drag" : "Enable Drag",
           action: () => markerObj.dragging.enabled()
