@@ -1,11 +1,11 @@
 // @file: src/modules/map/marker/icons/createCustomIcon.js
-// @version: 1.1 — use global L instead of ESM import
+// @version: 1.2 — enforce circular clipping of marker images
 
 // assumes Leaflet is loaded via <script> and exposes window.L
 const L = window.L;
 
 import { defaultNameColor } from "../../../utils/colorPresets.js";
-import { isImgUrl, getBestImageUrl } from "../utils.js";
+import { getBestImageUrl } from "../utils.js";
 
 /**
  * Creates a Leaflet divIcon for a marker,
@@ -18,24 +18,30 @@ export function createCustomIcon(m) {
   const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
   const size   = 32;
 
+  // wrapper div to hold image and border
   const wrap = document.createElement("div");
   wrap.className = "custom-marker";
   Object.assign(wrap.style, {
-    position: "relative",
-    width:    `${size}px`,
-    height:   `${size}px`
+    position:     "relative",
+    width:        `${size}px`,
+    height:       `${size}px`,
+    borderRadius: "50%",    // ensure circular shape
+    overflow:     "hidden"  // clip anything outside the circle
   });
 
+  // colored border
   const border = document.createElement("div");
   border.className = "marker-border";
   Object.assign(border.style, {
-    position:  "absolute",
-    inset:      0,
-    boxSizing: "border-box",
-    border:     `2px solid ${m.rarityColor || defaultNameColor}`
+    position:   "absolute",
+    inset:       0,
+    boxSizing:  "border-box",
+    border:      `2px solid ${m.rarityColor || defaultNameColor}`,
+    borderRadius: "50%"    // match the wrapper's circle
   });
   wrap.appendChild(border);
 
+  // optional image
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;
