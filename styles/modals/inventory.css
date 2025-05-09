@@ -66,27 +66,34 @@
 }
 
 /*────────────────────────────────────────────────────────*/
-/* POSITION THE PICKER AND ALIGN THE LABEL VIA SIBLING SELECTORS */
+/* ARRANGE THE LOOT POOL ROW VERTICALLY */
 
-/* 1) Align the “Loot Pool” label to the top */
-label[for="fldLootPool"] {
-  display: block;
-  margin-bottom: 0.25rem;
+/* Make the Loot Pool row stack its label, button, and chip list */
+.loot-pool-row {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
 }
 
-/* 2) Place the cog-wheel immediately after the label */
-label[for="fldLootPool"] + .open-loot-picker {
-  display: block;
-  margin-bottom: 0.5rem;
+/* The label is first */
+.loot-pool-row label {
+  order: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* Ensure the cog sits right under the label */
+.loot-pool-row .open-loot-picker {
+  order: 1;
+  margin: 0;
   filter: brightness(0) invert(1) !important;
 }
 
-/* 3) Chip list sits directly under the cog */
-label[for="fldLootPool"] + .open-loot-picker + .chip-list-container {
-  margin-top: 0;
-}
-
-/* 4) Ensure the chip-list container is full-width under its own column */
-label[for="fldLootPool"] ~ .chip-list-container {
+/* Chip wrapper and chip list container follow immediately */
+.loot-pool-row .loot-pool-wrapper,
+.loot-pool-row .chip-list-container {
+  order: 2;
   width: 100% !important;
 }
