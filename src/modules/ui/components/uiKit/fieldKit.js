@@ -1,12 +1,9 @@
 // @file: src/modules/ui/components/uiKit/fieldKit.js
-// @version: 1.3 — auto-append colon in labels
+// @version: 1.4 — export chip‐list field helper
 
 import { createPickr } from "../../pickrManager.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
 
-/**
- * Create a label/input row. Automatically appends a ':' if missing.
- */
 export function createFieldRow(labelText, inputEl) {
   const row = document.createElement("div");
   row.className = "field-row";
@@ -55,7 +52,12 @@ export function createTextareaFieldWithColor(labelText, id) {
   return { row, textarea, colorBtn };
 }
 
-export function createDropdownField(labelText, id, options = [], { showColor = true } = {}) {
+export function createDropdownField(
+  labelText,
+  id,
+  options = [],
+  { showColor = true } = {}
+) {
   const select = document.createElement("select");
   select.id = id;
   select.className = "ui-input";
@@ -65,7 +67,11 @@ export function createDropdownField(labelText, id, options = [], { showColor = t
     o.textContent = opt.label;
     select.append(o);
   });
-  const { row, inputEl: selectEl, colorBtn } = createColorFieldRow(labelText, select, `${id}-color`);
+  const { row, inputEl: selectEl, colorBtn } = createColorFieldRow(
+    labelText,
+    select,
+    `${id}-color`
+  );
   if (!showColor) colorBtn.style.visibility = "hidden";
   return { row, select: selectEl, colorBtn };
 }
@@ -129,5 +135,7 @@ export function createExtraInfoField({ withDividers = false } = {}) {
   return { row: container, extraInfo };
 }
 
-// also export block factory directly
+// Re-export block factory
 export { createExtraInfoBlock } from "./extraInfoBlock.js";
+// **New**: re-export the chip-list field helper
+export { createChipListField } from "./chipListField.js";
