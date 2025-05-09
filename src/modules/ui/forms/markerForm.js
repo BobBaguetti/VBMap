@@ -1,37 +1,66 @@
-// @version: 11
-// @file: /src/modules/ui/forms/markerForm.js 
+// @version: 12
+// @file: /src/modules/ui/forms/markerForm.js
 
 import {
-  createNameField,
-  createRarityField,
-  createItemTypeField,
-  createDescriptionField,
-  createExtraInfoField
-} from "./universalForm.js";
-import {
+  createTextField,
+  createDropdownField,
+  createTextareaFieldWithColor,
   createImageField,
-  createVideoField
-} from "../../ui/uiKit.js";
-import { createPickr } from "../../ui/pickrManager.js";
+  createVideoField,
+  createFieldRow
+} from "../components/uiKit/fieldKit.js";
+import { createExtraInfoBlock } from "../components/uiKit/extraInfoBlock.js";
+import { createPickr }         from "../../ui/pickrManager.js";
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
 export function createMarkerForm() {
   const form = document.createElement("form");
   form.id = "marker-form";
 
-  // Unique‐ID fields so they never clash
+  // — Name —
   const { row: rowName, input: fldName, colorBtn: colorName } =
-    createNameField("marker-fld-name");
+    createTextField("Name:", "marker-fld-name");
+  colorName.id = "marker-fld-name-color";
+  colorName.classList.add("color-swatch");
+
+  // — Rarity —
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } =
-    createRarityField("marker-fld-rarity");
+    createDropdownField("Rarity:", "marker-fld-rarity", [
+      { value: "",        label: "Select Rarity" },
+      { value: "common",  label: "Common" },
+      { value: "uncommon",label: "Uncommon" },
+      { value: "rare",    label: "Rare" },
+      { value: "epic",    label: "Epic" },
+      { value: "legendary",label:"Legendary" }
+    ]);
+  colorRarity.id = "marker-fld-rarity-color";
+  colorRarity.classList.add("color-swatch");
+
+  // — Item Type —
   const { row: rowItemType, select: fldItemType, colorBtn: colorItemType } =
-    createItemTypeField("marker-fld-item-type");
+    createDropdownField("Item Type:", "marker-fld-item-type", [
+      { value: "Crafting Material", label: "Crafting Material" },
+      { value: "Special",           label: "Special" },
+      { value: "Consumable",        label: "Consumable" },
+      { value: "Quest",             label: "Quest" }
+    ]);
+  colorItemType.id = "marker-fld-item-type-color";
+  colorItemType.classList.add("color-swatch");
+
+  // — Description —
   const { row: rowDesc, textarea: fldDesc, colorBtn: colorDesc } =
-    createDescriptionField("marker-fld-desc-item");
-  const { row: rowExtra, extraInfo } = createExtraInfoField({ withDividers: true });
+    createTextareaFieldWithColor("Description:", "marker-fld-desc");
+  colorDesc.id = "marker-fld-desc-color";
+  colorDesc.classList.add("color-swatch");
+
+  // — Extra Info —
+  const extraInfo = createExtraInfoBlock({ withDividers: true });
+  const rowExtra  = createFieldRow("Extra Info:", extraInfo.block);
+
+  // — Media —
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "marker-fld-img-s");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "marker-fld-img-l");
-  const { row: rowVid, input: fldVid }   = createVideoField("Video:", "marker-fld-vid");
+  const { row: rowVid, input: fldVid }   = createVideoField("Video:",  "marker-fld-vid");
 
   // spacing tweaks
   rowRarity.classList.add("item-gap");
@@ -49,76 +78,57 @@ export function createMarkerForm() {
     rowVid
   );
 
-  // Map button element → Pickr instance
+  // — Pickr wiring —
   const pickrs = new Map();
   const pickrTargets = [colorName, colorRarity, colorItemType, colorDesc];
-
-  // Initialize Pickr on any uninitialized target
   function initPickrs() {
     pickrTargets.forEach(el => {
       if (!pickrs.has(el)) {
-        const selector = `#${el.id}`;
-        const p = createPickr(selector);
+        const p = createPickr(`#${el.id}`);
         pickrs.set(el, p);
       }
     });
   }
 
-  // Helpers
-  const safe = (val, fallback = "") => val ?? fallback;
-  const getPickrHexColor = (el, fallback = "#E5E6E8") =>
-    pickrs.get(el)?.getColor()?.toHEXA()?.toString() || fallback;
+  // — Helpers —
+  const safe = (v, f = "") => v ?? f;
+  const getPickrHexColor = (el, f = "#E5E6E8") =>
+    pickrs.get(el)?.getColor()?.toHEXA()?.toString() || f;
 
-  // Populate form from an item definition
+  // — Populate from defs —
   function setFromDefinition(def = {}) {
     initPickrs();
-
-    // Name
     fldName.value = safe(def.name);
     pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
-
-    // Rarity
     fldRarity.value = safe(def.rarity);
     pickrs.get(colorRarity)?.setColor(
       rarityColors[fldRarity.value] || def.rarityColor || "#E5E6E8"
     );
-
-    // Item Type
     fldItemType.value = safe(def.itemType);
     pickrs.get(colorItemType)?.setColor(
       itemTypeColors[fldItemType.value] || def.itemTypeColor || "#E5E6E8"
     );
-
-    // Description
     fldDesc.value = safe(def.description);
     pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
-
     extraInfo.setLines(safe(def.extraLines, []), false);
-
-    // Media
     fldImgS.value = safe(def.imageSmall);
     fldImgL.value = safe(def.imageBig);
     fldVid.value  = safe(def.video);
   }
 
-  // Populate form for non-item data (teleports, etc.)
   function setFromNonItem(data = {}) {
     initPickrs();
-
     fldName.value = safe(data.name);
     pickrs.get(colorName)?.setColor(data.nameColor || "#E5E6E8");
-
     fldDesc.value = safe(data.description);
     pickrs.get(colorDesc)?.setColor(data.descriptionColor || "#E5E6E8");
-
     extraInfo.setLines(safe(data.extraLines, []), false);
-
     fldImgS.value = safe(data.imageSmall);
     fldImgL.value = safe(data.imageBig);
     fldVid.value  = safe(data.video);
   }
 
-  // Harvest form values
+  // — Read back values —
   function getCustom() {
     return {
       name:            fldName.value.trim(),
@@ -144,7 +154,7 @@ export function createMarkerForm() {
       fldItemType, colorItemType,
       fldDesc,   colorDesc,
       extraInfo,
-      extraRow: rowExtra,
+      extraRow:  rowExtra,
       fldImgS, fldImgL, fldVid
     },
     initPickrs,
