@@ -6,45 +6,49 @@
   border: 1px solid var(--ui-border-color, #444);
   border-radius: 4px;
   padding: 0.5rem;
+
+  /* Make it full width like other fields */
+  width: 100%;
+
+  /* Stack items vertically and scroll after ~5.5 items */
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column;
   gap: 0.25rem;
-  max-height: 200px;
+  max-height: calc(1.5em * 5.5 + 0.25rem * 5); /* adjust 1.5em to your chip height */
   overflow-y: auto;
 
-  /* full width like other form controls */
-  width: 100%;
+  /* keep visible border */
   box-shadow: inset 0 0 0 1px var(--ui-border-color, #444);
 }
 
 /* Individual chips */
 .loot-pool-chip {
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: space-between;
+
   background-color: var(--ui-chip-bg, #3a3a3a);
   color: var(--ui-text-color, #fff);
   border-radius: 2px;
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
 
-  /* make all chips the same minimum size */
-  min-width: 8ch;
-  justify-content: space-between;
+  /* Fixed height for consistent stacking */
+  height: 1.5em;
+  line-height: 1.5em;
 }
 
 /* Grab handle styling */
 .loot-pool-chip .chip-handle {
   cursor: grab;
-  margin-right: 0.25em;
-  font-size: 1em;
-  color: var(--ui-text-color, #fff);
+  margin-right: 0.5em;
 }
 
 /* Icon size clamped to the font-size */
 .loot-pool-chip .chip-icon {
   width: 1em !important;
   height: 1em !important;
-  margin-right: 0.25em;
+  margin-right: 0.5em;
   object-fit: contain;
 }
 
