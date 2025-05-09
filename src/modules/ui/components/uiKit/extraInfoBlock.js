@@ -1,117 +1,94 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 2.5 — re-add default blank line
+// @version: 1.3 — attach Pickr instance to line for correct getLines()
 
 import { createPickr } from "../../pickrManager.js";
-import { createFieldRow } from "./fieldKit.js";
 
-export function createExtraInfoRow({
-  withDividers = true,
-  defaultColor = "#E5E6E8",
-  readonly     = false
-} = {}) {
-  let lines = [];
-  const container = document.createElement("div");
-  container.style.display = "contents";
+export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = false } = {}) {
+  const wrap = document.createElement("div");
+  wrap.className = "extra-info-block";
 
-  const hrTop = document.createElement("hr");
-  const hrBot = document.createElement("hr");
-  hrTop.style.margin = hrBot.style.margin = "8px 0";
-
+  const lineWrap = document.createElement("div");
   const btnAdd = document.createElement("button");
   btnAdd.type = "button";
   btnAdd.textContent = "+";
-  btnAdd.className = "ui-button";
-  if (!readonly) {
-    btnAdd.addEventListener("click", () => {
-      lines.push({ text: "", color: defaultColor });
-      render();
-      dispatchInput();
-    });
-  } else {
-    btnAdd.style.display = "none";
-  }
+  btnAdd.classList.add("ui-button");
 
-  function dispatchInput() {
-    container.closest("form")?.dispatchEvent(
-      new Event("input", { bubbles: true })
-    );
-  }
+  wrap.append(lineWrap, btnAdd);
+
+  let lines = [];
 
   function render() {
-    container.innerHTML = "";
-    if (withDividers) container.append(hrTop);
+    lineWrap.innerHTML = "";
+    lines.forEach((line, i) => {
+      const row = document.createElement("div");
+      row.className = "field-row";
+      row.style.marginBottom = "5px";
 
-    // Label row
-    const labelRow = document.createElement("div");
-    labelRow.className = "field-row";
-    labelRow.style.display = "flex";
-    labelRow.style.alignItems = "center";
-    labelRow.style.marginBottom = "5px";
-    const lbl = document.createElement("label");
-    lbl.textContent = "Extra Info:";
-    labelRow.append(lbl);
-    container.append(labelRow);
-
-    // Data lines
-    lines.forEach((ln, idx) => {
-      const input  = document.createElement("input");
-      input.type   = "text";
+      const input = document.createElement("input");
       input.className = "ui-input";
-      input.value  = ln.text;
-      input.addEventListener("input", () => {
-        ln.text = input.value; dispatchInput();
-      });
+      input.value = line.text;
+      input.readOnly = readonly;
+      input.oninput = () => {
+        line.text = input.value;
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      };
 
-      const row = createFieldRow("", input);
-      row.classList.add("extra-info-row");
+      const color = document.createElement("div");
+      color.className = "color-btn";
+      color.id = `extra-color-${i}`;
+      color.style.marginLeft = "5px";
 
-      const colorBtn = document.createElement("button");
-      colorBtn.type = "button";
-      colorBtn.className = "color-swatch";
-      colorBtn.id = `extra-line-${idx}-color`;
-      row.append(colorBtn);
+      const btnRemove = document.createElement("button");
+      btnRemove.type = "button";
+      btnRemove.className = "ui-button";
+      btnRemove.textContent = "×";
+      btnRemove.style.marginLeft = "5px";
+      btnRemove.onclick = () => {
+        lines.splice(i, 1);
+        render();
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      };
 
-      if (!readonly) {
-        const btnRem = document.createElement("button");
-        btnRem.type = "button";
-        btnRem.className = "ui-button";
-        btnRem.textContent = "×";
-        btnRem.addEventListener("click", () => {
-          lines.splice(idx,1); render(); dispatchInput();
-        });
-        row.append(btnRem);
-      }
+      row.append(input, color);
+      if (!readonly) row.appendChild(btnRemove);
+      lineWrap.appendChild(row);
 
-      container.append(row);
+      // ─── Pickr wiring ──────────────────────────────────────────
+      const pickr = createPickr(`#${color.id}`);
+      line._pickr = pickr;  // ← attach instance for getLines()
 
+      // initialize pickr *after* its DOM root exists
       setTimeout(() => {
-        const pickr = createPickr(`#${colorBtn.id}`, ln.color||defaultColor);
-        pickr.on("change", c => { ln.color = c.toHEXA().toString(); dispatchInput(); });
-        pickr.on("save",   c => { ln.color = c.toHEXA().toString(); dispatchInput(); pickr.hide(); });
+        pickr.setColor(line.color || defaultColor);
       }, 0);
-    });
 
-    // “+” row
-    container.append(createFieldRow("", btnAdd));
-    if (withDividers) container.append(hrBot);
+      pickr.on("change", colorObj => {
+        line.color = colorObj.toHEXA().toString();
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      pickr.on("save", colorObj => {
+        line.color = colorObj.toHEXA().toString();
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+    });
   }
 
-  // — initial population — 
-  // re-add one blank extra‐info line by default
-  if (!readonly) lines.push({ text: "", color: defaultColor });
-
-  // first render
-  render();
+  btnAdd.onclick = () => {
+    lines.push({ text: "", color: defaultColor });
+    render();
+    wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+  };
 
   return {
-    container,
-    getLines: () => lines.map(l => ({ text: l.text, color: l.color })),
-    setLines: (newLines = [], makeReadOnly = false) => {
-      lines = newLines.map(l => ({
-        text: l.text||"", color: l.color||defaultColor
-      }));
+    block: wrap,
+    getLines: () => lines.map(l => ({
+      text: l.text,
+      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
+    })),
+    setLines: (newLines, isReadonly = false) => {
+      lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
       render();
-      if (makeReadOnly) btnAdd.style.display = "none";
+      if (isReadonly) btnAdd.style.display = "none";
     }
   };
 }

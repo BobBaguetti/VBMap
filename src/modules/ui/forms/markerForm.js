@@ -1,4 +1,4 @@
-// @version: 13
+// @version: 12
 // @file: /src/modules/ui/forms/markerForm.js
 
 import {
@@ -7,9 +7,10 @@ import {
   createTextareaFieldWithColor,
   createImageField,
   createVideoField,
-  createExtraInfoRow
+  createFieldRow
 } from "../components/uiKit/fieldKit.js";
-import { createPickr } from "../../ui/pickrManager.js";
+import { createExtraInfoBlock } from "../components/uiKit/extraInfoBlock.js";
+import { createPickr }         from "../../ui/pickrManager.js";
 import { rarityColors, itemTypeColors } from "../../utils/colorPresets.js";
 
 export function createMarkerForm() {
@@ -25,12 +26,12 @@ export function createMarkerForm() {
   // — Rarity —
   const { row: rowRarity, select: fldRarity, colorBtn: colorRarity } =
     createDropdownField("Rarity:", "marker-fld-rarity", [
-      { value: "",         label: "Select Rarity" },
-      { value: "common",   label: "Common" },
-      { value: "uncommon", label: "Uncommon" },
-      { value: "rare",     label: "Rare" },
-      { value: "epic",     label: "Epic" },
-      { value: "legendary",label: "Legendary" }
+      { value: "",        label: "Select Rarity" },
+      { value: "common",  label: "Common" },
+      { value: "uncommon",label: "Uncommon" },
+      { value: "rare",    label: "Rare" },
+      { value: "epic",    label: "Epic" },
+      { value: "legendary",label:"Legendary" }
     ]);
   colorRarity.id = "marker-fld-rarity-color";
   colorRarity.classList.add("color-swatch");
@@ -52,18 +53,14 @@ export function createMarkerForm() {
   colorDesc.id = "marker-fld-desc-color";
   colorDesc.classList.add("color-swatch");
 
-  // — Extra Info (divider + top‐aligned) —
-  const extraInfoRow = createExtraInfoRow({ withDividers: true });
-  const extraContainer = extraInfoRow.container;
-  const rowExtra       = extraInfoRow.row;
+  // — Extra Info —
+  const extraInfo = createExtraInfoBlock({ withDividers: true });
+  const rowExtra  = createFieldRow("Extra Info:", extraInfo.block);
 
   // — Media —
-  const { row: rowImgS, input: fldImgS } =
-    createImageField("Image S:", "marker-fld-img-s");
-  const { row: rowImgL, input: fldImgL } =
-    createImageField("Image L:", "marker-fld-img-l");
-  const { row: rowVid, input: fldVid } =
-    createVideoField("Video:", "marker-fld-vid");
+  const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "marker-fld-img-s");
+  const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "marker-fld-img-l");
+  const { row: rowVid, input: fldVid }   = createVideoField("Video:",  "marker-fld-vid");
 
   // spacing tweaks
   rowRarity.classList.add("item-gap");
@@ -75,7 +72,7 @@ export function createMarkerForm() {
     rowRarity,
     rowItemType,
     rowDesc,
-    extraContainer,
+    rowExtra,
     rowImgS,
     rowImgL,
     rowVid
@@ -83,9 +80,9 @@ export function createMarkerForm() {
 
   // — Pickr wiring —
   const pickrs = new Map();
-  const targets = [colorName, colorRarity, colorItemType, colorDesc];
+  const pickrTargets = [colorName, colorRarity, colorItemType, colorDesc];
   function initPickrs() {
-    targets.forEach(el => {
+    pickrTargets.forEach(el => {
       if (!pickrs.has(el)) {
         const p = createPickr(`#${el.id}`);
         pickrs.set(el, p);
@@ -95,30 +92,25 @@ export function createMarkerForm() {
 
   // — Helpers —
   const safe = (v, f = "") => v ?? f;
-  const hex = (el, f = "#E5E6E8") =>
+  const getPickrHexColor = (el, f = "#E5E6E8") =>
     pickrs.get(el)?.getColor()?.toHEXA()?.toString() || f;
 
-  // — Populate from definitions —
+  // — Populate from defs —
   function setFromDefinition(def = {}) {
     initPickrs();
     fldName.value = safe(def.name);
     pickrs.get(colorName)?.setColor(def.nameColor || "#E5E6E8");
-
     fldRarity.value = safe(def.rarity);
     pickrs.get(colorRarity)?.setColor(
       rarityColors[fldRarity.value] || def.rarityColor || "#E5E6E8"
     );
-
     fldItemType.value = safe(def.itemType);
     pickrs.get(colorItemType)?.setColor(
       itemTypeColors[fldItemType.value] || def.itemTypeColor || "#E5E6E8"
     );
-
     fldDesc.value = safe(def.description);
     pickrs.get(colorDesc)?.setColor(def.descriptionColor || "#E5E6E8");
-
-    extraInfoRow.setLines(safe(def.extraLines, []), false);
-
+    extraInfo.setLines(safe(def.extraLines, []), false);
     fldImgS.value = safe(def.imageSmall);
     fldImgL.value = safe(def.imageBig);
     fldVid.value  = safe(def.video);
@@ -128,29 +120,26 @@ export function createMarkerForm() {
     initPickrs();
     fldName.value = safe(data.name);
     pickrs.get(colorName)?.setColor(data.nameColor || "#E5E6E8");
-
     fldDesc.value = safe(data.description);
     pickrs.get(colorDesc)?.setColor(data.descriptionColor || "#E5E6E8");
-
-    extraInfoRow.setLines(safe(data.extraLines, []), false);
-
+    extraInfo.setLines(safe(data.extraLines, []), false);
     fldImgS.value = safe(data.imageSmall);
     fldImgL.value = safe(data.imageBig);
     fldVid.value  = safe(data.video);
   }
 
-  // — Harvest values —
+  // — Read back values —
   function getCustom() {
     return {
       name:            fldName.value.trim(),
-      nameColor:       hex(colorName),
+      nameColor:       getPickrHexColor(colorName),
       rarity:          fldRarity.value,
-      rarityColor:     hex(colorRarity),
+      rarityColor:     getPickrHexColor(colorRarity),
       itemType:        fldItemType.value,
-      itemTypeColor:   hex(colorItemType),
+      itemTypeColor:   getPickrHexColor(colorItemType),
       description:     fldDesc.value.trim(),
-      descriptionColor:hex(colorDesc),
-      extraLines:      extraInfoRow.getLines(),
+      descriptionColor:getPickrHexColor(colorDesc),
+      extraLines:      extraInfo.getLines(),
       imageSmall:      fldImgS.value.trim(),
       imageBig:        fldImgL.value.trim(),
       video:           fldVid.value.trim()
@@ -160,13 +149,12 @@ export function createMarkerForm() {
   return {
     form,
     fields: {
-      fldName, colorName,
+      fldName,   colorName,
       fldRarity, colorRarity,
       fldItemType, colorItemType,
-      fldDesc, colorDesc,
-      // the helper object has .getLines()/.setLines()
-      extraInfoRow,
-      rowExtra,
+      fldDesc,   colorDesc,
+      extraInfo,
+      extraRow:  rowExtra,
       fldImgS, fldImgL, fldVid
     },
     initPickrs,
