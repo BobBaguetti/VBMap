@@ -1,4 +1,4 @@
-// @version: 2.8
+// @version: 2.9
 // @file: src/modules/ui/forms/builders/chestFormBuilder.js
 
 import {
@@ -53,7 +53,7 @@ export function createChestForm() {
   );
 
   // — Loot Pool —
-  // `allItems` will be populated by the controller with your item definitions
+  // `allItems` will be populated by the controller
   const allItems = [];
   const {
     row: rowLoot,
@@ -63,7 +63,7 @@ export function createChestForm() {
     items:     allItems,
     idKey:     "id",
     labelKey:  "name",
-    renderIcon: item => item.imageSmall
+    renderIcon:item => item.imageSmall
   });
 
   // — Description —
@@ -106,10 +106,13 @@ export function createChestForm() {
     colorName,
     fldCategory,
     fldSize,
-    // For the loot-pool
+
+    // Loot-pool: selected IDs, helper funcs, and the master list
     lootPool:     [],
+    allItems,     // <— expose here
     getLootPool,
     setLootPool,
+
     // Other fields
     fldDesc,
     colorDesc,
