@@ -1,5 +1,7 @@
 // @file: src/uiBootstrap.js
+// @version: 2 updated — replace renderPopup with renderItemPopup
 // Subscribes to Firestore services, wires up marker CRUD, context menus, etc.
+
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 
@@ -20,7 +22,7 @@ import {
 import {
   createMarker,
   createCustomIcon,
-  renderPopup,
+  renderItemPopup,
   renderChestPopup
 } from "./modules/map/markerManager.js";
 import { initMarkerModal }          from "./modules/ui/modals/markerModal.js";
@@ -80,7 +82,7 @@ export function bootstrapUI(isAdmin) {
           Object.assign(data, fields);
 
           markerObj.setIcon(createCustomIcon(data));
-          markerObj.setPopupContent(renderPopup(data));
+          markerObj.setPopupContent(renderItemPopup(data));
           if (isAdmin) firebaseUpdateMarker(db, data).catch(() => {});
         } else if (data.type === "Chest") {
           const def = chestDefMap[data.chestTypeId] || { lootPool: [] };
@@ -127,6 +129,7 @@ export function bootstrapUI(isAdmin) {
         ? clusterItemLayer
         : flatItemLayer;
       layer.addLayer(markerObj);
+      markerObj.setPopupContent(renderItemPopup(data));
       allMarkers.push({ markerObj, data });
     }
 
@@ -137,7 +140,7 @@ export function bootstrapUI(isAdmin) {
         m.setPopupContent(
           updated.type === "Chest"
             ? renderChestPopup(updated.chestDefFull || {})
-            : renderPopup(updated)
+            : renderItemPopup(updated)
         );
         firebaseUpdateMarker(db, updated).catch(() => {});
       }),
