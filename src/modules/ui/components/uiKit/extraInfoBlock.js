@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.7 — remove auto‐add blank line to prevent early Pickr init
+// @version: 1.8 — dispatch on pickr change/save & restore HR spacing
 
 import { createPickr } from "../../pickrManager.js";
 import { createFieldRow } from "./fieldKit.js";
@@ -8,7 +8,7 @@ import { createFieldRow } from "./fieldKit.js";
  * Builds a block of “extra info” lines with Pickr per line.
  *
  * @param {object} opts
- * @param {string} opts.defaultColor – hex string for new‐line swatches
+ * @param {string} opts.defaultColor – hex string for new-line swatches
  * @param {boolean} opts.readonly     – hide the “+” button if true
  */
 export function createExtraInfoBlock({
@@ -40,6 +40,7 @@ export function createExtraInfoBlock({
       input.value = ln.text;
       input.addEventListener("input", e => {
         ln.text = e.target.value;
+        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
       });
 
       const colorBtn = document.createElement("button");
@@ -47,29 +48,30 @@ export function createExtraInfoBlock({
       colorBtn.classList.add("color-swatch");
       colorBtn.id = `extra-line-${idx}-color`;
 
-      // append row, then defer Pickr init so element is in DOM
+      // append row, then defer Pickr init so element exists
       row.append(input, colorBtn);
       lineWrap.append(row);
 
       setTimeout(() => {
         const pickr = createPickr(`#${colorBtn.id}`, ln.color);
         pickr.on("change", clr => {
-          ln.color = clr.toHEXA()?.toString();
+          ln.color = clr.toHEXA().toString();
+          wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
         });
         pickr.on("save", clr => {
-          ln.color = clr.toHEXA()?.toString();
+          ln.color = clr.toHEXA().toString();
+          wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
           pickr.hide();
         });
       }, 0);
     });
   }
 
-  function addLine() {
+  btnAdd.addEventListener("click", () => {
     lines.push({ text: "", color: defaultColor });
     render();
-  }
-
-  btnAdd.addEventListener("click", addLine);
+    wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+  });
 
   return {
     block: wrap,
@@ -87,7 +89,7 @@ export function createExtraInfoBlock({
 }
 
 /**
- * Wraps your extra‐info block in <hr>…<hr> and top‐aligns the label.
+ * Wraps your extra-info block in <hr>…<hr> and top-aligns the label.
  *
  * @param {object} opts
  * @param {boolean} opts.withDividers – wrap with <hr> above/below
@@ -112,7 +114,11 @@ export function createExtraInfoRow({
   const container = document.createElement("div");
   const hrTop      = document.createElement("hr");
   const hrBottom   = document.createElement("hr");
-  container.append(hrTop, row, hrBottom);
 
+  // inline margins to match original spacing
+  hrTop.style.margin    = "8px 0";
+  hrBottom.style.margin = "8px 0";
+
+  container.append(hrTop, row, hrBottom);
   return { container, row, block, getLines, setLines };
 }
