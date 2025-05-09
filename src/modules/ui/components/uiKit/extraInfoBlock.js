@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 2.3 — manual label row with no empty cell
+// @version: 2.4 — force label row to flex to remove phantom column
 
 import { createPickr } from "../../pickrManager.js";
 import { createFieldRow } from "./fieldKit.js";
@@ -42,16 +42,19 @@ export function createExtraInfoRow({
 
     if (withDividers) container.append(hrTop);
 
-    // — Label row, manually built —
+    // — Label row: flex, no extra cell —
     const labelRow = document.createElement("div");
     labelRow.className = "field-row";
-    labelRow.style.alignItems = "flex-start";
+    // override the default grid
+    labelRow.style.display = "flex";
+    labelRow.style.alignItems = "center";
+    labelRow.style.marginBottom = "5px";
     const lbl = document.createElement("label");
     lbl.textContent = "Extra Info:";
     labelRow.append(lbl);
     container.append(labelRow);
 
-    // — Each extra‐info line —
+    // — Data lines —
     lines.forEach((ln, idx) => {
       const input = document.createElement("input");
       input.type = "text";
@@ -65,30 +68,27 @@ export function createExtraInfoRow({
       const row = createFieldRow("", input);
       row.classList.add("extra-info-row");
 
-      // color swatch
       const colorBtn = document.createElement("button");
       colorBtn.type = "button";
       colorBtn.className = "color-swatch";
       colorBtn.id = `extra-line-${idx}-color`;
       row.append(colorBtn);
 
-      // remove
       if (!readonly) {
         const btnRemove = document.createElement("button");
         btnRemove.type = "button";
         btnRemove.className = "ui-button";
         btnRemove.textContent = "×";
-        btnRemove.addEventListener("click", () => {
+        btnRemove.onclick = () => {
           lines.splice(idx, 1);
           render();
           dispatchInput();
-        });
+        };
         row.append(btnRemove);
       }
 
       container.append(row);
 
-      // defer pickr
       setTimeout(() => {
         const pickr = createPickr(`#${colorBtn.id}`, ln.color || defaultColor);
         pickr.on("change", c => {
@@ -103,7 +103,7 @@ export function createExtraInfoRow({
       }, 0);
     });
 
-    // — “+” button row —
+    // — “+” row —
     container.append(createFieldRow("", btnAdd));
 
     if (withDividers) container.append(hrBot);
