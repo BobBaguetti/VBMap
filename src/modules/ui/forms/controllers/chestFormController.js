@@ -1,4 +1,4 @@
-// @version: 2.24
+// @version: 2.25
 // @file: src/modules/ui/forms/controllers/chestFormController.js
 
 /**
@@ -25,10 +25,6 @@ export function createChestFormController(
   db
 ) {
   const { form, fields } = createChestForm();
-  // fields now includes:
-  //  fields.lootPool (array of IDs)
-  //  fields.getLootPool(), fields.setLootPool(items[])
-  //  fields.allItems (populated below)
 
   // ─── Header + Buttons ────────────────────────────────────────
   const {
@@ -79,19 +75,26 @@ export function createChestFormController(
   }
   // initial seed: load defs then seed selected chips
   ensureAllItems().then(defs => {
-    fields.setLootPool(defs.filter(d => fields.lootPool.includes(d.id)));
+    fields.setLootPool(
+      defs.filter(d => fields.lootPool.includes(d.id))
+    );
   });
 
   // ─── Internal state & payload ────────────────────────────────
   let _id = null;
   function getCustom() {
+    // Use the chip-list helper to get full objects, then map to IDs
+    const selectedItems = fields.getLootPool();
+    const lootIds = selectedItems.map(item => item.id);
+
     return {
       id:               _id,
       name:             fields.fldName.value.trim(),
       nameColor:        getPickrHexColor(pickrs.name),
       category:         fields.fldCategory.value,
       size:             fields.fldSize.value,
-      lootPool:         [...fields.lootPool],  // array of IDs
+      // now we correctly save an array of IDs
+      lootPool:         lootIds,
       description:      fields.fldDesc.value.trim(),
       descriptionColor: getPickrHexColor(pickrs.description),
       extraLines:       fields.extraInfo.getLines(),
@@ -136,10 +139,8 @@ export function createChestFormController(
     _populate(def);
     fields.extraInfo.setLines(def.extraLines || [], false);
     await ensureAllItems();
-    // seed selected chips from saved IDs
     fields.setLootPool(
-      itemMap
-        .filter(d => def.lootPool.includes(d.id))
+      itemMap.filter(d => def.lootPool.includes(d.id))
     );
     applySizeCategoryColor();
   }
