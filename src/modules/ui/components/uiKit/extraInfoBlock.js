@@ -1,54 +1,89 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.9 — inner rows align with other fields via createFieldRow
+// @version: 2.0 — flatten rows into siblings so they align with other fields
 
 import { createPickr } from "../../pickrManager.js";
 import { createFieldRow } from "./fieldKit.js";
 
 /**
- * Builds a block of “extra info” lines with Pickr per line.
+ * Creates a set of “Extra Info” rows, each as its own field row,
+ * complete with divider <hr>s, top‐aligned label, color swatches,
+ * and the “+” button also aligned in the input column.
+ *
+ * @param {object} opts
+ * @param {boolean} opts.withDividers – wrap with <hr> above/below
+ * @param {string}  opts.defaultColor – initial color for new lines
+ * @param {boolean} opts.readonly     – hide the “+” button
  */
-export function createExtraInfoBlock({
+export function createExtraInfoRow({
+  withDividers = true,
   defaultColor = "#E5E6E8",
   readonly     = false
 } = {}) {
-  const wrap     = document.createElement("div");
-  wrap.className = "extra-info-block";
+  let lines = [];
+  const container = document.createElement("div");
+  container.style.display = "contents"; // collapse wrapper
 
-  const lineWrap = document.createElement("div");
-  const btnAdd   = document.createElement("button");
-  btnAdd.type    = "button";
+  // divider elements
+  const hrTop = document.createElement("hr");
+  const hrBot = document.createElement("hr");
+  hrTop.style.margin = "8px 0";
+  hrBot.style.margin = "8px 0";
+
+  // “+” button
+  const btnAdd = document.createElement("button");
+  btnAdd.type = "button";
   btnAdd.textContent = "+";
   btnAdd.classList.add("ui-button");
   if (readonly) btnAdd.style.display = "none";
+  btnAdd.addEventListener("click", () => {
+    lines.push({ text: "", color: defaultColor });
+    render();
+    dispatchInput();
+  });
 
-  wrap.append(lineWrap, btnAdd);
-
-  let lines = [];
+  function dispatchInput() {
+    container.closest("form")?.dispatchEvent(
+      new Event("input", { bubbles: true })
+    );
+  }
 
   function render() {
-    lineWrap.innerHTML = "";
+    // clear out everything
+    container.innerHTML = "";
+
+    // top divider
+    if (withDividers) container.append(hrTop);
+
+    // label row
+    const labelCell = document.createElement("span");
+    const labelRow = createFieldRow("Extra Info:", labelCell);
+    labelRow.style.alignItems = "flex-start";
+    container.append(labelRow);
+
+    // each existing extra‐info line
     lines.forEach((ln, idx) => {
-      // — create the aligned row with blank label —
+      // text input
       const input = document.createElement("input");
       input.type = "text";
-      input.className = "ui-input";
+      input.classList.add("ui-input");
       input.value = ln.text;
       input.addEventListener("input", e => {
         ln.text = e.target.value;
-        wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+        dispatchInput();
       });
 
+      // build a field row (blank label)
       const row = createFieldRow("", input);
       row.classList.add("extra-info-row");
 
-      // — color swatch —
+      // color swatch
       const colorBtn = document.createElement("button");
       colorBtn.type = "button";
       colorBtn.classList.add("color-swatch");
       colorBtn.id = `extra-line-${idx}-color`;
       row.append(colorBtn);
 
-      // — remove button —
+      // remove button
       if (!readonly) {
         const btnRemove = document.createElement("button");
         btnRemove.type = "button";
@@ -57,73 +92,49 @@ export function createExtraInfoBlock({
         btnRemove.addEventListener("click", () => {
           lines.splice(idx, 1);
           render();
-          wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+          dispatchInput();
         });
         row.append(btnRemove);
       }
 
-      lineWrap.append(row);
+      container.append(row);
 
-      // — defer Pickr init until after DOM insertion —
+      // defer Pickr init so the colorBtn is in the DOM
       setTimeout(() => {
         const pickr = createPickr(`#${colorBtn.id}`, ln.color);
-        pickr.on("change", c => {
-          ln.color = c.toHEXA().toString();
-          wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+        pickr.on("change", clr => {
+          ln.color = clr.toHEXA()?.toString();
+          dispatchInput();
         });
-        pickr.on("save", c => {
-          ln.color = c.toHEXA().toString();
-          wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+        pickr.on("save", clr => {
+          ln.color = clr.toHEXA()?.toString();
+          dispatchInput();
           pickr.hide();
         });
       }, 0);
     });
+
+    // “+” button row
+    const addRow = createFieldRow("", btnAdd);
+    container.append(addRow);
+
+    // bottom divider
+    if (withDividers) container.append(hrBot);
   }
 
-  btnAdd.addEventListener("click", () => {
-    lines.push({ text: "", color: defaultColor });
-    render();
-    wrap.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
-  });
+  // initial render (no default line here; controllers call setLines)
+  render();
 
   return {
-    block: wrap,
+    container,
     getLines: () => lines.map(l => ({ text: l.text, color: l.color })),
     setLines: (newLines = [], makeReadOnly = false) => {
       lines = newLines.map(l => ({
-        text:  l.text  || "",
-        color: l.color || defaultColor
+        text:  l.text   || "",
+        color: l.color  || defaultColor
       }));
       render();
       if (makeReadOnly) btnAdd.style.display = "none";
     }
   };
-}
-
-/**
- * Wraps the extra-info block in <hr>…<hr> and top-aligns the label.
- */
-export function createExtraInfoRow({
-  withDividers = true,
-  defaultColor = "#E5E6E8",
-  readonly     = false
-} = {}) {
-  const { block, getLines, setLines } =
-    createExtraInfoBlock({ defaultColor, readonly });
-
-  const row = createFieldRow("Extra Info:", block);
-  row.style.alignItems = "flex-start";
-
-  if (!withDividers) {
-    return { row, block, getLines, setLines };
-  }
-
-  const container = document.createElement("div");
-  const hrTop      = document.createElement("hr");
-  const hrBottom   = document.createElement("hr");
-  hrTop.style.margin    = "8px 0";
-  hrBottom.style.margin = "8px 0";
-
-  container.append(hrTop, row, hrBottom);
-  return { container, row, block, getLines, setLines };
 }
