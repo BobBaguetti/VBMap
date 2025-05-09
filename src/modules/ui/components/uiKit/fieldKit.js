@@ -100,5 +100,4 @@ export function createVideoField(labelText, id) {
 }
 
 // Re-export the extra-info block factory
-export { createExtraInfoBlock } from "./extraInfoBlock.js";
 export { createExtraInfoRow } from "./extraInfoBlock.js";
