@@ -124,3 +124,4 @@ export function createExtraInfoField({ withDividers = false } = {}) {
 
 // Re-export the extra-info block factory for direct use
 export { createExtraInfoBlock } from "./extraInfoBlock.js";
+ 
