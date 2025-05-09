@@ -1,15 +1,14 @@
 // @file: src/modules/ui/components/uiKit/modals/smallModal.js
-// @version: 1.5 — fix CSS class names to match existing styles
+// @version: 1.3 — wrap in .modal-content so form gap, field-row, extra-row, etc. all apply
 
 /**
  * Create a small, floating modal (no backdrop) that you can position yourself.
  *
- * @param {string} id              Unique ID for the modal root
- * @param {string} title           Header text
- * @param {HTMLElement[]} bodies   Array of DOM nodes to append into the body
- * @param {Function} onClose       Callback when the user clicks × or presses Escape
- * @param {boolean} draggable      Whether the modal can be dragged by its header
- * @param {boolean} withDivider    Whether to insert an <hr> under the header
+ * @param {string} id            Unique ID for the modal root
+ * @param {string} title         Header text
+ * @param {HTMLElement[]} bodies Array of DOM nodes to append into the body
+ * @param {Function} onClose     Callback when the user clicks × or presses Escape
+ * @param {boolean} draggable    Whether the modal can be dragged by its header
  * @returns {{ root: HTMLElement, show(x:number,y:number):void, hide():void }}
  */
 export function createSmallModal(
@@ -17,68 +16,61 @@ export function createSmallModal(
   title,
   bodies = [],
   onClose = () => {},
-  draggable = false,
-  withDivider = false
+  draggable = false
 ) {
-  // 1) Root wrapper
+  // root wrapper
   const root = document.createElement("div");
   root.id = id;
-  // Use the exact classes your CSS expects:
-  root.classList.add("modal", "modal-small");
+  root.classList.add("modal", "modal-small");       // match modal.small.css
   Object.assign(root.style, {
     position: "absolute",
     display:  "none",
-    zIndex:   "1001"
+    zIndex:   "10001"
   });
 
-  // 2) Content wrapper
+  // content container (so .modal-content CSS applies)
   const content = document.createElement("div");
-  content.className = "modal-content";
-  Object.assign(content.style, {
-    maxHeight: "90vh",
-    overflowY: "auto"
-  });
+  content.classList.add("modal-content");
+  // small-modal override will size this down
   root.appendChild(content);
 
-  // 3) Header
+  // header
   const hdr = document.createElement("div");
-  hdr.className = "modal-header";
+  hdr.classList.add("modal-header");
   hdr.innerHTML = `
-    <span class="modal-title">${title}</span>
+    <h2>${title}</h2>
     <span class="close">&times;</span>
   `;
   content.appendChild(hdr);
 
-  // 4) Optional divider
-  if (withDivider) {
-    const hr = document.createElement("hr");
-    content.appendChild(hr);
-  }
+  // optional divider (we want the thin HR under header like other modals)
+  const hr = document.createElement("hr");
+  content.appendChild(hr);
 
-  // 5) Body
+  // body wrapper
   const body = document.createElement("div");
-  body.className = "modal-body";
+  body.classList.add("modal-body");
   bodies.forEach(el => body.appendChild(el));
   content.appendChild(body);
 
-  // 6) Close wiring
-  hdr.querySelector(".close").onclick = () => {
-    onClose();
+  // wire up the close button
+  hdr.querySelector(".close").addEventListener("click", () => {
     hide();
-  };
+    onClose();
+  });
   document.addEventListener("keydown", e => {
     if (e.key === "Escape" && root.style.display === "block") {
-      onClose();
       hide();
+      onClose();
     }
   });
 
-  // 7) Drag if requested
+  // make draggable if requested
   if (draggable) {
-    makeSmallModalDraggable(content, hdr);
+    makeDraggable(root, hdr);
   }
 
-  document.body.append(root);
+  document.body.appendChild(root);
 
   function show(x = 0, y = 0) {
     root.style.left    = `${x}px`;
@@ -93,29 +85,29 @@ export function createSmallModal(
 }
 
 /**
- * Position an existing small‐modal next to a click event.
+ * Position an existing small‐modal next to the click event.
  *
- * @param {{ root: HTMLElement, show():void }} modalApi
+ * @param {{ root: HTMLElement, show():void }} api
  * @param {MouseEvent} evt
  */
-export function openSmallModalAt(modalApi, evt) {
-  const rect = modalApi.root
-    .querySelector(".modal-content")
-    .getBoundingClientRect();
-  modalApi.show(evt.pageX - rect.width - 8, evt.pageY - rect.height / 2);
+export function openSmallModalAt(api, evt) {
+  const rect = api.root.querySelector(".modal-content").getBoundingClientRect();
+  const x    = evt.pageX - rect.width - 8;
+  const y    = evt.pageY - rect.height / 2;
+  api.show(x, y);
 }
 
-function makeSmallModalDraggable(modalEl, handle) {
+// simple drag by header handle
+function makeDraggable(modalEl, handle) {
   let dragging = false, offsetX = 0, offsetY = 0;
   handle.onmousedown = e => {
     dragging = true;
     offsetX  = e.clientX - modalEl.offsetLeft;
     offsetY  = e.clientY - modalEl.offsetTop;
-    document.onmousemove = e2 => {
+    document.onmousemove = ev => {
       if (!dragging) return;
-      modalEl.style.left     = `${e2.clientX - offsetX}px`;
-      modalEl.style.top      = `${e2.clientY - offsetY}px`;
-      modalEl.style.position = "absolute";
+      modalEl.style.left     = `${ev.clientX - offsetX}px`;
+      modalEl.style.top      = `${ev.clientY - offsetY}px`;
     };
     document.onmouseup = () => {
       dragging = false;
