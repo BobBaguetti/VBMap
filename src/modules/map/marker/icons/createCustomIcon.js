@@ -1,7 +1,10 @@
 // @file: src/modules/map/marker/icons/createCustomIcon.js
-// @version: 1.0 — extract marker icon factory
+// @version: 1.1 — use global Leaflet instance
 
-import L from "leaflet";
+// assumes `<script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>` 
+// loads L onto window before your modules run
+const L = window.L;
+
 import { defaultNameColor } from "../../../utils/colorPresets.js";
 import { isImgUrl, getBestImageUrl } from "../utils.js";
 
@@ -10,17 +13,12 @@ import { isImgUrl, getBestImageUrl } from "../utils.js";
  * using the item's image (if available) and a colored border.
  *
  * @param {object} m — marker definition object
- * @param {string} [m.imageSmall] — URL for the marker image
- * @param {string} [m.imageBig] — alternative large image URL
- * @param {string} [m.imageLarge] — alternative large image URL
- * @param {string} [m.rarityColor] — border color for rarity
  * @returns {L.DivIcon}
  */
 export function createCustomIcon(m) {
   const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
   const size   = 32;
 
-  // wrapper div to hold image and border
   const wrap = document.createElement("div");
   wrap.className = "custom-marker";
   Object.assign(wrap.style, {
@@ -29,7 +27,6 @@ export function createCustomIcon(m) {
     height:   `${size}px`
   });
 
-  // colored border
   const border = document.createElement("div");
   border.className = "marker-border";
   Object.assign(border.style, {
@@ -40,7 +37,6 @@ export function createCustomIcon(m) {
   });
   wrap.appendChild(border);
 
-  // optional image
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;
@@ -54,11 +50,10 @@ export function createCustomIcon(m) {
     wrap.appendChild(img);
   }
 
-  // build and return the Leaflet icon
   return L.divIcon({
     html:       wrap.outerHTML,
     className:  "",
-    iconSize:  [size, size],
+    iconSize:   [size, size],
     iconAnchor: [size / 2, size / 2]
   });
 }
