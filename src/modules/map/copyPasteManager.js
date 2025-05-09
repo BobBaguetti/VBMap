@@ -1,5 +1,5 @@
-// @file:    /src/modules/map/copyPasteManager.js
-// @version: 1   The current file version is 1. Increase by 1 every time you update anything.
+// @file:    src/modules/map/copyPasteManager.js
+// @version: 1 
 
 // Clipboard copy‑/paste manager with a ghost preview marker that stays active
 // until the user right‑clicks to cancel. Only free‑form markers (those not linked to a predefined item) have "(copy)" appended to their names.
@@ -71,5 +71,3 @@ export function initCopyPasteManager(map, addMarkerCallback) {
 
   return { startCopy, cancel };
 }
-
-// @version: 1

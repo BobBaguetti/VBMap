@@ -1,7 +1,5 @@
-// @fullfile: Send the entire file, no omissions or abridgments.
-// @keep:    Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code.
 // @version: 1   The current file version is 1. Increase by 1 every time you update anything.
-// @file:    /src/modules/utils/utils.js 
+// @file:    src/modules/utils/utils.js 
 
 /**
  * Capitalizes the first letter of the given string.
@@ -52,4 +50,3 @@ export function deepClone(obj) {
   return JSON.parse(JSON.stringify(obj));
 }
   
-  // @version: 1

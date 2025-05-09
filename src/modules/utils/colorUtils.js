@@ -1,5 +1,6 @@
-// @version: 2
 // @file: /src/modules/utils/colorUtils.js
+// @version: 2
+
 
 import { rarityColors, itemTypeColors } from "./colorPresets.js";
 

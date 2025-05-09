@@ -1,5 +1,5 @@
+// @file: src/modules/utils/colorPresets.js
 // @version: 2
-// @file: /src/modules/utils/colorPresets.js
 
 /**
  * Default color for names when none is specified or on reset.
@@ -24,7 +24,7 @@ export const itemTypeColors = {
   "":                "#bbb"
 };
 
-export const goldColor = "#D4AF37"; // or "#FFD700" for brighter tone
+export const goldColor = "#D4AF37"; 
 
 export const questTypeColors = {
   Main:  "#ffdf91",
