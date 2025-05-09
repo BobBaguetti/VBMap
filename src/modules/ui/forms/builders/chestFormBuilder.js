@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.4 — wire up name-color swatch
+// @version: 2.5 — reposition loot-pool cog under label
 
 import {
   createTextField,
@@ -18,9 +18,8 @@ export function createChestForm() {
   const {
     row: rowName,
     input: fldName,
-    colorBtn: colorName   // <–– pull in the color swatch
+    colorBtn: colorName
   } = createTextField("Name", "fld-chest-name");
-  // give it our standard “color-swatch” & a stable ID
   colorName.id = "fld-chest-name-color";
   colorName.classList.add("color-swatch");
 
@@ -42,18 +41,28 @@ export function createChestForm() {
   // — Loot Pool —
   const rowLoot = document.createElement("div");
   rowLoot.className = "field-row loot-pool-row";
+
+  // Label
   const lblLoot = document.createElement("label");
   lblLoot.textContent = "Loot Pool";
-  const lootWrapper = document.createElement("div");
-  lootWrapper.className = "loot-pool-wrapper";
-  const chipContainer = document.createElement("div");
-  chipContainer.className = "loot-pool-chip-container";
+  lblLoot.htmlFor = "fld-chest-loot";  // ensure label-for if needed
+
+  // Cog button now goes directly under the label
   const btnCog = document.createElement("button");
   btnCog.type      = "button";
-  btnCog.className = "loot-pool-cog";
+  btnCog.className = "loot-pool-cog open-loot-picker";
   btnCog.innerHTML = "⚙️";
-  lootWrapper.append(chipContainer, btnCog);
-  rowLoot.append(lblLoot, lootWrapper);
+
+  // Wrapper for chips only
+  const lootWrapper = document.createElement("div");
+  lootWrapper.className = "loot-pool-wrapper";
+
+  const chipContainer = document.createElement("div");
+  chipContainer.className = "loot-pool-chip-container";
+  lootWrapper.append(chipContainer);
+
+  // Assemble row: label, then cog, then chip wrapper
+  rowLoot.append(lblLoot, btnCog, lootWrapper);
 
   // — Description —
   const {
@@ -86,7 +95,7 @@ export function createChestForm() {
     form,
     fields: {
       fldName,
-      colorName,    // <–– expose it for the controller
+      colorName,
       fldCategory,
       fldSize,
       lootPool:         [],
