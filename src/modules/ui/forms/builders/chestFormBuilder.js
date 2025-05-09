@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/builders/chestFormBuilder.js
-// @version: 2.6 — use createFieldRow for Loot Pool alignment
+// @version: 2.4 — wire up name-color swatch
 
 import {
   createTextField,
@@ -18,8 +18,9 @@ export function createChestForm() {
   const {
     row: rowName,
     input: fldName,
-    colorBtn: colorName
+    colorBtn: colorName   // <–– pull in the color swatch
   } = createTextField("Name", "fld-chest-name");
+  // give it our standard “color-swatch” & a stable ID
   colorName.id = "fld-chest-name-color";
   colorName.classList.add("color-swatch");
 
@@ -39,22 +40,20 @@ export function createChestForm() {
     ], { showColor: false });
 
   // — Loot Pool —
-  // Build the chip container and cog button
-  const chipContainer = document.createElement("div");
-  chipContainer.className = "loot-pool-chip-container";
-
-  const btnCog = document.createElement("button");
-  btnCog.type      = "button";
-  btnCog.className = "loot-pool-cog open-loot-picker";
-  btnCog.innerHTML = "⚙️";
-
-  // Wrap them together
+  const rowLoot = document.createElement("div");
+  rowLoot.className = "field-row loot-pool-row";
+  const lblLoot = document.createElement("label");
+  lblLoot.textContent = "Loot Pool";
   const lootWrapper = document.createElement("div");
   lootWrapper.className = "loot-pool-wrapper";
+  const chipContainer = document.createElement("div");
+  chipContainer.className = "loot-pool-chip-container";
+  const btnCog = document.createElement("button");
+  btnCog.type      = "button";
+  btnCog.className = "loot-pool-cog";
+  btnCog.innerHTML = "⚙️";
   lootWrapper.append(chipContainer, btnCog);
-
-  // Use the helper so label and field align perfectly
-  const { row: rowLoot } = createFieldRow("Loot Pool", lootWrapper);
+  rowLoot.append(lblLoot, lootWrapper);
 
   // — Description —
   const {
@@ -66,13 +65,12 @@ export function createChestForm() {
 
   // — Extra Info —
   const extraInfo = createExtraInfoBlock();
-  const { row: rowExtras } = createFieldRow("Extra Info", extraInfo.block);
+  const rowExtras = createFieldRow("Extra Info", extraInfo.block);
 
   // — Image S & L —
   const { row: rowImgS, input: fldImgS } = createImageField("Image S", "fld-chest-img-s");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L", "fld-chest-img-l");
 
-  // Append everything
   form.append(
     rowName,
     rowCategory,
@@ -88,12 +86,12 @@ export function createChestForm() {
     form,
     fields: {
       fldName,
-      colorName,
+      colorName,    // <–– expose it for the controller
       fldCategory,
       fldSize,
-      lootPool:       [],
-      chipContainer,    // where chips render
-      openLootPicker:  btnCog,
+      lootPool:         [],
+      chipContainer,
+      openLootPicker:   btnCog,
       fldDesc,
       colorDesc,
       extraInfo,

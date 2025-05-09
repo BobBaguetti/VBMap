@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/chestFormController.js
-// @version: 2.24 — removed old DOM-relocation now handled in builder
+// @version: 2.22 — preload item definitions for initial chip render
 
 /**
  * Creates the controller for the chest-definition form.
@@ -27,7 +27,6 @@ export function createChestFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },
   db
 ) {
-  // Build the raw form and grab its fields
   const { form, fields } = createChestForm();
 
   // Header + Buttons
@@ -90,10 +89,10 @@ export function createChestFormController(
     onChange:    () => onFieldChange?.(getCustom())
   });
 
-  // Preload & initial render
+  // Preload items & render initial chips so populate reflects names/icons
   ensureAllItems().then(() => chipManager.render());
 
-  // ─── Loot-pool picker button wiring ────────────────────────────
+  // ─── Loot-pool picker button ───────────────────────────────────
   fields.openLootPicker.onclick = async () => {
     await ensureAllItems();
     chipManager.render();
