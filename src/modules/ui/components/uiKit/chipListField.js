@@ -1,29 +1,12 @@
 // @file: src/modules/ui/components/uiKit/chipListField.js
-// @version: 1.2 — support custom addBtnContent & centered large modal
+// @version: 1.3 — fire form “input” event on any chip change
 
 import { createFieldRow } from "./fieldKit.js";
-import { createChipList }  from "../chipListManager.js";
-import { pickItems }       from "../listPicker.js";
+import { createChipList } from "../chipListManager.js";
+import { pickItems }      from "../listPicker.js";
 
 /**
  * Creates a labeled chip-list field with an “add” button that opens the list-picker.
- *
- * @param {string} labelText            – Text for the field label (no trailing colon)
- * @param {Array<object>} initialItems  – Array of item objects to seed the chips
- * @param {object} opts
- * @param {Array<object>} opts.items        – Full list of selectable items
- * @param {string} [opts.idKey="id"]        – Unique-id property name
- * @param {string} [opts.labelKey="name"]   – Property name to show as chip label/picker label
- * @param {function(object):string} [opts.renderIcon] – Fn to return an icon URL per item
- * @param {function(Array<object>):void} [opts.onChange] – Callback on selection change
- * @param {string} [opts.addBtnContent="+"]   – Button content (will default to “⚙️” if not passed)
- * @param {object} [opts.pickOptions={ size:"large" }] – Passthrough to pickItems for positioning
- *
- * @returns {{
- *   row: HTMLElement,
- *   getItems: () => Array<object>,
- *   setItems: (Array<object>) => void
- * }}
  */
 export function createChipListField(
   labelText,
@@ -38,7 +21,7 @@ export function createChipListField(
     pickOptions   = { size: "large" }
   } = {}
 ) {
-  // build the chip container + add button
+  // 1) build DOM
   const container = document.createElement("div");
   container.classList.add("chip-list-container");
 
@@ -47,11 +30,10 @@ export function createChipListField(
   btnAdd.className   = "ui-button add-chip-btn";
   btnAdd.textContent = addBtnContent;
 
-  // wrap in a field-row
   const row = createFieldRow(labelText, container);
   row.append(btnAdd);
 
-  // backing array and render logic
+  // 2) chip-list manager
   const listArray = [...initialItems];
   const chipList = createChipList({
     container,
@@ -59,12 +41,15 @@ export function createChipListField(
     renderLabel: item => item[labelKey],
     renderIcon,
     onChange: updated => {
+      // sync our backing array
       listArray.splice(0, listArray.length, ...updated);
       onChange?.([...listArray]);
+      // 🔥 fire an “input” on the form for live-preview!
+      row.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
     }
   });
 
-  // wire the “add” button to open the picker
+  // 3) “add” button → picker
   btnAdd.addEventListener("click", async () => {
     try {
       const selectedIds = await pickItems({
@@ -78,8 +63,10 @@ export function createChipListField(
       listArray.splice(0, listArray.length, ...picked);
       chipList.render();
       onChange?.([...listArray]);
+      // 🔥 also fire an “input” here
+      row.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
     } catch {
-      // cancelled
+      // user cancelled
     }
   });
 
@@ -89,6 +76,8 @@ export function createChipListField(
     setItems: newItems => {
       listArray.splice(0, listArray.length, ...newItems);
       chipList.render();
+      // and fire once on programmatic set
+      row.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
     }
   };
 }
