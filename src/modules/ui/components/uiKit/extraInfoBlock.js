@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.5 — fix Pickr init after element append
+// @version: 1.6 — defer Pickr init, preserve createExtraInfoRow helper
 
 import { createPickr } from "../../pickrManager.js";
 import { createFieldRow } from "./fieldKit.js";
@@ -9,7 +9,7 @@ import { createFieldRow } from "./fieldKit.js";
  *
  * @param {object} opts
  * @param {string} opts.defaultColor – hex string for new‐line swatches
- * @param {boolean} opts.readonly – hide the “+” button if true
+ * @param {boolean} opts.readonly     – hide the “+” button if true
  */
 export function createExtraInfoBlock({
   defaultColor = "#E5E6E8",
@@ -46,16 +46,22 @@ export function createExtraInfoBlock({
       colorBtn.type = "button";
       colorBtn.classList.add("color-swatch");
       colorBtn.id = `extra-line-${idx}-color`;
-      row.append(input, colorBtn);
 
-      // **Append to DOM first, then init Pickr**
+      // append row to DOM before wiring Pickr
+      row.append(input, colorBtn);
       lineWrap.append(row);
 
-      const pickr = createPickr(`#${colorBtn.id}`, ln.color);
-      pickr.on("save", clr => {
-        ln.color = clr.toHEXA().toString();
-        pickr.hide();
-      });
+      // defer Pickr wiring until after the element is in DOM
+      setTimeout(() => {
+        const pickr = createPickr(`#${colorBtn.id}`, ln.color);
+        pickr.on("change", clr => {
+          ln.color = clr.toHEXA()?.toString();
+        });
+        pickr.on("save", clr => {
+          ln.color = clr.toHEXA()?.toString();
+          pickr.hide();
+        });
+      }, 0);
     });
   }
 
@@ -66,7 +72,7 @@ export function createExtraInfoBlock({
 
   btnAdd.addEventListener("click", addLine);
 
-  // initialize with one blank line if not readonly
+  // initialize with one line if not readonly
   if (!readonly) addLine();
 
   return {
@@ -75,8 +81,8 @@ export function createExtraInfoBlock({
       lines.map(l => ({ text: l.text, color: l.color })),
     setLines: (newLines = [], makeReadOnly = false) => {
       lines = newLines.map(l => ({
-        text: l.text   || "",
-        color: l.color || defaultColor
+        text:  l.text   || "",
+        color: l.color  || defaultColor
       }));
       render();
       if (makeReadOnly) btnAdd.style.display = "none";
@@ -85,13 +91,12 @@ export function createExtraInfoBlock({
 }
 
 /**
- * Drops your extra‐info block inside a <hr>…<hr> wrapper
- * and top‐aligns the label row automatically.
+ * Wraps your extra‐info block in <hr>…<hr> and top‐aligns the label.
  *
  * @param {object} opts
  * @param {boolean} opts.withDividers – wrap with <hr> above/below
  * @param {string}  opts.defaultColor – passed to createExtraInfoBlock
- * @param {boolean} opts.readonly – passed to createExtraInfoBlock
+ * @param {boolean} opts.readonly     – passed to createExtraInfoBlock
  */
 export function createExtraInfoRow({
   withDividers = true,
@@ -101,7 +106,6 @@ export function createExtraInfoRow({
   const { block, getLines, setLines } =
     createExtraInfoBlock({ defaultColor, readonly });
 
-  // build the labeled row and force top‐alignment
   const row = createFieldRow("Extra Info:", block);
   row.style.alignItems = "flex-start";
 
