@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/modals/smallModal.js
-// @version: 1.6 — simple bodies array + divider, content wrapper
+// @version: 1.7 — fix openSmallModalAt positioning and viewport clamping
 
 /**
  * Create a small, floating modal (no backdrop) that you can position yourself.
@@ -87,16 +87,29 @@ export function createSmallModal(
 }
 
 /**
- * Position an existing small‐modal next to a click event.
+ * Position an existing small‐modal next to the click event,
+ * clamped to the viewport.
  *
  * @param {{ root: HTMLElement, show():void }} api
  * @param {MouseEvent} evt
  */
 export function openSmallModalAt(api, evt) {
-  const rect = api.root.getBoundingClientRect();
-  api.show(evt.pageX - rect.width - 8, evt.pageY - rect.height / 2);
+  const content = api.root.querySelector(".modal-content");
+  const rect    = content.getBoundingClientRect();
+
+  // calculate desired x/y
+  let x = evt.pageX - rect.width - 8;
+  let y = evt.pageY - rect.height / 2;
+
+  // clamp within viewport (8px margin)
+  const vw = window.innerWidth, vh = window.innerHeight;
+  x = Math.min(Math.max(8, x), vw - rect.width - 8);
+  y = Math.min(Math.max(8, y), vh - rect.height - 8);
+
+  api.show(x, y);
 }
 
+// simple drag by header handle
 function makeDraggable(modalEl, handle) {
   let dragging = false, offsetX = 0, offsetY = 0;
   handle.onmousedown = e => {
