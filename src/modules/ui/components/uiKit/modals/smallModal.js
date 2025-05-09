@@ -1,14 +1,15 @@
 // @file: src/modules/ui/components/uiKit/modals/smallModal.js
-// @version: 1.3 — reintroduce .modal-content wrapper
+// @version: 1.5 — fix CSS class names to match existing styles
 
 /**
  * Create a small, floating modal (no backdrop) that you can position yourself.
  *
- * @param {string} id            Unique ID for the modal root
- * @param {string} title         Header text
- * @param {HTMLElement[]} bodies Array of DOM nodes to append into the body
- * @param {Function} onClose     Callback when the user clicks × or presses Escape
- * @param {boolean} draggable    Whether the modal can be dragged by its header
+ * @param {string} id              Unique ID for the modal root
+ * @param {string} title           Header text
+ * @param {HTMLElement[]} bodies   Array of DOM nodes to append into the body
+ * @param {Function} onClose       Callback when the user clicks × or presses Escape
+ * @param {boolean} draggable      Whether the modal can be dragged by its header
+ * @param {boolean} withDivider    Whether to insert an <hr> under the header
  * @returns {{ root: HTMLElement, show(x:number,y:number):void, hide():void }}
  */
 export function createSmallModal(
@@ -16,22 +17,27 @@ export function createSmallModal(
   title,
   bodies = [],
   onClose = () => {},
-  draggable = false
+  draggable = false,
+  withDivider = false
 ) {
-  // 1) Root wrapper (backdropless)
+  // 1) Root wrapper
   const root = document.createElement("div");
   root.id = id;
-  root.className = "modal small-modal";
+  // Use the exact classes your CSS expects:
+  root.classList.add("modal", "modal-small");
   Object.assign(root.style, {
     position: "absolute",
     display:  "none",
     zIndex:   "1001"
   });
 
-  // 2) Content wrapper (so existing CSS applies)
+  // 2) Content wrapper
   const content = document.createElement("div");
   content.className = "modal-content";
-  // small-modal.css already sets width on .modal.small-modal .modal-content
+  Object.assign(content.style, {
+    maxHeight: "90vh",
+    overflowY: "auto"
+  });
   root.appendChild(content);
 
   // 3) Header
@@ -43,7 +49,19 @@ export function createSmallModal(
   `;
   content.appendChild(hdr);
 
-  // close wiring
+  // 4) Optional divider
+  if (withDivider) {
+    const hr = document.createElement("hr");
+    content.appendChild(hr);
+  }
+
+  // 5) Body
+  const body = document.createElement("div");
+  body.className = "modal-body";
+  bodies.forEach(el => body.appendChild(el));
+  content.appendChild(body);
+
+  // 6) Close wiring
   hdr.querySelector(".close").onclick = () => {
     onClose();
     hide();
@@ -55,14 +73,10 @@ export function createSmallModal(
     }
   });
 
-  // 4) Body
-  const body = document.createElement("div");
-  body.className = "modal-body";
-  bodies.forEach(el => body.appendChild(el));
-  content.appendChild(body);
-
-  // 5) Optional drag on content
-  if (draggable) makeSmallModalDraggable(content, hdr);
+  // 7) Drag if requested
+  if (draggable) {
+    makeSmallModalDraggable(content, hdr);
+  }
 
   document.body.append(root);
 
@@ -80,6 +94,9 @@ export function createSmallModal(
 
 /**
  * Position an existing small‐modal next to a click event.
+ *
+ * @param {{ root: HTMLElement, show():void }} modalApi
+ * @param {MouseEvent} evt
  */
 export function openSmallModalAt(modalApi, evt) {
   const rect = modalApi.root
