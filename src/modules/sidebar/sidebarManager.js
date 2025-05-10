@@ -1,16 +1,27 @@
 // @file: src/modules/sidebar/sidebarManager.js
-// @version: 10.3 — extract Settings toggles into sidebarSettings.js
+// @version: 10.4 — delegate filtering logic to sidebarFilters.js
 
-import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
 import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
 import { setupSidebarSettings }      from "./sidebarSettings.js";
+import { setupSidebarFilters }       from "./sidebarFilters.js";
 
+/**
+ * Sets up the application sidebar:
+ *  • UI toggles (open/close, group collapse)
+ *  • Settings section (marker grouping, small markers)
+ *  • Filters (search, PvE, main & item filters)
+ *  • Admin tools buttons
+ *
+ * @returns {{
+ *   filterMarkers: () => void,
+ *   loadItemFilters: () => Promise<void>
+ * }}
+ */
 export async function setupSidebar(
   map, layers, allMarkers, db,
   { enableGrouping, disableGrouping }
 ) {
-  console.log("[sidebar] setupSidebar() running");
   const searchBar     = document.getElementById("search-bar");
   const sidebarToggle = document.getElementById("sidebar-toggle");
   const sidebar       = document.getElementById("sidebar");
@@ -40,77 +51,19 @@ export async function setupSidebar(
     });
   });
 
-  // ─── Delegate Settings Toggles ────────────────────────────────────
+  // ─── Settings Section ────────────────────────────────────────────
   setupSidebarSettings(settingsSect, { enableGrouping, disableGrouping });
 
-  // ─── Core Filtering Logic ─────────────────────────────────────────
-  function filterMarkers() {
-    const nameQuery = (searchBar.value || "").toLowerCase();
-    const pveOn     = document.getElementById("toggle-pve")?.checked ?? true;
-
-    allMarkers.forEach(({ markerObj, data }) => {
-      const matchesPvE  = pveOn || data.type !== "Item";
-      const matchesName = data.name?.toLowerCase().includes(nameQuery);
-
-      let mainVisible = true;
-      document.querySelectorAll("#main-filters .toggle-group input")
-        .forEach(cb => {
-          if (data.type === cb.dataset.layer && !cb.checked)
-            mainVisible = false;
-        });
-
-      let itemVisible = true;
-      if (data.predefinedItemId) {
-        const itemCb = document.querySelector(
-          `#item-filter-list input[data-item-id="${data.predefinedItemId}"]`
-        );
-        if (itemCb && !itemCb.checked) itemVisible = false;
-      }
-
-      const shouldShow = matchesPvE
-                       && matchesName
-                       && mainVisible
-                       && itemVisible;
-      const layerGroup = layers[data.type];
-      if (!layerGroup) return;
-
-      shouldShow ? layerGroup.addLayer(markerObj)
-                 : layerGroup.removeLayer(markerObj);
-    });
-  }
-
-  searchBar.addEventListener("input", filterMarkers);
-  document
-    .querySelectorAll("#main-filters .toggle-group input")
-    .forEach(cb => cb.addEventListener("change", filterMarkers));
-  document.getElementById("toggle-pve")?.addEventListener("change", filterMarkers);
-
-  // ─── Add “Chests” Toggle ─────────────────────────────────────────
-  const mainGroup = document.querySelector("#main-filters .toggle-group");
-  const chestLabel = document.createElement("label");
-  chestLabel.innerHTML = `<input type="checkbox" checked data-layer="Chest"/><span>Chests</span>`;
-  mainGroup.appendChild(chestLabel);
-  chestLabel.querySelector("input")
-    .addEventListener("change", filterMarkers);
-
-  // ─── Item Filters ─────────────────────────────────────────────────
-  const itemFilterList = document.getElementById("item-filter-list");
-  async function loadItemFilters() {
-    itemFilterList.innerHTML = "";
-    const defs = await loadItemDefinitions(db);
-    defs.filter(d => d.showInFilters).forEach(d => {
-      const label = document.createElement("label");
-      const cb    = document.createElement("input");
-      cb.type           = "checkbox";
-      cb.checked        = true;
-      cb.dataset.itemId = d.id;
-      const span = document.createElement("span");
-      span.textContent = d.name;
-      label.append(cb, span);
-      itemFilterList.append(label);
-      cb.addEventListener("change", filterMarkers);
-    });
-  }
+  // ─── Filtering Section ───────────────────────────────────────────
+  const { filterMarkers, loadItemFilters } = setupSidebarFilters({
+    searchBarSelector:      "#search-bar",
+    mainFiltersSelector:    "#main-filters .toggle-group",
+    pveToggleSelector:      "#toggle-pve",
+    itemFilterListSelector: "#item-filter-list",
+    layers,
+    allMarkers,
+    db
+  });
   await loadItemFilters();
 
   // ─── Admin Tools ──────────────────────────────────────────────────
@@ -128,8 +81,8 @@ export async function setupSidebar(
   adminWrap.style.display = "none";
 
   [
-    ["Manage Items",       () => initItemDefinitionsModal(db).open()],
-    ["Manage Chests",      () => initChestDefinitionsModal(db).open()]
+    ["Manage Items",  () => initItemDefinitionsModal(db).open()],
+    ["Manage Chests", () => initChestDefinitionsModal(db).open()]
   ].forEach(([txt, fn]) => {
     const btn = document.createElement("button");
     btn.textContent = txt;
@@ -144,7 +97,7 @@ export async function setupSidebar(
     adminWrap.style.display   = "";
   }
 
-  // Initial draw
+  // ─── Initial draw ────────────────────────────────────────────────
   filterMarkers();
 
   return { filterMarkers, loadItemFilters };
