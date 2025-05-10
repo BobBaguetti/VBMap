@@ -1,19 +1,46 @@
 // @file: src/modules/sidebar/sidebarManager.js
-// @version: 2.4 — flexible selectors for settings/filters
+// @version: 2.5 — integrate updated renderSidebarFilters signature
 
 import { renderSidebarSettings } from "./settings/sidebarSettings.js";
 import { renderSidebarFilters }  from "./filters/sidebarFilters.js";
 
+/**
+ * Sets up the sidebar’s Settings and Filters sections.
+ *
+ * @param {L.Map} map
+ * @param {object<string,L.LayerGroup>} layers
+ * @param {Array<{ markerObj: L.Marker, data: object }>} allMarkers
+ * @param {firebase.firestore.Firestore} db
+ * @param {object} callbacks
+ * @param {() => void} callbacks.enableGrouping
+ * @param {() => void} callbacks.disableGrouping
+ * @param {() => void} callbacks.shrinkMarkers
+ * @param {() => void} callbacks.resetMarkerSize
+ * @param {() => void} callbacks.onManageItems
+ * @param {() => void} callbacks.onManageChests
+ * @param {() => void} callbacks.onMultiSelectMode
+ * @param {() => void} callbacks.onDeleteMode
+ * @returns {Promise<{ filterMarkers: Function, loadItemFilters: Function }>}
+ */
 export async function setupSidebar(
   map,
   layers,
   allMarkers,
   db,
-  callbacks
+  {
+    enableGrouping,
+    disableGrouping,
+    shrinkMarkers,
+    resetMarkerSize,
+    onManageItems,
+    onManageChests,
+    onMultiSelectMode,
+    onDeleteMode
+  }
 ) {
   const sidebar = document.getElementById("sidebar");
 
-  // Try both ID and class selectors (fall back if one is missing)
+  // Settings section is still dynamically rendered
   const settingsContainer =
     sidebar.querySelector("#settings-section") ||
     sidebar.querySelector(".sidebar__settings");
@@ -22,18 +49,20 @@ export async function setupSidebar(
     return {};
   }
 
-  const filtersContainer =
-    sidebar.querySelector("#filters-section") ||
-    sidebar.querySelector(".sidebar__filters");
-  if (!filtersContainer) {
-    console.error("[sidebar] could not find filters container");
-    return {};
-  }
+  // Render the Settings panel
+  renderSidebarSettings(settingsContainer, {
+    enableGrouping,
+    disableGrouping,
+    shrinkMarkers,
+    resetMarkerSize,
+    onManageItems,
+    onManageChests,
+    onMultiSelectMode,
+    onDeleteMode
+  });
 
-  renderSidebarSettings(settingsContainer, callbacks);
-
+  // Filters now hook into the static HTML (#main-filters, #item-filter-list)
   const { filterMarkers, loadItemFilters } = await renderSidebarFilters(
-    filtersContainer,
     allMarkers,
     db
   );
