@@ -1,7 +1,7 @@
 // @file: src/modules/sidebar/filters/itemFilters.js
 // @version: 1.0 — per‐item checkbox filters
 
-import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
+import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 
 /**
  * Renders item‐specific filters under a heading,

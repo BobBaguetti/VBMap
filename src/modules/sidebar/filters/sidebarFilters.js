@@ -1,7 +1,7 @@
 // @file: src/modules/sidebar/filters/sidebarFilters.js
 // @version: 1.0 — aggregate main & item filters and filtering logic
 
-import { loadItemDefinitions } from "../services/itemDefinitionsService.js";
+import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 
 /**
  * Renders the Filters section in the sidebar and wires up filtering logic.
