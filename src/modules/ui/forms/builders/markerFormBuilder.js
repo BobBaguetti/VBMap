@@ -102,12 +102,12 @@ export function createMarkerFormBuilder() {
   return {
     form,
     fields: {
-      fldName, colorName,
+      fldName,   colorName,
       fldRarity, colorRarity,
       fldItemType, colorItemType,
-      fldDesc, colorDesc,
+      fldDesc,   colorDesc,
       extraInfo, extraRow: rowExtra,
-      fldImgS, fldImgL, fldVid
+      fldImgS,   fldImgL, fldVid
     }
   };
 }
