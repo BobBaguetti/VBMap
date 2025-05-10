@@ -1,11 +1,11 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 21.0 — slim modal shell delegating to markerFormController
+// @version: 21.1 — fix import path for modalKit
 
 import {
   createModal,
   openModalAt,
   closeModal
-} from "../../components/uiKit/modalKit.js";
+} from "../components/uiKit/modalKit.js";  // corrected relative path
 import { createMarkerFormController } from "../forms/controllers/markerFormController.js";
 
 export function initMarkerModal(db) {
@@ -28,9 +28,9 @@ export function initMarkerModal(db) {
 
     // Instantiate our form controller
     ctrl = createMarkerFormController({
-      onCancel: () => closeModal(modal),
-      onSubmit: () => {},       // will be wired per-open
-      onFieldChange: () => {}   // preview is handled elsewhere
+      onCancel:      () => closeModal(modal),
+      onSubmit:      () => {},       // will be wired per-open
+      onFieldChange: () => {}        // preview is handled elsewhere
     }, db);
 
     // Mount the form
