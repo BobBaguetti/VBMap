@@ -1,37 +1,25 @@
 // @file: src/modules/ui/forms/controllers/markerFormController.js
-// @version: 1.1 — fix imports for loadChestDefinitions
+// @version: 1.2 — query type/select elements by ID instead of inside builder form
 
-import { getPickrHexColor }            from "../../../utils/colorUtils.js";
-import { loadItemDefinitions }         from "../../../services/itemDefinitionsService.js";
-import { loadChestDefinitions }        from "../../../services/chestDefinitionsService.js";
+import { getPickrHexColor }         from "../../../utils/colorUtils.js";
+import { loadItemDefinitions }      from "../../../services/itemDefinitionsService.js";
+import { loadChestDefinitions }     from "../../../services/chestDefinitionsService.js";
 import {
   createFormControllerHeader,
   wireFormEvents
-}                                       from "../../components/formControllerShell.js";
-import { initFormPickrs }              from "../../components/formPickrManager.js";
-import { createMarkerFormBuilder }     from "../builders/markerFormBuilder.js";
+}                                    from "../../components/formControllerShell.js";
+import { initFormPickrs }           from "../../components/formPickrManager.js";
+import { createMarkerFormBuilder }  from "../builders/markerFormBuilder.js";
 
-/**
- * Controller around the marker form:
- *  • loads & caches item/chest defs
- *  • wires the “Type” dropdown to show/hide the right fields
- *  • handles Pickr & live‐preview events
- *
- * @param {{
- *   onCancel?:      () => void,
- *   onSubmit:       (payload: object) => void,
- *   onFieldChange?: (payload: object) => void
- * }} callbacks
- * @param {firebase.firestore.Firestore} db
- */
 export function createMarkerFormController(
   { onCancel, onSubmit, onFieldChange },
   db
 ) {
+  // Build the form fields
   const { form, fields } = createMarkerFormBuilder();
 
-  // ─── Header row ──────────────────────────────────────────────
-  const { container: headerWrap, subheading, setDeleteVisible } =
+  // Header/Cancel wiring
+  const { container: headerWrap, setDeleteVisible } =
     createFormControllerHeader({
       title:     "Place Marker",
       hasFilter: false,
@@ -40,9 +28,8 @@ export function createMarkerFormController(
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // ─── Cached definitions ──────────────────────────────────────
-  let itemDefs  = [];
-  let chestDefs = [];
+  // Cached definitions
+  let itemDefs = [], chestDefs = [];
   async function refreshDefs() {
     [ itemDefs, chestDefs ] = await Promise.all([
       loadItemDefinitions(db),
@@ -50,40 +37,41 @@ export function createMarkerFormController(
     ]);
   }
 
-  // ─── Type‐switching logic ────────────────────────────────────
-  // these selects come from the modal shell, not builder
-  fields.fldType       = form.querySelector("#fld-type");
-  fields.fldPredefItem = form.querySelector("#fld-predef-item");
-  fields.fldChestType  = form.querySelector("#fld-predef-chest");
+  // Type‐switching selects are outside the builder form
+  fields.fldType       = document.getElementById("fld-type");
+  fields.fldPredefItem = document.getElementById("fld-predef-item");
+  fields.fldChestType  = document.getElementById("fld-predef-chest");
 
   function updateVisibility() {
     const t = fields.fldType.value;
     fields.fldPredefItem.closest(".field-row").style.display = t === "Item"  ? "flex" : "none";
     fields.fldChestType .closest(".field-row").style.display = t === "Chest" ? "flex" : "none";
-    fields.extraRow.style.display                       = t !== ""       ? "flex" : "none";
+    fields.extraRow.style.display                         = t !== ""       ? "flex" : "none";
   }
   fields.fldType.addEventListener("change", updateVisibility);
 
-  // ─── Populate preload dropdowns ─────────────────────────────
+  // Populate the “predef” dropdowns
   async function populateDropdowns() {
-    // clear + repopulate predefined‐item
     const pd = fields.fldPredefItem;
     pd.innerHTML = `<option value="">None (custom)</option>`;
-    itemDefs.forEach(d => pd.insertAdjacentHTML(
-      "beforeend",
-      `<option value="${d.id}">${d.name}</option>`
-    ));
+    itemDefs.forEach(d => 
+      pd.insertAdjacentHTML("beforeend", `<option value="${d.id}">${d.name}</option>`)
+    );
 
-    // clear + repopulate chest‐type
     const pc = fields.fldChestType;
     pc.innerHTML = `<option value="">Select Chest Type</option>`;
-    chestDefs.forEach(d => pc.insertAdjacentHTML(
-      "beforeend",
-      `<option value="${d.id}">${d.name}</option>`
-    ));
+    chestDefs.forEach(d =>
+      pc.insertAdjacentHTML("beforeend", `<option value="${d.id}">${d.name}</option>`)
+    );
   }
 
-  // ─── When user picks a predefined Item, autofill builder fields ─
+  // When user picks a predefined Item, autofill builder fields
+  // (uses the builder's setFromDefinition)
+  const formApi = {
+    ...createMarkerFormBuilder(),
+    form,
+    fields
+  };
   fields.fldPredefItem.addEventListener("change", () => {
     const def = itemDefs.find(d => d.id === fields.fldPredefItem.value) || {};
     formApi.setFromDefinition(def);
@@ -91,14 +79,7 @@ export function createMarkerFormController(
     onFieldChange?.(getCustom());
   });
 
-  // ─── Builder wiring ─────────────────────────────────────────
-  const formApi = { 
-    ...createMarkerFormBuilder(), // reuse DOM + getCustom/setFromDefinition 
-    form, 
-    fields 
-  };
-
-  // ─── Pickr wiring ────────────────────────────────────────────
+  // Pickr wiring
   const pickrs = initFormPickrs(form, {
     name:        fields.colorName,
     rarity:      fields.colorRarity,
@@ -106,7 +87,7 @@ export function createMarkerFormController(
     description: fields.colorDesc
   });
 
-  // ─── Payload maker ───────────────────────────────────────────
+  // Payload composer
   function getCustom() {
     const base = {
       name:             fields.fldName.value.trim(),
@@ -134,18 +115,15 @@ export function createMarkerFormController(
       };
     }
 
-    return {
-      type: fields.fldType.value || "Custom",
-      ...base
-    };
+    return { type: fields.fldType.value || "Custom", ...base };
   }
 
-  // ─── Reset & populate ────────────────────────────────────────
+  // Reset & populate methods
   form.reset = () => {
     formApi.setFromDefinition({});
-    fields.fldType.value          = "";
-    fields.fldPredefItem.value    = "";
-    fields.fldChestType.value     = "";
+    fields.fldType.value       = "";
+    fields.fldPredefItem.value = "";
+    fields.fldChestType.value  = "";
     updateVisibility();
     pickrs.name.setColor("");
   };
@@ -153,25 +131,25 @@ export function createMarkerFormController(
   form.populate = async data => {
     await refreshDefs();
     await populateDropdowns();
-    fields.fldType.value      = data.type;
-    fields.fldPredefItem.value= data.predefinedItemId || "";
-    fields.fldChestType.value = data.chestTypeId    || "";
+    fields.fldType.value       = data.type;
+    fields.fldPredefItem.value = data.predefinedItemId || "";
+    fields.fldChestType.value  = data.chestTypeId    || "";
     formApi.setFromDefinition(data);
     updateVisibility();
     pickrs.name.setColor(data.nameColor);
   };
 
-  // ─── Live‐preview & form submit ───────────────────────────────
+  // Wire events: input → onFieldChange, submit → onSubmit
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
-  // initial load
+  // Initial load of definitions & dropdowns
   refreshDefs().then(populateDropdowns);
 
   return {
     form,
-    reset:      form.reset,
-    populate:   form.populate,
-    initPickrs: () => Object.assign(
+    reset:        form.reset,
+    populate:     form.populate,
+    initPickrs:   () => Object.assign(
       pickrs,
       initFormPickrs(form, {
         name:        fields.colorName,
