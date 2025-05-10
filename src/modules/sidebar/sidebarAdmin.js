@@ -2,7 +2,7 @@
 // @version: 1.0 — extract Admin Tools section into its own module
 
 import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsService.js";
+import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js"; 
 
 /**
  * Render and wire the “Admin Tools” section at the bottom of the sidebar.
