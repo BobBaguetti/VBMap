@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 21 -->
+<!-- @version: 22 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -25,7 +25,7 @@
   <link rel="stylesheet" href="styles/modals/modal.base.css"/>
   <link rel="stylesheet" href="styles/modals/modal.small.css"/>
   <link rel="stylesheet" href="styles/modals/modal.large.css"/>
-  <link rel="stylesheet" href="styles/modals/inventory.css">
+  <link rel="stylesheet" href="styles/modals/inventory.css"/>
   <!-- Preview styles -->
   <link rel="stylesheet" href="styles/preview/previewPanel.css"/>
   <link rel="stylesheet" href="styles/preview/itemPreview.css"/>
@@ -90,10 +90,19 @@
         <div class="toggle-group" id="chest-filter-list"><!-- dynamic --></div>
       </div>
 
-      <!-- NPC filters -->
+      <!-- NPC filters with nested sub-groups -->
       <div class="filter-group" id="npc-filters">
         <h3>NPCs</h3>
-        <div class="toggle-group" id="npc-filter-list"><!-- dynamic --></div>
+
+        <div class="filter-group nested" id="npc-hostile-filters">
+          <h4>Hostile</h4>
+          <div class="toggle-group" id="npc-hostile-list"><!-- dynamic hostile entries --></div>
+        </div>
+
+        <div class="filter-group nested" id="npc-friendly-filters">
+          <h4>Friendly</h4>
+          <div class="toggle-group" id="npc-friendly-list"><!-- dynamic friendly entries --></div>
+        </div>
       </div>
     </div>
 
@@ -106,6 +115,13 @@
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..."/>
+    </div>
+
+    <!-- Admin Tools -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-tools"></i> Admin Tools</h2>
+      <button id="manage-items-btn">Manage Items</button>
+      <button id="manage-chests-btn">Manage Chests</button>
     </div>
   </div>
 
@@ -126,8 +142,6 @@
               padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
     Paste Mode ON
   </div>
-
-  <!-- NOTE: NO STATIC MODAL DIVs HERE – your JS creates all modals dynamically -->
 
   <!-- Leaflet & MarkerCluster scripts -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
