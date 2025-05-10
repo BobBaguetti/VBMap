@@ -1,98 +1,90 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 1.0 — slim modal shell delegating to markerFormController
+// @version: 21.0 — slim modal shell delegating to markerFormController
 
 import {
   createModal,
   openModalAt,
   closeModal
-} from "../components/uiKit/modalKit.js";                // re-export of modalCore, modalSmall :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
-import { createMarkerFormController } from "../forms/controllers/markerFormController.js"; // controller built around builder
+} from "../../components/uiKit/modalKit.js";
+import { createMarkerFormController } from "../forms/controllers/markerFormController.js";
 
-/**
- * Initializes the marker modal (small, draggable).
- *
- * Returns an object with openCreate and openEdit methods,
- * matching the old API but delegating rendering & logic to the form controller.
- *
- * @param {firebase.firestore.Firestore} db
- */
 export function initMarkerModal(db) {
-  let built = false;
-  let modal, content;
-  // instantiate controller once; its `form` element lives in the modal
-  const formCtrl = createMarkerFormController({
-    onCancel:    () => closeModal(modal),
-    onSubmit:    payload => {},            // overwritten per-open
-    onFieldChange: () => {}                // optional live‐preview hook
-  }, db);
+  let modal, content, ctrl;
 
+  // Build modal + form once
   function ensureBuilt() {
-    if (built) return;
-    built = true;
-    // create the shell
-    ({ modal, content } = createModal({
-      id:         "edit-marker-modal",
-      title:      "Place Marker",
+    if (modal) return;
+    const { modal: m, content: c } = createModal({
+      id:         "marker-modal",
+      title:      "Marker",
       size:       "small",
-      backdrop:   false,
+      backdrop:   true,
       draggable:  true,
       withDivider:true,
       onClose:    () => closeModal(modal)
-    }));
-    modal.classList.add("admin-only");
-    // mount the form into the modal content
-    content.appendChild(formCtrl.form);
+    });
+    modal   = m;
+    content = c;
+
+    // Instantiate our form controller
+    ctrl = createMarkerFormController({
+      onCancel: () => closeModal(modal),
+      onSubmit: () => {},       // will be wired per-open
+      onFieldChange: () => {}   // preview is handled elsewhere
+    }, db);
+
+    // Mount the form
+    content.appendChild(ctrl.form);
   }
 
-  return {
-    /**
-     * Open in “create” mode.
-     * @param {[number, number]} coords
-     * @param {string} defaultType
-     * @param {MouseEvent} evt
-     * @param {(payload: object) => void} onCreate
-     */
-    openCreate(coords, defaultType, evt, onCreate) {
-      ensureBuilt();
-      // reset to blank, then set coords & type
-      formCtrl.reset();
-      formCtrl.form.querySelector("#fld-type").value = defaultType || "";
-      formCtrl.form.querySelector("#fld-type").dispatchEvent(new Event("change"));
-      formCtrl.initPickrs();
+  /**
+   * Open the modal to edit an existing marker.
+   *
+   * @param {L.Marker}        markerObj
+   * @param {object}          data      — existing marker data
+   * @param {MouseEvent}      evt       — opening event
+   * @param {Function}        onSave    — callback(markerObj, payload, evt)
+   */
+  async function openEdit(markerObj, data, evt, onSave) {
+    ensureBuilt();
+    await ctrl.populate(data);
+    ctrl.initPickrs();
+    openModalAt(modal, evt);
 
-      // wire submit to call onCreate
-      formCtrl.form.onsubmit = e => {
-        e.preventDefault();
-        const custom = formCtrl.getCurrentPayload();
-        onCreate({ type: custom.type, coords, ...custom });
-        closeModal(modal);
-      };
+    ctrl.form.onsubmit = e => {
+      e.preventDefault();
+      const payload = ctrl.getCustom();
+      // retain updated coords from any drag
+      const { lat, lng } = markerObj.getLatLng();
+      payload.coords = [lat, lng];
+      onSave(markerObj, payload, evt);
+      closeModal(modal);
+    };
+  }
 
-      openModalAt(modal, evt);
-    },
+  /**
+   * Open the modal to create a new marker.
+   *
+   * @param {[number,number]} coords
+   * @param {string}          type      — initial marker type
+   * @param {MouseEvent}      evt
+   * @param {Function}        onCreate  — callback(payload)
+   */
+  async function openCreate(coords, type, evt, onCreate) {
+    ensureBuilt();
+    ctrl.reset();
+    await ctrl.populate({ type, coords, extraLines: [] });
+    ctrl.initPickrs();
+    openModalAt(modal, evt);
 
-    /**
-     * Open in “edit” mode.
-     * @param {L.Marker} markerObj
-     * @param {object} data — existing marker data (including coords, type, etc.)
-     * @param {MouseEvent} evt
-     * @param {(markerObj: L.Marker, payload: object, evt: MouseEvent) => void} onEdit
-     */
-    openEdit(markerObj, data, evt, onEdit) {
-      ensureBuilt();
-      // populate form with existing definition
-      formCtrl.populate(data);
-      formCtrl.initPickrs();
+    ctrl.form.onsubmit = e => {
+      e.preventDefault();
+      const payload = ctrl.getCustom();
+      payload.coords = coords;
+      onCreate(payload);
+      closeModal(modal);
+    };
+  }
 
-      // wire submit to call onEdit
-      formCtrl.form.onsubmit = e => {
-        e.preventDefault();
-        const custom = formCtrl.getCurrentPayload();
-        onEdit(markerObj, { type: custom.type, coords: data.coords, ...custom }, evt);
-        closeModal(modal);
-      };
-
-      openModalAt(modal, evt);
-    }
-  };
+  return { openEdit, openCreate };
 }
