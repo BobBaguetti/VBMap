@@ -1,11 +1,9 @@
 // @file: src/modules/ui/forms/controllers/markerFormController.js
-// @version: 1.0 — wires Pickr, type‐switching, preset loads, and form events
+// @version: 1.1 — fix imports for chest definitions
 
 import { getPickrHexColor }            from "../../../utils/colorUtils.js";
-import {
-  loadItemDefinitions,
-  loadChestDefinitions
-}                                       from "../../../services/itemDefinitionsService.js";
+import { loadItemDefinitions }         from "../../../services/itemDefinitionsService.js";
+import { loadChestDefinitions }        from "../../../services/chestDefinitionsService.js";
 import {
   createFormControllerHeader,
   wireFormEvents
@@ -53,9 +51,9 @@ export function createMarkerFormController(
   }
 
   // ─── Type‐switching logic ────────────────────────────────────
-  fields.fldType = form.querySelector("#fld-type"); // from modal, not builder
-  fields.fldPredefItem = form.querySelector("#fld-predef-item");
-  fields.fldChestType  = form.querySelector("#fld-predef-chest");
+  fields.fldType       = form.querySelector("#marker-fld-type");
+  fields.fldPredefItem = form.querySelector("#marker-fld-predef-item");
+  fields.fldChestType  = form.querySelector("#marker-fld-predef-chest");
 
   function updateVisibility() {
     const t = fields.fldType.value;
@@ -67,7 +65,6 @@ export function createMarkerFormController(
 
   // ─── Populate preload dropdowns ─────────────────────────────
   async function populateDropdowns() {
-    // clear + repopulate predefined‐item
     const pd = fields.fldPredefItem;
     pd.innerHTML = `<option value="">None (custom)</option>`;
     itemDefs.forEach(d => pd.insertAdjacentHTML(
@@ -75,7 +72,6 @@ export function createMarkerFormController(
       `<option value="${d.id}">${d.name}</option>`
     ));
 
-    // clear + repopulate chest‐type
     const pc = fields.fldChestType;
     pc.innerHTML = `<option value="">Select Chest Type</option>`;
     chestDefs.forEach(d => pc.insertAdjacentHTML(
@@ -84,7 +80,6 @@ export function createMarkerFormController(
     ));
   }
 
-  // ─── When user picks a predefined Item, autofill builder fields ─
   fields.fldPredefItem.addEventListener("change", () => {
     const def = itemDefs.find(d => d.id === fields.fldPredefItem.value) || {};
     formApi.setFromDefinition(def);
@@ -94,7 +89,7 @@ export function createMarkerFormController(
 
   // ─── Builder wiring ─────────────────────────────────────────
   const formApi = { 
-    ...createMarkerFormBuilder(), // reuse DOM + getCustom/setFromDefinition 
+    ...createMarkerFormBuilder(),
     form, 
     fields 
   };
@@ -154,15 +149,14 @@ export function createMarkerFormController(
   form.populate = async data => {
     await refreshDefs();
     await populateDropdowns();
-    fields.fldType.value      = data.type;
-    fields.fldPredefItem.value= data.predefinedItemId || "";
-    fields.fldChestType.value = data.chestTypeId    || "";
+    fields.fldType.value       = data.type;
+    fields.fldPredefItem.value = data.predefinedItemId || "";
+    fields.fldChestType.value  = data.chestTypeId    || "";
     formApi.setFromDefinition(data);
     updateVisibility();
     pickrs.name.setColor(data.nameColor);
   };
 
-  // ─── Live‐preview & form submit ───────────────────────────────
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   // initial load
@@ -170,17 +164,14 @@ export function createMarkerFormController(
 
   return {
     form,
-    reset:    form.reset,
-    populate: form.populate,
-    initPickrs: () => Object.assign(
-      pickrs,
-      initFormPickrs(form, {
-        name:        fields.colorName,
-        rarity:      fields.colorRarity,
-        itemType:    fields.colorItemType,
-        description: fields.colorDesc
-      })
-    ),
+    reset:      form.reset,
+    populate:   form.populate,
+    initPickrs: () => initFormPickrs(form, {
+      name:        fields.colorName,
+      rarity:      fields.colorRarity,
+      itemType:    fields.colorItemType,
+      description: fields.colorDesc
+    }),
     getCustom,
     getCurrentPayload: getCustom
   };
