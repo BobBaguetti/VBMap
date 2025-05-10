@@ -1,12 +1,10 @@
 // @file: src/modules/sidebar/sidebarManager.js
-// @version: 10.5 — delegate UI, settings, and filters to dedicated modules
+// @version: 10.6 — delegate UI, settings, filters, and admin-tools to dedicated modules
 
-import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
-
-import { setupSidebarUI }            from "./sidebarUI.js";
-import { setupSidebarSettings }      from "./sidebarSettings.js";
-import { setupSidebarFilters }       from "./sidebarFilters.js";
+import { setupSidebarUI }       from "./sidebarUI.js";
+import { setupSidebarSettings } from "./sidebarSettings.js";
+import { setupSidebarFilters }  from "./sidebarFilters.js";
+import { setupSidebarAdmin }    from "./sidebarAdmin.js";
 
 /**
  * Sets up the application sidebar:
@@ -55,35 +53,7 @@ export async function setupSidebar(
   if (!sidebar) {
     console.warn("[sidebar] Missing sidebar container");
   } else {
-    sidebar.querySelector(".admin-header")?.remove();
-    sidebar.querySelector("#sidebar-admin-tools")?.remove();
-
-    const adminHeader = document.createElement("h2");
-    adminHeader.className   = "admin-header";
-    adminHeader.textContent = "🛠 Admin Tools";
-    adminHeader.style.display = "none";
-    sidebar.appendChild(adminHeader);
-
-    const adminWrap = document.createElement("div");
-    adminWrap.id = "sidebar-admin-tools";
-    adminWrap.style.display = "none";
-
-    [
-      ["Manage Items",  () => initItemDefinitionsModal(db).open()],
-      ["Manage Chests", () => initChestDefinitionsModal(db).open()]
-    ].forEach(([txt, fn]) => {
-      const btn = document.createElement("button");
-      btn.textContent = txt;
-      btn.onclick     = fn;
-      adminWrap.appendChild(btn);
-    });
-
-    sidebar.appendChild(adminWrap);
-
-    if (document.body.classList.contains("is-admin")) {
-      adminHeader.style.display = "";
-      adminWrap.style.display   = "";
-    }
+    setupSidebarAdmin(sidebar, db);
   }
 
   // 5) Initial draw
