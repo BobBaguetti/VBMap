@@ -1,9 +1,7 @@
 // @file: src/modules/ui/forms/controllers/markerFormController.js
-// @version: 1.1 — fix imports for chest definitions
+// @version: 1.2 — strip out type/predef logic; focus on builder fields
 
 import { getPickrHexColor }            from "../../../utils/colorUtils.js";
-import { loadItemDefinitions }         from "../../../services/itemDefinitionsService.js";
-import { loadChestDefinitions }        from "../../../services/chestDefinitionsService.js";
 import {
   createFormControllerHeader,
   wireFormEvents
@@ -12,89 +10,36 @@ import { initFormPickrs }              from "../../components/formPickrManager.j
 import { createMarkerFormBuilder }     from "../builders/markerFormBuilder.js";
 
 /**
- * Controller around the marker form:
- *  • loads & caches item/chest defs
- *  • wires the “Type” dropdown to show/hide the right fields
- *  • handles Pickr & live‐preview events
+ * Controller for the marker form builder fields:
+ *  • headers & cancel button
+ *  • pickr wiring
+ *  • getCustom() & setFromDefinition()
+ *  • form reset/populate
+ *  • onSubmit/onFieldChange hooks
  *
  * @param {{
  *   onCancel?:     () => void,
  *   onSubmit:      (payload: object) => void,
  *   onFieldChange?: (payload: object) => void
  * }} callbacks
- * @param {firebase.firestore.Firestore} db
  */
 export function createMarkerFormController(
   { onCancel, onSubmit, onFieldChange },
-  db
 ) {
+  // build the form fields
   const { form, fields } = createMarkerFormBuilder();
 
-  // ─── Header row ──────────────────────────────────────────────
+  // Header + Cancel (no delete)
   const { container: headerWrap, subheading, setDeleteVisible } =
     createFormControllerHeader({
-      title:     "Place Marker",
+      title:     "Marker Details",
       hasFilter: false,
       onCancel:  () => onCancel?.()
     });
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // ─── Cached definitions ──────────────────────────────────────
-  let itemDefs  = [];
-  let chestDefs = [];
-  async function refreshDefs() {
-    [ itemDefs, chestDefs ] = await Promise.all([
-      loadItemDefinitions(db),
-      loadChestDefinitions(db)
-    ]);
-  }
-
-  // ─── Type‐switching logic ────────────────────────────────────
-  fields.fldType       = form.querySelector("#marker-fld-type");
-  fields.fldPredefItem = form.querySelector("#marker-fld-predef-item");
-  fields.fldChestType  = form.querySelector("#marker-fld-predef-chest");
-
-  function updateVisibility() {
-    const t = fields.fldType.value;
-    fields.fldPredefItem.closest(".field-row").style.display = t === "Item"  ? "flex" : "none";
-    fields.fldChestType .closest(".field-row").style.display = t === "Chest" ? "flex" : "none";
-    fields.extraRow.style.display                       = t !== ""       ? "flex" : "none";
-  }
-  fields.fldType.addEventListener("change", updateVisibility);
-
-  // ─── Populate preload dropdowns ─────────────────────────────
-  async function populateDropdowns() {
-    const pd = fields.fldPredefItem;
-    pd.innerHTML = `<option value="">None (custom)</option>`;
-    itemDefs.forEach(d => pd.insertAdjacentHTML(
-      "beforeend",
-      `<option value="${d.id}">${d.name}</option>`
-    ));
-
-    const pc = fields.fldChestType;
-    pc.innerHTML = `<option value="">Select Chest Type</option>`;
-    chestDefs.forEach(d => pc.insertAdjacentHTML(
-      "beforeend",
-      `<option value="${d.id}">${d.name}</option>`
-    ));
-  }
-
-  fields.fldPredefItem.addEventListener("change", () => {
-    const def = itemDefs.find(d => d.id === fields.fldPredefItem.value) || {};
-    formApi.setFromDefinition(def);
-    formApi.initPickrs();
-    onFieldChange?.(getCustom());
-  });
-
-  // ─── Builder wiring ─────────────────────────────────────────
-  const formApi = { 
-    ...createMarkerFormBuilder(),
-    form, 
-    fields 
-  };
-
-  // ─── Pickr wiring ────────────────────────────────────────────
+  // Initialize Pickr on builder color buttons
   const pickrs = initFormPickrs(form, {
     name:        fields.colorName,
     rarity:      fields.colorRarity,
@@ -102,77 +47,68 @@ export function createMarkerFormController(
     description: fields.colorDesc
   });
 
-  // ─── Payload maker ───────────────────────────────────────────
+  // Extract values from the builder fields into a payload
   function getCustom() {
-    const base = {
-      name:             fields.fldName.value.trim(),
-      nameColor:        getPickrHexColor(pickrs.name),
-      description:      fields.fldDesc.value.trim(),
-      descriptionColor: getPickrHexColor(pickrs.description),
-      extraLines:       fields.extraInfo.getLines(),
-      imageSmall:       fields.fldImgS.value.trim(),
-      imageBig:         fields.fldImgL.value.trim(),
-      video:            fields.fldVid.value.trim()
-    };
-
-    if (fields.fldType.value === "Item" && fields.fldPredefItem.value) {
-      return {
-        type:             "Item",
-        predefinedItemId: fields.fldPredefItem.value,
-        ...base,
-        ...formApi.getCustom()
-      };
-    } else if (fields.fldType.value === "Chest" && fields.fldChestType.value) {
-      return {
-        type:        "Chest",
-        chestTypeId: fields.fldChestType.value,
-        ...base
-      };
-    }
-
     return {
-      type: fields.fldType.value || "Custom",
-      ...base
+      name:              fields.fldName.value.trim(),
+      nameColor:         getPickrHexColor(pickrs.name),
+      rarity:            fields.fldRarity.value,
+      rarityColor:       getPickrHexColor(pickrs.rarity),
+      itemType:          fields.fldItemType.value,
+      itemTypeColor:     getPickrHexColor(pickrs.itemType),
+      description:       fields.fldDesc.value.trim(),
+      descriptionColor:  getPickrHexColor(pickrs.description),
+      extraLines:        fields.extraInfo.getLines(),
+      imageSmall:        fields.fldImgS.value.trim(),
+      imageBig:          fields.fldImgL.value.trim(),
+      video:             fields.fldVid.value.trim()
     };
   }
 
-  // ─── Reset & populate ────────────────────────────────────────
-  form.reset = () => {
-    formApi.setFromDefinition({});
-    fields.fldType.value          = "";
-    fields.fldPredefItem.value    = "";
-    fields.fldChestType.value     = "";
-    updateVisibility();
-    pickrs.name.setColor("");
-  };
+  // Populate builder fields from a definition object
+  function setFromDefinition(def = {}) {
+    fields.fldName.value        = def.name || "";
+    pickrs.name.setColor(def.nameColor || "#E5E6E8");
 
-  form.populate = async data => {
-    await refreshDefs();
-    await populateDropdowns();
-    fields.fldType.value       = data.type;
-    fields.fldPredefItem.value = data.predefinedItemId || "";
-    fields.fldChestType.value  = data.chestTypeId    || "";
-    formApi.setFromDefinition(data);
-    updateVisibility();
-    pickrs.name.setColor(data.nameColor);
-  };
+    fields.fldRarity.value      = def.rarity || "";
+    pickrs.rarity.setColor(def.rarityColor || "#E5E6E8");
 
+    fields.fldItemType.value    = def.itemType || "";
+    pickrs.itemType.setColor(def.itemTypeColor || "#E5E6E8");
+
+    fields.fldDesc.value        = def.description || "";
+    pickrs.description.setColor(def.descriptionColor || "#E5E6E8");
+
+    fields.extraInfo.setLines(def.extraLines || [], false);
+
+    fields.fldImgS.value        = def.imageSmall || "";
+    fields.fldImgL.value        = def.imageBig || "";
+    fields.fldVid.value         = def.video || "";
+  }
+
+  // Wire up form events to onSubmit and onFieldChange
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
-  // initial load
-  refreshDefs().then(populateDropdowns);
+  // Extend form with reset() and populate()
+  form.reset = () => {
+    setFromDefinition({});
+  };
+  form.populate = def => {
+    setFromDefinition(def);
+  };
 
+  // Expose API
   return {
     form,
-    reset:      form.reset,
-    populate:   form.populate,
-    initPickrs: () => initFormPickrs(form, {
+    reset:          form.reset,
+    populate:       form.populate,
+    initPickrs:     () => initFormPickrs(form, {
       name:        fields.colorName,
       rarity:      fields.colorRarity,
       itemType:    fields.colorItemType,
       description: fields.colorDesc
     }),
     getCustom,
-    getCurrentPayload: getCustom
+    setFromDefinition
   };
 }
