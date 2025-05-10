@@ -1,17 +1,17 @@
 // @file: src/modules/sidebar/filters/sidebarFilters.js
-// @version: 1.3 — use static #main-filters & #item-filter-list from HTML
+// @version: 1.4 — accept `layers` and use layers.Item / layers.Chest
 
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 
 /**
- * Wires up the existing main-filters and populates item-filter-list.
+ * Wires up static main‐filters & item‐filter-list, and returns filtering functions.
  *
  * @param {Array<{ markerObj: L.Marker, data: object }>} allMarkers
  * @param {firebase.firestore.Firestore} db
+ * @param {{ Item: L.LayerGroup, Chest: L.LayerGroup }} layers
  * @returns {Promise<{ filterMarkers: Function, loadItemFilters: Function }>}
  */
-export async function renderSidebarFilters(allMarkers, db) {
-  // Grab existing containers
+export async function renderSidebarFilters(allMarkers, db, layers) {
   const mainGroup = document.getElementById("main-filters");
   const itemList  = document.getElementById("item-filter-list");
   const searchBar = document.getElementById("search-bar");
@@ -21,14 +21,13 @@ export async function renderSidebarFilters(allMarkers, db) {
     return {};
   }
 
-  // Core filtering logic
+  // Core filtering logic now uses passed-in layers
   function filterMarkers() {
     const nameQ = (searchBar.value || "").toLowerCase();
     const pveOn = document.getElementById("toggle-pve")?.checked ?? true;
 
     const itemToggle  = mainGroup.querySelector('input[data-layer="Item"]');
     const chestToggle = mainGroup.querySelector('input[data-layer="Chest"]');
-    const otherToggles = mainGroup.querySelectorAll('input[data-layer]:not([data-layer="Item"]):not([data-layer="Chest"])');
 
     allMarkers.forEach(({ markerObj, data }) => {
       const matchesName = data.name?.toLowerCase().includes(nameQ);
@@ -37,7 +36,6 @@ export async function renderSidebarFilters(allMarkers, db) {
       let mainVisible = true;
       if (data.type === "Item" && itemToggle && !itemToggle.checked) mainVisible = false;
       if (data.type === "Chest" && chestToggle && !chestToggle.checked) mainVisible = false;
-      // for any additional layers, you can add logic here
 
       let itemVisible = true;
       if (data.predefinedItemId) {
@@ -46,20 +44,23 @@ export async function renderSidebarFilters(allMarkers, db) {
       }
 
       const show = matchesName && matchesPvE && mainVisible && itemVisible;
-      if (show) markerObj.addTo(data.type === "Item" ? window.clusterItemLayer : window.clusterChestLayer);
-      else      markerObj.remove();
+      if (show) {
+        layers[data.type]?.addLayer(markerObj);
+      } else {
+        layers[data.type]?.removeLayer(markerObj);
+      }
     });
   }
 
-  // Wire up main-filters toggles and search
-  mainGroup.querySelectorAll('input[data-layer], #toggle-pve').forEach(cb =>
-    cb.addEventListener("change", filterMarkers)
+  // Wire up main toggles & search
+  mainGroup.querySelectorAll('input[data-layer], #toggle-pve').forEach(el =>
+    el.addEventListener("change", filterMarkers)
   );
   if (searchBar) searchBar.addEventListener("input", filterMarkers);
 
-  // Populate item filter list
+  // Populate item filters
   async function loadItemFilters() {
-    itemList.innerHTML = ""; 
+    itemList.innerHTML = "";
     const defs = await loadItemDefinitions(db);
     const ids = [];
     defs.filter(d => d.showInFilters).forEach(d => {
@@ -74,7 +75,7 @@ export async function renderSidebarFilters(allMarkers, db) {
     return ids;
   }
 
-  // Initial populate & filter
+  // Initial population & filtering
   const initialIds = await loadItemFilters();
   filterMarkers();
 
