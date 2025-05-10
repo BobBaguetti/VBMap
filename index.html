@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 20 -->
+<!-- @version: 21 -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -63,6 +63,8 @@
     <!-- Filters -->
     <div class="sidebar-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
+
+      <!-- Main layer toggles -->
       <div class="filter-group" id="main-filters">
         <h3>Main</h3>
         <div class="toggle-group">
@@ -71,11 +73,27 @@
           <label><input type="checkbox" checked data-layer="Item"/><span>Item</span></label>
           <label><input type="checkbox" checked data-layer="Teleport"/><span>Teleport</span></label>
           <label><input type="checkbox" checked data-layer="Spawn Point"/><span>Spawn points</span></label>
+          <label><input type="checkbox" checked data-layer="Quest"/><span>Quests</span></label>
+          <label><input type="checkbox" checked data-layer="Misc"/><span>Misc</span></label>
         </div>
       </div>
+
+      <!-- Item filters -->
       <div class="filter-group" id="item-filters">
         <h3>Items</h3>
         <div class="toggle-group" id="item-filter-list"><!-- dynamic --></div>
+      </div>
+
+      <!-- Chest filters -->
+      <div class="filter-group" id="chest-filters">
+        <h3>Chests</h3>
+        <div class="toggle-group" id="chest-filter-list"><!-- dynamic --></div>
+      </div>
+
+      <!-- NPC filters -->
+      <div class="filter-group" id="npc-filters">
+        <h3>NPCs</h3>
+        <div class="toggle-group" id="npc-filter-list"><!-- dynamic --></div>
       </div>
     </div>
 
