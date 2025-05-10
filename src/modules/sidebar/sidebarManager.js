@@ -1,57 +1,37 @@
 // @file: src/modules/sidebar/sidebarManager.js
-// @version: 2.3 — fix filters selector to match HTML ID
+// @version: 2.4 — flexible selectors for settings/filters
 
 import { renderSidebarSettings } from "./settings/sidebarSettings.js";
 import { renderSidebarFilters }  from "./filters/sidebarFilters.js";
 
-/**
- * Sets up the sidebar’s Settings and Filters sections.
- */
 export async function setupSidebar(
   map,
   layers,
   allMarkers,
   db,
-  {
-    enableGrouping,
-    disableGrouping,
-    shrinkMarkers,
-    resetMarkerSize,
-    onManageItems,
-    onManageChests,
-    onMultiSelectMode,
-    onDeleteMode
-  }
+  callbacks
 ) {
   const sidebar = document.getElementById("sidebar");
 
-  // Settings container
-  const settingsContainer = sidebar.querySelector("#settings-section");
+  // Try both ID and class selectors (fall back if one is missing)
+  const settingsContainer =
+    sidebar.querySelector("#settings-section") ||
+    sidebar.querySelector(".sidebar__settings");
   if (!settingsContainer) {
-    console.error("[sidebar] could not find #settings-section");
+    console.error("[sidebar] could not find settings container");
     return {};
   }
 
-  // Filters container (use the ID from your HTML)
-  const filtersContainer = sidebar.querySelector("#filters-section");
+  const filtersContainer =
+    sidebar.querySelector("#filters-section") ||
+    sidebar.querySelector(".sidebar__filters");
   if (!filtersContainer) {
-    console.error("[sidebar] could not find #filters-section");
+    console.error("[sidebar] could not find filters container");
     return {};
   }
 
-  // Render Settings
-  renderSidebarSettings(settingsContainer, {
-    enableGrouping,
-    disableGrouping,
-    shrinkMarkers,
-    resetMarkerSize,
-    onManageItems,
-    onManageChests,
-    onMultiSelectMode,
-    onDeleteMode
-  });
+  renderSidebarSettings(settingsContainer, callbacks);
 
-  // Render Filters (main + item filters)
   const { filterMarkers, loadItemFilters } = await renderSidebarFilters(
     filtersContainer,
     allMarkers,
