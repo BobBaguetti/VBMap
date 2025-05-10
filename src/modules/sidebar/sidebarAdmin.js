@@ -1,8 +1,8 @@
 // @file: src/modules/sidebar/sidebarAdmin.js
 // @version: 1.0 — render admin-only “Manage” buttons in the sidebar
 
-import { initItemDefinitionsModal }  from "../modules/ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal } from "../modules/ui/modals/chestDefinitionsModal.js";
+import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
+import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
 
 /**
  * Render “Manage Items” and “Manage Chests” buttons for admin users.
