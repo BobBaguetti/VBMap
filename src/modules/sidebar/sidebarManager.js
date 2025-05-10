@@ -1,9 +1,10 @@
-// @file: /src/modules/sidebar/sidebarManager.js
-// @version: 10.2
+// @file: src/modules/sidebar/sidebarManager.js
+// @version: 10.3 — extract Settings toggles into sidebarSettings.js
 
 import { loadItemDefinitions }       from "../services/itemDefinitionsService.js";
 import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
 import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
+import { setupSidebarSettings }      from "./sidebarSettings.js";
 
 export async function setupSidebar(
   map, layers, allMarkers, db,
@@ -39,29 +40,8 @@ export async function setupSidebar(
     });
   });
 
-  // ─── Settings Toggles ─────────────────────────────────────────────
-  settingsSect.querySelectorAll("label").forEach(l => l.remove());
-
-  const groupingLabel = document.createElement("label");
-  groupingLabel.innerHTML = `<input type="checkbox" id="enable-grouping" /><span>Enable Marker Grouping</span>`;
-  settingsSect.appendChild(groupingLabel);
-  const groupingCb = document.getElementById("enable-grouping");
-  groupingCb.checked = false;
-  groupingCb.addEventListener("change", () => {
-    console.log("[sidebar] marker grouping:", groupingCb.checked);
-    groupingCb.checked ? enableGrouping() : disableGrouping();
-  });
-
-  const smallLabel = document.createElement("label");
-  smallLabel.innerHTML = `<input type="checkbox" id="toggle-small-markers" /><span>Small Markers (50%)</span>`;
-  settingsSect.appendChild(smallLabel);
-  const smallCb = document.getElementById("toggle-small-markers");
-  smallCb.checked = false;
-  smallCb.addEventListener("change", () => {
-    console.log("[sidebar] small markers:", smallCb.checked);
-    document.getElementById("map")
-      .classList.toggle("small-markers", smallCb.checked);
-  });
+  // ─── Delegate Settings Toggles ────────────────────────────────────
+  setupSidebarSettings(settingsSect, { enableGrouping, disableGrouping });
 
   // ─── Core Filtering Logic ─────────────────────────────────────────
   function filterMarkers() {
@@ -109,7 +89,7 @@ export async function setupSidebar(
   const mainGroup = document.querySelector("#main-filters .toggle-group");
   const chestLabel = document.createElement("label");
   chestLabel.innerHTML = `<input type="checkbox" checked data-layer="Chest"/><span>Chests</span>`;
-  mainGroup.append(chestLabel);
+  mainGroup.appendChild(chestLabel);
   chestLabel.querySelector("input")
     .addEventListener("change", filterMarkers);
 
