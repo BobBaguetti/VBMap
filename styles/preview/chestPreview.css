@@ -1,7 +1,7 @@
 /* @file: styles/preview/chestPreview.css – chest-specific extras */
 
 .chest-preview-panel{
-  background:#1a1a1a url("/VBMap/media/images/itemPreview.png") center/cover no-repeat;
+  background:#1a1a1a url("https://res.cloudinary.com/dtty7zxjh/image/upload/v1746912874/itemPreview_m2cbbg.png") center/cover no-repeat;
 }
 
 /* header */
