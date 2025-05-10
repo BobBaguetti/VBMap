@@ -1,17 +1,17 @@
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
 /* @file: /styles/sidebar.css */
-/* @version: 10.2 — width & compactness tweaks */
+/* @version: 10.2 — width & compactness tweaks integrated */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
-  width: 380px;              /* increased width for breathing room */
+  width: 380px;           /* increased width */
   height: 100vh;
   position: absolute;
   top: 0;
   left: 0;
   background-color: #222;
   color: #e5e6e8;
-  padding: 8px;              /* tighter padding */
+  padding: 8px;           /* tighter padding */
   box-sizing: border-box;
   overflow: auto;
   transition: transform 0.3s ease;
@@ -23,31 +23,39 @@
 
 /* Sidebar toggle */
 #sidebar-toggle {
+  position: absolute;
   top: 10px;
-  left: 380px;               /* match new width */
+  left: 380px;            /* match new width */
+  z-index: 1100;
+  width: 30px;
+  height: 30px;
+  background: #333;
+  border: none;
+  color: #e5e6e8;
+  cursor: pointer;
+  transition: left 0.3s ease, background 0.2s ease;
 }
-#sidebar-toggle,
 #sidebar-toggle:hover {
-  width: 28px;
-  height: 28px;
+  background: #444;
 }
 
-/* Section headings */
+/* Sidebar section headings */
 #sidebar h2 {
   margin: 0 0 8px;
   font-size: 18px;
+  color: #e5e6e8;
 }
 
-/* ========== Card-style filter groups ========== */
+/* ========== Card-style (flush) filter groups ========== */
 .filter-group {
   background-color: #2a2a2a;
   border-top:    1px solid #333;
   border-bottom: 1px solid #333;
-  border-left:   none;       /* flush sides */
+  border-left:   none;   /* flush sides */
   border-right:  none;
-  border-radius: 0;          /* no rounded corners on sides */
-  margin:        0 0 0.8em;  /* vertical spacing only */
-  overflow: hidden;
+  border-radius: 0;      /* no rounded corners on sides */
+  margin:        0 0 0.8em; /* vertical spacing only */
+  overflow:      hidden;
 }
 
 /* Indent nested groups */
@@ -55,13 +63,13 @@
   margin-left: 1.2em;
 }
 
-/* Group headers (h3 & h4) */
+/* Group headers (h3 & h4): collapse, eye-icon & header-actions targets */
 .filter-group > h3,
 .filter-group > h4 {
   background-color: #1f1f1f;
-  padding: 0.4em 0.6em;     /* tighter */
+  padding: 0.4em 0.6em;    /* tighter */
   margin: 0;
-  font-size: 0.9em;         /* slightly smaller */
+  font-size: 0.9em;        /* smaller */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid #333;
@@ -73,49 +81,118 @@
 
 /* ========== Filter items layout ========== */
 .toggle-group {
-  padding: 0.4em 0.8em;     /* tighter */
+  padding: 0.4em 0.8em;                         /* tighter */
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* more compact */
-  gap: 0.3em 0.5em;          /* tighter gaps */
-  font-size: 13px;          /* smaller labels */
+  gap: 0.3em 0.5em;                             /* tighter gaps */
+  font-size: 13px;                             /* smaller labels */
 }
 
 /* Collapse arrow styling */
 .filter-group h3::after {
-  right: 0.6em;             /* align with new padding */
+  content: '▾';
+  transition: transform 0.2s ease;
+  right: 0.6em; /* aligns with new padding */
+}
+.filter-group.collapsed h3::after {
+  transform: rotate(-90deg);
+}
+.filter-group.collapsed .toggle-group {
+  display: none;
 }
 
 /* ========== Checkbox label styling ========== */
+/* Hide native checkbox but keep focusable */
+.filter-group .toggle-group input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
 .filter-group .toggle-group label {
-  padding: 3px 6px;         /* smaller hit area */
+  position: relative;
+  padding: 3px 6px;   /* smaller hit area */
   border-radius: 3px;
+  transition: background 0.2s, color 0.2s, text-decoration 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+.filter-group .toggle-group label:hover {
+  background: rgba(255,255,255,0.1);
 }
 .filter-group .toggle-group input:checked + span {
+  color: #e5e6e8;
+  text-decoration: none;
   font-weight: 500;
 }
 .filter-group .toggle-group input:not(:checked) + span {
+  color: #555;
+  text-decoration: line-through;
   font-weight: 400;
 }
 
-/* ========== Header Actions ========== */
-.filter-group > h3 .header-actions,
-.filter-group > h4 .header-actions {
-  gap: 0.4em;
+/* ========== Settings section: restore native checkbox ========== */
+#settings-section label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 6px;
+  font-size: 14px;
 }
-.filter-group .header-actions a {
-  font-size: 0.75em;
+#settings-section label input[type="checkbox"] {
+  opacity: 1;
+  pointer-events: auto;
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
 }
 
 /* ========== Inputs & Buttons ========== */
 #sidebar input:not([type="checkbox"]),
 #sidebar select,
 #sidebar textarea {
-  padding: 3px 5px;
-  font-size: 13px;
+  background: #303030;
+  color: #e5e6e8;
+  border: 1px solid #555;
+  border-radius: 2px;
+  padding: 3px 5px;   /* tighter */
+  width: 100%;
+  font-family: 'Satoshi', sans-serif;
+  font-size: 13px;    /* smaller */
+  box-sizing: border-box;
   margin-bottom: 4px;
 }
+
 #sidebar button {
-  padding: 3px 5px;
-  font-size: 13px;
+  background: #333;
+  color: #e5e6e8;
+  border: 1px solid #555;
+  border-radius: 3px;
+  padding: 3px 5px;   /* tighter */
+  font-family: 'Satoshi', sans-serif;
+  font-size: 13px;    /* smaller */
+  cursor: pointer;
   margin: 3px 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+#sidebar button:hover {
+  background: #444;
+}
+
+/* ========== Header Actions: Show All / Hide All links ========== */
+.filter-group > h3 .header-actions,
+.filter-group > h4 .header-actions {
+  display: inline-flex;
+  gap: 0.4em;
+}
+.filter-group .header-actions a {
+  color: #bbb;
+  font-size: 0.75em;
+  text-decoration: none;
+  cursor: pointer;
+}
+.filter-group .header-actions a:hover {
+  text-decoration: underline;
 }
