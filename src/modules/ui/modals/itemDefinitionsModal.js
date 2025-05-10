@@ -1,10 +1,10 @@
 // @file: src/modules/ui/modals/itemDefinitionsModal.js
-// @version: 1.11 — wire in formApi.initPickrs() after form inject
+// @version: 1.12 – persist showInFilters correctly
 
-import { createDefinitionModalShell }   from "../components/definitionModalShell.js";
-import { createDefListContainer }      from "../../utils/listUtils.js";
-import { createDefinitionListManager } from "../components/definitionListManager.js";
-import { createPreviewController }     from "../preview/previewController.js";
+import { createDefinitionModalShell }        from "../components/definitionModalShell.js";
+import { createDefListContainer }           from "../../utils/listUtils.js";
+import { createDefinitionListManager }      from "../components/definitionListManager.js";
+import { createPreviewController }          from "../preview/previewController.js";
 
 import {
   loadItemDefinitions,
@@ -13,7 +13,7 @@ import {
   deleteItemDefinition
 } from "../../services/itemDefinitionsService.js";
 
-import { createItemFormController }    from "../forms/controllers/itemFormController.js";
+import { createItemFormController } from "../forms/controllers/itemFormController.js";
 
 export function initItemDefinitionsModal(db) {
   let listApi, formApi, definitions = [];
@@ -38,26 +38,26 @@ export function initItemDefinitionsModal(db) {
         }));
         modal.classList.add("admin-only");
 
-        // preview controller
+        // Preview pane
         const preview = createPreviewController("item");
         showPreview = preview.show;
         hidePreview = preview.hide;
 
-        // list container + form
+        // List + Form
         const listContainer = createDefListContainer("item-def-list");
         formApi = createItemFormController({
           onCancel:   async () => {
             formApi.reset();
             showPreview({});
           },
-          onDelete: async id => {
+          onDelete:   async id => {
             await deleteItemDefinition(db, id);
             await refreshList();
             formApi.reset();
             showPreview({});
           },
-          onSubmit: async payload => {
-            payload.showInFilters = payload.addToFilters;
+          onSubmit:   async payload => {
+            // payload.showInFilters is already set by getCustom()
             if (payload.id) {
               await updateItemDefinition(db, payload.id, payload);
             } else {
@@ -77,21 +77,21 @@ export function initItemDefinitionsModal(db) {
           formApi.form
         );
 
-        // list manager
+        // Definition List Manager
         listApi = createDefinitionListManager({
           container:      listContainer,
           getDefinitions: () => definitions,
-          onEntryClick: def => {
+          onEntryClick:   def => {
             formApi.populate(def);
             showPreview(def);
           },
-          onDelete: async id => {
+          onDelete:       async id => {
             await deleteItemDefinition(db, id);
             await refreshList();
           }
         });
 
-        // hook modal-search to list filter
+        // Search → Filter
         const shellSearch = modal.querySelector(".modal__search");
         if (shellSearch) {
           shellSearch.addEventListener("input", () => {
@@ -100,15 +100,11 @@ export function initItemDefinitionsModal(db) {
         }
       }
 
-      // on each open
+      // Every time we open…
       formApi.reset();
       await refreshList();
-
       openShell();
-
-      // ⬇ wire Pickr swatches now that form is in DOM
-      formApi.initPickrs();
-
+      formApi.initPickrs();  // re-wire Pickr swatches
       showPreview({});
     }
   };

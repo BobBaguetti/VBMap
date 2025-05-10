@@ -1,9 +1,9 @@
-// @version: 2.25
+// @version: 2.26
 // @file: src/modules/ui/forms/controllers/chestFormController.js
 
 /**
  * Creates the controller for the chest-definition form.
- * Handles wiring header, pickrs, state, and loot-pool chip-list.
+ * Handles wiring header, pickrs, filter‐toggle, state, and loot-pool chip-list.
  */
 import { getPickrHexColor }    from "../../../utils/colorUtils.js";
 import {
@@ -26,14 +26,16 @@ export function createChestFormController(
 ) {
   const { form, fields } = createChestForm();
 
-  // ─── Header + Buttons ────────────────────────────────────────
+  // ─── Header + Buttons (now with filter checkbox) ───────────────────
   const {
     container: subheadingWrap,
     subheading,
+    filterCheckbox: chkAddFilter,
     setDeleteVisible
   } = createFormControllerHeader({
     title:     "Add Chest Type",
-    hasFilter: false,
+    hasFilter: true,
+    onFilter:  () => onFieldChange?.(getCustom()),
     onCancel:  () => onCancel?.(),
     onDelete:  () => {
       if (_id && confirm("Delete this chest type?")) onDelete?.(_id);
@@ -42,7 +44,7 @@ export function createChestFormController(
   setDeleteVisible(false);
   form.prepend(subheadingWrap);
 
-  // ─── Auto‐apply nameColor on category/size change ────────────
+  // ─── Auto‐apply nameColor on category/size change ────────────────
   function applySizeCategoryColor() {
     const cat = fields.fldCategory.value || "Normal";
     const sz  = fields.fldSize.value     || "Small";
@@ -56,45 +58,38 @@ export function createChestFormController(
   fields.fldCategory.addEventListener("change", applySizeCategoryColor);
   fields.fldSize    .addEventListener("change", applySizeCategoryColor);
 
-  // ─── Pickr wiring ────────────────────────────────────────────
+  // ─── Pickr wiring ───────────────────────────────────────────────
   const pickrs = initFormPickrs(form, {
     name:        fields.colorName,
     description: fields.colorDesc
   });
   applySizeCategoryColor();
 
-  // ─── Load & seed definitions for the Loot Pool picker ───────
+  // ─── Load & seed definitions for the Loot Pool picker ───────────
   let itemMap = [];
   async function ensureAllItems() {
     if (!itemMap.length) {
       itemMap = await loadItemDefinitions(db);
-      // populate the builder’s items array so the picker shows them
       fields.allItems.splice(0, fields.allItems.length, ...itemMap);
     }
     return itemMap;
   }
-  // initial seed: load defs then seed selected chips
   ensureAllItems().then(defs => {
-    fields.setLootPool(
-      defs.filter(d => fields.lootPool.includes(d.id))
-    );
+    fields.setLootPool(defs.filter(d => fields.lootPool.includes(d.id)));
   });
 
-  // ─── Internal state & payload ────────────────────────────────
+  // ─── Internal state & payload (now includes showInFilters) ───────
   let _id = null;
   function getCustom() {
-    // Use the chip-list helper to get full objects, then map to IDs
-    const selectedItems = fields.getLootPool();
-    const lootIds = selectedItems.map(item => item.id);
-
+    const selected = fields.getLootPool();
     return {
       id:               _id,
+      showInFilters:    chkAddFilter.checked,
       name:             fields.fldName.value.trim(),
       nameColor:        getPickrHexColor(pickrs.name),
       category:         fields.fldCategory.value,
       size:             fields.fldSize.value,
-      // now we correctly save an array of IDs
-      lootPool:         lootIds,
+      lootPool:         selected.map(i => i.id),
       description:      fields.fldDesc.value.trim(),
       descriptionColor: getPickrHexColor(pickrs.description),
       extraLines:       fields.extraInfo.getLines(),
@@ -103,7 +98,7 @@ export function createChestFormController(
     };
   }
 
-  // ─── Shared reset & populate ────────────────────────────────
+  // ─── Shared reset & populate ───────────────────────────────────
   const { reset: _reset, populate: _populate } = createFormState({
     form,
     fields: {
@@ -128,20 +123,20 @@ export function createChestFormController(
 
   function reset() {
     _id = null;
+    chkAddFilter.checked = false;
     fields.extraInfo.setLines([], false);
     _reset();
-    fields.setLootPool([]);          // clear chips
+    fields.setLootPool([]);
     applySizeCategoryColor();
   }
 
   async function populate(def) {
     _id = def.id || null;
     _populate(def);
+    chkAddFilter.checked = !!def.showInFilters;
     fields.extraInfo.setLines(def.extraLines || [], false);
     await ensureAllItems();
-    fields.setLootPool(
-      itemMap.filter(d => def.lootPool.includes(d.id))
-    );
+    fields.setLootPool(itemMap.filter(d => def.lootPool.includes(d.id)));
     applySizeCategoryColor();
   }
 
