@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 21.3 — embed type selectors into form so controller can find them
+// @version: 21.4 — small modal without backdrop dimming
 
 import {
   createModal,
@@ -54,7 +54,7 @@ export function initMarkerModal(db) {
       id:         "marker-modal",
       title:      "Marker",
       size:       "small",
-      backdrop:   true,
+      backdrop:   false,      // no dimming behind small modals
       draggable:  true,
       withDivider:true,
       onClose:    () => closeModal(modal)
