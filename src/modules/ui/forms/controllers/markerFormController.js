@@ -1,11 +1,9 @@
 // @file: src/modules/ui/forms/controllers/markerFormController.js
-// @version: 1.0 — wires Pickr, type‐switching, preset loads, and form events
+// @version: 1.1 — fix imports for loadChestDefinitions
 
 import { getPickrHexColor }            from "../../../utils/colorUtils.js";
-import {
-  loadItemDefinitions,
-  loadChestDefinitions
-}                                       from "../../../services/itemDefinitionsService.js";
+import { loadItemDefinitions }         from "../../../services/itemDefinitionsService.js";
+import { loadChestDefinitions }        from "../../../services/chestDefinitionsService.js";
 import {
   createFormControllerHeader,
   wireFormEvents
@@ -20,8 +18,8 @@ import { createMarkerFormBuilder }     from "../builders/markerFormBuilder.js";
  *  • handles Pickr & live‐preview events
  *
  * @param {{
- *   onCancel?:     () => void,
- *   onSubmit:      (payload: object) => void,
+ *   onCancel?:      () => void,
+ *   onSubmit:       (payload: object) => void,
  *   onFieldChange?: (payload: object) => void
  * }} callbacks
  * @param {firebase.firestore.Firestore} db
@@ -53,7 +51,8 @@ export function createMarkerFormController(
   }
 
   // ─── Type‐switching logic ────────────────────────────────────
-  fields.fldType = form.querySelector("#fld-type"); // from modal, not builder
+  // these selects come from the modal shell, not builder
+  fields.fldType       = form.querySelector("#fld-type");
   fields.fldPredefItem = form.querySelector("#fld-predef-item");
   fields.fldChestType  = form.querySelector("#fld-predef-chest");
 
@@ -170,8 +169,8 @@ export function createMarkerFormController(
 
   return {
     form,
-    reset:    form.reset,
-    populate: form.populate,
+    reset:      form.reset,
+    populate:   form.populate,
     initPickrs: () => Object.assign(
       pickrs,
       initFormPickrs(form, {
