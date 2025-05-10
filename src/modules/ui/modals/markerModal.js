@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 21.2 — fix uiKit import paths
+// @version: 21.3 — embed type selectors into form so controller can find them
 
 import {
   createModal,
@@ -20,7 +20,6 @@ export function initMarkerModal(db) {
   let rowType, rowPredefItem, rowChestType;
   let itemDefs = {}, chestDefs = {};
 
-  // preload defs
   async function refreshPredefinedItems() {
     if (!fldPredefItem) return;
     const list = await loadItemDefinitions(db);
@@ -66,7 +65,7 @@ export function initMarkerModal(db) {
 
     // — Type dropdown —
     ({ row: rowType, select: fldType } = createDropdownField(
-      "Type:", "fld-type",
+      "Type:", "marker-fld-type",
       [
         { value: "Door",              label: "Door" },
         { value: "Extraction Portal", label: "Extraction Portal" },
@@ -81,12 +80,12 @@ export function initMarkerModal(db) {
 
     // — Predefined Item dropdown —
     ({ row: rowPredefItem, select: fldPredefItem } = createDropdownField(
-      "Item:", "fld-predef-item", [], { showColor: false }
+      "Item:", "marker-fld-predef-item", [], { showColor: false }
     ));
 
     // — Chest Type dropdown —
     ({ row: rowChestType, select: fldChestType } = createDropdownField(
-      "Chest Type:", "fld-predef-chest", [], { showColor: false }
+      "Chest Type:", "marker-fld-predef-chest", [], { showColor: false }
     ));
 
     // instantiate controller and mount its form
@@ -96,10 +95,15 @@ export function initMarkerModal(db) {
       onFieldChange: () => {}
     }, db);
 
-    content.append(
+    // embed our dropdown rows into the controller's form
+    ctrl.form.prepend(
       rowType,
       rowPredefItem,
-      rowChestType,
+      rowChestType
+    );
+
+    // assemble modal content
+    content.append(
       ctrl.form,
       createFormButtonRow()
     );
@@ -116,6 +120,7 @@ export function initMarkerModal(db) {
       ctrl.populate(def);
     });
 
+    // initial reset
     ctrl.reset();
     ctrl.initPickrs();
   }
@@ -133,7 +138,7 @@ export function initMarkerModal(db) {
     // let controller fill in the rest
     await ctrl.populate(data);
 
-    // wire submit
+    // hook save
     ctrl.form.onsubmit = e => {
       e.preventDefault();
       onSave(markerObj, { ...data, ...ctrl.getCustom() }, evt);
