@@ -1,6 +1,6 @@
 /* @keep: Comments must NOT be deleted unless their associated code is also deleted; comments may only be edited when editing their code. */
 /* @file: /styles/sidebar.css */
-/* @version: 10.2 — width & compactness tweaks integrated */
+/* @version: 10.3 — width & compactness + sticky search & collapse animations */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -13,7 +13,8 @@
   color: #e5e6e8;
   padding: 8px;           /* tighter padding */
   box-sizing: border-box;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
   transition: transform 0.3s ease;
   z-index: 1000;
 }
@@ -46,18 +47,42 @@
   color: #e5e6e8;
 }
 
+/* ========== Sticky search bar under title ========== */
+#sidebar-search {
+  position: sticky;
+  top: 0;
+  background-color: #222;
+  padding: 8px 0 4px;
+  z-index: 1001;
+}
+#sidebar-search input {
+  background: #303030;
+  color: #e5e6e8;
+  border: 1px solid #555;
+  border-radius: 2px;
+  padding: 3px 5px;
+  width: 100%;
+  font-family: 'Satoshi', sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+#sidebar-search hr {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 4px 0;
+}
+
 /* ========== Card-style (flush) filter groups ========== */
 .filter-group {
   background-color: #2a2a2a;
   border-top:    1px solid #333;
   border-bottom: 1px solid #333;
-  border-left:   none;   /* flush sides */
+  border-left:   none;
   border-right:  none;
-  border-radius: 0;      /* no rounded corners on sides */
+  border-radius: 0;
   margin:        0 0 0.8em; /* vertical spacing only */
   overflow:      hidden;
 }
-
 /* Indent nested groups */
 .filter-group.nested {
   margin-left: 1.2em;
@@ -86,23 +111,26 @@
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr)); /* more compact */
   gap: 0.3em 0.5em;                             /* tighter gaps */
   font-size: 13px;                             /* smaller labels */
+  overflow: hidden;
+  max-height: 2000px;                          /* large enough for full list */
+  transition: max-height 0.3s ease;
+}
+.filter-group.collapsed .toggle-group {
+  max-height: 0;
 }
 
 /* Collapse arrow styling */
 .filter-group h3::after {
   content: '▾';
-  transition: transform 0.2s ease;
-  right: 0.6em; /* aligns with new padding */
+  transition: transform 0.3s ease;
+  right: 0.6em; /* aligns with header padding */
 }
 .filter-group.collapsed h3::after {
   transform: rotate(-90deg);
 }
-.filter-group.collapsed .toggle-group {
-  display: none;
-}
 
 /* ========== Checkbox label styling ========== */
-/* Hide native checkbox but keep focusable */
+/* Hide native checkbox but keep it focusable */
 .filter-group .toggle-group input {
   position: absolute;
   opacity: 0;
@@ -163,7 +191,6 @@
   box-sizing: border-box;
   margin-bottom: 4px;
 }
-
 #sidebar button {
   background: #333;
   color: #e5e6e8;
