@@ -1,131 +1,125 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 21.0 — wire in the new markerFormController (unslimmed)
+// @version: 1.0 — slim modal shell delegating to markerFormController
 
 import {
   createModal,
   closeModal,
-  openModalAt
-} from "../uiKit.js";
-import {
+  openModalAt,
   createDropdownField,
   createFormButtonRow
-} from "../components/uiKit/fieldKit.js";
+} from "../uiKit.js"; // re-exports modalKit + fieldKit :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
 import { createMarkerFormController } from "../forms/controllers/markerFormController.js";
 
 export function initMarkerModal(db) {
   let modal, content;
+  let formApi;
 
-  function ensureBuilt() {
+  function ensureBuilt(onSave, onCancel) {
     if (modal) return;
-    ({ modal, content } = createModal({
-      id:          "marker-modal",
-      title:       "Place Marker",
-      size:        "small",
-      draggable:   true,
-      withDivider: true,
-      onClose:     () => closeModal(modal)
-    }));
-  }
 
-  // ─── Open for creating a new marker ────────────────────────────
-  async function openCreate(coords, type, evt, onCreate) {
-    ensureBuilt();
-    content.innerHTML = "";
+    // 1) Create shell
+    const created = createModal({
+      id:         "edit-marker-modal",
+      title:      "Edit Marker",
+      size:       "small",
+      backdrop:   false,
+      draggable:  true,
+      withDivider:true,
+      onClose:    () => closeModal(modal)
+    });
+    modal   = created.modal;
+    content = created.content;
+    modal.classList.add("admin-only");
 
-    // — Type —
-    const { row: rowType, select: fldType } =
-      createDropdownField("Type:", "fld-type", [
-        { value: "",     label: "Select Marker Type" },
-        { value: "Item", label: "Item" },
-        { value: "Chest",label: "Chest" }
-      ], { showColor: false });
-    content.appendChild(rowType);
-
-    // — Predefined Item —
-    const { row: rowPredefItem, select: fldPredefItem } =
-      createDropdownField("Item Definition:", "fld-predef-item", [], { showColor: false });
-    content.appendChild(rowPredefItem);
-
-    // — Chest Definition —
-    const { row: rowChestType, select: fldChestType } =
-      createDropdownField("Chest Definition:", "fld-predef-chest", [], { showColor: false });
-    content.appendChild(rowChestType);
-
-    // — The form controller (builder + wiring) —
-    const formApi = createMarkerFormController(
-      {
-        onCancel: () => closeModal(modal),
-        onSubmit: payload => {
-          onCreate({ coords, ...payload });
-          closeModal(modal);
-        },
-        onFieldChange: () => {}
-      },
+    // 2) Instantiate the form controller
+    formApi = createMarkerFormController(
+      { onSubmit: onSave, onCancel, onFieldChange: () => {} },
       db
     );
-    content.appendChild(formApi.form);
+    const form = formApi.form;
 
-    // Initialize form state
-    formApi.reset();
-    fldType.value = type || "";
-    fldType.dispatchEvent(new Event("change"));
-    formApi.initPickrs();
+    // 3) Build “Type” selector row
+    const { row: rowType, select: fldType } = createDropdownField(
+      "Type:",
+      "fld-type",
+      [
+        { value: "Door",              label: "Door" },
+        { value: "Extraction Portal", label: "Extraction Portal" },
+        { value: "Item",              label: "Item" },
+        { value: "Chest",             label: "Chest" },
+        { value: "Teleport",          label: "Teleport" },
+        { value: "Spawn Point",       label: "Spawn Point" }
+      ],
+      { showColor: false }
+    );
+    // insert placeholder
+    fldType.innerHTML =
+      `<option value="" disabled selected>Select type…</option>` +
+      fldType.innerHTML;
 
-    // Save / Cancel buttons
-    formApi.form.appendChild(
-      createFormButtonRow(() => closeModal(modal))
+    // 4) Build “Predefined Item” selector row
+    const { row: rowPredefItem, select: fldPredefItem } = createDropdownField(
+      "Item:",
+      "fld-predef-item",
+      [],
+      { showColor: false }
     );
 
+    // 5) Build “Chest Type” selector row
+    const { row: rowChestType, select: fldChestType } = createDropdownField(
+      "Chest Type:",
+      "fld-predef-chest",
+      [],
+      { showColor: false }
+    );
+
+    // 6) Build button row
+    const rowButtons = createFormButtonRow(() => closeModal(modal));
+
+    // 7) Inject rows into the form, before the first builder field
+    const firstField = form.querySelector(".field-row");
+    form.insertBefore(rowType,       firstField);
+    form.insertBefore(rowPredefItem, rowType.nextSibling);
+    form.insertBefore(rowChestType,  rowPredefItem.nextSibling);
+    form.appendChild(rowButtons);
+
+    // 8) Mount the form into the modal
+    content.appendChild(form);
+  }
+
+  /**
+   * Open the modal for creating a new marker.
+   * @param {[number,number]} coords
+   * @param {string} type
+   * @param {MouseEvent} evt
+   * @param {(payload: object) => void} onCreate
+   */
+  async function openCreate(coords, type, evt, onCreate) {
+    ensureBuilt(
+      payload => onCreate({ ...payload, coords }),
+      ()      => closeModal(modal)
+    );
+    formApi.reset();
+    await formApi.populate({ type: type || "", coords });
+    formApi.initPickrs();
     openModalAt(modal, evt);
   }
 
-  // ─── Open for editing an existing marker ───────────────────────
+  /**
+   * Open the modal for editing an existing marker.
+   * @param {L.Marker} markerObj
+   * @param {object} data
+   * @param {MouseEvent} evt
+   * @param {(markerObj: L.Marker, payload: object) => void} onSave
+   */
   async function openEdit(markerObj, data, evt, onSave) {
-    ensureBuilt();
-    content.innerHTML = "";
-
-    // — Type —
-    const { row: rowType, select: fldType } =
-      createDropdownField("Type:", "fld-type", [
-        { value: "",     label: "Select Marker Type" },
-        { value: "Item", label: "Item" },
-        { value: "Chest",label: "Chest" }
-      ], { showColor: false });
-    content.appendChild(rowType);
-
-    // — Predefined Item —
-    const { row: rowPredefItem, select: fldPredefItem } =
-      createDropdownField("Item Definition:", "fld-predef-item", [], { showColor: false });
-    content.appendChild(rowPredefItem);
-
-    // — Chest Definition —
-    const { row: rowChestType, select: fldChestType } =
-      createDropdownField("Chest Definition:", "fld-predef-chest", [], { showColor: false });
-    content.appendChild(rowChestType);
-
-    // — The form controller (builder + wiring) —
-    const formApi = createMarkerFormController(
-      {
-        onCancel: () => closeModal(modal),
-        onSubmit: payload => {
-          onSave(markerObj, payload, evt);
-          closeModal(modal);
-        },
-        onFieldChange: () => {}
-      },
-      db
+    ensureBuilt(
+      payload => onSave(markerObj, { ...payload, coords: data.coords }),
+      ()      => closeModal(modal)
     );
-    content.appendChild(formApi.form);
-
-    // Populate with existing data
+    formApi.reset();
     await formApi.populate(data);
     formApi.initPickrs();
-
-    // Save / Cancel buttons
-    formApi.form.appendChild(
-      createFormButtonRow(() => closeModal(modal))
-    );
-
     openModalAt(modal, evt);
   }
 
