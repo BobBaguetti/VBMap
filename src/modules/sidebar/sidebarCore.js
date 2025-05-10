@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarCore.js
-// @version: 1.2 — tolerate missing sections by falling back to empty containers
+// @version: 1.3 — auto-create #item-filter-list if missing
 
 /**
  * Initialize core sidebar DOM elements and wire the sidebar toggle.
@@ -16,7 +16,7 @@ export function initCore(map) {
   const sidebar = document.getElementById("sidebar");
   if (!sidebar) throw new Error("Sidebar element (#sidebar) not found in DOM");
 
-  // Search input
+  // ── Search input ─────────────────────────────────────────────
   let searchBar = sidebar.querySelector("#sidebar-search");
   if (!searchBar) {
     searchBar = sidebar.querySelector("input");
@@ -25,14 +25,13 @@ export function initCore(map) {
     );
   }
   if (!searchBar) {
-    // create a dummy hidden input so filters won't crash
     console.warn("initCore: no <input> found in sidebar; creating dummy searchBar");
     searchBar = document.createElement("input");
     searchBar.style.display = "none";
     sidebar.prepend(searchBar);
   }
 
-  // Toggle button
+  // ── Sidebar toggle ───────────────────────────────────────────
   const toggleBtn = document.getElementById("sidebar-toggle");
   if (toggleBtn) {
     toggleBtn.addEventListener("click", () => {
@@ -41,7 +40,7 @@ export function initCore(map) {
     });
   }
 
-  // Settings section
+  // ── Settings section ─────────────────────────────────────────
   let settingsSection = sidebar.querySelector("#sidebar-settings");
   if (!settingsSection) {
     console.warn("initCore: #sidebar-settings not found; creating placeholder");
@@ -50,13 +49,22 @@ export function initCore(map) {
     sidebar.append(settingsSection);
   }
 
-  // Filter section
+  // ── Filters section ──────────────────────────────────────────
   let filterSection = sidebar.querySelector("#sidebar-filters");
   if (!filterSection) {
     console.warn("initCore: #sidebar-filters not found; creating placeholder");
     filterSection = document.createElement("div");
     filterSection.id = "sidebar-filters";
     sidebar.append(filterSection);
+  }
+
+  // Ensure there's a child with id="item-filter-list" for loadItemFilters
+  let itemListContainer = filterSection.querySelector("#item-filter-list");
+  if (!itemListContainer) {
+    console.warn("initCore: #item-filter-list not found; creating placeholder");
+    itemListContainer = document.createElement("div");
+    itemListContainer.id = "item-filter-list";
+    filterSection.append(itemListContainer);
   }
 
   return { sidebar, searchBar, settingsSection, filterSection };
