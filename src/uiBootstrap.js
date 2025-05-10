@@ -1,7 +1,5 @@
 // @file: src/uiBootstrap.js
-// @version: 2 updated — replace renderPopup with renderItemPopup
-// Subscribes to Firestore services, wires up marker CRUD, context menus, etc.
-
+// @version: 3.0 — wire in sidebar callbacks and collapse button
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 
@@ -27,6 +25,7 @@ import {
 } from "./modules/map/markerManager.js";
 import { initMarkerModal }          from "./modules/ui/modals/markerModal.js";
 import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initChestDefinitionsModal }from "./modules/ui/modals/chestDefinitionsModal.js";
 import { initCopyPasteManager }     from "./modules/map/copyPasteManager.js";
 import { setupSidebar }             from "./modules/sidebar/sidebarManager.js";
 import {
@@ -41,16 +40,56 @@ export let allMarkers = [];
 let filterMarkers, loadItemFilters;
 
 export function bootstrapUI(isAdmin) {
+  // Sidebar collapse
+  document.getElementById("sidebar-toggle")
+    .addEventListener("click", () => {
+      document.getElementById("sidebar").classList.toggle("collapsed");
+    });
+
   // Keep chest definitions up to date
   subscribeChestDefinitions(db, defs => {
     chestDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
   });
 
   (async () => {
-    // Sidebar (filters, etc.)
-    ({ filterMarkers, loadItemFilters } = await setupSidebar(
-      map, layers, allMarkers, db, {}
-    ));
+    // Sidebar (filters, settings, etc.)
+    const sidebarApi = await setupSidebar(
+      map,
+      layers,
+      allMarkers,
+      db,
+      {
+        enableGrouping: () => {
+          allMarkers.forEach(({ markerObj, data }) => {
+            if (data.type === "Item") clusterItemLayer.addLayer(markerObj);
+          });
+        },
+        disableGrouping: () => {
+          allMarkers.forEach(({ markerObj, data }) => {
+            if (data.type === "Item") {
+              clusterItemLayer.removeLayer(markerObj);
+              flatItemLayer.addLayer(markerObj);
+            }
+          });
+        },
+        shrinkMarkers: () => {
+          document.body.classList.add("small-markers");
+        },
+        resetMarkerSize: () => {
+          document.body.classList.remove("small-markers");
+        },
+        onManageItems: () => initItemDefinitionsModal(db).open(),
+        onManageChests: () => initChestDefinitionsModal(db).open(),
+        onMultiSelectMode: () => {
+          /* TODO: implement multi-select mode */
+        },
+        onDeleteMode: () => {
+          /* TODO: implement delete mode */
+        }
+      }
+    );
+
+    ({ filterMarkers, loadItemFilters } = sidebarApi);
 
     // Initial item definitions load
     const initialDefs = await loadItemDefinitions(db);
@@ -100,6 +139,7 @@ export function bootstrapUI(isAdmin) {
     // Initialize modals and copy/paste
     const markerForm = initMarkerModal(db);
     initItemDefinitionsModal(db);
+    initChestDefinitionsModal(db);
     const copyMgr = initCopyPasteManager(map, upsertMarker.bind(null, db));
 
     // Helper for adding markers
