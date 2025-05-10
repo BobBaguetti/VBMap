@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 20 -->
+<!-- @version: 21 — search moved above settings -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -26,6 +26,7 @@
   <link rel="stylesheet" href="styles/modals/modal.small.css"/>
   <link rel="stylesheet" href="styles/modals/modal.large.css"/>
   <link rel="stylesheet" href="styles/modals/inventory.css">
+
   <!-- Preview styles -->
   <link rel="stylesheet" href="styles/preview/previewPanel.css"/>
   <link rel="stylesheet" href="styles/preview/itemPreview.css"/>
@@ -71,6 +72,7 @@
           <label><input type="checkbox" checked data-layer="Item"/><span>Item</span></label>
           <label><input type="checkbox" checked data-layer="Teleport"/><span>Teleport</span></label>
           <label><input type="checkbox" checked data-layer="Spawn Point"/><span>Spawn points</span></label>
+          <!-- additional layers ("Chests", "NPC-Hostile", etc.) are injected by JS -->
         </div>
       </div>
       <div class="filter-group" id="item-filters">
@@ -79,15 +81,15 @@
       </div>
     </div>
 
-    <!-- Settings (auth button injected here) -->
-    <div class="sidebar-section" id="settings-section">
-      <h2><i class="fas fa-cog"></i> Settings</h2>
-    </div>
-
-    <!-- Search -->
+    <!-- Search (moved above Settings) -->
     <div class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <input type="text" id="search-bar" placeholder="Search items/locations..."/>
+    </div>
+
+    <!-- Settings (auth button injected here) -->
+    <div class="sidebar-section" id="settings-section">
+      <h2><i class="fas fa-cog"></i> Settings</h2>
     </div>
   </div>
 
