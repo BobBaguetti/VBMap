@@ -15,7 +15,7 @@ export function initializeMap() {
 
   // Define the map bounds and overlay image URL
   const bounds = [[0, 0], [3000, 3000]];
-  const imageUrl = "./media/images/tempmap.png";
+  const imageUrl = "https://res.cloudinary.com/dtty7zxjh/image/upload/v1746912528/tempmap_ypzwlx.png";
 
   // Add the overlay image
   L.imageOverlay(imageUrl, bounds).addTo(map);
