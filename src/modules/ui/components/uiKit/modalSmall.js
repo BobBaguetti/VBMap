@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/uiKit/modalSmall.js
-// @version: 1.0 — small, draggable-capable modal creator
+// @version: 1.1 — remove dark backdrop for small modals (default backdrop = false)
 
 import { openModal, closeModal } from "./modalCore.js";
 
@@ -10,7 +10,7 @@ import { openModal, closeModal } from "./modalCore.js";
  *   id: string,
  *   title: string,
  *   onClose?: () => void,
- *   backdrop?: boolean,
+ *   backdrop?: boolean,    // now defaults to false
  *   draggable?: boolean,
  *   withDivider?: boolean
  * }} opts
@@ -20,7 +20,7 @@ export function createModalSmall({
   id,
   title,
   onClose,
-  backdrop = true,
+  backdrop = false,   // no dark backdrop by default
   draggable = false,
   withDivider = false
 }) {
@@ -61,7 +61,7 @@ export function createModalSmall({
   modal.append(content);
   document.body.append(modal);
 
-  // Close on backdrop click
+  // Close on backdrop click (now transparent, so clicks pass through)
   modal.addEventListener("click", e => {
     if (e.target === modal) {
       closeModal(modal);
