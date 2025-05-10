@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarManager.js
-// @version: 2.1 — wire in modular settings & filters
+// @version: 2.2 — fix settings selector to match HTML ID
 
 import { renderSidebarSettings } from "./settings/sidebarSettings.js";
 import { renderSidebarFilters }  from "./filters/sidebarFilters.js";
@@ -39,9 +39,17 @@ export async function setupSidebar(
   }
 ) {
   // Locate sidebar regions
-  const sidebar           = document.getElementById("sidebar");
-  const settingsContainer = sidebar.querySelector(".sidebar__settings");
-  const filtersContainer  = sidebar.querySelector(".sidebar__filters");
+  const sidebar = document.getElementById("sidebar");
+
+  // Match your HTML: settings are under #settings-section
+  const settingsContainer = sidebar.querySelector("#settings-section");
+  if (!settingsContainer) {
+    console.error("[sidebar] could not find #settings-section");
+    return {};
+  }
+
+  // Filters container remains as before
+  const filtersContainer = sidebar.querySelector(".sidebar__filters");
 
   // Render the Settings section
   renderSidebarSettings(settingsContainer, {
