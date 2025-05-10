@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/controllers/markerFormController.js
-// @version: 1.2 — strip out type/predef logic; focus on builder fields
+// @version: 1.3 — defer Pickr init until initPickrs(), guard against null
 
 import { getPickrHexColor }            from "../../../utils/colorUtils.js";
 import {
@@ -12,7 +12,7 @@ import { createMarkerFormBuilder }     from "../builders/markerFormBuilder.js";
 /**
  * Controller for the marker form builder fields:
  *  • headers & cancel button
- *  • pickr wiring
+ *  • deferred Pickr wiring
  *  • getCustom() & setFromDefinition()
  *  • form reset/populate
  *  • onSubmit/onFieldChange hooks
@@ -24,9 +24,9 @@ import { createMarkerFormBuilder }     from "../builders/markerFormBuilder.js";
  * }} callbacks
  */
 export function createMarkerFormController(
-  { onCancel, onSubmit, onFieldChange },
+  { onCancel, onSubmit, onFieldChange }
 ) {
-  // build the form fields
+  // Build the form fields
   const { form, fields } = createMarkerFormBuilder();
 
   // Header + Cancel (no delete)
@@ -39,13 +39,8 @@ export function createMarkerFormController(
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // Initialize Pickr on builder color buttons
-  const pickrs = initFormPickrs(form, {
-    name:        fields.colorName,
-    rarity:      fields.colorRarity,
-    itemType:    fields.colorItemType,
-    description: fields.colorDesc
-  });
+  // Placeholder for Pickr instances (populated on initPickrs)
+  let pickrs = {};
 
   // Extract values from the builder fields into a payload
   function getCustom() {
@@ -68,16 +63,16 @@ export function createMarkerFormController(
   // Populate builder fields from a definition object
   function setFromDefinition(def = {}) {
     fields.fldName.value        = def.name || "";
-    pickrs.name.setColor(def.nameColor || "#E5E6E8");
+    pickrs.name?.setColor(def.nameColor || "#E5E6E8");
 
     fields.fldRarity.value      = def.rarity || "";
-    pickrs.rarity.setColor(def.rarityColor || "#E5E6E8");
+    pickrs.rarity?.setColor(def.rarityColor || "#E5E6E8");
 
     fields.fldItemType.value    = def.itemType || "";
-    pickrs.itemType.setColor(def.itemTypeColor || "#E5E6E8");
+    pickrs.itemType?.setColor(def.itemTypeColor || "#E5E6E8");
 
     fields.fldDesc.value        = def.description || "";
-    pickrs.description.setColor(def.descriptionColor || "#E5E6E8");
+    pickrs.description?.setColor(def.descriptionColor || "#E5E6E8");
 
     fields.extraInfo.setLines(def.extraLines || [], false);
 
@@ -90,24 +85,27 @@ export function createMarkerFormController(
   wireFormEvents(form, getCustom, onSubmit, onFieldChange);
 
   // Extend form with reset() and populate()
-  form.reset = () => {
-    setFromDefinition({});
-  };
-  form.populate = def => {
-    setFromDefinition(def);
-  };
+  form.reset = () => setFromDefinition({});
+  form.populate = def => setFromDefinition(def);
 
-  // Expose API
   return {
     form,
-    reset:          form.reset,
-    populate:       form.populate,
-    initPickrs:     () => initFormPickrs(form, {
-      name:        fields.colorName,
-      rarity:      fields.colorRarity,
-      itemType:    fields.colorItemType,
-      description: fields.colorDesc
-    }),
+    reset:    form.reset,
+    populate: form.populate,
+
+    /**
+     * Initialize Pickr instances for all swatches.
+     * Call this after `form` is inserted into the DOM.
+     */
+    initPickrs() {
+      pickrs = initFormPickrs(form, {
+        name:        fields.colorName,
+        rarity:      fields.colorRarity,
+        itemType:    fields.colorItemType,
+        description: fields.colorDesc
+      });
+    },
+
     getCustom,
     setFromDefinition
   };
