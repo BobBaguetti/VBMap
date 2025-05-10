@@ -1,7 +1,8 @@
 // @file: src/uiBootstrap.js
-// @version: 3.0 — wire in sidebar callbacks and collapse button
+// @version: 3.1 — extract grouping logic to groupingService
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
+import { createGroupingCallbacks } from "./modules/map/groupingService.js";
 
 // Services under src/modules/services/
 import {
@@ -23,11 +24,11 @@ import {
   renderItemPopup,
   renderChestPopup
 } from "./modules/map/markerManager.js";
-import { initMarkerModal }          from "./modules/ui/modals/markerModal.js";
-import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal }from "./modules/ui/modals/chestDefinitionsModal.js";
-import { initCopyPasteManager }     from "./modules/map/copyPasteManager.js";
-import { setupSidebar }             from "./modules/sidebar/sidebarManager.js";
+import { initMarkerModal }           from "./modules/ui/modals/markerModal.js";
+import { initItemDefinitionsModal }  from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initChestDefinitionsModal } from "./modules/ui/modals/chestDefinitionsModal.js";
+import { initCopyPasteManager }      from "./modules/map/copyPasteManager.js";
+import { setupSidebar }              from "./modules/sidebar/sidebarManager.js";
 import {
   showContextMenu,
   hideContextMenu
@@ -40,7 +41,7 @@ export let allMarkers = [];
 let filterMarkers, loadItemFilters;
 
 export function bootstrapUI(isAdmin) {
-  // Sidebar collapse
+  // Sidebar collapse/expand toggle
   document.getElementById("sidebar-toggle")
     .addEventListener("click", () => {
       document.getElementById("sidebar").classList.toggle("collapsed");
@@ -52,40 +53,25 @@ export function bootstrapUI(isAdmin) {
   });
 
   (async () => {
-    // Sidebar (filters, settings, etc.)
+    // Create grouping callbacks using our service
+    const { enableGrouping, disableGrouping } =
+      createGroupingCallbacks(allMarkers, { clusterItemLayer, flatItemLayer });
+
+    // Initialize sidebar with Settings & Filters
     const sidebarApi = await setupSidebar(
       map,
       layers,
       allMarkers,
       db,
       {
-        enableGrouping: () => {
-          allMarkers.forEach(({ markerObj, data }) => {
-            if (data.type === "Item") clusterItemLayer.addLayer(markerObj);
-          });
-        },
-        disableGrouping: () => {
-          allMarkers.forEach(({ markerObj, data }) => {
-            if (data.type === "Item") {
-              clusterItemLayer.removeLayer(markerObj);
-              flatItemLayer.addLayer(markerObj);
-            }
-          });
-        },
-        shrinkMarkers: () => {
-          document.body.classList.add("small-markers");
-        },
-        resetMarkerSize: () => {
-          document.body.classList.remove("small-markers");
-        },
-        onManageItems: () => initItemDefinitionsModal(db).open(),
-        onManageChests: () => initChestDefinitionsModal(db).open(),
-        onMultiSelectMode: () => {
-          /* TODO: implement multi-select mode */
-        },
-        onDeleteMode: () => {
-          /* TODO: implement delete mode */
-        }
+        enableGrouping,
+        disableGrouping,
+        shrinkMarkers:   () => document.body.classList.add("sidebar-small-markers"),
+        resetMarkerSize: () => document.body.classList.remove("sidebar-small-markers"),
+        onManageItems:   () => initItemDefinitionsModal(db).open(),
+        onManageChests:  () => initChestDefinitionsModal(db).open(),
+        onMultiSelectMode: () => { /* TODO */ },
+        onDeleteMode:      () => { /* TODO */ }
       }
     );
 
@@ -184,11 +170,11 @@ export function bootstrapUI(isAdmin) {
         );
         firebaseUpdateMarker(db, updated).catch(() => {});
       }),
-      onCopy: (_, d)    => copyMgr.startCopy(d),
-      onDragEnd: (_, d) => firebaseUpdateMarker(db, d).catch(() => {}),
-      onDelete: (markerObj, data) => {
-        markerObj.remove();
-        clusterItemLayer.removeLayer(markerObj);
+      onCopy:    (_, d)    => copyMgr.startCopy(d),
+      onDragEnd: (_, d)    => firebaseUpdateMarker(db, d).catch(() => {}),
+      onDelete:  (mObj,data) => {
+        mObj.remove();
+        clusterItemLayer.removeLayer(mObj);
         const idx = allMarkers.findIndex(o => o.data.id === data.id);
         if (idx !== -1) allMarkers.splice(idx, 1);
         if (data.id) firebaseDeleteMarker(db, data.id).catch(() => {});
@@ -196,7 +182,7 @@ export function bootstrapUI(isAdmin) {
       }
     };
 
-    // Context menu for creating markers
+    // Context‐menu for creating markers
     map.on("contextmenu", evt => {
       if (!isAdmin) return;
       showContextMenu(
@@ -222,7 +208,7 @@ export function bootstrapUI(isAdmin) {
       }
     });
 
-    // Activate custom scrollbars once DOM is ready
+    // Activate custom scrollbars
     document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
   })();
 }
