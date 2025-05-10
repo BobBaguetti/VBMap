@@ -1,26 +1,11 @@
 // @file: src/modules/sidebar/sidebarManager.js
-// @version: 2.2 — fix settings selector to match HTML ID
+// @version: 2.3 — fix filters selector to match HTML ID
 
 import { renderSidebarSettings } from "./settings/sidebarSettings.js";
 import { renderSidebarFilters }  from "./filters/sidebarFilters.js";
 
 /**
  * Sets up the sidebar’s Settings and Filters sections.
- *
- * @param {L.Map} map
- * @param {object<string,L.LayerGroup>} layers
- * @param {Array<{ markerObj: L.Marker, data: object }>} allMarkers
- * @param {firebase.firestore.Firestore} db
- * @param {object} callbacks
- * @param {() => void} callbacks.enableGrouping
- * @param {() => void} callbacks.disableGrouping
- * @param {() => void} callbacks.shrinkMarkers
- * @param {() => void} callbacks.resetMarkerSize
- * @param {() => void} callbacks.onManageItems
- * @param {() => void} callbacks.onManageChests
- * @param {() => void} callbacks.onMultiSelectMode
- * @param {() => void} callbacks.onDeleteMode
- * @returns {Promise<{ filterMarkers: Function, loadItemFilters: Function }>}
  */
 export async function setupSidebar(
   map,
@@ -38,20 +23,23 @@ export async function setupSidebar(
     onDeleteMode
   }
 ) {
-  // Locate sidebar regions
   const sidebar = document.getElementById("sidebar");
 
-  // Match your HTML: settings are under #settings-section
+  // Settings container
   const settingsContainer = sidebar.querySelector("#settings-section");
   if (!settingsContainer) {
     console.error("[sidebar] could not find #settings-section");
     return {};
   }
 
-  // Filters container remains as before
-  const filtersContainer = sidebar.querySelector(".sidebar__filters");
+  // Filters container (use the ID from your HTML)
+  const filtersContainer = sidebar.querySelector("#filters-section");
+  if (!filtersContainer) {
+    console.error("[sidebar] could not find #filters-section");
+    return {};
+  }
 
-  // Render the Settings section
+  // Render Settings
   renderSidebarSettings(settingsContainer, {
     enableGrouping,
     disableGrouping,
@@ -63,7 +51,7 @@ export async function setupSidebar(
     onDeleteMode
   });
 
-  // Render the Filters section (main + item filters)
+  // Render Filters (main + item filters)
   const { filterMarkers, loadItemFilters } = await renderSidebarFilters(
     filtersContainer,
     allMarkers,
