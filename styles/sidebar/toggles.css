@@ -1,0 +1,42 @@
+/* @file: styles/sidebar/toggles.css */
+/* @version: 1.0 — toggle-group grid & label styling */
+
+.toggle-group {
+  padding: 0.4em 0.8em;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.3em 0.5em;
+  font-size: 13px;
+}
+
+.filter-group .toggle-group input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.filter-group .toggle-group label {
+  position: relative;
+  padding: 3px 6px;
+  border-radius: 3px;
+  transition: background 0.2s, color 0.2s, text-decoration 0.2s;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.filter-group .toggle-group label:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.filter-group .toggle-group input:checked + span {
+  color: #e5e6e8;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.filter-group .toggle-group input:not(:checked) + span {
+  color: #555;
+  text-decoration: line-through;
+  font-weight: 400;
+}

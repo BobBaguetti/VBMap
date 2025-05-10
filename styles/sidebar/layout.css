@@ -1,0 +1,41 @@
+/* @file: styles/sidebar/layout.css */
+/* @version: 1.0 — sidebar container & toggle button styling */
+
+#sidebar {
+  font-family: 'Satoshi', sans-serif;
+  width: 380px;
+  height: 100vh;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #222;
+  color: #e5e6e8;
+  padding: 8px;
+  box-sizing: border-box;
+  overflow-y: auto;
+  overflow-x: hidden;
+  transition: transform 0.3s ease;
+  z-index: 1000;
+}
+
+#sidebar.hidden {
+  transform: translateX(-100%);
+}
+
+#sidebar-toggle {
+  position: absolute;
+  top: 10px;
+  left: 380px;
+  z-index: 1100;
+  width: 30px;
+  height: 30px;
+  background: #333;
+  border: none;
+  color: #e5e6e8;
+  cursor: pointer;
+  transition: left 0.3s ease, background 0.2s ease;
+}
+
+#sidebar-toggle:hover {
+  background: #444;
+}

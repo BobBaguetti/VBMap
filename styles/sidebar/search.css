@@ -1,0 +1,28 @@
+/* @file: styles/sidebar/search.css */
+/* @version: 1.0 — sticky search bar & separator styling */
+
+#sidebar-search {
+  position: sticky;
+  top: 0;
+  background-color: #222;
+  padding: 8px 0 4px;
+  z-index: 1001;
+}
+
+#sidebar-search input {
+  background: #303030;
+  color: #e5e6e8;
+  border: 1px solid #555;
+  border-radius: 2px;
+  padding: 3px 5px;
+  width: 100%;
+  font-family: 'Satoshi', sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+#sidebar-search hr {
+  border: none;
+  border-top: 1px solid #333;
+  margin: 4px 0;
+}
