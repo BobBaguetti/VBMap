@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 23 – remove duplicate Admin Tools, custom scrollbar & filter‐group styling -->
+<!-- @version: 24 – remove static Admin Tools (dynamic injection only) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -40,9 +40,9 @@
   <link rel="stylesheet"
         href="https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css"/>
 
-  <!-- Custom scrollbar & filter-group styling -->
+  <!-- Custom scrollbar & filter‐group styling -->
   <style>
-    /* Thin, gray sidebar scrollbar without arrows or gutter */
+    /* Thin gray scrollbar without gutter or buttons */
     #sidebar {
       scrollbar-width: thin;
       scrollbar-color: #888 transparent;
@@ -58,8 +58,7 @@
     #sidebar::-webkit-scrollbar-button {
       display: none;
     }
-
-    /* Visually separate filter groups */
+    /* Distinct containers for each filter group */
     .filter-group {
       background-color: #1e1e1e;
       border: 1px solid #333;
@@ -67,7 +66,6 @@
       padding: 0.5em;
       margin-bottom: 1em;
     }
-    /* Indent nested sub-groups */
     .filter-group.nested {
       margin-left: 1em;
     }
@@ -124,15 +122,13 @@
         <div class="toggle-group" id="chest-filter-list"><!-- dynamic --></div>
       </div>
 
-      <!-- NPC filters with nested sub-groups -->
+      <!-- NPC filters with nested sub‐groups -->
       <div class="filter-group" id="npc-filters">
         <h3>NPCs</h3>
-
         <div class="filter-group nested" id="npc-hostile-filters">
           <h4>Hostile</h4>
           <div class="toggle-group" id="npc-hostile-list"><!-- dynamic --></div>
         </div>
-
         <div class="filter-group nested" id="npc-friendly-filters">
           <h4>Friendly</h4>
           <div class="toggle-group" id="npc-friendly-list"><!-- dynamic --></div>
@@ -151,12 +147,7 @@
       <input type="text" id="search-bar" placeholder="Search items/locations…"/>
     </div>
 
-    <!-- Admin Tools (single instance) -->
-    <div class="sidebar-section" id="admin-tools-section">
-      <h2><i class="fas fa-tools"></i> Admin Tools</h2>
-      <button id="manage-items-btn">Manage Items</button>
-      <button id="manage-chests-btn">Manage Chests</button>
-    </div>
+    <!-- Admin Tools are now injected dynamically via sidebarAdmin.js -->
   </div>
 
   <!-- Map container -->
