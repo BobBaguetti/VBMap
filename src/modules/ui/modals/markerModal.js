@@ -1,12 +1,15 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 21.0 — migrate to markerFormController
+// @version: 21.2 — fix uiKit import paths
 
 import {
   createModal,
   closeModal,
   openModalAt
-} from "../uiKit.js";
-import { createDropdownField, createFormButtonRow } from "../../components/uiKit/fieldKit.js";
+} from "../components/uiKit/modalKit.js";
+import {
+  createDropdownField,
+  createFormButtonRow
+} from "../components/uiKit/fieldKit.js";
 import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
 import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";
 import { createMarkerFormController } from "../forms/controllers/markerFormController.js";
@@ -47,12 +50,12 @@ export function initMarkerModal(db) {
   function ensureBuilt() {
     if (modal) return;
 
-    // create the modal
+    // create the modal shell
     const m = createModal({
-      id:         "edit-marker-modal",
-      title:      "Edit Marker",
+      id:         "marker-modal",
+      title:      "Marker",
       size:       "small",
-      backdrop:   false,
+      backdrop:   true,
       draggable:  true,
       withDivider:true,
       onClose:    () => closeModal(modal)
@@ -61,7 +64,7 @@ export function initMarkerModal(db) {
     content = m.content;
     modal.classList.add("admin-only");
 
-    // Type dropdown
+    // — Type dropdown —
     ({ row: rowType, select: fldType } = createDropdownField(
       "Type:", "fld-type",
       [
@@ -74,83 +77,63 @@ export function initMarkerModal(db) {
       ],
       { showColor: false }
     ));
-    // insert placeholder
-    fldType.innerHTML = `
-      <option value="" disabled selected>Select type…</option>
-    ` + fldType.innerHTML;
+    fldType.innerHTML = `<option value="" disabled selected>Select type…</option>` + fldType.innerHTML;
 
-    // Predef-item dropdown
+    // — Predefined Item dropdown —
     ({ row: rowPredefItem, select: fldPredefItem } = createDropdownField(
       "Item:", "fld-predef-item", [], { showColor: false }
     ));
 
-    // Chest-type dropdown
+    // — Chest Type dropdown —
     ({ row: rowChestType, select: fldChestType } = createDropdownField(
       "Chest Type:", "fld-predef-chest", [], { showColor: false }
     ));
 
-    // instantiate the controller
+    // instantiate controller and mount its form
     ctrl = createMarkerFormController({
-      onCancel: () => closeModal(modal),
-      onSubmit: payload => {
-        // pass payload back to whoever opened us
-        // this will be bound per-open in openCreate/openEdit below
-      },
+      onCancel:      () => closeModal(modal),
+      onSubmit:      () => {},
       onFieldChange: () => {}
     }, db);
 
-    // assemble form
     content.append(
       rowType,
       rowPredefItem,
       rowChestType,
-      ctrl.form,            // entire form built by controller
+      ctrl.form,
       createFormButtonRow()
     );
 
-    // show/hide sections on type change
+    // show/hide on type change
     fldType.addEventListener("change", () => {
       rowPredefItem.style.display = fldType.value === "Item"  ? "flex" : "none";
       rowChestType.style.display  = fldType.value === "Chest" ? "flex" : "none";
-      // let controller handle hiding item-vs-non-item fields itself
     });
 
-    // when picking a predefined item, have controller pull in its fields
+    // when picking a predefined item, populate fields via controller
     fldPredefItem.addEventListener("change", () => {
       const def = itemDefs[fldPredefItem.value] || {};
-      ctrl.populate(def);       // controller’s populate will set name, colors, etc.
+      ctrl.populate(def);
     });
 
-    // seed initial pickrs
     ctrl.reset();
     ctrl.initPickrs();
   }
 
-  // edit existing marker
   async function openEdit(markerObj, data, evt, onSave) {
     ensureBuilt();
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
 
-    // clear selectors
-    fldPredefItem.value = "";
-    fldChestType.value  = "";
-
-    // set type and then populate controller
+    // set type & selectors
     fldType.value = data.type;
     fldType.dispatchEvent(new Event("change"));
+    if (data.type === "Item") fldPredefItem.value = data.predefinedItemId || "";
+    if (data.type === "Chest") fldChestType.value = data.chestTypeId || "";
 
-    if (data.type === "Item" && data.predefinedItemId) {
-      fldPredefItem.value = data.predefinedItemId;
-      fldPredefItem.dispatchEvent(new Event("change"));
-    }
-    if (data.type === "Chest" && data.chestTypeId) {
-      fldChestType.value = data.chestTypeId;
-    }
+    // let controller fill in the rest
+    await ctrl.populate(data);
 
-    // controller.populate knows both item & non-item paths
-    ctrl.populate(data);
-
-    // wire our onSave into the controller’s submit hook
+    // wire submit
     ctrl.form.onsubmit = e => {
       e.preventDefault();
       onSave(markerObj, { ...data, ...ctrl.getCustom() }, evt);
@@ -160,23 +143,18 @@ export function initMarkerModal(db) {
     openModalAt(modal, evt);
   }
 
-  // create new marker
   async function openCreate(coords, type, evt, onCreate) {
     ensureBuilt();
     await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
 
-    // reset controller to blank
     ctrl.reset();
-
-    // set type
     fldType.value = type || "";
     fldType.dispatchEvent(new Event("change"));
 
-    // wire create callback
     ctrl.form.onsubmit = e => {
       e.preventDefault();
-      const out = { type, coords, ...ctrl.getCustom() };
-      onCreate(out);
+      const payload = { type, coords, ...ctrl.getCustom() };
+      onCreate(payload);
       closeModal(modal);
     };
 
