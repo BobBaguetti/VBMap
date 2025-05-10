@@ -1,5 +1,7 @@
 // @file: src/uiBootstrap.js
-// @version: 3.0 — delegate grouping & size toggles to sidebar settings
+// @version: 2 updated — replace renderPopup with renderItemPopup
+// Subscribes to Firestore services, wires up marker CRUD, context menus, etc.
+
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 
@@ -15,10 +17,6 @@ import {
   subscribeItemDefinitions,
   loadItemDefinitions
 } from "./modules/services/itemDefinitionsService.js";
-
-// new imports for grouping & marker‐size control
-import * as groupingService     from "./modules/services/groupingService.js";
-import * as markerSizeService   from "./modules/services/markerSizeService.js";
 
 // Map & UI under src/modules/
 import {
@@ -49,20 +47,9 @@ export function bootstrapUI(isAdmin) {
   });
 
   (async () => {
-    // Sidebar (filters, settings, etc.)
+    // Sidebar (filters, etc.)
     ({ filterMarkers, loadItemFilters } = await setupSidebar(
-      map,
-      layers,
-      allMarkers,
-      db,
-      {
-        // grouping toggles
-        enableGrouping:  groupingService.enableGrouping,
-        disableGrouping: groupingService.disableGrouping,
-        // marker size toggles
-        shrinkMarkers:   markerSizeService.shrinkMarkers,
-        expandMarkers:   markerSizeService.expandMarkers
-      }
+      map, layers, allMarkers, db, {}
     ));
 
     // Initial item definitions load
@@ -157,9 +144,9 @@ export function bootstrapUI(isAdmin) {
         );
         firebaseUpdateMarker(db, updated).catch(() => {});
       }),
-      onCopy:    (_, d)    => copyMgr.startCopy(d),
-      onDragEnd: (_, d)    => firebaseUpdateMarker(db, d).catch(() => {}),
-      onDelete:  (markerObj, data) => {
+      onCopy: (_, d)    => copyMgr.startCopy(d),
+      onDragEnd: (_, d) => firebaseUpdateMarker(db, d).catch(() => {}),
+      onDelete: (markerObj, data) => {
         markerObj.remove();
         clusterItemLayer.removeLayer(markerObj);
         const idx = allMarkers.findIndex(o => o.data.id === data.id);
