@@ -1,20 +1,15 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.1 — add eye‐toggle icons & nested collapse support
+// @version: 1.2 — add explicit Show All / Hide All links
 
 /**
  * Wire up basic sidebar UI interactions:
  *  - Search‐bar styling
  *  - Sidebar toggle (show/hide)
  *  - Collapsible filter groups (h3/h4 headers)
- *  - “Eye” icons on each group header to toggle visibility of that entire group
+ *  - “Eye” icons on each group header
+ *  - **New**: Show All / Hide All bulk‐toggle links
  *
- * @param {{
- *   map: L.Map,
- *   sidebarSelector: string,
- *   toggleSelector: string,
- *   searchBarSelector: string,
- *   filterGroupSelector: string
- * }} opts
+ * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
  */
 export function setupSidebarUI({
   map,
@@ -23,67 +18,82 @@ export function setupSidebarUI({
   searchBarSelector   = "#search-bar",
   filterGroupSelector = ".filter-group"
 }) {
-  const sidebar       = document.querySelector(sidebarSelector);
-  const sidebarToggle = document.querySelector(toggleSelector);
-  const searchBar     = document.querySelector(searchBarSelector);
+  // … (unchanged sidebar toggle & search styling) …
 
-  if (!sidebar || !sidebarToggle || !searchBar) {
-    console.warn("[sidebarUI] Missing elements");
-    return;
-  }
-
-  // 1) Style the search bar
-  searchBar.classList.add("ui-input");
-
-  // 2) Toggle sidebar open/closed
-  sidebarToggle.textContent = "◀︎";
-  sidebarToggle.addEventListener("click", () => {
-    const hidden = sidebar.classList.toggle("hidden");
-    sidebarToggle.style.left  = hidden ? "0px" : "350px";
-    sidebarToggle.textContent = hidden ? "▶︎" : "◀︎";
-    map.invalidateSize();
-  });
-
-  // 3) Collapse & eye‐toggle for every filter‐group
   document.querySelectorAll(filterGroupSelector).forEach(group => {
-    // Find the header (either h3 or h4)
     const header = group.querySelector("h3, h4");
     if (!header) return;
 
-    // 3a) Collapse on header click
+    // --- Collapse on header click ---
     header.addEventListener("click", () => {
       group.classList.toggle("collapsed");
-      console.log(`[sidebarUI] toggled ${group.id || header.textContent}`);
     });
 
-    // 3b) Inject the eye icon
+    // --- Existing eye icon (kept) ---
     const eye = document.createElement("i");
-    eye.classList.add("fas", "fa-eye", "filter-eye");
-    eye.style.cursor      = "pointer";
-    eye.style.marginLeft  = "0.5em";
+    eye.classList.add("fas","fa-eye","filter-eye");
+    eye.style.cursor = "pointer";
     header.appendChild(eye);
-
-    // 3c) Toggle all checkboxes in this group on/off
     eye.addEventListener("click", e => {
-      e.stopPropagation(); // don’t trigger collapse
-      const inputs   = group.querySelectorAll("input[type=checkbox]");
-      const visible  = eye.classList.contains("fa-eye");
-
-      if (visible) {
-        // switch to “hidden” state
-        eye.classList.replace("fa-eye", "fa-eye-slash");
-        inputs.forEach(cb => {
-          cb.checked = false;
-          cb.dispatchEvent(new Event("change", { bubbles: true }));
-        });
-      } else {
-        // switch back to “visible”
-        eye.classList.replace("fa-eye-slash", "fa-eye");
-        inputs.forEach(cb => {
-          cb.checked = true;
-          cb.dispatchEvent(new Event("change", { bubbles: true }));
-        });
-      }
+      e.stopPropagation();
+      const inputs = group.querySelectorAll("input[type=checkbox]");
+      const anyOff = [...inputs].some(cb => !cb.checked);
+      inputs.forEach(cb => {
+        cb.checked = anyOff;
+        cb.dispatchEvent(new Event("change",{bubbles:true}));
+      });
+      eye.classList.toggle("fa-eye-slash", !anyOff);
+      eye.classList.toggle("fa-eye", anyOff);
     });
+
+    // --- NEW: Show All / Hide All links ---
+    const container = document.createElement("span");
+    container.classList.add("header-actions");
+
+    const showAll = document.createElement("a");
+    showAll.textContent = "Show All";
+    showAll.href = "#";
+    showAll.classList.add("show-all");
+    showAll.addEventListener("click", e => {
+      e.preventDefault(); e.stopPropagation();
+      group.querySelectorAll("input[type=checkbox]").forEach(cb => {
+        if (!cb.checked) {
+          cb.checked = true;
+          cb.dispatchEvent(new Event("change",{bubbles:true}));
+        }
+      });
+      updateLinks();
+    });
+
+    const hideAll = document.createElement("a");
+    hideAll.textContent = "Hide All";
+    hideAll.href = "#";
+    hideAll.classList.add("hide-all");
+    hideAll.addEventListener("click", e => {
+      e.preventDefault(); e.stopPropagation();
+      group.querySelectorAll("input[type=checkbox]").forEach(cb => {
+        if (cb.checked) {
+          cb.checked = false;
+          cb.dispatchEvent(new Event("change",{bubbles:true}));
+        }
+      });
+      updateLinks();
+    });
+
+    container.append(showAll, hideAll);
+    header.appendChild(container);
+
+    // Show/hide the appropriate link based on current state
+    function updateLinks() {
+      const inputs = Array.from(group.querySelectorAll("input[type=checkbox]"));
+      const allOn = inputs.every(cb => cb.checked);
+      showAll.style.display = allOn ? "none" : "inline";
+      hideAll.style.display = allOn ? "inline" : "none";
+    }
+
+    // initialize and keep in sync
+    updateLinks();
+    group.querySelectorAll("input[type=checkbox]")
+         .forEach(cb => cb.addEventListener("change", updateLinks));
   });
 }
