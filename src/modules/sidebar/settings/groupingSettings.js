@@ -1,29 +1,25 @@
 // @file: src/modules/sidebar/settings/groupingSettings.js
-// @version: 1.1 — default grouping off
+// @version: 1.1 — dedicated marker‐grouping toggle UI
 
 /**
- * Populates the Settings section with the grouping toggle.
+ * Injects the “Enable Marker Grouping” checkbox into the given container,
+ * wiring it to the provided enable/disable callbacks.
  *
  * @param {HTMLElement} container
- * @param {object} callbacks
- * @param {() => void} callbacks.enableGrouping
- * @param {() => void} callbacks.disableGrouping
+ * @param {{ enableGrouping: Function, disableGrouping: Function }} svc
  */
-export function renderGroupingSettings(container, { enableGrouping, disableGrouping }) {
-  // Remove old grouping settings if present
-  container.querySelectorAll(".setting-group").forEach(el => el.remove());
-
-  const group = document.createElement("div");
-  group.className = "setting-group";
-
+export function renderGroupingSettings(container, svc) {
   const label = document.createElement("label");
-  label.innerHTML = `<input type="checkbox" id="toggle-grouping"><span>Enable Marker Grouping</span>`;
-  const checkbox = label.querySelector("input");
-  checkbox.checked = false; // start ungrouped
-  checkbox.addEventListener("change", () => {
-    checkbox.checked ? enableGrouping() : disableGrouping();
-  });
+  label.innerHTML = `
+    <input type="checkbox" id="enable-grouping" />
+    <span>Enable Marker Grouping</span>
+  `;
+  container.appendChild(label);
 
-  group.appendChild(label);
-  container.appendChild(group);
+  const cb = label.querySelector("input");
+  cb.checked = false;  // off by default
+  cb.addEventListener("change", () => {
+    console.log("[sidebar] marker grouping:", cb.checked);
+    cb.checked ? svc.enableGrouping() : svc.disableGrouping();
+  });
 }

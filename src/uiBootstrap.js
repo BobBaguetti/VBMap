@@ -1,8 +1,7 @@
 // @file: src/uiBootstrap.js
-// @version: 3.2 — use correct small-markers CSS class
+// @version: 3.0 — delegate grouping & size toggles to sidebar settings
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
-import { createGroupingCallbacks } from "./modules/map/groupingService.js";
 
 // Services under src/modules/services/
 import {
@@ -17,6 +16,10 @@ import {
   loadItemDefinitions
 } from "./modules/services/itemDefinitionsService.js";
 
+// new imports for grouping & marker‐size control
+import * as groupingService     from "./modules/services/groupingService.js";
+import * as markerSizeService   from "./modules/services/markerSizeService.js";
+
 // Map & UI under src/modules/
 import {
   createMarker,
@@ -24,11 +27,10 @@ import {
   renderItemPopup,
   renderChestPopup
 } from "./modules/map/markerManager.js";
-import { initMarkerModal }           from "./modules/ui/modals/markerModal.js";
-import { initItemDefinitionsModal }  from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal } from "./modules/ui/modals/chestDefinitionsModal.js";
-import { initCopyPasteManager }      from "./modules/map/copyPasteManager.js";
-import { setupSidebar }              from "./modules/sidebar/sidebarManager.js";
+import { initMarkerModal }          from "./modules/ui/modals/markerModal.js";
+import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initCopyPasteManager }     from "./modules/map/copyPasteManager.js";
+import { setupSidebar }             from "./modules/sidebar/sidebarManager.js";
 import {
   showContextMenu,
   hideContextMenu
@@ -41,41 +43,27 @@ export let allMarkers = [];
 let filterMarkers, loadItemFilters;
 
 export function bootstrapUI(isAdmin) {
-  // Sidebar collapse/expand toggle
-  document.getElementById("sidebar-toggle")
-    .addEventListener("click", () => {
-      document.getElementById("sidebar").classList.toggle("collapsed");
-    });
-
   // Keep chest definitions up to date
   subscribeChestDefinitions(db, defs => {
     chestDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
   });
 
   (async () => {
-    // Create grouping callbacks using our service
-    const { enableGrouping, disableGrouping } =
-      createGroupingCallbacks(allMarkers, { clusterItemLayer, flatItemLayer });
-
-    // Initialize sidebar with Settings & Filters
-    const sidebarApi = await setupSidebar(
+    // Sidebar (filters, settings, etc.)
+    ({ filterMarkers, loadItemFilters } = await setupSidebar(
       map,
       layers,
       allMarkers,
       db,
       {
-        enableGrouping,
-        disableGrouping,
-        shrinkMarkers:   () => document.body.classList.add("small-markers"),
-        resetMarkerSize: () => document.body.classList.remove("small-markers"),
-        onManageItems:   () => initItemDefinitionsModal(db).open(),
-        onManageChests:  () => initChestDefinitionsModal(db).open(),
-        onMultiSelectMode: () => { /* TODO */ },
-        onDeleteMode:      () => { /* TODO */ }
+        // grouping toggles
+        enableGrouping:  groupingService.enableGrouping,
+        disableGrouping: groupingService.disableGrouping,
+        // marker size toggles
+        shrinkMarkers:   markerSizeService.shrinkMarkers,
+        expandMarkers:   markerSizeService.expandMarkers
       }
-    );
-
-    ({ filterMarkers, loadItemFilters } = sidebarApi);
+    ));
 
     // Initial item definitions load
     const initialDefs = await loadItemDefinitions(db);
@@ -125,7 +113,6 @@ export function bootstrapUI(isAdmin) {
     // Initialize modals and copy/paste
     const markerForm = initMarkerModal(db);
     initItemDefinitionsModal(db);
-    initChestDefinitionsModal(db);
     const copyMgr = initCopyPasteManager(map, upsertMarker.bind(null, db));
 
     // Helper for adding markers
@@ -172,9 +159,9 @@ export function bootstrapUI(isAdmin) {
       }),
       onCopy:    (_, d)    => copyMgr.startCopy(d),
       onDragEnd: (_, d)    => firebaseUpdateMarker(db, d).catch(() => {}),
-      onDelete:  (mObj,data) => {
-        mObj.remove();
-        clusterItemLayer.removeLayer(mObj);
+      onDelete:  (markerObj, data) => {
+        markerObj.remove();
+        clusterItemLayer.removeLayer(markerObj);
         const idx = allMarkers.findIndex(o => o.data.id === data.id);
         if (idx !== -1) allMarkers.splice(idx, 1);
         if (data.id) firebaseDeleteMarker(db, data.id).catch(() => {});
@@ -182,7 +169,7 @@ export function bootstrapUI(isAdmin) {
       }
     };
 
-    // Context‐menu for creating markers
+    // Context menu for creating markers
     map.on("contextmenu", evt => {
       if (!isAdmin) return;
       showContextMenu(
