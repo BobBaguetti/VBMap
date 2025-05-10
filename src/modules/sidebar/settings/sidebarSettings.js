@@ -1,14 +1,10 @@
 // @file: src/modules/sidebar/settings/sidebarSettings.js
-// @version: 1.0 — aggregate all sidebar settings widgets
-
-import { createGroupingSettings }    from "./groupingSettings.js";
-import { createMarkerSizeSettings }  from "./markerSizeSettings.js";
-import { createAdminToolsSettings }  from "./adminToolsSettings.js";
+// @version: 1.1 — re-add Admin Tools panel
 
 /**
- * Renders the complete Settings section in the sidebar.
+ * Populates the Settings section (marker/group toggles + admin tools).
  *
- * @param {HTMLElement} settingsContainer – the <div> where settings belong
+ * @param {HTMLElement} container
  * @param {object} callbacks
  * @param {() => void} callbacks.enableGrouping
  * @param {() => void} callbacks.disableGrouping
@@ -19,33 +15,71 @@ import { createAdminToolsSettings }  from "./adminToolsSettings.js";
  * @param {() => void} callbacks.onMultiSelectMode
  * @param {() => void} callbacks.onDeleteMode
  */
-export function renderSidebarSettings(settingsContainer, callbacks) {
-  // Clear any existing settings
-  settingsContainer.innerHTML = "";
+export function renderSidebarSettings(
+  container,
+  {
+    enableGrouping,
+    disableGrouping,
+    shrinkMarkers,
+    resetMarkerSize,
+    onManageItems,
+    onManageChests,
+    onMultiSelectMode,
+    onDeleteMode
+  }
+) {
+  // Remove any old setting groups (but keep the <h2> header intact)
+  Array.from(container.querySelectorAll(".setting-group, .admin-tools-group"))
+    .forEach(el => el.remove());
 
-  // Marker Grouping toggle
-  settingsContainer.appendChild(
-    createGroupingSettings({
-      enableGrouping:  callbacks.enableGrouping,
-      disableGrouping: callbacks.disableGrouping
-    })
-  );
+  // — User Settings —
+  const userGroup = document.createElement("div");
+  userGroup.className = "setting-group";
 
-  // Marker Size toggle
-  settingsContainer.appendChild(
-    createMarkerSizeSettings({
-      shrinkMarkers:    callbacks.shrinkMarkers,
-      resetMarkerSize:  callbacks.resetMarkerSize
-    })
-  );
+  // Grouping toggle
+  const grpLabel = document.createElement("label");
+  grpLabel.innerHTML = `<input type="checkbox" id="toggle-grouping"><span>Enable Marker Grouping</span>`;
+  const grpCheckbox = grpLabel.querySelector("input");
+  grpCheckbox.checked = true;
+  grpCheckbox.addEventListener("change", () => {
+    grpCheckbox.checked ? enableGrouping() : disableGrouping();
+  });
+  userGroup.appendChild(grpLabel);
 
-  // Admin tools buttons
-  settingsContainer.appendChild(
-    createAdminToolsSettings({
-      onManageItems:     callbacks.onManageItems,
-      onManageChests:    callbacks.onManageChests,
-      onMultiSelectMode: callbacks.onMultiSelectMode,
-      onDeleteMode:      callbacks.onDeleteMode
-    })
-  );
+  // Marker size toggle
+  const sizeLabel = document.createElement("label");
+  sizeLabel.innerHTML = `<input type="checkbox" id="toggle-small-markers"><span>Small Markers (50%)</span>`;
+  const sizeCheckbox = sizeLabel.querySelector("input");
+  sizeCheckbox.addEventListener("change", () => {
+    sizeCheckbox.checked ? shrinkMarkers() : resetMarkerSize();
+  });
+  userGroup.appendChild(sizeLabel);
+
+  container.appendChild(userGroup);
+
+  // — Admin Tools —
+  const adminGroup = document.createElement("div");
+  adminGroup.className = "admin-tools-group";
+
+  const heading = document.createElement("h3");
+  heading.innerHTML = `<i class="fas fa-tools"></i> Admin Tools`;
+  adminGroup.appendChild(heading);
+
+  function makeButton(text, onClick) {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "ui-button";
+    btn.textContent = text;
+    btn.addEventListener("click", onClick);
+    return btn;
+  }
+
+  // Manage Items / Chests
+  adminGroup.appendChild(makeButton("Manage Items", onManageItems));
+  adminGroup.appendChild(makeButton("Manage Chests", onManageChests));
+  // Future admin modes
+  adminGroup.appendChild(makeButton("Multi-Select Mode", onMultiSelectMode));
+  adminGroup.appendChild(makeButton("Delete Mode", onDeleteMode));
+
+  container.appendChild(adminGroup);
 }
