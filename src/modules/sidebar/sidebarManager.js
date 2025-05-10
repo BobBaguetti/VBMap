@@ -1,35 +1,66 @@
 // @file: src/modules/sidebar/sidebarManager.js
-// @version: 1
+// @version: 2.1 — wire in modular settings & filters
 
-import { initCore } from "./sidebarCore.js";
-import { initSettings } from "./sidebarSettings.js";
-import { createFilterLogic } from "./sidebarFilters.js";
-import { loadItemFilters } from "./itemFilters.js";
-import { initAdminTools } from "./sidebarAdmin.js";
+import { renderSidebarSettings } from "./settings/sidebarSettings.js";
+import { renderSidebarFilters }  from "./filters/sidebarFilters.js";
 
 /**
- * Set up the sidebar: core UI, settings toggles, filters, and admin tools.
+ * Sets up the sidebar’s Settings and Filters sections.
  *
  * @param {L.Map} map
- * @param {{ [type: string]: L.LayerGroup }} layers
- * @param {Array} allMarkers
- * @param {FirebaseFirestore.Firestore} db
+ * @param {object<string,L.LayerGroup>} layers
+ * @param {Array<{ markerObj: L.Marker, data: object }>} allMarkers
+ * @param {firebase.firestore.Firestore} db
+ * @param {object} callbacks
+ * @param {() => void} callbacks.enableGrouping
+ * @param {() => void} callbacks.disableGrouping
+ * @param {() => void} callbacks.shrinkMarkers
+ * @param {() => void} callbacks.resetMarkerSize
+ * @param {() => void} callbacks.onManageItems
+ * @param {() => void} callbacks.onManageChests
+ * @param {() => void} callbacks.onMultiSelectMode
+ * @param {() => void} callbacks.onDeleteMode
  * @returns {Promise<{ filterMarkers: Function, loadItemFilters: Function }>}
  */
-export async function setupSidebar(map, layers, allMarkers, db) {
-  const { sidebar, searchBar, settingsSection, filterSection } = initCore(map);
+export async function setupSidebar(
+  map,
+  layers,
+  allMarkers,
+  db,
+  {
+    enableGrouping,
+    disableGrouping,
+    shrinkMarkers,
+    resetMarkerSize,
+    onManageItems,
+    onManageChests,
+    onMultiSelectMode,
+    onDeleteMode
+  }
+) {
+  // Locate sidebar regions
+  const sidebar           = document.getElementById("sidebar");
+  const settingsContainer = sidebar.querySelector(".sidebar__settings");
+  const filtersContainer  = sidebar.querySelector(".sidebar__filters");
 
-  initSettings(settingsSection, {
-    enableGrouping: () => layers.clusterGroup.enable(),
-    disableGrouping: () => layers.clusterGroup.disable()
+  // Render the Settings section
+  renderSidebarSettings(settingsContainer, {
+    enableGrouping,
+    disableGrouping,
+    shrinkMarkers,
+    resetMarkerSize,
+    onManageItems,
+    onManageChests,
+    onMultiSelectMode,
+    onDeleteMode
   });
 
-  const filterMarkers = createFilterLogic(allMarkers, layers, searchBar);
-  await loadItemFilters(db, filterSection.querySelector("#item-filter-list"), filterMarkers);
+  // Render the Filters section (main + item filters)
+  const { filterMarkers, loadItemFilters } = await renderSidebarFilters(
+    filtersContainer,
+    allMarkers,
+    db
+  );
 
-  initAdminTools(sidebar, db);
-
-  // Initial draw
-  filterMarkers();
-  return { filterMarkers, loadItemFilters: () => loadItemFilters(db, filterSection.querySelector("#item-filter-list"), filterMarkers) };
+  return { filterMarkers, loadItemFilters };
 }
