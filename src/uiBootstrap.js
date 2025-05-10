@@ -1,5 +1,5 @@
 // @file: src/uiBootstrap.js
-// @version: 3.1 — extract grouping logic to groupingService
+// @version: 3.2 — use correct small-markers CSS class
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 import { createGroupingCallbacks } from "./modules/map/groupingService.js";
@@ -66,8 +66,8 @@ export function bootstrapUI(isAdmin) {
       {
         enableGrouping,
         disableGrouping,
-        shrinkMarkers:   () => document.body.classList.add("sidebar-small-markers"),
-        resetMarkerSize: () => document.body.classList.remove("sidebar-small-markers"),
+        shrinkMarkers:   () => document.body.classList.add("small-markers"),
+        resetMarkerSize: () => document.body.classList.remove("small-markers"),
         onManageItems:   () => initItemDefinitionsModal(db).open(),
         onManageChests:  () => initChestDefinitionsModal(db).open(),
         onMultiSelectMode: () => { /* TODO */ },
@@ -208,7 +208,7 @@ export function bootstrapUI(isAdmin) {
       }
     });
 
-    // Activate custom scrollbars
+    // Activate custom scrollbars once DOM is ready
     document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
   })();
 }
