@@ -1,9 +1,15 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.6 — JS-driven smooth collapse/expand to eliminate lag
+// @version: 1.7 — sync Filters chevron with sub‐group toggles
 
 /**
- * Wire up basic sidebar UI interactions, including a JS-based
- * animateToggle for instant response on both collapse and expand.
+ * Wire up sidebar UI:
+ *  - Search‐bar styling
+ *  - Sidebar toggle
+ *  - Per‐group collapse/expand with animation
+ *  - “Eye” bulk‐toggle icons
+ *  - Filters “Toggle All” and master collapse/expand button
+ *
+ * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
  */
 export function setupSidebarUI({
   map,
@@ -15,15 +21,16 @@ export function setupSidebarUI({
   const sidebar       = document.querySelector(sidebarSelector);
   const sidebarToggle = document.querySelector(toggleSelector);
   const searchBar     = document.querySelector(searchBarSelector);
+
   if (!sidebar || !sidebarToggle || !searchBar) {
     console.warn("[sidebarUI] Missing elements");
     return;
   }
 
-  // Style the search bar
+  // 1) Style the search bar
   searchBar.classList.add("ui-input");
 
-  // Sidebar open/close toggle
+  // 2) Sidebar open/close
   sidebarToggle.textContent = "◀︎";
   sidebarToggle.addEventListener("click", () => {
     const hidden = sidebar.classList.toggle("hidden");
@@ -36,44 +43,37 @@ export function setupSidebarUI({
   function animateToggle(group) {
     const container = group.querySelector(".toggle-group");
     if (!container) return;
-
     const isCollapsed = group.classList.contains("collapsed");
-    // Clear any inline styles so we read natural height
+    // prepare initial state
     container.style.transition = "none";
-    container.style.maxHeight  = isCollapsed ? "0px" : `${container.scrollHeight}px`;
-    // Force reflow
+    container.style.maxHeight  = isCollapsed
+      ? "0px"
+      : `${container.scrollHeight}px`;
+    // force reflow
     container.offsetHeight;
-    // Enable transition
+    // animate to target
     container.style.transition = "max-height 0.25s ease-in-out";
     if (isCollapsed) {
-      // Expand
-      container.style.maxHeight = `${container.scrollHeight}px`;
       group.classList.remove("collapsed");
+      container.style.maxHeight = `${container.scrollHeight}px`;
     } else {
-      // Collapse
-      container.style.maxHeight = "0px";
       group.classList.add("collapsed");
+      container.style.maxHeight = "0px";
     }
   }
 
-  // Collapse & eye-toggle for every filter-group
+  // 3) Per–group collapse & eye‐toggle
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
 
-    // Collapse on header click using animateToggle
+    // on header click: animate and update master icon
     header.addEventListener("click", () => {
       animateToggle(group);
-      // update collapse-all icon if this is under Filters
-      const filtersHeader = document.querySelector('#filters-section > h2 .collapse-all');
-      if (filtersHeader) {
-        filtersHeader.dispatchEvent(new Event("click", { bubbles: false }));
-        // then restore its correct state
-        filtersHeader.click();
-      }
+      updateMasterCollapseIcon();
     });
 
-    // Inject the eye icon (no change)
+    // inject eye icon for bulk‐toggle
     const eye = document.createElement("i");
     eye.classList.add("fas", "fa-eye", "filter-eye");
     eye.style.cursor     = "pointer";
@@ -93,10 +93,10 @@ export function setupSidebarUI({
     });
   });
 
-  // Toggle All & Collapse All for Filters
+  // 4) Filters master controls
   const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
-    // Toggle All (checkboxes)
+    // Toggle All link (checkboxes)
     const toggleAllLink = document.createElement('a');
     toggleAllLink.textContent = 'Toggle All';
     toggleAllLink.classList.add('toggle-all');
@@ -116,7 +116,7 @@ export function setupSidebarUI({
       });
     });
 
-    // Collapse All toggler
+    // Collapse/Expand All button
     const collapseBtn = document.createElement('i');
     collapseBtn.classList.add('fas', 'collapse-all');
     collapseBtn.style.position   = 'absolute';
@@ -130,21 +130,27 @@ export function setupSidebarUI({
     const subGroups = () =>
       Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
-    const updateCollapseIcon = () => {
+    // update master icon based on all sub-group states
+    function updateMasterCollapseIcon() {
       const allCollapsed = subGroups().every(g => g.classList.contains('collapsed'));
       collapseBtn.classList.toggle('fa-chevron-up', allCollapsed);
       collapseBtn.classList.toggle('fa-chevron-down', !allCollapsed);
-    };
+    }
 
     collapseBtn.addEventListener('click', e => {
       e.stopPropagation();
       const groups      = subGroups();
       const allCollapsed = groups.every(g => g.classList.contains('collapsed'));
-      groups.forEach(g => animateToggle(g));
-      updateCollapseIcon();
+      // if all collapsed, expand all; else collapse all
+      groups.forEach(g => {
+        const shouldCollapse = !allCollapsed;
+        if (g.classList.contains('collapsed') === shouldCollapse) return;
+        animateToggle(g);
+      });
+      updateMasterCollapseIcon();
     });
 
-    // initialize icon state
-    updateCollapseIcon();
+    // initialize
+    updateMasterCollapseIcon();
   }
 }
