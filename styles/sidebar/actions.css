@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/actions.css */
-/* @version: 1.2 — eye-icon & Show All/Hide All link styling */
+/* @version: 1.0 — eye-icon & Show All/Hide All link styling */
 
 .filter-group > h3 .filter-eye,
 .filter-group > h4 .filter-eye {
@@ -33,17 +33,4 @@
 .filter-group .header-actions a:hover {
   color: #e5e6e8;
   text-decoration: underline;
-}
-
-/* hide the eye-icon on the top-level Filters card */
-#filters-section > .filter-eye {
-  display: none;
-}
-
-.filter-collapse-all {
-  color: #bbb;
-  transition: color 0.2s;
-}
-.filter-collapse-all:hover {
-  color: #e5e6e8;
 }

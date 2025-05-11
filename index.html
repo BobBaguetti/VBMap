@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 29 – make Filters a collapsible filter-group -->
+<!-- @version: 27 – add group icons in filter headers -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -30,7 +30,6 @@
   <link rel="stylesheet" href="styles/sidebar/microanimations.css"/>
   <link rel="stylesheet" href="styles/sidebar/accessibility.css"/>
   <link rel="stylesheet" href="styles/sidebar/icons.css"/>
-  <link rel="stylesheet" href="styles/sidebar/section-headers.css"/>
 
   <!-- Modal variants -->
   <link rel="stylesheet" href="styles/modals/modal.base.css"/>
@@ -77,9 +76,9 @@
       <hr/>
     </div>
 
-    <!-- FILTERS (now a collapsible filter-group) -->
-    <div class="filter-group" id="filters-section">
-      <h3><i class="fas fa-filter group-icon"></i>Filters</h3>
+    <!-- Filters -->
+    <div class="sidebar-section">
+      <h2><i class="fas fa-filter"></i> Filters</h2>
 
       <!-- Main layer toggles -->
       <div class="filter-group" id="main-filters">
@@ -107,7 +106,7 @@
         <div class="toggle-group" id="chest-filter-list"><!-- dynamic --></div>
       </div>
 
-      <!-- NPC filters -->
+      <!-- NPC filters with nested sub-groups -->
       <div class="filter-group" id="npc-filters">
         <h3><i class="fas fa-user-friends group-icon"></i>NPCs</h3>
         <div class="filter-group nested" id="npc-hostile-filters">
@@ -121,23 +120,12 @@
       </div>
     </div>
 
-    <!-- SETTINGS -->
-    <div class="filter-group" id="settings-section">
-      <h3><i class="fas fa-cog group-icon"></i>Settings</h3>
-      <div class="toggle-group">
-        <label><input type="checkbox" id="toggle-grouping"/><span>Enable Marker Grouping</span></label>
-        <label><input type="checkbox" id="toggle-small-markers"/><span>Small Markers (50%)</span></label>
-      </div>
+    <!-- Settings (auth button injected here) -->
+    <div class="sidebar-section" id="settings-section">
+      <h2><i class="fas fa-cog"></i> Settings</h2>
     </div>
 
-    <!-- ADMIN TOOLS -->
-    <div class="filter-group" id="admin-tools-section">
-      <h3><i class="fas fa-tools group-icon"></i>Admin Tools</h3>
-      <div class="toggle-group">
-        <button id="manage-items-btn">Manage Items</button>
-        <button id="manage-chests-btn">Manage Chests</button>
-      </div>
-    </div>
+    <!-- Admin Tools injected dynamically via sidebarAdmin.js -->
   </div>
 
   <!-- Map -->
@@ -153,8 +141,8 @@
 
   <!-- Paste Tooltip -->
   <div id="paste-tooltip"
-       style="display:none;position:absolute;background:rgba(0,0,0,0.7);color:#fff;
-              padding:2px 5px;border-radius:3px;font-size:12px;pointer-events:none;">
+       style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff;
+              padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
     Paste Mode ON
   </div>
 
