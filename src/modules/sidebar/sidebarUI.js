@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.8 — right/down chevrons for master collapse, synced with JS
+// @version: 1.9 — ensure updateMasterCollapseIcon is defined before use
 
 /**
  * Wire up sidebar UI:
@@ -7,7 +7,7 @@
  *  - Sidebar toggle
  *  - Per‐group collapse/expand with animation
  *  - “Eye” bulk‐toggle icons
- *  - Filters “Toggle All” and master collapse/expand button (right/down chevrons)
+ *  - Filters “Toggle All” and master collapse/expand button
  *
  * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
  */
@@ -21,7 +21,6 @@ export function setupSidebarUI({
   const sidebar       = document.querySelector(sidebarSelector);
   const sidebarToggle = document.querySelector(toggleSelector);
   const searchBar     = document.querySelector(searchBarSelector);
-
   if (!sidebar || !sidebarToggle || !searchBar) {
     console.warn("[sidebarUI] Missing elements");
     return;
@@ -47,10 +46,13 @@ export function setupSidebarUI({
     }
   }
 
+  // Placeholder for master update function — will be assigned later if Filters section exists
+  let updateMasterCollapseIcon = () => {};
+
   // 1) Style the search bar
   searchBar.classList.add("ui-input");
 
-  // 2) Sidebar open/close
+  // 2) Sidebar open/close toggle
   sidebarToggle.textContent = "◀︎";
   sidebarToggle.addEventListener("click", () => {
     const hidden = sidebar.classList.toggle("hidden");
@@ -111,7 +113,7 @@ export function setupSidebarUI({
       });
     });
 
-    // Collapse/Expand All button (fa-chevron-right/down)
+    // Collapse/Expand All button
     const collapseBtn = document.createElement('i');
     collapseBtn.classList.add('fas', 'collapse-all', 'fa-chevron-right');
     collapseBtn.style.position   = 'absolute';
@@ -125,15 +127,14 @@ export function setupSidebarUI({
     const getSubGroups = () =>
       Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
-    // Define updateMasterCollapseIcon to reflect right/down
-    function updateMasterCollapseIcon() {
+    // Now define the master update function
+    updateMasterCollapseIcon = () => {
       const allCollapsed = getSubGroups().every(g => g.classList.contains('collapsed'));
-      if (allCollapsed) {
-        collapseBtn.classList.replace('fa-chevron-down', 'fa-chevron-right');
-      } else {
-        collapseBtn.classList.replace('fa-chevron-right', 'fa-chevron-down');
-      }
-    }
+      collapseBtn.classList.replace(
+        allCollapsed ? 'fa-chevron-down' : 'fa-chevron-right',
+        allCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'
+      );
+    };
 
     collapseBtn.addEventListener('click', e => {
       e.stopPropagation();
