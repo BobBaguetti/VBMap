@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 1.7 — delay hiding content until after collapse animation */
+/* @version: 1.8 — fade out content as it collapses */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -27,7 +27,6 @@
 .filter-group > h4:hover::after {
   color: #e5e6e8;
 }
-/* Expanded vs. collapsed icons */
 .filter-group:not(.collapsed) > h3::after,
 .filter-group:not(.collapsed) > h4::after {
   content: "\f078"; /* chevron-down */
@@ -41,23 +40,22 @@
 .toggle-group {
   overflow: hidden;
   max-height: 0;
-  transition: max-height 0.25s ease-in-out;
-}
-
-/* Expanded state: allow content to show immediately */
-.filter-group:not(.collapsed) > .toggle-group {
-  max-height: 1000px;
-  visibility: visible;
-  transition: max-height 0.25s ease-in-out, visibility 0s;
-}
-
-/* Collapsed state: delay hiding until after max-height transition */
-.filter-group.collapsed > .toggle-group {
-  max-height: 0;
-  visibility: hidden;
+  opacity: 1;
   transition:
     max-height 0.25s ease-in-out,
-    visibility 0s linear 0.25s; /* hide visibility after height finishes */
+    opacity    0.25s ease-in-out;
+}
+
+/* Expanded state: fully visible */
+.filter-group:not(.collapsed) > .toggle-group {
+  max-height: 1000px;
+  opacity: 1;
+}
+
+/* Collapsed state: fade out while collapsing */
+.filter-group.collapsed > .toggle-group {
+  max-height: 0;
+  opacity: 0;
   pointer-events: none;
   user-select: none;
 }
