@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.0 — filter-group container & header styling */
+/* @version: 1.3 — style Settings & Admin Tools like other cards */
 
 .filter-group {
   background-color: #2a2a2a;
@@ -17,20 +17,75 @@
   margin-left: 1.2em;
 }
 
-/* Group headers (h3 & h4): collapse, eye-icon & header-actions targets */
+/* Group headers (h3 & h4) */
 .filter-group > h3,
 .filter-group > h4 {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start; /* pin everything at the left */
-  position: relative;           /* for absolute arrow */
+  background-color: #1f1f1f;
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid #333;
-  background-color: #1f1f1f;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   cursor: pointer;
-  /* color is now controlled in icons.css */
+}
+
+/* ================= Settings Section ================= */
+
+/* Two-column grid for checkboxes */
+#settings-section .toggle-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5em 1em;
+  padding: 0.6em 1em;
+}
+
+/* Checkbox labels */
+#settings-section .toggle-group label {
+  font-size: 13px;
+  color: #e5e6e8;
+}
+
+/* Restore native checkbox look */
+#settings-section .toggle-group input {
+  position: static;
+  opacity: 1;
+  pointer-events: auto;
+  margin-right: 0.4em;
+}
+
+/* ================= Admin Tools Section ================= */
+#admin-tools-section {
+  /* inherits .filter-group styles */
+  margin-bottom: 1em;
+}
+
+/* Vertical stack of buttons */
+#admin-tools-section .toggle-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4em;
+  padding: 0.6em 1em;
+}
+
+/* Button styling */
+#admin-tools-section .toggle-group button {
+  background: #333;
+  border: 1px solid #555;
+  border-radius: 3px;
+  padding: 4px 6px;
+  color: #e5e6e8;
+  font-family: 'Satoshi', sans-serif;
+  font-size: 13px;
+  cursor: pointer;
+  width: 100%;
+  box-sizing: border-box;
+  transition: background 0.2s;
+}
+
+#admin-tools-section .toggle-group button:hover {
+  background: #444;
 }

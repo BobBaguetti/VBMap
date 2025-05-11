@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 27 – add group icons in filter headers -->
+<!-- @version: 28 – style Settings & Admin Tools as filter-group cards -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -120,12 +120,23 @@
       </div>
     </div>
 
-    <!-- Settings (auth button injected here) -->
-    <div class="sidebar-section" id="settings-section">
-      <h2><i class="fas fa-cog"></i> Settings</h2>
+    <!-- Settings -->
+    <div class="filter-group" id="settings-section">
+      <h3><i class="fas fa-cog group-icon"></i>Settings</h3>
+      <div class="toggle-group">
+        <label><input type="checkbox" id="toggle-grouping"/><span>Enable Marker Grouping</span></label>
+        <label><input type="checkbox" id="toggle-small-markers"/><span>Small Markers (50%)</span></label>
+      </div>
     </div>
 
-    <!-- Admin Tools injected dynamically via sidebarAdmin.js -->
+    <!-- Admin Tools -->
+    <div class="filter-group" id="admin-tools-section">
+      <h3><i class="fas fa-tools group-icon"></i>Admin Tools</h3>
+      <div class="toggle-group">
+        <button id="manage-items-btn">Manage Items</button>
+        <button id="manage-chests-btn">Manage Chests</button>
+      </div>
+    </div>
   </div>
 
   <!-- Map -->
