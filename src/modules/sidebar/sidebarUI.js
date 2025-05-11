@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.5 — collapse‐all button with toggle & animation
+// @version: 1.7 — collapse‐all button with toggle & animation
 
 /**
  * Wire up basic sidebar UI interactions:
@@ -96,26 +96,27 @@ export function setupSidebarUI({
 
     // Collapse All toggle‐button
     const collapseBtn = document.createElement('i');
-    collapseBtn.classList.add('fas', 'fa-chevron-up', 'collapse-all');
+    collapseBtn.classList.add('fas', 'collapse-all');
     collapseBtn.style.marginLeft = '0.5em';
     collapseBtn.style.cursor     = 'pointer';
-    collapseBtn.style.transition = 'transform 0.3s ease';
     filtersHeader.appendChild(collapseBtn);
 
     const subGroups = () =>
       Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
     const updateCollapseIcon = () => {
-      const anyOpen = subGroups().some(g => !g.classList.contains('collapsed'));
-      collapseBtn.classList.toggle('fa-chevron-up', anyOpen);
-      collapseBtn.classList.toggle('fa-chevron-down', !anyOpen);
+      // if *all* subgroups are collapsed, show "down" (fa-chevron-down) to indicate expand
+      const allCollapsed = subGroups().every(g => g.classList.contains('collapsed'));
+      collapseBtn.classList.toggle('fa-chevron-down', allCollapsed);
+      collapseBtn.classList.toggle('fa-chevron-up', !allCollapsed);
     };
 
     collapseBtn.addEventListener('click', e => {
       e.stopPropagation();
       const groups = subGroups();
-      const anyOpen = groups.some(g => !g.classList.contains('collapsed'));
-      groups.forEach(g => g.classList.toggle('collapsed', anyOpen));
+      const allCollapsed = groups.every(g => g.classList.contains('collapsed'));
+      // if all are collapsed, expand all (remove collapsed); otherwise collapse all
+      groups.forEach(g => g.classList.toggle('collapsed', allCollapsed));
       updateCollapseIcon();
     });
 
