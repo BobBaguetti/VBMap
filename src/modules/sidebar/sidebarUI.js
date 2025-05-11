@@ -1,9 +1,7 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.12 — full file including live search dropdown with “Show Only” & “Exclude”
+// @version: 1.13 — remove loadAllDefinitions, use allMarkers for search
 
-import {
-  setupSidebarFilters
-} from "./sidebarFilters.js";
+import { setupSidebarFilters } from "./sidebarFilters.js";
 
 /**
  * Wire up sidebar UI:
@@ -37,7 +35,7 @@ export async function setupSidebarUI({
     return;
   }
 
-  // 1) Initialize sidebar filters (collapsible groups, toggles, etc.)
+  // 1) Initialize sidebar filters
   const { filterMarkers, loadItemFilters } = setupSidebarFilters({
     searchBarSelector,
     mainFiltersSelector: "#main-filters .toggle-group",
@@ -49,23 +47,19 @@ export async function setupSidebarUI({
     allMarkers,
     db
   });
-  // Immediately load item filters
   await loadItemFilters();
 
-  // 2) Search clear button functionality
+  // 2) Clear-button
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
     searchBar.dispatchEvent(new Event("input"));
     searchBar.focus();
   });
 
-  // 3) Live search dropdown
-  // Prepare a flat list of definitions to search: items, chests, NPCs
-  // For simplicity we derive from allMarkers
+  // 3) Live-search dropdown
+  // Build a deduplicated list of { name, type } for search suggestions
   const definitions = Array.from(
-    new Map(
-      allMarkers.map(({ data }) => [data.name, data])
-    ).values()
+    new Map(allMarkers.map(({ data }) => [data.name, { name: data.name, type: data.type }])).values()
   );
 
   searchBar.addEventListener("input", () => {
@@ -94,12 +88,10 @@ export async function setupSidebarUI({
       btnShow.innerHTML = '<i class="fas fa-eye"></i>';
       btnShow.addEventListener("click", e => {
         e.stopPropagation();
-        // clear all layers, then show only this definition
-        Object.values(layers).forEach(group => group.clearLayers());
+        // clear all, then show only this
+        Object.values(layers).forEach(g => g.clearLayers());
         allMarkers.forEach(({ markerObj, data }) => {
-          if (data.name === def.name) {
-            layers[data.type].addLayer(markerObj);
-          }
+          if (data.name === def.name) layers[data.type].addLayer(markerObj);
         });
         resultsBox.innerHTML = "";
       });
@@ -110,11 +102,8 @@ export async function setupSidebarUI({
       btnExcl.innerHTML = '<i class="fas fa-eye-slash"></i>';
       btnExcl.addEventListener("click", e => {
         e.stopPropagation();
-        // remove this definition's markers
         allMarkers.forEach(({ markerObj, data }) => {
-          if (data.name === def.name) {
-            layers[data.type].removeLayer(markerObj);
-          }
+          if (data.name === def.name) layers[data.type].removeLayer(markerObj);
         });
         resultsBox.innerHTML = "";
       });
@@ -125,14 +114,13 @@ export async function setupSidebarUI({
     });
   });
 
-  // Click outside to close
   document.addEventListener("click", e => {
     if (!sidebar.contains(e.target)) {
       resultsBox.innerHTML = "";
     }
   });
 
-  // 4) Sidebar open/close toggle
+  // 4) Sidebar toggle
   sidebarToggle.textContent = "◀︎";
   sidebarToggle.addEventListener("click", () => {
     const hidden = sidebar.classList.toggle("hidden");
@@ -141,7 +129,7 @@ export async function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // 5) Helper for animate/collapse groups (reused from previous versions)
+  // 5) Collapse/expand groups
   function animateToggle(group) {
     const container = group.querySelector(".toggle-group");
     if (!container) return;
@@ -172,17 +160,15 @@ export async function setupSidebarUI({
     container.addEventListener("transitionend", onTransitionEnd);
   }
 
-  // 6) Per-group collapse & eye-toggle wiring
+  // 6) Per-group collapse & eye
   let updateMasterCollapseIcon = () => {};
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
-
     header.addEventListener("click", () => {
       animateToggle(group);
       updateMasterCollapseIcon();
     });
-
     const eye = document.createElement("i");
     eye.classList.add("fas", "fa-eye", "filter-eye");
     eye.style.cursor     = "pointer";
@@ -202,7 +188,7 @@ export async function setupSidebarUI({
     });
   });
 
-  // 7) Filters master controls
+  // 7) Master Filter controls
   const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
     const toggleAllLink = document.createElement('a');
