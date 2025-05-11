@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 30 – convert top‐level sections to <h2> for Filters, Settings & Admin Tools -->
+<!-- @version: 31 – remove NPCs group; add Hostile & Friendly as top-level subfilters under Filters -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -107,17 +107,16 @@
         <div class="toggle-group" id="chest-filter-list"><!-- dynamic --></div>
       </div>
 
-      <!-- NPC filters -->
-      <div class="filter-group" id="npc-filters">
-        <h3><i class="fas fa-user-friends group-icon"></i>NPCs</h3>
-        <div class="filter-group nested" id="npc-hostile-filters">
-          <h4><i class="fas fa-skull-crossbones group-icon"></i>Hostile</h4>
-          <div class="toggle-group" id="npc-hostile-list"><!-- dynamic --></div>
-        </div>
-        <div class="filter-group nested" id="npc-friendly-filters">
-          <h4><i class="fas fa-user-check group-icon"></i>Friendly</h4>
-          <div class="toggle-group" id="npc-friendly-list"><!-- dynamic --></div>
-        </div>
+      <!-- Hostile NPCs -->
+      <div class="filter-group" id="npc-hostile-filters">
+        <h3><i class="fas fa-skull-crossbones group-icon"></i>Hostile</h3>
+        <div class="toggle-group" id="npc-hostile-list"><!-- dynamic --></div>
+      </div>
+
+      <!-- Friendly NPCs -->
+      <div class="filter-group" id="npc-friendly-filters">
+        <h3><i class="fas fa-user-check group-icon"></i>Friendly</h3>
+        <div class="toggle-group" id="npc-friendly-list"><!-- dynamic --></div>
       </div>
     </div>
 
