@@ -1,16 +1,6 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.9 — ensure updateMasterCollapseIcon is defined before use
+// @version: 1.10 — hide content after collapse transition ends
 
-/**
- * Wire up sidebar UI:
- *  - Search‐bar styling
- *  - Sidebar toggle
- *  - Per‐group collapse/expand with animation
- *  - “Eye” bulk‐toggle icons
- *  - Filters “Toggle All” and master collapse/expand button
- *
- * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
- */
 export function setupSidebarUI({
   map,
   sidebarSelector     = "#sidebar",
@@ -26,17 +16,33 @@ export function setupSidebarUI({
     return;
   }
 
-  // Helper: animate a group's toggle-group container
+  // Helper: animate a group's toggle-group container with post-transition hiding
   function animateToggle(group) {
     const container = group.querySelector(".toggle-group");
     if (!container) return;
     const isCollapsed = group.classList.contains("collapsed");
+
+    // Clear previous listener to avoid duplicates
+    container.removeEventListener("transitionend", onTransitionEnd);
+
+    // Prepare initial state & show content if expanding
+    if (isCollapsed) {
+      container.style.visibility = "visible";
+    }
+
+    // Disable transition to set starting maxHeight
     container.style.transition = "none";
     container.style.maxHeight  = isCollapsed
       ? "0px"
       : `${container.scrollHeight}px`;
-    container.offsetHeight; // reflow
-    container.style.transition = "max-height 0.25s ease-in-out";
+
+    // Force reflow
+    container.offsetHeight;
+
+    // Re-enable transition
+    container.style.transition = "max-height 0.3s ease-in-out";
+
+    // After collapse/expand, toggle the collapsed class
     if (isCollapsed) {
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
@@ -44,15 +50,23 @@ export function setupSidebarUI({
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
     }
+
+    // After the height transition ends, hide for real if collapsed
+    function onTransitionEnd(e) {
+      if (e.propertyName === "max-height" && group.classList.contains("collapsed")) {
+        container.style.visibility = "hidden";
+      }
+    }
+    container.addEventListener("transitionend", onTransitionEnd);
   }
 
-  // Placeholder for master update function — will be assigned later if Filters section exists
+  // Placeholder for master update function
   let updateMasterCollapseIcon = () => {};
 
   // 1) Style the search bar
   searchBar.classList.add("ui-input");
 
-  // 2) Sidebar open/close toggle
+  // 2) Sidebar toggle
   sidebarToggle.textContent = "◀︎";
   sidebarToggle.addEventListener("click", () => {
     const hidden = sidebar.classList.toggle("hidden");
@@ -61,7 +75,7 @@ export function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // 3) Per–group collapse & eye‐toggle
+  // 3) Per-group collapse & eye-toggle
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
@@ -93,7 +107,7 @@ export function setupSidebarUI({
   // 4) Filters master controls
   const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
-    // Toggle All link
+    // Toggle All
     const toggleAllLink = document.createElement('a');
     toggleAllLink.textContent = 'Toggle All';
     toggleAllLink.classList.add('toggle-all');
@@ -127,13 +141,14 @@ export function setupSidebarUI({
     const getSubGroups = () =>
       Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
-    // Now define the master update function
+    // Now define master update
     updateMasterCollapseIcon = () => {
       const allCollapsed = getSubGroups().every(g => g.classList.contains('collapsed'));
-      collapseBtn.classList.replace(
-        allCollapsed ? 'fa-chevron-down' : 'fa-chevron-right',
-        allCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'
-      );
+      if (allCollapsed) {
+        collapseBtn.classList.replace('fa-chevron-down', 'fa-chevron-right');
+      } else {
+        collapseBtn.classList.replace('fa-chevron-right', 'fa-chevron-down');
+      }
     };
 
     collapseBtn.addEventListener('click', e => {
@@ -148,7 +163,7 @@ export function setupSidebarUI({
       updateMasterCollapseIcon();
     });
 
-    // initialize master icon
+    // initialize
     updateMasterCollapseIcon();
   }
 }
