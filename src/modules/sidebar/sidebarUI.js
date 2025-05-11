@@ -1,14 +1,6 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.7 — revert to CSS-driven collapse, remove JS height animations
+// @version: 1.8 — auto‐wrap toggle‐group contents in toggle‐inner
 
-/**
- * Wire up basic sidebar UI interactions:
- *  - Search‐bar styling
- *  - Sidebar toggle (show/hide)
- *  - Collapsible filter groups (h3/h4 headers) via CSS only
- *  - “Eye” icons on each group header
- *  - Toggle All & Collapse All for Filters section
- */
 export function setupSidebarUI({
   map,
   sidebarSelector     = "#sidebar",
@@ -24,6 +16,22 @@ export function setupSidebarUI({
     console.warn("[sidebarUI] Missing elements");
     return;
   }
+
+  // —————————————  
+  // NEW: wrap each .toggle-group’s children into a .toggle-inner
+  document.querySelectorAll(".toggle-group").forEach(group => {
+    // If we’ve already wrapped, skip
+    if (group.querySelector(":scope > .toggle-inner")) return;
+
+    const inner = document.createElement("div");
+    inner.className = "toggle-inner";
+    // move all existing children into inner
+    while (group.firstChild) {
+      inner.appendChild(group.firstChild);
+    }
+    group.appendChild(inner);
+  });
+  // —————————————  
 
   // 1) Style the search bar
   searchBar.classList.add("ui-input");
@@ -78,7 +86,6 @@ export function setupSidebarUI({
     toggleAllLink.style.marginLeft = "1em";
     toggleAllLink.style.cursor     = "pointer";
     filtersHeader.appendChild(toggleAllLink);
-
     toggleAllLink.addEventListener("click", e => {
       e.stopPropagation();
       const cbs = Array.from(
