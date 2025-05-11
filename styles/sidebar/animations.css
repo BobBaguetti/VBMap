@@ -1,36 +1,27 @@
-/* @file: styles/sidebar/actions.css */
-/* @version: 1.7 — position collapse‐all right & correct up/down chevrons */
+/* @file: styles/sidebar/animations.css */
+/* @version: 1.1 — smoother, faster collapse/expand without delay */
 
-.header-actions {
-  display: none !important;
-}
-
-#filters-section > h2 {
-  position: relative;
-}
-
-#filters-section > h2 .toggle-all {
-  color: #bbb;
-  font-size: 0.75em;
-  text-decoration: none;
-  transition: color 0.2s;
-  margin-left: 1em;
-}
-#filters-section > h2 .toggle-all:hover {
-  color: #e5e6e8;
-  text-decoration: underline;
+.toggle-group {
+  /* clip contents and animate height smoothly */
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease-in-out;
 }
 
-#filters-section > h2 .collapse-all {
-  position: absolute;
-  right: 0.6em;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #bbb;
-  font-size: 0.9em;
-  cursor: pointer;
-  transition: color 0.2s;
+/* When not collapsed, allow content to expand */
+.filter-group:not(.collapsed) > .toggle-group {
+  /* must be larger than the tallest toggle-group content */
+  max-height: 1000px;
 }
-#filters-section > h2 .collapse-all:hover {
-  color: #e5e6e8;
+
+/* Collapse arrow rotation (unchanged) */
+.filter-group > h3::after,
+.filter-group > h4::after {
+  display: inline-block;
+  transition: transform 0.3s ease;
+}
+
+.filter-group.collapsed > h3::after,
+.filter-group.collapsed > h4::after {
+  transform: rotate(-90deg);
 }
