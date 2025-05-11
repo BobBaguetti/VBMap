@@ -1,27 +1,39 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 1.1 — smoother, faster collapse/expand without delay */
+/* @version: 1.2 — ensure collapse chevrons appear on all subfilter headers */
 
+/* Ensure filter-group headers (h3 & h4) show a chevron */
+.filter-group > h3::after,
+.filter-group > h4::after {
+  content: '▾';
+  display: inline-block;
+  transition: transform 0.3s ease;
+  margin-left: 0.4em;
+}
+
+/* Positioning for h3 (main subfilters) */
+.filter-group > h3 {
+  position: relative;
+}
+
+/* Positioning for h4 (nested, if any) */
+.filter-group > h4 {
+  position: relative;
+}
+
+/* When collapsed, rotate arrow up */
+.filter-group.collapsed > h3::after,
+.filter-group.collapsed > h4::after {
+  transform: rotate(-90deg);
+}
+
+/* Animate the toggle-group container */
 .toggle-group {
-  /* clip contents and animate height smoothly */
   overflow: hidden;
   max-height: 0;
   transition: max-height 0.25s ease-in-out;
 }
 
-/* When not collapsed, allow content to expand */
+/* Expanded state */
 .filter-group:not(.collapsed) > .toggle-group {
-  /* must be larger than the tallest toggle-group content */
   max-height: 1000px;
-}
-
-/* Collapse arrow rotation (unchanged) */
-.filter-group > h3::after,
-.filter-group > h4::after {
-  display: inline-block;
-  transition: transform 0.3s ease;
-}
-
-.filter-group.collapsed > h3::after,
-.filter-group.collapsed > h4::after {
-  transform: rotate(-90deg);
 }
