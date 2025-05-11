@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.6 — JS-driven height animations for collapse/expand
+// @version: 1.6.1 — fix header click expand/collapse logic for JS animations
 
 /**
  * Wire up sidebar UI interactions with smooth height animations:
@@ -40,24 +40,20 @@ export function setupSidebarUI({
     if (!content) return;
     const fullHeight = content.scrollHeight;
 
-    // prepare
     content.style.transition = "height 0.25s ease";
     content.style.overflow = "hidden";
 
     if (expand) {
-      // expand
       content.style.height = "0px";
       requestAnimationFrame(() => {
         content.style.height = fullHeight + "px";
       });
       content.addEventListener("transitionend", function cleanup() {
-        content.style.height = "";      // allow auto height
+        content.style.height = "";
         content.style.transition = "";
         content.removeEventListener("transitionend", cleanup);
       });
     } else {
-      // collapse
-      // set to current height, then slide to zero
       content.style.height = fullHeight + "px";
       requestAnimationFrame(() => {
         content.style.height = "0px";
@@ -71,13 +67,14 @@ export function setupSidebarUI({
     const content = group.querySelector(".toggle-group");
     if (!header || !content) return;
 
-    // ensure initial auto height
-    content.style.height = "";
+    // ensure open on init
     group.classList.remove("collapsed");
+    content.style.height = "";
 
     header.addEventListener("click", () => {
-      const isCollapsed = group.classList.toggle("collapsed");
-      animateGroup(group, isCollapsed);
+      const nowCollapsed = group.classList.toggle("collapsed");
+      // expand when nowCollapsed==false, collapse when true
+      animateGroup(group, !nowCollapsed);
     });
 
     // Eye toggle (unchanged)
@@ -99,7 +96,7 @@ export function setupSidebarUI({
     });
   });
 
-  // 4) Toggle All & Collapse All for Filters section (header h2)
+  // 4) Toggle All & Collapse All for Filters section
   const filtersHeader = document.querySelector("#filters-section > h2");
   if (filtersHeader) {
     // Toggle All
@@ -144,7 +141,7 @@ export function setupSidebarUI({
       const allCollapsed = groups.every(g => g.classList.contains("collapsed"));
       groups.forEach(g => {
         g.classList.toggle("collapsed", !allCollapsed);
-        animateGroup(g, !allCollapsed);
+        animateGroup(g, allCollapsed); // expand if was collapsed, collapse if was expanded
       });
       updateCollapseIcon();
     });
