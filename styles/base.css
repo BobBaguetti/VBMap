@@ -24,7 +24,7 @@ html, body {
 #map {
   position: absolute;
   top: 0; left: 0; right: 0; bottom: 0;
-  background-color: var(--surface-a0);
+  background-color: var(--map-bg);
 }
 
 /* 4) Form controls */
