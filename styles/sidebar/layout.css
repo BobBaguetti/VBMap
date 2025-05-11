@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.3 — constrain sidebar-logo image size more aggressively */
+/* @version: 1.4 — enforce strict logo sizing to fit sidebar width */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -42,7 +42,7 @@
 
 /* Sidebar logo container */
 #sidebar .sidebar-logo {
-  margin-top: 0.66em;
+  margin-top: 0.5em;         /* slightly tighter top spacing */
   text-align: center;
   font-family: 'Satoshi', sans-serif;
 }
@@ -51,8 +51,8 @@
 #sidebar .sidebar-logo img {
   display: block;
   margin: 0 auto;
-  width: 50%;                     /* force width to half the sidebar */
-  max-width: 180px;               /* but never超过180px */
+  width: 100%;               /* span full container width */
+  max-width: 120px;          /* but no wider than 120px */
   height: auto;
 }
 
