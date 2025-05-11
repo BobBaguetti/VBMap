@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 28 – add colored header bands styling -->
+<!-- @version: 29 – make Filters a collapsible filter-group -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,9 +77,9 @@
       <hr/>
     </div>
 
-    <!-- Filters -->
-    <div class="sidebar-section">
-      <h2><i class="fas fa-filter"></i> Filters</h2>
+    <!-- FILTERS (now a collapsible filter-group) -->
+    <div class="filter-group" id="filters-section">
+      <h3><i class="fas fa-filter group-icon"></i>Filters</h3>
 
       <!-- Main layer toggles -->
       <div class="filter-group" id="main-filters">
@@ -107,7 +107,7 @@
         <div class="toggle-group" id="chest-filter-list"><!-- dynamic --></div>
       </div>
 
-      <!-- NPC filters with nested sub-groups -->
+      <!-- NPC filters -->
       <div class="filter-group" id="npc-filters">
         <h3><i class="fas fa-user-friends group-icon"></i>NPCs</h3>
         <div class="filter-group nested" id="npc-hostile-filters">
@@ -121,7 +121,7 @@
       </div>
     </div>
 
-    <!-- Settings -->
+    <!-- SETTINGS -->
     <div class="filter-group" id="settings-section">
       <h3><i class="fas fa-cog group-icon"></i>Settings</h3>
       <div class="toggle-group">
@@ -130,7 +130,7 @@
       </div>
     </div>
 
-    <!-- Admin Tools -->
+    <!-- ADMIN TOOLS -->
     <div class="filter-group" id="admin-tools-section">
       <h3><i class="fas fa-tools group-icon"></i>Admin Tools</h3>
       <div class="toggle-group">
@@ -153,8 +153,8 @@
 
   <!-- Paste Tooltip -->
   <div id="paste-tooltip"
-       style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff;
-              padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
+       style="display:none;position:absolute;background:rgba(0,0,0,0.7);color:#fff;
+              padding:2px 5px;border-radius:3px;font-size:12px;pointer-events:none;">
     Paste Mode ON
   </div>
 

@@ -34,3 +34,8 @@
   color: #e5e6e8;
   text-decoration: underline;
 }
+
+/* hide the eye-icon on the top-level Filters card */
+#filters-section > .filter-eye {
+  display: none;
+}
