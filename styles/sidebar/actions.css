@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/actions.css */
-/* @version: 1.4 — smaller Toggle All & add Collapse All styling */
+/* @version: 1.5 — smaller Toggle All & Collapse All icon styling */
 
 /* Hide the auto-injected Show All / Hide All links entirely */
 .header-actions {
@@ -9,27 +9,29 @@
 /* Filters “Toggle All” link styling */
 #filters-section > h2 .toggle-all {
   color: #bbb;
-  font-size: 0.75em;       /* down from 0.9em */
+  font-size: 0.75em;       /* smaller font */
   text-decoration: none;
   transition: color 0.2s;
   margin-left: 1em;
 }
-
 #filters-section > h2 .toggle-all:hover {
   color: #e5e6e8;
   text-decoration: underline;
 }
 
-/* New: Collapse All button styling */
+/* Collapse All chevron icon styling */
 #filters-section > h2 .collapse-all {
   color: #bbb;
-  font-size: 0.75em;
-  text-decoration: none;
-  transition: color 0.2s;
+  font-size: 0.9em;
   margin-left: 0.5em;
+  cursor: pointer;
+  transition: color 0.2s, transform 0.3s ease;
 }
-
 #filters-section > h2 .collapse-all:hover {
   color: #e5e6e8;
-  text-decoration: underline;
+}
+
+/* Rotate when all sub-groups are collapsed */
+#filters-section > h2 .collapse-all.fa-chevron-down {
+  transform: rotate(180deg);
 }
