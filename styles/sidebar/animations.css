@@ -1,38 +1,28 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.1 — pure CSS scaleY + delayed display:none */
+/* @version: 3.0 — revert to robust max-height collapse with correct layout */
 
 .toggle-group {
-  transform-origin: top;
-  transform: scaleY(1);
-  transition: transform 0.2s ease-in-out;
-  /* keep content present until it's fully shrunk */
+  /* keep your grid layout intact */
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+  gap: 0.3em 0.5em;
+  
+  /* clip and animate height */
   overflow: hidden;
+  max-height: 1000px;              /* must exceed your tallest content */
+  transition: max-height 0.3s ease-in-out;
 }
 
-/* When collapsed, shrink immediately */
+/* collapsed state – shrink cleanly to zero */
 .filter-group.collapsed > .toggle-group {
-  transform: scaleY(0);
+  max-height: 0 !important;
 }
 
-/* After the shrink animation, hide container to remove grey box */
-.filter-group.collapsed > .toggle-group {
-  animation: hide-after 0s 0.2s forwards;
-}
-
-@keyframes hide-after {
-  to { display: none; }
-}
-
-/* And on expanding, reset display before expanding */
-.filter-group:not(.collapsed) > .toggle-group {
-  display: block;
-}
-
-/* Arrow rotation */
+/* arrow rotation */
 .filter-group > h3::after,
 .filter-group > h4::after {
   display: inline-block;
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.3s ease;
 }
 
 .filter-group.collapsed > h3::after,
