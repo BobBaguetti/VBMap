@@ -1,7 +1,6 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 1.4 — use FontAwesome right/down chevrons on subfilters, right-aligned */
+/* @version: 1.5 — disable interactions on collapsed groups */
 
-/* Ensure Font Awesome is loaded */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* Base: headers need positioning for absolute icon */
@@ -10,7 +9,7 @@
   position: relative;
 }
 
-/* By default (expanded), show chevron-down */
+/* By default (expanded), show FontAwesome chevron-down */
 .filter-group > h3::after,
 .filter-group > h4::after {
   content: "\f078";                 /* FontAwesome chevron-down */
@@ -23,6 +22,7 @@
   transition: color 0.2s, transform 0.2s;
   color: #bbb;
   cursor: pointer;
+  font-size: 0.9em;
 }
 
 /* Hover state */
@@ -47,4 +47,10 @@
 /* Expanded state: allow content to show */
 .filter-group:not(.collapsed) > .toggle-group {
   max-height: 1000px;
+}
+
+/* Disable pointer events and text selection when collapsed */
+.filter-group.collapsed > .toggle-group {
+  pointer-events: none;
+  user-select: none;
 }
