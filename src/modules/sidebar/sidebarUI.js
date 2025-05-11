@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.7 — sync Filters chevron with sub‐group toggles
+// @version: 1.8 — hoist updateMasterCollapseIcon so subfilters can call it
 
 /**
  * Wire up sidebar UI:
@@ -27,6 +27,34 @@ export function setupSidebarUI({
     return;
   }
 
+  // Helper: animate a group's toggle-group container
+  function animateToggle(group) {
+    const container = group.querySelector(".toggle-group");
+    if (!container) return;
+    const isCollapsed = group.classList.contains("collapsed");
+    container.style.transition = "none";
+    container.style.maxHeight  = isCollapsed
+      ? "0px"
+      : `${container.scrollHeight}px`;
+    container.offsetHeight; // reflow
+    container.style.transition = "max-height 0.25s ease-in-out";
+    if (isCollapsed) {
+      group.classList.remove("collapsed");
+      container.style.maxHeight = `${container.scrollHeight}px`;
+    } else {
+      group.classList.add("collapsed");
+      container.style.maxHeight = "0px";
+    }
+  }
+
+  // Helpers for Filters master icon
+  const filtersHeader = document.querySelector('#filters-section > h2');
+  const getSubGroups   = () =>
+    Array.from(document.querySelectorAll('#filters-section > .filter-group'));
+
+  // Will be assigned once the master button is created
+  let updateMasterCollapseIcon = () => {};
+
   // 1) Style the search bar
   searchBar.classList.add("ui-input");
 
@@ -39,41 +67,16 @@ export function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // Helper: animate a group's toggle-group container
-  function animateToggle(group) {
-    const container = group.querySelector(".toggle-group");
-    if (!container) return;
-    const isCollapsed = group.classList.contains("collapsed");
-    // prepare initial state
-    container.style.transition = "none";
-    container.style.maxHeight  = isCollapsed
-      ? "0px"
-      : `${container.scrollHeight}px`;
-    // force reflow
-    container.offsetHeight;
-    // animate to target
-    container.style.transition = "max-height 0.25s ease-in-out";
-    if (isCollapsed) {
-      group.classList.remove("collapsed");
-      container.style.maxHeight = `${container.scrollHeight}px`;
-    } else {
-      group.classList.add("collapsed");
-      container.style.maxHeight = "0px";
-    }
-  }
-
   // 3) Per–group collapse & eye‐toggle
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
 
-    // on header click: animate and update master icon
     header.addEventListener("click", () => {
       animateToggle(group);
       updateMasterCollapseIcon();
     });
 
-    // inject eye icon for bulk‐toggle
     const eye = document.createElement("i");
     eye.classList.add("fas", "fa-eye", "filter-eye");
     eye.style.cursor     = "pointer";
@@ -90,13 +93,13 @@ export function setupSidebarUI({
       });
       eye.classList.toggle("fa-eye-slash", !anyOff);
       eye.classList.toggle("fa-eye", anyOff);
+      updateMasterCollapseIcon();
     });
   });
 
   // 4) Filters master controls
-  const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
-    // Toggle All link (checkboxes)
+    // Toggle All link
     const toggleAllLink = document.createElement('a');
     toggleAllLink.textContent = 'Toggle All';
     toggleAllLink.classList.add('toggle-all');
@@ -127,21 +130,17 @@ export function setupSidebarUI({
     collapseBtn.style.transition = 'color 0.2s';
     filtersHeader.appendChild(collapseBtn);
 
-    const subGroups = () =>
-      Array.from(document.querySelectorAll('#filters-section > .filter-group'));
-
-    // update master icon based on all sub-group states
-    function updateMasterCollapseIcon() {
-      const allCollapsed = subGroups().every(g => g.classList.contains('collapsed'));
+    // Now that collapseBtn exists, define updateMasterCollapseIcon
+    updateMasterCollapseIcon = () => {
+      const allCollapsed = getSubGroups().every(g => g.classList.contains('collapsed'));
       collapseBtn.classList.toggle('fa-chevron-up', allCollapsed);
       collapseBtn.classList.toggle('fa-chevron-down', !allCollapsed);
-    }
+    };
 
     collapseBtn.addEventListener('click', e => {
       e.stopPropagation();
-      const groups      = subGroups();
+      const groups      = getSubGroups();
       const allCollapsed = groups.every(g => g.classList.contains('collapsed'));
-      // if all collapsed, expand all; else collapse all
       groups.forEach(g => {
         const shouldCollapse = !allCollapsed;
         if (g.classList.contains('collapsed') === shouldCollapse) return;
@@ -150,7 +149,7 @@ export function setupSidebarUI({
       updateMasterCollapseIcon();
     });
 
-    // initialize
+    // initialize master icon
     updateMasterCollapseIcon();
   }
 }
