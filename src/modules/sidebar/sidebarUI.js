@@ -1,15 +1,9 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.5 — collapse‐all button toggles correctly between up/down
+// @version: 1.6 — JS-driven smooth collapse/expand to eliminate lag
 
 /**
- * Wire up basic sidebar UI interactions:
- *  - Search‐bar styling
- *  - Sidebar toggle (show/hide)
- *  - Collapsible filter groups (h3/h4 headers)
- *  - “Eye” icons on each group header
- *  - Toggle All & Collapse All for Filters section
- *
- * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
+ * Wire up basic sidebar UI interactions, including a JS-based
+ * animateToggle for instant response on both collapse and expand.
  */
 export function setupSidebarUI({
   map,
@@ -21,16 +15,15 @@ export function setupSidebarUI({
   const sidebar       = document.querySelector(sidebarSelector);
   const sidebarToggle = document.querySelector(toggleSelector);
   const searchBar     = document.querySelector(searchBarSelector);
-
   if (!sidebar || !sidebarToggle || !searchBar) {
     console.warn("[sidebarUI] Missing elements");
     return;
   }
 
-  // 1) Style the search bar
+  // Style the search bar
   searchBar.classList.add("ui-input");
 
-  // 2) Toggle sidebar open/closed
+  // Sidebar open/close toggle
   sidebarToggle.textContent = "◀︎";
   sidebarToggle.addEventListener("click", () => {
     const hidden = sidebar.classList.toggle("hidden");
@@ -39,24 +32,54 @@ export function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // 3) Collapse & eye‐toggle for every filter‐group
+  // Helper: animate a group's toggle-group container
+  function animateToggle(group) {
+    const container = group.querySelector(".toggle-group");
+    if (!container) return;
+
+    const isCollapsed = group.classList.contains("collapsed");
+    // Clear any inline styles so we read natural height
+    container.style.transition = "none";
+    container.style.maxHeight  = isCollapsed ? "0px" : `${container.scrollHeight}px`;
+    // Force reflow
+    container.offsetHeight;
+    // Enable transition
+    container.style.transition = "max-height 0.25s ease-in-out";
+    if (isCollapsed) {
+      // Expand
+      container.style.maxHeight = `${container.scrollHeight}px`;
+      group.classList.remove("collapsed");
+    } else {
+      // Collapse
+      container.style.maxHeight = "0px";
+      group.classList.add("collapsed");
+    }
+  }
+
+  // Collapse & eye-toggle for every filter-group
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
 
-    // 3a) Collapse on header click
+    // Collapse on header click using animateToggle
     header.addEventListener("click", () => {
-      group.classList.toggle("collapsed");
+      animateToggle(group);
+      // update collapse-all icon if this is under Filters
+      const filtersHeader = document.querySelector('#filters-section > h2 .collapse-all');
+      if (filtersHeader) {
+        filtersHeader.dispatchEvent(new Event("click", { bubbles: false }));
+        // then restore its correct state
+        filtersHeader.click();
+      }
     });
 
-    // 3b) Inject the eye icon
+    // Inject the eye icon (no change)
     const eye = document.createElement("i");
     eye.classList.add("fas", "fa-eye", "filter-eye");
     eye.style.cursor     = "pointer";
     eye.style.marginLeft = "0.5em";
     header.appendChild(eye);
 
-    // Toggle all child checkboxes
     eye.addEventListener("click", e => {
       e.stopPropagation();
       const inputs = group.querySelectorAll("input[type=checkbox]");
@@ -70,17 +93,16 @@ export function setupSidebarUI({
     });
   });
 
-  // 4) Toggle All & Collapse All for Filters section
+  // Toggle All & Collapse All for Filters
   const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
-    // Toggle All link
+    // Toggle All (checkboxes)
     const toggleAllLink = document.createElement('a');
     toggleAllLink.textContent = 'Toggle All';
     toggleAllLink.classList.add('toggle-all');
     toggleAllLink.style.marginLeft = '1em';
     toggleAllLink.style.cursor     = 'pointer';
     filtersHeader.appendChild(toggleAllLink);
-
     toggleAllLink.addEventListener('click', e => {
       e.stopPropagation();
       const cbs = Array.from(
@@ -94,22 +116,21 @@ export function setupSidebarUI({
       });
     });
 
-    // Collapse All toggle‐button
+    // Collapse All toggler
     const collapseBtn = document.createElement('i');
     collapseBtn.classList.add('fas', 'collapse-all');
-    collapseBtn.style.position     = 'absolute';
-    collapseBtn.style.right        = '0.6em';
-    collapseBtn.style.top          = '50%';
-    collapseBtn.style.transform    = 'translateY(-50%)';
-    collapseBtn.style.cursor       = 'pointer';
-    collapseBtn.style.transition   = 'color 0.2s';
+    collapseBtn.style.position   = 'absolute';
+    collapseBtn.style.right      = '0.6em';
+    collapseBtn.style.top        = '50%';
+    collapseBtn.style.transform  = 'translateY(-50%)';
+    collapseBtn.style.cursor     = 'pointer';
+    collapseBtn.style.transition = 'color 0.2s';
     filtersHeader.appendChild(collapseBtn);
 
     const subGroups = () =>
       Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
     const updateCollapseIcon = () => {
-      // when all subgroups are collapsed ➞ show up arrow
       const allCollapsed = subGroups().every(g => g.classList.contains('collapsed'));
       collapseBtn.classList.toggle('fa-chevron-up', allCollapsed);
       collapseBtn.classList.toggle('fa-chevron-down', !allCollapsed);
@@ -117,10 +138,9 @@ export function setupSidebarUI({
 
     collapseBtn.addEventListener('click', e => {
       e.stopPropagation();
-      const groups = subGroups();
+      const groups      = subGroups();
       const allCollapsed = groups.every(g => g.classList.contains('collapsed'));
-      // if currently all collapsed ➞ expand; otherwise collapse all
-      groups.forEach(g => g.classList.toggle('collapsed', !allCollapsed));
+      groups.forEach(g => animateToggle(g));
       updateCollapseIcon();
     });
 
