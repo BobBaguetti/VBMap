@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.6 — enlarge logo and tighten vertical spacing around it */
+/* @version: 1.7 — hide sidebar scrollbar without altering layout */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -16,6 +16,15 @@
   overflow-x: hidden;
   transition: transform 0.3s ease;
   z-index: 1000;
+
+  /* Hide scrollbar, without reserving space */
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE 10+ */
+}
+
+#sidebar::-webkit-scrollbar {
+  width: 0;                    /* Chrome, Safari, Opera */
+  height: 0;
 }
 
 #sidebar.hidden {
@@ -42,7 +51,7 @@
 
 /* Logo container (h1) – tighter top and bottom margins */
 #sidebar > h1 {
-  margin: 0.25em 0;        /* less space above and below logo */
+  margin: 0.25em 0;
   text-align: center;
   font-family: 'Satoshi', sans-serif;
 }
@@ -52,13 +61,13 @@
   display: block;
   margin: 0 auto;
   width: 100%;
-  max-width: 194px;        /* increase max width from 120px to 150px */
+  max-width: 150px;
   height: auto;
 }
 
 /* Subtitle styling – reduced spacing */
 #sidebar .sidebar-logo__subtitle {
-  margin: 2px 0 4px;       /* less space above/below subtitle */
+  margin: 2px 0 4px;
   font-size: 12px;
   text-transform: uppercase;
   text-align: center;
