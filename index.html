@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 33 – add clear‐button to search input (full file) -->
+<!-- @version: 34 – replace VB Map title with logo PNG and subtitle -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -15,10 +15,9 @@
   <!-- Core UI styles -->
   <link rel="stylesheet" href="styles/base.css"/>
   <link rel="stylesheet" href="styles/ui.css"/>
-  <link rel="stylesheet" href="styles/popup.css"/>
   <link rel="stylesheet" href="styles/context-menu.css"/>
   <link rel="stylesheet" href="styles/custom-markers.css"/>
-  <link rel="stylesheet" href="styles/form.css"/>
+  <link rel="stylesheet" href="styles/popup.css"/>
 
   <!-- Sidebar styles -->
   <link rel="stylesheet" href="styles/sidebar/layout.css"/>
@@ -69,7 +68,14 @@
 
   <!-- Sidebar -->
   <div id="sidebar">
-    <h1><i class="fas fa-map-marked-alt"></i> VB Map</h1>
+    <h1>
+      <img
+        src="https://res.cloudinary.com/dtty7zxjh/image/upload/v1746941747/0g_VaultbreakersLogo_Blue_Fullsize_wbaf0o.png"
+        alt="Vaultbreakers Map Logo"
+        style="max-width:100%; height:auto;"
+      />
+    </h1>
+    <p style="font-size:12px; margin:4px 0 8px 0;">vaultbreakers interactive map</p>
 
     <!-- STICKY SEARCH -->
     <div id="sidebar-search" class="sidebar-section">
@@ -107,19 +113,18 @@
 
       <!-- Chest filters -->
       <div class="filter-group" id="chest-filters">
-        <h3><i class="fas fa-boxes group-icon"></i>Chests</h3>
+        <h3><i class="fas fa-dungeon group-icon"></i>Chests</h3>
         <div class="toggle-group" id="chest-filter-list"><!-- dynamic --></div>
       </div>
 
-      <!-- Hostile NPCs -->
+      <!-- NPC filters -->
       <div class="filter-group" id="npc-hostile-filters">
-        <h3><i class="fas fa-skull-crossbones group-icon"></i>Hostile</h3>
+        <h3><i class="fas fa-skull-crossbones group-icon"></i>Hostile NPCs</h3>
         <div class="toggle-group" id="npc-hostile-list"><!-- dynamic --></div>
       </div>
 
-      <!-- Friendly NPCs -->
       <div class="filter-group" id="npc-friendly-filters">
-        <h3><i class="fas fa-user-check group-icon"></i>Friendly</h3>
+        <h3><i class="fas fa-user-friends group-icon"></i>Friendly NPCs</h3>
         <div class="toggle-group" id="npc-friendly-list"><!-- dynamic --></div>
       </div>
     </div>
@@ -150,11 +155,12 @@
   <div id="video-popup">
     <button id="video-close">X</button>
     <video id="video-player" width="320" controls>
-      <source id="video-source" src="" type="video/mp4"/>
+      <source src="" type="video/mp4"/>
+      Your browser does not support the video tag.
     </video>
   </div>
 
-  <!-- Paste Tooltip -->
+  <!-- Paste tooltip -->
   <div id="paste-tooltip"
        style="display:none; position:absolute; background:rgba(0,0,0,0.7); color:#fff;
               padding:2px 5px; border-radius:3px; font-size:12px; pointer-events:none;">
