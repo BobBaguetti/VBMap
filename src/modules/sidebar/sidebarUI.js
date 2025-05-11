@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.7 — collapse‐all button with toggle & animation
+// @version: 1.6 — corrected Collapse/Expand All logic; toggle-all remains
 
 /**
  * Wire up basic sidebar UI interactions:
@@ -7,7 +7,8 @@
  *  - Sidebar toggle (show/hide)
  *  - Collapsible filter groups (h3/h4 headers)
  *  - “Eye” icons on each group header
- *  - Toggle All & Collapse All for Filters section
+ *  - Toggle All link for Filters
+ *  - Collapse/Expand All chevron for Filters
  *
  * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
  */
@@ -56,7 +57,7 @@ export function setupSidebarUI({
     eye.style.marginLeft = "0.5em";
     header.appendChild(eye);
 
-    // Toggle all child checkboxes
+    // Toggle all child checkboxes of this group
     eye.addEventListener("click", e => {
       e.stopPropagation();
       const inputs = group.querySelectorAll("input[type=checkbox]");
@@ -70,10 +71,10 @@ export function setupSidebarUI({
     });
   });
 
-  // 4) Toggle All & Collapse All for Filters section
+  // 4) Toggle All & Collapse/Expand All for Filters section
   const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
-    // Toggle All link
+    // --- Toggle All link ---
     const toggleAllLink = document.createElement('a');
     toggleAllLink.textContent = 'Toggle All';
     toggleAllLink.classList.add('toggle-all');
@@ -94,33 +95,34 @@ export function setupSidebarUI({
       });
     });
 
-    // Collapse All toggle‐button
+    // --- Collapse/Expand All chevron button ---
     const collapseBtn = document.createElement('i');
     collapseBtn.classList.add('fas', 'collapse-all');
-    collapseBtn.style.marginLeft = '0.5em';
-    collapseBtn.style.cursor     = 'pointer';
+    collapseBtn.style.cursor = 'pointer';
     filtersHeader.appendChild(collapseBtn);
 
     const subGroups = () =>
       Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
-    const updateCollapseIcon = () => {
-      // if *all* subgroups are collapsed, show "down" (fa-chevron-down) to indicate expand
+    function updateCollapseIcon() {
+      // if every subgroup is collapsed → show ▼ (fa-chevron-down), else show ▲ (fa-chevron-up)
       const allCollapsed = subGroups().every(g => g.classList.contains('collapsed'));
       collapseBtn.classList.toggle('fa-chevron-down', allCollapsed);
-      collapseBtn.classList.toggle('fa-chevron-up', !allCollapsed);
-    };
+      collapseBtn.classList.toggle('fa-chevron-up',   !allCollapsed);
+    }
 
     collapseBtn.addEventListener('click', e => {
       e.stopPropagation();
       const groups = subGroups();
       const allCollapsed = groups.every(g => g.classList.contains('collapsed'));
-      // if all are collapsed, expand all (remove collapsed); otherwise collapse all
-      groups.forEach(g => g.classList.toggle('collapsed', allCollapsed));
+      groups.forEach(g => {
+        // if all are collapsed, expand all (remove class); otherwise collapse all (add class)
+        g.classList.toggle('collapsed', !allCollapsed);
+      });
       updateCollapseIcon();
     });
 
-    // initialize icon state
+    // initialize the arrow state
     updateCollapseIcon();
   }
 }
