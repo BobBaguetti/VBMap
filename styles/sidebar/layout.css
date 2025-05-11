@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.1 — sidebar container & toggle button styling; add sidebar logo styling */
+/* @version: 1.2 — refine logo sizing and centering */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -43,14 +43,15 @@
 /* Sidebar logo styling */
 #sidebar .sidebar-logo {
   margin-top: 0.66em;       /* reduced by one-third from ~1em */
-  text-align: center;
+  text-align: center;       /* center the img */
   font-family: 'Satoshi', sans-serif;
 }
 
 #sidebar .sidebar-logo img {
-  display: inline-block;
-  width: 50%;               /* cap logo at half the sidebar width */
-  height: auto;
+  display: block;           /* treat as block for centering */
+  margin: 0 auto;           /* center horizontally */
+  max-width: 50%;           /* cap at half the sidebar width */
+  height: auto;             /* maintain aspect ratio */
 }
 
 #sidebar .sidebar-logo__subtitle {
