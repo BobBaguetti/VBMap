@@ -1,9 +1,9 @@
 /* @keep: Comments and protected headers must NOT be removed or altered except when updating version or content as specified. */
 /* @file: styles/base.css */
-/* @version: 11 — merged palette import, map layout, form controls, buttons, scrollbars, and utility styles */
+/* @version: 12 — fixed import path for colors.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
-@import url('styles/colors.css');
+@import url('colors.css');
 
 /* 1) Box-sizing reset */
 *, *::before, *::after {
