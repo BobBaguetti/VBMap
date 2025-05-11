@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 1.8 — fade out content as it collapses */
+/* @version: 1.9 — delay fade-out so content stays visible during collapse */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -36,26 +36,34 @@
   content: "\f054"; /* chevron-right */
 }
 
-/* Animate the toggle-group container */
+/* Animate the toggle-group container with delayed opacity fade */
 .toggle-group {
   overflow: hidden;
   max-height: 0;
   opacity: 1;
+  /* default (expanding): fade instantly, no delay */
   transition:
-    max-height 0.25s ease-in-out,
-    opacity    0.25s ease-in-out;
+    max-height 0.25s ease-in-out 0s,
+    opacity    0.4s ease-in-out 0s;
 }
 
-/* Expanded state: fully visible */
+/* Expanded state: content visible immediately */
 .filter-group:not(.collapsed) > .toggle-group {
   max-height: 1000px;
   opacity: 1;
+  transition:
+    max-height 0.25s ease-in-out 0s,
+    opacity    0.4s ease-in-out 0s;
 }
 
-/* Collapsed state: fade out while collapsing */
+/* Collapsed state: collapse height, then fade out */
 .filter-group.collapsed > .toggle-group {
   max-height: 0;
   opacity: 0;
   pointer-events: none;
   user-select: none;
+  /* delay opacity transition so fading happens after most of collapse */
+  transition:
+    max-height 0.25s ease-in-out 0s,
+    opacity    0.4s ease-in-out 0.25s;
 }
