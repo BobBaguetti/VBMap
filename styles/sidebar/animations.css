@@ -1,18 +1,17 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 1.2 — fix collapse delay by using only max-height and will-change */
+/* @version: 1.3 — simplified collapse/expand rules for immediate response */
 
 .toggle-group {
-  /* always clamp via max-height, no display:none */
   overflow: hidden;
-  max-height: 0;
+  /* Default (expanded) max-height—should exceed your tallest content */
+  max-height: 1000px;
   transition: max-height 0.25s ease-in-out;
   will-change: max-height;
 }
 
-/* Expanded state: allow content to grow up to this max.
-   Should exceed the tallest toggle-group you have. */
-.filter-group:not(.collapsed) > .toggle-group {
-  max-height: 1000px;
+/* When collapsed, clamp to zero */
+.filter-group.collapsed > .toggle-group {
+  max-height: 0 !important;
 }
 
 /* Collapse arrow rotation */
