@@ -2,7 +2,7 @@
 /* @file: styles/ui.css */
 /* @version: 4 — replaced hard-coded colors with CSS variables */
 
-@import url('styles/colors.css');
+@import url('colors.css');
 
 /* ============================
    Base Dark Mode UI Utilities
