@@ -1,6 +1,7 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.0 — filter-group container & header styling */
+/* @version: 1.1 — add filter-icon styling & align labels for icons */
 
+/* Container for each card‐style filter group */
 .filter-group {
   background-color: #2a2a2a;
   border-top:    1px solid #333;
@@ -8,22 +9,22 @@
   border-left:   none;
   border-right:  none;
   border-radius: 0;
-  margin:        0 0 0.8em; /* vertical spacing only */
+  margin:        0 0 0.8em; /* spacing between groups */
   overflow:      hidden;
 }
 
-/* Indent nested groups */
+/* Indent nested groups (if used) */
 .filter-group.nested {
   margin-left: 1.2em;
 }
 
-/* Group headers (h3 & h4): collapse, eye-icon & header-actions targets */
+/* Header bars (h3 & h4) */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
   align-items: center;
-  justify-content: flex-start; /* pin everything at the left */
-  position: relative;           /* for absolute arrow */
+  justify-content: flex-start;
+  position: relative;           /* for absolute chevron */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
@@ -32,5 +33,30 @@
   border-bottom: 1px solid #333;
   background-color: #1f1f1f;
   cursor: pointer;
-  /* color is now controlled in icons.css */
 }
+
+/* Layout of the toggles inside each group */
+.filter-group .toggle-group {
+  padding: 0.6em 1em;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5em 0.8em;
+}
+
+/* Style each label to align icon, checkbox, and text */
+.filter-group .toggle-group label {
+  display: flex;
+  align-items: center;
+}
+
+/* Thumbnail icons before the text */
+.filter-group .toggle-group label .filter-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5em;
+  flex-shrink: 0;
+  border-radius: 2px;
+  object-fit: cover;
+}
+
+/* Checkbox invisibility handled in toggles.css; span text styling there */
