@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.3 — add “Toggle All” link to Filters header
+// @version: 1.4 — add “Toggle All” & “Collapse All” to Filters header, hide Show/Hide All
 
 /**
  * Wire up basic sidebar UI interactions:
@@ -7,8 +7,8 @@
  *  - Sidebar toggle (show/hide)
  *  - Collapsible filter groups (h3/h4 headers)
  *  - “Eye” icons on each group header
- *  - Show All / Hide All bulk‐toggle links
- *  - **New**: Toggle All for Filters section
+ *  - Show All / Hide All bulk‐toggle links (hidden)
+ *  - Toggle All & Collapse All for Filters section
  *
  * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
  */
@@ -70,7 +70,7 @@ export function setupSidebarUI({
       eye.classList.toggle("fa-eye", anyOff);
     });
 
-    // 3c) Show All / Hide All links
+    // 3c) Show All / Hide All links (hidden via CSS)
     const container = document.createElement("span");
     container.classList.add("header-actions");
 
@@ -107,7 +107,6 @@ export function setupSidebarUI({
     container.append(showAll, hideAll);
     header.appendChild(container);
 
-    // Keep Show/Hide links in sync
     function updateLinks() {
       const inputs = Array.from(group.querySelectorAll("input[type=checkbox]"));
       const allOn = inputs.every(cb => cb.checked);
@@ -120,9 +119,10 @@ export function setupSidebarUI({
          .forEach(cb => cb.addEventListener("change", updateLinks));
   });
 
-  // 4) Toggle All for Filters section
+  // 4) Toggle All & Collapse All for Filters section
   const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
+    // Toggle All
     const toggleAllLink = document.createElement('a');
     toggleAllLink.textContent = 'Toggle All';
     toggleAllLink.classList.add('toggle-all');
@@ -135,12 +135,27 @@ export function setupSidebarUI({
       const cbs = Array.from(
         document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
       );
-      if (cbs.length === 0) return;
+      if (!cbs.length) return;
       const anyOff = cbs.some(cb => !cb.checked);
       cbs.forEach(cb => {
         cb.checked = anyOff;
         cb.dispatchEvent(new Event('change', { bubbles: true }));
       });
+    });
+
+    // Collapse All
+    const collapseAllLink = document.createElement('a');
+    collapseAllLink.textContent = 'Collapse All';
+    collapseAllLink.classList.add('collapse-all');
+    collapseAllLink.style.marginLeft = '0.5em';
+    collapseAllLink.style.cursor = 'pointer';
+    filtersHeader.appendChild(collapseAllLink);
+
+    collapseAllLink.addEventListener('click', e => {
+      e.stopPropagation();
+      document
+        .querySelectorAll('#filters-section > .filter-group')
+        .forEach(group => group.classList.add('collapsed'));
     });
   }
 }
