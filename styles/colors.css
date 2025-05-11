@@ -1,5 +1,5 @@
 /* @file: styles/colors.css */
-/* @version: 1.2 — added error-red and error-red-dark variables for delete buttons */
+/* @version: 1.3 — added map background variable (--map-bg) */
 
 :root,
 :root[data-theme="dark"] {
@@ -25,6 +25,9 @@
   /* Error / destructive actions */
   --error-red:       #b92f2f;  /* delete button background */
   --error-red-dark:  #772222;  /* delete button hover background */
+
+  /* Map background */
+  --map-bg:          #1a1a1a;  /* base map container background in dark mode */
 }
 
 /* ————— Light theme ————— */
@@ -51,6 +54,9 @@
   /* Error / destructive actions */
   --error-red:       #b92f2f;
   --error-red-dark:  #772222;
+
+  /* Map background */
+  --map-bg:          var(--surface-a0);  /* base map container background in light mode */
 }
 
 /* Example usage (adapt as needed): */
