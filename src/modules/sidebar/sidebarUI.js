@@ -1,11 +1,11 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.6.2 — hide content container completely when collapsed
+// @version: 1.6.1 — fix header click expand/collapse logic for JS animations
 
 /**
  * Wire up sidebar UI interactions with smooth height animations:
  *  - Search‐bar styling
  *  - Sidebar toggle (show/hide)
- *  - Collapsible filter groups with JS‐animated height + display toggling
+ *  - Collapsible filter groups with JS‐animated height
  *  - “Eye” icons on each group header
  *  - Toggle All & Collapse All for Filters section
  */
@@ -34,7 +34,7 @@ export function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // Helper: animate a group's toggle-group height and then toggle display
+  // Helper: animate a group's toggle-group height
   function animateGroup(group, expand) {
     const content = group.querySelector(".toggle-group");
     if (!content) return;
@@ -42,28 +42,21 @@ export function setupSidebarUI({
 
     content.style.transition = "height 0.25s ease";
     content.style.overflow = "hidden";
+
     if (expand) {
-      // make visible and animate from 0 → fullHeight
-      content.style.display = "";
       content.style.height = "0px";
       requestAnimationFrame(() => {
         content.style.height = fullHeight + "px";
       });
-      content.addEventListener("transitionend", function onExpand() {
+      content.addEventListener("transitionend", function cleanup() {
         content.style.height = "";
         content.style.transition = "";
-        content.removeEventListener("transitionend", onExpand);
+        content.removeEventListener("transitionend", cleanup);
       });
     } else {
-      // animate from current to 0, then hide
       content.style.height = fullHeight + "px";
       requestAnimationFrame(() => {
         content.style.height = "0px";
-      });
-      content.addEventListener("transitionend", function onCollapse() {
-        content.style.display = "none";
-        content.style.transition = "";
-        content.removeEventListener("transitionend", onCollapse);
       });
     }
   }
@@ -76,15 +69,15 @@ export function setupSidebarUI({
 
     // ensure open on init
     group.classList.remove("collapsed");
-    content.style.display = "";
     content.style.height = "";
 
     header.addEventListener("click", () => {
       const nowCollapsed = group.classList.toggle("collapsed");
+      // expand when nowCollapsed==false, collapse when true
       animateGroup(group, !nowCollapsed);
     });
 
-    // Eye toggle
+    // Eye toggle (unchanged)
     const eye = document.createElement("i");
     eye.classList.add("fas", "fa-eye", "filter-eye");
     eye.style.cursor     = "pointer";
@@ -118,6 +111,7 @@ export function setupSidebarUI({
       const cbs = Array.from(
         document.querySelectorAll("#filters-section .toggle-group input[type=checkbox]")
       );
+      if (!cbs.length) return;
       const anyOff = cbs.some(cb => !cb.checked);
       cbs.forEach(cb => {
         cb.checked = anyOff;
@@ -147,7 +141,7 @@ export function setupSidebarUI({
       const allCollapsed = groups.every(g => g.classList.contains("collapsed"));
       groups.forEach(g => {
         g.classList.toggle("collapsed", !allCollapsed);
-        animateGroup(g, allCollapsed);
+        animateGroup(g, allCollapsed); // expand if was collapsed, collapse if was expanded
       });
       updateCollapseIcon();
     });
