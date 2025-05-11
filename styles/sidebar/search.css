@@ -1,28 +1,64 @@
 /* @file: styles/sidebar/search.css */
-/* @version: 1.0 — sticky search bar & separator styling */
+/* @version: 1.1 — Tab‐style header & enhanced search input */
 
+/* Wrap the search section in its own “card” like Filters */
 #sidebar-search {
-  position: sticky;
-  top: 0;
-  background-color: #222;
-  padding: 8px 0 4px;
-  z-index: 1001;
+  margin-top: 0.8em;
 }
 
-#sidebar-search input {
-  background: #303030;
+/* Tab‐style header above the search bar */
+#sidebar-search > h2 {
+  background-color: #1b1b1b;      /* match section header bands */
+  padding: 0.5em 0.8em;
+  margin: 0;                      /* reset default margins */
+  border-top-left-radius: 4px;    /* rounded top corners */
+  border-top-right-radius: 4px;
+  font-size: 1.1em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: #e5e6e8;
-  border: 1px solid #555;
-  border-radius: 2px;
-  padding: 3px 5px;
-  width: 100%;
-  font-family: 'Satoshi', sans-serif;
-  font-size: 13px;
-  box-sizing: border-box;
 }
 
-#sidebar-search hr {
+/* The container stays flush under the header */
+#sidebar-search {
+  background-color: #2a2a2a;      /* match filter-group backgrounds */
+  border: 1px solid #333;
+  border-top: none;               /* header already provides top */
+  border-bottom-left-radius: 6px; /* match group card radius */
+  border-bottom-right-radius: 6px;
+  overflow: hidden;
+}
+
+/* Style the input itself */
+#sidebar-search #search-bar {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 10px;
+  margin: 0;
+  border: none;
+  border-bottom: 1px solid #444;
+  background-color: #303030;
+  color: #e5e6e8;
+  font-size: 14px;
+  font-family: 'Satoshi', sans-serif;
+  outline: none;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+/* Placeholder color */
+#sidebar-search #search-bar::placeholder {
+  color: #666;
+}
+
+/* Focus state */
+#sidebar-search #search-bar:focus {
+  background-color: #3a3a3a;
+  border-bottom-color: #5a9;
+}
+
+/* Hide the default hr, we'll use a light separator */
+#sidebar-search > hr {
   border: none;
   border-top: 1px solid #333;
-  margin: 4px 0;
+  margin: 0;
 }
