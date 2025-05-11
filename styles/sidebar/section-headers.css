@@ -1,46 +1,30 @@
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 3.0 — unified header bands with sticky + drop-shadow on scroll */
+/* @version: 3.1 — pin only the main title & Search header */
 
-.sidebar-section > h2,
-#sidebar-search > h2 {
-  background-color: #1b1b1b;    /* slightly lighter than sidebar BG */
-  padding: 0.5em 0.8em;
-  margin: 0;                    /* reset default margins */
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  font-size: 1.1em;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #e5e6e8;
+#sidebar {
+  /* ensure the sidebar itself scrolls */
+  overflow-y: auto;
+}
+
+/* 1) Pin the main title */
+#sidebar > h1 {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: 20;
+  margin: 0;
+  padding: 0.8em 0.8em;
+  background-color: #222;     /* match sidebar bg */
+  border-bottom: 1px solid #333;
 }
 
-/* Ensure the search header matches the same radius rules */
-#sidebar-search {
-  margin-top: 0.8em;
-  border-top-left-radius: 6px;
-  border-top-right-radius: 6px;
+/* 2) Pin the Search card’s header */
+#sidebar-search > h2 {
+  position: sticky;
+  top: 3.2em; /* height of the h1 bar (approx)—adjust if you tweak h1 padding) */
+  z-index: 15;
 }
 
-/* Push each section’s content neatly below its header */
-.sidebar-section {
-  margin-top: 0.8em;
-}
-
-/* Pseudo‐element for subtle bottom shadow */
-.sidebar-section > h2::after,
-#sidebar-search > h2::after {
-  content: "";
-  display: block;
-  height: 4px;
-  background: transparent;
-  transition: background 0.2s ease;
-}
-
-/* When scrolled under, cast a soft gradient shadow */
-.sidebar-section > h2.scrolled::after,
-#sidebar-search > h2.scrolled::after {
-  background: linear-gradient(to bottom, rgba(0,0,0,0.4), transparent);
+/* 3) Make sure the rest of the sections are simply normal flow */
+.sidebar-section > h2 {
+  position: static;
 }

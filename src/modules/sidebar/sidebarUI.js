@@ -164,18 +164,4 @@ export function setupSidebarUI({
     updateMasterCollapseIcon();
   }
 
-  // 5) Sticky headers with shadow on scroll
-  function watchStickyHeader(sectionSelector) {
-    const section = document.querySelector(sectionSelector);
-    if (!section) return;
-    const header = section.querySelector("h2");
-    section.addEventListener("scroll", () => {
-      if (section.scrollTop > 0) header.classList.add("scrolled");
-      else header.classList.remove("scrolled");
-    });
-  }
-  watchStickyHeader("#sidebar-search");
-  watchStickyHeader("#filters-section");
-  watchStickyHeader("#settings-section");
-  watchStickyHeader("#admin-tools-section");
 }
