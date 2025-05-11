@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.12 — added sticky‐header scroll shadow logic
+// @version: 1.11 — added search‐clear button handler
 
 /**
  * Wire up sidebar UI:
@@ -8,9 +8,6 @@
  *  - Per‐group collapse/expand with animation
  *  - “Eye” bulk‐toggle icons
  *  - Filters “Toggle All” and master collapse/expand button
- *  - Sticky headers with drop‐shadow on scroll
- *
- * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
  */
 export function setupSidebarUI({
   map,
@@ -19,6 +16,7 @@ export function setupSidebarUI({
   searchBarSelector   = "#search-bar",
   filterGroupSelector = ".filter-group"
 }) {
+  // Elements
   const sidebar       = document.querySelector(sidebarSelector);
   const sidebarToggle = document.querySelector(toggleSelector);
   const searchBar     = document.querySelector(searchBarSelector);
@@ -29,7 +27,7 @@ export function setupSidebarUI({
     return;
   }
 
-  // 1) Search‐bar: styling & clear handler
+  // 1) Search‐bar: add ui-input class & clear handler
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -46,17 +44,22 @@ export function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // Helper: animate collapse/expand with post‐transition hiding
+  // Helper: animate a group's toggle-group container with post-transition hiding
   function animateToggle(group) {
     const container = group.querySelector(".toggle-group");
     if (!container) return;
     const isCollapsed = group.classList.contains("collapsed");
+
     container.removeEventListener("transitionend", onTransitionEnd);
+
     if (isCollapsed) container.style.visibility = "visible";
     container.style.transition = "none";
-    container.style.maxHeight  = isCollapsed ? "0px" : `${container.scrollHeight}px`;
-    container.offsetHeight; // reflow
+    container.style.maxHeight  = isCollapsed
+      ? "0px"
+      : `${container.scrollHeight}px`;
+    container.offsetHeight;
     container.style.transition = "max-height 0.3s ease-in-out";
+
     if (isCollapsed) {
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
@@ -64,6 +67,7 @@ export function setupSidebarUI({
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
     }
+
     function onTransitionEnd(e) {
       if (e.propertyName === "max-height" && group.classList.contains("collapsed")) {
         container.style.visibility = "hidden";
@@ -72,17 +76,19 @@ export function setupSidebarUI({
     container.addEventListener("transitionend", onTransitionEnd);
   }
 
-  // Placeholder for master collapse‐icon updater
+  // Placeholder for master collapse-icon updater
   let updateMasterCollapseIcon = () => {};
 
-  // 3) Per‐group collapse & eye‐toggle
+  // 3) Per-group collapse & eye-toggle
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
+
     header.addEventListener("click", () => {
       animateToggle(group);
       updateMasterCollapseIcon();
     });
+
     const eye = document.createElement("i");
     eye.classList.add("fas", "fa-eye", "filter-eye");
     eye.style.cursor     = "pointer";
@@ -105,7 +111,7 @@ export function setupSidebarUI({
   // 4) Filters master controls
   const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
-    // Toggle All
+    // Toggle All link
     const toggleAllLink = document.createElement('a');
     toggleAllLink.textContent = 'Toggle All';
     toggleAllLink.classList.add('toggle-all');
@@ -125,17 +131,15 @@ export function setupSidebarUI({
       });
     });
 
-    // Collapse/Expand All
+    // Collapse/Expand All button
     const collapseBtn = document.createElement('i');
     collapseBtn.classList.add('fas', 'collapse-all', 'fa-chevron-right');
-    Object.assign(collapseBtn.style, {
-      position:   'absolute',
-      right:      '0.6em',
-      top:        '50%',
-      transform:  'translateY(-50%)',
-      cursor:     'pointer',
-      transition: 'color 0.2s'
-    });
+    collapseBtn.style.position   = 'absolute';
+    collapseBtn.style.right      = '0.6em';
+    collapseBtn.style.top        = '50%';
+    collapseBtn.style.transform  = 'translateY(-50%)';
+    collapseBtn.style.cursor     = 'pointer';
+    collapseBtn.style.transition = 'color 0.2s';
     filtersHeader.appendChild(collapseBtn);
 
     const getSubGroups = () =>
@@ -143,10 +147,11 @@ export function setupSidebarUI({
 
     updateMasterCollapseIcon = () => {
       const allCollapsed = getSubGroups().every(g => g.classList.contains('collapsed'));
-      collapseBtn.classList.replace(
-        allCollapsed ? 'fa-chevron-down' : 'fa-chevron-right',
-        allCollapsed ? 'fa-chevron-right' : 'fa-chevron-down'
-      );
+      if (allCollapsed) {
+        collapseBtn.classList.replace('fa-chevron-down', 'fa-chevron-right');
+      } else {
+        collapseBtn.classList.replace('fa-chevron-right', 'fa-chevron-down');
+      }
     };
 
     collapseBtn.addEventListener('click', e => {
@@ -163,5 +168,4 @@ export function setupSidebarUI({
 
     updateMasterCollapseIcon();
   }
-
 }
