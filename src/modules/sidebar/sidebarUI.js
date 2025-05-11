@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.8 — hoist updateMasterCollapseIcon so subfilters can call it
+// @version: 1.8 — right/down chevrons for master collapse, synced with JS
 
 /**
  * Wire up sidebar UI:
@@ -7,7 +7,7 @@
  *  - Sidebar toggle
  *  - Per‐group collapse/expand with animation
  *  - “Eye” bulk‐toggle icons
- *  - Filters “Toggle All” and master collapse/expand button
+ *  - Filters “Toggle All” and master collapse/expand button (right/down chevrons)
  *
  * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
  */
@@ -47,14 +47,6 @@ export function setupSidebarUI({
     }
   }
 
-  // Helpers for Filters master icon
-  const filtersHeader = document.querySelector('#filters-section > h2');
-  const getSubGroups   = () =>
-    Array.from(document.querySelectorAll('#filters-section > .filter-group'));
-
-  // Will be assigned once the master button is created
-  let updateMasterCollapseIcon = () => {};
-
   // 1) Style the search bar
   searchBar.classList.add("ui-input");
 
@@ -82,7 +74,6 @@ export function setupSidebarUI({
     eye.style.cursor     = "pointer";
     eye.style.marginLeft = "0.5em";
     header.appendChild(eye);
-
     eye.addEventListener("click", e => {
       e.stopPropagation();
       const inputs = group.querySelectorAll("input[type=checkbox]");
@@ -98,6 +89,7 @@ export function setupSidebarUI({
   });
 
   // 4) Filters master controls
+  const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
     // Toggle All link
     const toggleAllLink = document.createElement('a');
@@ -119,9 +111,9 @@ export function setupSidebarUI({
       });
     });
 
-    // Collapse/Expand All button
+    // Collapse/Expand All button (fa-chevron-right/down)
     const collapseBtn = document.createElement('i');
-    collapseBtn.classList.add('fas', 'collapse-all');
+    collapseBtn.classList.add('fas', 'collapse-all', 'fa-chevron-right');
     collapseBtn.style.position   = 'absolute';
     collapseBtn.style.right      = '0.6em';
     collapseBtn.style.top        = '50%';
@@ -130,12 +122,18 @@ export function setupSidebarUI({
     collapseBtn.style.transition = 'color 0.2s';
     filtersHeader.appendChild(collapseBtn);
 
-    // Now that collapseBtn exists, define updateMasterCollapseIcon
-    updateMasterCollapseIcon = () => {
+    const getSubGroups = () =>
+      Array.from(document.querySelectorAll('#filters-section > .filter-group'));
+
+    // Define updateMasterCollapseIcon to reflect right/down
+    function updateMasterCollapseIcon() {
       const allCollapsed = getSubGroups().every(g => g.classList.contains('collapsed'));
-      collapseBtn.classList.toggle('fa-chevron-up', allCollapsed);
-      collapseBtn.classList.toggle('fa-chevron-down', !allCollapsed);
-    };
+      if (allCollapsed) {
+        collapseBtn.classList.replace('fa-chevron-down', 'fa-chevron-right');
+      } else {
+        collapseBtn.classList.replace('fa-chevron-right', 'fa-chevron-down');
+      }
+    }
 
     collapseBtn.addEventListener('click', e => {
       e.stopPropagation();

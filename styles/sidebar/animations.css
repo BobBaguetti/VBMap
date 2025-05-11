@@ -1,40 +1,40 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 1.4 — use FontAwesome chevrons on subfilters, right-aligned */
+/* @version: 1.4 — use FontAwesome right/down chevrons on subfilters, right-aligned */
 
+/* Ensure Font Awesome is loaded */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* Base rules for any filter-group header (h3 & h4) */
+/* Base: headers need positioning for absolute icon */
 .filter-group > h3,
 .filter-group > h4 {
-  position: relative; /* to anchor ::after */
+  position: relative;
 }
 
-/* Replace Unicode triangle with FontAwesome chevron-down */
+/* By default (expanded), show chevron-down */
 .filter-group > h3::after,
 .filter-group > h4::after {
   content: "\f078";                 /* FontAwesome chevron-down */
   font-family: "Font Awesome 6 Free";
-  font-weight: 900;                 /* ensure solid style */
+  font-weight: 900;
   position: absolute;
   right: 0.6em;
   top: 50%;
   transform: translateY(-50%);
-  transition: transform 0.3s ease, color 0.2s;
+  transition: color 0.2s, transform 0.2s;
   color: #bbb;
-  font-size: 0.9em;
   cursor: pointer;
 }
 
-/* On hover, lighten the icon */
+/* Hover state */
 .filter-group > h3:hover::after,
 .filter-group > h4:hover::after {
   color: #e5e6e8;
 }
 
-/* Rotate to chevron-right when collapsed */
+/* When collapsed, switch to chevron-right */
 .filter-group.collapsed > h3::after,
 .filter-group.collapsed > h4::after {
-  transform: translateY(-50%) rotate(-90deg);
+  content: "\f054";                 /* FontAwesome chevron-right */
 }
 
 /* Animate the toggle-group container */
