@@ -1,20 +1,34 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.0 — use transform:scaleY for instant collapse/expand */
+/* @version: 2.1 — pure CSS scaleY + delayed display:none */
 
 .toggle-group {
   transform-origin: top;
   transform: scaleY(1);
   transition: transform 0.2s ease-in-out;
-  /* keep overflow hidden so content clips correctly */
+  /* keep content present until it's fully shrunk */
   overflow: hidden;
 }
 
-/* Collapsed state: scale the container to zero height */
+/* When collapsed, shrink immediately */
 .filter-group.collapsed > .toggle-group {
   transform: scaleY(0);
 }
 
-/* Collapse arrow rotation */
+/* After the shrink animation, hide container to remove grey box */
+.filter-group.collapsed > .toggle-group {
+  animation: hide-after 0s 0.2s forwards;
+}
+
+@keyframes hide-after {
+  to { display: none; }
+}
+
+/* And on expanding, reset display before expanding */
+.filter-group:not(.collapsed) > .toggle-group {
+  display: block;
+}
+
+/* Arrow rotation */
 .filter-group > h3::after,
 .filter-group > h4::after {
   display: inline-block;
