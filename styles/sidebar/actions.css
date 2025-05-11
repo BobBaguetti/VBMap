@@ -1,15 +1,12 @@
 /* @file: styles/sidebar/actions.css */
-/* @version: 1.6 — position collapse-all right & fix animation */
+/* @version: 1.7 — position collapse‐all right & correct up/down chevrons */
 
+/* Hide the auto-injected Show All / Hide All links entirely */
 .header-actions {
   display: none !important;
 }
 
 /* Filters “Toggle All” link styling */
-#filters-section > h2 {
-  position: relative; /* enable absolute child positioning */
-}
-
 #filters-section > h2 .toggle-all {
   color: #bbb;
   font-size: 0.75em;
@@ -23,11 +20,14 @@
 }
 
 /* Collapse All chevron icon styling */
+#filters-section > h2 {
+  position: relative; /* to anchor the absolute icon */
+}
 #filters-section > h2 .collapse-all {
   position: absolute;
   right: 0.6em;
   top: 50%;
-  transform: translateY(-50%);  /* vertically center */
+  transform: translateY(-50%);
   color: #bbb;
   font-size: 0.9em;
   cursor: pointer;
@@ -37,4 +37,4 @@
   color: #e5e6e8;
 }
 
-/* No extra rotation here—icon class itself flips between up/down */
+/* The icon’s class (fa-chevron-up/down) handles the direction, no extra rotation needed */

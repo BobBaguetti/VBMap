@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.6 — corrected Collapse/Expand All logic; toggle-all remains
+// @version: 1.5 — collapse‐all button toggles correctly between up/down
 
 /**
  * Wire up basic sidebar UI interactions:
@@ -7,8 +7,7 @@
  *  - Sidebar toggle (show/hide)
  *  - Collapsible filter groups (h3/h4 headers)
  *  - “Eye” icons on each group header
- *  - Toggle All link for Filters
- *  - Collapse/Expand All chevron for Filters
+ *  - Toggle All & Collapse All for Filters section
  *
  * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
  */
@@ -57,7 +56,7 @@ export function setupSidebarUI({
     eye.style.marginLeft = "0.5em";
     header.appendChild(eye);
 
-    // Toggle all child checkboxes of this group
+    // Toggle all child checkboxes
     eye.addEventListener("click", e => {
       e.stopPropagation();
       const inputs = group.querySelectorAll("input[type=checkbox]");
@@ -71,10 +70,10 @@ export function setupSidebarUI({
     });
   });
 
-  // 4) Toggle All & Collapse/Expand All for Filters section
+  // 4) Toggle All & Collapse All for Filters section
   const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
-    // --- Toggle All link ---
+    // Toggle All link
     const toggleAllLink = document.createElement('a');
     toggleAllLink.textContent = 'Toggle All';
     toggleAllLink.classList.add('toggle-all');
@@ -95,34 +94,37 @@ export function setupSidebarUI({
       });
     });
 
-    // --- Collapse/Expand All chevron button ---
+    // Collapse All toggle‐button
     const collapseBtn = document.createElement('i');
     collapseBtn.classList.add('fas', 'collapse-all');
-    collapseBtn.style.cursor = 'pointer';
+    collapseBtn.style.position     = 'absolute';
+    collapseBtn.style.right        = '0.6em';
+    collapseBtn.style.top          = '50%';
+    collapseBtn.style.transform    = 'translateY(-50%)';
+    collapseBtn.style.cursor       = 'pointer';
+    collapseBtn.style.transition   = 'color 0.2s';
     filtersHeader.appendChild(collapseBtn);
 
     const subGroups = () =>
       Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
-    function updateCollapseIcon() {
-      // if every subgroup is collapsed → show ▼ (fa-chevron-down), else show ▲ (fa-chevron-up)
+    const updateCollapseIcon = () => {
+      // when all subgroups are collapsed ➞ show up arrow
       const allCollapsed = subGroups().every(g => g.classList.contains('collapsed'));
-      collapseBtn.classList.toggle('fa-chevron-down', allCollapsed);
-      collapseBtn.classList.toggle('fa-chevron-up',   !allCollapsed);
-    }
+      collapseBtn.classList.toggle('fa-chevron-up', allCollapsed);
+      collapseBtn.classList.toggle('fa-chevron-down', !allCollapsed);
+    };
 
     collapseBtn.addEventListener('click', e => {
       e.stopPropagation();
       const groups = subGroups();
       const allCollapsed = groups.every(g => g.classList.contains('collapsed'));
-      groups.forEach(g => {
-        // if all are collapsed, expand all (remove class); otherwise collapse all (add class)
-        g.classList.toggle('collapsed', !allCollapsed);
-      });
+      // if currently all collapsed ➞ expand; otherwise collapse all
+      groups.forEach(g => g.classList.toggle('collapsed', !allCollapsed));
       updateCollapseIcon();
     });
 
-    // initialize the arrow state
+    // initialize icon state
     updateCollapseIcon();
   }
 }
