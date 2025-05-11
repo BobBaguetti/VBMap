@@ -1,36 +1,20 @@
 /* @file: styles/sidebar/actions.css */
-/* @version: 1.0 — eye-icon & Show All/Hide All link styling */
+/* @version: 1.3 — style for Filters “Toggle All” link & hide Show/Hide All links */
 
-.filter-group > h3 .filter-eye,
-.filter-group > h4 .filter-eye {
-  order: 1;               /* appear right after the header text/icon */
-  margin-left: 0.3em;     /* small gap from the text */
-  cursor: pointer;
-  color: #bbb;
-  transition: color 0.2s;
-}
-
-.filter-group > h3 .filter-eye:hover,
-.filter-group > h4 .filter-eye:hover {
-  color: #e5e6e8;
-}
-
-.filter-group > h3 .header-actions,
-.filter-group > h4 .header-actions {
+/* Hide the auto-injected Show All / Hide All links entirely */
+.header-actions {
   display: none !important;
-  gap: 0.4em;
-  
 }
 
-.filter-group .header-actions a {
+/* Filters “Toggle All” link styling */
+#filters-section > h2 .toggle-all {
   color: #bbb;
-  font-size: 0.75em;
+  font-size: 0.9em;
   text-decoration: none;
-  cursor: pointer;
   transition: color 0.2s;
 }
 
-.filter-group .header-actions a:hover {
+#filters-section > h2 .toggle-all:hover {
   color: #e5e6e8;
   text-decoration: underline;
 }
