@@ -13,7 +13,9 @@
 
 .filter-group > h3::after,
 .filter-group > h4::after {
-  display: inline-block;
+  content: '▾';
+  position: absolute;
+  right: 0.6em;             /* float arrow at right edge */
   transition: transform 0.3s ease;
 }
 

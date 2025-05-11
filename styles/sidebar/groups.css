@@ -20,15 +20,17 @@
 /* Group headers (h3 & h4): collapse, eye-icon & header-actions targets */
 .filter-group > h3,
 .filter-group > h4 {
-  background-color: #1f1f1f;
-  padding: 0.4em 0.6em;    /* tighter */
+  display: flex;
+  align-items: center;
+  justify-content: flex-start; /* pin everything at the left */
+  position: relative;           /* for absolute arrow */
+  padding: 0.4em 0.6em;
   margin: 0;
-  font-size: 0.9em;        /* smaller */
+  font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid #333;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  background-color: #1f1f1f;
   cursor: pointer;
+  /* color is now controlled in icons.css */
 }

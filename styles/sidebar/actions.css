@@ -3,7 +3,8 @@
 
 .filter-group > h3 .filter-eye,
 .filter-group > h4 .filter-eye {
-  margin-left: 0.5em;
+  order: 1;               /* appear right after the header text/icon */
+  margin-left: 0.3em;     /* small gap from the text */
   cursor: pointer;
   color: #bbb;
   transition: color 0.2s;
@@ -16,8 +17,9 @@
 
 .filter-group > h3 .header-actions,
 .filter-group > h4 .header-actions {
-  display: inline-flex;
+  display: none !important;
   gap: 0.4em;
+  
 }
 
 .filter-group .header-actions a {
