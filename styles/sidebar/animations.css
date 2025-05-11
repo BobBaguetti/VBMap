@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.1 — use visibility with delay instead of opacity for smoother collapse */
+/* @version: 2.2 — debug: use very long delays to verify transition is applied */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -40,25 +40,26 @@
 .toggle-group {
   overflow: hidden;
   max-height: 0;
-  /* no opacity transition */
-  transition: max-height 0.4s ease-in-out;
-  visibility: hidden; /* hidden by default */
+  visibility: hidden;
+  transition:
+    max-height 5s ease-in-out,
+    visibility 0s linear 5s; /* hide after 5s for testing */
 }
 
 /* Expanded: show content immediately */
 .filter-group:not(.collapsed) > .toggle-group {
   max-height: 1000px;
   visibility: visible;
-  transition: max-height 0.4s ease-in-out;
+  transition: max-height 5s ease-in-out;
 }
 
-/* Collapsed: hide via visibility after height animation */
+/* Collapsed: keep content visible for 5s while height animates down */
 .filter-group.collapsed > .toggle-group {
   max-height: 0;
   visibility: hidden;
   transition:
-    max-height 0.4s ease-in-out,
-    visibility 0s linear 0.4s; /* hide after 0.4s */
+    max-height 5s ease-in-out,
+    visibility 0s linear 5s; /* hide after 5s */
   pointer-events: none;
   user-select: none;
 }
