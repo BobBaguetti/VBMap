@@ -1,11 +1,11 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.9 — ensure updateMasterCollapseIcon is defined before use
+// @version: 2.0 — use JS to fully hide collapsed content after animation
 
 /**
  * Wire up sidebar UI:
  *  - Search‐bar styling
  *  - Sidebar toggle
- *  - Per‐group collapse/expand with animation
+ *  - Per‐group collapse/expand with animation + post-collapse hiding
  *  - “Eye” bulk‐toggle icons
  *  - Filters “Toggle All” and master collapse/expand button
  *
@@ -26,29 +26,6 @@ export function setupSidebarUI({
     return;
   }
 
-  // Helper: animate a group's toggle-group container
-  function animateToggle(group) {
-    const container = group.querySelector(".toggle-group");
-    if (!container) return;
-    const isCollapsed = group.classList.contains("collapsed");
-    container.style.transition = "none";
-    container.style.maxHeight  = isCollapsed
-      ? "0px"
-      : `${container.scrollHeight}px`;
-    container.offsetHeight; // reflow
-    container.style.transition = "max-height 0.25s ease-in-out";
-    if (isCollapsed) {
-      group.classList.remove("collapsed");
-      container.style.maxHeight = `${container.scrollHeight}px`;
-    } else {
-      group.classList.add("collapsed");
-      container.style.maxHeight = "0px";
-    }
-  }
-
-  // Placeholder for master update function — will be assigned later if Filters section exists
-  let updateMasterCollapseIcon = () => {};
-
   // 1) Style the search bar
   searchBar.classList.add("ui-input");
 
@@ -61,10 +38,55 @@ export function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // 3) Per–group collapse & eye‐toggle
+  // Helper: animate a group's toggle-group container
+  function animateToggle(group) {
+    const container = group.querySelector(".toggle-group");
+    if (!container) return;
+    const isCollapsed = group.classList.contains("collapsed");
+    const duration = 300; // match CSS transition duration (ms)
+
+    // prepare
+    container.style.transition = "none";
+    if (isCollapsed) {
+      // expanding: make sure visible, height=0
+      container.style.display = "";
+      container.style.maxHeight = "0px";
+    }
+    container.offsetHeight; // reflow
+
+    // animate
+    container.style.transition = `max-height ${duration}ms ease-in-out`;
+    if (isCollapsed) {
+      group.classList.remove("collapsed");
+      container.style.maxHeight = `${container.scrollHeight}px`;
+    } else {
+      group.classList.add("collapsed");
+      container.style.maxHeight = "0px";
+    }
+
+    // after animation, if collapsed fully, hide for good
+    setTimeout(() => {
+      if (group.classList.contains("collapsed")) {
+        container.style.display = "none";
+      }
+      // clear inline max-height to allow auto height on next expand
+      container.style.maxHeight = "";
+    }, duration);
+  }
+
+  // Placeholder for master update
+  let updateMasterCollapseIcon = () => {};
+
+  // 3) Per-group collapse & eye‐toggle
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
+
+    // start hidden if collapsed in markup
+    const container = group.querySelector(".toggle-group");
+    if (group.classList.contains("collapsed") && container) {
+      container.style.display = "none";
+    }
 
     header.addEventListener("click", () => {
       animateToggle(group);
@@ -127,7 +149,7 @@ export function setupSidebarUI({
     const getSubGroups = () =>
       Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
-    // Now define the master update function
+    // Define update function
     updateMasterCollapseIcon = () => {
       const allCollapsed = getSubGroups().every(g => g.classList.contains('collapsed'));
       collapseBtn.classList.replace(
@@ -148,7 +170,7 @@ export function setupSidebarUI({
       updateMasterCollapseIcon();
     });
 
-    // initialize master icon
+    // init icon
     updateMasterCollapseIcon();
   }
 }
