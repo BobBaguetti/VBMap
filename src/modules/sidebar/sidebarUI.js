@@ -1,6 +1,14 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.10 — hide content after collapse transition ends
+// @version: 1.11 — added search‐clear button handler
 
+/**
+ * Wire up sidebar UI:
+ *  - Search‐bar styling & clear button
+ *  - Sidebar toggle
+ *  - Per‐group collapse/expand with animation
+ *  - “Eye” bulk‐toggle icons
+ *  - Filters “Toggle All” and master collapse/expand button
+ */
 export function setupSidebarUI({
   map,
   sidebarSelector     = "#sidebar",
@@ -8,13 +16,33 @@ export function setupSidebarUI({
   searchBarSelector   = "#search-bar",
   filterGroupSelector = ".filter-group"
 }) {
+  // Elements
   const sidebar       = document.querySelector(sidebarSelector);
   const sidebarToggle = document.querySelector(toggleSelector);
   const searchBar     = document.querySelector(searchBarSelector);
-  if (!sidebar || !sidebarToggle || !searchBar) {
+  const clearBtn      = document.getElementById("search-clear");
+
+  if (!sidebar || !sidebarToggle || !searchBar || !clearBtn) {
     console.warn("[sidebarUI] Missing elements");
     return;
   }
+
+  // 1) Search‐bar: add ui-input class & clear handler
+  searchBar.classList.add("ui-input");
+  clearBtn.addEventListener("click", () => {
+    searchBar.value = "";
+    searchBar.dispatchEvent(new Event("input"));
+    searchBar.focus();
+  });
+
+  // 2) Sidebar open/close
+  sidebarToggle.textContent = "◀︎";
+  sidebarToggle.addEventListener("click", () => {
+    const hidden = sidebar.classList.toggle("hidden");
+    sidebarToggle.style.left  = hidden ? "0px" : `${sidebar.offsetWidth}px`;
+    sidebarToggle.textContent = hidden ? "▶︎" : "◀︎";
+    map.invalidateSize();
+  });
 
   // Helper: animate a group's toggle-group container with post-transition hiding
   function animateToggle(group) {
@@ -22,27 +50,16 @@ export function setupSidebarUI({
     if (!container) return;
     const isCollapsed = group.classList.contains("collapsed");
 
-    // Clear previous listener to avoid duplicates
     container.removeEventListener("transitionend", onTransitionEnd);
 
-    // Prepare initial state & show content if expanding
-    if (isCollapsed) {
-      container.style.visibility = "visible";
-    }
-
-    // Disable transition to set starting maxHeight
+    if (isCollapsed) container.style.visibility = "visible";
     container.style.transition = "none";
     container.style.maxHeight  = isCollapsed
       ? "0px"
       : `${container.scrollHeight}px`;
-
-    // Force reflow
     container.offsetHeight;
-
-    // Re-enable transition
     container.style.transition = "max-height 0.3s ease-in-out";
 
-    // After collapse/expand, toggle the collapsed class
     if (isCollapsed) {
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
@@ -51,7 +68,6 @@ export function setupSidebarUI({
       container.style.maxHeight = "0px";
     }
 
-    // After the height transition ends, hide for real if collapsed
     function onTransitionEnd(e) {
       if (e.propertyName === "max-height" && group.classList.contains("collapsed")) {
         container.style.visibility = "hidden";
@@ -60,20 +76,8 @@ export function setupSidebarUI({
     container.addEventListener("transitionend", onTransitionEnd);
   }
 
-  // Placeholder for master update function
+  // Placeholder for master collapse-icon updater
   let updateMasterCollapseIcon = () => {};
-
-  // 1) Style the search bar
-  searchBar.classList.add("ui-input");
-
-  // 2) Sidebar toggle
-  sidebarToggle.textContent = "◀︎";
-  sidebarToggle.addEventListener("click", () => {
-    const hidden = sidebar.classList.toggle("hidden");
-    sidebarToggle.style.left  = hidden ? "0px" : `${sidebar.offsetWidth}px`;
-    sidebarToggle.textContent = hidden ? "▶︎" : "◀︎";
-    map.invalidateSize();
-  });
 
   // 3) Per-group collapse & eye-toggle
   document.querySelectorAll(filterGroupSelector).forEach(group => {
@@ -107,7 +111,7 @@ export function setupSidebarUI({
   // 4) Filters master controls
   const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
-    // Toggle All
+    // Toggle All link
     const toggleAllLink = document.createElement('a');
     toggleAllLink.textContent = 'Toggle All';
     toggleAllLink.classList.add('toggle-all');
@@ -141,7 +145,6 @@ export function setupSidebarUI({
     const getSubGroups = () =>
       Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
-    // Now define master update
     updateMasterCollapseIcon = () => {
       const allCollapsed = getSubGroups().every(g => g.classList.contains('collapsed'));
       if (allCollapsed) {
@@ -163,7 +166,6 @@ export function setupSidebarUI({
       updateMasterCollapseIcon();
     });
 
-    // initialize
     updateMasterCollapseIcon();
   }
 }
