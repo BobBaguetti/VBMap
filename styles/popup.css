@@ -1,11 +1,13 @@
-/* @version: 27 */
-/* @file: /styles/popup.css */
+/* @keep: Comments and protected headers must NOT be removed or altered except when updating version or content as specified. */
+/* @file: styles/popup.css */
+/* @version: 28 — replaced hard-coded colors with CSS variables where possible */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
+@import url('styles/colors.css');
 
 /* ───────────────────────────────────────────────── Leaflet Overrides ─ */
 .leaflet-container {
-  background-color: #1a1a1a !important;
+  background-color: var(--surface-a0) !important; /* was #1a1a1a */
 }
 
 .leaflet-popup {
@@ -40,11 +42,11 @@
 /* ───────────────────────────────────────────────── Custom Popup ──── */
 .custom-popup {
   position: relative;
-  background: rgba(34, 34, 34, 0.95);
+  background-color: var(--surface-a10);           /* was rgba(34, 34, 34, 0.95) */
   border-radius: 8px;
   padding: 11px;
   width: 320px;
-  color: #e0e0e0;
+  color: var(--primary-a0);                        /* was #e0e0e0 */
   font-family: 'Satoshi', sans-serif;
   font-size: 14px;
   line-height: 1.4;
@@ -57,7 +59,7 @@
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 13px;
-  border-bottom: 2px solid #444;
+  border-bottom: 2px solid var(--surface-a20);     /* was #444 */
   padding: 0;
 }
 .popup-header-left {
@@ -66,12 +68,14 @@
   gap: 10px;
   flex: 1;
 }
+
+/* Image */
 .popup-image {
   width: 64px;
   height: 64px;
   object-fit: contain;
-  background: #222;
-  border: 2px solid #777;
+  background: var(--surface-a0);                   /* was #222 */
+  border: 2px solid var(--surface-a40);            /* was #777 */
   border-radius: 6px;
   flex-shrink: 0;
 }
@@ -89,6 +93,8 @@
   padding: 0;
   line-height: 1.2;
 }
+
+/* Name & Meta */
 .popup-name {
   font-family: 'Segoe UI', Tahoma, sans-serif;
   font-size: 18px;
@@ -97,6 +103,7 @@
   text-transform: uppercase;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
+
 .popup-type,
 .popup-rarity {
   font-size: 15px;
@@ -120,15 +127,15 @@
 .popup-value-icon svg {
   width: 16px;
   height: 16px;
-  fill: #d4af37;
+  fill: #d4af37;                                   /* gold accent (no variable defined) */
 }
 
 /* Body (with box style) */
 .popup-body.popup-info-box {
   font-weight: 420;
   font-size: 14px;
-  background: rgba(20, 20, 20, 0.6);
-  border: 1px solid #444;
+  background: rgba(20, 20, 20, 0.6);              /* retain semi-transparency */
+  border: 1px solid var(--surface-a20);           /* was #444 */
   border-radius: 4px;
   padding: 9px;
   margin-top: 7px;
@@ -157,14 +164,14 @@
   font-size: 12px;
   text-transform: uppercase;
   font-weight: 420;
-  color: #e0e0e0;
+  color: var(--primary-a0);                       /* was #e0e0e0 */
 }
 
 /* Divider after description */
 .popup-divider {
   border: none;
   height: 1px;
-  background: #444;
+  background: var(--surface-a20);                 /* was #444 */
   margin: 1px 0;      /* minimal gap */
 }
 
@@ -181,20 +188,20 @@
 
   /* animate the “×” on hover */
   transition: color 0.2s, transform 0.2s;
-  color: #aaa;
+  color: var(--surface-a50);                      /* was #aaa */
 }
 .popup-close-btn svg {
   width: 16px;
   height: 16px;
-  fill: #aaa;
+  fill: var(--surface-a50);                       /* was #aaa */
   transition: fill 0.2s, transform 0.2s;
 }
 .popup-close-btn:hover {
-  color: #fff;
+  color: var(--primary-a0);                       /* was #fff */
   transform: scale(1.2);
 }
 .popup-close-btn:hover svg {
-  fill: white;
+  fill: var(--primary-a0);                        /* was white */
   transform: scale(1.2);
 }
 
@@ -212,7 +219,7 @@
   box-sizing: border-box;
   width: 52px;
   height: 52px;
-  background: #333;
+  background: var(--surface-a10);                 /* was #333 */
   border: 2px solid transparent; /* inline border-color shows rarity */
   border-radius: 2px;
   overflow: hidden;
@@ -231,17 +238,17 @@
   position: absolute;
   bottom: 2px;
   right: 4px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0, 0, 0, 0.6);                  /* retain semi-transparency */
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 0.75em;
-  color: #fff;
+  color: var(--primary-a0);                       /* was #fff */
 }
 
-/* ───────────────────────────────────────────────── Two separate panels ─ */
+/* ───────────────────────────────── Two separate panels ─ */
 .custom-popup > .popup-info-box {
-  background: rgba(20, 20, 20, 0.6);
-  border: 1px solid #444;
+  background: rgba(20, 20, 20, 0.6);              /* retain semi-transparency */
+  border: 1px solid var(--surface-a20);           /* was #444 */
   border-radius: 4px;
   padding: 9px;
   margin: 8px 0;

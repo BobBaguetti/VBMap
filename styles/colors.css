@@ -1,0 +1,65 @@
+/* @file: styles/colors.css */
+/* @version: 1.2 — added error-red and error-red-dark variables for delete buttons */
+
+:root,
+:root[data-theme="dark"] {
+  /* Surface axis (dark → light) */
+  --surface-a0:  #1e1b21;  /* Sidebar / page background */
+  --surface-a10: #333036;  /* Section headers (Search, Filters) */
+  --surface-a20: #49464c;  /* Filter group panels (Main, Items, Chests) */
+  --surface-a30: #605e63;  /* Hovered rows, inputs, highlights */
+  --surface-a40: #79777b;  /* Borders, dividers, inactive icons */
+  --surface-a50: #929094;  /* Disabled text, placeholders */
+
+  /* Primary text axis (light → lighter) */
+  --primary-a0:  #e6e7e8;  /* Headings, main labels on dark bg */
+  --primary-a10: #e9eaeb;  /* Body text, secondary labels */
+  --primary-a20: #ececed;  /* Input backgrounds, chips */
+  --primary-a30: #eeeff0;  /* Button / card hover surfaces */
+  --primary-a40: #f1f2f2;  /* Light borders on light surfaces */
+  --primary-a50: #f4f4f5;  /* Overlays, modals, tooltips */
+
+  /* Accent */
+  --accent-blue:    #4ba3c7;  /* Vaultbreakers brand blue */
+
+  /* Error / destructive actions */
+  --error-red:       #b92f2f;  /* delete button background */
+  --error-red-dark:  #772222;  /* delete button hover background */
+}
+
+/* ————— Light theme ————— */
+:root[data-theme="light"] {
+  /* Surface axis (light → dark) */
+  --surface-a0:  #f4f4f5;  /* Sidebar / page background */
+  --surface-a10: #f1f2f2;  /* Section headers (Search, Filters) */
+  --surface-a20: #eeeff0;  /* Filter group panels (Main, Items, Chests) */
+  --surface-a30: #ececed;  /* Hovered rows, inputs, highlights */
+  --surface-a40: #e9eaeb;  /* Borders, dividers, inactive icons */
+  --surface-a50: #e6e7e8;  /* Disabled text, placeholders */
+
+  /* Primary text axis (dark → darker) */
+  --primary-a0:  #333036;  /* Headings, main labels on light bg */
+  --primary-a10: #49464c;  /* Body text, secondary labels */
+  --primary-a20: #605e63;  /* Input backgrounds, chips */
+  --primary-a30: #79777b;  /* Button / card hover surfaces */
+  --primary-a40: #929094;  /* Light borders on light surfaces */
+  --primary-a50: #1e1b21;  /* Overlays, modals, tooltips */
+
+  /* Accent (same as dark) */
+  --accent-blue:    #4ba3c7;
+
+  /* Error / destructive actions */
+  --error-red:       #b92f2f;
+  --error-red-dark:  #772222;
+}
+
+/* Example usage (adapt as needed): */
+/*
+.ui-button-delete {
+  background-color: var(--error-red);
+  color: var(--primary-a50);
+}
+.ui-button-delete:hover {
+  background-color: var(--error-red-dark);
+}
+*/

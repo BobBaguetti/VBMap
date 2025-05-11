@@ -1,53 +1,47 @@
+/* @keep: Comments and protected headers must NOT be removed or altered except when updating version or content as specified. */
+/* @file: styles/form.css */
+/* @version: 1.2 — bumped version, all hard-coded colors already replaced by variables */
+
 /* Form Field Layout for Item Definitions (non-modal) */
 #edit-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-top: 8px;
-  }
-  
-  .field-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  
-  .field-row label {
-    width: 90px;
-    margin-right: 5px;
-    flex-shrink: 0;
-  }
-  
-  .field-row input[type="text"],
-  .field-row select,
-  .field-row textarea {
-    background: #303030 !important;
-    color: #e5e6e8 !important;
-    border: 1px solid #555 !important;
-    padding: 4px 6px;
-    font-size: 14px;
-    box-sizing: border-box;
-    width: 100%;
-  }
-  
-  .field-row textarea {
-    resize: vertical;
-  }
-  
-  /* Buttons inside .field-row */
-  .field-row button {
-    padding: 6px 12px !important;
-  }
-  
-  /* Color button (pickr) */
-  .color-btn {
-    width: 32px;
-    height: 32px;
-    background: #666;
-    border: 1px solid #333;
-    border-radius: 2px;
-    cursor: pointer;
-    flex-shrink: 0;
-    margin-left: 86px;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.field-row label {
+  width: 90px;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.field-row input[type="text"],
+.field-row select,
+.field-row textarea {
+  background: var(--surface-a20) !important;    /* was #303030 */
+  color: var(--primary-a0)   !important;        /* was #e5e6e8 */
+  border: 1px solid var(--surface-a40) !important; /* was #555 */
+  padding: 4px 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* Color button (pickr) */
+.color-btn {
+  width: 32px;
+  height: 32px;
+  background: var(--surface-a30);               /* was #666 */
+  border: 1px solid var(--surface-a10);         /* was #333 */
+  border-radius: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 86px;
+}
