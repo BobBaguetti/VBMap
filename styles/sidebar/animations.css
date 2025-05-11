@@ -1,32 +1,24 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 3.1 — hybrid scaleY + grid via inner wrapper */
+/* @version: 1.1 — smoother, faster collapse/expand without delay */
 
-/* 1) Outer container: instant scaleY collapse/expand */
 .toggle-group {
-  transform-origin: top;
-  transform: scaleY(1);
-  transition: transform 0.2s ease-in-out;
-  overflow: hidden;  /* clip the inner wrapper */
+  /* clip contents and animate height smoothly */
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.25s ease-in-out;
 }
 
-/* 2) When collapsed, shrink immediately */
-.filter-group.collapsed > .toggle-group {
-  transform: scaleY(0);
+/* When not collapsed, allow content to expand */
+.filter-group:not(.collapsed) > .toggle-group {
+  /* must be larger than the tallest toggle-group content */
+  max-height: 1000px;
 }
 
-/* 3) Inner wrapper: your original grid layout lives here */
-.toggle-inner {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: 0.3em 0.5em;
-  padding: 0.4em 0.8em; /* preserve your spacing */
-}
-
-/* 4) Arrow rotation (unchanged) */
+/* Collapse arrow rotation (unchanged) */
 .filter-group > h3::after,
 .filter-group > h4::after {
   display: inline-block;
-  transition: transform 0.2s ease-in-out;
+  transition: transform 0.3s ease;
 }
 
 .filter-group.collapsed > h3::after,

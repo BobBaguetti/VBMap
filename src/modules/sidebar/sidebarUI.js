@@ -1,6 +1,16 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.8 — auto‐wrap toggle‐group contents in toggle‐inner
+// @version: 1.5 — collapse‐all button toggles correctly between up/down
 
+/**
+ * Wire up basic sidebar UI interactions:
+ *  - Search‐bar styling
+ *  - Sidebar toggle (show/hide)
+ *  - Collapsible filter groups (h3/h4 headers)
+ *  - “Eye” icons on each group header
+ *  - Toggle All & Collapse All for Filters section
+ *
+ * @param {{ map: L.Map, sidebarSelector: string, toggleSelector: string, searchBarSelector: string, filterGroupSelector: string }} opts
+ */
 export function setupSidebarUI({
   map,
   sidebarSelector     = "#sidebar",
@@ -17,22 +27,6 @@ export function setupSidebarUI({
     return;
   }
 
-  // —————————————  
-  // NEW: wrap each .toggle-group’s children into a .toggle-inner
-  document.querySelectorAll(".toggle-group").forEach(group => {
-    // If we’ve already wrapped, skip
-    if (group.querySelector(":scope > .toggle-inner")) return;
-
-    const inner = document.createElement("div");
-    inner.className = "toggle-inner";
-    // move all existing children into inner
-    while (group.firstChild) {
-      inner.appendChild(group.firstChild);
-    }
-    group.appendChild(inner);
-  });
-  // —————————————  
-
   // 1) Style the search bar
   searchBar.classList.add("ui-input");
 
@@ -45,17 +39,17 @@ export function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // 3) Collapse & eye‐toggle for every filter‐group (CSS handles animation)
+  // 3) Collapse & eye‐toggle for every filter‐group
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
 
-    // Collapse on header click
+    // 3a) Collapse on header click
     header.addEventListener("click", () => {
       group.classList.toggle("collapsed");
     });
 
-    // Inject the eye icon
+    // 3b) Inject the eye icon
     const eye = document.createElement("i");
     eye.classList.add("fas", "fa-eye", "filter-eye");
     eye.style.cursor     = "pointer";
@@ -77,54 +71,60 @@ export function setupSidebarUI({
   });
 
   // 4) Toggle All & Collapse All for Filters section
-  const filtersHeader = document.querySelector("#filters-section > h2");
+  const filtersHeader = document.querySelector('#filters-section > h2');
   if (filtersHeader) {
     // Toggle All link
-    const toggleAllLink = document.createElement("a");
-    toggleAllLink.textContent = "Toggle All";
-    toggleAllLink.classList.add("toggle-all");
-    toggleAllLink.style.marginLeft = "1em";
-    toggleAllLink.style.cursor     = "pointer";
+    const toggleAllLink = document.createElement('a');
+    toggleAllLink.textContent = 'Toggle All';
+    toggleAllLink.classList.add('toggle-all');
+    toggleAllLink.style.marginLeft = '1em';
+    toggleAllLink.style.cursor     = 'pointer';
     filtersHeader.appendChild(toggleAllLink);
-    toggleAllLink.addEventListener("click", e => {
+
+    toggleAllLink.addEventListener('click', e => {
       e.stopPropagation();
       const cbs = Array.from(
-        document.querySelectorAll("#filters-section .toggle-group input[type=checkbox]")
+        document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
       );
       if (!cbs.length) return;
       const anyOff = cbs.some(cb => !cb.checked);
       cbs.forEach(cb => {
         cb.checked = anyOff;
-        cb.dispatchEvent(new Event("change", { bubbles: true }));
+        cb.dispatchEvent(new Event('change', { bubbles: true }));
       });
     });
 
-    // Collapse/Expand All chevron
-    const collapseBtn = document.createElement("i");
-    collapseBtn.classList.add("fas", "collapse-all");
-    collapseBtn.style.marginLeft = "0.5em";
-    collapseBtn.style.cursor     = "pointer";
+    // Collapse All toggle‐button
+    const collapseBtn = document.createElement('i');
+    collapseBtn.classList.add('fas', 'collapse-all');
+    collapseBtn.style.position     = 'absolute';
+    collapseBtn.style.right        = '0.6em';
+    collapseBtn.style.top          = '50%';
+    collapseBtn.style.transform    = 'translateY(-50%)';
+    collapseBtn.style.cursor       = 'pointer';
+    collapseBtn.style.transition   = 'color 0.2s';
     filtersHeader.appendChild(collapseBtn);
 
     const subGroups = () =>
-      Array.from(document.querySelectorAll("#filters-section > .filter-group"));
+      Array.from(document.querySelectorAll('#filters-section > .filter-group'));
 
     const updateCollapseIcon = () => {
-      const allCollapsed = subGroups().every(g => g.classList.contains("collapsed"));
-      collapseBtn.classList.toggle("fa-chevron-up", allCollapsed);
-      collapseBtn.classList.toggle("fa-chevron-down", !allCollapsed);
+      // when all subgroups are collapsed ➞ show up arrow
+      const allCollapsed = subGroups().every(g => g.classList.contains('collapsed'));
+      collapseBtn.classList.toggle('fa-chevron-up', allCollapsed);
+      collapseBtn.classList.toggle('fa-chevron-down', !allCollapsed);
     };
 
-    collapseBtn.addEventListener("click", e => {
+    collapseBtn.addEventListener('click', e => {
       e.stopPropagation();
       const groups = subGroups();
-      const allCollapsed = groups.every(g => g.classList.contains("collapsed"));
-      groups.forEach(g => {
-        g.classList.toggle("collapsed", !allCollapsed);
-      });
+      const allCollapsed = groups.every(g => g.classList.contains('collapsed'));
+      // if currently all collapsed ➞ expand; otherwise collapse all
+      groups.forEach(g => g.classList.toggle('collapsed', !allCollapsed));
       updateCollapseIcon();
     });
 
+    // initialize icon state
     updateCollapseIcon();
   }
 }
