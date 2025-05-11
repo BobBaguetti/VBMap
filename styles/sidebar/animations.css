@@ -1,21 +1,23 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 1.0 — collapse/expand transitions */
+/* @version: 1.1 — smoother, faster collapse/expand without delay */
 
 .toggle-group {
+  /* clip contents and animate height smoothly */
   overflow: hidden;
-  max-height: 2000px;  /* large enough for full content */
-  transition: max-height 0.3s ease;
-}
-
-.filter-group.collapsed .toggle-group {
   max-height: 0;
+  transition: max-height 0.25s ease-in-out;
 }
 
+/* When not collapsed, allow content to expand */
+.filter-group:not(.collapsed) > .toggle-group {
+  /* must be larger than the tallest toggle-group content */
+  max-height: 1000px;
+}
+
+/* Collapse arrow rotation (unchanged) */
 .filter-group > h3::after,
 .filter-group > h4::after {
-  content: '▾';
-  position: absolute;
-  right: 0.6em;             /* float arrow at right edge */
+  display: inline-block;
   transition: transform 0.3s ease;
 }
 
