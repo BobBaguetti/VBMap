@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 1.5 — disable interactions on collapsed groups */
+/* @version: 1.6 — hide collapsed content to prevent "bleed-through" during transitions */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -49,8 +49,14 @@
   max-height: 1000px;
 }
 
-/* Disable pointer events and text selection when collapsed */
+/* Disable interactions when collapsed */
 .filter-group.collapsed > .toggle-group {
   pointer-events: none;
   user-select: none;
+  visibility: hidden;    /* fully hide content so no “bleed-through” */
+}
+
+/* Ensure expanded content is visible */
+.filter-group:not(.collapsed) > .toggle-group {
+  visibility: visible;
 }
