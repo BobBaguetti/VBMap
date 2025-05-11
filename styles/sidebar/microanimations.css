@@ -1,0 +1,20 @@
+/* @file: styles/sidebar/microanimations.css */
+/* @version: 1.0 — micro-interaction animations for labels & icons */
+
+.filter-group .toggle-group label {
+  transition: background 0.2s ease, transform 0.1s ease;
+}
+
+.filter-group .toggle-group label:active {
+  transform: scale(0.96);
+}
+
+.filter-group .filter-eye,
+.filter-group .header-actions a {
+  transition: color 0.2s ease, transform 0.1s ease;
+}
+
+.filter-group .filter-eye:active,
+.filter-group .header-actions a:active {
+  transform: scale(1.1);
+}
