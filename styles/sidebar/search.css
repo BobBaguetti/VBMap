@@ -1,10 +1,11 @@
 /* @file: styles/sidebar/search.css */
-/* @version: 1.3 — hide native search-clear so only custom button shows */
+/* @version: 1.4 — hide native clear, style custom button, and add search-results dropdown */
 
 #sidebar-search {
   margin-top: 0.8em;
 }
 
+/* Tab‐style header */
 #sidebar-search > h2 {
   background-color: #1b1b1b;
   padding: 0.5em 0.8em;
@@ -17,6 +18,7 @@
   color: #e5e6e8;
 }
 
+/* Card container */
 #sidebar-search {
   background-color: #2a2a2a;
   border: 1px solid #333;
@@ -93,4 +95,60 @@
   border: none;
   border-top: 1px solid #333;
   margin: 0;
+}
+
+/* ========== Search Results Dropdown ========== */
+#search-results {
+  position: relative;
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  background-color: #2a2a2a;
+  border: 1px solid #333;
+  border-radius: 4px;
+  z-index: 1001;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+}
+
+/* Each suggestion row */
+.search-results .result-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5em;
+  font-size: 0.9em;
+  color: #e5e6e8;
+  cursor: pointer;
+}
+.search-results .result-item:hover {
+  background-color: #3a3a3a;
+}
+
+/* Name text */
+.search-results .result-item .result-name {
+  flex-grow: 1;
+  margin-right: 0.5em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Action buttons */
+.search-results .result-item .result-actions button {
+  background: none;
+  border: none;
+  color: #888;
+  font-size: 1em;
+  margin-left: 0.4em;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+.search-results .result-item .result-actions button:hover {
+  color: #e5e6e8;
 }
