@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.2 — refine logo sizing and centering */
+/* @version: 1.2 — tighten sidebar-logo img sizing for proper fit */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -40,20 +40,23 @@
   background: #444;
 }
 
-/* Sidebar logo styling */
+/* Sidebar logo container */
 #sidebar .sidebar-logo {
   margin-top: 0.66em;       /* reduced by one-third from ~1em */
-  text-align: center;       /* center the img */
+  text-align: center;
   font-family: 'Satoshi', sans-serif;
 }
 
+/* Logo image sizing and centering */
 #sidebar .sidebar-logo img {
-  display: block;           /* treat as block for centering */
-  margin: 0 auto;           /* center horizontally */
-  max-width: 50%;           /* cap at half the sidebar width */
-  height: auto;             /* maintain aspect ratio */
+  display: block;           /* allow margin auto centering */
+  margin: 0 auto;
+  max-width: 50%;           /* cap at half sidebar width */
+  width: auto;              /* let the image scale proportionally */
+  height: auto;
 }
 
+/* Subtitle styling */
 #sidebar .sidebar-logo__subtitle {
   margin: 4px 0 8px;        /* fine-tune spacing under the logo */
   font-size: 12px;
