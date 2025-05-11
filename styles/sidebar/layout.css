@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.4 — enforce strict logo sizing to fit sidebar width */
+/* @version: 1.5 — target the actual h1/img since no .sidebar-logo class is present */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -40,15 +40,15 @@
   background: #444;
 }
 
-/* Sidebar logo container */
-#sidebar .sidebar-logo {
+/* Logo container (h1) */
+#sidebar > h1 {
   margin-top: 0.5em;         /* slightly tighter top spacing */
   text-align: center;
   font-family: 'Satoshi', sans-serif;
 }
 
 /* Logo image sizing and centering */
-#sidebar .sidebar-logo img {
+#sidebar > h1 > img {
   display: block;
   margin: 0 auto;
   width: 100%;               /* span full container width */
