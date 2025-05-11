@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.5 — target the actual h1/img since no .sidebar-logo class is present */
+/* @version: 1.6 — enlarge logo and tighten vertical spacing around it */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -40,25 +40,25 @@
   background: #444;
 }
 
-/* Logo container (h1) */
+/* Logo container (h1) – tighter top and bottom margins */
 #sidebar > h1 {
-  margin-top: 0.5em;         /* slightly tighter top spacing */
+  margin: 0.25em 0;        /* less space above and below logo */
   text-align: center;
   font-family: 'Satoshi', sans-serif;
 }
 
-/* Logo image sizing and centering */
+/* Logo image sizing and centering – larger max size */
 #sidebar > h1 > img {
   display: block;
   margin: 0 auto;
-  width: 100%;               /* span full container width */
-  max-width: 120px;          /* but no wider than 120px */
+  width: 100%;
+  max-width: 150px;        /* increase max width from 120px to 150px */
   height: auto;
 }
 
-/* Subtitle styling */
+/* Subtitle styling – reduced spacing */
 #sidebar .sidebar-logo__subtitle {
-  margin: 4px 0 8px;
+  margin: 2px 0 4px;       /* less space above/below subtitle */
   font-size: 12px;
   text-transform: uppercase;
   text-align: center;
