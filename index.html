@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 28 – add colored header bands styling -->
+<!-- @version: 30 – convert top‐level sections to <h2> for Filters, Settings & Admin Tools -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -77,8 +77,8 @@
       <hr/>
     </div>
 
-    <!-- Filters -->
-    <div class="sidebar-section">
+    <!-- FILTERS -->
+    <div class="sidebar-section" id="filters-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
 
       <!-- Main layer toggles -->
@@ -107,7 +107,7 @@
         <div class="toggle-group" id="chest-filter-list"><!-- dynamic --></div>
       </div>
 
-      <!-- NPC filters with nested sub-groups -->
+      <!-- NPC filters -->
       <div class="filter-group" id="npc-filters">
         <h3><i class="fas fa-user-friends group-icon"></i>NPCs</h3>
         <div class="filter-group nested" id="npc-hostile-filters">
@@ -121,18 +121,18 @@
       </div>
     </div>
 
-    <!-- Settings -->
-    <div class="filter-group" id="settings-section">
-      <h3><i class="fas fa-cog group-icon"></i>Settings</h3>
+    <!-- SETTINGS -->
+    <div class="sidebar-section" id="settings-section">
+      <h2><i class="fas fa-cog"></i> Settings</h2>
       <div class="toggle-group">
         <label><input type="checkbox" id="toggle-grouping"/><span>Enable Marker Grouping</span></label>
         <label><input type="checkbox" id="toggle-small-markers"/><span>Small Markers (50%)</span></label>
       </div>
     </div>
 
-    <!-- Admin Tools -->
-    <div class="filter-group" id="admin-tools-section">
-      <h3><i class="fas fa-tools group-icon"></i>Admin Tools</h3>
+    <!-- ADMIN TOOLS -->
+    <div class="sidebar-section" id="admin-tools-section">
+      <h2><i class="fas fa-tools"></i> Admin Tools</h2>
       <div class="toggle-group">
         <button id="manage-items-btn">Manage Items</button>
         <button id="manage-chests-btn">Manage Chests</button>

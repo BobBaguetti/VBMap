@@ -1,7 +1,6 @@
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 1.1 — colored header bands for major sections extended to Settings & Admin Tools */
+/* @version: 2.0 — unified header bands on h2 for top‐level sections */
 
-/* Filters header (h2) */
 .sidebar-section > h2 {
   background-color: #1b1b1b;    /* slightly lighter than the sidebar background */
   padding: 0.5em 0.8em;
@@ -13,22 +12,7 @@
   color: #e5e6e8;
 }
 
-/* Settings & Admin Tools headers (h3) */
-#settings-section > h3,
-#admin-tools-section > h3 {
-  background-color: #1b1b1b;    /* match Filters band */
-  padding: 0.5em 0.8em;
-  margin: 0;                    /* flush up */
-  border-radius: 4px;
-  font-size: 1.1em;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: #e5e6e8;
-}
-
-/* Ensure the content cards sit neatly below their headers */
-.sidebar-section,
-#settings-section,
-#admin-tools-section {
+/* Push the section content neatly below the header band */
+.sidebar-section {
   margin-top: 0.8em;
 }
