@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.0 — sidebar container & toggle button styling */
+/* @version: 1.1 — sidebar container & toggle button styling; add sidebar logo styling */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -38,4 +38,25 @@
 
 #sidebar-toggle:hover {
   background: #444;
+}
+
+/* Sidebar logo styling */
+#sidebar .sidebar-logo {
+  margin-top: 0.66em;       /* reduced by one-third from ~1em */
+  text-align: center;
+  font-family: 'Satoshi', sans-serif;
+}
+
+#sidebar .sidebar-logo img {
+  display: inline-block;
+  width: 50%;               /* cap logo at half the sidebar width */
+  height: auto;
+}
+
+#sidebar .sidebar-logo__subtitle {
+  margin: 4px 0 8px;        /* fine-tune spacing under the logo */
+  font-size: 12px;
+  text-transform: uppercase;
+  text-align: center;
+  font-family: 'Satoshi', sans-serif;
 }
