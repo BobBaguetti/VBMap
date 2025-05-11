@@ -1,21 +1,22 @@
+/* @keep: Comments and protected headers must NOT be removed or altered unless updating version or content as specified. */
 /* @file: styles/sidebar/icons.css */
-/* @version: 1.1 — header hover & spacing tweaks */
+/* @version: 1.2 — replaced hard-coded colors with CSS variables */
 
 .filter-group > h3,
 .filter-group > h4 {
-  color: #bbb;  /* default header text & icon color */
+  color: var(--surface-a50);  /* was #bbb */
 }
 
 .filter-group > h3:hover,
 .filter-group > h4:hover {
-  color: #e5e6e8;  /* lighten both text & icons on hover */
+  color: var(--primary-a0);   /* was #e5e6e8 */
 }
 
 .filter-group > h3 i.group-icon,
 .filter-group > h4 i.group-icon {
-  margin-right: 0.3em;  /* tighten gap between icon & text */
+  margin-right: 0.3em;        /* tighten gap between icon & text */
 }
 
 .filter-group.nested > h4 i.group-icon {
-  font-size: 0.9em;     /* keep nested icons a bit smaller */
+  font-size: 0.9em;           /* keep nested icons a bit smaller */
 }

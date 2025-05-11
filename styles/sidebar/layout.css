@@ -1,5 +1,6 @@
+/* @keep: Comments and protected headers must NOT be removed or altered unless updating version or content as specified. */
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.7 — hide sidebar scrollbar without altering layout */
+/* @version: 1.8 — replaced hard-coded colors with CSS variables */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -8,8 +9,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  background-color: #222;
-  color: #e5e6e8;
+  background-color: var(--surface-a0);   /* was #222 */
+  color: var(--primary-a0);               /* was #e5e6e8 */
   padding: 8px;
   box-sizing: border-box;
   overflow-y: auto;
@@ -38,15 +39,15 @@
   z-index: 1100;
   width: 30px;
   height: 30px;
-  background: #333;
+  background: var(--surface-a10); /* was #333 */
   border: none;
-  color: #e5e6e8;
+  color: var(--primary-a0);        /* was #e5e6e8 */
   cursor: pointer;
   transition: left 0.3s ease, background 0.2s ease;
 }
 
 #sidebar-toggle:hover {
-  background: #444;
+  background: var(--surface-a20); /* was #444 */
 }
 
 /* Logo container (h1) – tighter top and bottom margins */

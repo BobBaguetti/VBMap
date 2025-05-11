@@ -1,5 +1,6 @@
+/* @keep: Comments and protected headers must NOT be removed or altered unless updating version or content as specified. */
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.3 — normal durations restored; JS handles final hiding */
+/* @version: 2.4 — replaced hard-coded chevron colors with CSS variables */
 
 /* Ensure Font Awesome is loaded */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
@@ -20,14 +21,14 @@
   top: 50%;
   transform: translateY(-50%);
   transition: color 0.2s, transform 0.2s;
-  color: #bbb;
+  color: var(--surface-a50); /* was #bbb */
   cursor: pointer;
   font-size: 0.9em;
 }
 
 .filter-group > h3:hover::after,
 .filter-group > h4:hover::after {
-  color: #e5e6e8;
+  color: var(--primary-a0); /* was #e5e6e8 */
 }
 
 /* Right/down chevron icons */

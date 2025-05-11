@@ -1,15 +1,16 @@
+/* @keep: Comments and protected headers must NOT be removed or altered unless updating version or content as specified. */
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 2.0 — unified header bands on h2 for top‐level sections */
+/* @version: 2.1 — replaced hard-coded colors with CSS variables */
 
 .sidebar-section > h2 {
-  background-color: #1b1b1b;    /* slightly lighter than the sidebar background */
+  background-color: var(--surface-a10);    /* was #1b1b1b */
   padding: 0.5em 0.8em;
   margin: 0;                    /* reset default margins */
   border-radius: 4px;
   font-size: 1.1em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #e5e6e8;
+  color: var(--primary-a0);     /* was #e5e6e8 */
 }
 
 /* Push the section content neatly below the header band */
