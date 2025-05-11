@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 32 – added Search tab header -->
+<!-- @version: 33 – add clear‐button to search input (full file) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -74,13 +74,17 @@
     <!-- STICKY SEARCH -->
     <div id="sidebar-search" class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
-      <input type="text" id="search-bar" placeholder="Search items/locations…"/>
+      <div class="search-wrapper">
+        <input type="search" id="search-bar" placeholder="Search items/locations…"/>
+        <button id="search-clear" aria-label="Clear search">&times;</button>
+      </div>
       <hr/>
     </div>
 
     <!-- FILTERS -->
     <div class="sidebar-section" id="filters-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
+
       <!-- Main layer toggles -->
       <div class="filter-group" id="main-filters">
         <h3><i class="fas fa-layer-group group-icon"></i>Main</h3>
@@ -166,4 +170,3 @@
   <script type="module" src="src/index.js"></script>
 </body>
 </html>
- 
