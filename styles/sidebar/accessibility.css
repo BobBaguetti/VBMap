@@ -3,7 +3,7 @@
 
 .filter-group .toggle-group label:hover,
 .filter-group .toggle-group label:focus-within {
-  background-color: var(--surface-hover) !important;
+  background-color: var(--surface-toggle-hover);
 }
 
 /* Make labels keyboard-focusable */
@@ -12,22 +12,22 @@
 }
 
 .filter-group .toggle-group input:focus-visible + span {
-  outline: 2px solid var(--focus-outline) !important;
+  outline: 2px solid var(--focus-outline);
   outline-offset: 2px;
 }
 
 /* Highlight header on focus for collapse/eye */
 .filter-group > h3:focus-within,
 .filter-group > h4:focus-within {
-  background-color: var(--surface-hover-bg) !important;
-  outline: 2px solid var(--focus-outline) !important;
+  background-color: var(--surface-focus-bg);
+  outline: 2px solid var(--focus-outline);
   outline-offset: -2px;
 }
 
 /* Focus states for eye icon and header-actions links */
 .filter-group .filter-eye:focus-visible,
 .filter-group .header-actions a:focus-visible {
-  outline: 2px solid var(--focus-outline) !important;
+  outline: 2px solid var(--focus-outline);
   outline-offset: 2px;
 }
 

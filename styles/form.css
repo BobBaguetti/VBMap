@@ -46,8 +46,8 @@
 .color-btn {
   width: 32px;
   height: 32px;
-  background: var(--button-bg) !important;
-  border: 1px solid var(--border-main) !important;
+  background: var(--surface-color-btn);
+  border: 1px solid var(--border-strong);
   border-radius: 2px;
   cursor: pointer;
   flex-shrink: 0;
