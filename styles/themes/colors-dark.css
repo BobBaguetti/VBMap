@@ -1,0 +1,48 @@
+/* @file: styles/themes/colors-dark.css */
+/* @version: 1.1 — modular container variables, text-primary tweaked to #e5e6e8 */
+
+:root {
+  /* Page and Map */
+  --surface-page:            #1a1a1a; /* html/body background */
+  --surface-map:             #1a1a1a; /* map container background */
+
+  /* Sidebar */
+  --surface-sidebar:         #232323; /* sidebar overall background */
+  --surface-section-header:  #1a1a1a; /* “Search” & “Filters” header bars */
+  --surface-filter-group:    #232323; /* filter-group panels (Main, Items, Chests) */
+
+  /* Modals */
+  --surface-modal-small:     #232323; /* small modal background */
+  --surface-modal-large:     #232323; /* large modal background */
+
+  /* Other Containers */
+  --surface-about-section:   #232323; /* e.g. “About” page sections */
+
+  /* Interactive / Hover */
+  --surface-hover:           #2e2e2e; /* hovered rows, inputs, highlights */
+
+  /* Text */
+  --text-primary:            #e5e6e8; /* primary body and control text */
+  --text-secondary:          #a3a3a3; /* secondary text (placeholders, disabled) */
+
+  /* Accent & Feedback */
+  --accent:                  #ffda95; /* highlights, active states, buttons */
+  --danger:                  #e74c3c; /* delete buttons, errors */
+  --warning:                 #f1c40f; /* warnings */
+  --success:                 #27ae60; /* success states */
+
+  /* Borders & Dividers */
+  --border:                  #444444; /* general dividers and borders */
+  --border-muted:            #555555; /* subtle borders (inputs, buttons) */
+
+  /* Form & UI Controls */
+  --input-bg:                #303030; /* form inputs, dropdowns */
+  --input-text:              var(--text-primary);
+  --button-bg:               #333333; /* default button backgrounds */
+  --button-bg-hover:         #444444; /* button hover state */
+
+  /* Scrollbars */
+  --scrollbar-track:         #2a2a2a; /* scrollbar track */
+  --scrollbar-thumb:         #555555; /* scrollbar thumb default */
+  --scrollbar-thumb-hover:   #777777; /* scrollbar thumb hover */
+}

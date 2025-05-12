@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.7 — hide sidebar scrollbar without altering layout */
+/* @version: 1.8 — replace hard-coded colors with theme variables */
 
 #sidebar {
   font-family: 'Satoshi', sans-serif;
@@ -8,8 +8,8 @@
   position: absolute;
   top: 0;
   left: 0;
-  background-color: #222;
-  color: #e5e6e8;
+  background-color: var(--surface-sidebar);
+  color: var(--text-primary);
   padding: 8px;
   box-sizing: border-box;
   overflow-y: auto;
@@ -38,15 +38,15 @@
   z-index: 1100;
   width: 30px;
   height: 30px;
-  background: #333;
+  background: var(--button-bg);
   border: none;
-  color: #e5e6e8;
+  color: var(--text-primary);
   cursor: pointer;
   transition: left 0.3s ease, background 0.2s ease;
 }
 
 #sidebar-toggle:hover {
-  background: #444;
+  background: var(--button-bg-hover);
 }
 
 /* Logo container (h1) – tighter top and bottom margins */
