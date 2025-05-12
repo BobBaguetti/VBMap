@@ -1,12 +1,15 @@
-/* Context Menu */
+/* @file: styles/context-menu.css */
+/* @version: 2 */
+
 #context-menu {
-  font-family: Arial, sans-serif;
+  font-family: var(--font-body, Arial, sans-serif);
   font-size: 14px;
   border-radius: 3px;
-  background: #333 !important;
-  color: #eee !important;
-  border: 1px solid #555 !important;
+  background: var(--bg-40) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-soft) !important;
 }
+
 #context-menu div:hover {
-  background-color: #555 !important;
+  background-color: var(--bg-50) !important;
 }
