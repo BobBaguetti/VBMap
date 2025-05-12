@@ -1,31 +1,32 @@
 /* @file: styles/themes/colors-dark.css */
-/* @version: 3.5 — add --div-line and rewire divider vars */
+/* @version: 3.6 — add --div-line and rewire divider vars */
 
 :root {
       /* ==========================================================================
      0. Temp Gray & Divider Line
      ========================================================================== */
-  --temp-gray-777:           #777777;   /* keep for testing */
-  --temp-gray-555:           #555555;   /* keep for testing */
-  --temp-gray-2a:            #2a2a2a;   /* keep for testing */
+  --temp-gray-777:           #ff0000;   /* keep for testing */
+  --temp-gray-555:           #2bff00;   /* keep for testing */
 
   /* ==========================================================================
      1. Page & Map
      ========================================================================== */
-  --surface-page:            var(--surface-deep-dark);
-  --surface-map:             var(--surface-deep-dark);
+  --surface-page:            var(--surface-0);
+  --surface-map:             var(--surface-0);
 
   /* ==========================================================================
      2. Core Surface, Variations and Globals
      ========================================================================== */
-  --surface-dark:            #232323;
-  --surface-entry-container: var(--temp-gray-2a);
-  --surface-input-field:     #303030;
-  --surface-deep-dark:       #1a1a1a;
+  --surface-0:               #1a1a1a;
+  --surface-1:               #1f1f1f;
+  --surface-2:               #232323;
+  --surface-3:               #2a2a2a;
+  --surface-4:               #303030;
 
     /* UI Utilities & Entry Styles */
   --text-ui-default:         var(--text-primary);
   --div-line:              #444444; 
+  --surface-entry-container: var(--surface-4);
   --surface-button-delete:   var(--surface-delete);
   --surface-button-delete-hover: var(--surface-delete-hover);
   --text-button-delete:      var(--text-on-dark);
@@ -33,7 +34,7 @@
   --color-value-icon:        #d4af37;
 
     /*UI Controls: Forms & Buttons*/
-  --input-bg:                var(--surface-input-field);
+  --input-bg:                var(--surface-4);
   --input-text:              var(--text-primary);
   --button-bg:               #333333;
   --button-bg-hover:         #444444; 
@@ -58,9 +59,9 @@
   /* ==========================================================================
      3. Sidebar 
      ========================================================================== */
-  --surface-sidebar:         var(--surface-dark);
-  --surface-section-header:  var(--surface-deep-dark);
-  --surface-search-header:   var(--surface-deep-dark);
+  --surface-sidebar:         var(--surface-1);
+  --surface-section-header:  var(--surface-0);
+  --surface-search-header:   var(--surface-0);
   --surface-search-panel:    var(--surface-entry-container);
 
   /* Filter Groups */
@@ -71,7 +72,7 @@
   /* ==========================================================================
      4. Others
      ========================================================================== */
-  --surface-about-section:   var(--surface-dark);
+  --surface-about-section:   var(--surface-1);
 
   /* ==========================================================================
      5. Context Menu
@@ -99,7 +100,7 @@
   /* ==========================================================================
      9. Focus States
      ========================================================================== */
-  --surface-focus-bg:        var(--temp-gray-2a);
+  --surface-focus-bg:        var(--surface-3);
   --focus-outline:           var(--temp-gray-777);
 
   /* ==========================================================================
@@ -149,8 +150,8 @@
      14. Modals
      ========================================================================== */
   --surface-modal-base:      #222222;
-  --surface-modal-small:     var(--surface-dark);
-  --surface-modal-large:     var(--surface-dark);
+  --surface-modal-small:     var(--surface-1);
+  --surface-modal-large:     var(--surface-1);
   --text-modal:              var(--text-primary);
   --surface-modal-input:     var(--surface-entry-container);
 
@@ -164,7 +165,7 @@
   /* ==========================================================================
      15. Preview Panels
      ========================================================================== */
-  --surface-preview-bg:      var(--surface-deep-dark);
+  --surface-preview-bg:      var(--surface-0);
   --text-inverse:            var(--text-on-dark);
 
 }
