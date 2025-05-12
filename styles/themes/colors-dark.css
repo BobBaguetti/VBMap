@@ -7,7 +7,6 @@
      ========================================================================== */
   --temp-gray-777:           #777777;   /* keep for testing */
   --temp-gray-555:           #555555;   /* keep for testing */
-  --temp-gray-333:           #333333;   /* keep for testing */
   --temp-gray-2a:            #2a2a2a;   /* keep for testing */
 
   /* ==========================================================================
@@ -48,8 +47,9 @@
   --shadow-modal:            var(--shadow-strong);
 
     /* Borders & Dividers */
+  --border-main: #333333;
   --border:                  var(--div-line);
-  --border-strong:           var(--temp-gray-333);
+  --border-strong:           var(--border-main);
   --border-muted:            var(--temp-gray-555);
 
   /* preview border now aliases strong border */
@@ -76,7 +76,7 @@
   /* ==========================================================================
      5. Context Menu
      ========================================================================== */
-  --surface-context-menu:    var(--temp-gray-333);
+  --surface-context-menu:    var(--surface-entry-container);
   --text-context-menu:       var(--text-primary);
 
   /* ==========================================================================
@@ -139,7 +139,7 @@
   --surface-popup-image:     #222222;
   --border-popup-image:      var(--temp-gray-777); /* not a divider */
   --surface-info-box-bg:     rgba(20,20,20,0.6);
-  --surface-popup-chest-slot: var(--temp-gray-333);
+  --surface-popup-chest-slot: var(--border-main);
   --surface-chest-slot-qty-bg: rgba(0,0,0,0.6);
   --text-popup:              #e0e0e0;
   --text-popup-close:        var(--text-on-dark);
