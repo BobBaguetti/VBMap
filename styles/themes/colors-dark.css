@@ -9,7 +9,7 @@
   /* Sidebar */
   --surface-sidebar:         #232323; /* sidebar overall background */
   --surface-section-header:  #1a1a1a; /* “Search” & “Filters” header bars */
-  --surface-filter-group:    #ff0000; /* filter-group panels (Main, Items, Chests) */
+
 
   /* Modals */
   --surface-modal-small:     #232323; /* small modal background */
@@ -62,7 +62,7 @@
   /* border‐bottom‐color on focus will use var(--accent) */
 
   /* Filter-group header default text */
-  --text-filter-header-default: #bbbbbb;
+  --text-filter-header-default: #f30303;
 
   /* Filter-Group Cards */
   --surface-filter-group-panel:  #2a2a2a; /* filter-group card background */
