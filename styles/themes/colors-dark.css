@@ -1,12 +1,11 @@
 /* @file: styles/themes/colors-dark.css */
-/* @version: 3.9 — add --div-line and rewire divider vars */
+/* @version: 4.1 — merge outline & border-muted, unify backdrops, collapse marker/popups borders */
 
 :root {
-      /* ==========================================================================
-     0. Temp vars for testing colors asigned to unknown elements
+  /* ==========================================================================
+     0. Temp vars for testing colors assigned to unknown elements
      ========================================================================== */
   --temp-gray-777:           #ff0000;   /* keep for testing */
-
 
   /* ==========================================================================
      1. Page & Map
@@ -20,55 +19,55 @@
   --surface-0:               #1a1a1a;
   --surface-1:               #1f1f1f;
   --surface-2:               #232323;
-  --surface-window:          #232323;
+  --surface-window:          #282828;
   --surface-3:               #2a2a2a;
   --surface-4:               #303030;
 
-    /* UI Utilities & Entry Styles */
+  /* UI Utilities & Entry Styles */
   --text-ui-default:         var(--text-primary);
-  --div-line:              #444444; 
-  --surface-entry-container: var(--surface-4);
-  --surface-button-delete:   var(--surface-delete);
-  --surface-button-delete-hover: var(--surface-delete-hover);
-  --text-button-delete:      var(--text-on-dark);
-  --text-entry-quantity:     #aaaaaa;
-  --color-value-icon:        #d4af37;
+  --div-line:                #444444;
 
-    /*UI Controls: Forms & Buttons*/
+  /* delete button */
+  --surface-button-delete:       var(--surface-delete);
+  --surface-button-delete-hover: var(--surface-delete-hover);
+  --text-button-delete:          var(--text-on-dark);
+  --text-entry-quantity:         #aaaaaa;
+  --color-value-icon:            #d4af37;
+
+  /* UI Controls: Forms & Buttons */
   --input-bg:                var(--surface-4);
   --input-text:              var(--text-primary);
-  --outline:                 #555555;
   --button-bg:               #333333;
-  --button-bg-hover:         #444444; 
+  --button-bg-hover:         var(--div-line);
 
-    /* Shadows */
+  /* Shadows */
   --shadow-light:            rgba(0,0,0,0.5);
   --shadow-strong:           rgba(0,0,0,0.7);
-
-    /* existing shadows alias */
   --shadow-text:             var(--shadow-light);
   --shadow-modal:            var(--shadow-strong);
 
-    /* Borders & Dividers */
-  --border-main: #333333;
+  /* Borders & Dividers */
+  --border-main:             #333333;
   --border:                  var(--div-line);
   --border-strong:           var(--border-main);
-  --border-muted:            var(--outline);
+  --border-muted:            var(--border-main); /* merged outline into border-muted */
 
-  /* preview border now aliases strong border */
   --border-preview:          var(--border-strong);
 
+  /* new lighter border for markers & popup images */
+  --border-light:            var(--temp-gray-777);
+
   /* ==========================================================================
-     3. Sidebar 
+     3. Sidebar
      ========================================================================== */
   --surface-sidebar:         var(--surface-1);
   --surface-section-header:  var(--surface-0);
   --surface-search-header:   var(--surface-0);
-  --surface-search-panel:    var(--surface-entry-container);
+  --surface-search-panel:    var(--surface-3);
 
   /* Filter Groups */
   --text-filter-header-default:  #bbbbbb;
-  --surface-filter-group-panel:  var(--surface-entry-container);
+  --surface-filter-group-panel:  var(--surface-3);
   --surface-filter-group-header: var(--surface-1);
 
   /* ==========================================================================
@@ -79,13 +78,15 @@
   /* ==========================================================================
      5. Context Menu
      ========================================================================== */
-  --surface-context-menu:    var(--surface-entry-container);
+  --surface-context-menu:    var(--surface-3);
   --text-context-menu:       var(--text-primary);
 
   /* ==========================================================================
-     6. Custom Markers
+     6. Custom Markers & Popups
      ========================================================================== */
-  --border-marker:           var(--temp-gray-777);
+  --border-marker:           var(--border-light);
+  --border-popup-image:      var(--border-light);
+
   --highlight-chest:         #66ccff;
 
   /* ==========================================================================
@@ -103,7 +104,7 @@
      9. Focus States
      ========================================================================== */
   --surface-focus-bg:        var(--surface-3);
-  --focus-outline:           var(--temp-gray-777);
+  --focus-outline:           var(--border-muted);
 
   /* ==========================================================================
      10. Typography
@@ -114,7 +115,7 @@
   --text-secondary-mid:      var(--text-secondary);
   --text-clear:              #888888;
   --text-placeholder:        #666666;
-  --text-toggle-off:         var(--outline);
+  --text-toggle-off:         var(--border-muted);
 
   /* unified white-on-dark text */
   --text-on-dark:            #ffffff;
@@ -130,17 +131,16 @@
   /* ==========================================================================
      12. Scrollbars
      ========================================================================== */
-  --scrollbar-track:         var(--surface-entry-container);
-  --scrollbar-thumb:         var(--outline);
+  --scrollbar-track:         var(--surface-3);
+  --scrollbar-thumb:         var(--border-muted);
   --scrollbar-thumb-hover:   var(--temp-gray-777);
 
   /* ==========================================================================
      13. Popups
      ========================================================================== */
-  --surface-popup:           #2c2c2c;
-  --surface-popup-overlay:   rgba(34,34,34,0.95);
+  --surface-popup:           #ee0000;
+  --surface-popup-overlay:   var(--shadow-light); /* merged with shadow-light */
   --surface-popup-image:     var(--surface-window);
-  --border-popup-image:      var(--temp-gray-777); /* not a divider */
   --surface-info-box-bg:     rgba(20,20,20,0.6);
   --surface-popup-chest-slot: var(--border-main);
   --surface-chest-slot-qty-bg: rgba(0,0,0,0.6);
@@ -155,19 +155,17 @@
   --surface-modal-small:     var(--surface-1);
   --surface-modal-large:     var(--surface-1);
   --text-modal:              var(--text-primary);
-  --surface-modal-input:     var(--surface-entry-container);
+  --surface-modal-input:     var(--surface-3);
 
-  --surface-entry-delete:       var(--surface-delete);
+  --surface-entry-delete:    var(--surface-delete);
   --surface-entry-delete-hover: var(--surface-delete-hover);
 
-  --text-chip-default:          var(--text-filter-header-default);
-  --surface-backdrop:           rgba(0,0,0,0.5);
+  --text-chip-default:       var(--text-filter-header-default);
+  --surface-backdrop:        var(--shadow-light); /* merged with shadow-light */
 
-  
   /* ==========================================================================
      15. Preview Panels
      ========================================================================== */
   --surface-preview-bg:      var(--surface-0);
   --text-inverse:            var(--text-on-dark);
-
 }
