@@ -27,10 +27,10 @@
   max-width: 550px;
   height: 90vh;
   background-color: var(--surface-modal-base);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border-main);
   border-radius: 6px;
   padding: 16px;
-  box-shadow: 0 0 10px var(--shadow-modal);
+  box-shadow: 0 0 10px var(--shadow-strong);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -65,7 +65,7 @@
 .modal.modal-large hr {
   margin: 6px 0;
   border: 0;
-  border-top: 2px solid var(--border);
+  border-top: 2px solid var(--border-main);
 }
 
 /* Scrollable list container */
@@ -218,7 +218,7 @@
 }
 
 .modal.modal-large .item-def-entry:hover {
-  background-color: var(--border-strong);
+  background-color: var(--border-main);
 }
 
 .modal.modal-large .item-def-entry .entry-name {
@@ -228,14 +228,14 @@
 
 .modal.modal-large .item-def-entry .entry-meta {
   font-size: 12px;
-  color: var(--text-secondary-mid);
+  color: var(--text-secondary);
   margin-top: 2px;
 }
 
 .modal.modal-large .item-def-entry .entry-description {
   font-style: italic;
   font-size: 13px;
-  color: var(--text-emphasis);
+  color: var(--text-primary);
   margin-top: 2px;
 }
 
@@ -244,7 +244,7 @@
   gap: 12px;
   margin-top: 4px;
   font-size: 13px;
-  color: var(--text-secondary-light);
+  color: var(--text-secondary);
   align-items: center;
 }
 
@@ -263,7 +263,7 @@
 
 .modal.modal-large .item-def-entry .entry-delete {
   margin-top: 6px;
-  background-color: var(--surface-entry-delete);
+  background-color: var(--surface-button-delete);
   color: var(--text-button-delete);
   padding: 4px 10px;
   border: none;
@@ -277,7 +277,7 @@
 }
 
 .modal.modal-large .item-def-entry .entry-delete:hover {
-  background-color: var(--surface-entry-delete-hover);
+  background-color: var(--surface-button-delete-hover);
   color: var(--text-button-delete);
 }
 
@@ -339,7 +339,7 @@
   flex-direction: column;
   align-items: center;
   background: var(--surface-modal-input);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-main);
   padding: 10px;
   width: 110px;
   border-radius: 6px;

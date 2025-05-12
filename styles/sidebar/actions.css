@@ -8,7 +8,7 @@
 
 /* Filters “Toggle All” link styling */
 #filters-section > h2 .toggle-all {
-  color: var(--text-filter-header-default);
+  color: var(--text-secondary);
   font-size: 0.75em;
   text-decoration: none;
   transition: color 0.2s;
@@ -28,7 +28,7 @@
   right: 0.6em;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-filter-header-default);
+  color: var(--text-secondary);
   font-size: 0.9em;
   cursor: pointer;
   transition: color 0.2s;

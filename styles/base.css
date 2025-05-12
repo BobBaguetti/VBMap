@@ -12,7 +12,7 @@
 html, body {
   margin: 0; padding: 0; height: 100%;
   font-family: 'Satoshi', sans-serif;
-  background-color: var(--surface-page);
+  background-color: var(--surface-0);
   color: var(--text-primary);
   overflow: hidden;
 }
@@ -20,7 +20,7 @@ html, body {
 /* 3) Map container full-screen */
 #map {
   position: absolute; top: 0; left: 0; right: 0; bottom: 0;
-  background-color: var(--surface-map);
+  background-color: var(--surface-0);
 }
 
 /* 4) Dark form controls & buttons */ 

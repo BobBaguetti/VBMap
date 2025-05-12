@@ -3,7 +3,7 @@
 
 /* Leaflet Map Overrides */
 .leaflet-container {
-  background-color: var(--surface-map) !important;
+  background-color: var(--surface-0) !important;
 }
 
 /* ================================
@@ -53,7 +53,7 @@
   border-radius: 8px;
   color: var(--text-primary);
   max-width: 320px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 8px var(--shadow-light);
   font-family: "Inter", sans-serif;
   font-size: 14px;
   line-height: 1.4;

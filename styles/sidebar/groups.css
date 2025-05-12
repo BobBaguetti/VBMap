@@ -2,9 +2,9 @@
 /* @version: 1.2 — replace hard-coded colors with theme variables */
 
 .filter-group {
-  background-color: var(--surface-filter-group-panel);
-  border-top:    1px solid var(--border-strong);
-  border-bottom: 1px solid var(--border-strong);
+  background-color: var(--surface-2);
+  border-top:    1px solid var(--border-main);
+  border-bottom: 1px solid var(--border-main);
   border-left:   none;
   border-right:  none;
   border-radius: 0;
@@ -27,8 +27,8 @@
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border-strong);
-  background-color: var(--surface-filter-group-header);
+  border-bottom: 1px solid var(--border-main);
+  background-color: var(--surface-3);
   cursor: pointer;
 }
 
@@ -54,4 +54,3 @@
 }
 
 /* Checkbox invisibility handled in toggles.css; span text styling there */
- 

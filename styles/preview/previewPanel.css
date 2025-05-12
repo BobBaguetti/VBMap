@@ -8,9 +8,9 @@
   width: 432px;
   height: 432px;
   background-color: var(--surface-preview-bg);
-  border: 1px solid var(--border-preview);
+  border: 1px solid var(--div-line);
   border-radius: 6px;
-  box-shadow: 0 0 10px #000;
+  box-shadow: 0 0 10px var(--shadow-strong);
   padding: 8px;
   z-index: 11050;
   display: none; /* toggled by .visible */
