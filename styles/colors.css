@@ -13,11 +13,11 @@
 
   /* Primary text axis (light → lighter) */
   --primary-a0:  #e6e7e8;  /* Headings, main labels on dark bg */
-  --primary-a10: #e9eaeb;  /* Body text, secondary labels */
-  --primary-a20: #ececed;  /* Input backgrounds, chips */
-  --primary-a30: #eeeff0;  /* Button / card hover surfaces */
-  --primary-a40: #f1f2f2;  /* Light borders on light surfaces */
-  --primary-a50: #f4f4f5;  /* Overlays, modals, tooltips */
+  --primary-a10: #e6e7e8;  /* Body text, secondary labels */
+  --primary-a20: #e6e7e8;  /* Input backgrounds, chips */
+  --primary-a30: #e6e7e8;  /* Button / card hover surfaces */
+  --primary-a40: #e6e7e8;  /* Light borders on light surfaces */
+  --primary-a50: #e6e7e8;  /* Overlays, modals, tooltips */
 
   /* Accent */
   --accent-blue:    #4ba3c7;  /* Vaultbreakers brand blue */
