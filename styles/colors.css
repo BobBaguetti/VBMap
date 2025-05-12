@@ -4,10 +4,10 @@
 :root,
 :root[data-theme="dark"] {
   /* Surface axis (dark → light) */
-  --surface-a0:  #181818;  /* Sidebar / modal background */
-  --surface-a10: #222222;  /* Section headers (Search, Filters) */
-  --surface-a20: #282828;  /* Filter group panels (Main, Items, Chests) */
-  --surface-a30: #2d2d2d;  /* Hovered rows, inputs, highlights */
+  --surface-a0:  #232323;  /* Sidebar / modal background */
+  --surface-a10: #1a1a1a;  /* Section headers (Search, Filters) */
+  --surface-a20: #232323;  /* Filter group panels (Main, Items, Chests) */
+  --surface-a30: #2f2f2f;  /* Hovered rows, inputs, highlights */
   --surface-a40: #323232;  /* Borders, dividers, inactive icons */
   --surface-a50: #373737;  /* Disabled text, placeholders */
 
