@@ -5,13 +5,13 @@
   /* ==========================================================================
      1. Page & Map
      ========================================================================== */
-  --surface-page:            #00ff2a; /* html/body background */
-  --surface-map:             #eaff2d; /* map container background */
+  --surface-page:            #1a1a1a; /* html/body background */
+  --surface-map:             #1a1a1a; /* map container background */
 
   /* ==========================================================================
      2. Core Dark Surfaces
      ========================================================================== */
-  --surface-dark:            #ff0000; /* unified dark surface */
+  --surface-dark:            #232323; /* unified dark surface */
 
   /* ==========================================================================
      3. Sidebar
