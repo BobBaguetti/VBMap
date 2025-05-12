@@ -1,7 +1,9 @@
 /* @file: styles/preview/chestPreview.css – chest-specific extras */
+/* @version: 1.1 — convert hard-coded colors to theme tokens */
 
 .chest-preview-panel{
-  background:#1a1a1a url("https://res.cloudinary.com/dtty7zxjh/image/upload/v1746912874/itemPreview_m2cbbg.png") center/cover no-repeat;
+  background: var(--bg-00) url("https://res.cloudinary.com/dtty7zxjh/image/upload/v1746912874/itemPreview_m2cbbg.png")
+              center/cover no-repeat;
 }
 
 /* header */
@@ -19,8 +21,8 @@
 .chest-slot{
   position:relative;
   width:48px;height:48px;
-  background:#333;
-  border:1px solid #333;       /* overridden inline by rarity */
+  background: var(--bg-40);               /* was #333 */
+  border: 1px solid var(--bg-50);         /* was #333 but darker token */
   border-radius:2px;
   overflow:hidden;
 }
@@ -33,9 +35,9 @@
 .chest-slot-qty{
   position:absolute;
   bottom:2px;right:4px;
-  background:rgba(0,0,0,.6);
+  background: var(--overlay-dark);        /* was rgba(0,0,0,.6) */
   padding:1px 4px;
   border-radius:3px;
   font-size:.75em;
-  color:#fff;
+  color: var(--text-primary);             /* was #fff */
 }
