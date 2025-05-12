@@ -138,7 +138,7 @@
      ========================================================================== */
   --surface-popup:           #2c2c2c;
   --surface-popup-overlay:   rgba(34,34,34,0.95);
-  --surface-popup-image:     #222222;
+  --surface-popup-image:     #e5ff00;
   --border-popup-image:      var(--temp-gray-777); /* not a divider */
   --surface-info-box-bg:     rgba(20,20,20,0.6);
   --surface-popup-chest-slot: var(--border-main);
@@ -150,7 +150,7 @@
   /* ==========================================================================
      14. Modals
      ========================================================================== */
-  --surface-modal-base:      #222222;
+  --surface-modal-base:      #ff0000;
   --surface-modal-small:     var(--surface-1);
   --surface-modal-large:     var(--surface-1);
   --text-modal:              var(--text-primary);
