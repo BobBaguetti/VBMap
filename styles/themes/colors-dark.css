@@ -6,7 +6,7 @@
      0. Temp Gray & Divider Line
      ========================================================================== */
   --temp-gray-777:           #ff0000;   /* keep for testing */
-  --temp-gray-555:           #2bff00;   /* keep for testing */
+
 
   /* ==========================================================================
      1. Page & Map
@@ -36,6 +36,7 @@
     /*UI Controls: Forms & Buttons*/
   --input-bg:                var(--surface-4);
   --input-text:              var(--text-primary);
+  --outline:                 #555555;
   --button-bg:               #333333;
   --button-bg-hover:         #444444; 
 
@@ -51,7 +52,7 @@
   --border-main: #333333;
   --border:                  var(--div-line);
   --border-strong:           var(--border-main);
-  --border-muted:            var(--temp-gray-555);
+  --border-muted:            var(--outline);
 
   /* preview border now aliases strong border */
   --border-preview:          var(--border-strong);
@@ -67,7 +68,7 @@
   /* Filter Groups */
   --text-filter-header-default:  #bbbbbb;
   --surface-filter-group-panel:  var(--surface-entry-container);
-  --surface-filter-group-header: #1f1f1f;
+  --surface-filter-group-header: var(--surface-1);
 
   /* ==========================================================================
      4. Others
@@ -112,7 +113,7 @@
   --text-secondary-mid:      var(--text-secondary);
   --text-clear:              #888888;
   --text-placeholder:        #666666;
-  --text-toggle-off:         var(--temp-gray-555);
+  --text-toggle-off:         var(--outline);
 
   /* unified white-on-dark text */
   --text-on-dark:            #ffffff;
@@ -129,7 +130,7 @@
      12. Scrollbars
      ========================================================================== */
   --scrollbar-track:         var(--surface-entry-container);
-  --scrollbar-thumb:         var(--temp-gray-555);
+  --scrollbar-thumb:         var(--outline);
   --scrollbar-thumb-hover:   var(--temp-gray-777);
 
   /* ==========================================================================
