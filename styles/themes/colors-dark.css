@@ -1,12 +1,7 @@
 /* @file: styles/themes/colors-dark.css */
-/* @version: 4.1 — merge outline & border-muted, unify backdrops, collapse marker/popups borders */
+/* @version: 5.1 — promote border-light and drop temp-gray-777 */
 
 :root {
-  /* ==========================================================================
-     0. Temp vars for testing colors assigned to unknown elements
-     ========================================================================== */
-  --temp-gray-777:           #ff0000;   /* keep for testing */
-
   /* ==========================================================================
      1. Page & Map
      ========================================================================== */
@@ -36,7 +31,7 @@
   /* UI Controls: Forms & Buttons */
   --input-bg:                var(--surface-4);
   --input-text:              var(--text-primary);
-  --button-bg:               #333333;
+  --button-bg:               var(--temp-gray-333);
   --button-bg-hover:         var(--div-line);
 
   /* Shadows */
@@ -46,15 +41,12 @@
   --shadow-modal:            var(--shadow-strong);
 
   /* Borders & Dividers */
-  --border-main:             #333333;
+  --border-main:             var(--temp-gray-333);
   --border:                  var(--div-line);
+  --border-light:            #777777; 
   --border-strong:           var(--border-main);
-  --border-muted:            var(--border-main); /* merged outline into border-muted */
-
+  --border-muted:            var(--border-main);
   --border-preview:          var(--border-strong);
-
-  /* new lighter border for markers & popup images */
-  --border-light:            var(--temp-gray-777);
 
   /* ==========================================================================
      3. Sidebar
@@ -85,7 +77,6 @@
      ========================================================================== */
   --border-marker:           var(--border-light);
   --border-popup-image:      var(--border-light);
-
   --highlight-chest:         #66ccff;
 
   /* ==========================================================================
@@ -97,6 +88,7 @@
      8. Interactive / Hover States
      ========================================================================== */
   --surface-hover:           #2e2e2e;
+  --surface-hover-bg:        var(--surface-hover);
   --surface-toggle-hover:    #3a3a3a;
 
   /* ==========================================================================
@@ -132,13 +124,13 @@
      ========================================================================== */
   --scrollbar-track:         var(--surface-3);
   --scrollbar-thumb:         var(--border-muted);
-  --scrollbar-thumb-hover:   var(--temp-gray-777);
+  --scrollbar-thumb-hover:   var(--border-light);
 
   /* ==========================================================================
      13. Popups
      ========================================================================== */
   --surface-popup:           #2c2c2c;
-  --surface-popup-overlay:   var(--shadow-light); /* merged with shadow-light */
+  --surface-popup-overlay:   var(--shadow-light);
   --surface-popup-image:     var(--surface-2);
   --surface-info-box-bg:     rgba(20,20,20,0.6);
   --surface-popup-chest-slot: var(--border-main);
@@ -160,7 +152,7 @@
   --surface-entry-delete-hover: var(--surface-delete-hover);
 
   --text-chip-default:       var(--text-filter-header-default);
-  --surface-backdrop:        var(--shadow-light); /* merged with shadow-light */
+  --surface-backdrop:        var(--shadow-light);
 
   /* ==========================================================================
      15. Preview Panels
