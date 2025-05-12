@@ -6,7 +6,7 @@
    ============================ */
 
 .ui-text-default {
-  color: var(--text-ui-default) !important;
+  color: var(--text-primary) !important;
 }
 
 .ui-input {

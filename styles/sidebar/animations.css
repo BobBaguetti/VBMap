@@ -20,7 +20,7 @@
   top: 50%;
   transform: translateY(-50%);
   transition: color 0.2s, transform 0.2s;
-  color: var(--text-filter-header-default);
+  color: var(--text-secondary);
   cursor: pointer;
   font-size: 0.9em;
 }

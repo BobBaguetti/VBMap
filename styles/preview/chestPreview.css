@@ -34,8 +34,8 @@
   position: relative;
   width: 48px;
   height: 48px;
-  background-color: var(--border-preview);
-  border: 1px solid var(--border-preview); /* overridden inline by rarity */
+  background-color: var(--div-line);
+  border: 1px solid var(--div-line); /* overridden inline by rarity */
   border-radius: 2px;
   overflow: hidden;
 }
@@ -51,7 +51,7 @@
   position: absolute;
   bottom: 2px;
   right: 4px;
-  background: var(--surface-chest-slot-qty-bg);
+  background: var(--surface-3);
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 0.75em;
