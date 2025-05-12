@@ -1,5 +1,5 @@
 /* @file: styles/themes/colors-dark.css */
-/* @version: 1.1 — modular container variables, text-primary tweaked to #e5e6e8 */
+/* @version: 1.2 — add vars for search panel and input states */
 
 :root {
   /* Page and Map */
@@ -45,4 +45,19 @@
   --scrollbar-track:         #2a2a2a; /* scrollbar track */
   --scrollbar-thumb:         #555555; /* scrollbar thumb default */
   --scrollbar-thumb-hover:   #777777; /* scrollbar thumb hover */
+
+  /* Sidebar Search panel */
+  --surface-search-header:   #1b1b1b; /* “Search” header background */
+  --surface-search-panel:    #2a2a2a; /* search box container */
+
+  /* Borders */
+  --border-strong:           #333333; /* panel borders & separators */
+
+  /* Text states */
+  --text-clear:              #888888; /* clear‐icon default */
+  --text-placeholder:        #666666; /* input placeholder */
+
+  /* Input focus */
+  --surface-input-focus:     #3a3a3a; /* search‐bar:focus bg */
+  /* border‐bottom‐color on focus will use var(--accent) */
 }
