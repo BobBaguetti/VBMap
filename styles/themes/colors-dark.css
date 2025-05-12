@@ -1,5 +1,5 @@
 /* @file: styles/themes/colors-dark.css */
-/* @version: 1.2 — add vars for search panel and input states */
+/* @version: 1.3 — add vars for filter-group containers */
 
 :root {
   /* Page and Map */
@@ -60,4 +60,8 @@
   /* Input focus */
   --surface-input-focus:     #3a3a3a; /* search‐bar:focus bg */
   /* border‐bottom‐color on focus will use var(--accent) */
+
+  /* Filter-Group Cards */
+  --surface-filter-group-panel:  #2a2a2a; /* filter-group card background */
+  --surface-filter-group-header: #1f1f1f; /* filter-group header bar background */
 }
