@@ -1,5 +1,5 @@
 /* @file: styles/themes/colors-dark.css */
-/* @version: 2.1 — add vars for popup theming and reorganize */
+/* @version: 2.3 — add vars for modal-large entry styles */
 
 :root {
   /* ==========================================================================
@@ -119,29 +119,52 @@
   --text-popup-close-hover:  #ffffff; /* popup close icon hover */
 
   /* ==========================================================================
-   17. UI Utilities & Entry Styles
-   ========================================================================== */
-  /* Global text utility (falls back to primary) */
-  --text-ui-default:          var(--text-primary);
-
-  /* Delete button */
-  --surface-button-delete:    #b92f2f; /* .ui-button-delete BG */
+     17. UI Utilities & Entry Styles
+     ========================================================================== */
+  --text-ui-default:         var(--text-primary); /* global text util */
+  --surface-button-delete:   #b92f2f; /* .ui-button-delete BG */
   --surface-button-delete-hover: #772222; /* .ui-button-delete hover BG */
-  --text-button-delete:       #ffffff; /* delete button text */
-
-  /* Entry quantity text */
-  --text-entry-quantity:      #aaaaaa; /* .entry-quantity color */
-
-  /* Value icon in entries */
-  --color-value-icon:         #d4af37; /* .entry-value-icon svg fill */
+  --text-button-delete:      #ffffff; /* delete button text */
+  --text-entry-quantity:     #aaaaaa; /* .entry-quantity color */
+  --color-value-icon:        #d4af37; /* .entry-value-icon svg fill */
 
   /* ==========================================================================
-   18. Preview Panels
+     18. Preview Panels
+     ========================================================================== */
+  --surface-preview-bg:      #1a1a1a; /* preview panel background */
+  --border-preview:          #333333; /* borders for preview panels, slots */
+  --text-inverse:            #ffffff; /* white text */
+
+  /* ==========================================================================
+     19. Modal Base
+     ========================================================================== */
+  --surface-modal-base:      #222222; /* modal-content bg */
+  --text-modal:              #eeeeee; /* modal-content text */
+  --shadow-modal:            rgba(0,0,0,0.7); /* modal-content box-shadow */
+  --surface-modal-input:     #2a2a2a; /* form inputs & zebra rows */
+  --text-inverse:            #ffffff; /* strong/emphasis text */
+  --text-secondary-light:    #cccccc; /* small text in definitions */
+  --text-emphasis:           #aaaaaa; /* em text, minor accents */
+
+  /* ==========================================================================
+     20. Modal Large Entries
+     ========================================================================== */
+  --surface-entry-delete:       #551111; /* entry-delete bg */
+  --surface-entry-delete-hover: #772222; /* entry-delete hover bg */
+  --text-secondary-mid:         #bbbbbb; /* meta text in entries */
+
+  /* ==========================================================================
+   21. Chest Definitions Modal
    ========================================================================== */
---surface-preview-bg:      #1a1a1a; /* preview panel & preview‐panel background */
---border-preview:          #333333; /* borders for preview panels, slots */
---text-inverse:            #ffffff; /* white text (e.g. quantities) */
+--text-chip-default:          var(--text-filter-header-default); /* #bbbbbb for cog icon */
+--surface-backdrop:           rgba(0,0,0,0.5);                   /* picker backdrop */
+--button-bg-muted:            #666666;                           /* picker-footer hover, chip default */
 
 
+  /* unsorted*/
 
+  --ui-field-bg:      var(--input-bg);       /* form-like container bg */
+  --ui-border-color:  var(--border);         /* general border color */
+  --ui-chip-bg:       #3a3a3a;               /* chip background */
+  --ui-text-color:    var(--text-primary);   /* chip text color */
 }

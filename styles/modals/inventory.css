@@ -1,9 +1,10 @@
-/* styles/modals/inventory.css */
+/* @file: styles/modals/inventory.css */
+/* @version: 1.1 — rely on theme variables for colors */
 
 /* Container for all inventory-style chip lists */
 .chip-list-container {
-  background-color: var(--ui-field-bg, #2a2a2a);
-  border: 1px solid var(--ui-border-color, #444);
+  background-color: var(--ui-field-bg);
+  border: 1px solid var(--ui-border-color);
   border-radius: 4px;
   padding: 0.5rem;
   display: flex;
@@ -14,15 +15,15 @@
 
   /* full width like other form controls */
   width: 100%;
-  box-shadow: inset 0 0 0 1px var(--ui-border-color, #444);
+  box-shadow: inset 0 0 0 1px var(--ui-border-color);
 }
 
 /* Individual chips */
 .loot-pool-chip {
   display: inline-flex;
   align-items: center;
-  background-color: var(--ui-chip-bg, #3a3a3a);
-  color: var(--ui-text-color, #fff);
+  background-color: var(--ui-chip-bg);
+  color: var(--ui-text-color);
   border-radius: 2px;
   padding: 0.25rem 0.5rem;
   font-size: 0.875rem;
@@ -37,7 +38,7 @@
   cursor: grab;
   margin-right: 0.25em;
   font-size: 1em;
-  color: var(--ui-text-color, #fff);
+  color: var(--ui-text-color);
 }
 
 /* Icon size clamped to the font-size */
