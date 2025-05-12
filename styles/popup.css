@@ -6,7 +6,7 @@
 
 /* ───────────────────────────────────────────────── Leaflet Overrides ─ */
 .leaflet-container {
-  background-color: var(--surface-a0) !important; /* was #1a1a1a */
+  background-color: var(--map-bg) !important; /* was #1a1a1a */
 }
 
 .leaflet-popup {
