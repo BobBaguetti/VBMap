@@ -19,7 +19,6 @@
   --surface-0:               #1a1a1a;
   --surface-1:               #1f1f1f;
   --surface-2:               #232323;
-  --surface-window:          #282828;
   --surface-3:               #2a2a2a;
   --surface-4:               #303030;
 
@@ -138,9 +137,9 @@
   /* ==========================================================================
      13. Popups
      ========================================================================== */
-  --surface-popup:           #ee0000;
+  --surface-popup:           #2c2c2c;
   --surface-popup-overlay:   var(--shadow-light); /* merged with shadow-light */
-  --surface-popup-image:     var(--surface-window);
+  --surface-popup-image:     var(--surface-2);
   --surface-info-box-bg:     rgba(20,20,20,0.6);
   --surface-popup-chest-slot: var(--border-main);
   --surface-chest-slot-qty-bg: rgba(0,0,0,0.6);
@@ -151,7 +150,7 @@
   /* ==========================================================================
      14. Modals
      ========================================================================== */
-  --surface-modal-base:      var(--surface-window);
+  --surface-modal-base:      var(--surface-2);
   --surface-modal-small:     var(--surface-1);
   --surface-modal-large:     var(--surface-1);
   --text-modal:              var(--text-primary);
