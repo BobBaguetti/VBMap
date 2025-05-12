@@ -1,9 +1,9 @@
 /* @file: styles/themes/colors-dark.css */
-/* @version: 3.6 — add --div-line and rewire divider vars */
+/* @version: 3.9 — add --div-line and rewire divider vars */
 
 :root {
       /* ==========================================================================
-     0. Temp Gray & Divider Line
+     0. Temp vars for testing colors asigned to unknown elements
      ========================================================================== */
   --temp-gray-777:           #ff0000;   /* keep for testing */
 
@@ -20,6 +20,7 @@
   --surface-0:               #1a1a1a;
   --surface-1:               #1f1f1f;
   --surface-2:               #232323;
+  --surface-window:          #232323;
   --surface-3:               #2a2a2a;
   --surface-4:               #303030;
 
@@ -138,7 +139,7 @@
      ========================================================================== */
   --surface-popup:           #2c2c2c;
   --surface-popup-overlay:   rgba(34,34,34,0.95);
-  --surface-popup-image:     #e5ff00;
+  --surface-popup-image:     var(--surface-window);
   --border-popup-image:      var(--temp-gray-777); /* not a divider */
   --surface-info-box-bg:     rgba(20,20,20,0.6);
   --surface-popup-chest-slot: var(--border-main);
@@ -150,7 +151,7 @@
   /* ==========================================================================
      14. Modals
      ========================================================================== */
-  --surface-modal-base:      #ff0000;
+  --surface-modal-base:      var(--surface-window);
   --surface-modal-small:     var(--surface-1);
   --surface-modal-large:     var(--surface-1);
   --text-modal:              var(--text-primary);
