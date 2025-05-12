@@ -1,11 +1,13 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.1 — add filter-icon styling & align labels for icons */
+/* @version: 1.2 — swap hard‑coded dark grays for theme tokens */
+
+/* @keep: code comments retained unless code removed */
 
 /* Container for each card‐style filter group */
 .filter-group {
-  background-color: #2a2a2a;
-  border-top:    1px solid #333;
-  border-bottom: 1px solid #333;
+  background-color: var(--bg-30);          /* was #2a2a2a */
+  border-top:    1px solid var(--border-soft); /* was #333 */
+  border-bottom: 1px solid var(--border-soft);
   border-left:   none;
   border-right:  none;
   border-radius: 0;
@@ -30,8 +32,8 @@
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid #333;
-  background-color: #1f1f1f;
+  border-bottom: 1px solid var(--border-soft); /* was #333 */
+  background-color: var(--bg-20);             /* was #1f1f1f */
   cursor: pointer;
 }
 

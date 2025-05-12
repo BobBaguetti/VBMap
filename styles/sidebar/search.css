@@ -1,12 +1,12 @@
 /* @file: styles/sidebar/search.css */
-/* @version: 1.3 — hide native search-clear so only custom button shows */
+/* @version: 1.4 — convert hex colors to theme tokens */
 
 #sidebar-search {
   margin-top: 0.8em;
 }
 
 #sidebar-search > h2 {
-  background-color: #1b1b1b;
+  background-color: var(--bg-20);          /* was #1b1b1b */
   padding: 0.5em 0.8em;
   margin: 0;
   border-top-left-radius: 4px;
@@ -14,12 +14,12 @@
   font-size: 1.1em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: #e5e6e8;
+  color: var(--text-primary);              /* was #e5e6e8 */
 }
 
 #sidebar-search {
-  background-color: #2a2a2a;
-  border: 1px solid #333;
+  background-color: var(--bg-30);          /* was #2a2a2a */
+  border: 1px solid var(--border-soft);    /* was #333 */
   border-top: none;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
@@ -37,9 +37,9 @@
   box-sizing: border-box;
   padding: 6px 30px 6px 10px; /* room for custom clear button */
   border: none;
-  border-bottom: 1px solid #444;
-  background-color: #303030;
-  color: #e5e6e8;
+  border-bottom: 1px solid var(--bg-50);   /* was #444 */
+  background-color: var(--bg-30);          /* was #303030 */
+  color: var(--text-primary);
   font-size: 14px;
   font-family: 'Satoshi', sans-serif;
   outline: none;
@@ -60,7 +60,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: #888;
+  color: var(--text-secondary);            /* was #888 */
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -74,23 +74,23 @@
 }
 
 #search-clear:hover {
-  color: #e5e6e8;
+  color: var(--text-primary);              /* was #e5e6e8 */
 }
 
 /* placeholder styling */
 #sidebar-search #search-bar::placeholder {
-  color: #666;
+  color: var(--text-disabled);             /* was #666 */
 }
 
 /* input focus */
 #sidebar-search #search-bar:focus {
-  background-color: #3a3a3a;
-  border-bottom-color: #5a9;
+  background-color: var(--bg-50);          /* was #3a3a3a */
+  border-bottom-color: var(--accent-primary); /* was #5a9 */
 }
 
 /* separator */
 #sidebar-search > hr {
   border: none;
-  border-top: 1px solid #333;
+  border-top: 1px solid var(--border-soft); /* was #333 */
   margin: 0;
 }

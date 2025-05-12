@@ -1,16 +1,13 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.3 — normal durations restored; JS handles final hiding */
+/* @version: 2.4 — replace hex text colors with theme tokens */
 
-/* Ensure Font Awesome is loaded */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* Position headers for absolute chevron */
 .filter-group > h3,
 .filter-group > h4 {
   position: relative;
 }
 
-/* FontAwesome right/down chevrons */
 .filter-group > h3::after,
 .filter-group > h4::after {
   font-family: "Font Awesome 6 Free";
@@ -20,35 +17,27 @@
   top: 50%;
   transform: translateY(-50%);
   transition: color 0.2s, transform 0.2s;
-  color: #bbb;
+  color: var(--text-secondary);           /* was #bbb */
   cursor: pointer;
   font-size: 0.9em;
 }
 
 .filter-group > h3:hover::after,
 .filter-group > h4:hover::after {
-  color: #e5e6e8;
+  color: var(--text-primary);             /* was #e5e6e8 */
 }
 
-/* Right/down chevron icons */
 .filter-group:not(.collapsed) > h3::after,
-.filter-group:not(.collapsed) > h4::after {
-  content: "\f078"; /* chevron-down */
-}
+.filter-group:not(.collapsed) > h4::after { content: "\\f078"; }
 .filter-group.collapsed > h3::after,
-.filter-group.collapsed > h4::after {
-  content: "\f054"; /* chevron-right */
-}
+.filter-group.collapsed > h4::after      { content: "\\f054"; }
 
-/* Animate the toggle-group container */
 .toggle-group {
   overflow: hidden;
   max-height: 0;
   transition: max-height 0.3s ease-in-out;
-  /* do not manage visibility here; JS will handle hiding after transition */
 }
 
-/* Expanded state: allow content to show */
 .filter-group:not(.collapsed) > .toggle-group {
   max-height: 1000px;
 }
