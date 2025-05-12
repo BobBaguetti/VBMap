@@ -8,8 +8,8 @@
   --surface-a10: #1a1a1a;  /* Section headers (Search, Filters) */
   --surface-a20: #232323;  /* Filter group panels (Main, Items, Chests) */
   --surface-a30: #2f2f2f;  /* Hovered rows, inputs, highlights */
-  --surface-a40: #323232;  /* Borders, dividers, inactive icons */
-  --surface-a50: #373737;  /* Disabled text, placeholders */
+  --surface-a40: #e6e7e8;  /* Borders, dividers, inactive icons */
+  --surface-a50: #e6e7e8;  /* Disabled text, placeholders */
 
   /* Primary text axis (light → lighter) */
   --primary-a0:  #e6e7e8;  /* Headings, main labels on dark bg */
