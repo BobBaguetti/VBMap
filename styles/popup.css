@@ -1,11 +1,13 @@
-/* @version: 27 */
-/* @file: /styles/popup.css */
+/* @file: styles/popup.css */
+/* @version: 28 — replace hard-coded colors with theme variables */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
 
 /* ───────────────────────────────────────────────── Leaflet Overrides ─ */
+
+/* Map background */
 .leaflet-container {
-  background-color: #1a1a1a !important;
+  background-color: var(--surface-map) !important;
 }
 
 .leaflet-popup {
@@ -38,13 +40,14 @@
 }
 
 /* ───────────────────────────────────────────────── Custom Popup ──── */
+
 .custom-popup {
   position: relative;
-  background: rgba(34, 34, 34, 0.95);
+  background: var(--surface-popup-overlay);
   border-radius: 8px;
   padding: 11px;
   width: 320px;
-  color: #e0e0e0;
+  color: var(--text-popup);
   font-family: 'Satoshi', sans-serif;
   font-size: 14px;
   line-height: 1.4;
@@ -57,7 +60,7 @@
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 13px;
-  border-bottom: 2px solid #444;
+  border-bottom: 2px solid var(--border);
   padding: 0;
 }
 .popup-header-left {
@@ -66,12 +69,14 @@
   gap: 10px;
   flex: 1;
 }
+
+/* Image */
 .popup-image {
   width: 64px;
   height: 64px;
   object-fit: contain;
-  background: #222;
-  border: 2px solid #777;
+  background: var(--surface-popup-image);
+  border: 2px solid var(--border-popup-image);
   border-radius: 6px;
   flex-shrink: 0;
 }
@@ -95,14 +100,14 @@
   font-weight: 520;
   font-variant: small-caps;
   text-transform: uppercase;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 1px var(--shadow-text);
 }
 .popup-type,
 .popup-rarity {
   font-size: 15px;
   font-weight: 520;
   transform: translateY(-1px);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 1px var(--shadow-text);
 }
 
 /* Value (coins) block */
@@ -115,32 +120,32 @@
   font-size: 15px;
   font-weight: 520;
   white-space: nowrap;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 1px var(--shadow-text);
 }
 .popup-value-icon svg {
   width: 16px;
   height: 16px;
-  fill: #d4af37;
+  /* leave coin color as-is */
 }
 
 /* Body (with box style) */
 .popup-body.popup-info-box {
   font-weight: 420;
   font-size: 14px;
-  background: rgba(20, 20, 20, 0.6);
-  border: 1px solid #444;
+  background: var(--surface-info-box-bg);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 9px;
   margin-top: 7px;
   display: flex;
   flex-direction: column;
-  gap: 1px;           /* tight vertical gap */
+  gap: 1px;
 }
 .popup-body p {
   margin: 0;
   padding: 2px 0;
   font-weight: 420;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 1px var(--shadow-text);
 }
 .popup-desc {
   font-size: 14px;
@@ -157,15 +162,15 @@
   font-size: 12px;
   text-transform: uppercase;
   font-weight: 420;
-  color: #e0e0e0;
+  color: var(--text-popup);
 }
 
 /* Divider after description */
 .popup-divider {
   border: none;
   height: 1px;
-  background: #444;
-  margin: 1px 0;      /* minimal gap */
+  background: var(--border);
+  margin: 1px 0;
 }
 
 /* Close Button */
@@ -178,29 +183,25 @@
   padding: 0;
   cursor: pointer;
   z-index: 10;
-
-  /* animate the “×” on hover */
   transition: color 0.2s, transform 0.2s;
-  color: #aaa;
+  color: var(--text-popup-close);
 }
 .popup-close-btn svg {
   width: 16px;
   height: 16px;
-  fill: #aaa;
+  fill: var(--text-popup-close);
   transition: fill 0.2s, transform 0.2s;
 }
 .popup-close-btn:hover {
-  color: #fff;
+  color: var(--text-popup-close-hover);
   transform: scale(1.2);
 }
 .popup-close-btn:hover svg {
-  fill: white;
+  fill: var(--text-popup-close-hover);
   transform: scale(1.2);
 }
 
-/* ───────────────────────────────────────────────────────────────── *
-   Chest‐marker popup grid & slots (scoped inside loot panel)
- * ───────────────────────────────────────────────────────────────── */
+/* Chest‐marker popup grid & slots */
 .custom-popup > .popup-info-box.loot-box .chest-grid {
   display: grid;
   grid-template-columns: repeat(var(--cols), 52px);
@@ -212,8 +213,8 @@
   box-sizing: border-box;
   width: 52px;
   height: 52px;
-  background: #333;
-  border: 2px solid transparent; /* inline border-color shows rarity */
+  background: var(--surface-popup-chest-slot);
+  border: 2px solid transparent;
   border-radius: 2px;
   overflow: hidden;
   position: relative;
@@ -231,17 +232,17 @@
   position: absolute;
   bottom: 2px;
   right: 4px;
-  background: rgba(0, 0, 0, 0.6);
+  background: var(--surface-chest-slot-qty-bg);
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 0.75em;
-  color: #fff;
+  color: var(--text-popup-close-hover);
 }
 
-/* ───────────────────────────────────────────────── Two separate panels ─ */
+/* Two separate panels */
 .custom-popup > .popup-info-box {
-  background: rgba(20, 20, 20, 0.6);
-  border: 1px solid #444;
+  background: var(--surface-info-box-bg);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 9px;
   margin: 8px 0;
@@ -263,7 +264,7 @@
 
 /* Text panel gap and tight paragraphs */
 .custom-popup > .popup-info-box:not(.loot-box) {
-  gap: 1px !important;  /* very tight vertical gap */
+  gap: 1px !important;
 }
 .custom-popup > .popup-info-box:not(.loot-box) p {
   margin: 0;

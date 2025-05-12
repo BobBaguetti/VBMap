@@ -1,53 +1,55 @@
-/* Form Field Layout for Item Definitions (non-modal) */
+/* @file: styles/form.css */
+/* @version: 1.1 — replace hard-coded colors with theme variables */
+
+/* Form Field Layout */
 #edit-form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding-top: 8px;
-  }
-  
-  .field-row {
-    display: flex;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  
-  .field-row label {
-    width: 90px;
-    margin-right: 5px;
-    flex-shrink: 0;
-  }
-  
-  .field-row input[type="text"],
-  .field-row select,
-  .field-row textarea {
-    background: #303030 !important;
-    color: #e5e6e8 !important;
-    border: 1px solid #555 !important;
-    padding: 4px 6px;
-    font-size: 14px;
-    box-sizing: border-box;
-    width: 100%;
-  }
-  
-  .field-row textarea {
-    resize: vertical;
-  }
-  
-  /* Buttons inside .field-row */
-  .field-row button {
-    padding: 6px 12px !important;
-  }
-  
-  /* Color button (pickr) */
-  .color-btn {
-    width: 32px;
-    height: 32px;
-    background: #666;
-    border: 1px solid #333;
-    border-radius: 2px;
-    cursor: pointer;
-    flex-shrink: 0;
-    margin-left: 86px;
-  }
-  
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 8px;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.field-row label {
+  width: 90px;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+.field-row input[type="text"],
+.field-row select,
+.field-row textarea {
+  background: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border: 1px solid var(--border-muted) !important;
+  padding: 4px 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.field-row textarea {
+  resize: vertical;
+}
+
+/* Buttons inside .field-row */
+.field-row button {
+  padding: 6px 12px !important;
+}
+
+/* Color button (pickr) */
+.color-btn {
+  width: 32px;
+  height: 32px;
+  background: var(--surface-color-btn);
+  border: 1px solid var(--border-strong);
+  border-radius: 2px;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: 86px;
+}

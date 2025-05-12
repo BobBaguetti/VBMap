@@ -1,12 +1,15 @@
-/* Context Menu */
+/* @file: styles/context-menu.css */
+/* @version: 1.1 — replace hard-coded colors with theme variables */
+
 #context-menu {
   font-family: Arial, sans-serif;
   font-size: 14px;
   border-radius: 3px;
-  background: #333 !important;
-  color: #eee !important;
-  border: 1px solid #555 !important;
+  background: var(--surface-context-menu) !important;
+  color: var(--text-context-menu) !important;
+  border: 1px solid var(--border-muted) !important;
 }
+
 #context-menu div:hover {
-  background-color: #555 !important;
+  background-color: var(--border-muted) !important;
 }
