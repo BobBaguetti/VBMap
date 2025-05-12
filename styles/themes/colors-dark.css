@@ -134,4 +134,14 @@
 
   /* Value icon in entries */
   --color-value-icon:         #d4af37; /* .entry-value-icon svg fill */
+
+  /* ==========================================================================
+   18. Preview Panels
+   ========================================================================== */
+--surface-preview-bg:      #1a1a1a; /* preview panel & preview‐panel background */
+--border-preview:          #333333; /* borders for preview panels, slots */
+--text-inverse:            #ffffff; /* white text (e.g. quantities) */
+
+
+
 }

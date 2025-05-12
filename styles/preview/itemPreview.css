@@ -1,6 +1,10 @@
-/* @file: styles/preview/itemPreview.css – item-specific extras */
+/* @file: styles/preview/itemPreview.css */
+/* @version: 1.1 — replace hard-coded colors with theme variables */
 
 .item-preview-panel {
-  background: #1a1a1a url("https://res.cloudinary.com/dtty7zxjh/image/upload/v1746912874/itemPreview_m2cbbg.png") center center no-repeat;
+  background-color: var(--surface-preview-bg);
+  background-image: url("https://res.cloudinary.com/dtty7zxjh/image/upload/v1746912874/itemPreview_m2cbbg.png");
+  background-position: center center;
   background-size: cover;
+  background-repeat: no-repeat;
 }
