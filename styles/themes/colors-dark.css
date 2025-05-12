@@ -16,10 +16,10 @@
   --temp-gray-333:           #333333;   /* keep for testing */
   --temp-gray-eee:           #eeeeee;   /* keep for testing */
   --temp-gray-2a:            #2a2a2a;   /* keep for testing */
-  --temp-gray-444:           #444444;   /* Tested */
+  --temp-gray-444:           #ff0000;   /* Tested */
 
   /* New global divider line */
-  --div-line:                #ff0000; 
+  --div-line:                #15ff00; 
 
   /* ==========================================================================
      3. Core Dark Surface & Variations
@@ -108,7 +108,7 @@
   --input-bg:                var(--surface-input-field);
   --input-text:              var(--text-primary);
   --button-bg:               #333333;
-  --button-bg-hover:         var(--div-line); /* not a divider */
+  --button-bg-hover:         var(--temp-gray-444); /* not a divider */
 
   /* ==========================================================================
      15. Borders & Dividers
