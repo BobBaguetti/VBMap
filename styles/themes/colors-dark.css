@@ -1,81 +1,88 @@
 /* @file: styles/themes/colors-dark.css */
-/* @version: 1.5 — add vars for filter-group containers */
+/* @version: 1.7 — re-add surface-input-focus and reorganize */
 
 :root {
-  /* Page and Map */
+  /* ==========================================================================
+     1. Page & Map
+     ========================================================================== */
   --surface-page:            #1a1a1a; /* html/body background */
   --surface-map:             #1a1a1a; /* map container background */
 
-  /* Sidebar */
+  /* ==========================================================================
+     2. Sidebar
+     ========================================================================== */
   --surface-sidebar:         #232323; /* sidebar overall background */
   --surface-section-header:  #1a1a1a; /* “Search” & “Filters” header bars */
 
+  /* ==========================================================================
+     3. Sidebar Search Panel
+     ========================================================================== */
+  --surface-search-header:   #1b1b1b; /* search header band background */
+  --surface-search-panel:    #2a2a2a; /* search input container background */
+  --surface-input-focus:     #3a3a3a; /* search-bar focus background */
 
-  /* Modals */
+  /* ==========================================================================
+     4. Filter Groups
+     ========================================================================== */
+  --text-filter-header-default:  #bbbbbb; /* default group header text & icons */
+  --surface-filter-group-panel:  #2a2a2a; /* filter-group card background */
+  --surface-filter-group-header: #1f1f1f; /* filter-group header bar background */
+
+  /* ==========================================================================
+     5. Modals & Other Sections
+     ========================================================================== */
   --surface-modal-small:     #232323; /* small modal background */
   --surface-modal-large:     #232323; /* large modal background */
+  --surface-about-section:   #232323; /* “About” page section background */
 
-  /* Other Containers */
-  --surface-about-section:   #232323; /* e.g. “About” page sections */
-
-  /* Interactive / Hover */
+  /* ==========================================================================
+     6. Interactive / Hover States
+     ========================================================================== */
   --surface-hover:           #2e2e2e; /* hovered rows, inputs, highlights */
+  --surface-toggle-hover:    #3a3a3a; /* hover bg for toggle labels/chevrons/eyes */
 
-  /* Text */
-  --text-primary:            #e5e6e8; /* primary body and control text */
+  /* ==========================================================================
+     7. Focus States
+     ========================================================================== */
+  --surface-focus-bg:        #2a2a2a; /* focus-within container highlight */
+  --focus-outline:           #777777; /* outline for focus-visible elements */
+
+  /* ==========================================================================
+     8. Typography
+     ========================================================================== */
+  --text-primary:            #e5e6e8; /* main text color */
   --text-secondary:          #a3a3a3; /* secondary text (placeholders, disabled) */
+  --text-clear:              #888888; /* clear-icon default color */
+  --text-placeholder:        #666666; /* input placeholder text */
+  --text-toggle-off:         #555555; /* unchecked toggle text */
 
-  /* Accent & Feedback */
+  /* ==========================================================================
+     9. Accent & Feedback
+     ========================================================================== */
   --accent:                  #ffda95; /* highlights, active states, buttons */
   --danger:                  #e74c3c; /* delete buttons, errors */
   --warning:                 #f1c40f; /* warnings */
   --success:                 #27ae60; /* success states */
 
-  /* Borders & Dividers */
+  /* ==========================================================================
+     10. UI Controls: Forms & Buttons
+     ========================================================================== */
+  --input-bg:                #303030; /* form inputs, dropdowns background */
+  --input-text:              var(--text-primary);
+  --button-bg:               #333333; /* default button background */
+  --button-bg-hover:         #444444; /* button hover background */
+
+  /* ==========================================================================
+     11. Borders & Dividers
+     ========================================================================== */
   --border:                  #444444; /* general dividers and borders */
+  --border-strong:           #333333; /* panel borders & separators */
   --border-muted:            #555555; /* subtle borders (inputs, buttons) */
 
-  /* Form & UI Controls */
-  --input-bg:                #303030; /* form inputs, dropdowns */
-  --input-text:              var(--text-primary);
-  --button-bg:               #333333; /* default button backgrounds */
-  --button-bg-hover:         #444444; /* button hover state */
-
-  /* Scrollbars */
+  /* ==========================================================================
+     12. Scrollbars
+     ========================================================================== */
   --scrollbar-track:         #2a2a2a; /* scrollbar track */
   --scrollbar-thumb:         #555555; /* scrollbar thumb default */
   --scrollbar-thumb-hover:   #777777; /* scrollbar thumb hover */
-
-  /* Sidebar Search panel */
-  --surface-search-header:   #1b1b1b; /* “Search” header background */
-  --surface-search-panel:    #2a2a2a; /* search box container */
-
-  /* Borders */
-  --border-strong:           #333333; /* panel borders & separators */
-
-  /* Text states */
-  --text-clear:              #888888; /* clear‐icon default */
-  --text-placeholder:        #666666; /* input placeholder */
-
-  /* Input focus */
-  --surface-input-focus:     #3a3a3a; /* search‐bar:focus bg */
-  /* border‐bottom‐color on focus will use var(--accent) */
-
-  /* Filter-group header default text */
-  --text-filter-header-default: #f30303;
-
-  /* Filter-Group Cards */
-  --surface-filter-group-panel:  #2a2a2a; /* filter-group card background */
-  --surface-filter-group-header: #1f1f1f; /* filter-group header bar background */
-  
-  /* Toggle states */
-  --surface-toggle-hover:  #3A3A3A; /* hover bg for toggle labels / chevrons / eyes */
-  --text-toggle-off:       #555555; /* unchecked toggle text */
-
-  /* Focus highlight background */
---surface-focus-bg:    #2a2a2a; /* container highlight on focus-within */
-
-/* Focus outline */
---focus-outline:       #777777; /* outline color for focus-visible elements */
-
 }
