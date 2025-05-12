@@ -6,7 +6,7 @@
   font-size: 14px;
   border-radius: 3px;
   background: var(--surface-context-menu) !important;
-  color: var(--text-primary) !important;
+  color: var(--text-context-menu) !important;
   border: 1px solid var(--border-muted) !important;
 }
 

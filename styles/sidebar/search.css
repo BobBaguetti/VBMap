@@ -4,7 +4,7 @@
 #sidebar-search {
   margin-top: 0.8em;
   background-color: var(--surface-search-panel);
-  border: 1px solid var(--div-line);
+  border: 1px solid var(--border-strong);
   border-top: none;
   border-bottom-left-radius: 6px;
   border-bottom-right-radius: 6px;
@@ -34,7 +34,7 @@
   box-sizing: border-box;
   padding: 6px 30px 6px 10px;
   border: none;
-  border-bottom: 1px solid var(--border-main);
+  border-bottom: 1px solid var(--border);
   background-color: var(--input-bg);
   color: var(--text-primary);
   font-size: 14px;
@@ -57,7 +57,7 @@
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--text-secondary);
+  color: var(--text-clear);
   font-size: 18px;
   line-height: 1;
   cursor: pointer;
@@ -76,18 +76,19 @@
 
 /* placeholder styling */
 #sidebar-search #search-bar::placeholder {
-  color: var(--text-secondary);
+  color: var(--text-placeholder);
 }
 
 /* input focus */
 #sidebar-search #search-bar:focus {
-  background-color: var(--surface-hover-bg);
+  background-color: var(--surface-input-focus);
   border-bottom-color: var(--accent);
 }
 
 /* separator */
 #sidebar-search > hr {
   border: none;
-  border-top: 1px solid var(--div-line);
+  border-top: 1px solid var(--border-strong);
   margin: 0;
 }
+ 

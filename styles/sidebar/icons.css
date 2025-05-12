@@ -3,7 +3,7 @@
 
 .filter-group > h3,
 .filter-group > h4 {
-  color: var(--text-secondary);
+  color: var(--text-filter-header-default);
 }
 
 .filter-group > h3:hover,

@@ -7,7 +7,7 @@
 
 /* Map background */
 .leaflet-container {
-  background-color: var(--surface-0) !important;
+  background-color: var(--surface-map) !important;
 }
 
 .leaflet-popup {
@@ -60,7 +60,7 @@
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 13px;
-  border-bottom: 2px solid var(--border-main);
+  border-bottom: 2px solid var(--border);
   padding: 0;
 }
 .popup-header-left {
@@ -100,14 +100,14 @@
   font-weight: 520;
   font-variant: small-caps;
   text-transform: uppercase;
-  text-shadow: 0 1px 1px var(--shadow-light);
+  text-shadow: 0 1px 1px var(--shadow-text);
 }
 .popup-type,
 .popup-rarity {
   font-size: 15px;
   font-weight: 520;
   transform: translateY(-1px);
-  text-shadow: 0 1px 1px var(--shadow-light);
+  text-shadow: 0 1px 1px var(--shadow-text);
 }
 
 /* Value (coins) block */
@@ -120,7 +120,7 @@
   font-size: 15px;
   font-weight: 520;
   white-space: nowrap;
-  text-shadow: 0 1px 1px var(--shadow-light);
+  text-shadow: 0 1px 1px var(--shadow-text);
 }
 .popup-value-icon svg {
   width: 16px;
@@ -133,7 +133,7 @@
   font-weight: 420;
   font-size: 14px;
   background: var(--surface-info-box-bg);
-  border: 1px solid var(--border-main);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 9px;
   margin-top: 7px;
@@ -145,7 +145,7 @@
   margin: 0;
   padding: 2px 0;
   font-weight: 420;
-  text-shadow: 0 1px 1px var(--shadow-light);
+  text-shadow: 0 1px 1px var(--shadow-text);
 }
 .popup-desc {
   font-size: 14px;
@@ -169,7 +169,7 @@
 .popup-divider {
   border: none;
   height: 1px;
-  background: var(--border-main);
+  background: var(--border);
   margin: 1px 0;
 }
 
@@ -213,7 +213,7 @@
   box-sizing: border-box;
   width: 52px;
   height: 52px;
-  background: var(--surface-popup-image);
+  background: var(--surface-popup-chest-slot);
   border: 2px solid transparent;
   border-radius: 2px;
   overflow: hidden;
@@ -232,7 +232,7 @@
   position: absolute;
   bottom: 2px;
   right: 4px;
-  background: var(--surface-3);
+  background: var(--surface-chest-slot-qty-bg);
   padding: 1px 4px;
   border-radius: 3px;
   font-size: 0.75em;
@@ -242,7 +242,7 @@
 /* Two separate panels */
 .custom-popup > .popup-info-box {
   background: var(--surface-info-box-bg);
-  border: 1px solid var(--border-main);
+  border: 1px solid var(--border);
   border-radius: 4px;
   padding: 9px;
   margin: 8px 0;
