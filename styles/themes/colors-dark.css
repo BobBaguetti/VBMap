@@ -1,7 +1,15 @@
 /* @file: styles/themes/colors-dark.css */
-/* @version: 3.0 — add --div-line and rewire divider vars */
+/* @version: 3.5 — add --div-line and rewire divider vars */
 
 :root {
+      /* ==========================================================================
+     0. Temp Gray & Divider Line
+     ========================================================================== */
+  --temp-gray-777:           #777777;   /* keep for testing */
+  --temp-gray-555:           #555555;   /* keep for testing */
+  --temp-gray-333:           #333333;   /* keep for testing */
+  --temp-gray-2a:            #2a2a2a;   /* keep for testing */
+
   /* ==========================================================================
      1. Page & Map
      ========================================================================== */
@@ -9,79 +17,93 @@
   --surface-map:             var(--surface-deep-dark);
 
   /* ==========================================================================
-     2. Temp Gray & Divider Line
-     ========================================================================== */
-  --temp-gray-777:           #777777;   /* keep for testing */
-  --temp-gray-555:           #555555;   /* keep for testing */
-  --temp-gray-333:           #333333;   /* keep for testing */
-  --temp-gray-eee:           #eeeeee;   /* keep for testing */
-  --temp-gray-2a:            #2a2a2a;   /* keep for testing */
-  --temp-gray-444:           #ff0000;   /* Tested */
-
-  /* New global divider line */
-  --div-line:                #15ff00; 
-
-  /* ==========================================================================
-     3. Core Dark Surface & Variations
+     2. Core Surface, Variations and Globals
      ========================================================================== */
   --surface-dark:            #232323;
   --surface-entry-container: var(--temp-gray-2a);
   --surface-input-field:     #303030;
   --surface-deep-dark:       #1a1a1a;
 
+    /* UI Utilities & Entry Styles */
+  --text-ui-default:         var(--text-primary);
+  --div-line:              #444444; 
+  --surface-button-delete:   var(--surface-delete);
+  --surface-button-delete-hover: var(--surface-delete-hover);
+  --text-button-delete:      var(--text-on-dark);
+  --text-entry-quantity:     #aaaaaa;
+  --color-value-icon:        #d4af37;
+
+    /*UI Controls: Forms & Buttons*/
+  --input-bg:                var(--surface-input-field);
+  --input-text:              var(--text-primary);
+  --button-bg:               #333333;
+  --button-bg-hover:         #444444; 
+
+    /* Shadows */
+  --shadow-light:            rgba(0,0,0,0.5);
+  --shadow-strong:           rgba(0,0,0,0.7);
+
+    /* existing shadows alias */
+  --shadow-text:             var(--shadow-light);
+  --shadow-modal:            var(--shadow-strong);
+
+    /* Borders & Dividers */
+  --border:                  var(--div-line);
+  --border-strong:           var(--temp-gray-333);
+  --border-muted:            var(--temp-gray-555);
+
+  /* preview border now aliases strong border */
+  --border-preview:          var(--border-strong);
+
   /* ==========================================================================
-     4. Sidebar & Panels
+     3. Sidebar 
      ========================================================================== */
   --surface-sidebar:         var(--surface-dark);
   --surface-section-header:  var(--surface-deep-dark);
   --surface-search-header:   var(--surface-deep-dark);
   --surface-search-panel:    var(--surface-entry-container);
 
-  /* ==========================================================================
-     5. Filter Groups
-     ========================================================================== */
+  /* Filter Groups */
   --text-filter-header-default:  #bbbbbb;
   --surface-filter-group-panel:  var(--surface-entry-container);
   --surface-filter-group-header: #1f1f1f;
 
   /* ==========================================================================
-     6. Modals & Other Sections
+     4. Others
      ========================================================================== */
-  --surface-modal-small:     var(--surface-dark);
-  --surface-modal-large:     var(--surface-dark);
   --surface-about-section:   var(--surface-dark);
 
   /* ==========================================================================
-     7. Context Menu
+     5. Context Menu
      ========================================================================== */
   --surface-context-menu:    var(--temp-gray-333);
-  --text-context-menu:       var(--temp-gray-eee);
+  --text-context-menu:       var(--text-primary);
 
   /* ==========================================================================
-     8. Custom Markers
+     6. Custom Markers
      ========================================================================== */
   --border-marker:           var(--temp-gray-777);
   --highlight-chest:         #66ccff;
 
   /* ==========================================================================
-     9. Color-Picker Button
+     7. Color-Picker Button
      ========================================================================== */
   --surface-color-btn:       #666666;
 
   /* ==========================================================================
-     10. Interactive / Hover States
+     8. Interactive / Hover States
      ========================================================================== */
   --surface-hover:           #2e2e2e;
   --surface-toggle-hover:    #3a3a3a;
 
   /* ==========================================================================
-     11. Focus States
+     9. Focus States
      ========================================================================== */
   --surface-focus-bg:        var(--temp-gray-2a);
   --focus-outline:           var(--temp-gray-777);
 
   /* ==========================================================================
-     12. Typography
+     10. Typography
      ========================================================================== */
   --text-primary:            #e5e6e8;
   --text-secondary:          #a3a3a3;
@@ -95,7 +117,7 @@
   --text-on-dark:            #ffffff;
 
   /* ==========================================================================
-     13. Accent & Feedback
+     11. Accent & Feedback
      ========================================================================== */
   --accent:                  #ffda95;
   --danger:                  #e74c3c;
@@ -103,42 +125,14 @@
   --success:                 #27ae60;
 
   /* ==========================================================================
-     14. UI Controls: Forms & Buttons
-     ========================================================================== */
-  --input-bg:                var(--surface-input-field);
-  --input-text:              var(--text-primary);
-  --button-bg:               #333333;
-  --button-bg-hover:         var(--temp-gray-444); /* not a divider */
-
-  /* ==========================================================================
-     15. Borders & Dividers
-     ========================================================================== */
-  --border:                  var(--div-line);
-  --border-strong:           var(--temp-gray-333);
-  --border-muted:            var(--temp-gray-555);
-
-  /* preview border now aliases strong border */
-  --border-preview:          var(--border-strong);
-
-  /* ==========================================================================
-     16. Scrollbars
+     12. Scrollbars
      ========================================================================== */
   --scrollbar-track:         var(--surface-entry-container);
   --scrollbar-thumb:         var(--temp-gray-555);
   --scrollbar-thumb-hover:   var(--temp-gray-777);
 
   /* ==========================================================================
-     17. Shadows
-     ========================================================================== */
-  --shadow-light:            rgba(0,0,0,0.5);
-  --shadow-strong:           rgba(0,0,0,0.7);
-
-  /* existing shadows alias */
-  --shadow-text:             var(--shadow-light);
-  --shadow-modal:            var(--shadow-strong);
-
-  /* ==========================================================================
-     18. Popups
+     13. Popups
      ========================================================================== */
   --surface-popup:           #2c2c2c;
   --surface-popup-overlay:   rgba(34,34,34,0.95);
@@ -152,37 +146,25 @@
   --text-popup-close-hover:  var(--text-on-dark);
 
   /* ==========================================================================
-     19. UI Utilities & Entry Styles
+     14. Modals
      ========================================================================== */
-  --text-ui-default:         var(--text-primary);
-  --surface-button-delete:   var(--surface-delete);
-  --surface-button-delete-hover: var(--surface-delete-hover);
-  --text-button-delete:      var(--text-on-dark);
-  --text-entry-quantity:     #aaaaaa;
-  --color-value-icon:        #d4af37;
+  --surface-modal-base:      #222222;
+  --surface-modal-small:     var(--surface-dark);
+  --surface-modal-large:     var(--surface-dark);
+  --text-modal:              var(--text-primary);
+  --surface-modal-input:     var(--surface-entry-container);
 
+  --surface-entry-delete:       var(--surface-delete);
+  --surface-entry-delete-hover: var(--surface-delete-hover);
+
+  --text-chip-default:          var(--text-filter-header-default);
+  --surface-backdrop:           rgba(0,0,0,0.5);
+
+  
   /* ==========================================================================
-     20. Preview Panels
+     15. Preview Panels
      ========================================================================== */
   --surface-preview-bg:      var(--surface-deep-dark);
   --text-inverse:            var(--text-on-dark);
 
-  /* ==========================================================================
-     21. Modal Base
-     ========================================================================== */
-  --surface-modal-base:      #222222;
-  --text-modal:              var(--temp-gray-eee);
-  --surface-modal-input:     var(--surface-entry-container);
-
-  /* ==========================================================================
-     22. Modal Large Entries
-     ========================================================================== */
-  --surface-entry-delete:       var(--surface-delete);
-  --surface-entry-delete-hover: var(--surface-delete-hover);
-
-  /* ==========================================================================
-     23. Chest Definitions Modal
-     ========================================================================== */
-  --text-chip-default:          var(--text-filter-header-default);
-  --surface-backdrop:           rgba(0,0,0,0.5);
 }
