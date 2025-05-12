@@ -1,16 +1,12 @@
-/* @keep: Comments and protected headers must NOT be removed or altered except when updating version or content as specified. */
-/* @file: styles/context-menu.css */
-/* @version: 2 — replaced hard-coded colors with CSS variables and updated font */
-
+/* Context Menu */
 #context-menu {
-  font-family: 'Satoshi', sans-serif;
+  font-family: Arial, sans-serif;
   font-size: 14px;
   border-radius: 3px;
-  background: var(--surface-a10) !important;    /* was #333 */
-  color: var(--primary-a10) !important;         /* was #eee */
-  border: 1px solid var(--surface-a40) !important; /* was #555 */
+  background: #333 !important;
+  color: #eee !important;
+  border: 1px solid #555 !important;
 }
-
 #context-menu div:hover {
-  background-color: var(--surface-a40) !important; /* was #555 */
+  background-color: #555 !important;
 }

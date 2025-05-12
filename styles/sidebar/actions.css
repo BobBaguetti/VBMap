@@ -1,6 +1,5 @@
-/* @keep: Comments and protected headers must NOT be removed or altered unless updating version or content as specified. */
 /* @file: styles/sidebar/actions.css */
-/* @version: 1.8 — replaced hard-coded colors with CSS variables */
+/* @version: 1.7 — position collapse‐all right & correct up/down chevrons */
 
 /* Hide the auto-injected Show All / Hide All links entirely */
 .header-actions {
@@ -9,14 +8,14 @@
 
 /* Filters “Toggle All” link styling */
 #filters-section > h2 .toggle-all {
-  color: var(--surface-a50);
+  color: #bbb;
   font-size: 0.75em;
   text-decoration: none;
   transition: color 0.2s;
   margin-left: 1em;
 }
 #filters-section > h2 .toggle-all:hover {
-  color: var(--primary-a0);
+  color: #e5e6e8;
   text-decoration: underline;
 }
 
@@ -29,13 +28,13 @@
   right: 0.6em;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--surface-a50);
+  color: #bbb;
   font-size: 0.9em;
   cursor: pointer;
   transition: color 0.2s;
 }
 #filters-section > h2 .collapse-all:hover {
-  color: var(--primary-a0);
+  color: #e5e6e8;
 }
 
 /* The icon’s class (fa-chevron-up/down) handles the direction, no extra rotation needed */

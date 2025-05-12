@@ -1,6 +1,7 @@
-/* @keep: Comments and protected headers must NOT be removed or altered except when updating version or content as specified. */
-/* @file: styles/custom-markers.css */
-/* @version: 6 — replaced hard-coded colors with CSS variables */
+/* @file: /styles/custom-markers.css */
+/* @version: 5 */
+/* @keep: Comments must NOT be deleted unless their associated code is also deleted;
+         comments may only be edited when editing their code. */
 
 /* Custom Marker Style */
 .custom-marker-container {
@@ -18,7 +19,7 @@
   position: absolute;
   width: 100%;
   height: 100%;
-  border: 3px solid var(--surface-a40); /* was #777 */
+  border: 3px solid #777;
   border-radius: 50%;
   background: transparent !important;  /* removed the dark overlay */
 }
@@ -48,7 +49,7 @@
   align-items: center;
   padding: 0 0 4px 0;
   margin-bottom: 12px;
-  border-bottom: 2px solid var(--surface-a20); /* was #444 */
+  border-bottom: 2px solid #444;
 }
 
 .popup-body {
@@ -61,12 +62,12 @@
 .popup-rarity,
 .popup-description,
 .popup-extra-line {
-  color: var(--primary-a0); /* was #e5e6e8 */
+  color: #e5e6e8;
 }
 
 /* Highlight chest markers the same way as items */
 .chest-marker-icon {
-  border: 2px solid var(--accent-blue); /* was #6cf */
+  border: 2px solid #6cf;
   border-radius: 50%;
-  box-shadow: 0 0 6px var(--accent-blue); /* was #6cf */
+  box-shadow: 0 0 6px #6cf;
 }

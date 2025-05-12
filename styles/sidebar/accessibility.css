@@ -1,10 +1,9 @@
-/* @keep: Comments and protected headers must NOT be removed or altered unless updating version or content as specified. */
 /* @file: styles/sidebar/accessibility.css */
-/* @version: 1.1 — replaced hard-coded colors with CSS variables */
+/* @version: 1.0 — hover & focus states for better UX */
 
 .filter-group .toggle-group label:hover,
 .filter-group .toggle-group label:focus-within {
-  background-color: var(--surface-a30);  /* was rgba(255,255,255,0.12) */
+  background-color: rgba(255,255,255,0.12);
 }
 
 /* Make labels keyboard-focusable */
@@ -12,22 +11,22 @@
   outline: none;
 }
 .filter-group .toggle-group input:focus-visible + span {
-  outline: 2px solid var(--surface-a40); /* was #777 */
+  outline: 2px solid #777;
   outline-offset: 2px;
 }
 
 /* Highlight header on focus for collapse/eye */
 .filter-group > h3:focus-within,
 .filter-group > h4:focus-within {
-  background-color: var(--surface-a20);  /* was #2a2a2a */
-  outline: 2px solid var(--surface-a40); /* was #777 */
+  background-color: #2a2a2a;
+  outline: 2px solid #777;
   outline-offset: -2px;
 }
 
 /* Focus states for eye icon and header-actions links */
 .filter-group .filter-eye:focus-visible,
 .filter-group .header-actions a:focus-visible {
-  outline: 2px solid var(--surface-a40); /* was #777 */
+  outline: 2px solid #777;
   outline-offset: 2px;
 }
 
