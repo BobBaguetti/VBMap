@@ -1,5 +1,5 @@
-/* @version: 15 */
 /* @file: styles/modals/modal.base.css – base styles for all modals */
+/* @version: 16 — convert hard-coded dark colors to theme tokens */
 
 /* 1) Global box-sizing */
 *,
@@ -11,20 +11,22 @@
 /* 2) Backdrop & container */
 .modal {
   position: fixed;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
   background: transparent;
   display: none;
   z-index: 1000;
 }
 
 .modal-content {
-  background: #222222;
-  border: 1px solid #333;
+  background: var(--bg-30);                /* was #222222 */
+  border: 1px solid var(--border-soft);    /* was #333 */
   border-radius: 4px;
   padding: 10px 16px 16px;
-  color: #eee;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.7);
+  color: var(--text-primary);              /* was #eee */
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
   position: absolute;
   transform: none;
   width: auto;
@@ -50,7 +52,7 @@
 /* hr under header – tighter spacing */
 .modal-header + hr {
   border: none;
-  border-top: 2px solid #444;
+  border-top: 2px solid var(--bg-50);      /* was #444 */
   margin: 4px 0;
 }
 
@@ -81,21 +83,18 @@
   flex: 1 1 auto;
   min-width: 0;
   margin-right: 8px;
-  background: #2a2a2a;
-  border: 1px solid #555;
+  background: var(--bg-30);               /* was #2a2a2a */
+  border: 1px solid var(--border-soft);   /* was #555 */
   border-radius: 2px;
   padding: 6px 8px;
-  color: #eee;
+  color: var(--text-primary);             /* was #eee */
 }
 
 /* 7) Hide default number-spinner arrows and standardize appearance */
 .modal-content .field-row input[type="number"] {
-  /* Chrome/Safari */
-  -webkit-appearance: none;
-  /* Firefox */
-  -moz-appearance: none;
-  /* Standard */
-  appearance: none;
+  -webkit-appearance: none; /* Chrome/Safari */
+  -moz-appearance: none;    /* Firefox */
+  appearance: none;         /* Standard */
   margin: 0;
 }
 
@@ -103,8 +102,9 @@
 .modal-content .color-btn {
   margin-left: 8px !important;
   flex: 0 0 19px;
-  width: 19px; height: 19px;
-  border: 1px solid #555;
+  width: 19px;
+  height: 19px;
+  border: 1px solid var(--bg-50);         /* was #555 */
   border-radius: 2px;
   cursor: pointer;
 }
@@ -134,7 +134,7 @@
 /* 10) Dividers around Extra Info */
 .modal-content hr {
   border: none;
-  border-top: 2px solid #444;
+  border-top: 2px solid var(--bg-50);     /* was #444 */
   margin: 6px 0;
 }
 
@@ -146,22 +146,22 @@
 /* 12) Zebra-striped entry styling for definition lists */
 .item-def-entry {
   padding: 6px 10px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-soft); /* was #333 */
   cursor: pointer;
 }
 .item-def-entry:nth-child(even) {
-  background-color: #2a2a2a;
+  background-color: var(--bg-30);         /* was #2a2a2a */
 }
 .item-def-entry strong {
-  color: #fff;
+  color: #F2F3F5;                         /* keep bright highlight */
 }
 .item-def-entry small {
   font-size: 0.85em;
-  color: #ccc;
+  color: var(--text-secondary);           /* was #ccc */
 }
 .item-def-entry em {
   display: block;
   font-style: italic;
-  color: #aaa;
+  color: var(--text-secondary);           /* was #aaa */
   margin-top: 2px;
 }

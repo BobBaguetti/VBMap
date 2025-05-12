@@ -1,5 +1,5 @@
-/* @version: 19 */
 /* @file: /styles/modals/modal.large.css */
+/* @version: 20 — converted hard-coded colors to design tokens */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
 
@@ -17,27 +17,27 @@
   pointer-events: auto;
   font-family: 'Satoshi', sans-serif;
   font-weight: 400;
-  color: #e5e6e8;
+  color: var(--text-primary);                 /* #e5e6e8 */
 }
 
-/* Core modal box */
+/* ─── Core modal box ─────────────────────────────────────────────── */
 .modal.modal-large .modal-content {
   position: relative;
   width: 100%;
   max-width: 550px;
   height: 90vh;
-  background-color: #222;
-  border: 1px solid #333;
+  background-color: var(--bg-30);            /* #222 */
+  border: 1px solid var(--border-soft);      /* #333 */
   border-radius: 6px;
   padding: 16px;
-  box-shadow: 0 0 10px #000;
+  box-shadow: 0 0 10px rgba(0,0,0,0.85);
   display: flex;
   flex-direction: column;
   overflow: hidden;
   font-family: 'Satoshi', sans-serif;
 }
 
-/* Header */
+/* ─── Header ─────────────────────────────────────────────────────── */
 .modal.modal-large .modal-header {
   display: flex;
   justify-content: space-between;
@@ -48,43 +48,39 @@
 .modal.modal-large .modal-header h2 {
   margin: 0;
   font-size: 20px;
-  color: #e5e6e8;
+  color: var(--text-primary);
   font-weight: 600;
 }
 
 .modal.modal-large h3 {
   font-weight: 500;
-  color: #e5e6e8;
+  color: var(--text-primary);
 }
 
 .modal.modal-large .modal-header .close {
   font-size: 24px;
   cursor: pointer;
-  color: #e5e6e8;
+  color: var(--text-primary);
 }
 
 .modal.modal-large hr {
   margin: 6px 0;
   border: 0;
-  border-top: 2px solid #444;
+  border-top: 2px solid var(--bg-50);        /* #444 */
 }
 
-/* Scrollable list container */
+/* ─── Scrollable list & form areas ───────────────────────────────── */
 .modal.modal-large .def-list {
   flex: 0 0 240px;
   overflow-y: auto;
   padding-right: 4px;
   min-height: 0;
   max-height: 240px;
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE/Edge */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
-.modal.modal-large .def-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
+.modal.modal-large .def-list::-webkit-scrollbar { width: 0; height: 0; }
 
-/* Scrollable form area */
 .modal.modal-large form {
   flex: 1 1 auto;
   min-height: 0;
@@ -93,14 +89,9 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.modal.modal-large form::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
+.modal.modal-large form::-webkit-scrollbar { width: 0; height: 0; }
 
-/* ─── Fields ───────────────────────────────────────────────────────── */
-
-/* Container for each label+control row */
+/* ─── Fields ─────────────────────────────────────────────────────── */
 .modal.modal-large .field-row {
   display: flex;
   align-items: center;
@@ -111,59 +102,49 @@
 .modal.modal-large .field-row label {
   width: 100px;
   font-weight: 400;
-  color: #e5e6e8;
+  color: var(--text-primary);
   flex-shrink: 0;
 }
 
-/* Uniform styling for text, number, select, textarea */
 .modal.modal-large .field-row input[type="text"],
 .modal.modal-large .field-row input[type="number"],
 .modal.modal-large .field-row textarea,
 .modal.modal-large .field-row select {
   flex: 1;
-  background-color: #2a2a2a;
-  color: #e5e6e8;
-  border: 1px solid #555;
+  background-color: var(--bg-30);            /* #2a2a2a */
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);      /* #555 */
   padding: 6px 8px;
   border-radius: 3px;
   font-size: 14px;
   font-weight: 400;
 }
 
-/* Hide native number input spinners and standardize appearance */
+.modal.modal-large .field-row textarea { resize: vertical; }
+
+/* hide spinners on number inputs */
 .modal.modal-large .field-row input[type="number"]::-webkit-outer-spin-button,
 .modal.modal-large .field-row input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-.modal.modal-large .field-row input[type="number"] {
-  /* Remove spinner in Firefox/Edge, Safari/Chrome, and use standard */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  margin: 0;
-}
-
-/* Allow textarea vertical resize */
-.modal.modal-large .field-row textarea {
-  resize: vertical;
+.modal.modal-large .field-row input[type="number"]{
+  -webkit-appearance:none; -moz-appearance:none; appearance:none; margin:0;
 }
 
 /* Color-picker & remove-line buttons */
 .modal.modal-large .field-row .color-btn {
-  width: 24px;
-  height: 24px;
-  background-color: #e5e6e8;
-  border: 1px solid #555;
+  width: 24px; height: 24px;
+  background-color: var(--text-primary);     /* #e5e6e8 */
+  border: 1px solid var(--border-soft);      /* #555 */
   cursor: pointer;
   border-radius: 2px;
 }
 
-/* ─── Buttons & Floating Controls ───────────────────────────────────── */
-
+/* ─── Buttons & floating controls ───────────────────────────────── */
 .modal.modal-large .ui-button {
-  background-color: #444;
-  color: #e5e6e8;
+  background-color: var(--bg-50);            /* #444 */
+  color: var(--text-primary);
   border: none;
   padding: 6px 10px;
   margin-left: 5px;
@@ -173,45 +154,25 @@
   font-family: 'Satoshi', sans-serif;
 }
 .modal.modal-large .ui-button:hover {
-  background-color: #666;
+  filter: brightness(1.15);                  /* #666 equivalent */
 }
 
-.modal.modal-large .field-row.extra-row {
-  align-items: center;
-}
+.modal.modal-large .field-row.extra-row { align-items: center; }
 
 .modal.modal-large .extra-info-block > button,
 .modal.modal-large .extra-info-line .remove-line-btn {
-  width: 28px;
-  height: 28px;
-  padding: 0;
+  width: 28px; height: 28px; padding: 0;
   background: none;
   border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  display: flex; align-items: center; justify-content: center;
   cursor: pointer;
 }
 .modal.modal-large .extra-info-block > button svg,
 .modal.modal-large .extra-info-line .remove-line-btn svg {
-  fill: #e5e6e8;
+  fill: var(--text-primary);
 }
 
-/* Fix alignment for image URL fields */
-.modal.modal-large .field-row input[id^="def-image"] {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* Floating button row (Save/Clear/Delete) */
-.modal-large .floating-buttons {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-/* ─── Definition List Entries ───────────────────────────────────────── */
-
+/* ─── Definition list entries ───────────────────────────────────── */
 .modal.modal-large .item-def-entry {
   padding: 6px 8px;
   cursor: pointer;
@@ -220,7 +181,7 @@
 }
 
 .modal.modal-large .item-def-entry:hover {
-  background-color: #333;
+  background-color: var(--bg-40);            /* #333 */
 }
 
 .modal.modal-large .item-def-entry .entry-name {
@@ -230,14 +191,14 @@
 
 .modal.modal-large .item-def-entry .entry-meta {
   font-size: 12px;
-  color: #bbb;
+  color: var(--text-secondary);              /* #bbb */
   margin-top: 2px;
 }
 
 .modal.modal-large .item-def-entry .entry-description {
   font-style: italic;
   font-size: 13px;
-  color: #aaa;
+  color: var(--text-secondary);              /* #aaa */
   margin-top: 2px;
 }
 
@@ -246,26 +207,26 @@
   gap: 12px;
   margin-top: 4px;
   font-size: 13px;
-  color: #ccc;
+  color: var(--text-secondary);              /* #ccc */
   align-items: center;
 }
 
 .modal.modal-large .item-def-entry .entry-value svg {
-  width: 14px;
-  height: 14px;
-  vertical-align: middle;
+  width: 14px; height: 14px; vertical-align: middle;
   margin-left: 4px;
+  fill: var(--accent-gold);                  /* #d4af37 */
 }
 
 .modal.modal-large .item-def-entry .entry-quantity {
   font-style: italic;
-  color: #aaa;
+  color: var(--text-secondary);
 }
 
+/* Delete button */
 .modal.modal-large .item-def-entry .entry-delete {
   margin-top: 6px;
-  background-color: #551111;
-  color: #eee;
+  background-color: var(--accent-error);     /* #551111-ish */
+  color: var(--text-primary);
   padding: 4px 10px;
   border: none;
   border-radius: 4px;
@@ -274,96 +235,63 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  transition: background 0.3s, color 0.3s;
+  transition: filter 0.3s;
 }
-
 .modal.modal-large .item-def-entry .entry-delete:hover {
-  background-color: #772222;
-  color: white;
+  filter: brightness(0.85);                  /* #772222 equivalent */
 }
-
 .modal.modal-large .item-def-entry .entry-delete svg {
-  width: 16px;
-  height: 16px;
+  width: 16px; height: 16px;
 }
 
-/* Layout Modes */
-.modal-large .layout-row .item-def-entry {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 6px 10px;
+/* ─── Layout modes (row / stacked / gallery) ─────────────────────── */
+.modal-large .layout-row .item-def-entry{
+  display:flex; flex-direction:row; align-items:center;
+  justify-content:space-between; gap:12px; padding:6px 10px;
 }
-
-.modal-large .layout-row .item-def-entry > .entry-name {
-  flex: 2;
-}
-
+.modal-large .layout-row .item-def-entry > .entry-name{ flex:2; }
 .modal-large .layout-row .item-def-entry > .entry-meta,
 .modal-large .layout-row .item-def-entry > .entry-description,
-.modal-large .layout-row .item-def-entry > .entry-details {
-  flex: 1;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+.modal-large .layout-row .item-def-entry > .entry-details{
+  flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.modal-large .layout-row .item-def-entry > .entry-delete{
+  align-self:flex-start; margin-left:auto;
 }
 
-.modal-large .layout-row .item-def-entry > .entry-delete {
-  align-self: flex-start;
-  margin-left: auto;
+.modal-large .layout-stacked .item-def-entry{
+  display:flex; flex-direction:column; align-items:flex-start; padding:8px 10px;
+}
+.modal-large .layout-stacked .item-def-entry > .entry-delete{
+  align-self:flex-end; margin-top:4px;
 }
 
-.modal-large .layout-stacked .item-def-entry {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 8px 10px;
+.modal-large .layout-gallery{
+  display:flex; flex-wrap:wrap; gap:10px; justify-content:space-evenly; padding:6px;
 }
-
-.modal-large .layout-stacked .item-def-entry > .entry-delete {
-  align-self: flex-end;
-  margin-top: 4px;
+.modal-large .layout-gallery .item-def-entry{
+  display:flex; flex-direction:column; align-items:center;
+  background: var(--bg-30);                  /* #2a2a2a */
+  border: 1px solid var(--bg-50);            /* #444 */
+  padding: 10px; width: 110px; border-radius: 6px;
+  cursor: pointer; transition: background 0.2s;
 }
-
-.modal-large .layout-gallery {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  justify-content: space-evenly;
-  padding: 6px;
+.modal-large .layout-gallery .item-def-entry:hover{ background: var(--bg-40); }
+.modal-large .layout-gallery .item-def-entry > .entry-name{
+  font-size: 13px; font-weight:bold; text-align:center;
 }
-
-.modal-large .layout-gallery .item-def-entry {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  background: #2a2a2a;
-  border: 1px solid #444;
-  padding: 10px;
-  width: 110px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: background 0.2s;
-}
-
-.modal-large .layout-gallery .item-def-entry:hover {
-  background: #333;
-}
-
-.modal-large .layout-gallery .item-def-entry > .entry-name {
-  font-size: 13px;
-  font-weight: bold;
-  text-align: center;
-}
-
 .modal-large .layout-gallery .item-def-entry > .entry-meta,
-.modal-large .layout-gallery .item-def-entry > .entry-details {
-  font-size: 11px;
-  text-align: center;
+.modal-large .layout-gallery .item-def-entry > .entry-details{
+  font-size: 11px; text-align:center;
+}
+.modal-large .layout-gallery .item-def-entry .entry-delete{ margin-top:6px; }
+
+/* Fixed alignment for image URL fields */
+.modal.modal-large .field-row input[id^="def-image"]{
+  max-width:100%; box-sizing:border-box;
 }
 
-.modal-large .layout-gallery .item-def-entry .entry-delete {
-  margin-top: 6px;
+/* Floating Save / Clear / Delete row */
+.modal-large .floating-buttons{
+  display:flex; gap:6px; align-items:center;
 }
