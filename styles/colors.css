@@ -4,12 +4,12 @@
 :root,
 :root[data-theme="dark"] {
   /* Surface axis (dark → light) */
-  --surface-a0:  #1e1b21;  /* Sidebar / page background */
-  --surface-a10: #333036;  /* Section headers (Search, Filters) */
-  --surface-a20: #49464c;  /* Filter group panels (Main, Items, Chests) */
-  --surface-a30: #605e63;  /* Hovered rows, inputs, highlights */
-  --surface-a40: #79777b;  /* Borders, dividers, inactive icons */
-  --surface-a50: #929094;  /* Disabled text, placeholders */
+  --surface-a0:  #181818;  /* Sidebar / modal background */
+  --surface-a10: #222222;  /* Section headers (Search, Filters) */
+  --surface-a20: #282828;  /* Filter group panels (Main, Items, Chests) */
+  --surface-a30: #2d2d2d;  /* Hovered rows, inputs, highlights */
+  --surface-a40: #323232;  /* Borders, dividers, inactive icons */
+  --surface-a50: #373737;  /* Disabled text, placeholders */
 
   /* Primary text axis (light → lighter) */
   --primary-a0:  #e6e7e8;  /* Headings, main labels on dark bg */
