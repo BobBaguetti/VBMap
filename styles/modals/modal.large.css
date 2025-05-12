@@ -1,5 +1,5 @@
-/* @version: 20
-   @file: styles/modals/modal.large.css — replace hard-coded colors with theme variables */
+/* @version: 19 */
+/* @file: /styles/modals/modal.large.css */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
 
@@ -17,7 +17,7 @@
   pointer-events: auto;
   font-family: 'Satoshi', sans-serif;
   font-weight: 400;
-  color: var(--text-primary);
+  color: #e5e6e8;
 }
 
 /* Core modal box */
@@ -26,14 +26,15 @@
   width: 100%;
   max-width: 550px;
   height: 90vh;
-  background-color: var(--surface-modal-base);
-  border: 1px solid var(--border-strong);
+  background-color: #222;
+  border: 1px solid #333;
   border-radius: 6px;
   padding: 16px;
-  box-shadow: 0 0 10px var(--shadow-modal);
+  box-shadow: 0 0 10px #000;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  font-family: 'Satoshi', sans-serif;
 }
 
 /* Header */
@@ -47,25 +48,25 @@
 .modal.modal-large .modal-header h2 {
   margin: 0;
   font-size: 20px;
-  color: var(--text-primary);
+  color: #e5e6e8;
   font-weight: 600;
 }
 
 .modal.modal-large h3 {
   font-weight: 500;
-  color: var(--text-primary);
+  color: #e5e6e8;
 }
 
 .modal.modal-large .modal-header .close {
   font-size: 24px;
   cursor: pointer;
-  color: var(--text-primary);
+  color: #e5e6e8;
 }
 
 .modal.modal-large hr {
   margin: 6px 0;
   border: 0;
-  border-top: 2px solid var(--border);
+  border-top: 2px solid #444;
 }
 
 /* Scrollable list container */
@@ -110,7 +111,7 @@
 .modal.modal-large .field-row label {
   width: 100px;
   font-weight: 400;
-  color: var(--text-primary);
+  color: #e5e6e8;
   flex-shrink: 0;
 }
 
@@ -120,9 +121,9 @@
 .modal.modal-large .field-row textarea,
 .modal.modal-large .field-row select {
   flex: 1;
-  background-color: var(--surface-modal-input);
-  color: var(--text-primary);
-  border: 1px solid var(--border-muted);
+  background-color: #2a2a2a;
+  color: #e5e6e8;
+  border: 1px solid #555;
   padding: 6px 8px;
   border-radius: 3px;
   font-size: 14px;
@@ -136,6 +137,7 @@
   margin: 0;
 }
 .modal.modal-large .field-row input[type="number"] {
+  /* Remove spinner in Firefox/Edge, Safari/Chrome, and use standard */
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
@@ -151,8 +153,8 @@
 .modal.modal-large .field-row .color-btn {
   width: 24px;
   height: 24px;
-  background-color: var(--text-primary);
-  border: 1px solid var(--border-muted);
+  background-color: #e5e6e8;
+  border: 1px solid #555;
   cursor: pointer;
   border-radius: 2px;
 }
@@ -160,8 +162,8 @@
 /* ─── Buttons & Floating Controls ───────────────────────────────────── */
 
 .modal.modal-large .ui-button {
-  background-color: var(--button-bg-hover);
-  color: var(--text-primary);
+  background-color: #444;
+  color: #e5e6e8;
   border: none;
   padding: 6px 10px;
   margin-left: 5px;
@@ -171,7 +173,7 @@
   font-family: 'Satoshi', sans-serif;
 }
 .modal.modal-large .ui-button:hover {
-  background-color: var(--surface-hover);
+  background-color: #666;
 }
 
 .modal.modal-large .field-row.extra-row {
@@ -192,7 +194,7 @@
 }
 .modal.modal-large .extra-info-block > button svg,
 .modal.modal-large .extra-info-line .remove-line-btn svg {
-  fill: var(--text-primary);
+  fill: #e5e6e8;
 }
 
 /* Fix alignment for image URL fields */
@@ -218,7 +220,7 @@
 }
 
 .modal.modal-large .item-def-entry:hover {
-  background-color: var(--border-strong);
+  background-color: #333;
 }
 
 .modal.modal-large .item-def-entry .entry-name {
@@ -228,14 +230,14 @@
 
 .modal.modal-large .item-def-entry .entry-meta {
   font-size: 12px;
-  color: var(--text-secondary-mid);
+  color: #bbb;
   margin-top: 2px;
 }
 
 .modal.modal-large .item-def-entry .entry-description {
   font-style: italic;
   font-size: 13px;
-  color: var(--text-emphasis);
+  color: #aaa;
   margin-top: 2px;
 }
 
@@ -244,7 +246,7 @@
   gap: 12px;
   margin-top: 4px;
   font-size: 13px;
-  color: var(--text-secondary-light);
+  color: #ccc;
   align-items: center;
 }
 
@@ -253,18 +255,17 @@
   height: 14px;
   vertical-align: middle;
   margin-left: 4px;
-  fill: var(--color-value-icon);
 }
 
 .modal.modal-large .item-def-entry .entry-quantity {
   font-style: italic;
-  color: var(--text-entry-quantity);
+  color: #aaa;
 }
 
 .modal.modal-large .item-def-entry .entry-delete {
   margin-top: 6px;
-  background-color: var(--surface-entry-delete);
-  color: var(--text-button-delete);
+  background-color: #551111;
+  color: #eee;
   padding: 4px 10px;
   border: none;
   border-radius: 4px;
@@ -277,8 +278,8 @@
 }
 
 .modal.modal-large .item-def-entry .entry-delete:hover {
-  background-color: var(--surface-entry-delete-hover);
-  color: var(--text-button-delete);
+  background-color: #772222;
+  color: white;
 }
 
 .modal.modal-large .item-def-entry .entry-delete svg {
@@ -338,8 +339,8 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: var(--surface-modal-input);
-  border: 1px solid var(--border);
+  background: #2a2a2a;
+  border: 1px solid #444;
   padding: 10px;
   width: 110px;
   border-radius: 6px;
@@ -348,7 +349,7 @@
 }
 
 .modal-large .layout-gallery .item-def-entry:hover {
-  background: var(--button-bg);
+  background: #333;
 }
 
 .modal-large .layout-gallery .item-def-entry > .entry-name {

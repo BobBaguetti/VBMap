@@ -1,9 +1,6 @@
-/* @file: styles/leaflet.css */
-/* @version: 1.1 — replace hard-coded colors with theme variables */
-
 /* Leaflet Map Overrides */
 .leaflet-container {
-  background-color: var(--surface-map) !important;
+  background-color: #1a1a1a !important;
 }
 
 /* ================================
@@ -48,10 +45,10 @@
    ================================ */
 
 .custom-popup {
-  background-color: var(--surface-popup);
+  background-color: #2c2c2c;
   padding: 12px;
   border-radius: 8px;
-  color: var(--text-primary);
+  color: #e5e6e8;
   max-width: 320px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   font-family: "Inter", sans-serif;
@@ -94,7 +91,7 @@
   width: 64px;
   height: 64px;
   object-fit: contain;
-  background: var(--surface-popup-image);
+  background: #222;
   border: none;
   border-radius: 4px;
 }
@@ -112,5 +109,16 @@
 .popup-close-btn svg {
   width: 22px;
   height: 22px;
-  fill: var(--text-secondary);
+  fill: #aaa;
+}
+
+/* Optional: style the Play Video button if used */
+.more-info-btn {
+  margin-top: 6px;
+  background-color: #444;
+  border: none;
+  color: #e5e6e8;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
 }

@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/toggles.css */
-/* @version: 1.1 — swap hard-coded colors for theme vars */
+/* @version: 1.0 — toggle-group grid & label styling */
 
 .toggle-group {
   padding: 0.4em 0.8em;
@@ -26,18 +26,17 @@
 }
 
 .filter-group .toggle-group label:hover {
-  background: var(--surface-toggle-hover);
+  background: rgba(255,255,255,0.1);
 }
 
 .filter-group .toggle-group input:checked + span {
-  color: var(--text-primary);
+  color: #e5e6e8;
   text-decoration: none;
   font-weight: 500;
 }
 
 .filter-group .toggle-group input:not(:checked) + span {
-  color: var(--text-toggle-off);
+  color: #555;
   text-decoration: line-through;
   font-weight: 400;
 }
- 

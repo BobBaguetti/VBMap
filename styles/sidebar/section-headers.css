@@ -1,15 +1,15 @@
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 2.1 — replace hard-coded colors with theme variables */
+/* @version: 2.0 — unified header bands on h2 for top‐level sections */
 
 .sidebar-section > h2 {
-  background-color: var(--surface-section-header);
+  background-color: #1b1b1b;    /* slightly lighter than the sidebar background */
   padding: 0.5em 0.8em;
   margin: 0;                    /* reset default margins */
   border-radius: 4px;
   font-size: 1.1em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  color: var(--text-primary);
+  color: #e5e6e8;
 }
 
 /* Push the section content neatly below the header band */
