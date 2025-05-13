@@ -1,54 +1,18 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.7 — remove deprecated ‘speak’ property */
+/* @version: 2.7 — remove section-header pseudo-chevrons & keep group chevrons */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* === Section headers (h2) chevron === */
-.sidebar-section > h2 {
-  position: relative;            /* anchor pseudo-icon */
-}
-
-.sidebar-section > h2::after {
-  font-family: "Font Awesome 6 Free";
-  font-weight: 900;
-  /* no speak property */
-  font-style: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-
-  content: "\f054";              /* chevron-right default */
-  position: absolute;
-  right: 0.6em;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-secondary);
-  transition: color 0.2s, transform 0.2s;
-  pointer-events: none;
-}
-
-.sidebar-section > h2:hover::after {
-  color: var(--text-primary);
-}
-
-.sidebar-section:not(.collapsed) > h2::after {
-  content: "\f078";              /* chevron-down when expanded */
-}
-.sidebar-section.collapsed > h2::after {
-  content: "\f054";              /* chevron-right when collapsed */
-}
-
-/* === Filter-group (h3/h4) chevrons === */
+/* ── Filter-group (h3/h4) chevrons ───────────────────────────────── */
 .filter-group > h3,
 .filter-group > h4 {
-  position: relative;            /* anchor pseudo-icon */
+  position: relative; /* anchor the pseudo-icon */
 }
 
 .filter-group > h3::after,
 .filter-group > h4::after {
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
-  /* speak removed */
   font-style: normal;
   font-variant: normal;
   text-transform: none;
@@ -70,21 +34,20 @@
 
 .filter-group:not(.collapsed) > h3::after,
 .filter-group:not(.collapsed) > h4::after {
-  content: "\f078";              /* chevron-down */
+  content: "\f078"; /* chevron-down */
 }
 .filter-group.collapsed > h3::after,
 .filter-group.collapsed > h4::after {
-  content: "\f054";              /* chevron-right */
+  content: "\f054"; /* chevron-right */
 }
 
-/* Animate the toggle-group container */
+/* ── Animate the toggle-group container ──────────────────────────── */
 .toggle-group {
   overflow: hidden;
   max-height: 0;
   transition: max-height 0.3s ease-in-out;
 }
 
-/* Expanded state: allow content to show */
 .filter-group:not(.collapsed) > .toggle-group {
   max-height: 1000px;
 }
