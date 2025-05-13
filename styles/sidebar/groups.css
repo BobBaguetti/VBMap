@@ -1,18 +1,16 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.9 — add header hover dimming/light-up effect */
+/* @version: 1.10 — refine header hover so only logo & text light up, eye/chevron only on their own hover */
 
 /* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);               /* surface tone */
+  background-color: var(--bg-30);               
   border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
-  border-left:   none;
-  border-right:  none;
   border-radius: 0;
-  margin:        0 0 0.6em;                     /* spacing between groups */
+  margin:        0 0 0.6em;                     
   overflow:      hidden;
-  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   /* gentle lift */
-  transition:    box-shadow 0.2s ease;          /* animate shadow */
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   
+  transition:    box-shadow 0.2s ease;          
 }
 
 /* Hover elevation */
@@ -20,7 +18,7 @@
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
-/* Indent nested groups (if used) */
+/* Indent nested groups */
 .filter-group.nested {
   margin-left: 1.2em;
 }
@@ -31,7 +29,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;                            /* for absolute chevron */
+  position: relative;
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
@@ -40,39 +38,45 @@
   border-bottom: 1px solid var(--border-soft);
   background-color: var(--bg-20);
   cursor: pointer;
-  /* default header text & icons dimmed */
+
+  /* default: muted header text & all icons */
   color: var(--text-secondary);
 }
 
-/* On hover over header, light up text & left icon */
+/* Layout for the icons appended in JS */
+.filter-group > h3 > i,
+.filter-group > h4 > i {
+  margin-right: 0.5em;
+  font-size: 1em;
+  transition: color 0.2s ease;
+}
+
+/* 1) Header-bar hover → only first icon (logo) & text light up */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
 }
-
-/* Left-hand icon inside the header (first <i> element) */
-.filter-group > h3 > i,
-.filter-group > h4 > i {
-  color: var(--text-secondary);
-  margin-right: 0.5em;
-}
-
-/* Light up the left icon on header hover */
-.filter-group > h3:hover > i,
-.filter-group > h4:hover > i {
+.filter-group > h3:hover > i:first-child,
+.filter-group > h4:hover > i:first-child {
   color: var(--text-primary);
 }
 
-/* Filter-eye and chevron buttons remain muted except on their own hover */
-.filter-group > h3 > .filter-eye,
-.filter-group > h4 > .filter-eye {
+/* 2) Leave .filter-eye and collapse‐chevron muted on header hover */
+.filter-group > h3:hover > .filter-eye,
+.filter-group > h4:hover > .filter-eye,
+.filter-group > h3:hover > .fa-chevron-right,
+.filter-group > h4:hover > .fa-chevron-right {
   color: var(--text-secondary);
 }
 
+/* 3) On their own hover, eye & chevron light up */
 .filter-group > h3 > .filter-eye:hover,
-.filter-group > h4 > .filter-eye:hover {
+.filter-group > h4 > .filter-eye:hover,
+.filter-group > h3 > .fa-chevron-right:hover,
+.filter-group > h4 > .fa-chevron-right:hover {
   color: var(--text-primary);
 }
+
 
 /* Layout of the toggles inside each group */
 .filter-group .toggle-group {
@@ -82,7 +86,7 @@
   gap: 0.5em 0.8em;
 }
 
-/* Style each label to align icon, checkbox, and text */
+/* Style each filter label */
 .filter-group .toggle-group label {
   display: flex;
   align-items: center;
@@ -102,13 +106,13 @@
 /*--------------------------------------------------------------
   Disabled-visual state: switch text to disabled color & grayscale icons
 --------------------------------------------------------------*/
-/* Text: use your disabled token instead of opacity */
+/* Text: use disabled token + strikethrough */
 .filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ span {
   color: var(--text-disabled);
   text-decoration: line-through;
 }
 
-/* Icons: turn grayscale and reduce brightness */
+/* Icons: grayscale + darken */
 .filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ .filter-icon {
   filter: grayscale(100%) brightness(60%);
 }
