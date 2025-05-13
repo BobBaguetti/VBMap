@@ -1,29 +1,32 @@
 /* @file: styles/sidebar/accessibility.css */
-/* @version: 1.1 — swap colors for theme tokens */
+/* @version: 1.2 — refined focus styles to use accent and increased contrast */
 
 .filter-group .toggle-group label:hover,
 .filter-group .toggle-group label:focus-within {
-  background-color: var(--hover-light);         /* uniform hover wash */
+  background-color: var(--hover-light);         /* existing hover wash */
 }
 
+/* Make labels keyboard-focusable */
 .filter-group .toggle-group label {
   outline: none;
 }
 .filter-group .toggle-group input:focus-visible + span {
-  outline: 2px solid var(--bg-50);
+  outline: 2px solid var(--accent-info);        /* highlight with accent */
   outline-offset: 2px;
 }
 
+/* Focus highlight on group headers */
 .filter-group > h3:focus-within,
 .filter-group > h4:focus-within {
   background-color: var(--bg-30);
-  outline: 2px solid var(--bg-50);
+  outline: 2px solid var(--accent-info);
   outline-offset: -2px;
 }
 
+/* Focus for eye icon and header-actions links */
 .filter-group .filter-eye:focus-visible,
 .filter-group .header-actions a:focus-visible {
-  outline: 2px solid var(--bg-50);
+  outline: 2px solid var(--accent-info);
   outline-offset: 2px;
 }
 

@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.4 — add subtle shadows for depth */
+/* @version: 1.5 — add hover state shadow for interactive feedback */
 
 /* Container for each card-style filter group */
 .filter-group {
@@ -12,6 +12,12 @@
   margin:        0 0 0.6em;                     /* spacing between groups */
   overflow:      hidden;
   box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   /* gentle lift */
+  transition:    box-shadow 0.2s ease;          /* animate shadow */
+}
+
+/* Hover elevation */
+.filter-group:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }
 
 /* Indent nested groups (if used) */
@@ -25,7 +31,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;                           /* for absolute chevron */
+  position: relative;                            /* for absolute chevron */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
