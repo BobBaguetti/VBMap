@@ -1,16 +1,18 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.9 — dim group headers (text & icons) when group is disabled */
+/* @version: 1.9 — add header hover dimming/light-up effect */
 
 /* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);
+  background-color: var(--bg-30);               /* surface tone */
   border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
+  border-left:   none;
+  border-right:  none;
   border-radius: 0;
-  margin:        0 0 0.6em;
+  margin:        0 0 0.6em;                     /* spacing between groups */
   overflow:      hidden;
-  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
-  transition:    box-shadow 0.2s ease;
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   /* gentle lift */
+  transition:    box-shadow 0.2s ease;          /* animate shadow */
 }
 
 /* Hover elevation */
@@ -23,12 +25,13 @@
   margin-left: 1.2em;
 }
 
-/* Header bars */
+/* Header bars (h3 & h4) */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
   align-items: center;
-  position: relative;
+  justify-content: flex-start;
+  position: relative;                            /* for absolute chevron */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
@@ -37,11 +40,41 @@
   border-bottom: 1px solid var(--border-soft);
   background-color: var(--bg-20);
   cursor: pointer;
-  color: var(--text-primary);
-  transition: color 0.2s ease;
+  /* default header text & icons dimmed */
+  color: var(--text-secondary);
 }
 
-/* Layout of the toggles */
+/* On hover over header, light up text & left icon */
+.filter-group > h3:hover,
+.filter-group > h4:hover {
+  color: var(--text-primary);
+}
+
+/* Left-hand icon inside the header (first <i> element) */
+.filter-group > h3 > i,
+.filter-group > h4 > i {
+  color: var(--text-secondary);
+  margin-right: 0.5em;
+}
+
+/* Light up the left icon on header hover */
+.filter-group > h3:hover > i,
+.filter-group > h4:hover > i {
+  color: var(--text-primary);
+}
+
+/* Filter-eye and chevron buttons remain muted except on their own hover */
+.filter-group > h3 > .filter-eye,
+.filter-group > h4 > .filter-eye {
+  color: var(--text-secondary);
+}
+
+.filter-group > h3 > .filter-eye:hover,
+.filter-group > h4 > .filter-eye:hover {
+  color: var(--text-primary);
+}
+
+/* Layout of the toggles inside each group */
 .filter-group .toggle-group {
   padding: 0.6em 1em;
   display: grid;
@@ -49,13 +82,13 @@
   gap: 0.5em 0.8em;
 }
 
-/* Style each label */
+/* Style each label to align icon, checkbox, and text */
 .filter-group .toggle-group label {
   display: flex;
   align-items: center;
 }
 
-/* Thumbnail icons */
+/* Thumbnail icons before the text */
 .filter-group .toggle-group label .filter-icon {
   width: 20px;
   height: 20px;
@@ -63,32 +96,19 @@
   flex-shrink: 0;
   border-radius: 2px;
   object-fit: cover;
-  transition: filter 0.2s ease, opacity 0.2s ease;
+  transition: filter 0.2s ease;
 }
 
 /*--------------------------------------------------------------
   Disabled-visual state: switch text to disabled color & grayscale icons
-  and dim header when group is toggled off
 --------------------------------------------------------------*/
-/* 1) Text: use your disabled token instead of opacity */
+/* Text: use your disabled token instead of opacity */
 .filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ span {
   color: var(--text-disabled);
   text-decoration: line-through;
 }
 
-/* 2) Icons: turn grayscale and reduce brightness */
+/* Icons: turn grayscale and reduce brightness */
 .filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ .filter-icon {
   filter: grayscale(100%) brightness(60%);
-}
-
-/* 3) Header disabled: dim header text when group is toggled off */
-.filter-group.disabled > h3,
-.filter-group.disabled > h4 {
-  color: var(--text-disabled);
-}
-
-/* 4) Dim the eye icon in a disabled header */
-.filter-group.disabled > h3 .filter-eye,
-.filter-group.disabled > h4 .filter-eye {
-  color: var(--text-disabled);
 }
