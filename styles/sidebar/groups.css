@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.5 — add hover state shadow for interactive feedback */
+/* @version: 1.6 — add visual dimming for unchecked icon-based filters */
 
 /* Container for each card-style filter group */
 .filter-group {
@@ -68,3 +68,12 @@
 }
 
 /* Checkbox invisibility handled in toggles.css; span text styling there */
+
+/*--------------------------------------------------------------
+  Disabled-visual state: dim icons and text for unchecked filters
+--------------------------------------------------------------*/
+/* Any label in a filter-group toggle-group whose checkbox is unchecked */
+.filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ * {
+  opacity: 0.4;
+  pointer-events: none;
+}
