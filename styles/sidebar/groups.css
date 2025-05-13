@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.6 — add visual dimming for unchecked icon-based filters */
+/* @version: 1.7 — add visual dimming and strikethrough for unchecked icon-based filters */
 
 /* Container for each card-style filter group */
 .filter-group {
@@ -71,9 +71,15 @@
 
 /*--------------------------------------------------------------
   Disabled-visual state: dim icons and text for unchecked filters
+  and apply strikethrough to labels
 --------------------------------------------------------------*/
 /* Any label in a filter-group toggle-group whose checkbox is unchecked */
 .filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ * {
   opacity: 0.4;
   pointer-events: none;
+}
+
+/* Strikethrough the text next to an unchecked checkbox */
+.filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ span {
+  text-decoration: line-through;
 }
