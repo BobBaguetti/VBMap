@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.8 — use disabled color token and grayscale filter for unchecked filters */
+/* @version: 1.9 — dim group headers (text & icons) when group is disabled */
 
 /* Container for each card-style filter group */
 .filter-group {
@@ -37,6 +37,8 @@
   border-bottom: 1px solid var(--border-soft);
   background-color: var(--bg-20);
   cursor: pointer;
+  color: var(--text-primary);
+  transition: color 0.2s ease;
 }
 
 /* Layout of the toggles */
@@ -61,11 +63,12 @@
   flex-shrink: 0;
   border-radius: 2px;
   object-fit: cover;
-  transition: filter 0.2s ease;
+  transition: filter 0.2s ease, opacity 0.2s ease;
 }
 
 /*--------------------------------------------------------------
   Disabled-visual state: switch text to disabled color & grayscale icons
+  and dim header when group is toggled off
 --------------------------------------------------------------*/
 /* 1) Text: use your disabled token instead of opacity */
 .filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ span {
@@ -76,4 +79,16 @@
 /* 2) Icons: turn grayscale and reduce brightness */
 .filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ .filter-icon {
   filter: grayscale(100%) brightness(60%);
+}
+
+/* 3) Header disabled: dim header text when group is toggled off */
+.filter-group.disabled > h3,
+.filter-group.disabled > h4 {
+  color: var(--text-disabled);
+}
+
+/* 4) Dim the eye icon in a disabled header */
+.filter-group.disabled > h3 .filter-eye,
+.filter-group.disabled > h4 .filter-eye {
+  color: var(--text-disabled);
 }

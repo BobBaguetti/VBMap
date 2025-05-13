@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.17 — master eye now “on” when any filter is active (mirrors collapse logic)
+// @version: 1.18 — add disabled class to filter-groups when their eye-toggle is off
 
 export function setupSidebarUI({
   map,
@@ -96,10 +96,16 @@ export function setupSidebarUI({
       e.stopPropagation();
       const inputs = group.querySelectorAll("input[type=checkbox]");
       const anyOff = [...inputs].some(cb => !cb.checked);
+
       inputs.forEach(cb => {
         cb.checked = anyOff;
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
+
+      // add/remove disabled class on the group
+      group.classList.toggle("disabled", !anyOff);
+
+      // update eye icon
       eye.classList.toggle("fa-eye-slash", !anyOff);
       eye.classList.toggle("fa-eye", anyOff);
 
@@ -137,11 +143,18 @@ export function setupSidebarUI({
         document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
       );
       if (!cbs.length) return;
+
       const newState = cbs.some(cb => !cb.checked);
       cbs.forEach(cb => {
         cb.checked = newState;
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
+
+      // sync disabled class on each group
+      document.querySelectorAll(filterGroupSelector).forEach(group => {
+        group.classList.toggle("disabled", !newState);
+      });
+
       // sync master eye
       updateMasterEyeIcon();
 
@@ -191,5 +204,5 @@ export function setupSidebarUI({
     });
 
     updateMasterCollapseIcon();
-  } 
+  }
 }
