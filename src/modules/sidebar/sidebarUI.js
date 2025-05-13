@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.16 — restored animateToggle; fixed master eye init logic
+// @version: 1.17 — master eye now “on” when any filter is active (mirrors collapse logic)
 
 export function setupSidebarUI({
   map,
@@ -12,14 +12,12 @@ export function setupSidebarUI({
   function animateToggle(group) {
     const container = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
-    // ensure visible before expanding
     if (isCollapsed) container.style.visibility = "visible";
 
     container.style.transition = "none";
     container.style.maxHeight  = isCollapsed
       ? "0px"
       : `${container.scrollHeight}px`;
-    // force reflow
     container.offsetHeight;
     container.style.transition = "max-height 0.3s ease-in-out";
 
@@ -126,10 +124,10 @@ export function setupSidebarUI({
         document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
       );
       if (!cbs.length) return;
-      // eye open when all filters are ON
-      const allChecked = cbs.every(cb => cb.checked);
-      masterEye.classList.toggle("fa-eye",       allChecked);
-      masterEye.classList.toggle("fa-eye-slash", !allChecked);
+      // eye open when ANY filter is ON
+      const anyChecked = cbs.some(cb => cb.checked);
+      masterEye.classList.toggle("fa-eye",       anyChecked);
+      masterEye.classList.toggle("fa-eye-slash", !anyChecked);
     };
     updateMasterEyeIcon();
 
@@ -144,8 +142,8 @@ export function setupSidebarUI({
         cb.checked = newState;
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
-      masterEye.classList.toggle("fa-eye",       newState);
-      masterEye.classList.toggle("fa-eye-slash", !newState);
+      // sync master eye
+      updateMasterEyeIcon();
 
       // sync group eyes
       document.querySelectorAll(filterGroupSelector).forEach(group => {
