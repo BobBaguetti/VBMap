@@ -1,45 +1,41 @@
 /* @file: styles/sidebar/actions.css */
-/* @version: 1.10 — real eye icon + properly anchored collapse-all <i> */
+/* @version: 1.11 — inject eye icon on H2, hide old toggle link */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* 1) hide any leftover header-actions links */
-.header-actions {
+/* 1) hide the previous “Toggle All” anchor */
+#filters-section > h2 .toggle-all {
   display: none !important;
 }
 
-/* 2) ensure the h2 is a positioning context */
+/* 2) make H2 a positioning context */
 #filters-section > h2 {
   position: relative;
+  padding-right: 2em;           /* room for our eye icon */
 }
 
-/* 3) “Toggle All” as an eye icon */
-#filters-section > h2 .toggle-all {
-  display: inline-block;
-  width: 1em;
-  height: 1em;
-  margin-left: 1em;
-  text-indent: -9999px;            /* hide the text */
-  position: relative;              /* anchor the ::before */
+/* 3) inject the eye via ::after */
+#filters-section > h2::after {
+  content: "\f06e";              /* fa-eye */
   font-family: "Font Awesome 6 Free";
   font-weight: 900;
-  font-size: 1em;
-  color: var(--text-secondary);
-  transition: color 0.2s;
-  cursor: pointer;
-}
-#filters-section > h2 .toggle-all::before {
-  content: "\f06e";                 /* fa-eye */
   position: absolute;
-  left: 0;
+  right: 0.6em;
   top: 50%;
   transform: translateY(-50%);
+  color: var(--text-secondary);
+  font-size: 1em;
+  cursor: pointer;
+  transition: color 0.2s;
 }
-#filters-section > h2 .toggle-all:hover {
+
+/* hover/focus feedback on the eye */
+#filters-section > h2:hover::after,
+#filters-section > h2:focus-within::after {
   color: var(--text-primary);
 }
 
-/* 4) Pin the JS-injected collapse button (<i class="collapse-all">) */
+/* 4) position the JS-injected collapse button (<i class="collapse-all">) */
 #filters-section > h2 .collapse-all {
   position: absolute;
   right: 0.6em;

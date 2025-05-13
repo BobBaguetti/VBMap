@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.11 — added search‐clear button handler
+// @version: 1.12 — removed legacy “Toggle All” link logic
 
 /**
  * Wire up sidebar UI:
@@ -7,7 +7,7 @@
  *  - Sidebar toggle
  *  - Per‐group collapse/expand with animation
  *  - “Eye” bulk‐toggle icons
- *  - Filters “Toggle All” and master collapse/expand button
+ *  - Master collapse/expand button
  */
 export function setupSidebarUI({
   map,
@@ -108,59 +108,39 @@ export function setupSidebarUI({
     });
   });
 
-  // 4) Filters master controls
-  const filtersHeader = document.querySelector('#filters-section > h2');
-  if (filtersHeader) {
-    // Toggle All link
-    const toggleAllLink = document.createElement('a');
-    toggleAllLink.textContent = 'Toggle All';
-    toggleAllLink.classList.add('toggle-all');
-    toggleAllLink.style.marginLeft = '1em';
-    toggleAllLink.style.cursor     = 'pointer';
-    filtersHeader.appendChild(toggleAllLink);
-    toggleAllLink.addEventListener('click', e => {
-      e.stopPropagation();
-      const cbs = Array.from(
-        document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
-      );
-      if (!cbs.length) return;
-      const anyOff = cbs.some(cb => !cb.checked);
-      cbs.forEach(cb => {
-        cb.checked = anyOff;
-        cb.dispatchEvent(new Event('change', { bubbles: true }));
-      });
-    });
-
+  // 4) Master collapse/expand button only
+  const filtersSection = document.querySelector("#filters-section");
+  if (filtersSection) {
+    const filtersHeader = filtersSection.querySelector("h2");
     // Collapse/Expand All button
-    const collapseBtn = document.createElement('i');
-    collapseBtn.classList.add('fas', 'collapse-all', 'fa-chevron-right');
-    collapseBtn.style.position   = 'absolute';
-    collapseBtn.style.right      = '0.6em';
-    collapseBtn.style.top        = '50%';
-    collapseBtn.style.transform  = 'translateY(-50%)';
-    collapseBtn.style.cursor     = 'pointer';
-    collapseBtn.style.transition = 'color 0.2s';
+    const collapseBtn = document.createElement("i");
+    collapseBtn.classList.add("fas", "collapse-all", "fa-chevron-right");
+    collapseBtn.style.position   = "absolute";
+    collapseBtn.style.right      = "0.6em";
+    collapseBtn.style.top        = "50%";
+    collapseBtn.style.transform  = "translateY(-50%)";
+    collapseBtn.style.cursor     = "pointer";
+    collapseBtn.style.transition = "color 0.2s";
     filtersHeader.appendChild(collapseBtn);
 
     const getSubGroups = () =>
-      Array.from(document.querySelectorAll('#filters-section > .filter-group'));
+      Array.from(filtersSection.querySelectorAll(filterGroupSelector));
 
     updateMasterCollapseIcon = () => {
-      const allCollapsed = getSubGroups().every(g => g.classList.contains('collapsed'));
-      if (allCollapsed) {
-        collapseBtn.classList.replace('fa-chevron-down', 'fa-chevron-right');
-      } else {
-        collapseBtn.classList.replace('fa-chevron-right', 'fa-chevron-down');
-      }
+      const allCollapsed = getSubGroups().every(g => g.classList.contains("collapsed"));
+      collapseBtn.classList.replace(
+        allCollapsed ? "fa-chevron-down" : "fa-chevron-right",
+        allCollapsed ? "fa-chevron-right" : "fa-chevron-down"
+      );
     };
 
-    collapseBtn.addEventListener('click', e => {
+    collapseBtn.addEventListener("click", e => {
       e.stopPropagation();
-      const groups      = getSubGroups();
-      const allCollapsed = groups.every(g => g.classList.contains('collapsed'));
+      const groups       = getSubGroups();
+      const allCollapsed = groups.every(g => g.classList.contains("collapsed"));
       groups.forEach(g => {
         const shouldCollapse = !allCollapsed;
-        if (g.classList.contains('collapsed') === shouldCollapse) return;
+        if (g.classList.contains("collapsed") === shouldCollapse) return;
         animateToggle(g);
       });
       updateMasterCollapseIcon();
