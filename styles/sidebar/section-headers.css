@@ -1,18 +1,23 @@
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 2.1 — swap hard-coded colors for theme tokens */
+/* @version: 2.2 — accent edge, typographic & spacing tweaks for hierarchy */
 
 .sidebar-section > h2 {
-  background-color: var(--bg-20); /* was #1b1b1b */
+  background-color: var(--bg-20);               /* container tone */
   padding: 0.5em 0.8em;
-  margin: 0;                    /* reset default margins */
+  margin: 1.2em 0 0.5em;                        /* more breathing room above */
   border-radius: 4px;
   font-size: 1.1em;
+  font-weight: 700;                             /* heavier for section heads */
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  color: var(--text-primary);   /* was #e5e6e8 */
+  letter-spacing: 0.08em;                       /* tighter tracking */
+  color: var(--text-primary);
+
+  /* visual “rail” to call out top-level */
+  border-left: 2px solid var(--accent-primary);
+  padding-left: calc(0.8em - 0.2em);            /* keep text aligned under rail */
 }
 
 /* Push the section content neatly below the header band */
 .sidebar-section {
-  margin-top: 0.8em;
+  margin-top: 1.2em;                            /* matches the H2 top-margin */
 }

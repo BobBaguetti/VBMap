@@ -1,17 +1,15 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.2 — swap hard‑coded dark grays for theme tokens */
+/* @version: 1.3 — tightened spacing under top-level headers for clarity */
 
-/* @keep: code comments retained unless code removed */
-
-/* Container for each card‐style filter group */
+/* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);          /* was #2a2a2a */
-  border-top:    1px solid var(--border-soft); /* was #333 */
+  background-color: var(--bg-30);                /* surface tone */
+  border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
   border-left:   none;
   border-right:  none;
   border-radius: 0;
-  margin:        0 0 0.8em; /* spacing between groups */
+  margin:        0 0 0.6em;                      /* tighter spacing between sub-groups */
   overflow:      hidden;
 }
 
@@ -26,14 +24,14 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;           /* for absolute chevron */
+  position: relative;                            /* for absolute chevron */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border-soft); /* was #333 */
-  background-color: var(--bg-20);             /* was #1f1f1f */
+  border-bottom: 1px solid var(--border-soft);
+  background-color: var(--bg-20);
   cursor: pointer;
 }
 
