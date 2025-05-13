@@ -1,18 +1,16 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.7 — add visual dimming and strikethrough for unchecked icon-based filters */
+/* @version: 1.8 — use disabled color token and grayscale filter for unchecked filters */
 
 /* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);               /* surface tone */
+  background-color: var(--bg-30);
   border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
-  border-left:   none;
-  border-right:  none;
   border-radius: 0;
-  margin:        0 0 0.6em;                     /* spacing between groups */
+  margin:        0 0 0.6em;
   overflow:      hidden;
-  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   /* gentle lift */
-  transition:    box-shadow 0.2s ease;          /* animate shadow */
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
+  transition:    box-shadow 0.2s ease;
 }
 
 /* Hover elevation */
@@ -25,13 +23,12 @@
   margin-left: 1.2em;
 }
 
-/* Header bars (h3 & h4) */
+/* Header bars */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  position: relative;                            /* for absolute chevron */
+  position: relative;
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
@@ -40,10 +37,9 @@
   border-bottom: 1px solid var(--border-soft);
   background-color: var(--bg-20);
   cursor: pointer;
-  /* no shadow here to keep header flush with its container */
 }
 
-/* Layout of the toggles inside each group */
+/* Layout of the toggles */
 .filter-group .toggle-group {
   padding: 0.6em 1em;
   display: grid;
@@ -51,13 +47,13 @@
   gap: 0.5em 0.8em;
 }
 
-/* Style each label to align icon, checkbox, and text */
+/* Style each label */
 .filter-group .toggle-group label {
   display: flex;
   align-items: center;
 }
 
-/* Thumbnail icons before the text */
+/* Thumbnail icons */
 .filter-group .toggle-group label .filter-icon {
   width: 20px;
   height: 20px;
@@ -65,21 +61,19 @@
   flex-shrink: 0;
   border-radius: 2px;
   object-fit: cover;
+  transition: filter 0.2s ease;
 }
-
-/* Checkbox invisibility handled in toggles.css; span text styling there */
 
 /*--------------------------------------------------------------
-  Disabled-visual state: dim icons and text for unchecked filters
-  and apply strikethrough to labels
+  Disabled-visual state: switch text to disabled color & grayscale icons
 --------------------------------------------------------------*/
-/* Any label in a filter-group toggle-group whose checkbox is unchecked */
-.filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ * {
-  opacity: 0.4;
-  pointer-events: none;
+/* 1) Text: use your disabled token instead of opacity */
+.filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ span {
+  color: var(--text-disabled);
+  text-decoration: line-through;
 }
 
-/* Strikethrough the text next to an unchecked checkbox */
-.filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ span {
-  text-decoration: line-through;
+/* 2) Icons: turn grayscale and reduce brightness */
+.filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ .filter-icon {
+  filter: grayscale(100%) brightness(60%);
 }
