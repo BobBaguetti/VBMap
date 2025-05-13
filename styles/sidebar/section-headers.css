@@ -1,20 +1,18 @@
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 2.2 — accent edge, typographic & spacing tweaks for hierarchy */
+/* @version: 2.3 — remove accent rail, add depth via shadow */
 
+/* Top-level sidebar section headers */
 .sidebar-section > h2 {
   background-color: var(--bg-20);               /* container tone */
-  padding: 0.5em 0.8em;
-  margin: 1.2em 0 0.5em;                        /* more breathing room above */
+  padding: 0.5em 0.8em;                         /* uniform horizontal padding */
+  margin: 1.2em 0 0.5em;                        /* breathing room above & below */
   border-radius: 4px;
   font-size: 1.1em;
-  font-weight: 700;                             /* heavier for section heads */
+  font-weight: 700;                             /* heavy for clear hierarchy */
   text-transform: uppercase;
-  letter-spacing: 0.08em;                       /* tighter tracking */
+  letter-spacing: 0.08em;                       /* tight tracking */
   color: var(--text-primary);
-
-  /* visual “rail” to call out top-level */
-  border-left: 2px solid var(--accent-primary);
-  padding-left: calc(0.8em - 0.2em);            /* keep text aligned under rail */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);      /* subtle drop shadow */
 }
 
 /* Push the section content neatly below the header band */

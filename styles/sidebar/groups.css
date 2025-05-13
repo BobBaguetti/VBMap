@@ -1,16 +1,17 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.3 — tightened spacing under top-level headers for clarity */
+/* @version: 1.4 — add subtle shadows for depth */
 
 /* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);                /* surface tone */
+  background-color: var(--bg-30);               /* surface tone */
   border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
   border-left:   none;
   border-right:  none;
   border-radius: 0;
-  margin:        0 0 0.6em;                      /* tighter spacing between sub-groups */
+  margin:        0 0 0.6em;                     /* spacing between groups */
   overflow:      hidden;
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   /* gentle lift */
 }
 
 /* Indent nested groups (if used) */
@@ -24,7 +25,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;                            /* for absolute chevron */
+  position: relative;                           /* for absolute chevron */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
@@ -33,6 +34,7 @@
   border-bottom: 1px solid var(--border-soft);
   background-color: var(--bg-20);
   cursor: pointer;
+  /* no shadow here to keep header flush with its container */
 }
 
 /* Layout of the toggles inside each group */
