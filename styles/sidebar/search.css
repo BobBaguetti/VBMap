@@ -1,49 +1,89 @@
 /* @file: styles/sidebar/search.css */
-/* @version: 1.7 — unify header & input background for one-piece look */
+/* @version: 1.5 — unified search header with .sidebar-section, pill‐shape design, no gap */
 
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+
+/* Container now matches .sidebar-section spacing and styling */
+#sidebar-search {
+  margin-top: 1.2em;                            /* align with other sections :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1} */
+  background-color: var(--bg-30);
+  border: 1px solid var(--border-soft);
+  border-top: none;
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);      /* match section header shadow :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3} */
+}
+
+/* Header styling now inherited from .sidebar-section > h2 */
+#sidebar-search > h2 {
+  margin: 0;                                    /* remove bespoke margins :contentReference[oaicite:4]{index=4}:contentReference[oaicite:5]{index=5} */
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  /* padding and typography come from section-headers.css :contentReference[oaicite:6]{index=6}:contentReference[oaicite:7]{index=7} */
+}
+
+/* Hide the old horizontal rule */
+#sidebar-search > hr {
+  display: none;
+}
+
+/* Input wrapper: visually continuous with header, no extra rounding */
 .search-wrapper {
-  display: flex;
-  align-items: center;
-  margin: 0;                      /* flush up against the header */
-  padding: 0.5em 0.8em;           /* same vertical padding as the h2 */
-  background: transparent;        /* remove its own box so header shows through */
+  position: relative;
+  padding: 0.6em 1em;                          /* similar to filter-group padding :contentReference[oaicite:8]{index=8}:contentReference[oaicite:9]{index=9} */
+  background-color: var(--bg-30);
 }
 
-/* make the input sit right on that header background */
+/* Search input styles */
 #sidebar-search #search-bar {
-  flex: 1;
-  background: transparent;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 6px 30px 6px 10px;                  /* room for clear button */
   border: none;
+  border-radius: 0;                            /* square corners at top */
+  background-color: var(--bg-30);
   color: var(--text-primary);
+  font-size: 14px;
   font-family: 'Satoshi', sans-serif;
-  font-size: 1em;
-  padding: 0;
-  margin: 0;
   outline: none;
+  transition: background 0.2s, border-color 0.2s;
 }
 
-/* hide native clear icons */
+/* Hide browser’s built-in clear icon */
 #sidebar-search #search-bar::-webkit-search-cancel-button,
 #sidebar-search #search-bar::-ms-clear {
   display: none;
 }
 
-/* custom clear button stays */
+/* Custom clear button */
 #search-clear {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
   background: none;
   border: none;
   color: var(--text-secondary);
-  font-size: 1.2em;
+  font-size: 18px;
   line-height: 1;
   cursor: pointer;
-  margin-left: 0.5em;
+  opacity: 0;
+  transition: opacity 0.2s;
 }
-#search-clear:hover,
-#search-clear:focus-visible {
+/* Show clear when user types */
+#search-bar:not(:placeholder-shown) + #search-clear {
+  opacity: 1;
+}
+#search-clear:hover {
   color: var(--text-primary);
 }
 
-/* ditch the separator line */
-#sidebar-search > hr {
-  display: none;
+/* Placeholder & focus */
+#sidebar-search #search-bar::placeholder {
+  color: var(--text-disabled);
+}
+#sidebar-search #search-bar:focus {
+  background-color: var(--bg-50);
+  border-bottom-color: var(--accent-primary);
 }
