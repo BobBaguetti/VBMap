@@ -1,14 +1,6 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.13 — add master eye icon via JS, remove vestigial toggle-all link
+// @version: 1.14 — master eye now updates group eyes too
 
-/**
- * Wire up sidebar UI:
- *  - Search‐bar styling & clear button
- *  - Sidebar toggle
- *  - Per‐group collapse/expand with animation
- *  - “Eye” bulk‐toggle icons
- *  - Master collapse/expand & eye all button
- */
 export function setupSidebarUI({
   map,
   sidebarSelector     = "#sidebar",
@@ -44,12 +36,11 @@ export function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // Helper: animate a group's toggle-group container with post-transition hiding
+  // Helper to animate a group's toggle-group container
   function animateToggle(group) {
     const container = group.querySelector(".toggle-group");
     if (!container) return;
     const isCollapsed = group.classList.contains("collapsed");
-
     container.removeEventListener("transitionend", onTransitionEnd);
 
     if (isCollapsed) container.style.visibility = "visible";
@@ -76,24 +67,27 @@ export function setupSidebarUI({
     container.addEventListener("transitionend", onTransitionEnd);
   }
 
-  // Placeholder for master collapse-icon updater
+  // Placeholder for the collapse-all chevron updater
   let updateMasterCollapseIcon = () => {};
 
-  // 3) Per-group collapse & eye-toggle (unchanged)
+  // 3) Per-group collapse & eye-toggle
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
 
+    // collapse/expand
     header.addEventListener("click", () => {
       animateToggle(group);
       updateMasterCollapseIcon();
     });
 
+    // eye-toggle for this group
     const eye = document.createElement("i");
     eye.classList.add("fas", "fa-eye", "filter-eye");
     eye.style.cursor     = "pointer";
     eye.style.marginLeft = "0.5em";
     header.appendChild(eye);
+
     eye.addEventListener("click", e => {
       e.stopPropagation();
       const inputs = group.querySelectorAll("input[type=checkbox]");
@@ -113,27 +107,41 @@ export function setupSidebarUI({
   if (filtersSection) {
     const filtersHeader = filtersSection.querySelector("h2");
 
-    // -- insert master eye --
+    // — Master eye (bulk toggle) —
     const masterEye = document.createElement("i");
     masterEye.classList.add("fas", "fa-eye", "filter-eye");
     masterEye.style.cursor     = "pointer";
     masterEye.style.marginLeft = "0.5em";
     filtersHeader.appendChild(masterEye);
+
     masterEye.addEventListener("click", e => {
       e.stopPropagation();
       const cbs = Array.from(
         document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
       );
+      if (!cbs.length) return;
       const anyOff = cbs.some(cb => !cb.checked);
+      // Toggle all checkboxes
       cbs.forEach(cb => {
         cb.checked = anyOff;
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
+      // Update master eye icon
       masterEye.classList.toggle("fa-eye-slash", !anyOff);
       masterEye.classList.toggle("fa-eye", anyOff);
+
+      // **NEW**: sync all group-level eyes
+      document.querySelectorAll(filterGroupSelector).forEach(group => {
+        const groupEye = group.querySelector(".filter-eye");
+        if (!groupEye) return;
+        const inputs = group.querySelectorAll("input[type=checkbox]");
+        const groupAnyOff = [...inputs].some(cb => !cb.checked);
+        groupEye.classList.toggle("fa-eye-slash", !groupAnyOff);
+        groupEye.classList.toggle("fa-eye", groupAnyOff);
+      });
     });
 
-    // -- collapse/expand-all chevron --
+    // — Collapse/Expand All chevron —
     const collapseBtn = document.createElement("i");
     collapseBtn.classList.add("fas", "collapse-all", "fa-chevron-right");
     collapseBtn.style.position   = "absolute";
