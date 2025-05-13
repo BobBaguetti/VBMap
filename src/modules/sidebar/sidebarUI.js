@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.14 — master eye now updates group eyes too
+// @version: 1.15 — master eye now drives all group eyes in lockstep
 
 export function setupSidebarUI({
   map,
@@ -36,11 +36,12 @@ export function setupSidebarUI({
     map.invalidateSize();
   });
 
-  // Helper to animate a group's toggle-group container
+  // Helper: animate a group's toggle-group container
   function animateToggle(group) {
     const container = group.querySelector(".toggle-group");
     if (!container) return;
     const isCollapsed = group.classList.contains("collapsed");
+
     container.removeEventListener("transitionend", onTransitionEnd);
 
     if (isCollapsed) container.style.visibility = "visible";
@@ -120,24 +121,24 @@ export function setupSidebarUI({
         document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
       );
       if (!cbs.length) return;
-      const anyOff = cbs.some(cb => !cb.checked);
-      // Toggle all checkboxes
+
+      // Determine new state (on if any are off)
+      const newState = cbs.some(cb => !cb.checked);
       cbs.forEach(cb => {
-        cb.checked = anyOff;
+        cb.checked = newState;
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
-      // Update master eye icon
-      masterEye.classList.toggle("fa-eye-slash", !anyOff);
-      masterEye.classList.toggle("fa-eye", anyOff);
 
-      // **NEW**: sync all group-level eyes
+      // Update the master eye icon
+      masterEye.classList.toggle("fa-eye-slash", !newState);
+      masterEye.classList.toggle("fa-eye", newState);
+
+      // Sync every group’s eye to match the master exactly
       document.querySelectorAll(filterGroupSelector).forEach(group => {
         const groupEye = group.querySelector(".filter-eye");
         if (!groupEye) return;
-        const inputs = group.querySelectorAll("input[type=checkbox]");
-        const groupAnyOff = [...inputs].some(cb => !cb.checked);
-        groupEye.classList.toggle("fa-eye-slash", !groupAnyOff);
-        groupEye.classList.toggle("fa-eye", groupAnyOff);
+        groupEye.classList.toggle("fa-eye-slash", !newState);
+        groupEye.classList.toggle("fa-eye", newState);
       });
     });
 
