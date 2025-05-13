@@ -191,5 +191,5 @@ export function setupSidebarUI({
     });
 
     updateMasterCollapseIcon();
-  }
+  } 
 }
