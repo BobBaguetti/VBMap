@@ -1,23 +1,21 @@
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 2.2 — accent edge, typographic & spacing tweaks for hierarchy */
+/* @version: 2.2 — distinguish top-level headers with accent border, weight, spacing */
 
+/* Top-level sidebar section headers */
 .sidebar-section > h2 {
-  background-color: var(--bg-20);               /* container tone */
-  padding: 0.5em 0.8em;
-  margin: 1.2em 0 0.5em;                        /* more breathing room above */
+  background-color: var(--bg-20);               /* surface tone */
+  border-left: 2px solid var(--accent-primary);  /* accent edge */
+  padding: 0.5em 0.8em 0.5em 0.6em;              /* shift text after edge */
+  margin: 0;                                     /* reset default margins */
   border-radius: 4px;
   font-size: 1.1em;
-  font-weight: 700;                             /* heavier for section heads */
+  font-weight: 700;                              /* stronger weight */
   text-transform: uppercase;
-  letter-spacing: 0.08em;                       /* tighter tracking */
+  letter-spacing: 0.08em;                        /* slightly more spacing */
   color: var(--text-primary);
-
-  /* visual “rail” to call out top-level */
-  border-left: 2px solid var(--accent-primary);
-  padding-left: calc(0.8em - 0.2em);            /* keep text aligned under rail */
 }
 
 /* Push the section content neatly below the header band */
 .sidebar-section {
-  margin-top: 1.2em;                            /* matches the H2 top-margin */
+  margin-top: 1.2em;                             /* more breathing room */
 }
