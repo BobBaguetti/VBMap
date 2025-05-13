@@ -1,21 +1,37 @@
 /* @file: styles/sidebar/icons.css */
-/* @version: 1.2 — swap static colors for theme tokens */
+/* @version: 1.4 — styling for inline filter‐icon elements */
 
-.filter-group > h3,
-.filter-group > h4 {
-  color: var(--text-secondary);  /* default header text & icon color */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+
+/* Base styling for any icon in a filter label */
+.toggle-group label .filter-icon {
+  margin-right: 0.5em;               /* space between icon and text */
+  font-size: 1em;                    /* match text size */
+  vertical-align: middle;            /* align with text baseline */
+  color: var(--text-secondary);      /* muted by default */
+  transition: color 0.2s;
 }
 
-.filter-group > h3:hover,
-.filter-group > h4:hover {
-  color: var(--text-primary);    /* lighten both text & icons on hover */
+/* When the checkbox is checked, or on hover, brighten the icon */
+.toggle-group label:hover .filter-icon,
+.toggle-group input:checked + .filter-icon {
+  color: var(--text-primary);
 }
 
-.filter-group > h3 i.group-icon,
-.filter-group > h4 i.group-icon {
-  margin-right: 0.3em;           /* tighten gap between icon & text */
+/* Ensure the icon and label text sit in a line-height–controlled layout */
+.toggle-group label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25em;
 }
 
-.filter-group.nested > h4 i.group-icon {
-  font-size: 0.9em;              /* keep nested icons a bit smaller */
+/* If you want a little extra padding around each label: */
+/*
+.toggle-group label {
+  padding: 0.25em 0.5em;
+  border-radius: 3px;
 }
+.toggle-group label:hover {
+  background-color: var(--hover-light);
+}
+*/
