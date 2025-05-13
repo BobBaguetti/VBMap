@@ -1,37 +1,38 @@
 /* @file: styles/sidebar/actions.css */
-/* @version: 1.8 — swap hex colors for theme tokens */
+/* @version: 1.9 — replace “Toggle All” text with eye icon; tokenized and accessible */
 
+/* Hide the auto-injected Show All / Hide All links entirely */
 .header-actions {
   display: none !important;
 }
 
+/* Filters “Toggle All” icon styling */
 #filters-section > h2 .toggle-all {
-  color: var(--text-secondary);            /* was #bbb */
-  font-size: 0.75em;
-  text-decoration: none;
-  transition: color 0.2s;
+  /* hide the text, size the container for an icon */
+  display: inline-block;
+  width: 1.2em;
+  height: 1.2em;
   margin-left: 1em;
-}
-#filters-section > h2 .toggle-all:hover {
-  color: var(--text-primary);              /* was #e5e6e8 */
-  text-decoration: underline;
+  overflow: hidden;
+  text-indent: -9999px;
+
+  /* pull in FontAwesome solid */
+  font-family: "Font Awesome 6 Free";
+  font-weight: 900;
+  font-size: 1em;
+  color: var(--text-secondary);
+  transition: color 0.2s;
+  cursor: pointer;
 }
 
-#filters-section > h2 {
-  position: relative;
-}
-#filters-section > h2 .collapse-all {
+#filters-section > h2 .toggle-all::before {
+  content: "\f06e"; /* fa-eye */
   position: absolute;
-  right: 0.6em;
+  left: 0;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--text-secondary);            /* was #bbb */
-  font-size: 0.9em;
-  cursor: pointer;
-  transition: color 0.2s;
-}
-#filters-section > h2 .collapse-all:hover {
-  color: var(--text-primary);              /* was #e5e6e8 */
 }
 
-/* The icon’s class (fa-chevron-up/down) handles the direction, no extra rotation needed */
+#filters-section > h2 .toggle-all:hover {
+  color: var(--text-primary);
+}
