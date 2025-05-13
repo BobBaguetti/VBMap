@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/actions.css */
-/* @version: 1.13 — position master “eye” icon; room for both eye + chevron */
+/* @version: 1.14 — inline master “eye” next to header text */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -8,23 +8,20 @@
   display: none !important;
 }
 
-/* Ensure the H2 is a positioning context */
+/* Ensure the H2 is a positioning context for the collapse chevron */
 #filters-section > h2 {
   position: relative;
-  padding-right: 3em;           /* ↑ increased from 2em to fit both icons */
+  padding-right: 2em;           /* reserve space for the chevron */
 }
 
-/* Style the JS-injected master “eye” in the Filters header */
+/* Inline master “eye” icon next to the “Filters” text */
 #filters-section > h2 .filter-eye {
-  position: absolute;
-  top: 50%;
-  right: 2em;                   /* place to the left of the collapse chevron */
-  transform: translateY(-50%);
+  position: static !important;  /* override any absolute positioning */
+  margin-left: 0.5em !important;/* same spacing as group-level eyes */
   color: var(--text-secondary);
   font-size: 0.9em;
   cursor: pointer;
   transition: color 0.2s;
-  margin-left: 0 !important;    /* override inline margin-left from JS */
 }
 #filters-section > h2 .filter-eye:hover,
 #filters-section > h2 .filter-eye:focus-visible {
@@ -45,3 +42,5 @@
 #filters-section > h2 .collapse-all:hover {
   color: var(--text-primary);
 }
+
+/* — End of file — */
