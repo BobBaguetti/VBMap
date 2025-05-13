@@ -1,16 +1,16 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.10 — refine header hover so only logo & text light up, eye/chevron only on their own hover */
+/* @version: 1.11 — chevron only lights on its own hover, not on header-bar hover */
 
 /* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);               
+  background-color: var(--bg-30);
   border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
   border-radius: 0;
-  margin:        0 0 0.6em;                     
+  margin:        0 0 0.6em;
   overflow:      hidden;
-  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   
-  transition:    box-shadow 0.2s ease;          
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
+  transition:    box-shadow 0.2s ease;
 }
 
 /* Hover elevation */
@@ -61,11 +61,9 @@
   color: var(--text-primary);
 }
 
-/* 2) Leave .filter-eye and collapse‐chevron muted on header hover */
+/* 2) Leave .filter-eye muted on header hover */
 .filter-group > h3:hover > .filter-eye,
-.filter-group > h4:hover > .filter-eye,
-.filter-group > h3:hover > .fa-chevron-right,
-.filter-group > h4:hover > .fa-chevron-right {
+.filter-group > h4:hover > .filter-eye {
   color: var(--text-secondary);
 }
 
@@ -76,7 +74,6 @@
 .filter-group > h4 > .fa-chevron-right:hover {
   color: var(--text-primary);
 }
-
 
 /* Layout of the toggles inside each group */
 .filter-group .toggle-group {
