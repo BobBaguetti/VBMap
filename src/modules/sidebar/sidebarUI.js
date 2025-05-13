@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.15 — master eye now drives all group eyes in lockstep
+// @version: 1.16 — restored animateToggle; fixed master eye init logic
 
 export function setupSidebarUI({
   map,
@@ -8,6 +8,38 @@ export function setupSidebarUI({
   searchBarSelector   = "#search-bar",
   filterGroupSelector = ".filter-group"
 }) {
+  // helper to animate collapse/expand
+  function animateToggle(group) {
+    const container = group.querySelector(".toggle-group");
+    const isCollapsed = group.classList.contains("collapsed");
+    // ensure visible before expanding
+    if (isCollapsed) container.style.visibility = "visible";
+
+    container.style.transition = "none";
+    container.style.maxHeight  = isCollapsed
+      ? "0px"
+      : `${container.scrollHeight}px`;
+    // force reflow
+    container.offsetHeight;
+    container.style.transition = "max-height 0.3s ease-in-out";
+
+    if (isCollapsed) {
+      group.classList.remove("collapsed");
+      container.style.maxHeight = `${container.scrollHeight}px`;
+    } else {
+      group.classList.add("collapsed");
+      container.style.maxHeight = "0px";
+    }
+
+    function onEnd(e) {
+      if (e.propertyName === "max-height" && group.classList.contains("collapsed")) {
+        container.style.visibility = "hidden";
+      }
+      container.removeEventListener("transitionend", onEnd);
+    }
+    container.addEventListener("transitionend", onEnd);
+  }
+
   // Elements
   const sidebar       = document.querySelector(sidebarSelector);
   const sidebarToggle = document.querySelector(toggleSelector);
@@ -40,11 +72,8 @@ export function setupSidebarUI({
     observer.observe(filtersSection);
   }
 
-  // 4) Collapsibles and Eye‐toggles
-
-  // Placeholder for the collapse-all chevron updater
+  // placeholders for updater functions
   let updateMasterCollapseIcon = () => {};
-  // Placeholder for the master “eye” updater
   let updateMasterEyeIcon     = () => {};
 
   // 4a) Per-group collapse & eye-toggle
@@ -76,35 +105,32 @@ export function setupSidebarUI({
       eye.classList.toggle("fa-eye-slash", !anyOff);
       eye.classList.toggle("fa-eye", anyOff);
 
-      // update collapse chevron (unchanged)
       updateMasterCollapseIcon();
-      // *** new: sync master eye ***
       updateMasterEyeIcon();
     });
   });
 
-  // 4b) Master controls: inject eye + collapse chevron
+  // 4b) Master controls
   if (filtersSection) {
     const filtersHeader = filtersSection.querySelector("h2");
 
-    // — Master eye (bulk toggle) —
+    // Master eye
     const masterEye = document.createElement("i");
     masterEye.classList.add("fas", "fa-eye", "filter-eye");
     masterEye.style.cursor     = "pointer";
     masterEye.style.marginLeft = "0.5em";
     filtersHeader.appendChild(masterEye);
 
-    // Helper to update the master eye icon based on individual checkboxes
     updateMasterEyeIcon = () => {
       const cbs = Array.from(
         document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
       );
       if (!cbs.length) return;
-      const anyOff = cbs.some(cb => !cb.checked);
-      masterEye.classList.toggle("fa-eye", anyOff);
-      masterEye.classList.toggle("fa-eye-slash", !anyOff);
+      // eye open when all filters are ON
+      const allChecked = cbs.every(cb => cb.checked);
+      masterEye.classList.toggle("fa-eye",       allChecked);
+      masterEye.classList.toggle("fa-eye-slash", !allChecked);
     };
-    // Initialize master eye icon state
     updateMasterEyeIcon();
 
     masterEye.addEventListener("click", e => {
@@ -113,42 +139,39 @@ export function setupSidebarUI({
         document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
       );
       if (!cbs.length) return;
-
-      // Determine new state (on if any are off)
       const newState = cbs.some(cb => !cb.checked);
       cbs.forEach(cb => {
         cb.checked = newState;
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
-
-      // Update the master eye icon
+      masterEye.classList.toggle("fa-eye",       newState);
       masterEye.classList.toggle("fa-eye-slash", !newState);
-      masterEye.classList.toggle("fa-eye", newState);
 
-      // Sync every group's eye to match the master
+      // sync group eyes
       document.querySelectorAll(filterGroupSelector).forEach(group => {
         const groupEye = group.querySelector(".filter-eye");
         if (!groupEye) return;
+        groupEye.classList.toggle("fa-eye",       newState);
         groupEye.classList.toggle("fa-eye-slash", !newState);
-        groupEye.classList.toggle("fa-eye", newState);
       });
     });
 
-    // — Collapse/Expand All chevron —
+    // Collapse/Expand chevron
     const collapseBtn = document.createElement("i");
     collapseBtn.classList.add("fas", "collapse-all", "fa-chevron-right");
-    collapseBtn.style.position   = "absolute";
-    collapseBtn.style.right      = "0.6em";
-    collapseBtn.style.top        = "50%";
-    collapseBtn.style.transform  = "translateY(-50%)";
-    collapseBtn.style.cursor     = "pointer";
-    collapseBtn.style.transition = "color 0.2s";
+    Object.assign(collapseBtn.style, {
+      position:   "absolute",
+      right:      "0.6em",
+      top:        "50%",
+      transform:  "translateY(-50%)",
+      cursor:     "pointer",
+      transition: "color 0.2s"
+    });
     filtersHeader.appendChild(collapseBtn);
 
     const getSubGroups = () =>
       Array.from(filtersSection.querySelectorAll(filterGroupSelector));
 
-    // Now that collapseBtn exists, wire up chevron updates
     updateMasterCollapseIcon = () => {
       const allCollapsed = getSubGroups().every(g => g.classList.contains("collapsed"));
       collapseBtn.classList.replace(
@@ -169,7 +192,6 @@ export function setupSidebarUI({
       updateMasterCollapseIcon();
     });
 
-    // Initialize collapse chevron
     updateMasterCollapseIcon();
   }
 }
