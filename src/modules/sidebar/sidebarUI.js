@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.12 — removed legacy “Toggle All” link logic
+// @version: 1.13 — add master eye icon via JS, remove vestigial toggle-all link
 
 /**
  * Wire up sidebar UI:
@@ -7,7 +7,7 @@
  *  - Sidebar toggle
  *  - Per‐group collapse/expand with animation
  *  - “Eye” bulk‐toggle icons
- *  - Master collapse/expand button
+ *  - Master collapse/expand & eye all button
  */
 export function setupSidebarUI({
   map,
@@ -79,7 +79,7 @@ export function setupSidebarUI({
   // Placeholder for master collapse-icon updater
   let updateMasterCollapseIcon = () => {};
 
-  // 3) Per-group collapse & eye-toggle
+  // 3) Per-group collapse & eye-toggle (unchanged)
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
@@ -108,11 +108,32 @@ export function setupSidebarUI({
     });
   });
 
-  // 4) Master collapse/expand button only
+  // 4) Master controls: inject eye + collapse chevron
   const filtersSection = document.querySelector("#filters-section");
   if (filtersSection) {
     const filtersHeader = filtersSection.querySelector("h2");
-    // Collapse/Expand All button
+
+    // -- insert master eye --
+    const masterEye = document.createElement("i");
+    masterEye.classList.add("fas", "fa-eye", "filter-eye");
+    masterEye.style.cursor     = "pointer";
+    masterEye.style.marginLeft = "0.5em";
+    filtersHeader.appendChild(masterEye);
+    masterEye.addEventListener("click", e => {
+      e.stopPropagation();
+      const cbs = Array.from(
+        document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
+      );
+      const anyOff = cbs.some(cb => !cb.checked);
+      cbs.forEach(cb => {
+        cb.checked = anyOff;
+        cb.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      masterEye.classList.toggle("fa-eye-slash", !anyOff);
+      masterEye.classList.toggle("fa-eye", anyOff);
+    });
+
+    // -- collapse/expand-all chevron --
     const collapseBtn = document.createElement("i");
     collapseBtn.classList.add("fas", "collapse-all", "fa-chevron-right");
     collapseBtn.style.position   = "absolute";
