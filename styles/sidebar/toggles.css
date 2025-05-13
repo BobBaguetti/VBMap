@@ -1,7 +1,7 @@
 /* @file: styles/sidebar/toggles.css */
-/* @version: 1.1 — replace hex colors with theme tokens */
+/* @version: 1.3 — reintroduce hover feedback for filter labels and text */
 
-/* @keep: comments retained */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* Core grid layout */
 .toggle-group {
@@ -12,35 +12,39 @@
   font-size: 13px;
 }
 
+/* Make the entire label area clickable via an invisible, absolute-positioned checkbox */
 .filter-group .toggle-group input {
   position: absolute;
   opacity: 0;
-  pointer-events: none;
-}
-
-.filter-group .toggle-group label {
-  position: relative;
-  padding: 3px 6px;
-  border-radius: 3px;
-  transition: background 0.2s, color 0.2s, text-decoration 0.2s;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   cursor: pointer;
-  display: flex;
-  align-items: center;
 }
 
-/* Hover tint */
-.filter-group .toggle-group label:hover {
-  background: rgba(255, 255, 255, 0.08); /* was 0.1 */
-}
-
-.filter-group .toggle-group input:checked + span {
-  color: var(--text-primary); /* was #e5e6e8 */
+/* Text styling when the filter is ON */
+.filter-group .toggle-group input:checked ~ span {
+  color: var(--text-primary);
   text-decoration: none;
   font-weight: 500;
 }
 
-.filter-group .toggle-group input:not(:checked) + span {
-  color: var(--text-disabled); /* was #555 */
+/* Text styling when the filter is OFF */
+.filter-group .toggle-group input:not(:checked) ~ span {
+  color: var(--text-disabled);
   text-decoration: line-through;
   font-weight: 400;
+}
+
+/* Hover feedback: highlight text and background */
+.filter-group .toggle-group label:hover {
+  background-color: var(--hover-light);
+  border-radius: 3px;
+}
+.filter-group .toggle-group label:hover span {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 500;
 }
