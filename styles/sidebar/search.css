@@ -1,10 +1,9 @@
 /* @file: styles/sidebar/search.css */
-/* @version: 1.7 — add top border-radius and matching shadow to header for pill shape */
+/* @version: 1.8 — container now has full top‐corner radii for pill shape */
 
-/* Import Font Awesome for icons */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* CONTAINER: only bottom border, no side borders, pill-shape with header */
+/* CONTAINER: full pill shape with header and content */
 #sidebar-search {
   margin-top: 1.2em;                            /* align with other sections */
   background-color: var(--bg-30);
@@ -12,13 +11,18 @@
   border-left: none;
   border-right: none;
   border-bottom: 1px solid var(--border-soft);
+
+  /* round all corners for seamless pill appearance */
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
+
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* HEADER: match .sidebar-section > h2 for pill shape and shadow */
+/* HEADER: match .sidebar-section > h2 for consistent typography */
 #sidebar-search > h2 {
   margin: 0;                                    /* remove extra gaps */
   padding: 0.5em 0.8em;                         /* match section headers */
@@ -29,9 +33,6 @@
   letter-spacing: 0.08em;
   color: var(--text-primary);
   border-bottom: none;
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 /* remove old divider */
@@ -52,7 +53,7 @@
   box-sizing: border-box;
   padding: 4px 24px 4px 8px;                    /* 4px vertical gives a ~24px tall box */
   border: none;
-  border-radius: 0;                             /* square corners meet header */
+  border-radius: 0;                             /* square corners meet container */
   background-color: var(--bg-30);
   color: var(--text-primary);
   font-size: 13px;                              /* slightly smaller font */
