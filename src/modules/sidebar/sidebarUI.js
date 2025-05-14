@@ -15,8 +15,8 @@ export function setupSidebarUI({
   filterGroupSelector   = ".filter-group"
 }) {
   const COLLAPSE_DURATION = 300;
-  const PREHIDE_OFFSET    = 68;
-  const REAPPEAR_OFFSET   = 68;   // delay before entries re-appear when expanding
+  const PREHIDE_OFFSET    = 78;
+  const REAPPEAR_OFFSET   = 78;   // delay before entries re-appear when expanding
 
   // 1) Search bar
   setupSidebarSearch({
