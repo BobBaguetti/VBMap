@@ -1,0 +1,27 @@
+/* @file: styles/sidebar/admin.css */
+/* @version: 1.0 — styling for the “Admin Tools” panel */
+
+@import "../section-headers.css";
+
+/* Grid layout for Admin Tools buttons */
+#admin-tools-section .toggle-group {
+  padding: 0.4em 0.8em;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5em 0.8em;
+}
+
+/* Button styling */
+#admin-tools-section .toggle-group button {
+  padding: 6px 8px;
+  border: none;
+  background-color: var(--bg-20);
+  color: var(--text-primary);
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background 0.2s, color 0.2s;
+}
+#admin-tools-section .toggle-group button:hover {
+  background-color: var(--hover-light);
+}

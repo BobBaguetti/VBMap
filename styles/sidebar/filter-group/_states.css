@@ -1,0 +1,21 @@
+/* @file: styles/sidebar/filter-group/_states.css */
+/* @version: 1.0 — extracted collapsed & disabled state styles */
+
+/* Disable interactions on collapsed content */
+.filter-group.collapsed > .toggle-group {
+  pointer-events: none;
+}
+
+/*--------------------------------------------------------------
+  Disabled-visual state: switch text to disabled color & grayscale icons
+--------------------------------------------------------------*/
+/* Text: use disabled token + strikethrough when unchecked */
+.filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ span {
+  color: var(--text-disabled);
+  text-decoration: line-through;
+}
+
+/* Icons: grayscale + darken when unchecked */
+.filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ .filter-icon {
+  filter: grayscale(100%) brightness(60%);
+}

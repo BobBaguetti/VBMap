@@ -1,0 +1,6 @@
+/* @file: styles/sidebar/filter-group/filter-group.css */
+/* @version: 1.1 — import header, body, and state styles */
+
+@import "./_header.css";
+@import "./_body.css";
+@import "./_states.css";
