@@ -70,12 +70,6 @@ body {
   background: var(--bg-50);
 }
 
-/* 6) Hide off‑canvas tooltips/popups */
-#video-popup,
-#paste-tooltip {
-  display: none !important;
-}
-
 /* 7) Small‑markers styling */
 #map.small-markers .leaflet-marker-icon,
 #map.small-markers .custom-marker-container {

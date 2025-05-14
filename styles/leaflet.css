@@ -116,14 +116,3 @@
   height: 22px;
   fill: var(--text-secondary);
 }
-
-/* Optional: style the Play Video button if used */
-.more-info-btn {
-  margin-top: 6px;
-  background-color: var(--bg-50);
-  border: none;
-  color: var(--text-primary);
-  padding: 4px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-}

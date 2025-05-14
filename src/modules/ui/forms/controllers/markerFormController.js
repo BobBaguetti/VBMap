@@ -78,7 +78,6 @@ export function createMarkerFormController(
 
     fields.fldImgS.value        = def.imageSmall || "";
     fields.fldImgL.value        = def.imageBig || "";
-    fields.fldVid.value         = def.video || "";
   }
 
   // Wire up form events to onSubmit and onFieldChange
