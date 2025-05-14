@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.4 — refined underline: thinner and mid-tone shadow */
+/* @version: 1.5 — reinforce icon hover specificity for chevrons & eyes */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -56,8 +56,17 @@
 .filter-group > h4:hover > i:not(:first-child) {
   color: var(--text-secondary);
 }
+
 /* Icon hover always lights up */
 .filter-group > h3 > i:hover,
 .filter-group > h4 > i:hover {
+  color: var(--text-primary);
+}
+
+/* Explicitly target toggle-chevrons and eye icons for stronger specificity */
+.filter-group > h3 > .group-toggle:hover,
+.filter-group > h4 > .group-toggle:hover,
+.filter-group > h3 > .filter-eye:hover,
+.filter-group > h4 > .filter-eye:hover {
   color: var(--text-primary);
 }
