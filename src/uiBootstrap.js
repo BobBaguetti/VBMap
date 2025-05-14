@@ -1,6 +1,5 @@
 // @file: src/uiBootstrap.js
-// @version: 3 — wire up initSidebar instead of deprecated setupSidebar
-// Subscribes to Firestore services, wires up marker CRUD, context menus, etc.
+// @version: 4 — render sidebar shell before wiring up behaviors
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 
@@ -30,8 +29,9 @@ import { initCopyPasteManager }     from "./modules/map/copyPasteManager.js";
 import { showContextMenu, hideContextMenu } from "./modules/ui/uiManager.js";
 import { activateFloatingScrollbars }       from "./modules/utils/scrollUtils.js";
 
-// Sidebar orchestration
-import { initSidebar } from "./modules/sidebar/index.js";
+// Sidebar rendering & orchestration
+import { renderSidebarShell } from "./modules/sidebar/renderSidebar.js";
+import { initSidebar }        from "./modules/sidebar/index.js";
 
 let chestDefMap = {};
 let itemDefMap  = {};
@@ -45,7 +45,10 @@ export function bootstrapUI(isAdmin) {
   });
 
   (async () => {
-    // Sidebar (filters, settings, admin tools)
+    // 0) Render the static sidebar shell
+    renderSidebarShell();
+
+    // 1) Sidebar (filters, settings, admin tools)
     ({ filterMarkers, loadItemFilters } = await initSidebar({
       map,
       layers,
@@ -57,11 +60,11 @@ export function bootstrapUI(isAdmin) {
       }
     }));
 
-    // Initial item definitions load
+    // 2) Initial item definitions load
     const initialDefs = await loadItemDefinitions(db);
     itemDefMap = Object.fromEntries(initialDefs.map(d => [d.id, d]));
 
-    // Subscribe to markers
+    // 3) Subscribe to markers
     subscribeMarkers(db, markers => {
       // Clear old markers
       allMarkers.forEach(({ markerObj }) => {
@@ -75,7 +78,7 @@ export function bootstrapUI(isAdmin) {
       loadItemFilters().then(filterMarkers);
     });
 
-    // Live item-definition hydration
+    // 4) Live item-definition hydration
     subscribeItemDefinitions(db, async () => {
       const defs = await loadItemDefinitions(db);
       itemDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
@@ -102,7 +105,7 @@ export function bootstrapUI(isAdmin) {
       filterMarkers();
     });
 
-    // Initialize modals and copy/paste
+    // 5) Initialize modals and copy/paste
     const markerForm = initMarkerModal(db);
     initItemDefinitionsModal(db);
     const copyMgr = initCopyPasteManager(map, upsertMarker.bind(null, db));
@@ -161,7 +164,7 @@ export function bootstrapUI(isAdmin) {
       }
     };
 
-    // Context menu for creating markers
+    // 6) Context menu for creating markers
     map.on("contextmenu", evt => {
       if (!isAdmin) return;
       showContextMenu(
@@ -179,7 +182,7 @@ export function bootstrapUI(isAdmin) {
       );
     });
 
-    // Hide context menu on outside click
+    // 7) Hide context menu on outside click
     document.addEventListener("click", e => {
       const cm = document.getElementById("context-menu");
       if (cm?.style.display === "block" && !cm.contains(e.target)) {
@@ -187,7 +190,7 @@ export function bootstrapUI(isAdmin) {
       }
     });
 
-    // Activate custom scrollbars once DOM is ready
+    // 8) Activate custom scrollbars once DOM is ready
     document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
   })();
 }
