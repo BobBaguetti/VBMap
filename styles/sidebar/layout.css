@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.12 — allow horizontal overflow so toggle button isn’t clipped */
+/* @version: 1.13 — re-add fixed toggle button positioning and ensure visibility */
 
 /* ======= Sidebar container ======= */
 #sidebar {
@@ -14,13 +14,13 @@
   padding: 8px;
   box-sizing: border-box;
   overflow-y: auto;
-  overflow-x: visible;    /* changed from hidden to visible */
+  overflow-x: hidden;
   transition: transform 0.3s ease;
   z-index: 1000;
 
   /* Hide scrollbar, without reserving space */
-  scrollbar-width: none;  /* Firefox */
-  -ms-overflow-style: none; /* IE 10+ */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 #sidebar::-webkit-scrollbar {
@@ -34,9 +34,9 @@
 
 /* ======= Toggle button ======= */
 #sidebar-toggle {
-  position: absolute;
+  position: fixed;        /* stays fixed relative to viewport */
   top: 10px;
-  right: -30px;
+  left: 380px;            /* aligned to sidebar’s right edge */
   z-index: 1100;
   width: 30px;
   height: 30px;
@@ -44,11 +44,16 @@
   border: none;
   color: var(--text-primary);
   cursor: pointer;
-  transition: background 0.2s ease;
+  transition: left 0.3s ease, background 0.2s ease;
 }
 
 #sidebar-toggle:hover {
   background: var(--bg-50);
+}
+
+/* Move toggle button when sidebar is hidden */
+#sidebar.hidden ~ #sidebar-toggle {
+  left: 0;                /* slide button to left edge */
 }
 
 /* Icon swap handled by JS toggling <i> classes */
