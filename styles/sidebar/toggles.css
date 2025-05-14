@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/toggles.css */
-/* @version: 1.2 — prevent collapse‐all chevron lighting on header hover */
+/* @version: 1.1 — replace hex colors with theme tokens */
 
 /* Core grid layout */
 .toggle-group {
@@ -41,22 +41,4 @@
   color: var(--text-disabled); /* was #555 */
   text-decoration: line-through;
   font-weight: 400;
-}
-
-/* ----------------------------------------------------------
-   Fix for header collapse‐all chevron lighting behavior
-   ----------------------------------------------------------
-   Keep the chevron muted when hovering anywhere on the
-   filter-group header, but light it only when hovered itself.
------------------------------------------------------------*/
-/* 1) On header hover, collapse‐all stays secondary */
-.filter-group:hover > h3 > .collapse-all,
-.filter-group:hover > h4 > .collapse-all {
-  color: var(--text-secondary);
-}
-
-/* 2) On its own hover, collapse‐all lights up */
-.filter-group > h3 > .collapse-all:hover,
-.filter-group > h4 > .collapse-all:hover {
-  color: var(--text-primary);
 }
