@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 37 — sidebar markup moved to renderSidebarShell.js -->
+<!-- @version: 38 — removed sidebar-toggle from markup (now injected via JS) -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -9,7 +9,6 @@
   <title>Vaultbreakers Interactive Map</title>
 
   <link rel="stylesheet" href="styles/app.css"/>
-
 
   <!-- Import map for Firebase -->
   <script type="importmap">
@@ -24,9 +23,6 @@
   <script src="https://ga.jspm.io/npm:es-module-shims@1.5.10/dist/es-module-shims.js"></script>
 </head>
 <body>
-  <!-- Sidebar Toggle -->
-  <button id="sidebar-toggle">◀︎</button>
-
   <!-- Sidebar container (populated by renderSidebarShell.js) -->
   <div id="sidebar"></div>
 
