@@ -1,7 +1,19 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.1 — include Settings section & seed filter‐group headers
+// @version: 1.2 — include sidebar‐toggle button in JS shell
 
 export function renderSidebarShell() {
+  // 1) Ensure the sidebar-toggle button exists, inserting it if not
+  let toggleBtn = document.getElementById("sidebar-toggle");
+  if (!toggleBtn) {
+    toggleBtn = document.createElement("button");
+    toggleBtn.id = "sidebar-toggle";
+    toggleBtn.textContent = "◀︎";
+    toggleBtn.className = "sidebar-toggle-button";
+    // Insert it at the very top of the body
+    document.body.insertBefore(toggleBtn, document.body.firstChild);
+  }
+
+  // 2) Populate the sidebar container
   const sidebar = document.getElementById("sidebar");
   if (!sidebar) {
     console.warn("[renderSidebarShell] #sidebar element not found");
