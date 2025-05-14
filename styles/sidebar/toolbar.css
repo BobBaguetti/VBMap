@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/toolbar.css */
-/* @version: 1.1 — buttons resized to 25% width for a more balanced look */
+/* @version: 1.2 — buttons resized to a fixed 30px square for a more compact look */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -12,15 +12,15 @@
   margin: 1em 0;     /* vertical breathing room */
 }
 
-/* Toolbar buttons: set width to 25% of toolbar, square, themed, shadowed */
+/* Toolbar buttons: fixed 30px square, themed, shadowed */
 #sidebar-toolbar button {
-  flex: 0 1 25%;            /* up to 25% of toolbar width */
-  aspect-ratio: 1 / 1;      /* maintain square shape */
+  width: 30px;
+  height: 30px;
   background-color: var(--bg-30);
   color: var(--text-primary);
   border: none;
   border-radius: 4px;
-  font-size: 1.25em;        /* larger icons */
+  font-size: 1em;             /* back to default icon size */
   display: flex;
   align-items: center;
   justify-content: center;
