@@ -1,16 +1,16 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.11 — ensure collapse chevron only lights on its own hover */
+/* @version: 1.12 — remove chevron overrides now handled in animations.css */
 
 /* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);               
+  background-color: var(--bg-30);
   border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
   border-radius: 0;
-  margin:        0 0 0.6em;                     
+  margin:        0 0 0.6em;
   overflow:      hidden;
-  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   
-  transition:    box-shadow 0.2s ease;          
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
+  transition:    box-shadow 0.2s ease;
 }
 
 /* Hover elevation */
@@ -38,7 +38,6 @@
   border-bottom: 1px solid var(--border-soft);
   background-color: var(--bg-20);
   cursor: pointer;
-
   /* default: muted header text & all icons */
   color: var(--text-secondary);
 }
@@ -60,23 +59,6 @@
 .filter-group > h4:hover > i:first-child {
   color: var(--text-primary);
 }
-
-/* 2) Leave .filter-eye and collapse‐chevron muted on header hover */
-.filter-group > h3:hover > .filter-eye,
-.filter-group > h4:hover > .filter-eye,
-.filter-group > h3:hover > .collapse-all,
-.filter-group > h4:hover > .collapse-all {
-  color: var(--text-secondary);
-}
-
-/* 3) On their own hover, eye & chevron light up */
-.filter-group > h3 > .filter-eye:hover,
-.filter-group > h4 > .filter-eye:hover,
-.filter-group > h3 > .collapse-all:hover,
-.filter-group > h4 > .collapse-all:hover {
-  color: var(--text-primary);
-}
-
 
 /* Layout of the toggles inside each group */
 .filter-group .toggle-group {
