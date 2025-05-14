@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.5 — add icon hover styles for chevrons & eyes */
+/* @version: 1.6 — force hover color with highest specificity */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -15,7 +15,10 @@
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+
+  /* thinner, mid-tone underline for balanced separation */
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary); /* default muted text & icons */
@@ -29,18 +32,6 @@
   transition: color 0.2s ease;
 }
 
-/* Hover lighting for the collapse chevron */
-.filter-group > h3 > .group-toggle:hover,
-.filter-group > h4 > .group-toggle:hover {
-  color: var(--text-primary);
-}
-
-/* Hover lighting for the eye icon */
-.filter-group > h3 > .filter-eye:hover,
-.filter-group > h4 > .filter-eye:hover {
-  color: var(--text-primary);
-}
-
 /* Position the collapse chevron at the far right */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
@@ -51,7 +42,7 @@
   margin-right: 0;
 }
 
-/* Header hover: only text & first icon light up (unchanged) */
+/* Header hover: only text & first icon light up */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
@@ -64,4 +55,18 @@
 .filter-group > h3:hover > i:not(:first-child),
 .filter-group > h4:hover > i:not(:first-child) {
   color: var(--text-secondary);
+}
+
+/* Restore default icon hover (without specificity conflicts) */
+.filter-group > h3 > i:hover,
+.filter-group > h4 > i:hover {
+  color: var(--text-primary);
+}
+
+/* Force-hover on chevrons & eyes */
+.filter-group > h3 > .group-toggle:hover,
+.filter-group > h4 > .group-toggle:hover,
+.filter-group > h3 > .filter-eye:hover,
+.filter-group > h4 > .filter-eye:hover {
+  color: var(--text-primary) !important;
 }
