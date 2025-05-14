@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.1 — include Settings section & seed filter‐group headers
+// @version: 1.2 — inject sidebar‐toggle button and include Settings section & seed filter‐group headers
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -8,7 +8,9 @@ export function renderSidebarShell() {
     return;
   }
 
+  // Inject the collapse toggle button at the top of the sidebar
   sidebar.innerHTML = `
+    <button id="sidebar-toggle" aria-label="Toggle sidebar">◀︎</button>
     <h1>
       <img
         src="https://res.cloudinary.com/dtty7zxjh/image/upload/v1746941747/0g_VaultbreakersLogo_Blue_Fullsize_wbaf0o.png"
