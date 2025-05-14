@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.11 — ensure collapse chevron only lights on its own hover */
+/* @version: 1.12 — override inherited hover color so chevron only lights on its own hover */
 
 /* Container for each card-style filter group */
 .filter-group {
@@ -61,22 +61,32 @@
   color: var(--text-primary);
 }
 
-/* 2) Leave .filter-eye and collapse‐chevron muted on header hover */
-.filter-group > h3:hover > .filter-eye,
-.filter-group > h4:hover > .filter-eye,
-.filter-group > h3:hover > .collapse-all,
-.filter-group > h4:hover > .collapse-all {
+/* 2) Eye only lights on its own hover */
+.filter-group > h3 > .filter-eye,
+.filter-group > h4 > .filter-eye {
   color: var(--text-secondary);
 }
-
-/* 3) On their own hover, eye & chevron light up */
 .filter-group > h3 > .filter-eye:hover,
-.filter-group > h4 > .filter-eye:hover,
+.filter-group > h4 > .filter-eye:hover {
+  color: var(--text-primary);
+}
+
+/* 3) Chevron only lights on its own hover */
+.filter-group > h3 > .collapse-all,
+.filter-group > h4 > .collapse-all {
+  color: var(--text-secondary);
+  transition: color 0.2s ease;
+}
 .filter-group > h3 > .collapse-all:hover,
 .filter-group > h4 > .collapse-all:hover {
   color: var(--text-primary);
 }
 
+/* Prevent chevron from inheriting header hover color */
+.filter-group > h3:hover > .collapse-all,
+.filter-group > h4:hover > .collapse-all {
+  color: var(--text-secondary) !important;
+}
 
 /* Layout of the toggles inside each group */
 .filter-group .toggle-group {
