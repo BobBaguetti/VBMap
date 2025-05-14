@@ -1,29 +1,27 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.10 — delay visibility hide until collapse animation finishes */
+/* @version: 2.10 — increase visibility hide delay for smoother collapse */
 
-/* ── Base state for the toggle-group container ──────────────────── */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+
+/* ── Animate the toggle-group container ──────────────────────────── */
 .toggle-group {
   overflow: hidden;
-  /* start collapsed by default */
   max-height: 0;
-  visibility: hidden;
-  /* animate max-height over 0.3s; visibility switches hidden after 0.3s */
+  visibility: visible;
   transition:
     max-height 0.3s ease-in-out,
-    visibility 0s linear 0.300s;
+    visibility 0s linear 0.350s; /* wait 350ms before hiding visibility */
 }
 
-/* ── Expanded state: visible immediately, slide open ───────────── */
+/* Expanded state: no delay when showing */
 .filter-group:not(.collapsed) > .toggle-group {
   max-height: 1000px;
   visibility: visible;
-  /* no delay on show */
-  transition:
-    max-height 0.3s ease-in-out,
-    visibility 0s linear 0s;
+  transition-delay: 0s, 0s;
 }
 
-/* ── Collapsed state: block interactions, let visibility delay handle hiding ── */
+/* Collapsed state: block interactions immediately, then hide after delay */
 .filter-group.collapsed > .toggle-group {
   pointer-events: none;
+  visibility: hidden;
 }
