@@ -1,5 +1,5 @@
-// @file: src/modules/sidebar/sidebarManager.js
-// @version: 10.6 — delegate UI, settings, filters, and admin-tools to dedicated modules
+// @file: src/modules/sidebar/index.js
+// @version: 11.0 — rename to index.js; export initSidebar; orchestrate sidebar
 
 import { setupSidebarUI }       from "./sidebarUI.js";
 import { setupSidebarSettings } from "./sidebarSettings.js";
@@ -7,23 +7,28 @@ import { setupSidebarFilters }  from "./sidebarFilters.js";
 import { setupSidebarAdmin }    from "./sidebarAdmin.js";
 
 /**
- * Sets up the application sidebar:
- *  1) Basic UI (toggle, search‐bar styling, group collapse)
+ * Bootstraps the application sidebar:
+ *  1) Basic UI (search, mobile toggle, sticky header, group & master toggles)
  *  2) Settings section (marker grouping, small markers)
- *  3) Filters (search, PvE, main & item filters)
+ *  3) Filters (search, PvE, layer & item/chest/NPC filters)
  *  4) Admin tools buttons
  *
- * @param {L.Map} map
- * @param {object<string,L.LayerGroup>} layers
- * @param {Array<{markerObj: L.Marker, data: object}>} allMarkers
- * @param {firebase.firestore.Firestore} db
- * @param {{ enableGrouping: () => void, disableGrouping: () => void }} opts
+ * @param {object} params
+ * @param {L.Map}    params.map
+ * @param {object<string,L.LayerGroup>} params.layers
+ * @param {Array<{markerObj: L.Marker, data: object}>} params.allMarkers
+ * @param {firebase.firestore.Firestore} params.db
+ * @param {object}  params.opts                        – behavior hooks
+ * @param {() => void} params.opts.enableGrouping
+ * @param {() => void} params.opts.disableGrouping
  *
- * @returns {{ filterMarkers: () => void, loadItemFilters: () => Promise<void> }}
+ * @returns {{
+ *   filterMarkers: () => void,
+ *   loadItemFilters: () => Promise<void>
+ * }}
  */
-export async function setupSidebar(
-  map, layers, allMarkers, db,
-  { enableGrouping, disableGrouping }
+export async function initSidebar(
+  { map, layers, allMarkers, db, opts: { enableGrouping, disableGrouping } }
 ) {
   // 1) Basic UI wiring
   setupSidebarUI({ map });
@@ -42,6 +47,8 @@ export async function setupSidebar(
     mainFiltersSelector:    "#main-filters .toggle-group",
     pveToggleSelector:      "#toggle-pve",
     itemFilterListSelector: "#item-filter-list",
+    chestFilterListSelector:"#chest-filter-list",
+    npcFilterListSelector:  "#npc-hostile-list, #npc-friendly-list",
     layers,
     allMarkers,
     db

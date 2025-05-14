@@ -1,7 +1,6 @@
 // @file: src/uiBootstrap.js
-// @version: 2 updated — replace renderPopup with renderItemPopup
+// @version: 3 — wire up initSidebar instead of deprecated setupSidebar
 // Subscribes to Firestore services, wires up marker CRUD, context menus, etc.
-
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 
@@ -28,12 +27,11 @@ import {
 import { initMarkerModal }          from "./modules/ui/modals/markerModal.js";
 import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
 import { initCopyPasteManager }     from "./modules/map/copyPasteManager.js";
-import { setupSidebar }             from "./modules/sidebar/sidebarManager.js";
-import {
-  showContextMenu,
-  hideContextMenu
-} from "./modules/ui/uiManager.js";
-import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js";
+import { showContextMenu, hideContextMenu } from "./modules/ui/uiManager.js";
+import { activateFloatingScrollbars }       from "./modules/utils/scrollUtils.js";
+
+// Sidebar orchestration
+import { initSidebar } from "./modules/sidebar/index.js";
 
 let chestDefMap = {};
 let itemDefMap  = {};
@@ -47,10 +45,17 @@ export function bootstrapUI(isAdmin) {
   });
 
   (async () => {
-    // Sidebar (filters, etc.)
-    ({ filterMarkers, loadItemFilters } = await setupSidebar(
-      map, layers, allMarkers, db, {}
-    ));
+    // Sidebar (filters, settings, admin tools)
+    ({ filterMarkers, loadItemFilters } = await initSidebar({
+      map,
+      layers,
+      allMarkers,
+      db,
+      opts: {
+        enableGrouping:  () => {},   // implement grouping enable logic
+        disableGrouping: () => {}    // implement grouping disable logic
+      }
+    }));
 
     // Initial item definitions load
     const initialDefs = await loadItemDefinitions(db);
