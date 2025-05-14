@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.12 — override inherited hover color so chevron only lights on its own hover */
+/* @version: 1.13 — strengthen chevron override to block inherited hover color */
 
 /* Container for each card-style filter group */
 .filter-group {
@@ -43,7 +43,7 @@
   color: var(--text-secondary);
 }
 
-/* Layout for the icons appended in JS */
+/* Layout for all icons appended in JS */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   margin-right: 0.5em;
@@ -72,19 +72,19 @@
 }
 
 /* 3) Chevron only lights on its own hover */
-.filter-group > h3 > .collapse-all,
-.filter-group > h4 > .collapse-all {
+.filter-group > h3 > .fa-chevron-right.collapse-all,
+.filter-group > h4 > .fa-chevron-right.collapse-all {
   color: var(--text-secondary);
   transition: color 0.2s ease;
 }
-.filter-group > h3 > .collapse-all:hover,
-.filter-group > h4 > .collapse-all:hover {
+.filter-group > h3 > .fa-chevron-right.collapse-all:hover,
+.filter-group > h4 > .fa-chevron-right.collapse-all:hover {
   color: var(--text-primary);
 }
 
-/* Prevent chevron from inheriting header hover color */
-.filter-group > h3:hover > .collapse-all,
-.filter-group > h4:hover > .collapse-all {
+/* 4) Prevent the header-hover state from inheriting to the chevron */
+.filter-group:hover > h3 > .fa-chevron-right.collapse-all,
+.filter-group:hover > h4 > .fa-chevron-right.collapse-all {
   color: var(--text-secondary) !important;
 }
 
