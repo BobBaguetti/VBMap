@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/groupToggle.js
-// @version: 1.0 — extracted per-group collapse & eye-toggle logic
+// @version: 1.1 — sync group-eye icons when individual filters change
 
 /**
  * Initialize per-group collapse/expand chevrons and eye toggles.
@@ -85,7 +85,7 @@ export function setupGroupToggle({
       toggleIcon.classList.toggle("fa-chevron-down");
     });
 
-    // eye-toggle click
+    // eye-toggle click toggles all filters in group
     eye.addEventListener("click", e => {
       e.stopPropagation();
       const inputs = group.querySelectorAll("input[type=checkbox]");
@@ -99,6 +99,19 @@ export function setupGroupToggle({
       eye.classList.toggle("fa-eye",       anyOff);
       onUpdateMasterCollapse();
       onUpdateMasterEye();
+    });
+
+    // NEW: sync this group's eye icon when any individual checkbox changes
+    group.querySelectorAll(".toggle-group input[type=checkbox]").forEach(cb => {
+      cb.addEventListener("change", () => {
+        const anyOn = Array.from(
+          group.querySelectorAll(".toggle-group input[type=checkbox]")
+        ).some(i => i.checked);
+        eye.classList.toggle("fa-eye",       anyOn);
+        eye.classList.toggle("fa-eye-slash", !anyOn);
+        // propagate change up to master eye
+        onUpdateMasterEye();
+      });
     });
   });
 }
