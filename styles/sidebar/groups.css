@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.12 — update icon-hover specificity to override header-hover rule */
+/* @version: 1.12 — position collapse chevron absolutely and ensure it updates correctly */
 
 /* Container for each card-style filter group */
 .filter-group {
@@ -29,7 +29,7 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;
+  position: relative;  /* for absolute-positioned chevron */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
@@ -49,6 +49,16 @@
   margin-right: 0.5em;
   font-size: 1em;
   transition: color 0.2s ease;
+}
+
+/* Position the collapse chevron at the far right */
+.filter-group > h3 > .group-toggle,
+.filter-group > h4 > .group-toggle {
+  position: absolute;
+  right: 0.6em;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 0;  /* override default */
 }
 
 /* 1) Header-bar hover → only first icon (logo) & text light up */
