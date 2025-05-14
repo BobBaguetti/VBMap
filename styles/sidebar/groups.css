@@ -1,16 +1,16 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.11 — ensure only logo/text light on header hover; all other icons stay muted unless hovered */
+/* @version: 1.11 — prevent chevron from lighting on header hover; chevron only lights on its own hover */
 
 /* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);               
+  background-color: var(--bg-30);
   border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
   border-radius: 0;
-  margin:        0 0 0.6em;                     
+  margin:        0 0 0.6em;
   overflow:      hidden;
-  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   
-  transition:    box-shadow 0.2s ease;          
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
+  transition:    box-shadow 0.2s ease;
 }
 
 /* Hover elevation */
@@ -43,7 +43,7 @@
   color: var(--text-secondary);
 }
 
-/* Layout for icons appended in JS */
+/* Layout for the icons appended in JS */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   margin-right: 0.5em;
@@ -61,18 +61,23 @@
   color: var(--text-primary);
 }
 
-/* 2) All other icons (eye, chevron, etc.) stay muted on header hover */
-.filter-group > h3:hover > i:not(:first-child),
-.filter-group > h4:hover > i:not(:first-child) {
+/* 2) Chevron override: keep chevron muted on header hover */
+.filter-group > h3:hover > .fa-chevron-right,
+.filter-group > h4:hover > .fa-chevron-right,
+.filter-group > h3:hover > .fa-chevron-down,
+.filter-group > h4:hover > .fa-chevron-down {
   color: var(--text-secondary);
 }
 
-/* 3) On their own hover, each icon lights up */
-.filter-group > h3 > i:hover,
-.filter-group > h4 > i:hover {
+/* 3) On their own hover, eye & chevron light up */
+.filter-group > h3 > .filter-eye:hover,
+.filter-group > h4 > .filter-eye:hover,
+.filter-group > h3 > .fa-chevron-right:hover,
+.filter-group > h4 > .fa-chevron-right:hover,
+.filter-group > h3 > .fa-chevron-down:hover,
+.filter-group > h4 > .fa-chevron-down:hover {
   color: var(--text-primary);
 }
-
 
 /* Layout of the toggles inside each group */
 .filter-group .toggle-group {
