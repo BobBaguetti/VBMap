@@ -1,7 +1,5 @@
-// @file: src/modules/map/map.js
-// @version: 2 — import Leaflet as ES module instead of relying on global L
-
-import L from "leaflet";
+// @file:    /src/modules/map/map.js
+// @version: 1 
 
 export function initializeMap() {
   // Create the map with custom settings

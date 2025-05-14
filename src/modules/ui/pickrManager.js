@@ -1,7 +1,5 @@
-// @file: src/modules/ui/pickrManager.js
-// @version: 3 — switch from global window.Pickr to ES-module import
-
-import Pickr from "pickr";  // import ES-module version of Pickr
+// @file: /src/modules/ui/pickrManager.js
+// @version: 2 
 
 // Holds all active Pickr instances so destroyAllPickrs can clean them up
 const activePickrs = [];
@@ -22,7 +20,7 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
     };
   }
 
-  const p = Pickr.create({
+  const p = window.Pickr.create({
     el,
     theme: "nano",
     default: defaultColor,
@@ -50,7 +48,7 @@ export function disablePickr(pickr, disabled = true) {
   const root = pickr?.getRoot?.();
   if (root && root.style) {
     root.style.pointerEvents = disabled ? "none" : "auto";
-    root.style.opacity       = disabled ? 0.5    : 1;
+    root.style.opacity = disabled ? 0.5 : 1;
   }
 }
 
@@ -73,8 +71,8 @@ export function destroyAllPickrs() {
 }
 
 /**
- * Scan the given root element for any color-swatch buttons,
- * and attach Pickr to each one.
+ * Scan the given root element for any color‐swatch buttons,
+ * log what we find, and attach Pickr to each one.
  */
 export function initModalPickrs(root) {
   const swatches = root.querySelectorAll(".color-swatch");

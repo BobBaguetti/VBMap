@@ -1,24 +1,21 @@
 // @file: src/appInit.js
-// @version: 2 — switch to ES-module imports for Leaflet & MarkerCluster
+// @version: 1 — use global Leaflet (L) and MarkerCluster loaded via <script> tags
+// Initializes Firebase & Leaflet map, and exports shared instances
 
 import { initializeApp } from "firebase/app";
-import { getFirestore }  from "firebase/firestore";
+import { getFirestore } from "firebase/firestore";
 import { firebaseConfig } from "./firebaseConfig.js";
-
-// ES-module imports for map libraries
-import L from "leaflet";
-import "markercluster";
 
 import { initializeMap } from "./modules/map/map.js";
 
-// Initialize Firebase
+// initialize Firebase
 export const app = initializeApp(firebaseConfig);
 export const db  = getFirestore(app);
 
-// Initialize Leaflet map (using L from ES module)
+// initialize Leaflet map (global L is available from index.html <script> tags)
 export const { map } = initializeMap();
 
-// Set up layers
+// set up layers using global L
 export const clusterItemLayer = L.markerClusterGroup();
 export const flatItemLayer    = L.layerGroup();
 
@@ -31,10 +28,11 @@ export const layers = {
   Chest:               L.layerGroup()
 };
 
-// Add non-item layers to the map
+// add non-item layers to the map
 Object.entries(layers).forEach(([type, layer]) => {
   if (type !== "Item") layer.addTo(map);
 });
 
-// Show clustered items by default
+// show clustered items
 flatItemLayer.addTo(map);
+ 

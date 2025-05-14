@@ -1,5 +1,5 @@
 <!-- @file: index.html -->
-<!-- @version: 38 — consolidated CSS and ES-module imports for Leaflet, MarkerCluster, Pickr -->
+<!-- @version: 37 — sidebar markup moved to renderSidebarShell.js -->
 
 <!DOCTYPE html>
 <html lang="en">
@@ -8,19 +8,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Vaultbreakers Interactive Map</title>
 
-  <!-- Consolidated application stylesheet -->
   <link rel="stylesheet" href="styles/app.css"/>
 
-  <!-- Import map for JS dependencies -->
+
+  <!-- Import map for Firebase -->
   <script type="importmap">
   {
     "imports": {
       "firebase/app":       "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js",
       "firebase/auth":      "https://www.gstatic.com/firebasejs/9.22.2/firebase-auth.js",
-      "firebase/firestore": "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js",
-      "leaflet":            "https://unpkg.com/leaflet@1.9.4/dist/leaflet-src.esm.js",
-      "markercluster":      "https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster-src.esm.js",
-      "pickr":              "https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.esm.js"
+      "firebase/firestore": "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js"
     }
   }
   </script>
@@ -36,7 +33,12 @@
   <!-- Map -->
   <div id="map"></div>
 
-  <!-- Main application entrypoint -->
+  <!-- Leaflet & MarkerCluster scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/pickr.min.js"></script>
+
+  <!-- App entrypoint -->
   <script type="module" src="src/index.js"></script>
 </body>
 </html>
