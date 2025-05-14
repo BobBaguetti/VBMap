@@ -6,7 +6,6 @@ import {
   createDropdownField,
   createTextareaFieldWithColor,
   createImageField,
-  createVideoField,
   createFieldRow
 } from "../../components/uiKit/fieldKit.js";
 import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";
@@ -28,8 +27,7 @@ import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";
  *     extraInfo: object,
  *     extraRow: HTMLElement,
  *     fldImgS: HTMLInputElement,
- *     fldImgL: HTMLInputElement,
- *     fldVid: HTMLInputElement
+ *     fldImgL: HTMLInputElement
  *   }
  * }}
  */
@@ -80,7 +78,6 @@ export function createMarkerFormBuilder() {
   // — Media —
   const { row: rowImgS, input: fldImgS } = createImageField("Image S:", "marker-fld-img-s");
   const { row: rowImgL, input: fldImgL } = createImageField("Image L:", "marker-fld-img-l");
-  const { row: rowVid, input: fldVid }   = createVideoField("Video:", "marker-fld-vid");
 
   // spacing tweaks
   rowRarity.classList.add("item-gap");
@@ -96,7 +93,6 @@ export function createMarkerFormBuilder() {
     rowExtra,
     rowImgS,
     rowImgL,
-    rowVid
   );
 
   return {
@@ -107,7 +103,7 @@ export function createMarkerFormBuilder() {
       fldItemType, colorItemType,
       fldDesc,   colorDesc,
       extraInfo, extraRow: rowExtra,
-      fldImgS,   fldImgL, fldVid
+      fldImgS,   fldImgL
     }
   };
 }

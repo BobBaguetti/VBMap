@@ -55,8 +55,7 @@ export function createMarkerFormController(
       descriptionColor:  getPickrHexColor(pickrs.description),
       extraLines:        fields.extraInfo.getLines(),
       imageSmall:        fields.fldImgS.value.trim(),
-      imageBig:          fields.fldImgL.value.trim(),
-      video:             fields.fldVid.value.trim()
+      imageBig:          fields.fldImgL.value.trim()
     };
   }
 
@@ -78,7 +77,6 @@ export function createMarkerFormController(
 
     fields.fldImgS.value        = def.imageSmall || "";
     fields.fldImgL.value        = def.imageBig || "";
-    fields.fldVid.value         = def.video || "";
   }
 
   // Wire up form events to onSubmit and onFieldChange
