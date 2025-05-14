@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.19 — convert group collapse chevron to real <i> element for consistent hover
+// @version: 1.20 — sync child chevrons when master collapse toggles
 
 export function setupSidebarUI({
   map,
@@ -138,7 +138,7 @@ export function setupSidebarUI({
     });
   });
 
-  // 4b) Master controls (unchanged)
+  // 4b) Master controls
   if (filtersSection) {
     const filtersHeader = filtersSection.querySelector("h2");
 
@@ -185,7 +185,7 @@ export function setupSidebarUI({
       });
     });
 
-    // Collapse/Expand chevron for master (unchanged)
+    // Collapse/Expand chevron for master
     const collapseBtn = document.createElement("i");
     collapseBtn.classList.add("fas", "collapse-all", "fa-chevron-right");
     Object.assign(collapseBtn.style, {
@@ -202,11 +202,27 @@ export function setupSidebarUI({
       Array.from(filtersSection.querySelectorAll(filterGroupSelector));
 
     updateMasterCollapseIcon = () => {
-      const allCollapsed = getSubGroups().every(g => g.classList.contains("collapsed"));
+      const groups       = getSubGroups();
+      const allCollapsed = groups.every(g => g.classList.contains("collapsed"));
+
+      // update master chevron
       collapseBtn.classList.replace(
         allCollapsed ? "fa-chevron-down" : "fa-chevron-right",
         allCollapsed ? "fa-chevron-right" : "fa-chevron-down"
       );
+
+      // sync child chevrons
+      groups.forEach(group => {
+        const icon = group.querySelector(".group-toggle");
+        if (!icon) return;
+        if (group.classList.contains("collapsed")) {
+          icon.classList.add("fa-chevron-right");
+          icon.classList.remove("fa-chevron-down");
+        } else {
+          icon.classList.add("fa-chevron-down");
+          icon.classList.remove("fa-chevron-right");
+        }
+      });
     };
 
     collapseBtn.addEventListener("click", e => {
