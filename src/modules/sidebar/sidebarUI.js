@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.21 — clear inline visibility before collapsing so CSS can hide immediately
+// @version: 1.22 — schedule hide at end of collapse via setTimeout for precise timing
 
 export function setupSidebarUI({
   map,
@@ -8,40 +8,38 @@ export function setupSidebarUI({
   searchBarSelector   = "#search-bar",
   filterGroupSelector = ".filter-group"
 }) {
+  const COLLAPSE_DURATION = 300; // ms
+
   // helper to animate collapse/expand
   function animateToggle(group) {
-    const container = group.querySelector(".toggle-group");
+    const container   = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
-    if (isCollapsed) {
-      // expanding: ensure content is visible
-      container.style.visibility = "visible";
-    }
 
+    // prepare for height animation
     container.style.transition = "none";
     container.style.maxHeight  = isCollapsed
       ? "0px"
       : `${container.scrollHeight}px`;
+    // force style flush
     container.offsetHeight;
-    container.style.transition = "max-height 0.3s ease-in-out";
+    container.style.transition = `max-height ${COLLAPSE_DURATION}ms ease-in-out`;
 
     if (isCollapsed) {
-      // expanding
+      // EXPAND: show then slide down
+      container.style.visibility = "visible";
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
     } else {
-      // collapsing: clear inline visibility so CSS rule can take effect
+      // COLLAPSE: slide up then hide at the end
+      // clear any residual visibility so CSS clip works
       container.style.removeProperty("visibility");
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
-    }
-
-    function onEnd(e) {
-      if (e.propertyName === "max-height" && group.classList.contains("collapsed")) {
+      // schedule hide exactly when the 300 ms slide finishes
+      setTimeout(() => {
         container.style.visibility = "hidden";
-      }
-      container.removeEventListener("transitionend", onEnd);
+      }, COLLAPSE_DURATION);
     }
-    container.addEventListener("transitionend", onEnd);
   }
 
   // Helper to sync each group's chevron icon to its collapsed state
@@ -49,28 +47,23 @@ export function setupSidebarUI({
     document.querySelectorAll(filterGroupSelector).forEach(group => {
       const chevron = group.querySelector(".group-toggle");
       if (!chevron) return;
-      if (group.classList.contains("collapsed")) {
-        chevron.classList.add("fa-chevron-right");
-        chevron.classList.remove("fa-chevron-down");
-      } else {
-        chevron.classList.add("fa-chevron-down");
-        chevron.classList.remove("fa-chevron-right");
-      }
+      const down = !group.classList.contains("collapsed");
+      chevron.classList.toggle("fa-chevron-down", down);
+      chevron.classList.toggle("fa-chevron-right", !down);
     });
   }
 
-  // Elements
+  // Grab core elements
   const sidebar       = document.querySelector(sidebarSelector);
   const sidebarToggle = document.querySelector(toggleSelector);
   const searchBar     = document.querySelector(searchBarSelector);
   const clearBtn      = document.getElementById("search-clear");
-
   if (!sidebar || !sidebarToggle || !searchBar || !clearBtn) {
     console.warn("[sidebarUI] Missing elements");
     return;
   }
 
-  // 1) Search‐bar: add ui-input class & clear handler
+  // 1) Search‐bar
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -78,20 +71,20 @@ export function setupSidebarUI({
     searchBar.focus();
   });
 
-  // 2) Sidebar toggle (mobile)
+  // 2) Mobile sidebar toggle
   sidebarToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
 
-  // 3) Main “Filters” section sticky behavior
+  // 3) Sticky Filters header
   const filtersSection = document.querySelector("#filters-section");
   if (filtersSection) {
-    const observer = new IntersectionObserver(
+    const obs = new IntersectionObserver(
       ([e]) => filtersSection.classList.toggle("stuck", e.intersectionRatio < 1),
       { threshold: [1] }
     );
-    observer.observe(filtersSection);
+    obs.observe(filtersSection);
   }
 
-  // placeholders for updater functions
+  // Placeholders for master updater fns
   let updateMasterCollapseIcon = () => {};
   let updateMasterEyeIcon     = () => {};
 
@@ -100,7 +93,7 @@ export function setupSidebarUI({
     const header = group.querySelector("h3, h4");
     if (!header) return;
 
-    // create collapse chevron icon
+    // collapse/expand chevron
     const toggleIcon = document.createElement("i");
     toggleIcon.classList.add(
       "fas",
@@ -111,7 +104,7 @@ export function setupSidebarUI({
     toggleIcon.style.marginLeft = "0.5em";
     header.appendChild(toggleIcon);
 
-    // create eye-toggle icon
+    // eye-toggle
     const eye = document.createElement("i");
     eye.classList.add("fas", "fa-eye", "filter-eye");
     eye.style.cursor     = "pointer";
@@ -122,7 +115,6 @@ export function setupSidebarUI({
     header.addEventListener("click", () => {
       animateToggle(group);
       updateMasterCollapseIcon();
-      // swap this group's chevron
       toggleIcon.classList.toggle("fa-chevron-right");
       toggleIcon.classList.toggle("fa-chevron-down");
     });
@@ -141,16 +133,13 @@ export function setupSidebarUI({
       e.stopPropagation();
       const inputs = group.querySelectorAll("input[type=checkbox]");
       const anyOff = [...inputs].some(cb => !cb.checked);
-
       inputs.forEach(cb => {
         cb.checked = anyOff;
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
-
       group.classList.toggle("disabled", !anyOff);
       eye.classList.toggle("fa-eye-slash", !anyOff);
       eye.classList.toggle("fa-eye",       anyOff);
-
       updateMasterCollapseIcon();
       updateMasterEyeIcon();
     });
@@ -158,14 +147,14 @@ export function setupSidebarUI({
 
   // 4b) Master controls
   if (filtersSection) {
-    const filtersHeader = filtersSection.querySelector("h2");
+    const header = filtersSection.querySelector("h2");
 
     // Master eye
     const masterEye = document.createElement("i");
     masterEye.classList.add("fas", "fa-eye", "filter-eye");
     masterEye.style.cursor     = "pointer";
     masterEye.style.marginLeft = "0.5em";
-    filtersHeader.appendChild(masterEye);
+    header.appendChild(masterEye);
 
     updateMasterEyeIcon = () => {
       const cbs = Array.from(
@@ -180,30 +169,28 @@ export function setupSidebarUI({
 
     masterEye.addEventListener("click", e => {
       e.stopPropagation();
-      const cbs = Array.from(
+      const cbs      = Array.from(
         document.querySelectorAll('#filters-section .toggle-group input[type=checkbox]')
       );
       if (!cbs.length) return;
-
       const newState = cbs.some(cb => !cb.checked);
       cbs.forEach(cb => {
         cb.checked = newState;
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
-
       document.querySelectorAll(filterGroupSelector).forEach(group => {
         group.classList.toggle("disabled", !newState);
       });
       updateMasterEyeIcon();
       document.querySelectorAll(filterGroupSelector).forEach(group => {
-        const groupEye = group.querySelector(".filter-eye");
-        if (!groupEye) return;
-        groupEye.classList.toggle("fa-eye",       newState);
-        groupEye.classList.toggle("fa-eye-slash", !newState);
+        const ge = group.querySelector(".filter-eye");
+        if (!ge) return;
+        ge.classList.toggle("fa-eye",       newState);
+        ge.classList.toggle("fa-eye-slash", !newState);
       });
     });
 
-    // Collapse/Expand chevron for master
+    // Master collapse/expand
     const collapseBtn = document.createElement("i");
     collapseBtn.classList.add("fas", "collapse-all", "fa-chevron-right");
     Object.assign(collapseBtn.style, {
@@ -214,7 +201,7 @@ export function setupSidebarUI({
       cursor:     "pointer",
       transition: "color 0.2s"
     });
-    filtersHeader.appendChild(collapseBtn);
+    header.appendChild(collapseBtn);
 
     const getSubGroups = () =>
       Array.from(filtersSection.querySelectorAll(filterGroupSelector));
@@ -236,14 +223,10 @@ export function setupSidebarUI({
         if (g.classList.contains("collapsed") === shouldCollapse) return;
         animateToggle(g);
       });
-
-      // update master icon
       updateMasterCollapseIcon();
-      // sync all child chevrons
       syncGroupChevrons();
     });
 
     updateMasterCollapseIcon();
   }
 }
- 
