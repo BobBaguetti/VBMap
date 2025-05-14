@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.13 — re-add fixed toggle button positioning and ensure visibility */
+/* @version: 1.14 — use button’s `.collapsed` class to slide it, remove sibling selector */
 
 /* ======= Sidebar container ======= */
 #sidebar {
@@ -51,12 +51,10 @@
   background: var(--bg-50);
 }
 
-/* Move toggle button when sidebar is hidden */
-#sidebar.hidden ~ #sidebar-toggle {
-  left: 0;                /* slide button to left edge */
+/* Slide the button when it has .collapsed (controlled by JS) */
+#sidebar-toggle.collapsed {
+  left: 0;
 }
-
-/* Icon swap handled by JS toggling <i> classes */
 
 /* ======= Logo container (h1) ======= */
 #sidebar > h1 {
