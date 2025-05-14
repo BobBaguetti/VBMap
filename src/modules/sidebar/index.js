@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/index.js
-// @version: 11.0 — rename to index.js; export initSidebar; orchestrate sidebar
+// @version: 12.0 — removed in-sidebar settings section; wire toolbar settings modal
 
 import { setupSidebarUI }       from "./sidebarUI.js";
 import { setupSidebarSettings } from "./sidebarSettings.js";
@@ -9,7 +9,7 @@ import { setupSidebarAdmin }    from "./sidebarAdmin.js";
 /**
  * Bootstraps the application sidebar:
  *  1) Basic UI (search, mobile toggle, sticky header, group & master toggles)
- *  2) Settings section (marker grouping, small markers)
+ *  2) Settings modal (marker grouping, small markers)
  *  3) Filters (search, PvE, layer & item/chest/NPC filters)
  *  4) Admin tools buttons
  *
@@ -33,22 +33,19 @@ export async function initSidebar(
   // 1) Basic UI wiring
   setupSidebarUI({ map });
 
-  // 2) Settings Section
-  const settingsSect = document.getElementById("settings-section");
-  if (!settingsSect) {
-    console.warn("[sidebar] Missing settings section");
-    return { filterMarkers() {}, loadItemFilters: async () => {} };
-  }
-  setupSidebarSettings(settingsSect, { enableGrouping, disableGrouping });
+  // 2) Settings modal (toolbar button)
+  setupSidebarSettings({ enableGrouping, disableGrouping });
 
   // 3) Filtering Section
   const { filterMarkers, loadItemFilters } = setupSidebarFilters({
-    searchBarSelector:      "#search-bar",
-    mainFiltersSelector:    "#main-filters .toggle-group",
-    pveToggleSelector:      "#toggle-pve",
-    itemFilterListSelector: "#item-filter-list",
-    chestFilterListSelector:"#chest-filter-list",
-    npcFilterListSelector:  "#npc-hostile-list, #npc-friendly-list",
+    searchBarSelector:       "#search-bar",
+    mainFiltersSelector:     "#main-filters .toggle-group",
+    pveToggleSelector:       "#toggle-pve",
+    itemFilterListSelector:  "#item-filter-list",
+    chestFilterListSelector: "#chest-filter-list",
+    // Pass hostile and friendly separately:
+    npcHostileListSelector:  "#npc-hostile-list",
+    npcFriendlyListSelector: "#npc-friendly-list",
     layers,
     allMarkers,
     db
