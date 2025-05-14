@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/groupToggle.js
-// @version: 1.4 — default eye icon to “on” state; syncEye will correct it
+// @version: 1.5 — defer initial eye sync to next frame so inputs are present
 
 /**
  * Initialize per-group collapse/expand chevrons and eye toggles.
@@ -24,11 +24,7 @@ export function setupGroupToggle({
   function animateToggle(group) {
     const container   = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
-
-    if (container._reappearTimer) {
-      clearTimeout(container._reappearTimer);
-      container._reappearTimer = null;
-    }
+    if (container._reappearTimer) clearTimeout(container._reappearTimer);
 
     container.style.transition = "none";
     container.style.maxHeight  = isCollapsed
@@ -38,15 +34,16 @@ export function setupGroupToggle({
     container.style.transition = `max-height ${collapseDuration}ms ease-in-out`;
 
     if (isCollapsed) {
+      // EXPAND
       container.style.visibility = "hidden";
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
-
       container._reappearTimer = setTimeout(() => {
         container.style.visibility = "visible";
         container._reappearTimer = null;
       }, reappearOffset);
     } else {
+      // COLLAPSE
       container.style.removeProperty("visibility");
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
@@ -59,9 +56,9 @@ export function setupGroupToggle({
 
   // Wire up each group
   document.querySelectorAll(filterGroupSelector).forEach(group => {
-    const header = group.querySelector("h3, h4");
-    if (!header) return;
+    const header    = group.querySelector("h3, h4");
     const container = group.querySelector(".toggle-group");
+    if (!header || !container) return;
 
     // collapse chevron
     const toggleIcon = document.createElement("i");
@@ -74,7 +71,7 @@ export function setupGroupToggle({
     toggleIcon.style.marginLeft = "0.5em";
     header.appendChild(toggleIcon);
 
-    // eye-toggle (start with fa-eye by default)
+    // eye-toggle (default on)
     const eye = document.createElement("i");
     eye.classList.add("fas", "filter-eye", "fa-eye");
     eye.style.cursor     = "pointer";
@@ -90,11 +87,15 @@ export function setupGroupToggle({
       onUpdateMasterEye();
     }
 
-    // Initial eye sync
-    syncEye();
+    // Defer initial sync so checkboxes are in place
+    if (window.requestAnimationFrame) {
+      requestAnimationFrame(syncEye);
+    } else {
+      setTimeout(syncEye, 0);
+    }
 
     // collapse on header or chevron click
-    const doToggle = (e) => {
+    const doToggle = e => {
       if (e) e.stopPropagation();
       animateToggle(group);
       onUpdateMasterCollapse();
@@ -119,7 +120,7 @@ export function setupGroupToggle({
     });
 
     // Delegate change events within the container
-    container.addEventListener("change", (e) => {
+    container.addEventListener("change", e => {
       if (e.target.matches("input[type=checkbox]")) {
         syncEye();
       }
