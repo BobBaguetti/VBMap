@@ -6,6 +6,7 @@ import {
   createDropdownField,
   createTextareaFieldWithColor,
   createImageField,
+  createVideoField,
   createFieldRow
 } from "../../components/uiKit/fieldKit.js";
 import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";

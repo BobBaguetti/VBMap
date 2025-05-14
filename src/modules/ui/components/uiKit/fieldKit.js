@@ -105,6 +105,14 @@ export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "C
   return row;
 }
 
+export function createVideoField(labelText, id) {
+  const input = document.createElement("input");
+  input.id = id;
+  input.type = "text";
+  const row = createFieldRow(labelText, input);
+  return { row, input };
+}
+
 /**
  * Create a top-aligned “Extra Info” field row, with optional <hr> dividers.
  *
