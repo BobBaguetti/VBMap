@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.30 — delegate master controls to masterToggle.js
+// @version: 1.31 — added REAPPEAR_OFFSET and passed into groupToggle
 
 import { setupSidebarSearch }       from "./search.js";
 import { setupSidebarMobileToggle } from "./mobileToggle.js";
@@ -16,6 +16,7 @@ export function setupSidebarUI({
 }) {
   const COLLAPSE_DURATION = 300;
   const PREHIDE_OFFSET    = 68;
+  const REAPPEAR_OFFSET   = 25;   // delay before entries re-appear when expanding
 
   // 1) Search bar
   setupSidebarSearch({
@@ -47,6 +48,7 @@ export function setupSidebarUI({
     filterGroupSelector,
     collapseDuration:       COLLAPSE_DURATION,
     prehideOffset:          PREHIDE_OFFSET,
+    reappearOffset:         REAPPEAR_OFFSET,
     onUpdateMasterCollapse: updateMasterCollapseIcon,
     onUpdateMasterEye:      updateMasterEyeIcon
   });
