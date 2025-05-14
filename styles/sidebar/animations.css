@@ -1,7 +1,7 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.8 — chevron now only lights on its own hover */
+/* @version: 2.9 — pin chevron color on header hover, allow only its own hover */
 
-/* Import Font Awesome for pseudo‐elements */
+/* Import Font Awesome for pseudo-elements */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* ── Filter-group (h3/h4) chevrons ───────────────────────────────── */
@@ -16,30 +16,24 @@
   font-weight: 900;
   font-style: normal;
   font-variant: normal;
-  text-transform: none;
   line-height: 1;
-  
   position: absolute;
   right: 0.6em;
   top: 50%;
   transform: translateY(-50%);
   transition: color 0.2s, transform 0.2s;
   color: var(--text-secondary);
-  
-  /* allow the pseudo-ele­ment to receive hover */
   pointer-events: auto;
   cursor: pointer;
 }
 
-/* Remove generic header-hover coloring for the chevron */
-/* (this block is deleted)
+/* 1) Remove any header-hover chevron lighting (no longer auto-lit) */
 .filter-group > h3:hover::after,
 .filter-group > h4:hover::after {
-  color: var(--text-primary);
+  color: var(--text-secondary) !important;
 }
-*/
 
-/* Chevron shape based on collapsed state */
+/* 2) Keep the shape based on collapsed state */
 .filter-group:not(.collapsed) > h3::after,
 .filter-group:not(.collapsed) > h4::after {
   content: "\f078"; /* chevron-down */
@@ -49,10 +43,10 @@
   content: "\f054"; /* chevron-right */
 }
 
-/* ── Only light up the chevron on its own hover ─────────────────── */
+/* 3) On its own hover → chevron lights up */
 .filter-group > h3::after:hover,
 .filter-group > h4::after:hover {
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
 }
 
 /* ── Animate the toggle-group container ──────────────────────────── */
@@ -61,7 +55,6 @@
   max-height: 0;
   transition: max-height 0.3s ease-in-out;
 }
-
 .filter-group:not(.collapsed) > .toggle-group {
   max-height: 1000px;
 }

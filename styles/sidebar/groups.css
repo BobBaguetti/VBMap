@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.12 — remove chevron overrides now handled in animations.css */
+/* @version: 1.13 — explicitly lock eye icon on header hover and allow only its own hover */
 
 /* Container for each card-style filter group */
 .filter-group {
@@ -28,7 +28,6 @@
 .filter-group > h4 {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   position: relative;
   padding: 0.4em 0.6em;
   margin: 0;
@@ -42,7 +41,7 @@
   color: var(--text-secondary);
 }
 
-/* Layout for the icons appended in JS */
+/* Icon elements appended in JS */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   margin-right: 0.5em;
@@ -50,7 +49,7 @@
   transition: color 0.2s ease;
 }
 
-/* 1) Header-bar hover → only first icon (logo) & text light up */
+/* 1) Header-bar hover → only first icon & text light */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
@@ -58,6 +57,18 @@
 .filter-group > h3:hover > i:first-child,
 .filter-group > h4:hover > i:first-child {
   color: var(--text-primary);
+}
+
+/* 2) On header hover → force the eye icon muted */
+.filter-group > h3:hover > .filter-eye,
+.filter-group > h4:hover > .filter-eye {
+  color: var(--text-secondary) !important;
+}
+
+/* 3) On its own hover → eye lights up */
+.filter-group > h3 > .filter-eye:hover,
+.filter-group > h4 > .filter-eye:hover {
+  color: var(--text-primary) !important;
 }
 
 /* Layout of the toggles inside each group */
@@ -93,7 +104,6 @@
   color: var(--text-disabled);
   text-decoration: line-through;
 }
-
 /* Icons: grayscale + darken */
 .filter-group .toggle-group label input[type="checkbox"]:not(:checked) ~ .filter-icon {
   filter: grayscale(100%) brightness(60%);
