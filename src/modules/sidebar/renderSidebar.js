@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.2 — include sidebar‐toggle button in JS shell
+// @version: 1.3 — add click listener for sidebar collapse/expand toggle
 
 export function renderSidebarShell() {
   // 1) Ensure the sidebar-toggle button exists, inserting it if not
@@ -108,4 +108,10 @@ export function renderSidebarShell() {
       </div>
     </div>
   `.trim();
+
+  // 3) Wire up the collapse/expand toggle
+  toggleBtn.addEventListener("click", () => {
+    sidebar.classList.toggle("collapsed");
+    toggleBtn.textContent = sidebar.classList.contains("collapsed") ? "▶︎" : "◀︎";
+  });
 }
