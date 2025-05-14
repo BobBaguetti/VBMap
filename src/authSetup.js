@@ -1,5 +1,5 @@
-// @file: /src/authSetup.js
-// @version: 6 – with diagnostics 
+// @file: src/authSetup.js
+// @version: 7 — inject auth button into sidebar toolbar instead of settings section
 
 import {
   getAuth,
@@ -14,17 +14,19 @@ import {
 export function initAdminAuth() {
   const auth = getAuth();
   const provider = new GoogleAuthProvider();
-  const settingsSect = document.getElementById("settings-section");
-  if (!settingsSect) {
-    console.warn("[authSetup] #settings-section not found");
+
+  // Find the toolbar container (under the logo)
+  const toolbar = document.getElementById("sidebar-toolbar");
+  if (!toolbar) {
+    console.warn("[authSetup] #sidebar-toolbar not found");
     return;
   }
 
-  // Create the button
+  // Create the Sign In/Out button and prepend it to the toolbar
   const authBtn = document.createElement("button");
   authBtn.id = "auth-btn";
   authBtn.className = "ui-button";
-  settingsSect.prepend(authBtn);
+  toolbar.prepend(authBtn);
 
   // If a redirect result is pending, log it
   getRedirectResult(auth)
