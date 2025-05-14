@@ -6,8 +6,8 @@
 @import "section-headers.css";
 @import "search.css";
 
-/* Settings (marker grouping toggles) */
-@import "settings.css";
+/* Toolbar */
+@import "sidebar/toolbar.css";
 
 /* Filter groups */
 @import "filters/container.css";
