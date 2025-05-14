@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.9 — position toggle button fixed and animate collapse state */
+/* @version: 1.10 — flip toggle arrow horizontally instead of rotating */
 
 /* ======= Sidebar container ======= */
 #sidebar {
@@ -49,10 +49,10 @@
   background: var(--bg-50);
 }
 
-/* Move and rotate the arrow when collapsed */
+/* Flip the arrow horizontally when collapsed */
 #sidebar-toggle.collapsed {
   left: 0;
-  transform: rotate(180deg);
+  transform: scaleX(-1);
 }
 
 /* Logo container (h1) – tighter top and bottom margins */
