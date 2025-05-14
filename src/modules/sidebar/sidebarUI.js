@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.20 — sync child chevrons when master collapse toggles all groups
+// @version: 1.21 — clear inline visibility before collapsing so CSS can hide immediately
 
 export function setupSidebarUI({
   map,
@@ -12,7 +12,10 @@ export function setupSidebarUI({
   function animateToggle(group) {
     const container = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
-    if (isCollapsed) container.style.visibility = "visible";
+    if (isCollapsed) {
+      // expanding: ensure content is visible
+      container.style.visibility = "visible";
+    }
 
     container.style.transition = "none";
     container.style.maxHeight  = isCollapsed
@@ -22,9 +25,12 @@ export function setupSidebarUI({
     container.style.transition = "max-height 0.3s ease-in-out";
 
     if (isCollapsed) {
+      // expanding
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
     } else {
+      // collapsing: clear inline visibility so CSS rule can take effect
+      container.style.removeProperty("visibility");
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
     }
