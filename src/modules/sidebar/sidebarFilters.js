@@ -1,105 +1,89 @@
 // @file: src/modules/sidebar/sidebarFilters.js
-// @version: 1.3 — full file with imageSmall icons and all prior logic
+// @version: 1.4 — split NPC filters into hostile/friendly lists and fix selector logic
 
 import { loadItemDefinitions } from "../services/itemDefinitionsService.js";
 
 /**
  * Sets up marker filtering and populates sidebar filters.
- *
- * @param {object} params
- * @param {string} params.searchBarSelector       – selector for name-search input
- * @param {string} params.mainFiltersSelector     – selector for main filter checkbox container
- * @param {string} params.pveToggleSelector       – selector for PvE toggle checkbox
- * @param {string} params.itemFilterListSelector  – selector for item-filters container
- * @param {string} params.chestFilterListSelector – selector for chest-filters container
- * @param {string} params.npcFilterListSelector   – selector for NPC-filters container
- * @param {object<string,L.LayerGroup>} params.layers
- * @param {Array<{ markerObj: L.Marker, data: object }>} params.allMarkers
- * @param {firebase.firestore.Firestore} params.db
- *
- * @returns {{
- *   filterMarkers: () => void,
- *   loadItemFilters: () => Promise<void>
- * }}
  */
 export function setupSidebarFilters({
-  searchBarSelector       = "#search-bar",
-  mainFiltersSelector     = "#main-filters .toggle-group",
-  pveToggleSelector       = "#toggle-pve",
-  itemFilterListSelector  = "#item-filter-list",
-  chestFilterListSelector = "#chest-filter-list",
-  npcFilterListSelector   = "#npc-filter-list",
+  searchBarSelector         = "#search-bar",
+  mainFiltersSelector       = "#main-filters .toggle-group",
+  pveToggleSelector         = "#toggle-pve",
+  itemFilterListSelector    = "#item-filter-list",
+  chestFilterListSelector   = "#chest-filter-list",
+  npcHostileListSelector    = "#npc-hostile-list",
+  npcFriendlyListSelector   = "#npc-friendly-list",
   layers,
   allMarkers,
   db
 }) {
-  const searchBar      = document.querySelector(searchBarSelector);
-  const mainGroup      = document.querySelector(mainFiltersSelector);
-  const pveToggle      = document.querySelector(pveToggleSelector);
-  const itemFilterList = document.querySelector(itemFilterListSelector);
-  const chestFilterList= document.querySelector(chestFilterListSelector);
-  const npcFilterList  = document.querySelector(npcFilterListSelector);
+  const searchBar       = document.querySelector(searchBarSelector);
+  const mainGroup       = document.querySelector(mainFiltersSelector);
+  const pveToggle       = document.querySelector(pveToggleSelector);
+  const itemFilterList  = document.querySelector(itemFilterListSelector);
+  const chestFilterList = document.querySelector(chestFilterListSelector);
+  const hostileList     = document.querySelector(npcHostileListSelector);
+  const friendlyList    = document.querySelector(npcFriendlyListSelector);
 
-  // ─── Ensure main toggles for Chest, NPC, Quest, Misc ─────────────
+  // ─── Main toggles ───────────────────────────────────────────────────
   if (mainGroup) {
     const ensureToggle = (layer, labelText) => {
       if (!mainGroup.querySelector(`input[data-layer="${layer}"]`)) {
         const lbl = document.createElement("label");
         lbl.innerHTML = `<input type="checkbox" checked data-layer="${layer}"/><span>${labelText}</span>`;
         mainGroup.appendChild(lbl);
-        lbl.querySelector("input")
-           .addEventListener("change", filterMarkers);
+        lbl.querySelector("input").addEventListener("change", filterMarkers);
       }
     };
-    ensureToggle("Chest",  "Chests");
-    ensureToggle("NPC",    "NPCs");
-    ensureToggle("Quest",  "Quests");
-    ensureToggle("Misc",   "Misc");
+    ["Chest","NPC","Quest","Misc"].forEach(type => {
+      ensureToggle(type, type === "NPC" ? "NPCs" : type + (type!=="Misc" ? "s" : ""));
+    });
   }
 
-  // ─── Chest Filters tier ────────────────────────────────────────────
-  if (chestFilterList) {
-    if (!chestFilterList.querySelector("input[type=checkbox]")) {
-      const opts = [
-        { lbl: "Small",       filter: "size",     key: "Small" },
-        { lbl: "Medium",      filter: "size",     key: "Medium" },
-        { lbl: "Large",       filter: "size",     key: "Large" },
-        { lbl: "Dragonvault", filter: "category", key: "Dragonvault" },
-        { lbl: "Normal",      filter: "category", key: "Normal" }
-      ];
-      opts.forEach(o => {
-        const lbl = document.createElement("label");
-        lbl.innerHTML = `
-          <input
-            type="checkbox"
-            checked
-            data-chest-filter="${o.filter}"
-            ${o.filter==="size"     ? `data-chest-size="${o.key}"`     : ""}
-            ${o.filter==="category" ? `data-chest-category="${o.key}"` : ""}
-          />
-          <span>${o.lbl}</span>
-        `;
-        chestFilterList.appendChild(lbl);
-        lbl.querySelector("input")
-           .addEventListener("change", filterMarkers);
-      });
-    }
+  // ─── Chest Filters ──────────────────────────────────────────────────
+  if (chestFilterList && !chestFilterList.querySelector("input[type=checkbox]")) {
+    [
+      { lbl: "Small",       filter: "size",     key: "Small" },
+      { lbl: "Medium",      filter: "size",     key: "Medium" },
+      { lbl: "Large",       filter: "size",     key: "Large" },
+      { lbl: "Dragonvault", filter: "category", key: "Dragonvault" },
+      { lbl: "Normal",      filter: "category", key: "Normal" }
+    ].forEach(o => {
+      const lbl = document.createElement("label");
+      lbl.innerHTML = `
+        <input
+          type="checkbox"
+          checked
+          data-chest-filter="${o.filter}"
+          ${o.filter==="size"     ? `data-chest-size="${o.key}"`     : ""}
+          ${o.filter==="category" ? `data-chest-category="${o.key}"` : ""}
+        />
+        <span>${o.lbl}</span>
+      `;
+      chestFilterList.appendChild(lbl);
+      lbl.querySelector("input").addEventListener("change", filterMarkers);
+    });
   }
 
-  // ─── NPC Filters tier ──────────────────────────────────────────────
-  if (npcFilterList) {
-    if (!npcFilterList.querySelector("input[type=checkbox]")) {
-      ["Hostile","Friendly"].forEach(type => {
-        const lbl = document.createElement("label");
-        lbl.innerHTML = `
-          <input type="checkbox" checked data-npc-type="${type}"/>
-          <span>${type}</span>
-        `;
-        npcFilterList.appendChild(lbl);
-        lbl.querySelector("input")
-           .addEventListener("change", filterMarkers);
-      });
-    }
+  // ─── NPC Filters ────────────────────────────────────────────────────
+  if (hostileList && friendlyList &&
+      !hostileList.querySelector("input[type=checkbox]") &&
+      !friendlyList.querySelector("input[type=checkbox]")) {
+
+    ["Hostile","Friendly"].forEach(type => {
+      const lbl = document.createElement("label");
+      lbl.innerHTML = `
+        <input type="checkbox" checked data-npc-type="${type}"/>
+        <span>${type}</span>
+      `;
+      if (type === "Hostile") {
+        hostileList.appendChild(lbl);
+      } else {
+        friendlyList.appendChild(lbl);
+      }
+      lbl.querySelector("input").addEventListener("change", filterMarkers);
+    });
   }
 
   /**
@@ -113,7 +97,7 @@ export function setupSidebarFilters({
       const matchesPvE   = pveOn || data.type !== "Item";
       const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
-      // type-level visibility
+      // Main level
       let mainVisible = true;
       mainGroup.querySelectorAll("input[type=checkbox]").forEach(cb => {
         if (data.type === cb.dataset.layer && !cb.checked) {
@@ -121,7 +105,7 @@ export function setupSidebarFilters({
         }
       });
 
-      // item-specific visibility
+      // Item level
       let itemVisible = true;
       if (data.predefinedItemId) {
         const cb = itemFilterList.querySelector(
@@ -130,32 +114,29 @@ export function setupSidebarFilters({
         if (cb && !cb.checked) itemVisible = false;
       }
 
-      // chest-specific visibility
+      // Chest level
       let chestVisible = true;
-      if (data.type === "Chest" && chestFilterList) {
+      if (data.type === "Chest") {
         chestVisible = false;
         chestFilterList.querySelectorAll("input[type=checkbox]").forEach(cb => {
           const f = cb.dataset.chestFilter;
           if (
-            f === "size" &&
-            data.size === cb.dataset.chestSize &&
-            cb.checked
-          ) chestVisible = true;
-          if (
-            f === "category" &&
-            data.category === cb.dataset.chestCategory &&
-            cb.checked
+            (f === "size"     && data.size     === cb.dataset.chestSize && cb.checked) ||
+            (f === "category" && data.category === cb.dataset.chestCategory && cb.checked)
           ) chestVisible = true;
         });
       }
 
-      // NPC-specific visibility
+      // NPC level
       let npcVisible = true;
-      if (data.type === "NPC" && npcFilterList) {
+      if (data.type === "NPC") {
         npcVisible = false;
-        npcFilterList.querySelectorAll("input[type=checkbox]").forEach(cb => {
-          if (data.npcType === cb.dataset.npcType && cb.checked)
+        // choose correct list based on data.npcType
+        const list = data.npcType === "Hostile" ? hostileList : friendlyList;
+        list.querySelectorAll("input[type=checkbox]").forEach(cb => {
+          if (data.npcType === cb.dataset.npcType && cb.checked) {
             npcVisible = true;
+          }
         });
       }
 
@@ -176,8 +157,7 @@ export function setupSidebarFilters({
   // ─── Wire core events ──────────────────────────────────────────────
   searchBar?.addEventListener("input", filterMarkers);
   pveToggle?.addEventListener("change", filterMarkers);
-  mainGroup
-    .querySelectorAll("input[type=checkbox]")
+  mainGroup.querySelectorAll("input[type=checkbox]")
     .forEach(cb => cb.addEventListener("change", filterMarkers));
 
   /**
@@ -187,33 +167,28 @@ export function setupSidebarFilters({
     if (!itemFilterList) return;
     itemFilterList.innerHTML = "";
     const defs = await loadItemDefinitions(db);
-    defs
-      .filter(d => d.showInFilters)
-      .forEach(d => {
-        const lbl = document.createElement("label");
-        const cb  = document.createElement("input");
-        const img = document.createElement("img");
-        const span= document.createElement("span");
+    defs.filter(d => d.showInFilters).forEach(d => {
+      const lbl = document.createElement("label");
+      const cb  = document.createElement("input");
+      const img = document.createElement("img");
+      const span= document.createElement("span");
 
-        // Checkbox
-        cb.type           = "checkbox";
-        cb.checked        = true;
-        cb.dataset.itemId = d.id;
-        cb.addEventListener("change", filterMarkers);
+      cb.type           = "checkbox";
+      cb.checked        = true;
+      cb.dataset.itemId = d.id;
+      cb.addEventListener("change", filterMarkers);
 
-        // Icon thumbnail — use imageSmall
-        img.src       = d.imageSmall;
-        img.alt       = d.name;
-        img.className = "filter-icon";
-        img.width     = 20;
-        img.height    = 20;
+      img.src       = d.imageSmall;
+      img.alt       = d.name;
+      img.className = "filter-icon";
+      img.width     = 20;
+      img.height    = 20;
 
-        // Text
-        span.textContent = d.name;
+      span.textContent = d.name;
 
-        lbl.append(cb, img, span);
-        itemFilterList.appendChild(lbl);
-      });
+      lbl.append(cb, img, span);
+      itemFilterList.appendChild(lbl);
+    });
   }
 
   return { filterMarkers, loadItemFilters };
