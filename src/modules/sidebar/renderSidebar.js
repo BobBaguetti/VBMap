@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.5 — insert toggle button inside sidebar so it moves with transform
+// @version: 1.4 — use Font Awesome chevron icon in toggle button
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -8,19 +8,15 @@ export function renderSidebarShell() {
     return;
   }
 
-  // Remove old toggle if present
+  // Remove any old toggle button and re-insert it *before* the sidebar
   const oldToggle = document.getElementById("sidebar-toggle");
   if (oldToggle) oldToggle.remove();
-
-  // Inject the toggle button as the first child of the sidebar
   sidebar.insertAdjacentHTML(
-    "afterbegin",
+    "beforebegin",
     `<button id="sidebar-toggle" aria-label="Toggle sidebar"><i class="fas fa-chevron-left"></i></button>`
   );
 
-  sidebar.insertAdjacentHTML(
-    "beforeend",
-    `
+  sidebar.innerHTML = `
     <h1>
       <img
         src="https://res.cloudinary.com/dtty7zxjh/image/upload/v1746941747/0g_VaultbreakersLogo_Blue_Fullsize_wbaf0o.png"
