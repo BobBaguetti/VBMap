@@ -1,16 +1,16 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.12 — ensure chevron only lights on its own hover, not on header hover */
+/* @version: 1.11 — ensure collapse chevron only lights on its own hover */
 
 /* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);
+  background-color: var(--bg-30);               
   border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
   border-radius: 0;
-  margin:        0 0 0.6em;
+  margin:        0 0 0.6em;                     
   overflow:      hidden;
-  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
-  transition:    box-shadow 0.2s ease;
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   
+  transition:    box-shadow 0.2s ease;          
 }
 
 /* Hover elevation */
@@ -43,17 +43,15 @@
   color: var(--text-secondary);
 }
 
-/* Icons within header (logo, eye, chevron) */
+/* Layout for the icons appended in JS */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   margin-right: 0.5em;
   font-size: 1em;
   transition: color 0.2s ease;
-  /* ensure all start muted */
-  color: var(--text-secondary);
 }
 
-/* 1) Header-bar hover → only text & first icon (logo) light up */
+/* 1) Header-bar hover → only first icon (logo) & text light up */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
@@ -63,23 +61,22 @@
   color: var(--text-primary);
 }
 
-/* 2) Override: keep eye & chevron muted on header hover */
+/* 2) Leave .filter-eye and collapse‐chevron muted on header hover */
 .filter-group > h3:hover > .filter-eye,
 .filter-group > h4:hover > .filter-eye,
-.filter-group > h3:hover > .fa-chevron-right,
-.filter-group > h4:hover > .fa-chevron-right {
-  color: var(--text-secondary) !important;
+.filter-group > h3:hover > .collapse-all,
+.filter-group > h4:hover > .collapse-all {
+  color: var(--text-secondary);
 }
 
-/* 3) Individual hover → eye & chevron light up */
+/* 3) On their own hover, eye & chevron light up */
 .filter-group > h3 > .filter-eye:hover,
 .filter-group > h4 > .filter-eye:hover,
-.filter-group > h3 > .fa-chevron-right:hover,
-.filter-group > h4 > .fa-chevron-right:hover,
-.filter-group > h3 > .fa-chevron-down:hover,
-.filter-group > h4 > .fa-chevron-down:hover {
+.filter-group > h3 > .collapse-all:hover,
+.filter-group > h4 > .collapse-all:hover {
   color: var(--text-primary);
 }
+
 
 /* Layout of the toggles inside each group */
 .filter-group .toggle-group {
