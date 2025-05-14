@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/index.js
-// @version: 12.1 — full initSidebar with updated filter and settings wiring
+// @version: 11.0 — rename to index.js; export initSidebar; orchestrate sidebar
 
 import { setupSidebarUI }       from "./sidebarUI.js";
 import { setupSidebarSettings } from "./sidebarSettings.js";
@@ -9,8 +9,8 @@ import { setupSidebarAdmin }    from "./sidebarAdmin.js";
 /**
  * Bootstraps the application sidebar:
  *  1) Basic UI (search, mobile toggle, sticky header, group & master toggles)
- *  2) Settings modal (marker grouping, small markers)
- *  3) Filters (search, PvE, Main, Chest, NPC, Item)
+ *  2) Settings section (marker grouping, small markers)
+ *  3) Filters (search, PvE, layer & item/chest/NPC filters)
  *  4) Admin tools buttons
  *
  * @param {object} params
@@ -18,7 +18,7 @@ import { setupSidebarAdmin }    from "./sidebarAdmin.js";
  * @param {object<string,L.LayerGroup>} params.layers
  * @param {Array<{markerObj: L.Marker, data: object}>} params.allMarkers
  * @param {firebase.firestore.Firestore} params.db
- * @param {object}  params.opts                       – behavior hooks
+ * @param {object}  params.opts                        – behavior hooks
  * @param {() => void} params.opts.enableGrouping
  * @param {() => void} params.opts.disableGrouping
  *
@@ -33,32 +33,38 @@ export async function initSidebar(
   // 1) Basic UI wiring
   setupSidebarUI({ map });
 
-  // 2) Settings modal (toolbar button)
-  setupSidebarSettings({ enableGrouping, disableGrouping });
+  // 2) Settings Section
+  const settingsSect = document.getElementById("settings-section");
+  if (!settingsSect) {
+    console.warn("[sidebar] Missing settings section");
+    return { filterMarkers() {}, loadItemFilters: async () => {} };
+  }
+  setupSidebarSettings(settingsSect, { enableGrouping, disableGrouping });
 
-  // 3) Filters
-  //    Pass only the selectors and data needed by the filters module.
+  // 3) Filtering Section
   const { filterMarkers, loadItemFilters } = setupSidebarFilters({
-    mainFiltersSelector:     "#main-filters .toggle-group",
-    chestFilterListSelector: "#chest-filter-list",
-    npcHostileListSelector:  "#npc-hostile-list",
-    npcFriendlyListSelector: "#npc-friendly-list",
-    itemFilterListSelector:  "#item-filter-list",
+    searchBarSelector:      "#search-bar",
+    mainFiltersSelector:    "#main-filters .toggle-group",
+    pveToggleSelector:      "#toggle-pve",
+    itemFilterListSelector: "#item-filter-list",
+    chestFilterListSelector:"#chest-filter-list",
+    npcFilterListSelector:  "#npc-hostile-list, #npc-friendly-list",
     layers,
     allMarkers,
     db
   });
-  // Load the async item filters, then perform an initial draw
   await loadItemFilters();
-  filterMarkers();
 
-  // 4) Admin tools
-  const sidebarEl = document.getElementById("sidebar");
-  if (!sidebarEl) {
+  // 4) Admin Tools
+  const sidebar = document.getElementById("sidebar");
+  if (!sidebar) {
     console.warn("[sidebar] Missing sidebar container");
   } else {
-    setupSidebarAdmin(sidebarEl, db);
+    setupSidebarAdmin(sidebar, db);
   }
+
+  // 5) Initial draw
+  filterMarkers();
 
   return { filterMarkers, loadItemFilters };
 }

@@ -1,76 +1,45 @@
 // @file: src/modules/sidebar/sidebarSettings.js
-// @version: 1.1 — render settings toggles in a modal opened by the toolbar button
+// @version: 1.0 — extract Settings toggles into its own module
 
 /**
- * Sets up the Settings modal and wires the Settings button.
+ * Render and wire the “Settings” toggles in the sidebar.
  *
- * @param {object} callbacks
- * @param {() => void} callbacks.enableGrouping
- * @param {() => void} callbacks.disableGrouping
+ * @param {HTMLElement} settingsSect — the <section id="settings-section"> element
+ * @param {{
+ *   enableGrouping: () => void,
+ *   disableGrouping: () => void
+ * }} callbacks
  */
-export function setupSidebarSettings({ enableGrouping, disableGrouping }) {
-  const btnSettings = document.getElementById("btn-settings");
-  if (!btnSettings) {
-    console.warn("[sidebarSettings] Settings button not found");
-    return;
-  }
+export function setupSidebarSettings(settingsSect, { enableGrouping, disableGrouping }) {
+  // Clear any existing labels
+  settingsSect.querySelectorAll("label").forEach(l => l.remove());
 
-  // Create modal container (hidden by default)
-  let modal;
-  function createModal() {
-    modal = document.createElement("div");
-    modal.id = "settings-modal";
-    modal.classList.add("modal", "hidden");
-    modal.innerHTML = `
-      <div class="modal-content">
-        <header>
-          <h3>Settings</h3>
-          <button id="settings-close" aria-label="Close">&times;</button>
-        </header>
-        <div class="modal-body">
-          <label>
-            <input type="checkbox" id="enable-grouping"/>
-            <span>Enable Marker Grouping</span>
-          </label>
-          <label>
-            <input type="checkbox" id="toggle-small-markers"/>
-            <span>Small Markers (50%)</span>
-          </label>
-        </div>
-      </div>
-      <div class="modal-backdrop"></div>
-    `;
-    document.body.append(modal);
+  // — Enable Marker Grouping toggle —
+  const groupingLabel = document.createElement("label");
+  groupingLabel.innerHTML = `
+    <input type="checkbox" id="enable-grouping" />
+    <span>Enable Marker Grouping</span>
+  `;
+  settingsSect.appendChild(groupingLabel);
+  const groupingCb = document.getElementById("enable-grouping");
+  groupingCb.checked = false;
+  groupingCb.addEventListener("change", () => {
+    console.log("[sidebarSettings] marker grouping:", groupingCb.checked);
+    groupingCb.checked ? enableGrouping() : disableGrouping();
+  });
 
-    // Wire close
-    modal.querySelector("#settings-close")
-      .addEventListener("click", hideModal);
-    modal.querySelector(".modal-backdrop")
-      .addEventListener("click", hideModal);
-
-    // Wire toggles
-    const groupingCb = modal.querySelector("#enable-grouping");
-    groupingCb.checked = false;
-    groupingCb.addEventListener("change", () => {
-      groupingCb.checked ? enableGrouping() : disableGrouping();
-    });
-
-    const smallCb = modal.querySelector("#toggle-small-markers");
-    smallCb.checked = false;
-    smallCb.addEventListener("change", () => {
-      document.getElementById("map")
-        .classList.toggle("small-markers", smallCb.checked);
-    });
-  }
-
-  function showModal() {
-    if (!modal) createModal();
-    modal.classList.remove("hidden");
-  }
-
-  function hideModal() {
-    modal.classList.add("hidden");
-  }
-
-  btnSettings.addEventListener("click", showModal);
+  // — Small Markers (50%) toggle —
+  const smallLabel = document.createElement("label");
+  smallLabel.innerHTML = `
+    <input type="checkbox" id="toggle-small-markers" />
+    <span>Small Markers (50%)</span>
+  `;
+  settingsSect.appendChild(smallLabel);
+  const smallCb = document.getElementById("toggle-small-markers");
+  smallCb.checked = false;
+  smallCb.addEventListener("change", () => {
+    console.log("[sidebarSettings] small markers:", smallCb.checked);
+    document.getElementById("map")
+      .classList.toggle("small-markers", smallCb.checked);
+  });
 }
