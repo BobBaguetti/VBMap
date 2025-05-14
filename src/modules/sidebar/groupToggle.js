@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/groupToggle.js
-// @version: 1.1 — sync group-eye icons when individual filters change
+// @version: 1.2 — added reappearOffset parameter; delay entry visibility on expand
 
 /**
  * Initialize per-group collapse/expand chevrons and eye toggles.
@@ -7,14 +7,16 @@
  * @param {object} params
  * @param {string}   params.filterGroupSelector      – selector for filter-group containers
  * @param {number}   params.collapseDuration         – collapse animation duration in ms
- * @param {number}   params.prehideOffset            – ms before end to hide content
+ * @param {number}   params.prehideOffset            – ms before end to hide content when collapsing
+ * @param {number}   params.reappearOffset           – ms after start to show content when expanding
  * @param {function} params.onUpdateMasterCollapse   – callback after any group toggles collapse
  * @param {function} params.onUpdateMasterEye        – callback after any group toggles eye
  */
 export function setupGroupToggle({
   filterGroupSelector    = ".filter-group",
   collapseDuration       = 300,
-  prehideOffset          = 68,
+  prehideOffset          = 0,
+  reappearOffset         = 0,
   onUpdateMasterCollapse = () => {},
   onUpdateMasterEye      = () => {}
 }) {
@@ -22,6 +24,12 @@ export function setupGroupToggle({
   function animateToggle(group) {
     const container   = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
+
+    // reset any existing timers on this container
+    if (container._reappearTimer) {
+      clearTimeout(container._reappearTimer);
+      container._reappearTimer = null;
+    }
 
     container.style.transition = "none";
     container.style.maxHeight  = isCollapsed
@@ -31,10 +39,17 @@ export function setupGroupToggle({
     container.style.transition = `max-height ${collapseDuration}ms ease-in-out`;
 
     if (isCollapsed) {
-      container.style.visibility = "visible";
+      // EXPANDING: start hidden, then reveal after reappearOffset
+      container.style.visibility = "hidden";
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
+
+      container._reappearTimer = setTimeout(() => {
+        container.style.visibility = "visible";
+        container._reappearTimer = null;
+      }, reappearOffset);
     } else {
+      // COLLAPSING: hide at end minus prehideOffset
       container.style.removeProperty("visibility");
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
@@ -101,7 +116,7 @@ export function setupGroupToggle({
       onUpdateMasterEye();
     });
 
-    // NEW: sync this group's eye icon when any individual checkbox changes
+    // sync this group's eye icon when any individual checkbox changes
     group.querySelectorAll(".toggle-group input[type=checkbox]").forEach(cb => {
       cb.addEventListener("change", () => {
         const anyOn = Array.from(
