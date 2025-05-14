@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.1 — add drop-shadow under filter group headers for visual depth */
+/* @version: 1.2 — switch to subtle darker underline for separation */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -15,14 +15,11 @@
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border-soft);
+  /* Thicker, darker bottom border for clear separation */
+  border-bottom: 2px solid var(--bg-10);
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary); /* default muted text & icons */
-
-  /* add subtle shadow underneath to lift header above its container */
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-  z-index: 1; /* ensure header sits above the group content */
 }
 
 /* Layout for icons appended via JS */
