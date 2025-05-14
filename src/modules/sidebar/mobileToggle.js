@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/mobileToggle.js
-// @version: 1.1 — inject Font Awesome chevron toggle button & switch icons on open/close
+// @version: 1.2 — toggle `.hidden` to match CSS and invert icon logic
 
 /**
  * Sets up the mobile sidebar open/close toggle button,
@@ -23,22 +23,22 @@ export function setupSidebarMobileToggle({
   toggleButton.id = "sidebar-toggle";
   toggleButton.setAttribute("aria-label", "Toggle sidebar");
   toggleButton.classList.add("sidebar-toggle");
-  // start closed: show "chevron-right"
-  toggleButton.innerHTML = `<i class="fas fa-chevron-right" aria-hidden="true"></i>`;
+  // start visible: show "chevron-left" (sidebar open → can collapse)
+  toggleButton.innerHTML = `<i class="fas fa-chevron-left" aria-hidden="true"></i>`;
   
   // Insert button before sidebar in the DOM
   sidebar.parentNode.insertBefore(toggleButton, sidebar);
 
-  // Click handler: toggle .open and swap icon
+  // Click handler: toggle .hidden and swap icon
   toggleButton.addEventListener("click", () => {
-    const isOpen = sidebar.classList.toggle("open");
+    const isHidden = sidebar.classList.toggle("hidden");
     const icon = toggleButton.querySelector("i");
-    if (isOpen) {
-      // now open → show left chevron
-      icon.classList.replace("fa-chevron-right", "fa-chevron-left");
-    } else {
-      // now closed → show right chevron
+    if (isHidden) {
+      // sidebar is now hidden → show right chevron to open
       icon.classList.replace("fa-chevron-left", "fa-chevron-right");
+    } else {
+      // sidebar is now visible → show left chevron to collapse
+      icon.classList.replace("fa-chevron-right", "fa-chevron-left");
     }
   });
 }
