@@ -1,7 +1,0 @@
-/* @file: styles/sidebar/filter-group/filter-group.css */
-/* @version: 1.3 — switched to url() imports to fix resolution */
-
-@import url("./header.css");
-@import url("./body.css");
-@import url("./states.css");
-

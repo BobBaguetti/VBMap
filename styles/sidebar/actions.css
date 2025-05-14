@@ -1,21 +1,23 @@
-/* @file: styles/sidebar/master.css */
-/* @version: 1.1 — hide old toggle-all link; master eye & collapse-all chevron styling */
+/* @file: styles/sidebar/actions.css */
+/* @version: 1.14 — inline master “eye” next to header text */
 
-/* Hide the old “Toggle All” link (if it exists) */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+
+/* Hide the old “Toggle All” link entirely */
 #filters-section > h2 .toggle-all {
   display: none !important;
 }
 
-/* Make the H2 a positioning context for the collapse chevron */
+/* Ensure the H2 is a positioning context for the collapse chevron */
 #filters-section > h2 {
   position: relative;
-  padding-right: 2em; /* reserve space for the chevron */
+  padding-right: 2em;           /* reserve space for the chevron */
 }
 
 /* Inline master “eye” icon next to the “Filters” text */
 #filters-section > h2 .filter-eye {
-  position: static !important;
-  margin-left: 0.5em !important;
+  position: static !important;  /* override any absolute positioning */
+  margin-left: 0.5em !important;/* same spacing as group-level eyes */
   color: var(--text-secondary);
   font-size: 0.9em;
   cursor: pointer;
@@ -26,7 +28,7 @@
   color: var(--text-primary);
 }
 
-/* Position and style the JS-injected collapse-all chevron */
+/* Position the JS-injected collapse button (<i class="collapse-all">) */
 #filters-section > h2 .collapse-all {
   position: absolute;
   right: 0.6em;
@@ -40,3 +42,5 @@
 #filters-section > h2 .collapse-all:hover {
   color: var(--text-primary);
 }
+
+/* — End of file — */
