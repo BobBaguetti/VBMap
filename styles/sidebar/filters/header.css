@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.4 — apply subtle top‐to‐bottom gradient to group headers */
+/* @version: 1.5 — stronger contrast gradient for filter‐group headers */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -16,16 +16,14 @@
   text-transform: uppercase;
   letter-spacing: 0.05em;
 
-  /* subtle gradient from slightly darker to normal */
+  /* stronger gradient from darker bg-30 down to bg-20 for clear lift */
   background: linear-gradient(
     to bottom,
-    var(--bg-25) 0%,
+    var(--bg-30) 0%,
     var(--bg-20) 100%
   );
 
-  /* keep a light separator at the bottom */
   border-bottom: 1px solid var(--border-soft);
-
   cursor: pointer;
   color: var(--text-secondary); /* default muted text & icons */
 }
