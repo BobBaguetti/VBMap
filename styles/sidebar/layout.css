@@ -1,9 +1,11 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.10 — remove legacy .hidden; standardize on .collapsed */
+/* @version: 1.11 — pin toggle to inside-right when open; slide to viewport edge when collapsed */
 
 /* ======= Sidebar container ======= */
 #sidebar {
-  --sidebar-width: 380px;
+  --sidebar-width: 380px;     /* sidebar full width */
+  --toggle-size: 30px;        /* width/height of the toggle button */
+
   font-family: 'Satoshi', sans-serif;
   width: var(--sidebar-width);
   height: 100vh;
@@ -36,24 +38,26 @@
 
 /* ======= Toggle button ======= */
 #sidebar-toggle {
+  --size: var(--toggle-size);
   position: absolute;
   top: 10px;
-  left: var(--sidebar-width);
-  z-index: 1100;
-  width: 30px;
-  height: 30px;
+  /* inside-right of open sidebar: sidebar width minus button width */
+  left: calc(var(--sidebar-width) - var(--size));
+  width: var(--size);
+  height: var(--size);
   background: var(--bg-40);
   border: none;
   color: var(--text-primary);
   cursor: pointer;
   transition: left 0.3s ease, background 0.2s ease;
+  z-index: 1100;
 }
 
 #sidebar-toggle:hover {
   background: var(--bg-50);
 }
 
-/* Move toggle button when sidebar is collapsed */
+/* When sidebar is collapsed, slide toggle back to the viewport edge */
 #sidebar.collapsed + #sidebar-toggle {
   left: 0;
 }
@@ -65,6 +69,7 @@
   font-family: 'Satoshi', sans-serif;
 }
 
+/* Logo image sizing and centering */
 #sidebar > h1 > img {
   display: block;
   margin: 0 auto;
@@ -73,6 +78,7 @@
   height: auto;
 }
 
+/* Subtitle styling */
 #sidebar .sidebar-logo__subtitle {
   margin: 2px 0 4px;
   font-size: 12px;

@@ -1,25 +1,27 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.3 — add click listener for sidebar collapse/expand toggle
+// @version: 1.4 — insert sidebar-toggle after #sidebar; preserve collapse logic
 
 export function renderSidebarShell() {
   // 1) Ensure the sidebar-toggle button exists, inserting it if not
   let toggleBtn = document.getElementById("sidebar-toggle");
-  if (!toggleBtn) {
-    toggleBtn = document.createElement("button");
-    toggleBtn.id = "sidebar-toggle";
-    toggleBtn.textContent = "◀︎";
-    toggleBtn.className = "sidebar-toggle-button";
-    // Insert it at the very top of the body
-    document.body.insertBefore(toggleBtn, document.body.firstChild);
-  }
-
-  // 2) Populate the sidebar container
+  
+  // Grab sidebar early so we can place the toggle beside it
   const sidebar = document.getElementById("sidebar");
   if (!sidebar) {
     console.warn("[renderSidebarShell] #sidebar element not found");
     return;
   }
+  
+  if (!toggleBtn) {
+    toggleBtn = document.createElement("button");
+    toggleBtn.id = "sidebar-toggle";
+    toggleBtn.textContent = "◀︎";
+    // No need for extra class; styling targets #sidebar-toggle
+    // Insert *after* the sidebar element so CSS sibling selector works
+    sidebar.insertAdjacentElement("afterend", toggleBtn);
+  }
 
+  // 2) Populate the sidebar container
   sidebar.innerHTML = `
     <h1>
       <img
@@ -110,8 +112,8 @@ export function renderSidebarShell() {
   `.trim();
 
   // 3) Wire up the collapse/expand toggle
-  toggleBtn.addEventListener("click", () => {
+  toggleBtn.onclick = () => {
     sidebar.classList.toggle("collapsed");
     toggleBtn.textContent = sidebar.classList.contains("collapsed") ? "▶︎" : "◀︎";
-  });
+  };
 }
