@@ -1,0 +1,36 @@
+/* @file: styles/app.css */
+/* @version: 1.0 — Consolidated stylesheet for entire app */
+
+/* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
+@import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
+@import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css");
+@import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css");
+
+/* ── Third-party themes & icons ───────────────────────────────────────── */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+@import url("https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css");
+@import url("https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css");
+
+/* ── Core UI styles ──────────────────────────────────────────────────── */
+@import "base.css";
+@import "ui.css";
+@import "context-menu.css";
+@import "custom-markers.css";
+@import "popup.css";
+
+/* ── Sidebar ─────────────────────────────────────────────────────────── */
+@import "sidebar/index.css";
+
+/* ── Modals ──────────────────────────────────────────────────────────── */
+@import "modals/modal.base.css";
+@import "modals/modal.small.css";
+@import "modals/modal.large.css";
+@import "modals/inventory.css";
+
+/* ── Preview panels ─────────────────────────────────────────────────── */
+@import "preview/previewPanel.css";
+@import "preview/itemPreview.css";
+@import "preview/chestPreview.css";
+
+/* ── Dark-mode theme tokens ──────────────────────────────────────────── */
+@import "themes/darkmode.css";
