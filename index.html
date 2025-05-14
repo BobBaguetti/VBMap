@@ -1,5 +1,6 @@
 <!-- @file: index.html -->
-<!-- @version: 36 — added FontAwesome icons to Main filter entries -->
+<!-- @version: 37 — sidebar markup moved to renderSidebarShell.js -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -60,119 +61,8 @@
   <!-- Sidebar Toggle -->
   <button id="sidebar-toggle">◀︎</button>
 
-  <!-- Sidebar -->
-  <div id="sidebar">
-    <h1>
-      <img
-        src="https://res.cloudinary.com/dtty7zxjh/image/upload/v1746941747/0g_VaultbreakersLogo_Blue_Fullsize_wbaf0o.png"
-        alt="Vaultbreakers Map Logo"
-      />
-    </h1>
-    <p class="sidebar-logo__subtitle">vaultbreakers interactive map</p>
-
-    <!-- STICKY SEARCH -->
-    <div id="sidebar-search" class="sidebar-section">
-      <h2><i class="fas fa-search"></i> Search</h2>
-      <div class="search-wrapper">
-        <input type="search" id="search-bar" placeholder="Search items/locations…"/>
-        <button id="search-clear" aria-label="Clear search">&times;</button>
-      </div>
-      <hr/>
-    </div>
-
-    <!-- FILTERS -->
-    <div class="sidebar-section" id="filters-section">
-      <h2><i class="fas fa-filter"></i> Filters</h2>
-
-      <!-- Main layer toggles -->
-      <div class="filter-group" id="main-filters">
-        <h3><i class="fas fa-layer-group group-icon"></i>Main</h3>
-        <div class="toggle-group">
-          <label>
-            <input type="checkbox" checked data-layer="Door"/>
-            <i class="fas fa-door-closed filter-icon"></i>
-            <span>Door</span>
-          </label>
-          <label>
-            <input type="checkbox" checked data-layer="Extraction Portal"/>
-            <i class="fas fa-right-from-bracket filter-icon"></i>
-            <span>Extraction Portal</span>
-          </label>
-          <label>
-            <input type="checkbox" checked data-layer="Item"/>
-            <i class="fas fa-box-open filter-icon"></i>
-            <span>Item</span>
-          </label>
-          <label>
-            <input type="checkbox" checked data-layer="Teleport"/>
-            <i class="fas fa-magic filter-icon"></i>
-            <span>Teleport</span>
-          </label>
-          <label>
-            <input type="checkbox" checked data-layer="Spawn Point"/>
-            <i class="fas fa-map-marker-alt filter-icon"></i>
-            <span>Spawn Points</span>
-          </label>
-          <label>
-            <input type="checkbox" checked data-layer="Quest"/>
-            <i class="fas fa-scroll filter-icon"></i>
-            <span>Quests</span>
-          </label>
-          <label>
-            <input type="checkbox" checked data-layer="Misc"/>
-            <i class="fas fa-ellipsis-h filter-icon"></i>
-            <span>Misc</span>
-          </label>
-          <label>
-            <input type="checkbox" checked data-layer="NPC"/>
-            <i class="fas fa-user filter-icon"></i>
-            <span>NPCs</span>
-          </label>
-        </div>
-      </div>
-
-      <!-- Item filters -->
-      <div class="filter-group" id="item-filters">
-        <h3><i class="fas fa-box-open group-icon"></i>Items</h3>
-        <div class="toggle-group" id="item-filter-list"><!-- dynamic --></div>
-      </div>
-
-      <!-- Chest filters -->
-      <div class="filter-group" id="chest-filters">
-        <h3><i class="fas fa-dungeon group-icon"></i>Chests</h3>
-        <div class="toggle-group" id="chest-filter-list"><!-- dynamic --></div>
-      </div>
-
-      <!-- NPC filters -->
-      <div class="filter-group" id="npc-hostile-filters">
-        <h3><i class="fas fa-skull-crossbones group-icon"></i>Hostile NPCs</h3>
-        <div class="toggle-group" id="npc-hostile-list"><!-- dynamic --></div>
-      </div>
-
-      <div class="filter-group" id="npc-friendly-filters">
-        <h3><i class="fas fa-user-friends group-icon"></i>Friendly NPCs</h3>
-        <div class="toggle-group" id="npc-friendly-list"><!-- dynamic --></div>
-      </div>
-    </div>
-
-    <!-- SETTINGS -->
-    <div class="sidebar-section" id="settings-section">
-      <h2><i class="fas fa-cog"></i> Settings</h2>
-      <div class="toggle-group">
-        <label><input type="checkbox" id="toggle-grouping"/><span>Enable Marker Grouping</span></label>
-        <label><input type="checkbox" id="toggle-small-markers"/><span>Small Markers (50%)</span></label>
-      </div>
-    </div>
-
-    <!-- ADMIN TOOLS -->
-    <div class="sidebar-section" id="admin-tools-section">
-      <h2><i class="fas fa-tools"></i> Admin Tools</h2>
-      <div class="toggle-group">
-        <button id="manage-items-btn">Manage Items</button>
-        <button id="manage-chests-btn">Manage Chests</button>
-      </div>
-    </div>
-  </div>
+  <!-- Sidebar container (populated by renderSidebarShell.js) -->
+  <div id="sidebar"></div>
 
   <!-- Map -->
   <div id="map"></div>

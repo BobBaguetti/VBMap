@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.0 — renders sidebar skeleton (logo, toolbar, search & empty filters)
+// @version: 1.1 — include Settings section & seed filter‐group headers
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -43,12 +43,48 @@ export function renderSidebarShell() {
     <div class="sidebar-section" id="filters-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
 
-      <!-- skeleton filter-groups; JS will populate contents -->
-      <div class="filter-group" id="main-filters"><h3><!-- injected --></h3><div class="toggle-group"></div></div>
-      <div class="filter-group" id="item-filters"><h3></h3><div class="toggle-group" id="item-filter-list"></div></div>
-      <div class="filter-group" id="chest-filters"><h3></h3><div class="toggle-group" id="chest-filter-list"></div></div>
-      <div class="filter-group" id="npc-hostile-filters"><h3></h3><div class="toggle-group" id="npc-hostile-list"></div></div>
-      <div class="filter-group" id="npc-friendly-filters"><h3></h3><div class="toggle-group" id="npc-friendly-list"></div></div>
+      <!-- Main layer toggles -->
+      <div class="filter-group" id="main-filters">
+        <h3><i class="fas fa-layer-group group-icon"></i>Main</h3>
+        <div class="toggle-group"></div>
+      </div>
+
+      <!-- Item filters -->
+      <div class="filter-group" id="item-filters">
+        <h3><i class="fas fa-box-open group-icon"></i>Items</h3>
+        <div class="toggle-group" id="item-filter-list"></div>
+      </div>
+
+      <!-- Chest filters -->
+      <div class="filter-group" id="chest-filters">
+        <h3><i class="fas fa-dungeon group-icon"></i>Chests</h3>
+        <div class="toggle-group" id="chest-filter-list"></div>
+      </div>
+
+      <!-- NPC filters -->
+      <div class="filter-group" id="npc-hostile-filters">
+        <h3><i class="fas fa-skull-crossbones group-icon"></i>Hostile NPCs</h3>
+        <div class="toggle-group" id="npc-hostile-list"></div>
+      </div>
+      <div class="filter-group" id="npc-friendly-filters">
+        <h3><i class="fas fa-user-friends group-icon"></i>Friendly NPCs</h3>
+        <div class="toggle-group" id="npc-friendly-list"></div>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div class="sidebar-section" id="settings-section">
+      <h2><i class="fas fa-cog"></i> Settings</h2>
+      <div class="toggle-group">
+        <label>
+          <input type="checkbox" id="toggle-grouping"/>
+          <span>Enable Marker Grouping</span>
+        </label>
+        <label>
+          <input type="checkbox" id="toggle-small-markers"/>
+          <span>Small Markers (50%)</span>
+        </label>
+      </div>
     </div>
 
     <!-- ADMIN TOOLS -->
