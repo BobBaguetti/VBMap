@@ -1,19 +1,16 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.11 — pin toggle to inside-right when open; slide to viewport edge when collapsed */
+/* @version: 1.8 */
 
 /* ======= Sidebar container ======= */
 #sidebar {
-  --sidebar-width: 380px;     /* sidebar full width */
-  --toggle-size: 30px;        /* width/height of the toggle button */
-
   font-family: 'Satoshi', sans-serif;
-  width: var(--sidebar-width);
+  width: 380px;
   height: 100vh;
   position: absolute;
   top: 0;
   left: 0;
-  background-color: var(--bg-10);
-  color: var(--text-primary);
+  background-color: var(--bg-10);   /* was #222 */
+  color: var(--text-primary);       /* was #e5e6e8 */
   padding: 8px;
   box-sizing: border-box;
   overflow-y: auto;
@@ -22,54 +19,46 @@
   z-index: 1000;
 
   /* Hide scrollbar, without reserving space */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE 10+ */
 }
 
 #sidebar::-webkit-scrollbar {
-  width: 0;
+  width: 0;                    /* Chrome, Safari, Opera */
   height: 0;
 }
 
-/* Collapsed state: slide sidebar off-screen */
-#sidebar.collapsed {
+#sidebar.hidden {
   transform: translateX(-100%);
 }
 
 /* ======= Toggle button ======= */
 #sidebar-toggle {
-  --size: var(--toggle-size);
   position: absolute;
   top: 10px;
-  /* inside-right of open sidebar: sidebar width minus button width */
-  left: calc(var(--sidebar-width) - var(--size));
-  width: var(--size);
-  height: var(--size);
-  background: var(--bg-40);
+  left: 380px;
+  z-index: 1100;
+  width: 30px;
+  height: 30px;
+  background: var(--bg-40);    /* was #333 */
   border: none;
-  color: var(--text-primary);
+  color: var(--text-primary);  /* was #e5e6e8 */
   cursor: pointer;
   transition: left 0.3s ease, background 0.2s ease;
-  z-index: 1100;
 }
 
 #sidebar-toggle:hover {
-  background: var(--bg-50);
+  background: var(--bg-50);    /* was #444 */
 }
 
-/* When sidebar is collapsed, slide toggle back to the viewport edge */
-#sidebar.collapsed + #sidebar-toggle {
-  left: 0;
-}
-
-/* ======= Logo container (h1) ======= */
+/* Logo container (h1) – tighter top and bottom margins */
 #sidebar > h1 {
   margin: 0.25em 0;
   text-align: center;
   font-family: 'Satoshi', sans-serif;
 }
 
-/* Logo image sizing and centering */
+/* Logo image sizing and centering – larger max size */
 #sidebar > h1 > img {
   display: block;
   margin: 0 auto;
@@ -78,7 +67,7 @@
   height: auto;
 }
 
-/* Subtitle styling */
+/* Subtitle styling – reduced spacing */
 #sidebar .sidebar-logo__subtitle {
   margin: 2px 0 4px;
   font-size: 12px;
