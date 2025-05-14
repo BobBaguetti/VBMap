@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.11 — ensure only logo/text light on header hover; all other icons stay muted unless hovered */
+/* @version: 1.12 — ensure collapse/expand chevrons stay muted on header hover */
 
 /* Container for each card-style filter group */
 .filter-group {
@@ -67,12 +67,19 @@
   color: var(--text-secondary);
 }
 
+/* 2b) Collapse/expand chevrons stay muted on header hover */
+.filter-group > h3:hover .fa-chevron-right,
+.filter-group > h3:hover .fa-chevron-down,
+.filter-group > h4:hover .fa-chevron-right,
+.filter-group > h4:hover .fa-chevron-down {
+  color: var(--text-secondary);
+}
+
 /* 3) On their own hover, each icon lights up */
 .filter-group > h3 > i:hover,
 .filter-group > h4 > i:hover {
   color: var(--text-primary);
 }
-
 
 /* Layout of the toggles inside each group */
 .filter-group .toggle-group {
