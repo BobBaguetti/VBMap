@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.14 — use button’s `.collapsed` class to slide it, remove sibling selector */
+/* @version: 1.15 — position toggle inside sidebar so it moves with transform */
 
 /* ======= Sidebar container ======= */
 #sidebar {
@@ -9,22 +9,22 @@
   position: absolute;
   top: 0;
   left: 0;
-  background-color: var(--bg-10);
-  color: var(--text-primary);
+  background-color: var(--bg-10);   /* was #222 */
+  color: var(--text-primary);       /* was #e5e6e8 */
   padding: 8px;
   box-sizing: border-box;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible; /* allow button to peek out */
   transition: transform 0.3s ease;
   z-index: 1000;
 
   /* Hide scrollbar, without reserving space */
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE 10+ */
 }
 
 #sidebar::-webkit-scrollbar {
-  width: 0;
+  width: 0;                    /* Chrome, Safari, Opera */
   height: 0;
 }
 
@@ -32,38 +32,34 @@
   transform: translateX(-100%);
 }
 
-/* ======= Toggle button ======= */
-#sidebar-toggle {
-  position: fixed;        /* stays fixed relative to viewport */
+/* ======= Toggle button inside sidebar ======= */
+#sidebar > #sidebar-toggle {
+  position: absolute;
   top: 10px;
-  left: 380px;            /* aligned to sidebar’s right edge */
-  z-index: 1100;
+  right: -30px;     /* sticks out from sidebar’s right edge */
   width: 30px;
   height: 30px;
   background: var(--bg-40);
   border: none;
-  color: var(--text-primary);
   cursor: pointer;
-  transition: left 0.3s ease, background 0.2s ease;
+  transition: none;  /* no movement; sidebar transform moves it */
+  z-index: 1100;
 }
 
-#sidebar-toggle:hover {
+#sidebar > #sidebar-toggle:hover {
   background: var(--bg-50);
 }
 
-/* Slide the button when it has .collapsed (controlled by JS) */
-#sidebar-toggle.collapsed {
-  left: 0;
-}
+/* Icon swap handled by JS toggling <i> classes */
 
-/* ======= Logo container (h1) ======= */
+/* ======= Logo container (h1) – tighter top and bottom margins ======= */
 #sidebar > h1 {
   margin: 0.25em 0;
   text-align: center;
   font-family: 'Satoshi', sans-serif;
 }
 
-/* ======= Logo image sizing and centering ======= */
+/* ======= Logo image sizing and centering – larger max size ======= */
 #sidebar > h1 > img {
   display: block;
   margin: 0 auto;
@@ -72,7 +68,7 @@
   height: auto;
 }
 
-/* ======= Subtitle styling ======= */
+/* ======= Subtitle styling – reduced spacing ======= */
 #sidebar .sidebar-logo__subtitle {
   margin: 2px 0 4px;
   font-size: 12px;
