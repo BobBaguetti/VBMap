@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.11 — position toggle button inside sidebar, full file */
+/* @version: 1.12 — allow horizontal overflow so toggle button isn’t clipped */
 
 /* ======= Sidebar container ======= */
 #sidebar {
@@ -9,22 +9,22 @@
   position: absolute;
   top: 0;
   left: 0;
-  background-color: var(--bg-10);   /* was #222 */
-  color: var(--text-primary);       /* was #e5e6e8 */
+  background-color: var(--bg-10);
+  color: var(--text-primary);
   padding: 8px;
   box-sizing: border-box;
   overflow-y: auto;
-  overflow-x: hidden;
+  overflow-x: visible;    /* changed from hidden to visible */
   transition: transform 0.3s ease;
   z-index: 1000;
 
   /* Hide scrollbar, without reserving space */
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE 10+ */
+  scrollbar-width: none;  /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
 }
 
 #sidebar::-webkit-scrollbar {
-  width: 0;                    /* Chrome, Safari, Opera */
+  width: 0;
   height: 0;
 }
 
@@ -34,33 +34,33 @@
 
 /* ======= Toggle button ======= */
 #sidebar-toggle {
-  position: absolute;    /* now inside sidebar */
+  position: absolute;
   top: 10px;
-  right: -30px;          /* just outside the sidebar’s right edge */
+  right: -30px;
   z-index: 1100;
   width: 30px;
   height: 30px;
-  background: var(--bg-40);    /* was #333 */
+  background: var(--bg-40);
   border: none;
-  color: var(--text-primary);  /* was #e5e6e8 */
+  color: var(--text-primary);
   cursor: pointer;
   transition: background 0.2s ease;
 }
 
 #sidebar-toggle:hover {
-  background: var(--bg-50);    /* was #444 */
+  background: var(--bg-50);
 }
 
 /* Icon swap handled by JS toggling <i> classes */
 
-/* ======= Logo container (h1) – tighter top and bottom margins ======= */
+/* ======= Logo container (h1) ======= */
 #sidebar > h1 {
   margin: 0.25em 0;
   text-align: center;
   font-family: 'Satoshi', sans-serif;
 }
 
-/* ======= Logo image sizing and centering – larger max size ======= */
+/* ======= Logo image sizing and centering ======= */
 #sidebar > h1 > img {
   display: block;
   margin: 0 auto;
@@ -69,7 +69,7 @@
   height: auto;
 }
 
-/* ======= Subtitle styling – reduced spacing ======= */
+/* ======= Subtitle styling ======= */
 #sidebar .sidebar-logo__subtitle {
   margin: 2px 0 4px;
   font-size: 12px;
