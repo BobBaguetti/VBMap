@@ -1,7 +1,7 @@
 /* @file: styles/sidebar/admin.css */
-/* @version: 1.0 — styling for the “Admin Tools” panel */
+/* @version: 1.1 — fixed import path for section-headers */
 
-@import "../section-headers.css";
+@import "./section-headers.css";
 
 /* Grid layout for Admin Tools buttons */
 #admin-tools-section .toggle-group {
