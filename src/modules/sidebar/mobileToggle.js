@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/mobileToggle.js
-// @version: 1.3 — swap chevron icon classes instead of rotating button
+// @version: 1.0 — extracted mobile sidebar open/close toggle
 
 /**
  * Sets up the mobile sidebar open/close toggle button.
@@ -19,20 +19,7 @@ export function setupSidebarMobileToggle({
     return;
   }
 
-  // Ensure initial state: sidebar shown, icon pointing left
-  sidebar.classList.remove("hidden");
-  const icon = sidebarToggle.querySelector("i");
-  if (icon) {
-    icon.classList.remove("fa-chevron-right");
-    icon.classList.add("fa-chevron-left");
-  }
-
-  sidebarToggle.addEventListener("click", () => {
-    const isHidden = sidebar.classList.toggle("hidden");
-    if (icon) {
-      // swap between left and right chevrons
-      icon.classList.toggle("fa-chevron-left", !isHidden);
-      icon.classList.toggle("fa-chevron-right", isHidden);
-    }
-  });
+  sidebarToggle.addEventListener("click", () =>
+    sidebar.classList.toggle("open")
+  );
 }

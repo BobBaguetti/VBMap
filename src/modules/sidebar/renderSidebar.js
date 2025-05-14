@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.7 — inject toggle button at top inside sidebar so it moves with transform
+// @version: 1.1 — include Settings section & seed filter‐group headers
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -9,9 +9,6 @@ export function renderSidebarShell() {
   }
 
   sidebar.innerHTML = `
-    <button id="sidebar-toggle" aria-label="Toggle sidebar">
-      <i class="fas fa-chevron-left"></i>
-    </button>
     <h1>
       <img
         src="https://res.cloudinary.com/dtty7zxjh/image/upload/v1746941747/0g_VaultbreakersLogo_Blue_Fullsize_wbaf0o.png"
