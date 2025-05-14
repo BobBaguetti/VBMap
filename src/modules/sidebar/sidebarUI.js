@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.22 — schedule hide at end of collapse via setTimeout for precise timing
+// @version: 1.23 — use transitionend to hide content right as collapse animation ends
 
 export function setupSidebarUI({
   map,
@@ -15,30 +15,34 @@ export function setupSidebarUI({
     const container   = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
 
-    // prepare for height animation
+    // prepare transition
     container.style.transition = "none";
     container.style.maxHeight  = isCollapsed
       ? "0px"
       : `${container.scrollHeight}px`;
-    // force style flush
     container.offsetHeight;
     container.style.transition = `max-height ${COLLAPSE_DURATION}ms ease-in-out`;
 
     if (isCollapsed) {
-      // EXPAND: show then slide down
+      // EXPAND: make visible then slide down
       container.style.visibility = "visible";
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
     } else {
-      // COLLAPSE: slide up then hide at the end
-      // clear any residual visibility so CSS clip works
+      // COLLAPSE: slide up and then hide WHEN transition really ends
+      // clear any inline visibility so we can hide in onEnd
       container.style.removeProperty("visibility");
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
-      // schedule hide exactly when the 300 ms slide finishes
-      setTimeout(() => {
-        container.style.visibility = "hidden";
-      }, COLLAPSE_DURATION);
+
+      // wait exactly for the max-height transition to finish
+      function onEnd(e) {
+        if (e.propertyName === "max-height" && group.classList.contains("collapsed")) {
+          container.style.visibility = "hidden";
+          container.removeEventListener("transitionend", onEnd);
+        }
+      }
+      container.addEventListener("transitionend", onEnd);
     }
   }
 
