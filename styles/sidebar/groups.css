@@ -1,16 +1,16 @@
 /* @file: styles/sidebar/groups.css */
-/* @version: 1.12 — ensure collapse/expand chevrons stay muted on header hover */
+/* @version: 1.12 — update icon-hover specificity to override header-hover rule */
 
 /* Container for each card-style filter group */
 .filter-group {
-  background-color: var(--bg-30);               
+  background-color: var(--bg-30);
   border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
   border-radius: 0;
-  margin:        0 0 0.6em;                     
+  margin:        0 0 0.6em;
   overflow:      hidden;
-  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);   
-  transition:    box-shadow 0.2s ease;          
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
+  transition:    box-shadow 0.2s ease;
 }
 
 /* Hover elevation */
@@ -67,17 +67,9 @@
   color: var(--text-secondary);
 }
 
-/* 2b) Collapse/expand chevrons stay muted on header hover */
-.filter-group > h3:hover .fa-chevron-right,
-.filter-group > h3:hover .fa-chevron-down,
-.filter-group > h4:hover .fa-chevron-right,
-.filter-group > h4:hover .fa-chevron-down {
-  color: var(--text-secondary);
-}
-
-/* 3) On their own hover, each icon lights up */
-.filter-group > h3 > i:hover,
-.filter-group > h4 > i:hover {
+/* 3) On their own hover—even when header is hovered—each icon lights up */
+.filter-group > h3:hover > i:hover,
+.filter-group > h4:hover > i:hover {
   color: var(--text-primary);
 }
 
