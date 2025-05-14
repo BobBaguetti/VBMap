@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/groupToggle.js
-// @version: 1.2 — added reappearOffset parameter; delay entry visibility on expand
+// @version: 1.3 — add delegated change listener so group eye stays in sync
 
 /**
  * Initialize per-group collapse/expand chevrons and eye toggles.
@@ -25,7 +25,6 @@ export function setupGroupToggle({
     const container   = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
 
-    // reset any existing timers on this container
     if (container._reappearTimer) {
       clearTimeout(container._reappearTimer);
       container._reappearTimer = null;
@@ -39,7 +38,7 @@ export function setupGroupToggle({
     container.style.transition = `max-height ${collapseDuration}ms ease-in-out`;
 
     if (isCollapsed) {
-      // EXPANDING: start hidden, then reveal after reappearOffset
+      // EXPANDING
       container.style.visibility = "hidden";
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
@@ -49,7 +48,7 @@ export function setupGroupToggle({
         container._reappearTimer = null;
       }, reappearOffset);
     } else {
-      // COLLAPSING: hide at end minus prehideOffset
+      // COLLAPSING
       container.style.removeProperty("visibility");
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
@@ -60,7 +59,17 @@ export function setupGroupToggle({
     }
   }
 
-  // Wire up each group
+  // Sync the eye icon state based on current checkboxes
+  function syncEye(group) {
+    const eye = group.querySelector(".filter-eye");
+    const anyOn = Array.from(
+      group.querySelectorAll(".toggle-group input[type=checkbox]")
+    ).some(cb => cb.checked);
+    eye.classList.toggle("fa-eye",       anyOn);
+    eye.classList.toggle("fa-eye-slash", !anyOn);
+    onUpdateMasterEye();
+  }
+
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header = group.querySelector("h3, h4");
     if (!header) return;
@@ -78,7 +87,15 @@ export function setupGroupToggle({
 
     // eye-toggle
     const eye = document.createElement("i");
-    eye.classList.add("fas", "fa-eye", "filter-eye");
+    eye.classList.add(
+      "fas",
+      group.querySelectorAll(".toggle-group input[type=checkbox]").length && Array.from(
+        group.querySelectorAll(".toggle-group input[type=checkbox]")
+      ).some(cb => cb.checked)
+        ? "fa-eye"
+        : "fa-eye-slash",
+      "filter-eye"
+    );
     eye.style.cursor     = "pointer";
     eye.style.marginLeft = "0.5em";
     header.appendChild(eye);
@@ -110,23 +127,16 @@ export function setupGroupToggle({
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
       group.classList.toggle("disabled", !anyOff);
-      eye.classList.toggle("fa-eye-slash", !anyOff);
-      eye.classList.toggle("fa-eye",       anyOff);
+      // syncEye will update the icon and master for us
+      syncEye(group);
       onUpdateMasterCollapse();
-      onUpdateMasterEye();
     });
 
-    // sync this group's eye icon when any individual checkbox changes
-    group.querySelectorAll(".toggle-group input[type=checkbox]").forEach(cb => {
-      cb.addEventListener("change", () => {
-        const anyOn = Array.from(
-          group.querySelectorAll(".toggle-group input[type=checkbox]")
-        ).some(i => i.checked);
-        eye.classList.toggle("fa-eye",       anyOn);
-        eye.classList.toggle("fa-eye-slash", !anyOn);
-        // propagate change up to master eye
-        onUpdateMasterEye();
-      });
+    // Delegate any checkbox change to sync the group eye
+    group.addEventListener("change", e => {
+      if (e.target.matches("input[type=checkbox]")) {
+        syncEye(group);
+      }
     });
   });
 }
