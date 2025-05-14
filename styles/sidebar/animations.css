@@ -1,22 +1,25 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.9 — hide & disable pointer events on collapsed toggle-group */
+/* @version: 2.9 — re-enable hide & disable interactions on collapsed toggle-groups */
 
-/* ── Animate the toggle-group container ──────────────────────────── */
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+
+/* ── Animate the toggle-group container ───────────────────────────── */
 .toggle-group {
   overflow: hidden;
   max-height: 0;
   transition: max-height 0.3s ease-in-out;
 }
 
-/* when expanded: show content and allow interactions */
+/* Expanded state: show content and allow clicks */
 .filter-group:not(.collapsed) > .toggle-group {
-  max-height: 1000px;
-  visibility: visible;
-  pointer-events: auto;
+  max-height: 1000px;       /* your “expanded” height */
+  visibility: visible;      /* ensure it’s visible */
+  pointer-events: auto;     /* allow interaction */
 }
 
-/* when collapsed: hide content and prevent clicks */
+/* Collapsed state: hide content and prevent clicks */
 .filter-group.collapsed > .toggle-group {
-  visibility: hidden;
-  pointer-events: none;
+  max-height: 0;            /* keep fully collapsed */
+  visibility: hidden;       /* hide any overflowing bits */
+  pointer-events: none;     /* disable all clicks/hover */
 }
