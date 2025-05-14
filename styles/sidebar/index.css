@@ -7,7 +7,7 @@
 @import "search.css";
 
 /* Toolbar */
-@import "sidebar/toolbar.css";
+@import "toolbar.css";
 
 /* Filter groups */
 @import "filters/container.css";
