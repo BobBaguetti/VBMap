@@ -16,7 +16,7 @@ export function setupSidebarUI({
 }) {
   const COLLAPSE_DURATION = 300;
   const PREHIDE_OFFSET    = 68;
-  const REAPPEAR_OFFSET   = 125;   // delay before entries re-appear when expanding
+  const REAPPEAR_OFFSET   = 525;   // delay before entries re-appear when expanding
 
   // 1) Search bar
   setupSidebarSearch({
