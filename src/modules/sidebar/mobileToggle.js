@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/mobileToggle.js
-// @version: 1.0 — extracted mobile sidebar open/close toggle
+// @version: 1.1 — toggle `.hidden` class (match CSS) instead of `.open`
 
 /**
  * Sets up the mobile sidebar open/close toggle button.
@@ -19,7 +19,7 @@ export function setupSidebarMobileToggle({
     return;
   }
 
-  sidebarToggle.addEventListener("click", () =>
-    sidebar.classList.toggle("open")
-  );
+  sidebarToggle.addEventListener("click", () => {
+    sidebar.classList.toggle("hidden");
+  });
 }
