@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/groupToggle.js
-// @version: 1.3 — add delegated change listener so group eye stays in sync
+// @version: 1.4 — listen on the toggle-group container for checkbox changes, always resync eye
 
 /**
  * Initialize per-group collapse/expand chevrons and eye toggles.
@@ -20,11 +20,23 @@ export function setupGroupToggle({
   onUpdateMasterCollapse = () => {},
   onUpdateMasterEye      = () => {}
 }) {
+  // Sync the eye icon state based on current checkboxes
+  function syncEye(group) {
+    const eye = group.querySelector(".filter-eye");
+    const anyOn = Array.from(
+      group.querySelectorAll(".toggle-group input[type=checkbox]")
+    ).some(cb => cb.checked);
+    eye.classList.toggle("fa-eye",       anyOn);
+    eye.classList.toggle("fa-eye-slash", !anyOn);
+    onUpdateMasterEye();
+  }
+
   // Animate a single group's collapse/expand
   function animateToggle(group) {
     const container   = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
 
+    // clear pending reappear
     if (container._reappearTimer) {
       clearTimeout(container._reappearTimer);
       container._reappearTimer = null;
@@ -34,6 +46,8 @@ export function setupGroupToggle({
     container.style.maxHeight  = isCollapsed
       ? "0px"
       : `${container.scrollHeight}px`;
+    // force repaint
+    // eslint-disable-next-line no-unused-expressions
     container.offsetHeight;
     container.style.transition = `max-height ${collapseDuration}ms ease-in-out`;
 
@@ -42,7 +56,6 @@ export function setupGroupToggle({
       container.style.visibility = "hidden";
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
-
       container._reappearTimer = setTimeout(() => {
         container.style.visibility = "visible";
         container._reappearTimer = null;
@@ -53,21 +66,10 @@ export function setupGroupToggle({
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
       setTimeout(
-        () => container.style.visibility = "hidden",
+        () => (container.style.visibility = "hidden"),
         collapseDuration - prehideOffset
       );
     }
-  }
-
-  // Sync the eye icon state based on current checkboxes
-  function syncEye(group) {
-    const eye = group.querySelector(".filter-eye");
-    const anyOn = Array.from(
-      group.querySelectorAll(".toggle-group input[type=checkbox]")
-    ).some(cb => cb.checked);
-    eye.classList.toggle("fa-eye",       anyOn);
-    eye.classList.toggle("fa-eye-slash", !anyOn);
-    onUpdateMasterEye();
   }
 
   document.querySelectorAll(filterGroupSelector).forEach(group => {
@@ -89,9 +91,8 @@ export function setupGroupToggle({
     const eye = document.createElement("i");
     eye.classList.add(
       "fas",
-      group.querySelectorAll(".toggle-group input[type=checkbox]").length && Array.from(
-        group.querySelectorAll(".toggle-group input[type=checkbox]")
-      ).some(cb => cb.checked)
+      Array.from(group.querySelectorAll(".toggle-group input[type=checkbox]"))
+           .some(cb => cb.checked)
         ? "fa-eye"
         : "fa-eye-slash",
       "filter-eye"
@@ -124,19 +125,24 @@ export function setupGroupToggle({
       const anyOff = Array.from(inputs).some(cb => !cb.checked);
       inputs.forEach(cb => {
         cb.checked = anyOff;
+        // dispatch change so syncEye picks it up
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
       group.classList.toggle("disabled", !anyOff);
-      // syncEye will update the icon and master for us
+      // syncEye will update both this icon and the master
       syncEye(group);
       onUpdateMasterCollapse();
     });
 
-    // Delegate any checkbox change to sync the group eye
-    group.addEventListener("change", e => {
+    // Listen on the toggle-group container for any checkbox changes
+    const container = group.querySelector(".toggle-group");
+    container.addEventListener("change", e => {
       if (e.target.matches("input[type=checkbox]")) {
         syncEye(group);
       }
     });
+
+    // initial sync
+    syncEye(group);
   });
 }
