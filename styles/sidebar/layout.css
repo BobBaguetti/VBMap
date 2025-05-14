@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.11 — move toggle button with sidebar and remove button flip transform */
+/* @version: 1.10 — flip toggle arrow horizontally instead of rotating */
 
 /* ======= Sidebar container ======= */
 #sidebar {
@@ -42,16 +42,17 @@
   border: none;
   color: var(--text-primary);
   cursor: pointer;
-  transition: left 0.3s ease, background 0.2s ease;
+  transition: left 0.3s ease, transform 0.3s ease, background 0.2s ease;
 }
 
 #sidebar-toggle:hover {
   background: var(--bg-50);
 }
 
-/* Move the button in sync with the sidebar; icon flipping is handled in JS */
+/* Flip the arrow horizontally when collapsed */
 #sidebar-toggle.collapsed {
   left: 0;
+  transform: scaleX(-1);
 }
 
 /* Logo container (h1) – tighter top and bottom margins */

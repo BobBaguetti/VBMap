@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.4 — use Font Awesome chevron icon in toggle button
+// @version: 1.5 — move toggle button inside sidebar so it moves with sidebar
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -8,15 +8,8 @@ export function renderSidebarShell() {
     return;
   }
 
-  // Remove any old toggle button and re-insert it *before* the sidebar
-  const oldToggle = document.getElementById("sidebar-toggle");
-  if (oldToggle) oldToggle.remove();
-  sidebar.insertAdjacentHTML(
-    "beforebegin",
-    `<button id="sidebar-toggle" aria-label="Toggle sidebar"><i class="fas fa-chevron-left"></i></button>`
-  );
-
   sidebar.innerHTML = `
+    <button id="sidebar-toggle" aria-label="Toggle sidebar"><i class="fas fa-chevron-left"></i></button>
     <h1>
       <img
         src="https://res.cloudinary.com/dtty7zxjh/image/upload/v1746941747/0g_VaultbreakersLogo_Blue_Fullsize_wbaf0o.png"
@@ -24,6 +17,7 @@ export function renderSidebarShell() {
       />
     </h1>
     <p class="sidebar-logo__subtitle">vaultbreakers interactive map</p>
+
     <!-- TOOLBAR -->
     <div id="sidebar-toolbar" class="sidebar-section toolbar">
       <button id="btn-settings" aria-label="Settings">
@@ -36,6 +30,7 @@ export function renderSidebarShell() {
         <i class="fab fa-discord"></i>
       </button>
     </div>
+
     <!-- SEARCH -->
     <div id="sidebar-search" class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
@@ -44,24 +39,29 @@ export function renderSidebarShell() {
         <button id="search-clear" aria-label="Clear search">&times;</button>
       </div>
     </div>
+
     <!-- FILTERS -->
     <div class="sidebar-section" id="filters-section">
       <h2><i class="fas fa-filter"></i> Filters</h2>
+
       <!-- Main layer toggles -->
       <div class="filter-group" id="main-filters">
         <h3><i class="fas fa-layer-group group-icon"></i>Main</h3>
         <div class="toggle-group"></div>
       </div>
+
       <!-- Item filters -->
       <div class="filter-group" id="item-filters">
         <h3><i class="fas fa-box-open group-icon"></i>Items</h3>
         <div class="toggle-group" id="item-filter-list"></div>
       </div>
+
       <!-- Chest filters -->
       <div class="filter-group" id="chest-filters">
         <h3><i class="fas fa-dungeon group-icon"></i>Chests</h3>
         <div class="toggle-group" id="chest-filter-list"></div>
       </div>
+
       <!-- NPC filters -->
       <div class="filter-group" id="npc-hostile-filters">
         <h3><i class="fas fa-skull-crossbones group-icon"></i>Hostile NPCs</h3>
@@ -72,6 +72,7 @@ export function renderSidebarShell() {
         <div class="toggle-group" id="npc-friendly-list"></div>
       </div>
     </div>
+
     <!-- SETTINGS -->
     <div class="sidebar-section" id="settings-section">
       <h2><i class="fas fa-cog"></i> Settings</h2>
@@ -86,6 +87,7 @@ export function renderSidebarShell() {
         </label>
       </div>
     </div>
+
     <!-- ADMIN TOOLS -->
     <div class="sidebar-section" id="admin-tools-section">
       <h2><i class="fas fa-tools"></i> Admin Tools</h2>
