@@ -1,5 +1,5 @@
-/* @file: styles/sidebar/icons.css */
-/* @version: 1.4 — styling for inline filter‐icon elements */
+/* @file: styles/sidebar/filters/icons.css */
+/* @version: 1.0 — Thumbnail and filter-icon styling */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -24,14 +24,3 @@
   align-items: center;
   gap: 0.25em;
 }
-
-/* If you want a little extra padding around each label: */
-/*
-.toggle-group label {
-  padding: 0.25em 0.5em;
-  border-radius: 3px;
-}
-.toggle-group label:hover {
-  background-color: var(--hover-light);
-}
-*/

@@ -1,0 +1,13 @@
+/* @file: styles/sidebar/filters/animations.css */
+/* @version: 1.0 — Animate the toggle-group container */
+
+.toggle-group {
+  overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s ease-in-out;
+}
+
+/* Expanded state */
+.filter-group:not(.collapsed) > .toggle-group {
+  max-height: 1000px;
+}

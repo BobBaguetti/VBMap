@@ -1,0 +1,25 @@
+/* @file: styles/sidebar/filters/body.css */
+/* @version: 1.0 — Filter group body layout and thumbnail icons */
+
+.filter-group .toggle-group {
+  padding: 0.6em 1em;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  gap: 0.5em 0.8em;
+}
+
+.filter-group .toggle-group label {
+  display: flex;
+  align-items: center;
+}
+
+/* Thumbnail icons before the text */
+.filter-group .toggle-group label .filter-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5em;
+  flex-shrink: 0;
+  border-radius: 2px;
+  object-fit: cover;
+  transition: filter 0.2s ease;
+}
