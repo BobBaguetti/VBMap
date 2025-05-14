@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/masterToggle.js
-// @version: 1.0 — extracted master collapse-all & eye-all controls
+// @version: 1.1 — sync child group-eye icons when master eye toggles
 
 /**
  * Sets up the master eye toggle and collapse-all chevron.
@@ -54,17 +54,28 @@ export function setupMasterControls({
       document.querySelectorAll(`${sectionSelector} .toggle-group input[type=checkbox]`)
     );
     if (!cbs.length) return;
+
     const newState = cbs.some(cb => !cb.checked);
     cbs.forEach(cb => {
       cb.checked = newState;
       cb.dispatchEvent(new Event("change", { bubbles: true }));
     });
-    // Disable/enable groups visually
+
+    // sync disabled class on each group
     document.querySelectorAll(filterGroupSelector).forEach(group => {
       group.classList.toggle("disabled", !newState);
     });
+
+    // sync each group's eye icon
+    document.querySelectorAll(filterGroupSelector).forEach(group => {
+      const groupEye = group.querySelector(".filter-eye");
+      if (!groupEye) return;
+      groupEye.classList.toggle("fa-eye",       newState);
+      groupEye.classList.toggle("fa-eye-slash", !newState);
+    });
+
+    // update master eye & collapse icons
     updateMasterEyeIcon();
-    // After toggling all filters, also refresh collapse icon
     updateMasterCollapseIcon();
   });
 
@@ -100,10 +111,11 @@ export function setupMasterControls({
     groups.forEach(group => {
       const shouldCollapse = !allCollapsed;
       if (group.classList.contains("collapsed") === shouldCollapse) return;
-      // simulate one group toggle so CSS/JS hide runs
-      group.querySelector("h3, h4").dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      // simulate click on group header or toggle icon
+      const header = group.querySelector("h3, h4");
+      if (header) header.click();
     });
-    // Sync icons after all toggles
+    // Sync collapse icon after toggling
     updateMasterCollapseIcon();
   });
 
