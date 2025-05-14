@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.2 — move inset shadow to container for pressed look */
+/* @version: 1.3 — soften underline using var(--border-soft) color */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -15,19 +15,13 @@
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid var(--border-soft);
+
+  /* Softer, subtler bottom border for separation */
+  border-bottom: 2px solid var(--border-soft);
+
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary); /* default muted text & icons */
-
-  /* no box-shadow here */
-  box-shadow: none;
-}
-
-/* Container for the group’s entries: inset shadow at top edge */
-.filter-group > .toggle-group {
-  /* give a tiny embossed line under the header */
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 /* Layout for icons appended via JS */
