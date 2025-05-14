@@ -9,7 +9,7 @@ export function setupSidebarUI({
   filterGroupSelector = ".filter-group"
 }) {
   const COLLAPSE_DURATION = 300; // total collapse animation time (ms)
-  const PREHIDE_OFFSET    = 75;  // hide content this many ms before the end
+  const PREHIDE_OFFSET    = 68;  // hide content this many ms before the end
 
   // helper to animate collapse/expand
   function animateToggle(group) {
