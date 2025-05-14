@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.2 — switch to subtle darker underline for separation */
+/* @version: 1.3 — use subtle inset shadow for a pressed look */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -15,11 +15,15 @@
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  /* Thicker, darker bottom border for clear separation */
-  border-bottom: 2px solid var(--bg-10);
+
+  /* original thin separator */
+  border-bottom: 1px solid var(--border-soft);
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary); /* default muted text & icons */
+
+  /* subtle inset shadow at the top for a pressed-in effect */
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 /* Layout for icons appended via JS */
