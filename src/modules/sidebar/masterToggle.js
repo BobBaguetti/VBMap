@@ -1,4 +1,4 @@
-// @file: src/modules/sidebar/masterToggle.js
+// @file: src/modules/sidebar/masterToggle.js 
 // @version: 1.1 — sync child group-eye icons when master eye toggles
 
 /**
