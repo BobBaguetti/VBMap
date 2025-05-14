@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/animations.css */
-/* @version: 2.8 — remove pseudo-element chevrons; keep only toggle-group animations */
+/* @version: 2.9 — delay visibility hide until collapse animation completes */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -7,9 +7,21 @@
 .toggle-group {
   overflow: hidden;
   max-height: 0;
-  transition: max-height 0.3s ease-in-out;
+  visibility: visible;
+  transition:
+    max-height 0.3s ease-in-out,
+    visibility 0s linear 0.3001s; /* hide visibility right after max-height finishes */
 }
 
+/* Expanded state: ensure no delay on showing */
 .filter-group:not(.collapsed) > .toggle-group {
   max-height: 1000px;
+  visibility: visible;
+  transition-delay: 0s, 0s;
+}
+
+/* Collapsed state: pointer-events off immediately, visibility hidden after delay */
+.filter-group.collapsed > .toggle-group {
+  pointer-events: none;
+  visibility: hidden;
 }
