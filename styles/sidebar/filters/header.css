@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.5 — reinforce icon hover specificity for chevrons & eyes */
+/* @version: 1.6 — force hover color with highest specificity */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -57,16 +57,16 @@
   color: var(--text-secondary);
 }
 
-/* Icon hover always lights up */
+/* Restore default icon hover (without specificity conflicts) */
 .filter-group > h3 > i:hover,
 .filter-group > h4 > i:hover {
   color: var(--text-primary);
 }
 
-/* Explicitly target toggle-chevrons and eye icons for stronger specificity */
+/* Force-hover on chevrons & eyes */
 .filter-group > h3 > .group-toggle:hover,
 .filter-group > h4 > .group-toggle:hover,
 .filter-group > h3 > .filter-eye:hover,
 .filter-group > h4 > .filter-eye:hover {
-  color: var(--text-primary);
+  color: var(--text-primary) !important;
 }
