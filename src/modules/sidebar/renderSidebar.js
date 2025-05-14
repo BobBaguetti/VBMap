@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.3 — move toggle button outside sidebar container
+// @version: 1.4 — use Font Awesome chevron icon in toggle button
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -13,7 +13,7 @@ export function renderSidebarShell() {
   if (oldToggle) oldToggle.remove();
   sidebar.insertAdjacentHTML(
     "beforebegin",
-    `<button id="sidebar-toggle" aria-label="Toggle sidebar">◀︎</button>`
+    `<button id="sidebar-toggle" aria-label="Toggle sidebar"><i class="fas fa-chevron-left"></i></button>`
   );
 
   sidebar.innerHTML = `
