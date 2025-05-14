@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.23 — use transitionend to hide content right as collapse animation ends
+// @version: 1.24 — hide content 50 ms before collapse animation ends
 
 export function setupSidebarUI({
   map,
@@ -8,14 +8,15 @@ export function setupSidebarUI({
   searchBarSelector   = "#search-bar",
   filterGroupSelector = ".filter-group"
 }) {
-  const COLLAPSE_DURATION = 300; // ms
+  const COLLAPSE_DURATION = 300; // total collapse animation time (ms)
+  const PREHIDE_OFFSET    = 50;  // hide content this many ms before the end
 
   // helper to animate collapse/expand
   function animateToggle(group) {
     const container   = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
 
-    // prepare transition
+    // reset any previous inline visibility
     container.style.transition = "none";
     container.style.maxHeight  = isCollapsed
       ? "0px"
@@ -24,29 +25,24 @@ export function setupSidebarUI({
     container.style.transition = `max-height ${COLLAPSE_DURATION}ms ease-in-out`;
 
     if (isCollapsed) {
-      // EXPAND: make visible then slide down
+      // EXPAND: show then slide down
       container.style.visibility = "visible";
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
     } else {
-      // COLLAPSE: slide up and then hide WHEN transition really ends
-      // clear any inline visibility so we can hide in onEnd
+      // COLLAPSE: slide up, then hide content slightly early
       container.style.removeProperty("visibility");
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
 
-      // wait exactly for the max-height transition to finish
-      function onEnd(e) {
-        if (e.propertyName === "max-height" && group.classList.contains("collapsed")) {
-          container.style.visibility = "hidden";
-          container.removeEventListener("transitionend", onEnd);
-        }
-      }
-      container.addEventListener("transitionend", onEnd);
+      // schedule hide just before animation ends
+      setTimeout(() => {
+        container.style.visibility = "hidden";
+      }, COLLAPSE_DURATION - PREHIDE_OFFSET);
     }
   }
 
-  // Helper to sync each group's chevron icon to its collapsed state
+  // sync chevrons
   function syncGroupChevrons() {
     document.querySelectorAll(filterGroupSelector).forEach(group => {
       const chevron = group.querySelector(".group-toggle");
@@ -57,7 +53,7 @@ export function setupSidebarUI({
     });
   }
 
-  // Grab core elements
+  // core elements
   const sidebar       = document.querySelector(sidebarSelector);
   const sidebarToggle = document.querySelector(toggleSelector);
   const searchBar     = document.querySelector(searchBarSelector);
@@ -67,7 +63,7 @@ export function setupSidebarUI({
     return;
   }
 
-  // 1) Search‐bar
+  // 1) Search bar
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -75,7 +71,7 @@ export function setupSidebarUI({
     searchBar.focus();
   });
 
-  // 2) Mobile sidebar toggle
+  // 2) Mobile toggle
   sidebarToggle.addEventListener("click", () => sidebar.classList.toggle("open"));
 
   // 3) Sticky Filters header
@@ -88,7 +84,7 @@ export function setupSidebarUI({
     obs.observe(filtersSection);
   }
 
-  // Placeholders for master updater fns
+  // placeholders for master update fns
   let updateMasterCollapseIcon = () => {};
   let updateMasterEyeIcon     = () => {};
 
@@ -97,7 +93,7 @@ export function setupSidebarUI({
     const header = group.querySelector("h3, h4");
     if (!header) return;
 
-    // collapse/expand chevron
+    // collapse chevron
     const toggleIcon = document.createElement("i");
     toggleIcon.classList.add(
       "fas",
@@ -115,7 +111,7 @@ export function setupSidebarUI({
     eye.style.marginLeft = "0.5em";
     header.appendChild(eye);
 
-    // header click toggles collapse + update icons
+    // header click toggles collapse + chevron
     header.addEventListener("click", () => {
       animateToggle(group);
       updateMasterCollapseIcon();
@@ -136,7 +132,7 @@ export function setupSidebarUI({
     eye.addEventListener("click", e => {
       e.stopPropagation();
       const inputs = group.querySelectorAll("input[type=checkbox]");
-      const anyOff = [...inputs].some(cb => !cb.checked);
+      const anyOff = Array.from(inputs).some(cb => !cb.checked);
       inputs.forEach(cb => {
         cb.checked = anyOff;
         cb.dispatchEvent(new Event("change", { bubbles: true }));
@@ -153,7 +149,7 @@ export function setupSidebarUI({
   if (filtersSection) {
     const header = filtersSection.querySelector("h2");
 
-    // Master eye
+    // master eye
     const masterEye = document.createElement("i");
     masterEye.classList.add("fas", "fa-eye", "filter-eye");
     masterEye.style.cursor     = "pointer";
@@ -194,7 +190,7 @@ export function setupSidebarUI({
       });
     });
 
-    // Master collapse/expand
+    // master collapse/expand
     const collapseBtn = document.createElement("i");
     collapseBtn.classList.add("fas", "collapse-all", "fa-chevron-right");
     Object.assign(collapseBtn.style, {
