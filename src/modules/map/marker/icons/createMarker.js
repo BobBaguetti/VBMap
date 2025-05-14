@@ -1,14 +1,11 @@
 // @file: src/modules/map/marker/icons/createMarker.js
-// @version: 1.3 — use global L and fix module imports
+// @version: 1.4 — import Leaflet as ES module instead of using window.L
 
-// Assumes Leaflet is loaded via a <script> tag and exposes window.L
-const L = window.L;
-
+import L from "leaflet";  // ES-module import
 import { renderItemPopup }  from "../popups/itemPopup.js";
 import { renderChestPopup } from "../popups/chestPopup.js";
 import { createCustomIcon } from "./createCustomIcon.js";
 import { CHEST_RARITY }     from "../utils.js";
-// climb up three levels to reach src/modules/utils/colorPresets.js
 import { rarityColors, defaultNameColor } from "../../../utils/colorPresets.js";
 
 /**
