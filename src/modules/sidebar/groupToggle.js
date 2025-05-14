@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/groupToggle.js
-// @version: 1.5 — defer initial eye sync to next frame so inputs are present
+// @version: 1.6 — observe dynamic additions of checkboxes and re-sync eye
 
 /**
  * Initialize per-group collapse/expand chevrons and eye toggles.
@@ -20,7 +20,6 @@ export function setupGroupToggle({
   onUpdateMasterCollapse = () => {},
   onUpdateMasterEye      = () => {}
 }) {
-  // Animate a single group's collapse/expand
   function animateToggle(group) {
     const container   = group.querySelector(".toggle-group");
     const isCollapsed = group.classList.contains("collapsed");
@@ -34,7 +33,6 @@ export function setupGroupToggle({
     container.style.transition = `max-height ${collapseDuration}ms ease-in-out`;
 
     if (isCollapsed) {
-      // EXPAND
       container.style.visibility = "hidden";
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
@@ -43,7 +41,6 @@ export function setupGroupToggle({
         container._reappearTimer = null;
       }, reappearOffset);
     } else {
-      // COLLAPSE
       container.style.removeProperty("visibility");
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
@@ -54,7 +51,6 @@ export function setupGroupToggle({
     }
   }
 
-  // Wire up each group
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header    = group.querySelector("h3, h4");
     const container = group.querySelector(".toggle-group");
@@ -78,7 +74,7 @@ export function setupGroupToggle({
     eye.style.marginLeft = "0.5em";
     header.appendChild(eye);
 
-    // Helper: sync eye icon based on current checkbox states
+    // sync helper
     function syncEye() {
       const anyOn = Array.from(container.querySelectorAll("input[type=checkbox]"))
         .some(cb => cb.checked);
@@ -87,14 +83,18 @@ export function setupGroupToggle({
       onUpdateMasterEye();
     }
 
-    // Defer initial sync so checkboxes are in place
+    // defer initial sync
     if (window.requestAnimationFrame) {
       requestAnimationFrame(syncEye);
     } else {
       setTimeout(syncEye, 0);
     }
 
-    // collapse on header or chevron click
+    // observe additions/removals of checkboxes
+    const observer = new MutationObserver(syncEye);
+    observer.observe(container, { childList: true, subtree: true });
+
+    // collapse toggles
     const doToggle = e => {
       if (e) e.stopPropagation();
       animateToggle(group);
@@ -119,7 +119,7 @@ export function setupGroupToggle({
       onUpdateMasterCollapse();
     });
 
-    // Delegate change events within the container
+    // delegate change events for real-time sync
     container.addEventListener("change", e => {
       if (e.target.matches("input[type=checkbox]")) {
         syncEye();
