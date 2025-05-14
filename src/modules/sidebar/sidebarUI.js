@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.20 — sync child chevrons when master collapse toggles
+// @version: 1.20 — sync child chevrons when master collapse toggles all groups
 
 export function setupSidebarUI({
   map,
@@ -36,6 +36,21 @@ export function setupSidebarUI({
       container.removeEventListener("transitionend", onEnd);
     }
     container.addEventListener("transitionend", onEnd);
+  }
+
+  // Helper to sync each group's chevron icon to its collapsed state
+  function syncGroupChevrons() {
+    document.querySelectorAll(filterGroupSelector).forEach(group => {
+      const chevron = group.querySelector(".group-toggle");
+      if (!chevron) return;
+      if (group.classList.contains("collapsed")) {
+        chevron.classList.add("fa-chevron-right");
+        chevron.classList.remove("fa-chevron-down");
+      } else {
+        chevron.classList.add("fa-chevron-down");
+        chevron.classList.remove("fa-chevron-right");
+      }
+    });
   }
 
   // Elements
@@ -101,7 +116,7 @@ export function setupSidebarUI({
     header.addEventListener("click", () => {
       animateToggle(group);
       updateMasterCollapseIcon();
-      // swap chevron direction
+      // swap this group's chevron
       toggleIcon.classList.toggle("fa-chevron-right");
       toggleIcon.classList.toggle("fa-chevron-down");
     });
@@ -126,10 +141,7 @@ export function setupSidebarUI({
         cb.dispatchEvent(new Event("change", { bubbles: true }));
       });
 
-      // add/remove disabled class on the group
       group.classList.toggle("disabled", !anyOff);
-
-      // update eye icon
       eye.classList.toggle("fa-eye-slash", !anyOff);
       eye.classList.toggle("fa-eye",       anyOff);
 
@@ -202,27 +214,11 @@ export function setupSidebarUI({
       Array.from(filtersSection.querySelectorAll(filterGroupSelector));
 
     updateMasterCollapseIcon = () => {
-      const groups       = getSubGroups();
-      const allCollapsed = groups.every(g => g.classList.contains("collapsed"));
-
-      // update master chevron
+      const allCollapsed = getSubGroups().every(g => g.classList.contains("collapsed"));
       collapseBtn.classList.replace(
         allCollapsed ? "fa-chevron-down" : "fa-chevron-right",
         allCollapsed ? "fa-chevron-right" : "fa-chevron-down"
       );
-
-      // sync child chevrons
-      groups.forEach(group => {
-        const icon = group.querySelector(".group-toggle");
-        if (!icon) return;
-        if (group.classList.contains("collapsed")) {
-          icon.classList.add("fa-chevron-right");
-          icon.classList.remove("fa-chevron-down");
-        } else {
-          icon.classList.add("fa-chevron-down");
-          icon.classList.remove("fa-chevron-right");
-        }
-      });
     };
 
     collapseBtn.addEventListener("click", e => {
@@ -234,7 +230,11 @@ export function setupSidebarUI({
         if (g.classList.contains("collapsed") === shouldCollapse) return;
         animateToggle(g);
       });
+
+      // update master icon
       updateMasterCollapseIcon();
+      // sync all child chevrons
+      syncGroupChevrons();
     });
 
     updateMasterCollapseIcon();
