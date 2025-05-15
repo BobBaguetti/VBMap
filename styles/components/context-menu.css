@@ -1,0 +1,16 @@
+/* @file: styles/components/context-menu.css */
+/* @version: 1.0 — token-driven context-menu styles */
+
+#context-menu {
+  font-family: var(--font-body);
+  font-size: 0.875rem;                  /* 14px base */
+  border-radius: var(--radius-small);
+  background-color: var(--bg-40);
+  color: var(--text-primary);
+  border: var(--border-width-hair) solid var(--border-soft);
+  box-shadow: var(--shadow-low);
+}
+
+#context-menu div:hover {
+  background-color: var(--bg-50);
+}
