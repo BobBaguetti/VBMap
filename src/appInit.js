@@ -1,5 +1,5 @@
-// @file: appInit.js
-// @version: 4 — corrected import paths for in-`src/` context (no double “src”)
+// @file: src/appInit.js
+// @version: 5 — corrected markerManager import path
 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
@@ -93,7 +93,7 @@ function initLayer(loadFn, subscribeFn, layerKey, renderFn) {
   subscribeFn(db, defs => renderFn(defs, layers[layerKey]));
 }
 
-// import render functions from markerManager
+// import render functions from markerManager (correct path)
 import {
   renderItems,
   renderChests,
@@ -106,7 +106,7 @@ import {
   renderGates,
   renderMisc,
   renderSecrets
-} from "./modules/map/marker/markerManager.js";
+} from "./modules/map/markerManager.js";
 
 // wire each layer’s load + subscribe
 initLayer(loadItems, subscribeItems,           "item",       renderItems);
