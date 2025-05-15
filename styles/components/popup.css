@@ -1,7 +1,7 @@
 /* @file: styles/components/popup.css */
 /* @version: 1.2 — switch popup font to Satoshi (font-body token) */
 
-@import "tokens/popup.css";
+@import "../tokens/popup.css";
 
 /* ───────────────────────────────────────────────── Custom Popup ──── */
 .custom-popup {
