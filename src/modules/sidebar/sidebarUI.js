@@ -1,22 +1,24 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.31 — added REAPPEAR_OFFSET and passed into groupToggle
+// @version: 1.32 — wire Settings toolbar button to open settings modal
 
 import { setupSidebarSearch }       from "./search.js";
 import { setupSidebarMobileToggle } from "./mobileToggle.js";
 import { setupStickyHeader }        from "./stickyHeader.js";
 import { setupGroupToggle }         from "./groupToggle.js";
 import { setupMasterControls }      from "./masterToggle.js";
+import { setupSettingsModal }       from "./settingsModal.js";
 
 export function setupSidebarUI({
   map,
   sidebarSelector       = "#sidebar",
   toggleSelector        = "#sidebar-toggle",
   searchBarSelector     = "#search-bar",
-  filterGroupSelector   = ".filter-group"
+  filterGroupSelector   = ".filter-group",
+  settingsButtonSelector= "#btn-settings"
 }) {
   const COLLAPSE_DURATION = 300;
-  const PREHIDE_OFFSET    = 86;
-  const REAPPEAR_OFFSET   = 86;   // delay before entries re-appear when expanding
+  const PREHIDE_OFFSET    = 68;
+  const REAPPEAR_OFFSET   = 25;
 
   // 1) Search bar
   setupSidebarSearch({
@@ -52,4 +54,7 @@ export function setupSidebarUI({
     onUpdateMasterCollapse: updateMasterCollapseIcon,
     onUpdateMasterEye:      updateMasterEyeIcon
   });
+
+  // 6) Settings modal
+  setupSettingsModal({ buttonSelector: settingsButtonSelector });
 }

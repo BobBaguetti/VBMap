@@ -1,0 +1,22 @@
+/* Modal base styles */
+#settings-modal.modal.hidden { display: none; }
+#settings-modal .modal-overlay {
+  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0,0,0,0.5);
+}
+#settings-modal .modal-content {
+  position: fixed; top: 50%; left: 50%;
+  transform: translate(-50%,-50%);
+  background: var(--bg-20);
+  color: var(--text-primary);
+  padding: 1em;
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  max-width: 90%; width: 300px;
+}
+#settings-modal header, #settings-modal footer {
+  display: flex; justify-content: space-between; align-items: center;
+}
+#settings-modal .modal-body label {
+  display: block; margin: 0.5em 0;
+}
