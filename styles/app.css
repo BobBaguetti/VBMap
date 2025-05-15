@@ -36,7 +36,7 @@
 @import "components/icons.css";
 @import "components/ui-controls.css";
 @import "components/map.css";
-@import "components/markers.css";   /* custom marker styles */
+@import "components/markers.css";   
 @import "components/entries.css";
 
 /* ── Utilities ────────────────────────────────────────────────────────── */
