@@ -1,21 +1,21 @@
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 2.3 — remove accent rail, add depth via shadow */
+/* @version: 2.4 — migrated spacing, radius, and shadow to sidebar tokens */
 
 /* Top-level sidebar section headers */
 .sidebar-section > h2 {
-  background-color: var(--bg-20);               /* container tone */
-  padding: 0.5em 0.8em;                         /* uniform horizontal padding */
-  margin: 1.2em 0 0.5em;                        /* breathing room above & below */
-  border-radius: 4px;
-  font-size: 1.1em;
-  font-weight: 700;                             /* heavy for clear hierarchy */
+  background-color: var(--bg-20);
+  padding: var(--sidebar-section-padding);
+  margin: var(--sidebar-section-h2-margin);
+  border-radius: var(--radius-small);
+  font-size: var(--sidebar-section-font-size);
+  font-weight: 700;                /* heavy for clear hierarchy */
   text-transform: uppercase;
-  letter-spacing: 0.08em;                       /* tight tracking */
+  letter-spacing: var(--sidebar-section-h2-letter-spacing);
   color: var(--text-primary);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);      /* subtle drop shadow */
+  box-shadow: var(--sidebar-shadow-medium);       /* subtle drop shadow */
 }
 
 /* Push the section content neatly below the header band */
 .sidebar-section {
-  margin-top: 1.2em;                            /* matches the H2 top-margin */
+  margin-top: var(--space-3);      /* matches the first value in h2 margin */
 }

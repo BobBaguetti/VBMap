@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/master.css */
-/* @version: 1.0 — Styles for the master Filters header controls */
+/* @version: 1.1 — migrated spacing & sizing to sidebar tokens */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -11,15 +11,15 @@
 /* Ensure the H2 is a positioning context for the collapse chevron */
 #filters-section > h2 {
   position: relative;
-  padding-right: 2em;           /* reserve space for the chevron */
+  padding-right: var(--sidebar-master-padding-right);
 }
 
 /* Inline master “eye” icon next to the “Filters” text */
 #filters-section > h2 .filter-eye {
-  position: static !important;  /* override any absolute positioning */
-  margin-left: 0.5em !important;/* same spacing as group-level eyes */
+  position: static !important;
+  margin-left: var(--sidebar-master-icon-gap) !important;
   color: var(--text-secondary);
-  font-size: 0.9em;
+  font-size: var(--sidebar-master-icon-font-size);
   cursor: pointer;
   transition: color 0.2s;
 }
@@ -31,11 +31,11 @@
 /* Position the JS-injected collapse button (<i class="collapse-all">) */
 #filters-section > h2 .collapse-all {
   position: absolute;
-  right: 0.6em;
+  right: var(--sidebar-master-icon-right);
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-secondary);
-  font-size: 0.9em;
+  font-size: var(--sidebar-master-icon-font-size);
   cursor: pointer;
   transition: color 0.2s;
 }

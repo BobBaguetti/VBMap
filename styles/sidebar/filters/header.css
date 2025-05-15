@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.6 — force hover color with highest specificity */
+/* @version: 1.7 — migrated header spacing, font, border & icon sizing to sidebar tokens */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -9,26 +9,23 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;  /* anchor for toggle icons */
-  padding: 0.4em 0.6em;
+  position: relative;                            /* anchor for toggle icons */
+  padding: var(--sidebar-filter-header-padding);
   margin: 0;
-  font-size: 0.9em;
+  font-size: var(--sidebar-filter-header-font-size);
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-
-  /* thinner, mid-tone underline for balanced separation */
-  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
-
+  letter-spacing: var(--sidebar-filter-header-letter-spacing);
+  border-bottom: var(--sidebar-section-border);
   background-color: var(--bg-20);
   cursor: pointer;
-  color: var(--text-secondary); /* default muted text & icons */
+  color: var(--text-secondary);                  /* default muted text & icons */
 }
 
 /* Layout for icons appended via JS */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
-  margin-right: 0.5em;
-  font-size: 1em;
+  margin-right: var(--sidebar-filter-icon-margin-right);
+  font-size: var(--sidebar-icon-size);
   transition: color 0.2s ease;
 }
 
@@ -36,7 +33,7 @@
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   position: absolute;
-  right: 0.6em;
+  right: var(--sidebar-filter-group-toggle-right);
   top: 50%;
   transform: translateY(-50%);
   margin-right: 0;

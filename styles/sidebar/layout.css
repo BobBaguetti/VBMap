@@ -1,28 +1,27 @@
 /* @file: styles/sidebar/layout.css */
-/* @version: 1.8 */
+/* @version: 1.9 — migrated width, padding, toggle sizing to sidebar tokens */
 
 /* ======= Sidebar container ======= */
 #sidebar {
-  font-family: 'Satoshi', sans-serif;
-  width: 380px;
+  font-family: var(--font-body);
+  width: var(--sidebar-width);
   height: 100vh;
   position: absolute;
   top: 0;
   left: 0;
-  background-color: var(--bg-10);   /* was #222 */
-  color: var(--text-primary);       /* was #e5e6e8 */
-  padding: 8px;
+  background-color: var(--bg-10);
+  color: var(--text-primary);
+  padding: var(--sidebar-padding);
   box-sizing: border-box;
   overflow-y: auto;
   overflow-x: hidden;
   transition: transform 0.3s ease;
-  z-index: 1000;
+  z-index: var(--z-index-dropdown, 1000); /* fallback to literal if token absent */
 
   /* Hide scrollbar, without reserving space */
   scrollbar-width: none;       /* Firefox */
   -ms-overflow-style: none;    /* IE 10+ */
 }
-
 #sidebar::-webkit-scrollbar {
   width: 0;                    /* Chrome, Safari, Opera */
   height: 0;
@@ -36,26 +35,25 @@
 #sidebar-toggle {
   position: absolute;
   top: 10px;
-  left: 380px;
-  z-index: 1100;
-  width: 30px;
-  height: 30px;
-  background: var(--bg-40);    /* was #333 */
+  left: calc(var(--sidebar-width));      /* sit just outside sidebar edge */
+  z-index: var(--z-index-dropdown, 1100);
+  width:  var(--sidebar-control-size);
+  height: var(--sidebar-control-size);
+  background: var(--bg-40);
   border: none;
-  color: var(--text-primary);  /* was #e5e6e8 */
+  color: var(--text-primary);
   cursor: pointer;
   transition: left 0.3s ease, background 0.2s ease;
 }
-
 #sidebar-toggle:hover {
-  background: var(--bg-50);    /* was #444 */
+  background: var(--bg-50);
 }
 
 /* Logo container (h1) – tighter top and bottom margins */
 #sidebar > h1 {
   margin: 0.25em 0;
   text-align: center;
-  font-family: 'Satoshi', sans-serif;
+  font-family: var(--font-body);
 }
 
 /* Logo image sizing and centering – larger max size */
@@ -73,5 +71,5 @@
   font-size: 12px;
   text-transform: uppercase;
   text-align: center;
-  font-family: 'Satoshi', sans-serif;
+  font-family: var(--font-body);
 }

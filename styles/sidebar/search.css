@@ -1,40 +1,34 @@
 /* @file: styles/sidebar/search.css */
-/* @version: 1.9 — add subtle underline under Search header */
+/* @version: 2.0 — migrated spacing, underline, shadows to sidebar tokens */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* CONTAINER: full pill shape with header and content */
 #sidebar-search {
-  margin-top: 1.2em;                            
+  margin-top: var(--sidebar-search-margin-top);
   background-color: var(--bg-30);
   border-top: none;
   border-left: none;
   border-right: none;
   border-bottom: 1px solid var(--border-soft);
 
-  /* round all corners for seamless pill appearance */
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
+  border-radius: var(--radius-small);
 
   overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  box-shadow: var(--sidebar-shadow-medium);
 }
 
-/* HEADER: match .sidebar-section > h2 for consistent typography and add underline */
+/* HEADER: consistent typography and underline */
 #sidebar-search > h2 {
-  margin: 0;                                    
-  padding: 0.5em 0.8em;                         
-  background-color: var(--bg-20);               
-  font-size: 1.1em;
+  margin: 0;
+  padding: var(--sidebar-section-padding);
+  background-color: var(--bg-20);
+  font-size: var(--sidebar-section-font-size);
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: var(--sidebar-section-h2-letter-spacing);
   color: var(--text-primary);
-
-  /* subtle underline for visual separation */
-  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  border-bottom: var(--sidebar-section-border);
 }
 
 /* remove old divider */
@@ -45,21 +39,21 @@
 /* SEARCH WRAPPER: snug padding, continuous with header */
 .search-wrapper {
   position: relative;
-  padding: 0.4em 0.8em;                          
+  padding: var(--sidebar-search-wrapper-padding);
   background-color: var(--bg-30);
 }
 
-/* INPUT: lower height to match older style */
+/* INPUT field */
 #sidebar-search #search-bar {
   width: 100%;
   box-sizing: border-box;
-  padding: 4px 24px 4px 8px;                    
+  padding: var(--sidebar-search-input-padding);
   border: none;
-  border-radius: 0;                             
+  border-radius: 0;
   background-color: var(--bg-30);
   color: var(--text-primary);
-  font-size: 13px;                              
-  font-family: 'Satoshi', sans-serif;
+  font-size: var(--sidebar-search-input-font-size);
+  font-family: var(--font-body);
   outline: none;
   transition: background 0.2s, border-color 0.2s;
 }
@@ -73,7 +67,7 @@
 /* custom clear button */
 #search-clear {
   position: absolute;
-  right: 8px;
+  right: var(--sidebar-search-clear-right);
   top: 50%;
   transform: translateY(-50%);
   background: none;
@@ -100,4 +94,3 @@
   background-color: var(--bg-50);
   border-bottom-color: var(--accent-primary);
 }
- 

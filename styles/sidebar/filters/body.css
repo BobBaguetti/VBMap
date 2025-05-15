@@ -1,11 +1,11 @@
 /* @file: styles/sidebar/filters/body.css */
-/* @version: 1.0 — Filter group body layout and thumbnail icons */
+/* @version: 1.1 — migrate paddings, gaps & thumbnail sizing to tokens */
 
 .filter-group .toggle-group {
-  padding: 0.6em 1em;
+  padding: var(--sidebar-filter-group-padding);
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-  gap: 0.5em 0.8em;
+  gap: var(--sidebar-filter-grid-gap);
 }
 
 .filter-group .toggle-group label {
@@ -15,11 +15,11 @@
 
 /* Thumbnail icons before the text */
 .filter-group .toggle-group label .filter-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 0.5em;
+  width: var(--sidebar-filter-thumbnail-size);
+  height: var(--sidebar-filter-thumbnail-size);
+  margin-right: var(--sidebar-filter-icon-margin-right);
   flex-shrink: 0;
-  border-radius: 2px;
+  border-radius: var(--sidebar-filter-thumbnail-radius);
   object-fit: cover;
   transition: filter 0.2s ease;
 }
