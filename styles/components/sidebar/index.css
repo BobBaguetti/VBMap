@@ -1,0 +1,12 @@
+/* @file: styles/components/sidebar/index.css */
+/* @version: 1.0 — aggregate sidebar styles */
+
+@import "./filters/index.css";
+@import "./accessibility.css";
+@import "./layout.css";
+@import "./master.css";
+@import "./microanimations.css";
+@import "./search.css";
+@import "./section-headers.css";
+@import "./settings.css";
+@import "./toolbar.css";

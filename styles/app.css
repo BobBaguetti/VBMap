@@ -1,5 +1,5 @@
 /* @file: styles/app.css */
-/* @version: 1.7 — consolidated component imports using index files and removed legacy paths */
+/* @version: 1.8 — updated sidebar import to components/sidebar/index.css */
 
 /* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
 @import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
@@ -60,4 +60,4 @@
 @import "components/preview/index.css";
 
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
-@import "sidebar/index.css";
+@import "components/sidebar/index.css";

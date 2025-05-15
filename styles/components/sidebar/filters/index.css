@@ -1,0 +1,10 @@
+/* @file: styles/components/sidebar/filters/index.css */
+/* @version: 1.0 — aggregate all sidebar filter styles */
+
+@import "./animations.css";
+@import "./body.css";
+@import "./container.css";
+@import "./header.css";
+@import "./icons.css";
+@import "./states.css";
+@import "./toggles.css";
