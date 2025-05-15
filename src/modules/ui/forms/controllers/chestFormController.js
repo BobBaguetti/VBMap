@@ -18,7 +18,7 @@ import {
 }                              from "../../components/formControllerShell.js";
 import { initFormPickrs }      from "../../components/formPickrManager.js";
 import { createFormState }     from "../../components/formStateManager.js";
-import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
+import { loadItemDefinitions } from "../../../services/definitions/itemservice.js";
 
 export function createChestFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },

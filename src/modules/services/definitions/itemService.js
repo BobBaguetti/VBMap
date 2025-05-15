@@ -1,5 +1,5 @@
 // @version: 10
-// @file:    /src/modules/services/itemDefinitionsService.js
+// @file:    /src/modules/services/definitions/itemservice.js
 
 /**
  * Firestore service for item definitions.

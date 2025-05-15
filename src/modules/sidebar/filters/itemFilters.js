@@ -1,7 +1,7 @@
 // @file: src/modules/sidebar/filters/itemFilters.js
 // @version: 1.0 — item-definition toggles with thumbnails
 
-import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
+import { loadItemDefinitions } from "../../services/definitions/itemService.js";
 
 export async function setupItemFilters(containerSelector, db, onChange) {
   const container = document.querySelector(containerSelector);

@@ -1,4 +1,4 @@
-// @file: /src/modules/services/chestDefinitionsService.js
+// @file: /src/modules/services/definitions/chestservice.js
 // @version: 1.2 – normalize showInFilters default on load & subscribe
 
 /**

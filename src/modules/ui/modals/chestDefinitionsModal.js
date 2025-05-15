@@ -11,7 +11,7 @@ import {
   saveChestDefinition,
   updateChestDefinition,
   deleteChestDefinition
-} from "../../services/chestDefinitionsService.js";
+} from "../../services/definitions/chestService.js";
 
 import { createChestFormController }   from "../forms/controllers/chestFormController.js";
 
@@ -23,7 +23,7 @@ export function initChestDefinitionsModal(db) {
 
   async function ensureItemMap() {
     if (!Object.keys(itemMap).length) {
-      const items = await import("../../services/itemDefinitionsService.js")
+      const items = await import("../../services/definitions/itemService.js")
                          .then(m => m.loadItemDefinitions(db));
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
