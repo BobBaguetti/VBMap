@@ -48,7 +48,7 @@ export function setupSettingsModal({ buttonSelector }) {
     if (!sidebar) return;
     const rect = sidebar.getBoundingClientRect();
     panel.style.left = `${rect.right + 12}px`;
-    panel.style.top  = `${rect.top + 40}px`;
+    panel.style.top  = `${rect.top + 64}px`;
   }
 
   /* ── Open / Close helpers ───────────────────────────────────────── */
