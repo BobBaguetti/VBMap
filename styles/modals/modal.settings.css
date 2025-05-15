@@ -1,70 +1,77 @@
 /* @file: styles/modals/modal.settings.css */
-/* @version: 1.0 — modal styles for Settings window */
+/* @version: 1.1 — full styling so the Settings modal shows up */
 
-#settings-modal.modal.hidden {
+/* Hide when .hidden is present */
+#settings-modal.hidden {
   display: none;
 }
 
-/* Dark overlay */
-#settings-modal .modal-overlay {
+/* Full‑screen overlay container */
+#settings-modal {
   position: fixed;
+  inset: 0;                      /* top:0; right:0; bottom:0; left:0 */
+  z-index: 1200;                 /* above the sidebar & map */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Satoshi', sans-serif;
+}
+
+/* The dark overlay */
+#settings-modal .modal-overlay {
+  position: absolute;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
-  cursor: pointer;
 }
 
 /* Modal card */
 #settings-modal .modal-content {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  max-width: 90%;
-  width: 320px;
+  position: relative;
   background: var(--bg-20);
   color: var(--text-primary);
+  padding: 1.2em;
   border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  display: flex;
-  flex-direction: column;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  width: 90%;
+  max-width: 340px;
 }
 
-/* Header & footer */
-#settings-modal header,
-#settings-modal footer {
+/* Header */
+#settings-modal header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.6em 0.8em;
-  background: var(--bg-25);
-  border-bottom: 1px solid var(--border-soft);
+  margin-bottom: 0.8em;
+}
+#settings-modal header h3 {
+  margin: 0;
+  font-size: 1.1em;
+  letter-spacing: 0.05em;
 }
 
-#settings-modal footer {
-  border-top: 1px solid var(--border-soft);
-  border-bottom: none;
-}
-
-/* Close button */
+/* Close buttons */
 #settings-modal .modal-close {
   background: none;
   border: none;
-  font-size: 1.2em;
+  font-size: 1.3em;
+  color: var(--text-secondary);
   cursor: pointer;
+  transition: color 0.2s;
+}
+#settings-modal .modal-close:hover,
+#settings-modal .modal-close:focus {
   color: var(--text-primary);
+  outline: none;
 }
 
 /* Body */
-#settings-modal .modal-body {
-  padding: 0.8em;
-}
-
 #settings-modal .modal-body label {
   display: block;
-  margin: 0.5em 0;
-  cursor: pointer;
+  margin: 0.6em 0;
 }
 
-#settings-modal .modal-body input[type="checkbox"] {
-  margin-right: 0.4em;
+/* Footer */
+#settings-modal footer {
+  margin-top: 1em;
+  text-align: right;
 }
