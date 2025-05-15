@@ -1,47 +1,53 @@
 /* @file: styles/modals/modal.about.css */
-/* @version: 1.0 — styling for the floating About panel */
+/* @version: 1.1 — centered dialog, wider layout, centered text */
 
-#about-modal.hidden {
-  display: none;
-}
+/* Hide when .hidden is present */
+#about-modal.hidden { display: none; }
 
-/* Floating container */
-#about-modal.floating {
+/* Centered container */
+#about-modal.centered {
   position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
   z-index: 1200;
-  width: 340px;
-  pointer-events: all;
+  pointer-events: all;      /* dialog clickable, rest of UI still interactive */
 }
 
-/* Draggable card */
+/* Dialog card */
 #about-modal .modal-content {
+  width: 440px;             /* wider to suit text */
+  max-width: 90vw;
   background: var(--bg-20);
   color: var(--text-primary);
   border: 1px solid var(--border-soft);
-  border-radius: 4px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.45);
-  user-select: none;
+  border-radius: 6px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.45);
+  padding: 1.2em 1.4em;
 }
 
-/* Header / drag handle */
-#about-modal .drag-handle {
+/* Header */
+#about-modal header {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;   /* center the title text */
   align-items: center;
-  padding: 0.6em 0.8em;
-  cursor: move;
-  background: var(--bg-25);
-  border-bottom: 1px solid var(--border-soft);
+  position: relative;
+  margin-bottom: 0.8em;
 }
-#about-modal .drag-handle h3 {
+#about-modal header h3 {
   margin: 0;
-  font-size: 1em;
+  font-size: 1.15em;
   letter-spacing: 0.05em;
+  text-align: center;
+  flex: 1;
 }
 #about-modal .modal-close {
+  position: absolute;
+  right: 0;
+  top: 0;
   background: none;
   border: none;
-  font-size: 1.2em;
+  font-size: 1.3em;
   color: var(--text-secondary);
   cursor: pointer;
 }
@@ -51,11 +57,15 @@
   outline: none;
 }
 
-/* Body */
+/* Body text */
 #about-modal .modal-body {
-  padding: 0.8em;
+  text-align: center;
+  line-height: 1.45;
 }
-#about-modal .modal-body p {
-  margin: 0.6em 0;
-  line-height: 1.4;
+#about-modal .modal-body a {
+  color: var(--accent-primary);
+  text-decoration: none;
+}
+#about-modal .modal-body a:hover {
+  text-decoration: underline;
 }
