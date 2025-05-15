@@ -1,14 +1,17 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.0 — core custom-popup styling (layout, sizing, typography, controls) */
+/* @version: 1.0 — core custom-popup styles */
+
+/* ───────────────────────────────────────────────── Custom Popup ──── */
+@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
 
 .custom-popup {
   position: relative;
-  background: var(--bg-40);                /* was rgba(34,34,34,0.95) */
+  background: var(--bg-40);                /* was rgba(34, 34, 34, 0.95) */
   border-radius: 8px;
   padding: 11px;
   width: 320px;
   color: var(--text-primary);              /* was #e0e0e0 */
-  font-family: var(--font-body);
+  font-family: 'Satoshi', sans-serif;
   font-size: 14px;
   line-height: 1.4;
 }
@@ -39,7 +42,7 @@
   flex-shrink: 0;
 }
 
-/* Info block (non-loot panels) */
+/* Info Block */
 .popup-info {
   display: flex;
   flex-direction: column;
@@ -52,25 +55,23 @@
   padding: 0;
   line-height: 1.2;
 }
-
-/* Text elements */
 .popup-name {
   font-family: 'Segoe UI', Tahoma, sans-serif;
   font-size: 18px;
   font-weight: 520;
   font-variant: small-caps;
   text-transform: uppercase;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-type,
 .popup-rarity {
   font-size: 15px;
   font-weight: 520;
   transform: translateY(-1px);
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Value (coins) */
+/* Value (coins) block */
 .popup-value-icon {
   display: inline-flex;
   align-items: center;
@@ -80,32 +81,32 @@
   font-size: 15px;
   font-weight: 520;
   white-space: nowrap;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-value-icon svg {
   width: 16px;
   height: 16px;
-  fill: var(--accent-gold);                /* was #d4af37 */
+  fill: #d4af37; /* keep gold accent */
 }
 
-/* Info box (shared by text panels & loot panels) */
-.custom-popup > .popup-body.popup-info-box {
+/* Body (with box style) */
+.popup-body.popup-info-box {
   font-weight: 420;
   font-size: 14px;
-  background: var(--bg-30);                /* was rgba(20,20,20,0.6) */
+  background: var(--bg-30);                /* was rgba(20, 20, 20, 0.6) */
   border: 1px solid var(--border-soft);    /* was #444 */
   border-radius: 4px;
   padding: 9px;
   margin-top: 7px;
   display: flex;
   flex-direction: column;
-  gap: 1px;                                 /* was tight vertical gap */
+  gap: 1px;           /* tight vertical gap */
 }
-.popup-body.popup-info-box p {
+.popup-body p {
   margin: 0;
   padding: 2px 0;
   font-weight: 420;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-desc {
   font-size: 14px;
@@ -113,7 +114,7 @@
   font-weight: 400;
 }
 
-/* Extra & meta lines */
+/* Extras + Meta */
 .popup-extra-line {
   font-size: 14px;
   font-weight: 420;
@@ -122,18 +123,18 @@
   font-size: 12px;
   text-transform: uppercase;
   font-weight: 420;
-  color: var(--text-primary);
+  color: var(--text-primary);              /* was #e0e0e0 */
 }
 
-/* Divider */
+/* Divider after description */
 .popup-divider {
   border: none;
   height: 1px;
-  background: var(--bg-50);
-  margin: 1px 0;
+  background: var(--bg-50);                /* was #444 */
+  margin: 1px 0;      /* minimal gap */
 }
 
-/* Close button */
+/* Close Button */
 .popup-close-btn {
   position: absolute;
   top: 8px;
@@ -143,20 +144,22 @@
   padding: 0;
   cursor: pointer;
   z-index: 10;
+
+  /* animate the “×” on hover */
   transition: color 0.2s, transform 0.2s;
-  color: var(--text-secondary);
+  color: var(--text-secondary);            /* was #aaa */
 }
 .popup-close-btn svg {
   width: 16px;
   height: 16px;
-  fill: var(--text-secondary);
+  fill: var(--text-secondary);             /* was #aaa */
   transition: fill 0.2s, transform 0.2s;
 }
 .popup-close-btn:hover {
-  color: var(--text-primary);
+  color: var(--text-primary);              /* was #fff */
   transform: scale(1.2);
 }
 .popup-close-btn:hover svg {
-  fill: var(--text-primary);
+  fill: var(--text-primary);               /* was white */
   transform: scale(1.2);
 }
