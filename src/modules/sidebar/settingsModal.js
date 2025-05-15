@@ -1,22 +1,27 @@
 // @file: src/modules/sidebar/settingsModal.js
-// @version: 1.1 — robust button detection & event‑delegation
+// @version: 1.1 — draggable floating panel, no blocking overlay
 
 /**
- * Creates and wires a settings modal, toggled by the toolbar button.
+ * Creates and wires a draggable, floating Settings panel.
  *
  * @param {object} params
  * @param {string} params.buttonSelector – selector for the Settings toolbar button
  */
-export function setupSettingsModal({ buttonSelector = "#btn-settings" }) {
-  // Build modal element once and append to <body>
-  const modal = document.createElement("div");
-  modal.id = "settings-modal";
-  modal.classList.add("modal", "hidden"); // hidden by default
+export function setupSettingsModal({ buttonSelector }) {
+  const btn = document.querySelector(buttonSelector);
+  if (!btn) {
+    console.warn("[settingsModal] Button not found:", buttonSelector);
+    return;
+  }
 
-  modal.innerHTML = `
-    <div class="modal-overlay"></div>
+  /* ── Build panel markup ─────────────────────────────────────────── */
+  const panel = document.createElement("div");
+  panel.id = "settings-modal";
+  panel.classList.add("floating", "hidden"); // hidden by default
+
+  panel.innerHTML = `
     <div class="modal-content">
-      <header>
+      <header class="drag-handle">
         <h3>Settings</h3>
         <button class="modal-close" aria-label="Close">&times;</button>
       </header>
@@ -30,28 +35,60 @@ export function setupSettingsModal({ buttonSelector = "#btn-settings" }) {
           Small Markers (50%)
         </label>
       </section>
-      <footer>
-        <button class="modal-close">Close</button>
-      </footer>
     </div>
   `.trim();
-  document.body.appendChild(modal);
 
-  const overlay      = modal.querySelector(".modal-overlay");
-  const closeButtons = modal.querySelectorAll(".modal-close");
-  const openModal    = () => modal.classList.remove("hidden");
-  const closeModal   = () => modal.classList.add("hidden");
+  document.body.appendChild(panel);
 
-  // Global delegation — works even if the button isn’t in the DOM yet
-  document.addEventListener("click", (e) => {
-    const btn = e.target.closest(buttonSelector);
-    if (btn) {
-      openModal();
-      e.preventDefault();
+  const closeBtn = panel.querySelector(".modal-close");
+
+  /* ── Position: just right of sidebar initially ──────────────────── */
+  function positionNextToSidebar() {
+    const sidebar = document.getElementById("sidebar");
+    if (!sidebar) return;
+    const rect = sidebar.getBoundingClientRect();
+    panel.style.left = `${rect.right + 12}px`;
+    panel.style.top  = `${rect.top + 40}px`;
+  }
+
+  /* ── Open / Close helpers ───────────────────────────────────────── */
+  function open() {
+    panel.classList.remove("hidden");
+    // If the panel has never been moved, snap next to sidebar
+    if (!panel.dataset.moved) positionNextToSidebar();
+  }
+  function close() {
+    panel.classList.add("hidden");
+  }
+
+  btn.addEventListener("click", open);
+  closeBtn.addEventListener("click", close);
+
+  /* ── Drag behaviour (header acts as handle) ─────────────────────── */
+  const handle = panel.querySelector(".drag-handle");
+  let startX, startY, startLeft, startTop;
+
+  handle.addEventListener("pointerdown", (e) => {
+    e.preventDefault();
+    startX = e.clientX;
+    startY = e.clientY;
+    const rect = panel.getBoundingClientRect();
+    startLeft = rect.left;
+    startTop  = rect.top;
+
+    function onMove(ev) {
+      const dx = ev.clientX - startX;
+      const dy = ev.clientY - startY;
+      panel.style.left = `${startLeft + dx}px`;
+      panel.style.top  = `${startTop  + dy}px`;
+      panel.dataset.moved = "true";
     }
-  });
+    function onUp() {
+      window.removeEventListener("pointermove", onMove);
+      window.removeEventListener("pointerup", onUp);
+    }
 
-  // Close interactions
-  overlay.addEventListener("click", closeModal);
-  closeButtons.forEach(b => b.addEventListener("click", closeModal));
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp);
+  });
 }

@@ -1,53 +1,61 @@
 /* @file: styles/modals/modal.settings.css */
-/* @version: 1.0 — visual styles for Settings modal */
+/* @version: 1.2 — floating, draggable panel with non-blocking style */
 
-#settings-modal.modal.hidden { display: none; }
-
-#settings-modal .modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
-  z-index: 998;
+#settings-modal.hidden {
+  display: none;
 }
 
-#settings-modal .modal-content {
+/* Floating container */
+#settings-modal.floating {
   position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%,-50%);
+  z-index: 1200;            /* above map & sidebar */
+  width: 320px;
+  pointer-events: all;      /* allow interaction */
+}
+
+/* Draggable card */
+#settings-modal .modal-content {
   background: var(--bg-20);
   color: var(--text-primary);
-  padding: 1rem;
+  border: 1px solid var(--border-soft);
   border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
-  max-width: 320px;
-  width: 90%;
-  z-index: 999;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+  user-select: none;        /* avoid text selection while dragging */
 }
 
-#settings-modal header,
-#settings-modal footer {
+/* Header / drag handle */
+#settings-modal .drag-handle {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 0.6em 0.8em;
+  cursor: move;
+  background: var(--bg-25);
+  border-bottom: 1px solid var(--border-soft);
 }
-
-#settings-modal header h3 {
+#settings-modal .drag-handle h3 {
   margin: 0;
-  font-size: 1.1rem;
+  font-size: 1em;
   letter-spacing: 0.05em;
 }
-
 #settings-modal .modal-close {
   background: none;
   border: none;
-  color: var(--text-primary);
-  font-size: 1.4rem;
+  font-size: 1.2em;
+  color: var(--text-secondary);
   cursor: pointer;
 }
+#settings-modal .modal-close:hover,
+#settings-modal .modal-close:focus {
+  color: var(--text-primary);
+  outline: none;
+}
 
+/* Body */
+#settings-modal .modal-body {
+  padding: 0.8em;
+}
 #settings-modal .modal-body label {
   display: block;
-  margin: 0.6em 0;
-  font-size: 0.95rem;
+  margin: 0.5em 0;
 }
