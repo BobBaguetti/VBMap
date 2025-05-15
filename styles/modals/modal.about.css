@@ -1,7 +1,6 @@
 /* @file: styles/modals/modal.about.css */
-/* @version: 1.1 — centered dialog, wider layout, centered text */
+/* @version: 1.2 — use Satoshi font throughout the dialog */
 
-/* Hide when .hidden is present */
 #about-modal.hidden { display: none; }
 
 /* Centered container */
@@ -11,12 +10,13 @@
   left: 50%;
   transform: translate(-50%, -50%);
   z-index: 1200;
-  pointer-events: all;      /* dialog clickable, rest of UI still interactive */
+  pointer-events: all;
+  font-family: 'Satoshi', sans-serif;   /* ensure Satoshi everywhere */
 }
 
 /* Dialog card */
 #about-modal .modal-content {
-  width: 440px;             /* wider to suit text */
+  width: 440px;
   max-width: 90vw;
   background: var(--bg-20);
   color: var(--text-primary);
@@ -29,7 +29,7 @@
 /* Header */
 #about-modal header {
   display: flex;
-  justify-content: center;   /* center the title text */
+  justify-content: center;
   align-items: center;
   position: relative;
   margin-bottom: 0.8em;
