@@ -1,24 +1,27 @@
 /* @keep:  Comments must NOT be deleted unless code is deleted; edits only with code changes. */
 /* @file: styles/base.css */
-/* @version: 10 */
+/* @version: 11 — make Medium (500) the default weight */
 
-/* 0) Import Satoshi globally */
+/* 0) Import Satoshi globally (Fontshare CDN) */
 @import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600&display=swap");
 
 /* 1) Box-sizing */
 *, *::before, *::after { box-sizing: border-box; }
 
-/* 2) Global reset & dark‑mode background */
+/* 2) Global reset & dark-mode background */
 html,
 body {
   margin: 0;
   padding: 0;
   height: 100%;
   font-family: 'Satoshi', sans-serif;
+  /* NEW ↓ default weight = Medium / 500 */
+  font-weight: 500;
   background-color: var(--bg-00);
   color: var(--text-primary);
   overflow: hidden;
 }
+
 
 /* 3) Map container full‑screen */
 #map {
