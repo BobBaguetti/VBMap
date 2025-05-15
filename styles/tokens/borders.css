@@ -1,9 +1,10 @@
 /* @file: styles/tokens/borders.css */
-/* @version: 1.0 — initial border tokens */
+/* @version: 1.1  */
 
 /* Border radii and widths */
 :root {
   /* Border radii */
+  --radius-xsmall: 2px;    
   --radius-small: 4px;
   --radius-medium: 8px;
   --radius-large: 12px;

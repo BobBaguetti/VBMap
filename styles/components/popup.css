@@ -1,5 +1,5 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.0 — token-driven custom popup component styles */
+/* @version: 1.1 — tweak paragraph shadows & image rounding */
 
 .custom-popup {
   position: relative;
@@ -38,7 +38,7 @@
   object-fit: contain;
   background-color: var(--bg-20);
   border: 2px solid var(--bg-50);
-  border-radius: var(--radius-small);
+  border-radius: 6px;  /* restored to original rounding */
   flex-shrink: 0;
 }
 
@@ -101,12 +101,14 @@
   flex-direction: column;
   gap: 1px;
 }
+/* Removed text-shadow here so extra/info lines render cleanly */
 .popup-body.popup-info-box p {
   margin: 0;
   padding: 2px 0;
   font-weight: 420;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
+
+/* Description */
 .popup-desc {
   font-style: italic;
   font-weight: 400;
