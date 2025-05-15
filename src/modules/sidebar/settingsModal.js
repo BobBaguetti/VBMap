@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/settingsModal.js
-// @version: 1.1 — draggable floating panel, no blocking overlay
+// @version: 1.2 — offset = 64 px and cog button now toggles open/close
 
 /**
  * Creates and wires a draggable, floating Settings panel.
@@ -42,26 +42,30 @@ export function setupSettingsModal({ buttonSelector }) {
 
   const closeBtn = panel.querySelector(".modal-close");
 
-  /* ── Position: just right of sidebar initially ──────────────────── */
+  /* ── Position: right of sidebar, 64 px down ─────────────────────── */
+  const INITIAL_TOP_OFFSET = 64; // tweak this to shift vertically
   function positionNextToSidebar() {
     const sidebar = document.getElementById("sidebar");
     if (!sidebar) return;
     const rect = sidebar.getBoundingClientRect();
     panel.style.left = `${rect.right + 12}px`;
-    panel.style.top  = `${rect.top + 64}px`;
+    panel.style.top  = `${rect.top + INITIAL_TOP_OFFSET}px`;
   }
 
   /* ── Open / Close helpers ───────────────────────────────────────── */
   function open() {
     panel.classList.remove("hidden");
-    // If the panel has never been moved, snap next to sidebar
     if (!panel.dataset.moved) positionNextToSidebar();
   }
   function close() {
     panel.classList.add("hidden");
   }
+  function toggle() {
+    panel.classList.contains("hidden") ? open() : close();
+  }
 
-  btn.addEventListener("click", open);
+  /* ── Wire events ────────────────────────────────────────────────── */
+  btn.addEventListener("click", toggle);
   closeBtn.addEventListener("click", close);
 
   /* ── Drag behaviour (header acts as handle) ─────────────────────── */
