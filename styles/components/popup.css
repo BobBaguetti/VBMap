@@ -1,5 +1,5 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.4 — remove redundant font-family declarations */
+/* @version: 1.5 — restore text-shadow on description & extra-info rows */
 
 @import "../tokens/popup.css";
 
@@ -11,7 +11,7 @@
   padding: var(--popup-padding);
   width: var(--popup-width);
   color: var(--text-primary);
-  font-family: var(--font-body);       /* single source of truth */
+  font-family: var(--font-body);
   font-size: var(--popup-font-size);
   line-height: var(--popup-line-height);
   box-shadow: var(--shadow-medium);
@@ -109,17 +109,19 @@
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Description (no shadow) */
+/* Description (now with shadow) */
 .popup-desc {
   font-size: var(--popup-info-box-font-size);
   font-style: italic;
   font-weight: 400;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Extras + Meta (no shadow) */
+/* Extras + Meta */
 .popup-extra-line {
   font-size: var(--popup-info-box-font-size);
   font-weight: var(--popup-info-box-font-weight);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-meta {
   font-size: 0.75rem;
