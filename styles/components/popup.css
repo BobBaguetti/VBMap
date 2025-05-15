@@ -1,5 +1,5 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.2 — added box-shadow and use global font */
+/* @version: 1.4 — remove redundant font-family declarations */
 
 @import "../tokens/popup.css";
 
@@ -11,7 +11,7 @@
   padding: var(--popup-padding);
   width: var(--popup-width);
   color: var(--text-primary);
-  font-family: var(--font-body);
+  font-family: var(--font-body);       /* single source of truth */
   font-size: var(--popup-font-size);
   line-height: var(--popup-line-height);
   box-shadow: var(--shadow-medium);
@@ -57,7 +57,6 @@
   line-height: var(--popup-info-line-height);
 }
 .popup-name {
-  font-family: var(--font-body);
   font-size: var(--popup-name-font-size);
   font-weight: 520;
   font-variant: small-caps;
@@ -90,7 +89,7 @@
   fill: #d4af37;
 }
 
-/* Body (with box style) */
+/* Body (info box) */
 .popup-body.popup-info-box {
   font-weight: var(--popup-info-box-font-weight);
   font-size: var(--popup-info-box-font-size);
@@ -102,7 +101,6 @@
   display: flex;
   flex-direction: column;
   gap: var(--popup-info-box-gap);
-  box-shadow: var(--shadow-low);
 }
 .popup-body p {
   margin: 0;
@@ -110,13 +108,15 @@
   font-weight: var(--popup-info-box-font-weight);
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
+
+/* Description (no shadow) */
 .popup-desc {
   font-size: var(--popup-info-box-font-size);
   font-style: italic;
   font-weight: 400;
 }
 
-/* Extras + Meta */
+/* Extras + Meta (no shadow) */
 .popup-extra-line {
   font-size: var(--popup-info-box-font-size);
   font-weight: var(--popup-info-box-font-weight);
@@ -128,7 +128,7 @@
   color: var(--text-primary);
 }
 
-/* Divider after description */
+/* Divider */
 .popup-divider {
   border: none;
   height: 1px;
