@@ -1,5 +1,5 @@
 /* @file: styles/utilities.css */
-/* @version: 1.0 — initial utility helper classes */
+/* @version: 1.1 — added legacy UI utilities */
 
 /* Text helpers */
 .text-primary {
@@ -27,4 +27,18 @@
 }
 .bg-surface-50 {
   background-color: var(--bg-50);
+}
+
+/* Legacy UI utilities */
+.ui-text-default {
+  color: var(--text-primary);
+}
+.admin-only {
+  display: none !important;
+}
+body.is-admin .admin-only {
+  display: block !important;
+}
+[hidden] {
+  display: none !important;
 }
