@@ -1,0 +1,4 @@
+/* @file: styles/components/map/index.css */
+/* @version: 1.0 — aggregates map styles */
+@import "./map.css";
+@import "./leaflet-overrides.css";

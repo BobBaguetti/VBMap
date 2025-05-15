@@ -1,5 +1,5 @@
 /* @file: styles/app.css */
-/* @version: 1.6 — migrate all modal & preview imports to component paths; remove legacy files */
+/* @version: 1.7 — consolidated component imports using index files and removed legacy paths */
 
 /* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
 @import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
@@ -26,7 +26,7 @@
 @import "themes/darkmode.css";  /* default */
 
 /* ── Global base styles ──────────────────────────────────────────────── */
-@import "base.css";
+@import "components/base.css";
 
 /* ── Core component skins ────────────────────────────────────────────── */
 @import "components/buttons.css";
@@ -35,45 +35,29 @@
 @import "components/scrollbar.css";
 @import "components/icons.css";
 @import "components/ui-controls.css";
-@import "components/map.css";
-@import "components/markers.css";
 @import "components/entries.css";
 
+/* ── Map & Marker overrides ──────────────────────────────────────────── */
+@import "components/map/index.css";
+@import "components/markers.css";
+
 /* ── Utilities ───────────────────────────────────────────────────────── */
-@import "utilities.css";
+@import "components/utilities.css";
 
 /* ── Context menus & popups ──────────────────────────────────────────── */
 @import "components/context-menu.css";
-@import "components/leaflet-overrides.css";
+@import "components/map/leaflet-overrides.css";
 @import "components/popup.css";
 @import "components/popup-chest-grid.css";
 
 /* ── Modal stack ─────────────────────────────────────────────────────── */
-@import "components/modal/base.css";
-@import "components/modal/form.css";
-@import "components/modal/entries.css";
+@import "components/modal/index.css";
 
-/* Large-modal micro-modules */
-@import "components/modal/large/box.css";
-@import "components/modal/large/header.css";
-@import "components/modal/large/scroll.css";
-@import "components/modal/large/fields.css";
-@import "components/modal/large/entries.css";
-@import "components/modal/large/buttons.css";
-
-/* Shared small/about/settings overrides */
-@import "components/modal/small.css";
-@import "components/modal/about.css";
-@import "components/modal/settings.css";
-
-/* ── Inventory / loot-pool components ────────────────────────────────── */
-@import "components/inventory/chip-list.css";
-@import "components/inventory/chest-picker.css";
+/* ── Inventory components ───────────────────────────────────────────── */
+@import "components/inventory/index.css";
 
 /* ── Preview panels ──────────────────────────────────────────────────── */
-@import "components/preview/base.css";
-@import "components/preview/item.css";
-@import "components/preview/chest.css";
+@import "components/preview/index.css";
 
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
 @import "sidebar/index.css";

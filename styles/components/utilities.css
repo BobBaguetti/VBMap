@@ -1,7 +1,7 @@
-/* @file: styles/utilities.css */
-/* @version: 1.1 — added legacy UI utilities */
+/* @file: styles/components/utilities.css */
+/* @version: 1.2 — migrated legacy utilities from styles/utilities.css */
 
-/* Text helpers */
+/* 1) Text Helpers */
 .text-primary {
   color: var(--text-primary);
 }
@@ -12,7 +12,7 @@
   color: var(--text-disabled);
 }
 
-/* Background surface helpers */
+/* 2) Background Surface Helpers */
 .bg-surface-10 {
   background-color: var(--bg-10);
 }
@@ -29,7 +29,7 @@
   background-color: var(--bg-50);
 }
 
-/* Legacy UI utilities */
+/* 3) Legacy UI Utilities */
 .ui-text-default {
   color: var(--text-primary);
 }

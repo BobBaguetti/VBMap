@@ -1,0 +1,5 @@
+/* @file: styles/components/preview/index.css */
+/* @version: 1.0 — aggregates preview panel styles */
+@import "./base.css";
+@import "./item.css";
+@import "./chest.css";

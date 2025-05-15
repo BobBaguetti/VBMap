@@ -1,0 +1,95 @@
+/* @file: styles/components/map/leaflet-overrides.css */
+/* @version: 1.1 — added custom-popup styles and tokenized values */
+
+/* ───────────────────────────────────────────────── Leaflet Overrides ─ */
+
+/* 1) Container Background */
+.leaflet-container {
+  background-color: var(--bg-00) !important; /* was #1a1a1a */
+}
+
+/* 2) Full Popup Reset */
+.leaflet-popup,
+.leaflet-popup-content-wrapper,
+.leaflet-popup-content {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-tip-container,
+.leaflet-popup-tip {
+  display: none !important;
+}
+
+/* 3) Custom Marker Popup Styles */
+.custom-popup {
+  background-color: var(--bg-40);
+  padding: var(--space-2);             /* was 12px */
+  border-radius: var(--radius-small);  /* was 8px */
+  color: var(--text-primary);
+  max-width: var(--popup-width);       /* define in tokens/popup.css, was 320px */
+  box-shadow: var(--shadow-medium);    /* was 0 2px 8px rgba(0,0,0,0.5) */
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);      /* was 14px */
+  line-height: 1.4;
+  position: relative;
+}
+
+.popup-header {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);                 /* was 10px */
+  margin-bottom: var(--space-1);       /* was 6px */
+}
+
+.popup-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex-grow: 1;
+}
+
+.popup-name {
+  font-size: var(--font-size-md);     /* was 18px */
+  font-weight: 600;
+  margin-bottom: var(--space-0_5);     /* define ~2px token in spacing if needed */
+}
+
+.popup-type,
+.popup-rarity {
+  font-size: var(--font-size-xs);     /* was 13px */
+  text-transform: uppercase;
+}
+
+.popup-body p {
+  margin: var(--space-0_5) 0;          /* was 2px */
+}
+
+.popup-image {
+  width: var(--space-8);               /* was 64px */
+  height: var(--space-8);
+  object-fit: contain;
+  background: var(--bg-20);
+  border: none;
+  border-radius: var(--radius-small);  /* was 4px */
+}
+
+.popup-close-btn {
+  position: absolute;
+  top: var(--space-2);                 /* was 8px */
+  right: var(--space-2);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+
+.popup-close-btn svg {
+  width: var(--space-5);               /* define ~22px token if needed */
+  height: var(--space-5);
+  fill: var(--text-secondary);
+}

@@ -1,9 +1,14 @@
 /* @file: styles/tokens/spacing.css */
-/* @version: 1.0 — initial spacing scale */
+/* @version: 1.1 — added larger spacing tokens for form layouts */
 
-/* Consistent spacing rhythm */
 :root {
   --space-1: 0.4em;   /* small gap */
   --space-2: 0.6em;   /* default padding/margin */
   --space-3: 1.2em;   /* larger separation */
+
+  /* New extended spacing */
+  --space-4: 2.4em;   /* ~38.4px */
+  --space-5: 4.8em;   /* ~76.8px */
+  --space-6: 5.625em; /* ~90px — for label widths */
+  --space-7: 5.375em; /* ~86px — for color-btn margin-left */
 }

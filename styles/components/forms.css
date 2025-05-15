@@ -1,6 +1,7 @@
 /* @file: styles/components/forms.css */
-/* @version: 1.0 — initial forms component styles */
+/* @version: 1.2 — applied extended spacing tokens for edit-form layout */
 
+/* 1) Generic Form Controls */
 input,
 select,
 textarea {
@@ -16,4 +17,55 @@ select:focus-visible,
 textarea:focus-visible {
   outline: var(--border-width-thin) solid var(--focus-ring);
   outline-offset: var(--space-1);
+}
+
+/* 2) Edit Form Layout */
+#edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);            /* was 10px */
+  padding-top: var(--space-1);     /* was 8px */
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: var(--space-2);   /* was 8px */
+}
+
+.field-row label {
+  width: var(--space-6);           /* ~90px */
+  margin-right: var(--space-1);    /* was 5px */
+  flex-shrink: 0;
+}
+
+.field-row input[type="text"],
+.field-row select,
+.field-row textarea {
+  background: var(--bg-30) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-width-hair) solid var(--border-soft) !important;
+  padding: var(--space-1) var(--space-1); /* was 4px 6px */
+  font-size: var(--font-size-sm);         /* was 14px */
+  box-sizing: border-box;
+  width: 100%;
+}
+
+.field-row textarea {
+  resize: vertical;
+}
+
+.field-row button {
+  padding: var(--space-1) var(--space-2) !important; /* was 6px 12px */
+}
+
+.color-btn {
+  width: var(--space-8);           /* remains 32px if --space-8 is defined */
+  height: var(--space-8);          /* remains 32px if --space-8 is defined */
+  background: var(--bg-40);
+  border: 1px solid var(--bg-50);
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-left: var(--space-7);     /* ~86px */
 }
