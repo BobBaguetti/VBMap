@@ -1,51 +1,53 @@
 // @file: src/modules/sidebar/sidebarUI.js
-// @version: 1.32 — wire Settings toolbar button to open settings modal
+// @version: 1.34 — wire About toolbar button to draggable About modal
 
-import { setupSidebarSearch }       from "./search.js";
+import { setupSidebarSearch }   from "./search.js";
 import { setupSidebarMobileToggle } from "./mobileToggle.js";
-import { setupStickyHeader }        from "./stickyHeader.js";
-import { setupGroupToggle }         from "./groupToggle.js";
-import { setupMasterControls }      from "./masterToggle.js";
-import { setupSettingsModal }       from "./settingsModal.js";
+import { setupStickyHeader }    from "./stickyHeader.js";
+import { setupGroupToggle }     from "./groupToggle.js";
+import { setupMasterControls }  from "./masterToggle.js";
+import { setupSettingsModal }   from "./settingsModal.js";
+import { setupAboutModal }      from "./aboutModal.js";     // NEW
 
 export function setupSidebarUI({
   map,
-  sidebarSelector       = "#sidebar",
-  toggleSelector        = "#sidebar-toggle",
-  searchBarSelector     = "#search-bar",
-  filterGroupSelector   = ".filter-group",
-  settingsButtonSelector= "#btn-settings"
+  sidebarSelector         = "#sidebar",
+  toggleSelector          = "#sidebar-toggle",
+  searchBarSelector       = "#search-bar",
+  filterGroupSelector     = ".filter-group",
+  settingsButtonSelector  = "#btn-settings",
+  aboutButtonSelector     = "#btn-about"
 }) {
   const COLLAPSE_DURATION = 300;
   const PREHIDE_OFFSET    = 68;
   const REAPPEAR_OFFSET   = 25;
 
-  // 1) Search bar
+  /* ── Search bar ─────────────────────────────────────────────── */
   setupSidebarSearch({
     searchBarSelector,
     clearButtonSelector: "#search-clear"
   });
 
-  // 2) Mobile sidebar toggle
+  /* ── Mobile sidebar toggle ──────────────────────────────────── */
   setupSidebarMobileToggle({
     sidebarSelector,
     toggleSelector
   });
 
-  // 3) Sticky Filters header
+  /* ── Sticky Filters header ──────────────────────────────────── */
   setupStickyHeader({
     sectionSelector: "#filters-section",
     stuckClass:      "stuck",
     threshold:       [1]
   });
 
-  // 4) Master controls
+  /* ── Master controls (collapse/eye-all) ─────────────────────── */
   const { updateMasterCollapseIcon, updateMasterEyeIcon } = setupMasterControls({
     sectionSelector:     "#filters-section",
     filterGroupSelector
   });
 
-  // 5) Per-group collapse & eye toggles
+  /* ── Per-group collapse & eye toggles ───────────────────────── */
   setupGroupToggle({
     filterGroupSelector,
     collapseDuration:       COLLAPSE_DURATION,
@@ -55,6 +57,9 @@ export function setupSidebarUI({
     onUpdateMasterEye:      updateMasterEyeIcon
   });
 
-  // 6) Settings modal
+  /* ── Settings modal ─────────────────────────────────────────── */
   setupSettingsModal({ buttonSelector: settingsButtonSelector });
+
+  /* ── About modal ────────────────────────────────────────────── */
+  setupAboutModal({ buttonSelector: aboutButtonSelector });
 }

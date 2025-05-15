@@ -27,6 +27,7 @@
 @import "modals/modal.large.css";
 @import "modals/inventory.css";
 @import "modals/modal.settings.css";  
+@import "modals/modal.about.css";  
 
 /* ── Preview panels ─────────────────────────────────────────────────── */
 @import "preview/previewPanel.css";
