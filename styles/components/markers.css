@@ -1,0 +1,45 @@
+/* @file: styles/components/markers.css */
+/* @version: 1.0 — token-driven marker styles */
+
+/* Container reset for custom markers */
+.custom-marker-container {
+  background: transparent !important;
+  border: none !important;
+}
+
+/* Marker size */
+.custom-marker {
+  position: relative;
+  width: var(--marker-size);
+  height: var(--marker-size);
+}
+
+/* Circular border around marker */
+.marker-border {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  border: var(--marker-border-thickness) solid var(--bg-50);
+  border-radius: 50%;
+  background: transparent !important;
+}
+
+/* Icon inside marker */
+.marker-icon {
+  position: absolute;
+  width: var(--marker-icon-size);
+  height: var(--marker-icon-size);
+  top: calc((var(--marker-size) - var(--marker-icon-size)) / 2);
+  left: calc((var(--marker-size) - var(--marker-icon-size)) / 2);
+  object-fit: cover;
+  display: block;
+  background: transparent !important;
+  opacity: 1 !important;
+  filter: none !important;
+}
+
+/* Small-markers mode */
+#map.small-markers .custom-marker {
+  transform: scale(var(--marker-small-scale));
+  transform-origin: center bottom;
+}

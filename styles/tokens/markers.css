@@ -1,0 +1,10 @@
+/* @file: styles/tokens/markers.css */
+/* @version: 1.0 — marker dimension tokens */
+
+:root {
+  /* Default marker dimensions */
+  --marker-size: 32px;
+  --marker-icon-size: 24px;
+  --marker-border-thickness: 3px;
+  --marker-small-scale: 0.5;
+}
