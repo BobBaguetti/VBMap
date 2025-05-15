@@ -3,7 +3,7 @@
 /* @version: 10 */
 
 /* 0) Import Satoshi globally */
-@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
+@import url("https://api.fontshare.com/v2/css?f[]=satoshi@400,500,600&display=swap");
 
 /* 1) Box-sizing */
 *, *::before, *::after { box-sizing: border-box; }
