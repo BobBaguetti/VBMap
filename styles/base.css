@@ -5,19 +5,19 @@
 /* 0) Self-hosted Satoshi — Regular, Medium, SemiBold (hinted) */
 @font-face {
   font-family: 'Satoshi';
-  src: url('/assets/fonts/satoshi/Satoshi-Regular.woff2') format('woff2');
+  src: url('assets/fonts/satoshi/Satoshi-Regular.woff2') format('woff2');
   font-weight: 400;
   font-display: swap;
 }
 @font-face {
   font-family: 'Satoshi';
-  src: url('/assets/fonts/satoshi/Satoshi-Medium.woff2') format('woff2');
+  src: url('assets/fonts/satoshi/Satoshi-Medium.woff2') format('woff2');
   font-weight: 500;
   font-display: swap;
 }
 @font-face {
   font-family: 'Satoshi';
-  src: url('/assets/fonts/satoshi/Satoshi-Bold.woff2') format('woff2');
+  src: url('assets/fonts/satoshi/Satoshi-Bold.woff2') format('woff2');
   font-weight: 600 700;          /* covers 600 & 700 */
   font-display: swap;
 }
