@@ -1,0 +1,40 @@
+/* @file: styles/components/popup-chest-grid.css */
+/* @version: 1.0 — chest-slot grid inside popups */
+
+.custom-popup > .popup-info-box.loot-box .chest-grid {
+  display: grid;
+  grid-template-columns: repeat(var(--cols), 52px);
+  gap: 5px;
+  justify-content: start;
+  margin: 0;
+}
+
+.custom-popup > .popup-info-box.loot-box .chest-slot {
+  box-sizing: border-box;
+  width: 52px;
+  height: 52px;
+  background-color: var(--bg-40);
+  border: 2px solid transparent; /* inline border-color shows rarity */
+  border-radius: var(--radius-small);
+  overflow: hidden;
+  position: relative;
+  transition: filter 0.15s ease;
+}
+.custom-popup > .popup-info-box.loot-box .chest-slot:hover {
+  filter: brightness(1.2);
+}
+.custom-popup > .popup-info-box.loot-box .chest-slot-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.custom-popup > .popup-info-box.loot-box .chest-slot-qty {
+  position: absolute;
+  bottom: var(--space-1);
+  right: var(--space-1);
+  background: rgba(0,0,0,0.6);
+  padding: 1px 4px;
+  border-radius: var(--radius-small);
+  font-size: 0.75rem;
+  color: #fff;
+}

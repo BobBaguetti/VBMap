@@ -1,0 +1,27 @@
+/* @file: styles/components/leaflet-overrides.css */
+/* @version: 1.0 — reset Leaflet popups for custom styling */
+
+.leaflet-container {
+  background-color: var(--bg-00) !important;
+}
+
+.leaflet-popup,
+.leaflet-popup-content-wrapper {
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
+  border-radius: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+.leaflet-popup-content {
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+.leaflet-popup-tip-container,
+.leaflet-popup-tip {
+  display: none !important;
+}

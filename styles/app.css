@@ -1,5 +1,5 @@
 /* @file: styles/app.css */
-/* @version: 1.3 — add marker tokens & component, replace custom-markers */
+/* @version: 1.4 — replace legacy popup with modular components */
 
 /* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
 @import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
@@ -18,11 +18,11 @@
 @import "tokens/borders.css";
 @import "tokens/shadows.css";
 @import "tokens/z-index.css";
-@import "tokens/markers.css";       /* marker dimension tokens */
+@import "tokens/markers.css";
 
 /* ── Theme overrides ──────────────────────────────────────────────────── */
-@import "themes/lightmode.css";   /* Light theme overrides */
-@import "themes/darkmode.css";    /* Dark theme (default) */
+@import "themes/lightmode.css";
+@import "themes/darkmode.css";
 
 /* ── Global base styles ───────────────────────────────────────────────── */
 @import "base.css";
@@ -35,16 +35,22 @@
 @import "components/icons.css";
 @import "components/ui-controls.css";
 @import "components/map.css";
-@import "components/markers.css";   /* custom marker styles */
+@import "components/markers.css";
 @import "components/entries.css";
+
+/* ── Popup & Leaflet overrides ────────────────────────────────────────── */
+@import "components/leaflet-overrides.css";
+@import "components/popup.css";
+@import "components/popup-chest-grid.css";
 
 /* ── Utilities ────────────────────────────────────────────────────────── */
 @import "utilities.css";
 
 /* ── Core UI (legacy) ─────────────────────────────────────────────────── */
+/* Deprecated: see styles/components for replacements */
 @import "ui.css";
 @import "context-menu.css";
-@import "popup.css";
+/* @import "custom-markers.css"; */  /* replaced by components/markers.css */
 
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
 @import "sidebar/index.css";
