@@ -1,5 +1,5 @@
 // @file: src/appInit.js
-// @version: 2 — added layers & subscriptions for quests, NPCs, spawn points, teleports, extractions, doors, gates, misc, and secrets
+// @version: 3 — fixed import paths for plural service filenames
 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
@@ -7,7 +7,7 @@ import { firebaseConfig } from "./firebaseConfig.js";
 
 import { initializeMap } from "./modules/map/map.js";
 
-// Definition services
+// Definition services (note plural filenames)
 import {
   loadItems,
   subscribeItems
@@ -36,14 +36,15 @@ import {
   loadExtractions,
   subscribeExtractions
 } from "./modules/services/definitions/extractionService.js";
+// 👇 Plural matches your files
 import {
   loadDoors,
   subscribeDoors
-} from "./modules/services/definitions/doorService.js";
+} from "./modules/services/definitions/doorsService.js";
 import {
   loadGates,
   subscribeGates
-} from "./modules/services/definitions/gateService.js";
+} from "./modules/services/definitions/gatesService.js";
 import {
   loadMisc,
   subscribeMisc
@@ -57,10 +58,10 @@ import {
 export const app = initializeApp(firebaseConfig);
 export const db  = getFirestore(app);
 
-// initialize Leaflet map (global L is available from index.html <script> tags)
+// initialize Leaflet map (global L is available)
 export const { map } = initializeMap();
 
-// create clusters for items, flat for others
+// cluster & flat layers
 export const clusterItemLayer = L.markerClusterGroup();
 export const flatItemLayer    = L.layerGroup();
 
@@ -79,42 +80,44 @@ export const layers = {
   secret:     L.layerGroup()
 };
 
-// add all non-item layers to map
+// add non-item layers to map
 Object.values(layers)
   .filter(layer => layer !== flatItemLayer)
   .forEach(layer => layer.addTo(map));
 
-// show clustered items
+// show items as clustered
 flatItemLayer.addTo(map);
 
-// helper to wire load + subscribe for a type
+// helper to load + subscribe + render each type
 function initLayer(loadFn, subscribeFn, layerKey, renderFn) {
   loadFn(db).then(defs => renderFn(defs, layers[layerKey]));
   subscribeFn(db, defs => renderFn(defs, layers[layerKey]));
 }
 
-// import your markerManager render functions:
-import { renderItems } from "./modules/map/marker/markerManager.js";
-import { renderChests } from "./modules/map/marker/markerManager.js";
-import { renderQuests } from "./modules/map/marker/markerManager.js";
-import { renderNpcs } from "./modules/map/marker/markerManager.js";
-import { renderSpawnpoints } from "./modules/map/marker/markerManager.js";
-import { renderTeleports } from "./modules/map/marker/markerManager.js";
-import { renderExtractions } from "./modules/map/marker/markerManager.js";
-import { renderDoors } from "./modules/map/marker/markerManager.js";
-import { renderGates } from "./modules/map/marker/markerManager.js";
-import { renderMisc } from "./modules/map/marker/markerManager.js";
-import { renderSecrets } from "./modules/map/marker/markerManager.js";
+// import render functions from markerManager
+import {
+  renderItems,
+  renderChests,
+  renderQuests,
+  renderNpcs,
+  renderSpawnpoints,
+  renderTeleports,
+  renderExtractions,
+  renderDoors,
+  renderGates,
+  renderMisc,
+  renderSecrets
+} from "./modules/map/marker/markerManager.js";
 
-// wire each layer
-initLayer(loadItems, subscribeItems,       "item",       renderItems);
-initLayer(loadChests, subscribeChests,     "chest",      renderChests);
-initLayer(loadQuests, subscribeQuests,     "quest",      renderQuests);
-initLayer(loadNpcs, subscribeNpcs,         "npc",        renderNpcs);
+// wire each layer’s load + subscribe
+initLayer(loadItems, subscribeItems,           "item",       renderItems);
+initLayer(loadChests, subscribeChests,         "chest",      renderChests);
+initLayer(loadQuests, subscribeQuests,         "quest",      renderQuests);
+initLayer(loadNpcs, subscribeNpcs,             "npc",        renderNpcs);
 initLayer(loadSpawnpoints, subscribeSpawnpoints, "spawnpoint", renderSpawnpoints);
-initLayer(loadTeleports, subscribeTeleports,     "teleport",   renderTeleports);
+initLayer(loadTeleports, subscribeTeleports,   "teleport",   renderTeleports);
 initLayer(loadExtractions, subscribeExtractions, "extraction", renderExtractions);
-initLayer(loadDoors, subscribeDoors,       "door",       renderDoors);
-initLayer(loadGates, subscribeGates,       "gate",       renderGates);
-initLayer(loadMisc, subscribeMisc,         "misc",       renderMisc);
-initLayer(loadSecrets, subscribeSecrets,   "secret",     renderSecrets);
+initLayer(loadDoors, subscribeDoors,           "door",       renderDoors);
+initLayer(loadGates, subscribeGates,           "gate",       renderGates);
+initLayer(loadMisc, subscribeMisc,             "misc",       renderMisc);
+initLayer(loadSecrets, subscribeSecrets,       "secret",     renderSecrets);
