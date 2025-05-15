@@ -1,7 +1,6 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.7 — restore info-box backdrop & paragraph-scoped shadow */
+/* @version: 1.2 — added outside box-shadow to popup container */
 
-/* Token imports */
 @import "../tokens/popup.css";
 
 /* ───────────────────────────────────────────────── Custom Popup ──── */
@@ -12,9 +11,11 @@
   padding: var(--popup-padding);
   width: var(--popup-width);
   color: var(--text-primary);
-  font-family: var(--font-body);
+  font-family: var(--popup-font-family);
   font-size: var(--popup-font-size);
   line-height: var(--popup-line-height);
+
+  /* new drop shadow to lift popup off the map */
   box-shadow: var(--shadow-medium);
 }
 
@@ -28,14 +29,12 @@
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
 }
-
 .popup-header-left {
   display: flex;
   align-items: flex-start;
   gap: var(--popup-header-gap);
   flex: 1;
 }
-
 .popup-image {
   width: var(--popup-image-size);
   height: var(--popup-image-size);
@@ -54,26 +53,26 @@
   margin-top: 0;
   padding-top: 0;
 }
-
 .popup-info > * {
   margin: 0;
   padding: 0;
   line-height: var(--popup-info-line-height);
 }
-
 .popup-name {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
   font-size: var(--popup-name-font-size);
   font-weight: 520;
   font-variant: small-caps;
   text-transform: uppercase;
+  /* existing text-shadow */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
-
 .popup-type,
 .popup-rarity {
   font-size: var(--popup-variant-font-size);
   font-weight: 520;
   transform: translateY(-1px);
+  /* existing text-shadow */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
@@ -87,16 +86,16 @@
   font-size: var(--popup-value-font-size);
   font-weight: 520;
   white-space: nowrap;
+  /* existing text-shadow */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
-
 .popup-value-icon svg {
   width: 1rem;
   height: 1rem;
   fill: #d4af37;
 }
 
-/* Body (info box backdrop & layout) */
+/* Body (with box style) */
 .popup-body.popup-info-box {
   font-weight: var(--popup-info-box-font-weight);
   font-size: var(--popup-info-box-font-size);
@@ -109,28 +108,24 @@
   flex-direction: column;
   gap: var(--popup-info-box-gap);
 }
-
-/* Paragraphs in the info box (with text shadow) */
-.popup-body.popup-info-box p {
+.popup-body p {
   margin: 0;
   padding: 2px 0;
   font-weight: var(--popup-info-box-font-weight);
+  /* existing text-shadow */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
-
-/* Description (inherits box shadow via paragraph rule) */
 .popup-desc {
   font-size: var(--popup-info-box-font-size);
   font-style: italic;
   font-weight: 400;
 }
 
-/* Extras + Meta (inherits shadow via paragraph rule) */
+/* Extras + Meta */
 .popup-extra-line {
   font-size: var(--popup-info-box-font-size);
   font-weight: var(--popup-info-box-font-weight);
 }
-
 .popup-meta {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -138,7 +133,7 @@
   color: var(--text-primary);
 }
 
-/* Divider */
+/* Divider after description */
 .popup-divider {
   border: none;
   height: 1px;
@@ -160,7 +155,6 @@
               transform var(--popup-close-transition);
   color: var(--text-secondary);
 }
-
 .popup-close-btn svg {
   width: var(--popup-close-icon-size);
   height: var(--popup-close-icon-size);
@@ -168,12 +162,10 @@
   transition: fill var(--popup-close-transition),
               transform var(--popup-close-transition);
 }
-
 .popup-close-btn:hover {
   color: var(--text-primary);
   transform: scale(var(--popup-close-hover-scale));
 }
-
 .popup-close-btn:hover svg {
   fill: var(--text-primary);
   transform: scale(var(--popup-close-hover-scale));

@@ -1,7 +1,7 @@
 /* @file: styles/components/popup-chest-grid.css */
 /* @version: 1.1 — migrated values to popup tokens */
 
-@import "../tokens/popup.css";
+@import "tokens/popup.css";
 
 /* Chest‐marker popup grid & slots (scoped inside loot panel) */
 .custom-popup > .popup-info-box.loot-box .chest-grid {
