@@ -1,58 +1,57 @@
 // @file: src/appInit.js
-// @version: 3 — fixed import paths for plural service filenames
+// @version: 3 — fixed import paths to include src/ prefix
 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 import { firebaseConfig } from "./firebaseConfig.js";
 
-import { initializeMap } from "./modules/map/map.js";
+import { initializeMap } from "./src/modules/map/map.js";
 
-// Definition services (note plural filenames)
+// Definition services (note src/ prefix and plural filenames)
 import {
   loadItems,
   subscribeItems
-} from "./modules/services/definitions/itemService.js";
+} from "./src/modules/services/definitions/itemService.js";
 import {
   loadChests,
   subscribeChests
-} from "./modules/services/definitions/chestService.js";
+} from "./src/modules/services/definitions/chestService.js";
 import {
   loadQuests,
   subscribeQuests
-} from "./modules/services/definitions/questService.js";
+} from "./src/modules/services/definitions/questService.js";
 import {
   loadNpcs,
   subscribeNpcs
-} from "./modules/services/definitions/npcService.js";
+} from "./src/modules/services/definitions/npcService.js";
 import {
   loadSpawnpoints,
   subscribeSpawnpoints
-} from "./modules/services/definitions/spawnpointService.js";
+} from "./src/modules/services/definitions/spawnpointService.js";
 import {
   loadTeleports,
   subscribeTeleports
-} from "./modules/services/definitions/teleportService.js";
+} from "./src/modules/services/definitions/teleportService.js";
 import {
   loadExtractions,
   subscribeExtractions
-} from "./modules/services/definitions/extractionService.js";
-// 👇 Plural matches your files
+} from "./src/modules/services/definitions/extractionService.js";
 import {
   loadDoors,
   subscribeDoors
-} from "./modules/services/definitions/doorsService.js";
+} from "./src/modules/services/definitions/doorsService.js";
 import {
   loadGates,
   subscribeGates
-} from "./modules/services/definitions/gatesService.js";
+} from "./src/modules/services/definitions/gatesService.js";
 import {
   loadMisc,
   subscribeMisc
-} from "./modules/services/definitions/miscService.js";
+} from "./src/modules/services/definitions/miscService.js";
 import {
   loadSecrets,
   subscribeSecrets
-} from "./modules/services/definitions/secretService.js";
+} from "./src/modules/services/definitions/secretService.js";
 
 // initialize Firebase
 export const app = initializeApp(firebaseConfig);
@@ -94,7 +93,7 @@ function initLayer(loadFn, subscribeFn, layerKey, renderFn) {
   subscribeFn(db, defs => renderFn(defs, layers[layerKey]));
 }
 
-// import render functions from markerManager
+// import render functions from markerManager (with src/ prefix)
 import {
   renderItems,
   renderChests,
@@ -107,7 +106,7 @@ import {
   renderGates,
   renderMisc,
   renderSecrets
-} from "./modules/map/marker/markerManager.js";
+} from "./src/modules/map/marker/markerManager.js";
 
 // wire each layer’s load + subscribe
 initLayer(loadItems, subscribeItems,           "item",       renderItems);
