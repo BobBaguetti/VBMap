@@ -1,0 +1,61 @@
+/* @file: styles/modals/modal.about.css */
+/* @version: 1.0 — styling for the floating About panel */
+
+#about-modal.hidden {
+  display: none;
+}
+
+/* Floating container */
+#about-modal.floating {
+  position: fixed;
+  z-index: 1200;
+  width: 340px;
+  pointer-events: all;
+}
+
+/* Draggable card */
+#about-modal .modal-content {
+  background: var(--bg-20);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+  user-select: none;
+}
+
+/* Header / drag handle */
+#about-modal .drag-handle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6em 0.8em;
+  cursor: move;
+  background: var(--bg-25);
+  border-bottom: 1px solid var(--border-soft);
+}
+#about-modal .drag-handle h3 {
+  margin: 0;
+  font-size: 1em;
+  letter-spacing: 0.05em;
+}
+#about-modal .modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+#about-modal .modal-close:hover,
+#about-modal .modal-close:focus {
+  color: var(--text-primary);
+  outline: none;
+}
+
+/* Body */
+#about-modal .modal-body {
+  padding: 0.8em;
+}
+#about-modal .modal-body p {
+  margin: 0.6em 0;
+  line-height: 1.4;
+}
