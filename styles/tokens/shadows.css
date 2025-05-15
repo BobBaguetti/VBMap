@@ -1,0 +1,14 @@
+/* @file: styles/tokens/shadows.css */
+/* @version: 1.0 — initial shadow tokens */
+
+/* Elevation and depth shadows */
+:root {
+  /* Light elevation */
+  --shadow-low: 0 1px 3px var(--overlay-dark);
+
+  /* Medium elevation */
+  --shadow-medium: 0 4px 12px var(--overlay-dark);
+
+  /* High elevation (e.g. modals) */
+  --shadow-high: 0 8px 24px var(--overlay-dark);
+}

@@ -1,0 +1,30 @@
+/* @file: styles/utilities.css */
+/* @version: 1.0 — initial utility helper classes */
+
+/* Text helpers */
+.text-primary {
+  color: var(--text-primary);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+.text-disabled {
+  color: var(--text-disabled);
+}
+
+/* Background surface helpers */
+.bg-surface-10 {
+  background-color: var(--bg-10);
+}
+.bg-surface-20 {
+  background-color: var(--bg-20);
+}
+.bg-surface-30 {
+  background-color: var(--bg-30);
+}
+.bg-surface-40 {
+  background-color: var(--bg-40);
+}
+.bg-surface-50 {
+  background-color: var(--bg-50);
+}

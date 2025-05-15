@@ -1,0 +1,15 @@
+/* @file: styles/tokens/borders.css */
+/* @version: 1.0 — initial border tokens */
+
+/* Border radii and widths */
+:root {
+  /* Border radii */
+  --radius-small: 4px;
+  --radius-medium: 8px;
+  --radius-large: 12px;
+
+  /* Border widths */
+  --border-width-hair: 1px;
+  --border-width-thin: 2px;
+  --border-width-thick: 4px;
+}

@@ -1,0 +1,9 @@
+/* @file: styles/tokens/spacing.css */
+/* @version: 1.0 — initial spacing scale */
+
+/* Consistent spacing rhythm */
+:root {
+  --space-1: 0.4em;   /* small gap */
+  --space-2: 0.6em;   /* default padding/margin */
+  --space-3: 1.2em;   /* larger separation */
+}

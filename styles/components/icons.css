@@ -1,0 +1,16 @@
+/* @file: styles/components/icons.css */
+/* @version: 1.0 — initial icons component styles */
+
+/* Icon font setup */
+.icon {
+  font-family: var(--font-icon);
+  font-weight: 900; /* FontAwesome solid */
+  display: inline-block;
+  line-height: 1;
+  color: var(--text-secondary);
+  transition: color 0.2s ease-in-out;
+}
+.icon:hover,
+.icon:focus {
+  color: var(--text-primary);
+}

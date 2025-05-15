@@ -1,7 +1,7 @@
 /* @file: styles/app.css */
-/* @version: 1.1 — include settings-modal styles */
+/* @version: 1.2 — refactor imports for token-driven themes & components */
 
- /* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
+/* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
 @import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
 @import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css");
 @import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css");
@@ -11,28 +11,51 @@
 @import url("https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css");
 @import url("https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css");
 
-/* ── Core UI styles ──────────────────────────────────────────────────── */
+/* ── Token definitions ─────────────────────────────────────────────────── */
+@import "tokens/colors.css";
+@import "tokens/typography.css";
+@import "tokens/spacing.css";
+@import "tokens/borders.css";
+@import "tokens/shadows.css";
+@import "tokens/z-index.css";
+
+/* ── Theme overrides ──────────────────────────────────────────────────── */
+@import "themes/lightmode.css";   /* Light theme overrides */
+@import "themes/darkmode.css";    /* Dark theme (default) */
+
+/* ── Global base styles ───────────────────────────────────────────────── */
 @import "base.css";
+
+/* ── Component skins ──────────────────────────────────────────────────── */
+@import "components/buttons.css";
+@import "components/forms.css";
+@import "components/surfaces.css";
+@import "components/scrollbar.css";
+@import "components/icons.css";
+@import "components/ui-controls.css";
+@import "components/map.css";
+
+/* ── Utilities ────────────────────────────────────────────────────────── */
+@import "utilities.css";
+
+/* ── Core UI (legacy) ─────────────────────────────────────────────────── */
 @import "ui.css";
 @import "context-menu.css";
 @import "custom-markers.css";
 @import "popup.css";
 
-/* ── Sidebar ─────────────────────────────────────────────────────────── */
+/* ── Sidebar ──────────────────────────────────────────────────────────── */
 @import "sidebar/index.css";
 
-/* ── Modals ──────────────────────────────────────────────────────────── */
+/* ── Modals ───────────────────────────────────────────────────────────── */
 @import "modals/modal.base.css";
 @import "modals/modal.small.css";
 @import "modals/modal.large.css";
 @import "modals/inventory.css";
-@import "modals/modal.settings.css";  
-@import "modals/modal.about.css";  
+@import "modals/modal.settings.css";
+@import "modals/modal.about.css";
 
-/* ── Preview panels ─────────────────────────────────────────────────── */
+/* ── Preview panels ───────────────────────────────────────────────────── */
 @import "preview/previewPanel.css";
 @import "preview/itemPreview.css";
 @import "preview/chestPreview.css";
-
-/* ── Dark-mode theme tokens ──────────────────────────────────────────── */
-@import "themes/darkmode.css";

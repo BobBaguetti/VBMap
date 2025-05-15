@@ -1,0 +1,39 @@
+/* @file: styles/components/scrollbar.css */
+/* @version: 1.1 — merged legacy .ui-scrollbar rules */
+
+/* WebKit scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-10);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--bg-20);
+  border-radius: var(--radius-small);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-30);
+}
+
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--bg-20) var(--bg-10);
+}
+
+/* Legacy .ui-scrollbar overrides */
+.ui-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+.ui-scrollbar::-webkit-scrollbar-track {
+  background: var(--bg-20);
+}
+.ui-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--bg-40);
+  border-radius: var(--radius-small);
+}
+.ui-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--bg-50);
+}

@@ -1,7 +1,7 @@
 /* @file: styles/base.css */
-/* @version: 12.2 — correct font paths (../assets/…) */
+/* @version: 14 — merged global element defaults, preserved font-face & reset */
 
-/* Self-hosted Satoshi */
+/* 1) Font loading */
 @font-face {
   font-family: 'Satoshi';
   src: url('../assets/fonts/satoshi/Satoshi-Regular.woff2') format('woff2');
@@ -21,68 +21,59 @@
   font-display: swap;
 }
 
-/* 1) Box-sizing */
-*, *::before, *::after { box-sizing: border-box; }
+/* 2) Box-sizing reset */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
 
-/* 2) Global reset, default font & dark-mode background */
-html,
+/* 3) Color scheme */
+html {
+  color-scheme: dark light;
+}
+
+/* 4) Body defaults */
 body {
   margin: 0;
   padding: 0;
   height: 100%;
-
-  /* Primary type stack */
-  font-family: 'Satoshi', sans-serif;
-  font-weight: 500;              /* Medium – wider stems */
-  letter-spacing: 0.015em;       /* subtle tracking for readability */
-
-  /* Sharper rendering */
-  -webkit-font-smoothing: antialiased; /* Chrome / Edge / Safari */
-  -moz-osx-font-smoothing: grayscale;  /* Firefox on macOS */
-  text-rendering: optimizeLegibility;  /* kerning & ligatures */
-
+  font-family: var(--font-body);
+  font-weight: 500;               /* Medium weight for primary text */
+  letter-spacing: 0.015em;        /* Subtle tracking */
+  font-size: 16px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
   background-color: var(--bg-00);
   color: var(--text-primary);
   overflow: hidden;
 }
 
-/* 3) Map container full-screen */
-#map {
-  position: absolute;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background-color: var(--bg-00);
+/* 5) Links */
+a {
+  color: var(--accent-info);
+  text-decoration: none;
+}
+a:hover,
+a:focus-visible {
+  text-decoration: underline;
 }
 
-/* 4) Dark form controls & buttons */
-.ui-input {
-  background: var(--bg-30) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-soft) !important;
-  padding: 4px 6px;
-  font-size: 14px;
-  box-sizing: border-box;
+/* 6) Headings */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--text-primary);
+  font-weight: 600;
+  line-height: 1.2;
 }
 
-.ui-button {
-  background: var(--bg-40) !important;
-  color: var(--text-primary) !important;
-  border: 1px solid var(--border-soft) !important;
-  border-radius: 3px !important;
-  cursor: pointer;
+/* 7) Captions */
+small, .caption {
+  color: var(--text-secondary);
 }
-.ui-button:hover { background: var(--bg-50) !important; }
 
-/* 5) Dark scrollbars for .ui-scrollbar */
-.ui-scrollbar::-webkit-scrollbar        { width: 8px; }
-.ui-scrollbar::-webkit-scrollbar-track  { background: var(--bg-20); }
-.ui-scrollbar::-webkit-scrollbar-thumb  {
-  background: var(--bg-40); border-radius: 4px;
-}
-.ui-scrollbar::-webkit-scrollbar-thumb:hover { background: var(--bg-50); }
-
-/* 6) Small-markers styling */
-#map.small-markers .leaflet-marker-icon,
-#map.small-markers .custom-marker-container {
-  transform: scale(0.5);
-  transform-origin: center center;
+/* 8) Horizontal rules */
+hr {
+  border: none;
+  border-top: var(--border-width-hair) solid var(--line-hair);
+  margin: var(--space-3) 0;
 }

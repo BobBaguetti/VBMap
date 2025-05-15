@@ -1,0 +1,26 @@
+/* @file: styles/themes/lightmode.css */
+/* @version: 1.0 — initial light theme overrides */
+
+[data-theme="light"] {
+  /* Surfaces */
+  --bg-00: #FFFFFF;
+  --bg-10: #F8F8F8;
+  --bg-20: #EEEEEE;
+  --bg-30: #E0E0E0;
+  --bg-40: #CCCCCC;
+  --bg-50: #B2B2B2;
+
+  /* Text */
+  --text-primary: #111111;
+  --text-secondary: #4E4E56;
+  --text-disabled: #9E9E9E;
+
+  /* Lines & borders */
+  --line-hair: #E5E5E6;
+  --border-soft: #CCCCCD;
+  --focus-ring: #28A7B8;
+
+  /* Overlays & hovers */
+  --overlay-dark: rgba(0, 0, 0, 0.1);
+  --hover-light: rgba(0, 0, 0, 0.05);
+}

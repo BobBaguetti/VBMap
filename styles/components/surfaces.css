@@ -1,0 +1,17 @@
+/* @file: styles/components/surfaces.css */
+/* @version: 1.0 — initial surface component styles */
+
+.sidebar {
+  background-color: var(--bg-10);
+}
+
+.panel {
+  background-color: var(--bg-20);
+  border: var(--border-width-hair) solid var(--border-soft);
+}
+
+.modal {
+  background-color: var(--bg-30);
+  border: var(--border-width-hair) solid var(--border-soft);
+  box-shadow: var(--shadow-high);
+}

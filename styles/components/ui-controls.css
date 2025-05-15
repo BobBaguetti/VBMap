@@ -1,0 +1,26 @@
+/* @file: styles/components/ui-controls.css */
+/* @version: 1.0 — legacy UI-kit control styles */
+
+.ui-input {
+  background-color: var(--bg-30) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-width-hair) solid var(--border-soft) !important;
+  padding: 4px 6px;
+  font-size: 14px;
+  box-sizing: border-box;
+}
+
+.ui-button {
+  background-color: var(--bg-40) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-width-hair) solid var(--border-soft) !important;
+  border-radius: var(--radius-small) !important;
+  cursor: pointer;
+  padding: var(--space-2) var(--space-2);
+  font-family: var(--font-body);
+  font-size: 14px;
+}
+
+.ui-button:hover {
+  background-color: var(--bg-50) !important;
+}

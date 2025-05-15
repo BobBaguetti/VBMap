@@ -1,0 +1,36 @@
+/* @file: styles/tokens/colors.css */
+/* @version: 1.0 — initial color tokens */
+
+/* All color variables shared across themes */
+:root {
+  /* Surfaces */
+  --bg-00: #0E0E11;
+  --bg-10: #151519;
+  --bg-20: #1B1B1F;
+  --bg-30: #232328;
+  --bg-40: #2C2C33;
+  --bg-50: #35353F;
+
+  /* Accents */
+  --accent-primary: #28A7B8;
+  --accent-secondary: #8F5BFF;
+  --accent-success: #3AA56F;
+  --accent-warning: #E5B45D;
+  --accent-error: #E03E4F;
+  --accent-info: #2E9CEF;
+  --accent-gold: #D4AF37;
+
+  /* Overlays & hovers */
+  --overlay-dark: rgba(0, 0, 0, 0.6);
+  --hover-light: rgba(255, 255, 255, 0.08);
+
+  /* Text */
+  --text-primary: #E5E6E8;
+  --text-secondary: #B4B4C2;
+  --text-disabled: #6E6E83;
+
+  /* Lines & borders */
+  --line-hair: #1B1B1F;
+  --border-soft: #232328;
+  --focus-ring: #4ED1E6;
+}
