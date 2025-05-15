@@ -1,22 +1,70 @@
-/* Modal base styles */
-#settings-modal.modal.hidden { display: none; }
-#settings-modal .modal-overlay {
-  position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+/* @file: styles/modals/modal.settings.css */
+/* @version: 1.0 — modal styles for Settings window */
+
+#settings-modal.modal.hidden {
+  display: none;
 }
+
+/* Dark overlay */
+#settings-modal .modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  cursor: pointer;
+}
+
+/* Modal card */
 #settings-modal .modal-content {
-  position: fixed; top: 50%; left: 50%;
-  transform: translate(-50%,-50%);
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 90%;
+  width: 320px;
   background: var(--bg-20);
   color: var(--text-primary);
-  padding: 1em;
   border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  max-width: 90%; width: 300px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
 }
-#settings-modal header, #settings-modal footer {
-  display: flex; justify-content: space-between; align-items: center;
+
+/* Header & footer */
+#settings-modal header,
+#settings-modal footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.6em 0.8em;
+  background: var(--bg-25);
+  border-bottom: 1px solid var(--border-soft);
 }
+
+#settings-modal footer {
+  border-top: 1px solid var(--border-soft);
+  border-bottom: none;
+}
+
+/* Close button */
+#settings-modal .modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+/* Body */
+#settings-modal .modal-body {
+  padding: 0.8em;
+}
+
 #settings-modal .modal-body label {
-  display: block; margin: 0.5em 0;
+  display: block;
+  margin: 0.5em 0;
+  cursor: pointer;
+}
+
+#settings-modal .modal-body input[type="checkbox"] {
+  margin-right: 0.4em;
 }

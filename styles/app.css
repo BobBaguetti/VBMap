@@ -1,7 +1,7 @@
 /* @file: styles/app.css */
-/* @version: 1.0 — Consolidated stylesheet for entire app */
+/* @version: 1.1 — include settings-modal styles */
 
-/* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
+ /* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
 @import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
 @import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css");
 @import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css");
@@ -26,6 +26,7 @@
 @import "modals/modal.small.css";
 @import "modals/modal.large.css";
 @import "modals/inventory.css";
+@import "modals/modal.settings.css";  
 
 /* ── Preview panels ─────────────────────────────────────────────────── */
 @import "preview/previewPanel.css";
