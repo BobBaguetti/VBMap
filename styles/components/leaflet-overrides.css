@@ -1,8 +1,8 @@
 /* @file: styles/components/leaflet-overrides.css */
-/* @version: 1.0 — remove default Leaflet popup styling */
+/* @version: 1.0 — reset Leaflet popup chrome to enable custom styling */
 
 .leaflet-container {
-  background-color: var(--bg-00) !important;
+  background-color: var(--bg-00) !important; /* was #1a1a1a */
 }
 
 .leaflet-popup,

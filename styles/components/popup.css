@@ -1,27 +1,26 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.1 — tweak paragraph shadows & image rounding */
+/* @version: 1.0 — core custom-popup styling (layout, sizing, typography, controls) */
 
 .custom-popup {
   position: relative;
-  background-color: var(--bg-40);
-  border-radius: var(--radius-medium);
+  background: var(--bg-40);                /* was rgba(34,34,34,0.95) */
+  border-radius: 8px;
   padding: 11px;
   width: 320px;
-  color: var(--text-primary);
+  color: var(--text-primary);              /* was #e0e0e0 */
   font-family: var(--font-body);
-  font-size: 0.875rem;
+  font-size: 14px;
   line-height: 1.4;
-  box-shadow: var(--shadow-medium);
 }
 
-/* Header layout */
+/* Header */
 .popup-header {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
   margin-bottom: 13px;
-  border-bottom: 2px solid var(--bg-50);
+  border-bottom: 2px solid var(--bg-50);   /* was #444 */
   padding: 0;
 }
 .popup-header-left {
@@ -30,98 +29,97 @@
   gap: 10px;
   flex: 1;
 }
-
-/* Image thumbnail */
 .popup-image {
   width: 64px;
   height: 64px;
   object-fit: contain;
-  background-color: var(--bg-20);
-  border: 2px solid var(--bg-50);
-  border-radius: 6px;  /* restored to original rounding */
+  background: var(--bg-20);                /* was #222 */
+  border: 2px solid var(--bg-50);          /* was #777 */
+  border-radius: 6px;
   flex-shrink: 0;
 }
 
-/* Info block */
+/* Info block (non-loot panels) */
 .popup-info {
   display: flex;
   flex-direction: column;
   gap: 2px;
-  margin: 0;
-  padding: 0;
+  margin-top: 0;
+  padding-top: 0;
 }
 .popup-info > * {
   margin: 0;
   padding: 0;
   line-height: 1.2;
 }
+
+/* Text elements */
 .popup-name {
-  font-family: var(--font-body);
-  font-size: 1.125rem;
+  font-family: 'Segoe UI', Tahoma, sans-serif;
+  font-size: 18px;
   font-weight: 520;
+  font-variant: small-caps;
   text-transform: uppercase;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
 .popup-type,
 .popup-rarity {
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 520;
   transform: translateY(-1px);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
 
-/* Value (coins) block */
+/* Value (coins) */
 .popup-value-icon {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   margin-top: 32px;
   margin-right: 4px;
-  font-size: 0.9375rem;
+  font-size: 15px;
   font-weight: 520;
   white-space: nowrap;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
 .popup-value-icon svg {
-  width: 1rem;
-  height: 1rem;
-  fill: var(--accent-gold);
+  width: 16px;
+  height: 16px;
+  fill: var(--accent-gold);                /* was #d4af37 */
 }
 
-/* Body info box */
-.popup-body.popup-info-box {
+/* Info box (shared by text panels & loot panels) */
+.custom-popup > .popup-body.popup-info-box {
   font-weight: 420;
-  font-size: 0.875rem;
-  background-color: var(--bg-30);
-  border: var(--border-width-hair) solid var(--border-soft);
-  border-radius: var(--radius-small);
+  font-size: 14px;
+  background: var(--bg-30);                /* was rgba(20,20,20,0.6) */
+  border: 1px solid var(--border-soft);    /* was #444 */
+  border-radius: 4px;
   padding: 9px;
   margin-top: 7px;
   display: flex;
   flex-direction: column;
-  gap: 1px;
+  gap: 1px;                                 /* was tight vertical gap */
 }
-/* Removed text-shadow here so extra/info lines render cleanly */
 .popup-body.popup-info-box p {
   margin: 0;
   padding: 2px 0;
   font-weight: 420;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
-
-/* Description */
 .popup-desc {
+  font-size: 14px;
   font-style: italic;
   font-weight: 400;
-  font-size: 0.875rem;
 }
 
-/* Extras & meta */
+/* Extra & meta lines */
 .popup-extra-line {
-  font-size: 0.875rem;
+  font-size: 14px;
   font-weight: 420;
 }
 .popup-meta {
-  font-size: 0.75rem;
+  font-size: 12px;
   text-transform: uppercase;
   font-weight: 420;
   color: var(--text-primary);
@@ -131,7 +129,7 @@
 .popup-divider {
   border: none;
   height: 1px;
-  background-color: var(--bg-50);
+  background: var(--bg-50);
   margin: 1px 0;
 }
 
@@ -144,13 +142,13 @@
   border: none;
   padding: 0;
   cursor: pointer;
-  z-index: var(--z-index-overlay);
+  z-index: 10;
   transition: color 0.2s, transform 0.2s;
   color: var(--text-secondary);
 }
 .popup-close-btn svg {
-  width: 1rem;
-  height: 1rem;
+  width: 16px;
+  height: 16px;
   fill: var(--text-secondary);
   transition: fill 0.2s, transform 0.2s;
 }

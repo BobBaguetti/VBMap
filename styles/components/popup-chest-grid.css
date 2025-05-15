@@ -1,7 +1,17 @@
 /* @file: styles/components/popup-chest-grid.css */
-/* @version: 1.1 — use new extra-small radius token */
+/* @version: 1.0 — chest-grid & slot styling within loot panels */
 
-/* Chest grid layout */
+.custom-popup > .popup-info-box.loot-box {
+  margin: 4px 0 !important;
+  overflow-y: auto;
+  max-height: 140px;
+  scrollbar-width: none;
+}
+.custom-popup > .popup-info-box.loot-box::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 .custom-popup > .popup-info-box.loot-box .chest-grid {
   display: grid;
   grid-template-columns: repeat(var(--cols), 52px);
@@ -14,9 +24,9 @@
   box-sizing: border-box;
   width: 52px;
   height: 52px;
-  background-color: var(--bg-40);
-  border: 2px solid transparent;
-  border-radius: var(--radius-xsmall);
+  background: var(--bg-40);                /* was #333 */
+  border: 2px solid transparent;           /* inline border-color shows rarity */
+  border-radius: 2px;
   overflow: hidden;
   position: relative;
   transition: filter 0.15s ease;
@@ -24,20 +34,18 @@
 .custom-popup > .popup-info-box.loot-box .chest-slot:hover {
   filter: brightness(1.2) !important;
 }
-
 .custom-popup > .popup-info-box.loot-box .chest-slot-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 .custom-popup > .popup-info-box.loot-box .chest-slot-qty {
   position: absolute;
   bottom: 2px;
   right: 4px;
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(0,0,0,0.6);
   padding: 1px 4px;
-  border-radius: var(--radius-small);
-  font-size: 0.75rem;
-  color: #fff;
+  border-radius: 3px;
+  font-size: 0.75em;
+  color: #fff;                             /* keep white for clarity */
 }
