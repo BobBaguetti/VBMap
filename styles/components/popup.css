@@ -1,5 +1,5 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.2 — added outside box-shadow to popup container */
+/* @version: 1.1 — migrated values to popup tokens */
 
 @import "../tokens/popup.css";
 
@@ -14,9 +14,6 @@
   font-family: var(--popup-font-family);
   font-size: var(--popup-font-size);
   line-height: var(--popup-line-height);
-
-  /* new drop shadow to lift popup off the map */
-  box-shadow: var(--shadow-medium);
 }
 
 /* Header */
@@ -64,7 +61,6 @@
   font-weight: 520;
   font-variant: small-caps;
   text-transform: uppercase;
-  /* existing text-shadow */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-type,
@@ -72,7 +68,6 @@
   font-size: var(--popup-variant-font-size);
   font-weight: 520;
   transform: translateY(-1px);
-  /* existing text-shadow */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
@@ -86,7 +81,6 @@
   font-size: var(--popup-value-font-size);
   font-weight: 520;
   white-space: nowrap;
-  /* existing text-shadow */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-value-icon svg {
@@ -112,7 +106,6 @@
   margin: 0;
   padding: 2px 0;
   font-weight: var(--popup-info-box-font-weight);
-  /* existing text-shadow */
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-desc {
