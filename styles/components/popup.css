@@ -1,6 +1,7 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.6 — restore original paragraph-scoped text-shadow for exact legacy look */
+/* @version: 1.7 — restore info-box backdrop & paragraph-scoped shadow */
 
+/* Token imports */
 @import "../tokens/popup.css";
 
 /* ───────────────────────────────────────────────── Custom Popup ──── */
@@ -17,14 +18,6 @@
   box-shadow: var(--shadow-medium);
 }
 
-/* Leaflet content paragraphs (original selector restored for exact legacy shadow) */
-.popup-body.popup-info-box p {
-  margin: 0;
-  padding: 2px 0;
-  font-weight: var(--popup-info-box-font-weight);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
-}
-
 /* Header */
 .popup-header {
   display: flex;
@@ -35,12 +28,14 @@
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
 }
+
 .popup-header-left {
   display: flex;
   align-items: flex-start;
   gap: var(--popup-header-gap);
   flex: 1;
 }
+
 .popup-image {
   width: var(--popup-image-size);
   height: var(--popup-image-size);
@@ -59,11 +54,13 @@
   margin-top: 0;
   padding-top: 0;
 }
+
 .popup-info > * {
   margin: 0;
   padding: 0;
   line-height: var(--popup-info-line-height);
 }
+
 .popup-name {
   font-size: var(--popup-name-font-size);
   font-weight: 520;
@@ -71,6 +68,7 @@
   text-transform: uppercase;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
+
 .popup-type,
 .popup-rarity {
   font-size: var(--popup-variant-font-size);
@@ -91,26 +89,48 @@
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
+
 .popup-value-icon svg {
   width: 1rem;
   height: 1rem;
   fill: #d4af37;
 }
 
-/* Description (now with legacy paragraph-scoped shadow via above rule) */
+/* Body (info box backdrop & layout) */
+.popup-body.popup-info-box {
+  font-weight: var(--popup-info-box-font-weight);
+  font-size: var(--popup-info-box-font-size);
+  background: var(--bg-30);
+  border: var(--border-width-hair) solid var(--border-soft);
+  border-radius: var(--popup-info-box-border-radius);
+  padding: var(--popup-info-box-padding);
+  margin-top: var(--popup-info-box-margin-top);
+  display: flex;
+  flex-direction: column;
+  gap: var(--popup-info-box-gap);
+}
+
+/* Paragraphs in the info box (with text shadow) */
+.popup-body.popup-info-box p {
+  margin: 0;
+  padding: 2px 0;
+  font-weight: var(--popup-info-box-font-weight);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+/* Description (inherits box shadow via paragraph rule) */
 .popup-desc {
   font-size: var(--popup-info-box-font-size);
   font-style: italic;
   font-weight: 400;
-  /* no separate text-shadow here—handled by the paragraph rule */
 }
 
-/* Extras + Meta (no shadow except via paragraph rule when inside info-box) */
+/* Extras + Meta (inherits shadow via paragraph rule) */
 .popup-extra-line {
   font-size: var(--popup-info-box-font-size);
   font-weight: var(--popup-info-box-font-weight);
-  /* shadow applied via original paragraph rule */
 }
+
 .popup-meta {
   font-size: 0.75rem;
   text-transform: uppercase;
@@ -140,6 +160,7 @@
               transform var(--popup-close-transition);
   color: var(--text-secondary);
 }
+
 .popup-close-btn svg {
   width: var(--popup-close-icon-size);
   height: var(--popup-close-icon-size);
@@ -147,10 +168,12 @@
   transition: fill var(--popup-close-transition),
               transform var(--popup-close-transition);
 }
+
 .popup-close-btn:hover {
   color: var(--text-primary);
   transform: scale(var(--popup-close-hover-scale));
 }
+
 .popup-close-btn:hover svg {
   fill: var(--text-primary);
   transform: scale(var(--popup-close-hover-scale));
