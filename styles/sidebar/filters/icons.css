@@ -1,14 +1,14 @@
 /* @file: styles/sidebar/filters/icons.css */
-/* @version: 1.1 — migrated icon sizing & margins to sidebar tokens */
+/* @version: 1.0 — Thumbnail and filter-icon styling */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* Base styling for any icon in a filter label */
 .toggle-group label .filter-icon {
-  margin-right: var(--sidebar-filter-icon-margin-right);  /* was 0.5em */
-  font-size: var(--sidebar-icon-size);             /* was 1em */
-  vertical-align: middle;
-  color: var(--text-secondary);
+  margin-right: 0.5em;               /* space between icon and text */
+  font-size: 1em;                    /* match text size */
+  vertical-align: middle;            /* align with text baseline */
+  color: var(--text-secondary);      /* muted by default */
   transition: color 0.2s;
 }
 
@@ -22,5 +22,5 @@
 .toggle-group label {
   display: inline-flex;
   align-items: center;
-  gap: var(--sidebar-filter-icon-gap);                     /* was 0.25em */
+  gap: 0.25em;
 }

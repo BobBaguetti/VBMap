@@ -1,17 +1,17 @@
 /* @file: styles/sidebar/filters/container.css */
-/* @version: 1.1 — migrated margin and shadows to sidebar tokens */
+/* @version: 1.0 — Filter group container & hover elevation */
 
 .filter-group {
   background-color: var(--bg-30);
-  border-top: 1px solid var(--border-soft);
+  border-top:    1px solid var(--border-soft);
   border-bottom: 1px solid var(--border-soft);
   border-radius: 0;
-  margin: 0 0 var(--sidebar-filter-group-margin-bottom);
-  overflow: hidden;
-  box-shadow: var(--sidebar-shadow-low);
-  transition: box-shadow 0.2s ease;
+  margin:        0 0 0.6em;
+  overflow:      hidden;
+  box-shadow:    0 1px 3px rgba(0, 0, 0, 0.3);
+  transition:    box-shadow 0.2s ease;
 }
 
 .filter-group:hover {
-  box-shadow: var(--sidebar-shadow-high);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
 }

@@ -1,27 +1,24 @@
 /* @file: styles/sidebar/filters/toggles.css */
-/* @version: 1.1 — replaced hard-coded padding, gap & font-size with sidebar tokens */
+/* @version: 1.0 — Core grid layout and toggle label styles */
 
-/* Grid container for individual toggle labels (icons + text) */
 .toggle-group {
-  padding: var(--sidebar-filter-group-padding);   /* 0.6em 1em */
+  padding: 0.4em 0.8em;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-  gap: var(--sidebar-filter-grid-gap);            /* 0.5em 0.8em */
-  font-size: var(--sidebar-filter-toggle-font-size);
+  gap: 0.3em 0.5em;
+  font-size: 13px;
 }
 
-/* Hide the real checkbox */
 .filter-group .toggle-group input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
-/* Clickable label */
 .filter-group .toggle-group label {
   position: relative;
-  padding: var(--sidebar-filter-toggle-padding);
-  border-radius: var(--radius-small);
+  padding: 3px 6px;
+  border-radius: 3px;
   transition: background 0.2s, color 0.2s, text-decoration 0.2s;
   cursor: pointer;
   display: flex;
@@ -30,15 +27,15 @@
 
 /* Hover tint */
 .filter-group .toggle-group label:hover {
-  background: var(--hover-light);
+  background: rgba(255, 255, 255, 0.08);
 }
 
-/* Checked vs unchecked states */
 .filter-group .toggle-group input:checked + span {
   color: var(--text-primary);
   text-decoration: none;
   font-weight: 500;
 }
+
 .filter-group .toggle-group input:not(:checked) + span {
   color: var(--text-disabled);
   text-decoration: line-through;

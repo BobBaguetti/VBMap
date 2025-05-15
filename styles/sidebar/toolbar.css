@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/toolbar.css */
-/* @version: 1.3 — migrated hard-coded values to sidebar tokens */
+/* @version: 1.2 — buttons resized to a fixed 30px square for a more compact look */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -8,23 +8,23 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: var(--sidebar-gap);                        /* tokenised gap */
-  margin: var(--sidebar-toolbar-margin-y) 0;      /* vertical breathing room */
+  gap: 0.5em;        /* space between buttons */
+  margin: 1em 0;     /* vertical breathing room */
 }
 
-/* Toolbar buttons: fixed square, themed, shadowed */
+/* Toolbar buttons: fixed 30px square, themed, shadowed */
 #sidebar-toolbar button {
-  width:  var(--sidebar-control-size);
-  height: var(--sidebar-control-size);
+  width: 30px;
+  height: 30px;
   background-color: var(--bg-30);
   color: var(--text-primary);
   border: none;
-  border-radius: var(--radius-small);
-  font-size: 1em;                                 /* default icon size */
+  border-radius: 4px;
+  font-size: 1em;             /* back to default icon size */
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: var(--sidebar-toolbar-shadow);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: background 0.2s, box-shadow 0.2s;
 }
@@ -33,6 +33,6 @@
 #sidebar-toolbar button:hover,
 #sidebar-toolbar button:focus {
   background-color: var(--bg-40);
-  box-shadow: var(--sidebar-toolbar-shadow-hover);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
   outline: none;
 }

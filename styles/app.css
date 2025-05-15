@@ -18,7 +18,6 @@
 @import "tokens/borders.css";
 @import "tokens/shadows.css";
 @import "tokens/z-index.css";
-@import "tokens/sidebar.css";   
 
 /* ── Theme overrides ──────────────────────────────────────────────────── */
 @import "themes/lightmode.css";   /* Light theme overrides */
