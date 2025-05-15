@@ -1,5 +1,5 @@
 /* @file: styles/components/popup-chest-grid.css */
-/* @version: 1.0 — chest-slot grid inside popups */
+/* @version: 1.0 — token-driven chest grid for popups */
 
 .custom-popup > .popup-info-box.loot-box .chest-grid {
   display: grid;
@@ -14,7 +14,7 @@
   width: 52px;
   height: 52px;
   background-color: var(--bg-40);
-  border: 2px solid transparent; /* inline border-color shows rarity */
+  border: 2px solid transparent;
   border-radius: var(--radius-small);
   overflow: hidden;
   position: relative;
@@ -30,9 +30,9 @@
 }
 .custom-popup > .popup-info-box.loot-box .chest-slot-qty {
   position: absolute;
-  bottom: var(--space-1);
-  right: var(--space-1);
-  background: rgba(0,0,0,0.6);
+  bottom: 2px;
+  right: 4px;
+  background: rgba(0, 0, 0, 0.6);
   padding: 1px 4px;
   border-radius: var(--radius-small);
   font-size: 0.75rem;

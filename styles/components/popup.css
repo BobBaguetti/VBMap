@@ -1,15 +1,15 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.0 — token-driven custom popup styling */
+/* @version: 1.0 — token-driven custom popup component styles */
 
 .custom-popup {
   position: relative;
   background-color: var(--bg-40);
   border-radius: var(--radius-medium);
-  padding: var(--space-3);
+  padding: 11px;
   width: 320px;
   color: var(--text-primary);
   font-family: var(--font-body);
-  font-size: 0.875rem;    /* ~14px */
+  font-size: 0.875rem;
   line-height: 1.4;
   box-shadow: var(--shadow-medium);
 }
@@ -19,25 +19,25 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
-  border-bottom: var(--border-width-thin) solid var(--bg-50);
+  gap: 10px;
+  margin-bottom: 13px;
+  border-bottom: 2px solid var(--bg-50);
   padding: 0;
 }
 .popup-header-left {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-2);
+  gap: 10px;
   flex: 1;
 }
 
-/* Thumbnail */
+/* Image thumbnail */
 .popup-image {
   width: 64px;
   height: 64px;
   object-fit: contain;
   background-color: var(--bg-20);
-  border: var(--border-width-thin) solid var(--bg-50);
+  border: 2px solid var(--bg-50);
   border-radius: var(--radius-small);
   flex-shrink: 0;
 }
@@ -46,7 +46,7 @@
 .popup-info {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 2px;
   margin: 0;
   padding: 0;
 }
@@ -55,37 +55,32 @@
   padding: 0;
   line-height: 1.2;
 }
-
-/* Title & meta */
 .popup-name {
-  font-size: 1.125rem;     /* ~18px */
+  font-family: var(--font-body);
+  font-size: 1.125rem;
   font-weight: 520;
-  font-variant: small-caps;
   text-transform: uppercase;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-type,
 .popup-rarity {
-  font-size: 0.9375rem;    /* ~15px */
+  font-size: 0.9375rem;
   font-weight: 520;
   transform: translateY(-1px);
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
-}
-.popup-rarity {
-  text-transform: uppercase;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Value / coins */
+/* Value (coins) block */
 .popup-value-icon {
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
-  margin-top: var(--space-3);
-  margin-right: var(--space-1);
+  gap: 4px;
+  margin-top: 32px;
+  margin-right: 4px;
   font-size: 0.9375rem;
   font-weight: 520;
   white-space: nowrap;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-value-icon svg {
   width: 1rem;
@@ -93,18 +88,63 @@
   fill: var(--accent-gold);
 }
 
+/* Body info box */
+.popup-body.popup-info-box {
+  font-weight: 420;
+  font-size: 0.875rem;
+  background-color: var(--bg-30);
+  border: var(--border-width-hair) solid var(--border-soft);
+  border-radius: var(--radius-small);
+  padding: 9px;
+  margin-top: 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.popup-body.popup-info-box p {
+  margin: 0;
+  padding: 2px 0;
+  font-weight: 420;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+.popup-desc {
+  font-style: italic;
+  font-weight: 400;
+  font-size: 0.875rem;
+}
+
+/* Extras & meta */
+.popup-extra-line {
+  font-size: 0.875rem;
+  font-weight: 420;
+}
+.popup-meta {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: 420;
+  color: var(--text-primary);
+}
+
+/* Divider */
+.popup-divider {
+  border: none;
+  height: 1px;
+  background-color: var(--bg-50);
+  margin: 1px 0;
+}
+
 /* Close button */
 .popup-close-btn {
   position: absolute;
-  top: var(--space-2);
-  right: var(--space-2);
+  top: 8px;
+  right: 8px;
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
-  z-index: var(--z-index-tooltip);
-  color: var(--text-secondary);
+  z-index: var(--z-index-overlay);
   transition: color 0.2s, transform 0.2s;
+  color: var(--text-secondary);
 }
 .popup-close-btn svg {
   width: 1rem;
