@@ -1,19 +1,19 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.0 — core custom-popup styles */
+/* @version: 1.1 — migrated values to popup tokens */
+
+@import "tokens/popup.css";
 
 /* ───────────────────────────────────────────────── Custom Popup ──── */
-@import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;420;520&display=swap');
-
 .custom-popup {
   position: relative;
-  background: var(--bg-40);                /* was rgba(34, 34, 34, 0.95) */
-  border-radius: 8px;
-  padding: 11px;
-  width: 320px;
-  color: var(--text-primary);              /* was #e0e0e0 */
-  font-family: 'Satoshi', sans-serif;
-  font-size: 14px;
-  line-height: 1.4;
+  background: var(--bg-40);
+  border-radius: var(--popup-border-radius);
+  padding: var(--popup-padding);
+  width: var(--popup-width);
+  color: var(--text-primary);
+  font-family: var(--popup-font-family);
+  font-size: var(--popup-font-size);
+  line-height: var(--popup-line-height);
 }
 
 /* Header */
@@ -21,24 +21,24 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 10px;
-  margin-bottom: 13px;
-  border-bottom: 2px solid var(--bg-50);   /* was #444 */
+  gap: var(--popup-header-gap);
+  margin-bottom: var(--popup-header-margin-bottom);
+  border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
 }
 .popup-header-left {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: var(--popup-header-gap);
   flex: 1;
 }
 .popup-image {
-  width: 64px;
-  height: 64px;
+  width: var(--popup-image-size);
+  height: var(--popup-image-size);
   object-fit: contain;
-  background: var(--bg-20);                /* was #222 */
-  border: 2px solid var(--bg-50);          /* was #777 */
-  border-radius: 6px;
+  background: var(--bg-20);
+  border: var(--popup-image-border-thickness) solid var(--bg-50);
+  border-radius: var(--popup-image-border-radius);
   flex-shrink: 0;
 }
 
@@ -46,18 +46,18 @@
 .popup-info {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: var(--popup-info-gap);
   margin-top: 0;
   padding-top: 0;
 }
 .popup-info > * {
   margin: 0;
   padding: 0;
-  line-height: 1.2;
+  line-height: var(--popup-info-line-height);
 }
 .popup-name {
   font-family: 'Segoe UI', Tahoma, sans-serif;
-  font-size: 18px;
+  font-size: var(--popup-name-font-size);
   font-weight: 520;
   font-variant: small-caps;
   text-transform: uppercase;
@@ -65,7 +65,7 @@
 }
 .popup-type,
 .popup-rarity {
-  font-size: 15px;
+  font-size: var(--popup-variant-font-size);
   font-weight: 520;
   transform: translateY(-1px);
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
@@ -75,91 +75,91 @@
 .popup-value-icon {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  margin-top: 32px;
-  margin-right: 4px;
-  font-size: 15px;
+  gap: var(--popup-value-gap);
+  margin-top: var(--popup-value-margin-top);
+  margin-right: var(--popup-value-margin-right);
+  font-size: var(--popup-value-font-size);
   font-weight: 520;
   white-space: nowrap;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-value-icon svg {
-  width: 16px;
-  height: 16px;
-  fill: #d4af37; /* keep gold accent */
+  width: 1rem;
+  height: 1rem;
+  fill: #d4af37;
 }
 
 /* Body (with box style) */
 .popup-body.popup-info-box {
-  font-weight: 420;
-  font-size: 14px;
-  background: var(--bg-30);                /* was rgba(20, 20, 20, 0.6) */
-  border: 1px solid var(--border-soft);    /* was #444 */
-  border-radius: 4px;
-  padding: 9px;
-  margin-top: 7px;
+  font-weight: var(--popup-info-box-font-weight);
+  font-size: var(--popup-info-box-font-size);
+  background: var(--bg-30);
+  border: var(--border-width-hair) solid var(--border-soft);
+  border-radius: var(--popup-info-box-border-radius);
+  padding: var(--popup-info-box-padding);
+  margin-top: var(--popup-info-box-margin-top);
   display: flex;
   flex-direction: column;
-  gap: 1px;           /* tight vertical gap */
+  gap: var(--popup-info-box-gap);
 }
 .popup-body p {
   margin: 0;
   padding: 2px 0;
-  font-weight: 420;
+  font-weight: var(--popup-info-box-font-weight);
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 .popup-desc {
-  font-size: 14px;
+  font-size: var(--popup-info-box-font-size);
   font-style: italic;
   font-weight: 400;
 }
 
 /* Extras + Meta */
 .popup-extra-line {
-  font-size: 14px;
-  font-weight: 420;
+  font-size: var(--popup-info-box-font-size);
+  font-weight: var(--popup-info-box-font-weight);
 }
 .popup-meta {
-  font-size: 12px;
+  font-size: 0.75rem;
   text-transform: uppercase;
-  font-weight: 420;
-  color: var(--text-primary);              /* was #e0e0e0 */
+  font-weight: var(--popup-info-box-font-weight);
+  color: var(--text-primary);
 }
 
 /* Divider after description */
 .popup-divider {
   border: none;
   height: 1px;
-  background: var(--bg-50);                /* was #444 */
-  margin: 1px 0;      /* minimal gap */
+  background: var(--bg-50);
+  margin: 1px 0;
 }
 
 /* Close Button */
 .popup-close-btn {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: var(--popup-close-offset);
+  right: var(--popup-close-offset);
   background: none;
   border: none;
   padding: 0;
   cursor: pointer;
   z-index: 10;
-
-  /* animate the “×” on hover */
-  transition: color 0.2s, transform 0.2s;
-  color: var(--text-secondary);            /* was #aaa */
+  transition: color var(--popup-close-transition),
+              transform var(--popup-close-transition);
+  color: var(--text-secondary);
 }
 .popup-close-btn svg {
-  width: 16px;
-  height: 16px;
-  fill: var(--text-secondary);             /* was #aaa */
-  transition: fill 0.2s, transform 0.2s;
+  width: var(--popup-close-icon-size);
+  height: var(--popup-close-icon-size);
+  fill: var(--text-secondary);
+  transition: fill var(--popup-close-transition),
+              transform var(--popup-close-transition);
 }
 .popup-close-btn:hover {
-  color: var(--text-primary);              /* was #fff */
-  transform: scale(1.2);
+  color: var(--text-primary);
+  transform: scale(var(--popup-close-hover-scale));
 }
 .popup-close-btn:hover svg {
-  fill: var(--text-primary);               /* was white */
-  transform: scale(1.2);
+  fill: var(--text-primary);
+  transform: scale(var(--popup-close-hover-scale));
 }

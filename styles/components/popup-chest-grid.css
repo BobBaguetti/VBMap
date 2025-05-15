@@ -1,24 +1,26 @@
 /* @file: styles/components/popup-chest-grid.css */
-/* @version: 1.0 — chest‐marker popup grid & loot-panel styles */
+/* @version: 1.1 — migrated values to popup tokens */
+
+@import "tokens/popup.css";
 
 /* Chest‐marker popup grid & slots (scoped inside loot panel) */
 .custom-popup > .popup-info-box.loot-box .chest-grid {
   display: grid;
-  grid-template-columns: repeat(var(--cols), 52px);
-  gap: 5px;
+  grid-template-columns: repeat(var(--cols), var(--popup-chest-slot-size));
+  gap: var(--popup-chest-gap);
   justify-content: start;
   margin: 0;
 }
 .custom-popup > .popup-info-box.loot-box .chest-slot {
   box-sizing: border-box;
-  width: 52px;
-  height: 52px;
-  background: var(--bg-40);                /* was #333 */
-  border: 2px solid transparent; /* inline border-color shows rarity */
-  border-radius: 2px;
+  width: var(--popup-chest-slot-size);
+  height: var(--popup-chest-slot-size);
+  background: var(--bg-40);
+  border: var(--popup-chest-slot-border-thickness) solid transparent;
+  border-radius: var(--popup-chest-slot-border-radius);
   overflow: hidden;
   position: relative;
-  transition: filter 0.15s ease;
+  transition: filter var(--popup-chest-slot-transition) ease;
 }
 .custom-popup > .popup-info-box.loot-box .chest-slot:hover {
   filter: brightness(1.2) !important;
@@ -30,29 +32,29 @@
 }
 .custom-popup > .popup-info-box.loot-box .chest-slot-qty {
   position: absolute;
-  bottom: 2px;
-  right: 4px;
+  bottom: var(--popup-chest-qty-bottom);
+  right: var(--popup-chest-qty-right);
   background: rgba(0, 0, 0, 0.6);
-  padding: 1px 4px;
-  border-radius: 3px;
-  font-size: 0.75em;
-  color: #fff; /* keep white for clarity */
+  padding: var(--popup-chest-qty-padding);
+  border-radius: var(--popup-chest-slot-border-radius);
+  font-size: var(--popup-chest-qty-font-size);
+  color: #fff;
 }
 
 /* Two separate panels */
 .custom-popup > .popup-info-box {
-  background: var(--bg-30);                /* was rgba(20, 20, 20, 0.6) */
-  border: 1px solid var(--border-soft);    /* was #444 */
-  border-radius: 4px;
-  padding: 9px;
-  margin: 8px 0;
+  background: var(--bg-30);
+  border: var(--border-width-hair) solid var(--border-soft);
+  border-radius: var(--popup-info-box-border-radius);
+  padding: var(--popup-info-box-padding);
+  margin: var(--space-1) 0;
   display: flex;
   flex-direction: column;
 }
 
 /* Loot panel margins/scroll */
 .custom-popup > .popup-info-box.loot-box {
-  margin: 4px 0 !important;
+  margin: var(--space-0) 0 !important;
   overflow-y: auto;
   max-height: 140px;
   scrollbar-width: none;
@@ -64,7 +66,7 @@
 
 /* Text panel gap and tight paragraphs */
 .custom-popup > .popup-info-box:not(.loot-box) {
-  gap: 1px !important;  /* very tight vertical gap */
+  gap: var(--popup-info-box-gap) !important;
 }
 .custom-popup > .popup-info-box:not(.loot-box) p {
   margin: 0;

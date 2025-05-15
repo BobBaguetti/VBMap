@@ -1,40 +1,65 @@
 /* @file: styles/tokens/popup.css */
-/* @version: 1.0 — popup dimension & typography tokens */
+/* @version: 1.0 — popup dimension and spacing tokens */
 
 :root {
-  /* Container */
-  --popup-width: 20rem;           /* 320px */
-  --popup-padding: 0.75rem;       /* 12px */
-
-  /* Border & radius */
-  --popup-border-width: 0.125rem; /* 2px */
-  --popup-border-radius: var(--radius-medium);
-
-  /* Headers */
-  --popup-header-gap: 0.5rem;     /* 8px */
-  --popup-header-border: 0.125rem;/* 2px */
-
-  /* Image thumbnail */
-  --popup-image-size: 4rem;       /* 64px */
-  --popup-image-border: 0.125rem; /* 2px */
-  --popup-image-radius: var(--radius-small);
+  /* Core popup dimensions */
+  --popup-width: 320px;
+  --popup-padding: 11px;
+  --popup-border-radius: 8px;
 
   /* Typography */
-  --popup-font-size-base: 0.875rem;    /* 14px */
-  --popup-font-size-lg: 1.125rem;      /* 18px */
-  --popup-font-size-sm: 0.9375rem;     /* 15px */
+  --popup-font-size: 0.875rem;        /* 14px */
   --popup-line-height: 1.4;
+  --popup-font-family: 'Satoshi', sans-serif;
+
+  /* Header */
+  --popup-header-gap: 10px;
+  --popup-header-margin-bottom: 13px;
+  --popup-header-border-thickness: 2px;
+
+  /* Image */
+  --popup-image-size: 64px;
+  --popup-image-border-thickness: 2px;
+  --popup-image-border-radius: 6px;
+
+  /* Info block */
+  --popup-info-gap: 2px;
+  --popup-info-line-height: 1.2;
+
+  /* Name & variant fonts */
+  --popup-name-font-size: 1.125rem;   /* 18px */
+  --popup-variant-font-size: 0.9375rem;/* 15px */
 
   /* Value icon */
-  --popup-value-gap: 0.25rem;    /* 4px */
-  --popup-value-margin-top: 2rem;/* 32px */
+  --popup-value-gap: 4px;
+  --popup-value-margin-top: 32px;
+  --popup-value-margin-right: 4px;
+  --popup-value-font-size: 0.9375rem; /* 15px */
 
-  /* Body info boxes */
-  --popup-box-padding: 0.5625rem;  /* 9px */
-  --popup-box-gap: 0.0625rem;      /* 1px */
-  --popup-box-border: var(--popup-border-width);
+  /* Info-box (body) */
+  --popup-info-box-font-weight: 420;
+  --popup-info-box-font-size: 0.875rem;/* 14px */
+  --popup-info-box-padding: 9px;
+  --popup-info-box-margin-top: 7px;
+  --popup-info-box-border-radius: 4px;
+  --popup-info-box-gap: 1px;
 
-  /* Chest grid */
-  --popup-chest-slot: 3.25rem;     /* 52px */
-  --popup-chest-gap: 0.3125rem;    /* 5px */
+  /* Close button */
+  --popup-close-offset: 8px;
+  --popup-close-icon-size: 1rem;      /* 16px */
+  --popup-close-hover-scale: 1.2;
+  --popup-close-transition: 0.2s;
+
+  /* Chest‐grid slots */
+  --popup-chest-slot-size: 52px;
+  --popup-chest-gap: 5px;
+  --popup-chest-slot-border-radius: 2px;
+  --popup-chest-slot-border-thickness: 2px;
+  --popup-chest-slot-transition: 0.15s;
+
+  /* Chest‐qty badge */
+  --popup-chest-qty-bottom: 2px;
+  --popup-chest-qty-right: 4px;
+  --popup-chest-qty-padding: 1px 4px;
+  --popup-chest-qty-font-size: 0.75em;
 }
