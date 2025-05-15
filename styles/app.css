@@ -1,34 +1,34 @@
 /* @file: styles/app.css */
-/* @version: 1.4 — fix imports: remove legacy, correct popup token path */
+/* @version: 1.6 — migrate all modal & preview imports to component paths; remove legacy files */
 
 /* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
 @import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
 @import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css");
 @import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css");
 
-/* ── Third-party themes & icons ───────────────────────────────────────── */
+/* ── Third-party themes & icons ──────────────────────────────────────── */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 @import url("https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css");
 @import url("https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css");
 
-/* ── Token definitions ─────────────────────────────────────────────────── */
+/* ── Token definitions ───────────────────────────────────────────────── */
 @import "tokens/colors.css";
 @import "tokens/typography.css";
 @import "tokens/spacing.css";
 @import "tokens/borders.css";
 @import "tokens/shadows.css";
 @import "tokens/z-index.css";
-@import "tokens/markers.css";       /* marker dimension tokens */
-@import "tokens/popup.css";         /* popup dimension & spacing tokens */
+@import "tokens/markers.css";
+@import "tokens/popup.css";
 
-/* ── Theme overrides ──────────────────────────────────────────────────── */
-@import "themes/lightmode.css";   /* Light theme overrides */
-@import "themes/darkmode.css";    /* Dark theme (default) */
+/* ── Theme overrides ─────────────────────────────────────────────────── */
+@import "themes/lightmode.css";
+@import "themes/darkmode.css";  /* default */
 
-/* ── Global base styles ───────────────────────────────────────────────── */
+/* ── Global base styles ──────────────────────────────────────────────── */
 @import "base.css";
 
-/* ── Component skins ──────────────────────────────────────────────────── */
+/* ── Core component skins ────────────────────────────────────────────── */
 @import "components/buttons.css";
 @import "components/forms.css";
 @import "components/surfaces.css";
@@ -36,30 +36,44 @@
 @import "components/icons.css";
 @import "components/ui-controls.css";
 @import "components/map.css";
-@import "components/markers.css";   
+@import "components/markers.css";
 @import "components/entries.css";
 
-/* ── Utilities ────────────────────────────────────────────────────────── */
+/* ── Utilities ───────────────────────────────────────────────────────── */
 @import "utilities.css";
 
-/* ── Context menus & popups (token-driven) ───────────────────────────── */
+/* ── Context menus & popups ──────────────────────────────────────────── */
 @import "components/context-menu.css";
 @import "components/leaflet-overrides.css";
 @import "components/popup.css";
 @import "components/popup-chest-grid.css";
 
+/* ── Modal stack ─────────────────────────────────────────────────────── */
+@import "components/modal/base.css";
+@import "components/modal/form.css";
+@import "components/modal/entries.css";
+
+/* Large-modal micro-modules */
+@import "components/modal/large/box.css";
+@import "components/modal/large/header.css";
+@import "components/modal/large/scroll.css";
+@import "components/modal/large/fields.css";
+@import "components/modal/large/entries.css";
+@import "components/modal/large/buttons.css";
+
+/* Shared small/about/settings overrides */
+@import "components/modal/small.css";
+@import "components/modal/about.css";
+@import "components/modal/settings.css";
+
+/* ── Inventory / loot-pool components ────────────────────────────────── */
+@import "components/inventory/chip-list.css";
+@import "components/inventory/chest-picker.css";
+
+/* ── Preview panels ──────────────────────────────────────────────────── */
+@import "components/preview/base.css";
+@import "components/preview/item.css";
+@import "components/preview/chest.css";
+
 /* ── Sidebar ─────────────────────────────────────────────────────────── */
 @import "sidebar/index.css";
-
-/* ── Modals ───────────────────────────────────────────────────────────── */
-@import "modals/modal.base.css";
-@import "modals/modal.small.css";
-@import "modals/modal.large.css";
-@import "modals/inventory.css";
-@import "modals/modal.settings.css";
-@import "modals/modal.about.css";
-
-/* ── Preview panels ───────────────────────────────────────────────────── */
-@import "preview/previewPanel.css";
-@import "preview/itemPreview.css";
-@import "preview/chestPreview.css";

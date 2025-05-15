@@ -1,0 +1,8 @@
+/* @file: styles/components/preview/item.css */
+/* @version: 1.0 — item-specific preview background */
+
+.item-preview-panel{
+  background: var(--bg-00)
+              url("https://res.cloudinary.com/dtty7zxjh/image/upload/v1746912874/itemPreview_m2cbbg.png")
+              center/cover no-repeat;
+}

@@ -1,0 +1,31 @@
+/* @file: styles/components/modal/large/scroll.css */
+/* @version: 1.0 — scroll-pane rules for large modal */
+
+/* Definition list (left pane) */
+.modal.modal-large .def-list {
+  flex: 0 0 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+  min-height: 0;
+  max-height: 240px;
+  scrollbar-width: none;        /* Firefox */
+  -ms-overflow-style: none;     /* IE */
+}
+.modal.modal-large .def-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Form pane (right side) */
+.modal.modal-large form {
+  flex: 1 1 auto;
+  min-height: 0;
+  max-height: 100%;
+  padding-right: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.modal.modal-large form::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
