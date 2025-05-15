@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.1 — include Settings section & seed filter‐group headers
+// @version: 1.2 — removed Settings section (will use toolbar button instead)
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -69,21 +69,6 @@ export function renderSidebarShell() {
       <div class="filter-group" id="npc-friendly-filters">
         <h3><i class="fas fa-user-friends group-icon"></i>Friendly NPCs</h3>
         <div class="toggle-group" id="npc-friendly-list"></div>
-      </div>
-    </div>
-
-    <!-- SETTINGS -->
-    <div class="sidebar-section" id="settings-section">
-      <h2><i class="fas fa-cog"></i> Settings</h2>
-      <div class="toggle-group">
-        <label>
-          <input type="checkbox" id="toggle-grouping"/>
-          <span>Enable Marker Grouping</span>
-        </label>
-        <label>
-          <input type="checkbox" id="toggle-small-markers"/>
-          <span>Small Markers (50%)</span>
-        </label>
       </div>
     </div>
 
