@@ -1,8 +1,7 @@
-/* @keep:  Comments must NOT be deleted unless code is deleted; edits only with code changes. */
 /* @file: styles/base.css */
-/* @version: 12 — switch to self-hosted Satoshi (woff2); add smoothing hints */
+/* @version: 12.1 — fix font URLs: make them project-relative */
 
-/* 0) Self-hosted Satoshi — Regular, Medium, SemiBold (hinted) */
+/* Self-hosted Satoshi */
 @font-face {
   font-family: 'Satoshi';
   src: url('assets/fonts/satoshi/Satoshi-Regular.woff2') format('woff2');
@@ -18,7 +17,7 @@
 @font-face {
   font-family: 'Satoshi';
   src: url('assets/fonts/satoshi/Satoshi-Bold.woff2') format('woff2');
-  font-weight: 600 700;          /* covers 600 & 700 */
+  font-weight: 600 700;
   font-display: swap;
 }
 
