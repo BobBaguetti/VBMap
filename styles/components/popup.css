@@ -1,5 +1,5 @@
 /* @file: styles/components/popup.css */
-/* @version: 1.5 — restore text-shadow on description & extra-info rows */
+/* @version: 1.6 — restore original paragraph-scoped text-shadow for exact legacy look */
 
 @import "../tokens/popup.css";
 
@@ -15,6 +15,14 @@
   font-size: var(--popup-font-size);
   line-height: var(--popup-line-height);
   box-shadow: var(--shadow-medium);
+}
+
+/* Leaflet content paragraphs (original selector restored for exact legacy shadow) */
+.popup-body.popup-info-box p {
+  margin: 0;
+  padding: 2px 0;
+  font-weight: var(--popup-info-box-font-weight);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
 /* Header */
@@ -89,39 +97,19 @@
   fill: #d4af37;
 }
 
-/* Body (info box) */
-.popup-body.popup-info-box {
-  font-weight: var(--popup-info-box-font-weight);
-  font-size: var(--popup-info-box-font-size);
-  background: var(--bg-30);
-  border: var(--border-width-hair) solid var(--border-soft);
-  border-radius: var(--popup-info-box-border-radius);
-  padding: var(--popup-info-box-padding);
-  margin-top: var(--popup-info-box-margin-top);
-  display: flex;
-  flex-direction: column;
-  gap: var(--popup-info-box-gap);
-}
-.popup-body p {
-  margin: 0;
-  padding: 2px 0;
-  font-weight: var(--popup-info-box-font-weight);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
-}
-
-/* Description (now with shadow) */
+/* Description (now with legacy paragraph-scoped shadow via above rule) */
 .popup-desc {
   font-size: var(--popup-info-box-font-size);
   font-style: italic;
   font-weight: 400;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  /* no separate text-shadow here—handled by the paragraph rule */
 }
 
-/* Extras + Meta */
+/* Extras + Meta (no shadow except via paragraph rule when inside info-box) */
 .popup-extra-line {
   font-size: var(--popup-info-box-font-size);
   font-weight: var(--popup-info-box-font-weight);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  /* shadow applied via original paragraph rule */
 }
 .popup-meta {
   font-size: 0.75rem;
