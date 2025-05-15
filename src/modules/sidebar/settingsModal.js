@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/settingsModal.js
-// @version: 1.0 — implements a modal dialog for sidebar settings
+// @version: 1.1 — robust button detection & event‑delegation
 
 /**
  * Creates and wires a settings modal, toggled by the toolbar button.
@@ -7,14 +7,8 @@
  * @param {object} params
  * @param {string} params.buttonSelector – selector for the Settings toolbar button
  */
-export function setupSettingsModal({ buttonSelector }) {
-  const btn = document.querySelector(buttonSelector);
-  if (!btn) {
-    console.warn("[settingsModal] Button not found:", buttonSelector);
-    return;
-  }
-
-  // Build modal structure
+export function setupSettingsModal({ buttonSelector = "#btn-settings" }) {
+  // Build modal element once and append to <body>
   const modal = document.createElement("div");
   modal.id = "settings-modal";
   modal.classList.add("modal", "hidden"); // hidden by default
@@ -35,30 +29,29 @@ export function setupSettingsModal({ buttonSelector }) {
           <input type="checkbox" id="toggle-small-markers"/>
           Small Markers (50%)
         </label>
-        <!-- add more settings here -->
       </section>
       <footer>
         <button class="modal-close">Close</button>
       </footer>
     </div>
   `.trim();
-
   document.body.appendChild(modal);
 
-  const overlay = modal.querySelector(".modal-overlay");
+  const overlay      = modal.querySelector(".modal-overlay");
   const closeButtons = modal.querySelectorAll(".modal-close");
+  const openModal    = () => modal.classList.remove("hidden");
+  const closeModal   = () => modal.classList.add("hidden");
 
-  function open() {
-    modal.classList.remove("hidden");
-  }
-  function close() {
-    modal.classList.add("hidden");
-  }
+  // Global delegation — works even if the button isn’t in the DOM yet
+  document.addEventListener("click", (e) => {
+    const btn = e.target.closest(buttonSelector);
+    if (btn) {
+      openModal();
+      e.preventDefault();
+    }
+  });
 
-  // Toggle on Settings button click
-  btn.addEventListener("click", open);
-
-  // Close on overlay or close-button click
-  overlay.addEventListener("click", close);
-  closeButtons.forEach(b => b.addEventListener("click", close));
+  // Close interactions
+  overlay.addEventListener("click", closeModal);
+  closeButtons.forEach(b => b.addEventListener("click", closeModal));
 }

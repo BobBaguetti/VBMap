@@ -1,77 +1,53 @@
 /* @file: styles/modals/modal.settings.css */
-/* @version: 1.1 — full styling so the Settings modal shows up */
+/* @version: 1.0 — visual styles for Settings modal */
 
-/* Hide when .hidden is present */
-#settings-modal.hidden {
-  display: none;
-}
+#settings-modal.modal.hidden { display: none; }
 
-/* Full‑screen overlay container */
-#settings-modal {
-  position: fixed;
-  inset: 0;                      /* top:0; right:0; bottom:0; left:0 */
-  z-index: 1200;                 /* above the sidebar & map */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Satoshi', sans-serif;
-}
-
-/* The dark overlay */
 #settings-modal .modal-overlay {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0,0,0,0.5);
+  z-index: 998;
 }
 
-/* Modal card */
 #settings-modal .modal-content {
-  position: relative;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
   background: var(--bg-20);
   color: var(--text-primary);
-  padding: 1.2em;
+  padding: 1rem;
   border-radius: 4px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+  max-width: 320px;
   width: 90%;
-  max-width: 340px;
+  z-index: 999;
 }
 
-/* Header */
-#settings-modal header {
+#settings-modal header,
+#settings-modal footer {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 0.8em;
 }
+
 #settings-modal header h3 {
   margin: 0;
-  font-size: 1.1em;
+  font-size: 1.1rem;
   letter-spacing: 0.05em;
 }
 
-/* Close buttons */
 #settings-modal .modal-close {
   background: none;
   border: none;
-  font-size: 1.3em;
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: color 0.2s;
-}
-#settings-modal .modal-close:hover,
-#settings-modal .modal-close:focus {
   color: var(--text-primary);
-  outline: none;
+  font-size: 1.4rem;
+  cursor: pointer;
 }
 
-/* Body */
 #settings-modal .modal-body label {
   display: block;
   margin: 0.6em 0;
-}
-
-/* Footer */
-#settings-modal footer {
-  margin-top: 1em;
-  text-align: right;
+  font-size: 0.95rem;
 }
