@@ -1,11 +1,12 @@
 // @file: src/authHandler.js
-// Handles Firebase Auth state and gates admin UI
+// @version: 5 — updated bootstrapUI import to new bootstrap folder
 
 import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
 // authSetup.js now lives in src/
 import { initAdminAuth } from "./authSetup.js";
 
-import { bootstrapUI } from "./uiBootstrap.js";
+// Point bootstrapUI at the new orchestrator
+import { bootstrapUI } from "./bootstrap/index.js";
 
 export function handleAuth() {
   const auth = getAuth();
