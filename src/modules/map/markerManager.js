@@ -1,17 +1,38 @@
 /* @file: src/modules/map/markerManager.js */
-/* @version: 13.0 — added NPC marker exports */
+/* @version: 13.1 — re-export color presets for form controllers */
 
-export { default as createMarker }         from "./markers/common/createMarker.js";
-export { default as createCustomIcon }     from "./markers/common/createCustomIcon.js";
-export { wrapPopup }                       from "./markers/common/popupBase.js";
+import { createMarker }       from "./markers/common/createMarker.js";
+import { createCustomIcon }   from "./markers/common/createCustomIcon.js";
+import { wrapPopup }          from "./markers/common/popupBase.js";
 
-export { default as createChestMarker }    from "./markers/chest/factory.js";
-export { default as renderChestPopup }     from "./markers/chest/popup.js";
+import createChestMarker      from "./markers/chest/factory.js";
+import renderChestPopup       from "./markers/chest/popup.js";
 
-export { default as createItemMarker }     from "./markers/item/factory.js";
-export { default as renderItemPopup }      from "./markers/item/popup.js";
+import createItemMarker       from "./markers/item/factory.js";
+import renderItemPopup        from "./markers/item/popup.js";
 
-export { default as createNPCMarker }      from "./markers/npc/factory.js";
-export { default as renderNPCPopup }       from "./markers/npc/popup.js";
+import createNPCMarker        from "./markers/npc/factory.js";
+import renderNPCPopup         from "./markers/npc/popup.js";
 
-export * from "./markers/utils.js";
+import { CHEST_RARITY }       from "./markers/utils.js";
+import { rarityColors, defaultNameColor } from "../utils/colorPresets.js";
+
+// Re-exports
+export {
+  createMarker,
+  createCustomIcon,
+  wrapPopup,
+
+  createChestMarker,
+  renderChestPopup,
+
+  createItemMarker,
+  renderItemPopup,
+
+  createNPCMarker,
+  renderNPCPopup,
+
+  CHEST_RARITY,
+  rarityColors,
+  defaultNameColor
+};
