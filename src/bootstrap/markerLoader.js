@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.1 — accept clusterItemLayer & flatItemLayer directly
+// @version: 1.2 — removed loadItemFilters call from marker subscription to prevent duplicate filter list rebuilds
 
 import {
   subscribeMarkers,
@@ -15,6 +15,7 @@ import {
   renderChestPopup
 } from "../modules/map/markerManager.js";
 
+/** @type {{ markerObj: L.Marker, data: object }[]} */
 export const allMarkers = [];
 
 /**
@@ -24,10 +25,10 @@ export const allMarkers = [];
  * @param {L.Map} map
  * @param {L.LayerGroup} clusterItemLayer
  * @param {L.LayerGroup} flatItemLayer
- * @param {Function} filterMarkers
- * @param {Function} loadItemFilters
+ * @param {() => void} filterMarkers
+ * @param {() => Promise<void>} loadItemFilters (no longer used here)
  * @param {boolean} isAdmin
- * @param {object} [callbacks={}] – edit/copy/drag/delete callbacks
+ * @param {object} [callbacks={}] – edit/copy/drag/delete handlers
  */
 export async function init(
   db,
@@ -39,9 +40,9 @@ export async function init(
   isAdmin,
   callbacks = {}
 ) {
-  // 1) Subscribe to marker updates
+  // Subscribe to marker updates (adds/removes)
   subscribeMarkers(db, markers => {
-    // Clear existing
+    // Clear existing markers
     allMarkers.forEach(({ markerObj }) => {
       markerObj.remove();
       clusterItemLayer.removeLayer(markerObj);
@@ -50,16 +51,24 @@ export async function init(
 
     // Add incoming markers
     markers.forEach(data =>
-      addMarker(db, map, clusterItemLayer, flatItemLayer, data, isAdmin, callbacks)
+      addMarker(
+        db,
+        map,
+        clusterItemLayer,
+        flatItemLayer,
+        data,
+        isAdmin,
+        callbacks
+      )
     );
 
-    // Refresh filters
-    loadItemFilters().then(filterMarkers);
+    // Re‐apply filters (but do NOT rebuild the filter list)
+    filterMarkers();
   });
 
-  // 2) Hydrate markers on item-definition changes
+  // Hydrate markers whenever item definitions change
   subscribeItemDefinitions(db, async () => {
-    const itemDefMap = definitionsManager.getItemDefMap();
+    const itemDefMap  = definitionsManager.getItemDefMap();
     const chestDefMap = definitionsManager.getChestDefMap();
 
     allMarkers.forEach(({ markerObj, data }) => {
@@ -80,6 +89,7 @@ export async function init(
       }
     });
 
+    // Re‐apply filters after hydration
     filterMarkers();
   });
 }
@@ -87,9 +97,17 @@ export async function init(
 /**
  * Add a single marker to the map and register callbacks.
  */
-function addMarker(db, map, clusterItemLayer, flatItemLayer, data, isAdmin, callbacks) {
+function addMarker(
+  db,
+  map,
+  clusterItemLayer,
+  flatItemLayer,
+  data,
+  isAdmin,
+  callbacks
+) {
   const chestDefMap = definitionsManager.getChestDefMap();
-  const itemDefMap = definitionsManager.getItemDefMap();
+  const itemDefMap  = definitionsManager.getItemDefMap();
 
   if (data.type === "Chest") {
     // Enrich chest data
@@ -98,18 +116,28 @@ function addMarker(db, map, clusterItemLayer, flatItemLayer, data, isAdmin, call
       ...def,
       lootPool: (def.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
     };
-    data.name = fullDef.name;
+    data.name       = fullDef.name;
     data.imageSmall = fullDef.iconUrl;
     data.chestDefFull = fullDef;
 
-    const markerObj = createMarker(data, map, { clusterItemLayer, flatItemLayer }, callbacks);
+    const markerObj = createMarker(
+      data,
+      map,
+      { clusterItemLayer, flatItemLayer },
+      callbacks
+    );
     markerObj.setPopupContent(renderChestPopup(fullDef));
     allMarkers.push({ markerObj, data });
     return;
   }
 
   // Standard item marker
-  const markerObj = createMarker(data, map, { clusterItemLayer, flatItemLayer }, callbacks);
+  const markerObj = createMarker(
+    data,
+    map,
+    { clusterItemLayer, flatItemLayer },
+    callbacks
+  );
   const targetLayer = clusterItemLayer.hasLayer(markerObj)
     ? clusterItemLayer
     : flatItemLayer;
