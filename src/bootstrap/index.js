@@ -1,9 +1,9 @@
 // @file: src/bootstrap/index.js
-// @version: 1.1 — supply allMarkers and opts to initSidebar
+// @version: 1.2 — import and pass clusterItemLayer & flatItemLayer correctly
 
-import { db, map, layers } from "../appInit.js";
-import { renderSidebarShell } from "../modules/sidebar/renderSidebar.js";
-import { initSidebar }       from "../modules/sidebar/index.js";
+import { db, map, clusterItemLayer, flatItemLayer } from "../appInit.js";
+import { renderSidebarShell }             from "../modules/sidebar/renderSidebar.js";
+import { initSidebar }                    from "../modules/sidebar/index.js";
 
 import defsManager    from "./definitionsManager.js";
 import markerLoader   from "./markerLoader.js";
@@ -12,18 +12,19 @@ import contextMenu    from "./contextMenu.js";
 import events         from "./events.js";
 
 export async function bootstrapUI(isAdmin) {
-  // 1) Render the sidebar shell
+  // 1) Render sidebar shell
   renderSidebarShell();
 
-  // 2) Wire up sidebar with grouping stubs and marker list
+  // 2) Initialize sidebar (pass in layers object)
+  const layers = { clusterItemLayer, flatItemLayer };
   const { filterMarkers, loadItemFilters } = await initSidebar({
     map,
     layers,
     allMarkers: markerLoader.allMarkers,
     db,
     opts: {
-      enableGrouping: () => {},   // stubbed for now
-      disableGrouping: () => {}   // stubbed for now
+      enableGrouping: () => {},
+      disableGrouping: () => {}
     },
     isAdmin
   });
