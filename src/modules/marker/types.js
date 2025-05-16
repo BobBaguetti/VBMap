@@ -1,5 +1,5 @@
 // @file: src/modules/marker/types.js
-// @version: 1.4 — added defIdKey for marker instance payloads
+// @version: 1.5 — switch to unified definition schema & modal
 
 import {
   loadItemDefinitions,
@@ -16,42 +16,30 @@ import {
   createCustomIcon,
 } from "../map/markerManager.js";
 
-import { initItemDefinitionsModal } from "../ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
-
-import { createItemForm } from "../ui/forms/builders/itemFormBuilder.js";
-import { createChestForm } from "../ui/forms/builders/chestFormBuilder.js";
-
-import { createItemFormController } from "../ui/forms/controllers/itemFormController.js";
-import { createChestFormController } from "../ui/forms/controllers/chestFormController.js";
-
-import { setupItemFilters } from "../sidebar/filters/itemFilters.js";
+import { definitionTypes } from "../../definition/types.js";
+import { setupItemFilters }  from "../sidebar/filters/itemFilters.js";
 import { setupChestFilters } from "../sidebar/filters/chestFilters.js";
 
 export const markerTypes = {
   Item: {
-    defIdKey:              "predefinedItemId",
-    loadDefinitions:       loadItemDefinitions,
-    subscribeDefinitions:  subscribeItemDefinitions,
-    formBuilder:           createItemForm,
-    formController:        createItemFormController,
-    modalInit:             initItemDefinitionsModal,
-    popupRenderer:         renderItemPopup,
-    iconFactory:           createCustomIcon,
-    filterSetup:           setupItemFilters,
-    showInSidebar:         def => def.showInFilters,
+    defIdKey:             "predefinedItemId",
+    loadDefinitions:      definitionTypes.Item.loadDefs,
+    subscribeDefinitions: definitionTypes.Item.subscribe,
+    // we no longer have per-type modals or form builders/controllers here
+    popupRenderer:        renderItemPopup,
+    iconFactory:          createCustomIcon,
+    filterSetup:          setupItemFilters,
+    showInSidebar:        def => def.showInFilters,
   },
+
   Chest: {
-    defIdKey:              "chestTypeId",
-    loadDefinitions:       loadChestDefinitions,
-    subscribeDefinitions:  subscribeChestDefinitions,
-    formBuilder:           createChestForm,
-    formController:        createChestFormController,
-    modalInit:             initChestDefinitionsModal,
-    popupRenderer:         renderChestPopup,
-    iconFactory:           createCustomIcon,
-    filterSetup:           setupChestFilters,
-    showInSidebar:         () => true,
-  },
-  // … future types here …
+    defIdKey:             "chestTypeId",
+    loadDefinitions:      definitionTypes.Chest.loadDefs,
+    subscribeDefinitions: definitionTypes.Chest.subscribe,
+    popupRenderer:        renderChestPopup,
+    iconFactory:          createCustomIcon,
+    filterSetup:          setupChestFilters,
+    showInSidebar:        () => true,
+  }
+  // … future types can be added here …
 };

@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.2 — updated to register the chipList field support
+// @version: 1.2 — hook up generic definition modal & schema-driven forms
 
 import {
   loadItemDefinitions,
