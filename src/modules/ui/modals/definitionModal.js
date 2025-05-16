@@ -1,11 +1,11 @@
 // @file: src/modules/ui/modals/definitionModal.js
-// @version: 1.0 — unified modal for definition types (Item only for now)
+// @version: 1.1 — import uiKit from barrel
 
-import { createModal, openModalAt, closeModal } from "../components/uiKit/modalKit.js";
-import { definitionTypes }                    from "../../definition/types.js";
-import { createDefListContainer }              from "../../utils/listUtils.js";
-import { createPreviewController }             from "../preview/previewController.js";
-import { createDefinitionListManager }          from "../components/definitionListManager.js";
+import { createModal, openModalAt, closeModal } from "../uiKit.js";
+import { definitionTypes }                      from "../../definition/types.js";
+import { createDefListContainer }                from "../../../utils/listUtils.js";
+import { createPreviewController }               from "../preview/previewController.js";
+import { createDefinitionListManager }           from "../components/definitionListManager.js";
 
 export function initDefinitionModal(db) {
   let modal, content, openShell;
@@ -35,11 +35,11 @@ export function initDefinitionModal(db) {
     `;
     labType.appendChild(fldType);
 
-    // 3) List + Form + Preview containers
+    // 3) Containers
     const listContainer = createDefListContainer("def-list");
     const formContainer = document.createElement("div");
     formContainer.id = "def-form-container";
-    previewApi = createPreviewController("item");  // item for now
+    previewApi = createPreviewController("item");
 
     content.append(labType, listContainer, formContainer);
 
@@ -54,19 +54,14 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // 5) Type switch handler
+    // 5) Type change
     fldType.addEventListener("change", async () => {
       currentType = fldType.value;
       await refreshList();
-
-      // Build form controller
       const cfg = definitionTypes[currentType];
       formContainer.innerHTML = "";
       formApi = cfg.controller({
-        onCancel: () => {
-          formApi.reset();
-          previewApi.hide();
-        },
+        onCancel: () => { formApi.reset(); previewApi.hide(); },
         onDelete: async id => {
           await cfg.del(db, id);
           await refreshList();
@@ -74,28 +69,20 @@ export function initDefinitionModal(db) {
           previewApi.hide();
         },
         onSubmit: async payload => {
-          if (payload.id) {
-            await cfg.save(db, payload.id, payload);
-          } else {
-            await cfg.save(db, null, payload);
-          }
+          if (payload.id) await cfg.save(db, payload.id, payload);
+          else               await cfg.save(db, null, payload);
           await refreshList();
           formApi.reset();
           previewApi.hide();
         },
         onFieldChange: data => previewApi.show(data)
       }, db);
-
       formContainer.appendChild(formApi.form);
     });
 
-    // 6) Search wiring
-    const searchInput = modal.querySelector(".modal__search");
-    if (searchInput) {
-      searchInput.addEventListener("input", () => {
-        listApi.filter(searchInput.value);
-      });
-    }
+    // 6) Search
+    const search = modal.querySelector(".modal__search");
+    if (search) search.addEventListener("input", () => listApi.filter(search.value));
   }
 
   async function refreshList() {
