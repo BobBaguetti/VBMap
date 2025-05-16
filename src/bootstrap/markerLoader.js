@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.5 — merge edit payload onto original data so id is preserved
+// @version: 1.6 — purge leftover fields on type change to prevent old border colors from persisting
 
 import {
   subscribeMarkers,
@@ -7,8 +7,8 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "../modules/services/firebaseService.js";
 import definitionsManager from "./definitionsManager.js";
-import { markerTypes } from "../modules/marker/types.js";
-import { createMarker } from "../modules/map/markerManager.js";
+import { markerTypes }    from "../modules/marker/types.js";
+import { createMarker }    from "../modules/map/markerManager.js";
 import { showContextMenu, hideContextMenu } from "../modules/ui/uiManager.js";
 
 /** @type {{ markerObj: L.Marker, data: object }[]} */
@@ -38,7 +38,7 @@ export async function init(
 ) {
   const { markerForm, copyMgr } = callbacks;
 
-  // 1) Subscribe to marker updates (add/remove)
+  // 1) Subscribe to marker data changes
   subscribeMarkers(db, markers => {
     // Clear existing markers
     allMarkers.forEach(({ markerObj }) => {
@@ -54,7 +54,7 @@ export async function init(
       if (!cfg) return;
 
       // Merge definition fields without overwriting data.id
-      const defs = definitionsManager.getDefinitions(data.type);
+      const defs  = definitionsManager.getDefinitions(data.type);
       const defKey = cfg.defIdKey;
       if (defKey && defs[data[defKey]]) {
         const { id: _ignore, ...fields } = defs[data[defKey]];
@@ -65,7 +65,21 @@ export async function init(
       const cb = {
         onEdit: (markerObj, originalData, event) =>
           markerForm.openEdit(markerObj, originalData, event, payload => {
-            // Merge payload onto original data to preserve id
+            // Purge any leftover fields when switching types
+            if (payload.type !== originalData.type) {
+              if (payload.type === "Chest") {
+                delete originalData.rarity;
+                delete originalData.itemType;
+                delete originalData.value;
+                delete originalData.quantity;
+              } else if (payload.type === "Item") {
+                delete originalData.category;
+                delete originalData.size;
+                delete originalData.chestTypeId;
+                delete originalData.lootPool;
+              }
+            }
+            // Merge the payload onto the original data (preserving data.id)
             const updated = { ...originalData, ...payload };
             markerObj.setIcon(cfg.iconFactory(updated));
             markerObj.setPopupContent(cfg.popupRenderer(updated));
@@ -82,7 +96,7 @@ export async function init(
         }
       };
 
-      // Create the marker with context-menu support
+      // Create marker with context-menu support
       const markerObj = createMarker(
         data,
         map,
@@ -123,12 +137,8 @@ export async function init(
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
         }
-        if (cfg.iconFactory) {
-          markerObj.setIcon(cfg.iconFactory(data));
-        }
-        if (cfg.popupRenderer) {
-          markerObj.setPopupContent(cfg.popupRenderer(data));
-        }
+        if (cfg.iconFactory)    markerObj.setIcon(cfg.iconFactory(data));
+        if (cfg.popupRenderer)  markerObj.setPopupContent(cfg.popupRenderer(data));
       });
       filterMarkers();
     });
