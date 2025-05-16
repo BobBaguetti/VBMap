@@ -1,5 +1,5 @@
 // @file: src/modules/marker/types.js
-// @version: 1.1 — corrected formBuilder imports to match actual exports
+// @version: 1.2 — switched formController imports to default to match actual exports
 
 import {
   loadItemDefinitions,
@@ -19,12 +19,12 @@ import {
 import { initItemDefinitionsModal } from "../ui/modals/itemDefinitionsModal.js";
 import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js";
 
-// Import builder functions by their actual exported names
 import { createItemForm } from "../ui/forms/builders/itemFormBuilder.js";
 import { createChestForm } from "../ui/forms/builders/chestFormBuilder.js";
 
-import { itemFormController } from "../ui/forms/controllers/itemFormController.js";
-import { chestFormController } from "../ui/forms/controllers/chestFormController.js";
+// Switch to default imports for controllers
+import itemFormController from "../ui/forms/controllers/itemFormController.js";
+import chestFormController from "../ui/forms/controllers/chestFormController.js";
 
 import { setupItemFilters } from "../sidebar/filters/itemFilters.js";
 import { setupChestFilters } from "../sidebar/filters/chestFilters.js";
@@ -33,8 +33,8 @@ export const markerTypes = {
   Item: {
     loadDefinitions:        loadItemDefinitions,
     subscribeDefinitions:   subscribeItemDefinitions,
-    formBuilder:            createItemForm,      // was itemFormBuilder
-    formController:         itemFormController,
+    formBuilder:            createItemForm,
+    formController:         itemFormController,      // default import
     modalInit:              initItemDefinitionsModal,
     popupRenderer:          renderItemPopup,
     iconFactory:            createCustomIcon,
@@ -44,8 +44,8 @@ export const markerTypes = {
   Chest: {
     loadDefinitions:        loadChestDefinitions,
     subscribeDefinitions:   subscribeChestDefinitions,
-    formBuilder:            createChestForm,     // was chestFormBuilder
-    formController:         chestFormController,
+    formBuilder:            createChestForm,
+    formController:         chestFormController,     // default import
     modalInit:              initChestDefinitionsModal,
     popupRenderer:          renderChestPopup,
     iconFactory:            createCustomIcon,
