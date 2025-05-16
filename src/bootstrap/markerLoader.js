@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.4 — fix id‐overwrite & wire in markerForm/copyMgr
+// @version: 1.5 — merge edit payload onto original data so id is preserved
 
 import {
   subscribeMarkers,
@@ -7,24 +7,40 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "../modules/services/firebaseService.js";
 import definitionsManager from "./definitionsManager.js";
-import { markerTypes }    from "../modules/marker/types.js";
-import { createMarker }    from "../modules/map/markerManager.js";
+import { markerTypes } from "../modules/marker/types.js";
+import { createMarker } from "../modules/map/markerManager.js";
 import { showContextMenu, hideContextMenu } from "../modules/ui/uiManager.js";
 
+/** @type {{ markerObj: L.Marker, data: object }[]} */
 export const allMarkers = [];
 
 /**
- * @param {{ markerForm, copyMgr }} callbacks
+ * Initialize marker subscriptions, creation, and hydration.
+ *
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {L.Map} map
+ * @param {L.LayerGroup} clusterItemLayer
+ * @param {L.LayerGroup} flatItemLayer
+ * @param {() => void} filterMarkers
+ * @param {() => Promise<void>} loadItemFilters
+ * @param {boolean} isAdmin
+ * @param {{ markerForm: object, copyMgr: object }} callbacks
  */
 export async function init(
-  db, map, clusterItemLayer, flatItemLayer,
-  filterMarkers, loadItemFilters, isAdmin,
+  db,
+  map,
+  clusterItemLayer,
+  flatItemLayer,
+  filterMarkers,
+  loadItemFilters,
+  isAdmin,
   callbacks = {}
 ) {
   const { markerForm, copyMgr } = callbacks;
 
-  // 1) Subscribe → add/remove
+  // 1) Subscribe to marker updates (add/remove)
   subscribeMarkers(db, markers => {
+    // Clear existing markers
     allMarkers.forEach(({ markerObj }) => {
       markerObj.remove();
       clusterItemLayer.removeLayer(markerObj);
@@ -32,45 +48,56 @@ export async function init(
     });
     allMarkers.length = 0;
 
+    // Add incoming markers
     markers.forEach(data => {
       const cfg = markerTypes[data.type];
       if (!cfg) return;
 
-      // — merge defs without stomping data.id —
-      const defMap = definitionsManager.getDefinitions(data.type);
+      // Merge definition fields without overwriting data.id
+      const defs = definitionsManager.getDefinitions(data.type);
       const defKey = cfg.defIdKey;
-      if (defKey && defMap[data[defKey]]) {
-        const { id: _ignore, ...fields } = defMap[data[defKey]];
+      if (defKey && defs[data[defKey]]) {
+        const { id: _ignore, ...fields } = defs[data[defKey]];
         Object.assign(data, fields);
       }
 
-      // build ctx‐menu callbacks
+      // Context-menu callbacks
       const cb = {
-        onEdit:    (m,d,e) => markerForm.openEdit(m, d, e, updated => {
-                       m.setIcon(cfg.iconFactory(updated));
-                       m.setPopupContent(cfg.popupRenderer(updated));
-                       firebaseUpdateMarker(db, updated);
-                     }),
-        onCopy:    (_,d)   => copyMgr.startCopy(d),
-        onDragEnd: (_,d)   => firebaseUpdateMarker(db, d),
-        onDelete:  (m,d)   => {
-                       firebaseDeleteMarker(db, d.id);
-                       hideContextMenu();
-                       m.remove();
-                       const idx = allMarkers.findIndex(o=>o.data.id===d.id);
-                       if (idx>-1) allMarkers.splice(idx,1);
-                     }
+        onEdit: (markerObj, originalData, event) =>
+          markerForm.openEdit(markerObj, originalData, event, payload => {
+            // Merge payload onto original data to preserve id
+            const updated = { ...originalData, ...payload };
+            markerObj.setIcon(cfg.iconFactory(updated));
+            markerObj.setPopupContent(cfg.popupRenderer(updated));
+            firebaseUpdateMarker(db, updated);
+          }),
+        onCopy:    (_, d) => copyMgr.startCopy(d),
+        onDragEnd: (_, d) => firebaseUpdateMarker(db, d),
+        onDelete:  (markerObj, d) => {
+          firebaseDeleteMarker(db, d.id);
+          hideContextMenu();
+          markerObj.remove();
+          const idx = allMarkers.findIndex(o => o.data.id === d.id);
+          if (idx > -1) allMarkers.splice(idx, 1);
+        }
       };
 
-      // create + popup + layer
+      // Create the marker with context-menu support
       const markerObj = createMarker(
-        data, map,
+        data,
+        map,
         { clusterItemLayer, flatItemLayer },
         showContextMenu,
         cb,
         isAdmin
       );
-      if (cfg.popupRenderer) markerObj.setPopupContent(cfg.popupRenderer(data));
+
+      // Set popup content
+      if (cfg.popupRenderer) {
+        markerObj.setPopupContent(cfg.popupRenderer(data));
+      }
+
+      // Add to the correct layer
       const layer = clusterItemLayer.hasLayer(markerObj)
         ? clusterItemLayer
         : flatItemLayer;
@@ -79,14 +106,15 @@ export async function init(
       allMarkers.push({ markerObj, data });
     });
 
+    // Re-apply filters
     filterMarkers();
   });
 
-  // 2) Hydrate on def‐updates
-  Object.entries(markerTypes).forEach(([type,cfg]) => {
+  // 2) Hydrate on definition updates for each marker type
+  Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
-      definitionsManager.getDefinitions(type); // already updated
+      // definitionsManager already updated internally
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.type !== type) return;
         const defMap = definitionsManager.getDefinitions(type);
@@ -95,12 +123,19 @@ export async function init(
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
         }
-        if (cfg.iconFactory)    markerObj.setIcon(cfg.iconFactory(data));
-        if (cfg.popupRenderer)  markerObj.setPopupContent(cfg.popupRenderer(data));
+        if (cfg.iconFactory) {
+          markerObj.setIcon(cfg.iconFactory(data));
+        }
+        if (cfg.popupRenderer) {
+          markerObj.setPopupContent(cfg.popupRenderer(data));
+        }
       });
       filterMarkers();
     });
   });
 }
 
-export default { init, allMarkers };
+export default {
+  init,
+  allMarkers
+};
