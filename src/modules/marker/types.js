@@ -16,7 +16,7 @@ import {
   createCustomIcon,
 } from "../map/markerManager.js";
 
-import { definitionTypes } from "../../definition/types.js";
+import { definitionTypes } from "../definition/types.js";
 import { setupItemFilters }  from "../sidebar/filters/itemFilters.js";
 import { setupChestFilters } from "../sidebar/filters/chestFilters.js";
 
