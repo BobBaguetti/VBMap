@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/definitionModal.js
-// @version: 1.2 — use openModal instead of missing openShell
+// @version: 1.3 — fix openEdit reference by hoisting function definitions
 
 import { createModal, openModal, closeModal }    from "../components/uiKit/modalKit.js";
 import { definitionTypes }                       from "../../definition/types.js";
@@ -12,14 +12,93 @@ export function initDefinitionModal(db) {
   let fldType, listApi, formApi, previewApi, formContainer;
   let definitions = [], currentType, currentId;
 
+  // Build or refresh the definitions list
   async function refreshList() {
     definitions = await definitionTypes[currentType].loadDefs(db);
     listApi.refresh(definitions);
   }
 
+  // The edit flow, called from the list manager
+  async function openEdit(def) {
+    await build();
+    currentType   = def.type;
+    fldType.value = currentType;
+    await refreshList();
+
+    // Instantiate form controller
+    const cfg = definitionTypes[currentType];
+    formContainer.innerHTML = "";
+    formApi = cfg.controller({
+      onCancel:   () => { formApi.reset(); previewApi.hide(); },
+      onDelete:   async id => {
+        await cfg.del(db, id);
+        await refreshList();
+        formApi.reset();
+        previewApi.hide();
+      },
+      onSubmit:   async payload => {
+        payload.id = def.id;
+        await cfg.save(db, payload.id, payload);
+        await refreshList();
+        formApi.reset();
+        previewApi.hide();
+      },
+      onFieldChange: data => previewApi.show(data)
+    }, db);
+    formContainer.appendChild(formApi.form);
+
+    // Populate and preview
+    currentId = def.id;
+    formApi.populate(def);
+    previewApi.show(def);
+
+    openModal(modal);
+  }
+
+  // The create flow
+  async function openCreate(evt, type) {
+    await build();
+    currentType   = type || Object.keys(definitionTypes)[0];
+    fldType.value = currentType;
+    await refreshList();
+
+    // Instantiate form controller
+    const cfg = definitionTypes[currentType];
+    formContainer.innerHTML = "";
+    formApi = cfg.controller({
+      onCancel:   () => { formApi.reset(); previewApi.hide(); },
+      onDelete:   async id => {
+        await cfg.del(db, id);
+        await refreshList();
+        formApi.reset();
+        previewApi.hide();
+      },
+      onSubmit:   async payload => {
+        if (payload.id) {
+          await cfg.save(db, payload.id, payload);
+        } else {
+          await cfg.save(db, null, payload);
+        }
+        await refreshList();
+        formApi.reset();
+        previewApi.hide();
+      },
+      onFieldChange: data => previewApi.show(data)
+    }, db);
+    formContainer.appendChild(formApi.form);
+
+    // Initialize state
+    currentId = null;
+    formApi.reset();
+    previewApi.hide();
+
+    openModal(modal);
+  }
+
+  // Build the modal shell, list, and wiring
   async function build() {
     if (modal) return;
-    // 1) Create modal shell
+    // 1) Create modal
     ({ modal, content } = createModal({
       id:         "definition-modal",
       title:      "Manage Definitions",
@@ -68,89 +147,5 @@ export function initDefinitionModal(db) {
     }
   }
 
-  return {
-    /**
-     * Open the modal to create a new definition of the given type.
-     * @param {MouseEvent} evt
-     * @param {string}     type
-     */
-    async openCreate(evt, type) {
-      await build();
-      // Set up type and list
-      currentType    = type || Object.keys(definitionTypes)[0];
-      fldType.value  = currentType;
-      await refreshList();
-
-      // Build form controller
-      const cfg = definitionTypes[currentType];
-      formContainer.innerHTML = "";
-      formApi = cfg.controller({
-        onCancel:   () => { formApi.reset(); previewApi.hide(); },
-        onDelete:   async id   => {
-          await cfg.del(db, id);
-          await refreshList();
-          formApi.reset();
-          previewApi.hide();
-        },
-        onSubmit:   async payload => {
-          if (payload.id) {
-            await cfg.save(db, payload.id, payload);
-          } else {
-            await cfg.save(db, null, payload);
-          }
-          await refreshList();
-          formApi.reset();
-          previewApi.hide();
-        },
-        onFieldChange: data => previewApi.show(data)
-      }, db);
-      formContainer.appendChild(formApi.form);
-
-      // Initialize state
-      currentId = null;
-      formApi.reset();
-      previewApi.hide();
-
-      // Show modal
-      openModal(modal);
-    },
-
-    /**
-     * Open the modal to edit an existing definition.
-     * @param {Object} def – existing definition object
-     */
-    async openEdit(def) {
-      await build();
-      currentType   = def.type;
-      fldType.value = currentType;
-      await refreshList();
-
-      // Build form controller
-      const cfg = definitionTypes[currentType];
-      formContainer.innerHTML = "";
-      formApi = cfg.controller({
-        onCancel:   () => { formApi.reset(); previewApi.hide(); },
-        onDelete:   async id   => {
-          await cfg.del(db, id);
-          await refreshList();
-          formApi.reset(); previewApi.hide();
-        },
-        onSubmit:   async payload => {
-          payload.id = def.id;
-          await cfg.save(db, payload.id, payload);
-          await refreshList();
-          formApi.reset(); previewApi.hide();
-        },
-        onFieldChange: data => previewApi.show(data)
-      }, db);
-      formContainer.appendChild(formApi.form);
-
-      // Populate and show
-      currentId = def.id;
-      formApi.populate(def);
-      previewApi.show(def);
-
-      openModal(modal);
-    }
-  };
+  return { openCreate, openEdit };
 }
