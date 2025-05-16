@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.3 — added loadNpcFilters export alongside loadItemFilters
+// @version: 1.1 — return loadItemFilters alongside filterMarkers
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -22,8 +22,7 @@ import { setupItemFilters }  from "./itemFilters.js";
  *   - db
  * @returns {{
  *   filterMarkers: () => void,
- *   loadItemFilters: () => Promise<void>,
- *   loadNpcFilters: () => Promise<void>
+ *   loadItemFilters: () => Promise<void>
  * }}
  */
 export function setupSidebarFilters(params) {
@@ -40,7 +39,7 @@ export function setupSidebarFilters(params) {
     db
   } = params;
 
-  // Core filter function
+  // Core filter function (identical to previous monolith)
   function filterMarkers() {
     const searchBar = document.querySelector(searchBarSelector);
     const pveToggle = document.querySelector(pveToggleSelector);
@@ -91,11 +90,11 @@ export function setupSidebarFilters(params) {
       if (data.type === "NPC") {
         npcVisible = false;
         const listSelector =
-          data.isHostile ? npcHostileListSelector : npcFriendlyListSelector;
+          data.npcType === "Hostile" ? npcHostileListSelector : npcFriendlyListSelector;
         document
           .querySelectorAll(`${listSelector} input[type=checkbox]`)
           .forEach(cb => {
-            if (data.id === cb.dataset.npcId && cb.checked) {
+            if (data.npcType === cb.dataset.npcType && cb.checked) {
               npcVisible = true;
             }
           });
@@ -109,7 +108,7 @@ export function setupSidebarFilters(params) {
         chestVisible &&
         npcVisible;
 
-      const group = layers[data.type.toLowerCase()];
+      const group = layers[data.type];
       if (!group) return;
       shouldShow ? group.addLayer(markerObj) : group.removeLayer(markerObj);
     });
@@ -118,26 +117,12 @@ export function setupSidebarFilters(params) {
   // Wire the static filters
   setupMainFilters(mainFiltersSelector, filterMarkers);
   setupChestFilters(chestFilterListSelector, filterMarkers);
-  setupNpcFilters(
-    npcHostileListSelector,
-    npcFriendlyListSelector,
-    db,
-    filterMarkers
-  );
+  setupNpcFilters(npcHostileListSelector, npcFriendlyListSelector, filterMarkers);
 
-  // Expose loadItemFilters & loadNpcFilters as async functions
+  // Expose loadItemFilters as an async function
   async function loadItemFilters() {
     await setupItemFilters(itemFilterListSelector, db, filterMarkers);
   }
-  async function loadNpcFilters() {
-    // we pass an empty element for chestFilterListSelector since it's not used here
-    await setupNpcFilters(
-      npcHostileListSelector,
-      npcFriendlyListSelector,
-      db,
-      filterMarkers
-    );
-  }
 
-  return { filterMarkers, loadItemFilters, loadNpcFilters };
+  return { filterMarkers, loadItemFilters };
 }

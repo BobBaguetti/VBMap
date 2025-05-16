@@ -10,8 +10,8 @@ import {
   createDropdownField,
   createFormButtonRow
 } from "../components/uiKit/fieldKit.js";
-import { loadItemDefinitions }  from "../../services/definitions/itemService.js";
-import { loadChestDefinitions } from "../../services/definitions/chestService.js";
+import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
+import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";
 import { createMarkerFormController } from "../forms/controllers/markerFormController.js";
 
 export function initMarkerModal(db) {

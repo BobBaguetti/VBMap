@@ -11,7 +11,7 @@ import {
   saveItemDefinition,
   updateItemDefinition,
   deleteItemDefinition
-} from "../../services/definitions/itemService.js";
+} from "../../services/itemDefinitionsService.js";
 
 import { createItemFormController } from "../forms/controllers/itemFormController.js";
 

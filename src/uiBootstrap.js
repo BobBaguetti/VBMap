@@ -1,5 +1,5 @@
 // @file: src/uiBootstrap.js
-// @version: 6 — wired in NPC Definitions modal
+// @version: 4 — render sidebar shell before wiring up behaviors
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 
@@ -10,35 +10,33 @@ import {
   updateMarker as firebaseUpdateMarker,
   deleteMarker as firebaseDeleteMarker
 } from "./modules/services/firebaseService.js";
-import { subscribeChestDefinitions } from "./modules/services/definitions/chestService.js";
+import { subscribeChestDefinitions } from "./modules/services/chestDefinitionsService.js";
 import {
   subscribeItemDefinitions,
   loadItemDefinitions
-} from "./modules/services/definitions/itemService.js";
+} from "./modules/services/itemDefinitionsService.js";
 
 // Map & UI under src/modules/
 import {
   createMarker,
   createCustomIcon,
   renderItemPopup,
-  renderChestPopup,
-  renderNpcPopup
-} from "./modules/map/marker/markerManager.js";
+  renderChestPopup
+} from "./modules/map/markerManager.js";
 import { initMarkerModal }          from "./modules/ui/modals/markerModal.js";
 import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
-import { initNpcDefinitionsModal }  from "./modules/ui/modals/npcDefinitionsModal.js";
 import { initCopyPasteManager }     from "./modules/map/copyPasteManager.js";
 import { showContextMenu, hideContextMenu } from "./modules/ui/uiManager.js";
 import { activateFloatingScrollbars }       from "./modules/utils/scrollUtils.js";
 
 // Sidebar rendering & orchestration
 import { renderSidebarShell } from "./modules/sidebar/renderSidebar.js";
-import { setupSidebar }       from "./modules/sidebar/index.js";
+import { initSidebar }        from "./modules/sidebar/index.js";
 
 let chestDefMap = {};
 let itemDefMap  = {};
 export let allMarkers = [];
-let filterMarkers, loadItemFilters, loadNpcFilters;
+let filterMarkers, loadItemFilters;
 
 export function bootstrapUI(isAdmin) {
   // Keep chest definitions up to date
@@ -51,24 +49,20 @@ export function bootstrapUI(isAdmin) {
     renderSidebarShell();
 
     // 1) Sidebar (filters, settings, admin tools)
-    ({
-      filterMarkers,
-      loadItemFilters,
-      loadNpcFilters
-    } = await setupSidebar({
+    ({ filterMarkers, loadItemFilters } = await initSidebar({
       map,
       layers,
       allMarkers,
       db,
       opts: {
-        enableGrouping:  () => {},
-        disableGrouping: () => {}
+        enableGrouping:  () => {},   // implement grouping enable logic
+        disableGrouping: () => {}    // implement grouping disable logic
       }
     }));
 
     // 2) Initial item definitions load
-    const initialItemDefs = await loadItemDefinitions(db);
-    itemDefMap = Object.fromEntries(initialItemDefs.map(d => [d.id, d]));
+    const initialDefs = await loadItemDefinitions(db);
+    itemDefMap = Object.fromEntries(initialDefs.map(d => [d.id, d]));
 
     // 3) Subscribe to markers
     subscribeMarkers(db, markers => {
@@ -81,12 +75,10 @@ export function bootstrapUI(isAdmin) {
 
       // Add new ones
       markers.forEach(data => addMarker(data));
-
-      // Populate filters then apply
-      Promise.all([loadItemFilters(), loadNpcFilters()]).then(filterMarkers);
+      loadItemFilters().then(filterMarkers);
     });
 
-    // 4) Live hydration of item & chest definitions
+    // 4) Live item-definition hydration
     subscribeItemDefinitions(db, async () => {
       const defs = await loadItemDefinitions(db);
       itemDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
@@ -94,7 +86,9 @@ export function bootstrapUI(isAdmin) {
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.predefinedItemId) {
           const def = itemDefMap[data.predefinedItemId] || {};
-          Object.assign(data, def);
+          const { id: _ignore, ...fields } = def;
+          Object.assign(data, fields);
+
           markerObj.setIcon(createCustomIcon(data));
           markerObj.setPopupContent(renderItemPopup(data));
           if (isAdmin) firebaseUpdateMarker(db, data).catch(() => {});
@@ -102,7 +96,7 @@ export function bootstrapUI(isAdmin) {
           const def = chestDefMap[data.chestTypeId] || { lootPool: [] };
           const fullDef = {
             ...def,
-            lootPool: def.lootPool.map(id => itemDefMap[id]).filter(Boolean)
+            lootPool: (def.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
           };
           markerObj.setPopupContent(renderChestPopup(fullDef));
         }
@@ -114,7 +108,6 @@ export function bootstrapUI(isAdmin) {
     // 5) Initialize modals and copy/paste
     const markerForm = initMarkerModal(db);
     initItemDefinitionsModal(db);
-    initNpcDefinitionsModal(db);
     const copyMgr = initCopyPasteManager(map, upsertMarker.bind(null, db));
 
     // Helper for adding markers
@@ -144,24 +137,16 @@ export function bootstrapUI(isAdmin) {
         ? clusterItemLayer
         : flatItemLayer;
       layer.addLayer(markerObj);
-
-      if (data.type === "NPC") {
-        markerObj.setPopupContent(renderNpcPopup(data));
-      } else {
-        markerObj.setPopupContent(renderItemPopup(data));
-      }
-
+      markerObj.setPopupContent(renderItemPopup(data));
       allMarkers.push({ markerObj, data });
     }
 
-    // Callbacks for edit/copy/drag/delete (unchanged)…
+    // Common callbacks for edit/copy/drag/delete
     const callbacks = {
       onEdit: (m, d, e) => markerForm.openEdit(m, d, e, updated => {
         m.setIcon(createCustomIcon(updated));
         m.setPopupContent(
-          updated.type === "NPC"
-            ? renderNpcPopup(updated)
-            : updated.type === "Chest"
+          updated.type === "Chest"
             ? renderChestPopup(updated.chestDefFull || {})
             : renderItemPopup(updated)
         );
@@ -179,7 +164,7 @@ export function bootstrapUI(isAdmin) {
       }
     };
 
-    // 6) Context menu creation (unchanged)…
+    // 6) Context menu for creating markers
     map.on("contextmenu", evt => {
       if (!isAdmin) return;
       showContextMenu(
@@ -197,7 +182,7 @@ export function bootstrapUI(isAdmin) {
       );
     });
 
-    // 7) Click outside to hide context menu
+    // 7) Hide context menu on outside click
     document.addEventListener("click", e => {
       const cm = document.getElementById("context-menu");
       if (cm?.style.display === "block" && !cm.contains(e.target)) {
@@ -205,7 +190,7 @@ export function bootstrapUI(isAdmin) {
       }
     });
 
-    // 8) Activate custom scrollbars
+    // 8) Activate custom scrollbars once DOM is ready
     document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
   })();
 }
