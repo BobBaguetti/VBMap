@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/definitionListManager.js
-// @version: 6.7 — single‐line ellipsized desc & uppercase type
+// @version: 6.8 — enforce min-width on description so it ellipsizes before value
 
 /**
  * Creates and manages a sortable, filterable definition list.
@@ -38,7 +38,8 @@ export function createDefinitionListManager({
         height:       "36px",
         objectFit:    "cover",
         borderRadius: "4px",
-        marginRight:  "0.8em"
+        marginRight:  "0.8em",
+        flexShrink:   "0"
       });
       entry.appendChild(thumb);
     }
@@ -46,6 +47,7 @@ export function createDefinitionListManager({
     // Main content
     const main = document.createElement("div");
     main.style.flex = "1";
+    main.style.minWidth = "0";  // allow children to shrink
 
     // Header: name | TYPE • RARITY
     const header = document.createElement("div");
@@ -53,11 +55,12 @@ export function createDefinitionListManager({
       display:       "flex",
       alignItems:    "baseline",
       gap:           "0.4em",
-      marginBottom:  "0.2em"
+      marginBottom:  "0.2em",
+      minWidth:      "0"
     });
     const nameEl = document.createElement("span");
     nameEl.textContent = def.name;
-    Object.assign(nameEl.style, { fontWeight: "600" });
+    Object.assign(nameEl.style, { fontWeight: "600", flexShrink: "1", minWidth: "0" });
     header.appendChild(nameEl);
 
     const metaEl = document.createElement("span");
@@ -65,39 +68,44 @@ export function createDefinitionListManager({
     const rarityText = def.rarity ? def.rarity.toUpperCase() : "";
     metaEl.textContent = `| ${typeText}${rarityText ? " • " + rarityText : ""}`;
     Object.assign(metaEl.style, {
-      fontSize: "0.9em",
-      color:    "var(--text-secondary)"
+      fontSize:      "0.9em",
+      color:         "var(--text-secondary)",
+      flexShrink:    "0"
     });
     header.appendChild(metaEl);
     main.appendChild(header);
 
-    // Sub-row: description (single line) and value
+    // Sub-row: description (single line, can shrink) and value
     const sub = document.createElement("div");
     Object.assign(sub.style, {
       display:        "flex",
       alignItems:     "center",
       justifyContent: "space-between",
-      gap:            "0.6em"
+      gap:            "0.6em",
+      minWidth:       "0"
     });
     const descEl = document.createElement("span");
     descEl.textContent = def.description || "";
     Object.assign(descEl.style, {
       fontSize:       "0.9em",
       color:          "var(--text-secondary)",
-      flex:           "1",
+      flex:           "1 1 auto",
+      minWidth:       "0",
       whiteSpace:     "nowrap",
       overflow:       "hidden",
       textOverflow:   "ellipsis"
     });
     sub.appendChild(descEl);
 
+    let valEl;
     if (def.value) {
-      const valEl = document.createElement("span");
+      valEl = document.createElement("span");
       valEl.innerHTML = `${def.value} <i class="fas fa-coins"></i>`;
       Object.assign(valEl.style, {
-        fontSize:   "0.9em",
-        color:      "var(--text-primary)",
-        whiteSpace: "nowrap"
+        fontSize:     "0.9em",
+        color:        "var(--text-primary)",
+        flex:         "0 0 auto",
+        whiteSpace:   "nowrap"
       });
       sub.appendChild(valEl);
     }
