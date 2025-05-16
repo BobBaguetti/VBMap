@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.3 — refactored to use markerTypes registry for dynamic marker creation & hydration
+// @version: 1.4 — pass showContextMenu to createMarker to fix ctxMenu errors
 
 import {
   subscribeMarkers,
@@ -7,22 +7,14 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "../modules/services/firebaseService.js";
 import definitionsManager from "./definitionsManager.js";
-import { markerTypes } from "../modules/marker/types.js";
-import { createMarker } from "../modules/map/markerManager.js";
+import { markerTypes }    from "../modules/marker/types.js";
+import { createMarker }    from "../modules/map/markerManager.js";
+import { showContextMenu, hideContextMenu } from "../modules/ui/uiManager.js";
 
 export const allMarkers = [];
 
 /**
  * Initialize marker subscriptions, creation, and hydration.
- *
- * @param {import('firebase/firestore').Firestore} db
- * @param {L.Map} map
- * @param {L.LayerGroup} clusterItemLayer
- * @param {L.LayerGroup} flatItemLayer
- * @param {() => void} filterMarkers
- * @param {() => Promise<void>} loadItemFilters
- * @param {boolean} isAdmin
- * @param {object} [callbacks={}]
  */
 export async function init(
   db,
@@ -34,7 +26,7 @@ export async function init(
   isAdmin,
   callbacks = {}
 ) {
-  // 1) Subscribe to marker data changes
+  // 1) Subscribe to Firestore marker data
   subscribeMarkers(db, markers => {
     // Clear existing markers
     allMarkers.forEach(({ markerObj }) => {
@@ -44,64 +36,85 @@ export async function init(
     });
     allMarkers.length = 0;
 
-    // Add new markers
+    // Add incoming markers
     markers.forEach(data => {
-      const typeCfg = markerTypes[data.type];
-      if (!typeCfg) return; // unknown type
+      const cfg = markerTypes[data.type];
+      if (!cfg) return;
 
-      // Enrich with definition fields
-      const defs = definitionsManager.getDefinitions(data.type);
-      const defIdKey = data.predefinedItemId ? 'predefinedItemId'
-                      : data.chestTypeId   ? 'chestTypeId'
-                      : null;
-      if (defIdKey && defs[data[defIdKey]]) {
-        Object.assign(data, defs[data[defIdKey]]);
+      // Enrich data with its definition
+      const defs   = definitionsManager.getDefinitions(data.type);
+      const defKey = cfg.defIdKey;
+      if (defKey && defs[data[defKey]]) {
+        Object.assign(data, defs[data[defKey]]);
       }
 
-      // Create marker
-      const markerObj = createMarker(data, map, { clusterItemLayer, flatItemLayer }, callbacks);
-      // Set popup
-      if (typeCfg.popupRenderer) {
-        markerObj.setPopupContent(typeCfg.popupRenderer(data));
+      // Build the callback set for edit/copy/drag/delete
+      const cb = {
+        onEdit:    (m,d,e) => markerForm.openEdit(m,d,e, updated => {
+                        m.setIcon(cfg.iconFactory(updated));
+                        m.setPopupContent(cfg.popupRenderer(updated));
+                        firebaseUpdateMarker(db, updated).catch(()=>{});
+                     }),
+        onCopy:    (_,d)   => copyMgr.startCopy(d),
+        onDragEnd: (_,d)   => firebaseUpdateMarker(db, d).catch(()=>{}),
+        onDelete:  (m,d)   => {
+                        m.remove();
+                        clusterItemLayer.removeLayer(m);
+                        flatItemLayer.removeLayer(m);
+                        const idx = allMarkers.findIndex(o=>o.data.id===d.id);
+                        if (idx>-1) allMarkers.splice(idx,1);
+                        if (d.id) firebaseDeleteMarker(db,d.id).catch(()=>{});
+                        hideContextMenu();
+                     }
+      };
+
+      // Create marker with context-menu support
+      const markerObj = createMarker(
+        data,
+        map,
+        { clusterItemLayer, flatItemLayer },
+        showContextMenu,
+        cb,
+        isAdmin
+      );
+
+      // Set its popup
+      if (cfg.popupRenderer) {
+        markerObj.setPopupContent(cfg.popupRenderer(data));
       }
-      // Add to correct layer
-      const targetLayer = clusterItemLayer.hasLayer(markerObj) ? clusterItemLayer : flatItemLayer;
-      targetLayer.addLayer(markerObj);
+
+      // Add to proper layer
+      const layer = clusterItemLayer.hasLayer(markerObj)
+        ? clusterItemLayer
+        : flatItemLayer;
+      layer.addLayer(markerObj);
 
       allMarkers.push({ markerObj, data });
     });
 
-    // Re-apply filters (no rebuild of filter list)
+    // Re-apply the existing filters
     filterMarkers();
   });
 
-  // 2) Hydrate markers on definition updates for each type
+  // 2) Hydrate on definition updates
   Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
-      // Update definitions cache in definitionsManager
-      definitionsManager.getDefinitions(type); // internal map is already updated
-      // Hydrate each existing marker of this type
+      definitionsManager.getDefinitions(type); // already updated
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.type !== type) return;
-        // Re-attach definition fields
         const defMap = definitionsManager.getDefinitions(type);
-        const defIdKey = data.predefinedItemId ? 'predefinedItemId'
-                        : data.chestTypeId   ? 'chestTypeId'
-                        : null;
-        if (defIdKey && defMap[data[defIdKey]]) {
-          Object.assign(data, defMap[data[defIdKey]]);
+        const defKey = cfg.defIdKey;
+        if (defKey && defMap[data[defKey]]) {
+          Object.assign(data, defMap[data[defKey]]);
         }
-        // Update icon if factory provided
         if (cfg.iconFactory) {
           markerObj.setIcon(cfg.iconFactory(data));
         }
-        // Update popup
         if (cfg.popupRenderer) {
           markerObj.setPopupContent(cfg.popupRenderer(data));
         }
       });
-      // Re-apply filters
       filterMarkers();
     });
   });
