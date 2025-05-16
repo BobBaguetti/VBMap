@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.0 — subscribe to markers & definitions; manage marker lifecycle
+// @version: 1.1 — accept clusterItemLayer & flatItemLayer directly
 
 import {
   subscribeMarkers,
@@ -22,23 +22,23 @@ export const allMarkers = [];
  *
  * @param {Firestore} db
  * @param {L.Map} map
- * @param {Object} layers         – map layers { clusterItemLayer, flatItemLayer }
+ * @param {L.LayerGroup} clusterItemLayer
+ * @param {L.LayerGroup} flatItemLayer
  * @param {Function} filterMarkers
  * @param {Function} loadItemFilters
  * @param {boolean} isAdmin
- * @param {Function} callbackProvider – returns { onEdit, onCopy, onDragEnd, onDelete }
+ * @param {object} [callbacks={}] – edit/copy/drag/delete callbacks
  */
 export async function init(
   db,
   map,
-  layers,
+  clusterItemLayer,
+  flatItemLayer,
   filterMarkers,
   loadItemFilters,
   isAdmin,
-  callbackProvider = () => ({})
+  callbacks = {}
 ) {
-  const { clusterItemLayer, flatItemLayer } = layers;
-
   // 1) Subscribe to marker updates
   subscribeMarkers(db, markers => {
     // Clear existing
@@ -49,9 +49,9 @@ export async function init(
     allMarkers.length = 0;
 
     // Add incoming markers
-    markers.forEach(data => {
-      addMarker(db, map, layers, data, isAdmin, callbackProvider());
-    });
+    markers.forEach(data =>
+      addMarker(db, map, clusterItemLayer, flatItemLayer, data, isAdmin, callbacks)
+    );
 
     // Refresh filters
     loadItemFilters().then(filterMarkers);
@@ -87,8 +87,7 @@ export async function init(
 /**
  * Add a single marker to the map and register callbacks.
  */
-function addMarker(db, map, layers, data, isAdmin, callbacks) {
-  const { clusterItemLayer, flatItemLayer } = layers;
+function addMarker(db, map, clusterItemLayer, flatItemLayer, data, isAdmin, callbacks) {
   const chestDefMap = definitionsManager.getChestDefMap();
   const itemDefMap = definitionsManager.getItemDefMap();
 
@@ -103,14 +102,14 @@ function addMarker(db, map, layers, data, isAdmin, callbacks) {
     data.imageSmall = fullDef.iconUrl;
     data.chestDefFull = fullDef;
 
-    const markerObj = createMarker(data, map, layers, callbacks);
+    const markerObj = createMarker(data, map, { clusterItemLayer, flatItemLayer }, callbacks);
     markerObj.setPopupContent(renderChestPopup(fullDef));
     allMarkers.push({ markerObj, data });
     return;
   }
 
   // Standard item marker
-  const markerObj = createMarker(data, map, layers, callbacks);
+  const markerObj = createMarker(data, map, { clusterItemLayer, flatItemLayer }, callbacks);
   const targetLayer = clusterItemLayer.hasLayer(markerObj)
     ? clusterItemLayer
     : flatItemLayer;

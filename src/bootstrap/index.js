@@ -1,22 +1,21 @@
 // @file: src/bootstrap/index.js
-// @version: 1.2 — import and pass clusterItemLayer & flatItemLayer correctly
+// @version: 1.2 — wire up clusterItemLayer & flatItemLayer to markerLoader
 
-import { db, map, clusterItemLayer, flatItemLayer } from "../appInit.js";
-import { renderSidebarShell }             from "../modules/sidebar/renderSidebar.js";
-import { initSidebar }                    from "../modules/sidebar/index.js";
+import { db, map, layers, clusterItemLayer, flatItemLayer } from "../appInit.js";
+import { renderSidebarShell } from "../modules/sidebar/renderSidebar.js";
+import { initSidebar } from "../modules/sidebar/index.js";
 
-import defsManager    from "./definitionsManager.js";
-import markerLoader   from "./markerLoader.js";
-import modalsManager  from "./modalsManager.js";
-import contextMenu    from "./contextMenu.js";
-import events         from "./events.js";
+import defsManager   from "./definitionsManager.js";
+import markerLoader  from "./markerLoader.js";
+import modalsManager from "./modalsManager.js";
+import contextMenu   from "./contextMenu.js";
+import events        from "./events.js";
 
 export async function bootstrapUI(isAdmin) {
-  // 1) Render sidebar shell
+  // 1) Render the sidebar shell
   renderSidebarShell();
 
-  // 2) Initialize sidebar (pass in layers object)
-  const layers = { clusterItemLayer, flatItemLayer };
+  // 2) Wire up sidebar with grouping stubs and marker list
   const { filterMarkers, loadItemFilters } = await initSidebar({
     map,
     layers,
@@ -29,14 +28,15 @@ export async function bootstrapUI(isAdmin) {
     isAdmin
   });
 
-  // 3) Definitions (items & chests)
+  // 3) Definitions
   await defsManager.init(db, loadItemFilters, filterMarkers);
 
   // 4) Markers (subscribe, clear, add, hydrate)
   await markerLoader.init(
     db,
     map,
-    layers,
+    clusterItemLayer,
+    flatItemLayer,
     filterMarkers,
     loadItemFilters,
     isAdmin
@@ -48,6 +48,6 @@ export async function bootstrapUI(isAdmin) {
   // 6) Context menu logic
   contextMenu.init(map, db, isAdmin);
 
-  // 7) Global events (scrollbars, etc.)
+  // 7) Global events
   events.init();
 }
