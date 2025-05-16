@@ -1,5 +1,5 @@
 // @file: src/modules/marker/types.js
-// @version: 1.2 — switched formController imports to default to match actual exports
+// @version: 1.3 — corrected formController imports to use the actual named exports
 
 import {
   loadItemDefinitions,
@@ -22,9 +22,9 @@ import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js
 import { createItemForm } from "../ui/forms/builders/itemFormBuilder.js";
 import { createChestForm } from "../ui/forms/builders/chestFormBuilder.js";
 
-// Switch to default imports for controllers
-import itemFormController from "../ui/forms/controllers/itemFormController.js";
-import chestFormController from "../ui/forms/controllers/chestFormController.js";
+// Use the actual named exports for the controllers:
+import { createItemFormController } from "../ui/forms/controllers/itemFormController.js";
+import { createChestFormController } from "../ui/forms/controllers/chestFormController.js";
 
 import { setupItemFilters } from "../sidebar/filters/itemFilters.js";
 import { setupChestFilters } from "../sidebar/filters/chestFilters.js";
@@ -34,7 +34,7 @@ export const markerTypes = {
     loadDefinitions:        loadItemDefinitions,
     subscribeDefinitions:   subscribeItemDefinitions,
     formBuilder:            createItemForm,
-    formController:         itemFormController,      // default import
+    formController:         createItemFormController,
     modalInit:              initItemDefinitionsModal,
     popupRenderer:          renderItemPopup,
     iconFactory:            createCustomIcon,
@@ -45,7 +45,7 @@ export const markerTypes = {
     loadDefinitions:        loadChestDefinitions,
     subscribeDefinitions:   subscribeChestDefinitions,
     formBuilder:            createChestForm,
-    formController:         chestFormController,     // default import
+    formController:         createChestFormController,
     modalInit:              initChestDefinitionsModal,
     popupRenderer:          renderChestPopup,
     iconFactory:            createCustomIcon,
