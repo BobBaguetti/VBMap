@@ -1,57 +1,196 @@
 // @file: src/uiBootstrap.js
-// @version: 6.1 — fixed import paths for map and uiManager
+// @version: 4 — render sidebar shell before wiring up behaviors
 
-// ─── CORE APP INIT ─────────────────────────────────────────────────────────
-import { map, clusterItemLayer, flatItemLayer, layers } from "./appInit.js";
+import { db, map, layers, clusterItemLayer, flatItemLayer } from "./appInit.js";
 
-// ─── UI UTILITIES ──────────────────────────────────────────────────────────
-import { showContextMenu, hideContextMenu }            from "./modules/ui/uiManager.js";
-import { activateFloatingScrollbars }                  from "./modules/utils/scrollUtils.js";
+// Services under src/modules/services/
+import {
+  subscribeMarkers,
+  upsertMarker,
+  updateMarker as firebaseUpdateMarker,
+  deleteMarker as firebaseDeleteMarker
+} from "./modules/services/firebaseService.js";
+import { subscribeChestDefinitions } from "./modules/services/chestDefinitionsService.js";
+import {
+  subscribeItemDefinitions,
+  loadItemDefinitions
+} from "./modules/services/itemDefinitionsService.js";
 
-// ─── SIDEBAR ──────────────────────────────────────────────────────────────
-import { renderSidebarShell }  from "./modules/sidebar/renderSidebar.js";
-import { initSidebar }         from "./modules/sidebar/index.js";
+// Map & UI under src/modules/
+import {
+  createMarker,
+  createCustomIcon,
+  renderItemPopup,
+  renderChestPopup
+} from "./modules/map/markerManager.js";
+import { initMarkerModal }          from "./modules/ui/modals/markerModal.js";
+import { initItemDefinitionsModal } from "./modules/ui/modals/itemDefinitionsModal.js";
+import { initCopyPasteManager }     from "./modules/map/copyPasteManager.js";
+import { showContextMenu, hideContextMenu } from "./modules/ui/uiManager.js";
+import { activateFloatingScrollbars }       from "./modules/utils/scrollUtils.js";
 
-// ─── INITIALIZERS ─────────────────────────────────────────────────────────
-import { initDefinitions }     from "./modules/initializer/definitionsLoader.js";
-import { initMarkers }         from "./modules/initializer/markerHydrator.js";
-import { initModals }          from "./modules/initializer/modalInitializer.js";
-import { initContextMenu }     from "./modules/initializer/contextMenuHandler.js";
+// Sidebar rendering & orchestration
+import { renderSidebarShell } from "./modules/sidebar/renderSidebar.js";
+import { initSidebar }        from "./modules/sidebar/index.js";
 
-// ─── OTHER SERVICES ────────────────────────────────────────────────────────
-import { upsertMarker }        from "./modules/services/firebaseService.js";
-import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
+let chestDefMap = {};
+let itemDefMap  = {};
+export let allMarkers = [];
+let filterMarkers, loadItemFilters;
 
-/**
- * Bootstraps the UI: sidebar, definitions, markers, modals, context menu, and scrollbars.
- */
 export function bootstrapUI(isAdmin) {
-  // 1) Render sidebar shell & initialize sidebar behaviors
-  renderSidebarShell();
-  const { filterMarkers, loadItemFilters } = initSidebar({
-    map,
-    layers,
-    allMarkers: [], // populated by markerHydrator
-    db: null,
-    opts: {
-      enableGrouping:  () => {},
-      disableGrouping: () => {}
-    }
+  // Keep chest definitions up to date
+  subscribeChestDefinitions(db, defs => {
+    chestDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
   });
 
-  // 2) Initialize definitions & marker hydration
-  initDefinitions();
-  initMarkers(isAdmin);
+  (async () => {
+    // 0) Render the static sidebar shell
+    renderSidebarShell();
 
-  // 3) Initialize modals (marker creation/editing and definitions)
-  const { markerForm } = initModals();
+    // 1) Sidebar (filters, settings, admin tools)
+    ({ filterMarkers, loadItemFilters } = await initSidebar({
+      map,
+      layers,
+      allMarkers,
+      db,
+      opts: {
+        enableGrouping:  () => {},   // implement grouping enable logic
+        disableGrouping: () => {}    // implement grouping disable logic
+      }
+    }));
 
-  // 4) Initialize copy/paste for markers
-  initCopyPasteManager(map, upsertMarker);
+    // 2) Initial item definitions load
+    const initialDefs = await loadItemDefinitions(db);
+    itemDefMap = Object.fromEntries(initialDefs.map(d => [d.id, d]));
 
-  // 5) Context menu logic
-  initContextMenu(isAdmin, markerForm, upsertMarker);
+    // 3) Subscribe to markers
+    subscribeMarkers(db, markers => {
+      // Clear old markers
+      allMarkers.forEach(({ markerObj }) => {
+        markerObj.remove();
+        clusterItemLayer.removeLayer(markerObj);
+      });
+      allMarkers.length = 0;
 
-  // 6) Activate custom scrollbars
-  document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
+      // Add new ones
+      markers.forEach(data => addMarker(data));
+      loadItemFilters().then(filterMarkers);
+    });
+
+    // 4) Live item-definition hydration
+    subscribeItemDefinitions(db, async () => {
+      const defs = await loadItemDefinitions(db);
+      itemDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
+
+      allMarkers.forEach(({ markerObj, data }) => {
+        if (data.predefinedItemId) {
+          const def = itemDefMap[data.predefinedItemId] || {};
+          const { id: _ignore, ...fields } = def;
+          Object.assign(data, fields);
+
+          markerObj.setIcon(createCustomIcon(data));
+          markerObj.setPopupContent(renderItemPopup(data));
+          if (isAdmin) firebaseUpdateMarker(db, data).catch(() => {});
+        } else if (data.type === "Chest") {
+          const def = chestDefMap[data.chestTypeId] || { lootPool: [] };
+          const fullDef = {
+            ...def,
+            lootPool: (def.lootPool || []).map(id => itemDefMap[id]).filter(Boolean)
+          };
+          markerObj.setPopupContent(renderChestPopup(fullDef));
+        }
+      });
+
+      filterMarkers();
+    });
+
+    // 5) Initialize modals and copy/paste
+    const markerForm = initMarkerModal(db);
+    initItemDefinitionsModal(db);
+    const copyMgr = initCopyPasteManager(map, upsertMarker.bind(null, db));
+
+    // Helper for adding markers
+    function addMarker(data) {
+      if (data.type === "Chest") {
+        const def = chestDefMap[data.chestTypeId] || { lootPool: [] };
+        const fullDef = {
+          ...def,
+          lootPool: def.lootPool.map(id => itemDefMap[id]).filter(Boolean)
+        };
+        data.name         = fullDef.name;
+        data.imageSmall   = fullDef.iconUrl;
+        data.chestDefFull = fullDef;
+
+        const markerObj = createMarker(
+          data, map, layers, showContextMenu, callbacks, isAdmin
+        );
+        markerObj.setPopupContent(renderChestPopup(fullDef));
+        allMarkers.push({ markerObj, data });
+        return;
+      }
+
+      const markerObj = createMarker(
+        data, map, layers, showContextMenu, callbacks, isAdmin
+      );
+      const layer = clusterItemLayer.hasLayer(markerObj)
+        ? clusterItemLayer
+        : flatItemLayer;
+      layer.addLayer(markerObj);
+      markerObj.setPopupContent(renderItemPopup(data));
+      allMarkers.push({ markerObj, data });
+    }
+
+    // Common callbacks for edit/copy/drag/delete
+    const callbacks = {
+      onEdit: (m, d, e) => markerForm.openEdit(m, d, e, updated => {
+        m.setIcon(createCustomIcon(updated));
+        m.setPopupContent(
+          updated.type === "Chest"
+            ? renderChestPopup(updated.chestDefFull || {})
+            : renderItemPopup(updated)
+        );
+        firebaseUpdateMarker(db, updated).catch(() => {});
+      }),
+      onCopy: (_, d)    => copyMgr.startCopy(d),
+      onDragEnd: (_, d) => firebaseUpdateMarker(db, d).catch(() => {}),
+      onDelete: (markerObj, data) => {
+        markerObj.remove();
+        clusterItemLayer.removeLayer(markerObj);
+        const idx = allMarkers.findIndex(o => o.data.id === data.id);
+        if (idx !== -1) allMarkers.splice(idx, 1);
+        if (data.id) firebaseDeleteMarker(db, data.id).catch(() => {});
+        hideContextMenu();
+      }
+    };
+
+    // 6) Context menu for creating markers
+    map.on("contextmenu", evt => {
+      if (!isAdmin) return;
+      showContextMenu(
+        evt.originalEvent.pageX,
+        evt.originalEvent.pageY,
+        [{
+          text: "Create New Marker",
+          action: () => markerForm.openCreate(
+            [evt.latlng.lat, evt.latlng.lng],
+            undefined,
+            evt.originalEvent,
+            upsertMarker.bind(null, db)
+          )
+        }]
+      );
+    });
+
+    // 7) Hide context menu on outside click
+    document.addEventListener("click", e => {
+      const cm = document.getElementById("context-menu");
+      if (cm?.style.display === "block" && !cm.contains(e.target)) {
+        cm.style.display = "none";
+      }
+    });
+
+    // 8) Activate custom scrollbars once DOM is ready
+    document.addEventListener("DOMContentLoaded", activateFloatingScrollbars);
+  })();
 }
