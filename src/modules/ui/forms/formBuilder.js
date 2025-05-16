@@ -1,5 +1,5 @@
 // @file: src/modules/ui/forms/formBuilder.js
-// @version: 1.0 — generic schema-driven form builder
+// @version: 1.1 — add support for chipList fields
 
 import {
   createTextField,
@@ -7,7 +7,7 @@ import {
   createTextareaFieldWithColor,
   createImageField,
   createExtraInfoField,
-  createFormButtonRow
+  createChipListField
 } from "../components/uiKit/fieldKit.js";
 
 /**
@@ -40,7 +40,9 @@ export function buildForm(schema) {
 
       case "select":
         ({ row, select: input, colorBtn: picker } =
-          createDropdownField(cfg.label, `fld-${key}`, 
+          createDropdownField(
+            cfg.label,
+            `fld-${key}`,
             (cfg.options||[]).map(o => ({value:o,label:o})),
             { showColor: !!cfg.colorable }
           ));
@@ -62,14 +64,31 @@ export function buildForm(schema) {
 
       case "extraInfo":
         ({ row, extraInfo: input } =
-          createExtraInfoField(cfg));
+          createExtraInfoField({ withDividers: cfg.withDividers }));
         fields[key] = input;
+        break;
+
+      case "chipList":
+        // cfg.optionsSource is the type to load definitions for
+        // We'll initialize with empty list; controller will populate items
+        ({ row, getItems: input, setItems: picker } =
+          createChipListField(
+            cfg.label,
+            [],
+            {
+              items:    [],            // controller seeds this
+              idKey:    cfg.idKey,
+              labelKey: cfg.labelKey,
+              renderIcon: cfg.renderIcon
+            }
+          ));
+        fields[key] = { get: input, set: picker };
         break;
 
       case "checkbox":
         row = document.createElement("label");
         const cb = document.createElement("input");
-        cb.type = "checkbox";
+        cb.type    = "checkbox";
         cb.checked = cfg.default ?? false;
         row.innerHTML = `<span>${cfg.label}</span>`;
         row.prepend(cb);

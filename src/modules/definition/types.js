@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.1 — hook up new generic builder/controller
+// @version: 1.2 — updated to register the chipList field support
 
 import {
   loadItemDefinitions,
@@ -17,7 +17,7 @@ import {
 import { itemSchema }  from "./schemas/itemSchema.js";
 import { chestSchema } from "./schemas/chestSchema.js";
 
-import { buildForm }         from "../ui/forms/formBuilder.js";
+import { buildForm }            from "../ui/forms/formBuilder.js";
 import { createFormController } from "../ui/forms/formController.js";
 
 export const definitionTypes = {

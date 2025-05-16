@@ -1,18 +1,20 @@
 // @file: src/modules/ui/modals/definitionModal.js
-// @version: 1.4 — add search bar and re-init Pickr swatches on open
+// @version: 1.5 — chest lootPool hydration, preview reset, and Pickr init
 
 import { createModal, openModal, closeModal }        from "../components/uiKit/modalKit.js";
 import { definitionTypes }                           from "../../definition/types.js";
 import { createDefListContainer }                     from "../../utils/listUtils.js";
 import { createPreviewController }                    from "../preview/previewController.js";
 import { createDefinitionListManager }                from "../components/definitionListManager.js";
+import { loadItemDefinitions }                       from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
   let modal, content;
   let fldType, listApi, formApi, previewApi, formContainer, searchInput;
   let definitions = [], currentType, currentId;
+  let itemMap = {}; // for chest lootPool hydration
 
-  // Fetch and refresh definitions list for the active type
+  // Fetch and refresh the list of definitions for the active type
   async function refreshList() {
     const cfg = definitionTypes[currentType];
     definitions = await cfg.loadDefs(db);
@@ -23,7 +25,6 @@ export function initDefinitionModal(db) {
   async function build() {
     if (modal) return;
 
-    // 1) Create modal shell with searchable disabled (we inject our own)
     ({ modal, content } = createModal({
       id:         "definition-modal",
       title:      "Manage Definitions",
@@ -32,30 +33,30 @@ export function initDefinitionModal(db) {
     }));
     modal.classList.add("admin-only");
 
-    // 2) Inject our search bar
+    // 1) Search bar
     searchInput = document.createElement("input");
     searchInput.type = "search";
     searchInput.className = "modal__search";
     searchInput.placeholder = "Search definitions…";
-    content.appendChild(searchInput);
+    content.append(searchInput);
 
-    // 3) Type selector
+    // 2) Type selector
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
     fldType.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option value="${t}">${t}</option>`)
       .join("");
-    typeLabel.appendChild(fldType);
+    typeLabel.append(fldType);
 
-    // 4) List and form container
+    // 3) List & form containers
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
 
     content.append(typeLabel, listContainer, formContainer);
 
-    // 5) List manager
+    // 4) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -67,7 +68,7 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // 6) Wire search
+    // 5) Wire modal search to list filter
     searchInput.addEventListener("input", () => {
       listApi.filter(searchInput.value);
     });
@@ -77,15 +78,20 @@ export function initDefinitionModal(db) {
   async function openCreate(evt, type = "Item") {
     await build();
 
-    currentType    = type;
-    currentId      = null;
-    fldType.value  = currentType;
+    currentType   = type;
+    currentId     = null;
+    fldType.value = currentType;
     await refreshList();
 
-    // Preview
+    // If chest, preload item definitions
+    if (currentType === "Chest") {
+      const items = await loadItemDefinitions(db);
+      itemMap = Object.fromEntries(items.map(i => [i.id, i]));
+    }
+
     previewApi = createPreviewController(currentType.toLowerCase());
 
-    // Instantiate form
+    // Instantiate and render form
     const cfg = definitionTypes[currentType];
     formContainer.innerHTML = "";
     formApi = cfg.controller({
@@ -101,16 +107,24 @@ export function initDefinitionModal(db) {
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
-      onFieldChange:data => previewApi.show(data)
+      onFieldChange: data => {
+        // Hydrate chest lootPool from IDs to objects
+        let previewData = data;
+        if (currentType === "Chest" && Array.isArray(data.lootPool)) {
+          previewData = {
+            ...data,
+            lootPool: data.lootPool.map(id => itemMap[id]).filter(Boolean)
+          };
+        }
+        previewApi.show(previewData);
+      }
     }, db);
-    formContainer.appendChild(formApi.form);
+    formContainer.append(formApi.form);
 
-    // Re-init Pickr swatches (in case DOM was re-rendered)
+    // Initialize Pickr swatches and reset preview pane
     formApi.initPickrs?.();
-
-    // Reset and hide preview
     formApi.reset();
-    previewApi.hide();
+    previewApi.show(currentType === "Chest" ? { lootPool: [] } : {});
 
     openModal(modal);
   }
@@ -119,14 +133,19 @@ export function initDefinitionModal(db) {
   async function openEdit(def) {
     await build();
 
-    // Keep currentType from create or default
+    // Keep existing currentType
     fldType.value = currentType;
     await refreshList();
 
-    // Preview
+    // If chest, preload item definitions
+    if (currentType === "Chest") {
+      const items = await loadItemDefinitions(db);
+      itemMap = Object.fromEntries(items.map(i => [i.id, i]));
+    }
+
     previewApi = createPreviewController(currentType.toLowerCase());
 
-    // Instantiate form
+    // Instantiate and render form
     const cfg = definitionTypes[currentType];
     formContainer.innerHTML = "";
     formApi = cfg.controller({
@@ -142,17 +161,26 @@ export function initDefinitionModal(db) {
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
-      onFieldChange:data => previewApi.show(data)
+      onFieldChange: data => {
+        let previewData = data;
+        if (currentType === "Chest" && Array.isArray(data.lootPool)) {
+          previewData = {
+            ...data,
+            lootPool: data.lootPool.map(id => itemMap[id]).filter(Boolean)
+          };
+        }
+        previewApi.show(previewData);
+      }
     }, db);
-    formContainer.appendChild(formApi.form);
+    formContainer.append(formApi.form);
 
-    // Re-init Pickr swatches
+    // Initialize Pickr, populate form and preview
     formApi.initPickrs?.();
-
-    // Populate and preview
-    currentId = def.id;
     formApi.populate(def);
-    previewApi.show(def);
+    const initialPreview = currentType === "Chest"
+      ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
+      : def;
+    previewApi.show(initialPreview);
 
     openModal(modal);
   }
