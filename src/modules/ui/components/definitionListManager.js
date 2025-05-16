@@ -90,7 +90,7 @@ export function createDefinitionListManager({
       fontSize:       "0.9em",
       color:          "var(--text-secondary)",
       flex:           "1 1 auto",
-      maxWidth:       "60%",
+      maxWidth:       "72%",
       minWidth:       "0",
       whiteSpace:     "nowrap",
       overflow:       "hidden",
