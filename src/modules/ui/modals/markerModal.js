@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 21.4 — small modal without backdrop dimming
+// @version: 21.5 — added NPC type and definitions dropdown support
 
 import {
   createModal,
@@ -12,13 +12,14 @@ import {
 } from "../components/uiKit/fieldKit.js";
 import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
 import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";
+import { loadNPCs }             from "../../modules/services/definitions/npcService.js";
 import { createMarkerFormController } from "../forms/controllers/markerFormController.js";
 
 export function initMarkerModal(db) {
   let modal, content, ctrl;
-  let fldType, fldPredefItem, fldChestType;
-  let rowType, rowPredefItem, rowChestType;
-  let itemDefs = {}, chestDefs = {};
+  let fldType, fldPredefItem, fldChestType, fldNPCDef;
+  let rowType, rowPredefItem, rowChestType, rowNPCDef;
+  let itemDefs = {}, chestDefs = {}, npcDefs = {};
 
   async function refreshPredefinedItems() {
     if (!fldPredefItem) return;
@@ -46,6 +47,19 @@ export function initMarkerModal(db) {
     });
   }
 
+  async function refreshNPCDefinitions() {
+    if (!fldNPCDef) return;
+    const list = await loadNPCs(db);
+    npcDefs = Object.fromEntries(list.map(d => [d.id, d]));
+    fldNPCDef.innerHTML = `<option value="">Select NPC Type</option>`;
+    list.forEach(d => {
+      const o = document.createElement("option");
+      o.value = d.id;
+      o.textContent = d.name;
+      fldNPCDef.append(o);
+    });
+  }
+
   function ensureBuilt() {
     if (modal) return;
 
@@ -54,7 +68,7 @@ export function initMarkerModal(db) {
       id:         "marker-modal",
       title:      "Marker",
       size:       "small",
-      backdrop:   false,      // no dimming behind small modals
+      backdrop:   false,
       draggable:  true,
       withDivider:true,
       onClose:    () => closeModal(modal)
@@ -71,6 +85,7 @@ export function initMarkerModal(db) {
         { value: "Extraction Portal", label: "Extraction Portal" },
         { value: "Item",              label: "Item" },
         { value: "Chest",             label: "Chest" },
+        { value: "NPC",               label: "NPC" },
         { value: "Teleport",          label: "Teleport" },
         { value: "Spawn Point",       label: "Spawn Point" }
       ],
@@ -88,6 +103,11 @@ export function initMarkerModal(db) {
       "Chest Type:", "marker-fld-predef-chest", [], { showColor: false }
     ));
 
+    // — NPC Definitions dropdown —
+    ({ row: rowNPCDef, select: fldNPCDef } = createDropdownField(
+      "NPC Type:", "marker-fld-predef-npc", [], { showColor: false }
+    ));
+
     // instantiate controller and mount its form
     ctrl = createMarkerFormController({
       onCancel:      () => closeModal(modal),
@@ -99,7 +119,8 @@ export function initMarkerModal(db) {
     ctrl.form.prepend(
       rowType,
       rowPredefItem,
-      rowChestType
+      rowChestType,
+      rowNPCDef
     );
 
     // assemble modal content
@@ -112,11 +133,20 @@ export function initMarkerModal(db) {
     fldType.addEventListener("change", () => {
       rowPredefItem.style.display = fldType.value === "Item"  ? "flex" : "none";
       rowChestType.style.display  = fldType.value === "Chest" ? "flex" : "none";
+      rowNPCDef.style.display     = fldType.value === "NPC"   ? "flex" : "none";
     });
 
-    // when picking a predefined item, populate fields via controller
+    // handle predefined selection
     fldPredefItem.addEventListener("change", () => {
       const def = itemDefs[fldPredefItem.value] || {};
+      ctrl.populate(def);
+    });
+    fldChestType.addEventListener("change", () => {
+      const def = chestDefs[fldChestType.value] || {};
+      ctrl.populate(def);
+    });
+    fldNPCDef.addEventListener("change", () => {
+      const def = npcDefs[fldNPCDef.value] || {};
       ctrl.populate(def);
     });
 
@@ -127,15 +157,20 @@ export function initMarkerModal(db) {
 
   async function openEdit(markerObj, data, evt, onSave) {
     ensureBuilt();
-    await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
+    await Promise.all([
+      refreshPredefinedItems(),
+      refreshChestTypes(),
+      refreshNPCDefinitions()
+    ]);
 
     // set type & selectors
     fldType.value = data.type;
     fldType.dispatchEvent(new Event("change"));
-    if (data.type === "Item") fldPredefItem.value = data.predefinedItemId || "";
-    if (data.type === "Chest") fldChestType.value = data.chestTypeId || "";
+    if (data.type === "Item") fldPredefItem.value   = data.predefinedItemId || "";
+    if (data.type === "Chest") fldChestType.value  = data.chestTypeId  || "";
+    if (data.type === "NPC")   fldNPCDef.value     = data.npcDefinitionId || "";
 
-    // let controller fill in the rest
+    // populate rest
     await ctrl.populate(data);
 
     // hook save
@@ -150,7 +185,11 @@ export function initMarkerModal(db) {
 
   async function openCreate(coords, type, evt, onCreate) {
     ensureBuilt();
-    await Promise.all([ refreshPredefinedItems(), refreshChestTypes() ]);
+    await Promise.all([
+      refreshPredefinedItems(),
+      refreshChestTypes(),
+      refreshNPCDefinitions()
+    ]);
 
     ctrl.reset();
     fldType.value = type || "";
