@@ -1,37 +1,35 @@
 // @file: src/bootstrap/index.js
-// @version: 1.2 — wire up clusterItemLayer & flatItemLayer to markerLoader
+// @version: 1.3 — pass markerForm & copyMgr into markerLoader
 
-import { db, map, layers, clusterItemLayer, flatItemLayer } from "../appInit.js";
+import { db, map, clusterItemLayer, flatItemLayer, layers } from "../appInit.js";
 import { renderSidebarShell } from "../modules/sidebar/renderSidebar.js";
-import { initSidebar } from "../modules/sidebar/index.js";
+import { initSidebar }        from "../modules/sidebar/index.js";
 
-import defsManager   from "./definitionsManager.js";
-import markerLoader  from "./markerLoader.js";
-import modalsManager from "./modalsManager.js";
-import contextMenu   from "./contextMenu.js";
-import events        from "./events.js";
+import defsManager    from "./definitionsManager.js";
+import markerLoader   from "./markerLoader.js";
+import modalsManager  from "./modalsManager.js";
+import contextMenu    from "./contextMenu.js";
+import events         from "./events.js";
 
 export async function bootstrapUI(isAdmin) {
-  // 1) Render the sidebar shell
+  // Sidebar
   renderSidebarShell();
-
-  // 2) Wire up sidebar with grouping stubs and marker list
   const { filterMarkers, loadItemFilters } = await initSidebar({
     map,
     layers,
     allMarkers: markerLoader.allMarkers,
     db,
-    opts: {
-      enableGrouping: () => {},
-      disableGrouping: () => {}
-    },
+    opts: { enableGrouping:()=>{}, disableGrouping:()=>{} },
     isAdmin
   });
 
-  // 3) Definitions
+  // Definitions
   await defsManager.init(db, loadItemFilters, filterMarkers);
 
-  // 4) Markers (subscribe, clear, add, hydrate)
+  // Modals & Copy/Paste
+  const { markerForm, copyMgr } = modalsManager.init(db, map);
+
+  // Markers (pass callbacks)
   await markerLoader.init(
     db,
     map,
@@ -39,15 +37,11 @@ export async function bootstrapUI(isAdmin) {
     flatItemLayer,
     filterMarkers,
     loadItemFilters,
-    isAdmin
+    isAdmin,
+    { markerForm, copyMgr }
   );
 
-  // 5) Modals & copy/paste
-  modalsManager.init(db, map);
-
-  // 6) Context menu logic
+  // Context Menu & Events
   contextMenu.init(map, db, isAdmin);
-
-  // 7) Global events
   events.init();
 }
