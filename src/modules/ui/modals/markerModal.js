@@ -1,12 +1,12 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 22.0 — simplified, registry‐driven marker creation modal
+// @version: 22.1 — corrected import path for markerTypes registry
 
 import { createModal, closeModal, openModalAt } from "../components/uiKit/modalKit.js";
-import { markerTypes }                           from "../../modules/marker/types.js";
+import { markerTypes }                         from "../../marker/types.js";
 
 export function initMarkerModal(db) {
   let modal, content, fldType, fldDef, btnCreate;
-  let pendingCoords, pendingType, onCreate, onEdit, onSaveCallback;
+  let pendingCoords, onCreate, onSaveCallback;
 
   async function ensureBuilt() {
     if (modal) return;
@@ -62,10 +62,8 @@ export function initMarkerModal(db) {
     fldType.addEventListener("change", async () => {
       const type = fldType.value;
       if (!type) return;
-      // Load definitions for this type
       const cfg = markerTypes[type];
       const defs = await cfg.loadDefinitions(db);
-      // Populate dropdown
       fldDef.innerHTML = `
         <option value="" disabled selected>Select ${type}…</option>
         ${defs
@@ -78,7 +76,8 @@ export function initMarkerModal(db) {
 
     btnCreate.addEventListener("click", () => {
       const type = fldType.value;
-      const defIdKey = markerTypes[type]?.defIdKey;
+      const cfg = markerTypes[type];
+      const defIdKey = cfg.defIdKey;
       const defId = fldDef.value;
       if (!type || !defIdKey || !defId) return;
       const payload = { type, coords: pendingCoords, [defIdKey]: defId };
@@ -92,33 +91,17 @@ export function initMarkerModal(db) {
   }
 
   return {
-    /**
-     * Open the modal for creating a new marker.
-     * @param {[number,number]} coords – [lat, lng]
-     * @param {string} type            – optional preselected type
-     * @param {MouseEvent} evt         – original event for positioning
-     * @param {Function} createCb      – callback receiving payload
-     */
     openCreate(coords, type, evt, createCb) {
       pendingCoords = coords;
       onCreate      = createCb;
       onSaveCallback= null;
-      pendingType   = type || "";
       ensureBuilt().then(() => {
-        fldType.value = pendingType;
+        fldType.value = type || "";
         fldType.dispatchEvent(new Event("change"));
         openModalAt(modal, evt);
       });
     },
 
-    /**
-     * Open the modal for editing an existing marker instance.
-     * (prepopulates type/definition and uses onSaveCallback)
-     * @param {L.Marker} markerObj
-     * @param {object} data – marker data with type & defIdKey
-     * @param {MouseEvent} evt
-     * @param {Function} saveCb
-     */
     openEdit(markerObj, data, evt, saveCb) {
       pendingCoords  = data.coords;
       onCreate       = null;
@@ -126,8 +109,8 @@ export function initMarkerModal(db) {
       ensureBuilt().then(async () => {
         fldType.value = data.type;
         fldType.dispatchEvent(new Event("change"));
-        const key = markerTypes[data.type].defIdKey;
-        fldDef.value  = data[key] || "";
+        const defIdKey = markerTypes[data.type].defIdKey;
+        fldDef.value   = data[defIdKey] || "";
         openModalAt(modal, evt);
       });
     }
