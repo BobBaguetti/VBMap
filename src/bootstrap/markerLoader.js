@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.6 — purge leftover fields on type change to prevent old border colors from persisting
+// @version: 1.7 — rebuild marker data object from scratch on edit to avoid stale style fields
 
 import {
   subscribeMarkers,
@@ -38,9 +38,9 @@ export async function init(
 ) {
   const { markerForm, copyMgr } = callbacks;
 
-  // 1) Subscribe to marker data changes
+  // Subscribe to marker data
   subscribeMarkers(db, markers => {
-    // Clear existing markers
+    // Remove existing
     allMarkers.forEach(({ markerObj }) => {
       markerObj.remove();
       clusterItemLayer.removeLayer(markerObj);
@@ -48,41 +48,49 @@ export async function init(
     });
     allMarkers.length = 0;
 
-    // Add incoming markers
-    markers.forEach(data => {
-      const cfg = markerTypes[data.type];
+    markers.forEach(origData => {
+      const cfg = markerTypes[origData.type];
       if (!cfg) return;
 
-      // Merge definition fields without overwriting data.id
-      const defs  = definitionsManager.getDefinitions(data.type);
+      // Initial merge of def fields (preserve origData.id, coords)
+      const defs   = definitionsManager.getDefinitions(origData.type);
       const defKey = cfg.defIdKey;
-      if (defKey && defs[data[defKey]]) {
-        const { id: _ignore, ...fields } = defs[data[defKey]];
-        Object.assign(data, fields);
-      }
+      const def    = defKey ? defs[origData[defKey]] : {};
+      const { id: _ignore, ...defFields } = def || {};
+      const data = {
+        id:     origData.id,
+        coords: origData.coords,
+        type:   origData.type,
+        ...(defKey ? { [defKey]: origData[defKey] } : {}),
+        ...defFields
+      };
 
       // Context-menu callbacks
       const cb = {
-        onEdit: (markerObj, originalData, event) =>
-          markerForm.openEdit(markerObj, originalData, event, payload => {
-            // Purge any leftover fields when switching types
-            if (payload.type !== originalData.type) {
-              if (payload.type === "Chest") {
-                delete originalData.rarity;
-                delete originalData.itemType;
-                delete originalData.value;
-                delete originalData.quantity;
-              } else if (payload.type === "Item") {
-                delete originalData.category;
-                delete originalData.size;
-                delete originalData.chestTypeId;
-                delete originalData.lootPool;
-              }
-            }
-            // Merge the payload onto the original data (preserving data.id)
-            const updated = { ...originalData, ...payload };
+        onEdit: (markerObj, _, event) =>
+          markerForm.openEdit(markerObj, data, event, payload => {
+            // Build a fresh updated object: keep id, coords, type, defKey, plus new defFields
+            const newType   = payload.type;
+            const newDefKey = markerTypes[newType].defIdKey;
+            const newDefs   = definitionsManager.getDefinitions(newType);
+            const newDef    = newDefKey ? newDefs[payload[newDefKey]] : {};
+            const { id: _i2, ...newDefFields } = newDef || {};
+            const updated = {
+              id:     data.id,
+              coords: data.coords,
+              type:   newType,
+              ...(newDefKey ? { [newDefKey]: payload[newDefKey] } : {}),
+              ...newDefFields
+            };
+
+            // Replace data in our array
+            Object.assign(data, updated);
+
+            // Update icon & popup
             markerObj.setIcon(cfg.iconFactory(updated));
             markerObj.setPopupContent(cfg.popupRenderer(updated));
+
+            // Persist to Firestore
             firebaseUpdateMarker(db, updated);
           }),
         onCopy:    (_, d) => copyMgr.startCopy(d),
@@ -96,7 +104,7 @@ export async function init(
         }
       };
 
-      // Create marker with context-menu support
+      // Create marker
       const markerObj = createMarker(
         data,
         map,
@@ -106,12 +114,12 @@ export async function init(
         isAdmin
       );
 
-      // Set popup content
+      // Popup
       if (cfg.popupRenderer) {
         markerObj.setPopupContent(cfg.popupRenderer(data));
       }
 
-      // Add to the correct layer
+      // Add to layer
       const layer = clusterItemLayer.hasLayer(markerObj)
         ? clusterItemLayer
         : flatItemLayer;
@@ -120,25 +128,23 @@ export async function init(
       allMarkers.push({ markerObj, data });
     });
 
-    // Re-apply filters
     filterMarkers();
   });
 
-  // 2) Hydrate on definition updates for each marker type
+  // Hydrate on any def updates
   Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
-      // definitionsManager already updated internally
+      // definitionsManager updated behind the scenes
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.type !== type) return;
         const defMap = definitionsManager.getDefinitions(type);
         const defKey = cfg.defIdKey;
-        if (defKey && defMap[data[defKey]]) {
-          const { id: _ignore, ...fields } = defMap[data[defKey]];
-          Object.assign(data, fields);
-        }
-        if (cfg.iconFactory)    markerObj.setIcon(cfg.iconFactory(data));
-        if (cfg.popupRenderer)  markerObj.setPopupContent(cfg.popupRenderer(data));
+        const def    = defKey ? defMap[data[defKey]] : {};
+        const { id: _ignore, ...defFields } = def || {};
+        Object.assign(data, defFields);
+        if (cfg.iconFactory)   markerObj.setIcon(cfg.iconFactory(data));
+        if (cfg.popupRenderer) markerObj.setPopupContent(cfg.popupRenderer(data));
       });
       filterMarkers();
     });
