@@ -2,7 +2,8 @@
 // @version: 1.0 — orchestrate app startup with dedicated bootstrap modules
 
 import { db, map, layers, clusterItemLayer, flatItemLayer } from "../appInit.js";
-import { renderSidebarShell, initSidebar } from "../modules/sidebar/index.js";
+import { renderSidebarShell } from "../modules/sidebar/renderSidebar.js";
+import { initSidebar       } from "../modules/sidebar/index.js";
 
 import defsManager from "./definitionsManager.js";
 import markerLoader from "./markerLoader.js";
