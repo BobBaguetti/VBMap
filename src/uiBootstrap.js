@@ -1,18 +1,25 @@
 // @file: src/uiBootstrap.js
-// @version: 6 — integrated initContextMenu and removed inline listeners
+// @version: 6.1 — fixed import paths for map and uiManager
 
-import { map } from "./modules/ui/uiManager.js";
-import { activateFloatingScrollbars } from "./modules/utils/scrollUtils.js";
-import { renderSidebarShell } from "./modules/sidebar/renderSidebar.js";
-import { initSidebar } from "./modules/sidebar/index.js";
+// ─── CORE APP INIT ─────────────────────────────────────────────────────────
+import { map, clusterItemLayer, flatItemLayer, layers } from "./appInit.js";
 
-import { initDefinitions } from "./modules/initializer/definitionsLoader.js";
-import { initMarkers } from "./modules/initializer/markerHydrator.js";
-import { initModals } from "./modules/initializer/modalInitializer.js";
-import { initContextMenu } from "./modules/initializer/contextMenuHandler.js";
+// ─── UI UTILITIES ──────────────────────────────────────────────────────────
+import { showContextMenu, hideContextMenu }            from "./modules/ui/uiManager.js";
+import { activateFloatingScrollbars }                  from "./modules/utils/scrollUtils.js";
 
-import { clusterItemLayer, flatItemLayer, layers } from "./appInit.js";
-import { upsertMarker } from "./modules/services/firebaseService.js";
+// ─── SIDEBAR ──────────────────────────────────────────────────────────────
+import { renderSidebarShell }  from "./modules/sidebar/renderSidebar.js";
+import { initSidebar }         from "./modules/sidebar/index.js";
+
+// ─── INITIALIZERS ─────────────────────────────────────────────────────────
+import { initDefinitions }     from "./modules/initializer/definitionsLoader.js";
+import { initMarkers }         from "./modules/initializer/markerHydrator.js";
+import { initModals }          from "./modules/initializer/modalInitializer.js";
+import { initContextMenu }     from "./modules/initializer/contextMenuHandler.js";
+
+// ─── OTHER SERVICES ────────────────────────────────────────────────────────
+import { upsertMarker }        from "./modules/services/firebaseService.js";
 import { initCopyPasteManager } from "./modules/map/copyPasteManager.js";
 
 /**
