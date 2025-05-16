@@ -1,8 +1,7 @@
 // @file: src/modules/sidebar/sidebarAdmin.js
-// @version: 1.0 — extract Admin Tools section into its own module
+// @version: 1.1 — unified “Manage Definitions” button using definitionModal
 
-import { initItemDefinitionsModal }  from "../ui/modals/itemDefinitionsModal.js";
-import { initChestDefinitionsModal } from "../ui/modals/chestDefinitionsModal.js"; 
+import { initDefinitionModal } from "../ui/modals/definitionModal.js";
 
 /**
  * Render and wire the “Admin Tools” section at the bottom of the sidebar.
@@ -17,32 +16,27 @@ export function setupSidebarAdmin(sidebarEl, db) {
 
   // Admin header
   const adminHeader = document.createElement("h2");
-  adminHeader.className   = "admin-header";
+  adminHeader.className = "admin-header";
   adminHeader.textContent = "🛠 Admin Tools";
-  adminHeader.style.display = "none";
   sidebarEl.appendChild(adminHeader);
 
   // Container for buttons
   const adminWrap = document.createElement("div");
   adminWrap.id = "sidebar-admin-tools";
-  adminWrap.style.display = "none";
-
-  // Buttons for managing definitions
-  [
-    ["Manage Items",  () => initItemDefinitionsModal(db).open()],
-    ["Manage Chests", () => initChestDefinitionsModal(db).open()]
-  ].forEach(([label, fn]) => {
-    const btn = document.createElement("button");
-    btn.textContent = label;
-    btn.onclick     = fn;
-    adminWrap.appendChild(btn);
-  });
-
   sidebarEl.appendChild(adminWrap);
 
+  // Initialize the unified definition modal
+  const definitionModal = initDefinitionModal(db);
+
+  // Single “Manage Definitions” button
+  const btnManage = document.createElement("button");
+  btnManage.textContent = "Manage Definitions";
+  btnManage.onclick = e => definitionModal.openCreate(e, "Item");
+  adminWrap.appendChild(btnManage);
+
   // Only show for admins
-  if (document.body.classList.contains("is-admin")) {
-    adminHeader.style.display = "";
-    adminWrap.style.display   = "";
+  if (!document.body.classList.contains("is-admin")) {
+    adminHeader.style.display = "none";
+    adminWrap.style.display   = "none";
   }
 }
