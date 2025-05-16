@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.8 — replace marker on type-change to reset icon state and preserve color logic
+// @version: 1.9 — removed type-change recreation; rely on createCustomIcon for fresh border colors
 
 import {
   subscribeMarkers,
@@ -16,15 +16,6 @@ export const allMarkers = [];
 
 /**
  * Initialize marker subscriptions, creation, and hydration.
- *
- * @param {import('firebase/firestore').Firestore} db
- * @param {L.Map} map
- * @param {L.LayerGroup} clusterItemLayer
- * @param {L.LayerGroup} flatItemLayer
- * @param {() => void} filterMarkers
- * @param {() => Promise<void>} loadItemFilters
- * @param {boolean} isAdmin
- * @param {{ markerForm: object, copyMgr: object }} callbacks
  */
 export async function init(
   db,
@@ -38,9 +29,9 @@ export async function init(
 ) {
   const { markerForm, copyMgr } = callbacks;
 
-  // 1) Subscribe to marker data (add/remove)
+  // 1) Marker data subscription
   subscribeMarkers(db, markers => {
-    // Clear existing
+    // Clear
     allMarkers.forEach(({ markerObj }) => {
       markerObj.remove();
       clusterItemLayer.removeLayer(markerObj);
@@ -48,12 +39,12 @@ export async function init(
     });
     allMarkers.length = 0;
 
-    // Add new set
+    // Rebuild
     markers.forEach(data => {
       const cfg = markerTypes[data.type];
       if (!cfg) return;
 
-      // Merge definition fields (excluding def.id)
+      // Merge definition fields WITHOUT overwriting data.id
       const defMap = definitionsManager.getDefinitions(data.type);
       const defKey = cfg.defIdKey;
       if (defKey && defMap[data[defKey]]) {
@@ -61,53 +52,15 @@ export async function init(
         Object.assign(data, fields);
       }
 
-      // Prepare context-menu callbacks
+      // Callbacks for context-menu
       const cb = {
-        onEdit: (markerObj, originalData, event) =>
-          markerForm.openEdit(markerObj, originalData, event, payload => {
-            // Build full updated data
+        onEdit:    (markerObj, originalData, e) =>
+          markerForm.openEdit(markerObj, originalData, e, payload => {
             const updated = { ...originalData, ...payload };
-
-            // If type changed, replace the marker entirely to reset icon border logic
-            if (payload.type !== originalData.type) {
-              // Remove old marker
-              markerObj.remove();
-              clusterItemLayer.removeLayer(markerObj);
-              flatItemLayer.removeLayer(markerObj);
-
-              // Create new marker with updated type
-              const newCfg = markerTypes[updated.type];
-              const newCb = { ...cb }; // reuse callbacks
-              const newMarkerObj = createMarker(
-                updated,
-                map,
-                { clusterItemLayer, flatItemLayer },
-                showContextMenu,
-                newCb,
-                isAdmin
-              );
-              newMarkerObj.setPopupContent(newCfg.popupRenderer(updated));
-              const targetLayer = clusterItemLayer.hasLayer(newMarkerObj)
-                ? clusterItemLayer
-                : flatItemLayer;
-              targetLayer.addLayer(newMarkerObj);
-
-              // Replace in allMarkers
-              const idx = allMarkers.findIndex(o => o.markerObj === markerObj);
-              if (idx !== -1) allMarkers[idx] = { markerObj: newMarkerObj, data: updated };
-            } else {
-              // Same type: just update icon & popup
-              markerObj.setIcon(cfg.iconFactory(updated));
-              markerObj.setPopupContent(cfg.popupRenderer(updated));
-              // Update in our cache
-              const entry = allMarkers.find(o => o.markerObj === markerObj);
-              if (entry) entry.data = updated;
-            }
-
-            // Persist change
+            markerObj.setIcon(cfg.iconFactory(updated));
+            markerObj.setPopupContent(cfg.popupRenderer(updated));
             firebaseUpdateMarker(db, updated);
           }),
-
         onCopy:    (_, d) => copyMgr.startCopy(d),
         onDragEnd: (_, d) => firebaseUpdateMarker(db, d),
         onDelete:  (markerObj, d) => {
@@ -119,7 +72,7 @@ export async function init(
         }
       };
 
-      // Create marker
+      // Create + add
       const markerObj = createMarker(
         data,
         map,
@@ -128,11 +81,7 @@ export async function init(
         cb,
         isAdmin
       );
-      // Set its popup
-      if (cfg.popupRenderer) {
-        markerObj.setPopupContent(cfg.popupRenderer(data));
-      }
-      // Add to correct layer
+      if (cfg.popupRenderer) markerObj.setPopupContent(cfg.popupRenderer(data));
       const layer = clusterItemLayer.hasLayer(markerObj)
         ? clusterItemLayer
         : flatItemLayer;
@@ -141,15 +90,14 @@ export async function init(
       allMarkers.push({ markerObj, data });
     });
 
-    // Re-apply filters
     filterMarkers();
   });
 
-  // 2) Hydrate on definition updates
+  // 2) Re-apply icon & popup on definition changes
   Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
-      // definitionsManager updated internally
+      // definitionsManager updated already
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.type !== type) return;
         const defMap = definitionsManager.getDefinitions(type);
@@ -158,7 +106,7 @@ export async function init(
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
         }
-        // Always re-create icon to pick up new border color
+        // Always reset icon & popup
         markerObj.setIcon(cfg.iconFactory(data));
         markerObj.setPopupContent(cfg.popupRenderer(data));
       });
