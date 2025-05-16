@@ -1,30 +1,35 @@
 // @file: src/modules/ui/modals/definitionModal.js
-// @version: 1.0 — unified modal for definition types (Item only for now)
+// @version: 1.1 — ensure formApi is initialized before calling reset
 
 import { createModal, openModalAt, closeModal } from "../components/uiKit/modalKit.js";
 import { definitionTypes }                    from "../../definition/types.js";
 import { createDefListContainer }              from "../../utils/listUtils.js";
 import { createPreviewController }             from "../preview/previewController.js";
-import { createDefinitionListManager }          from "../components/definitionListManager.js";
+import { createDefinitionListManager }         from "../components/definitionListManager.js";
 
 export function initDefinitionModal(db) {
   let modal, content, openShell;
-  let fldType, listApi, formApi, previewApi;
+  let fldType, listApi, formApi, previewApi, formContainer;
   let definitions = [], currentType, currentId;
+
+  async function refreshList() {
+    definitions = await definitionTypes[currentType].loadDefs(db);
+    listApi.refresh(definitions);
+  }
 
   async function build() {
     if (modal) return;
-    // 1) Shell
+    // Shell
     ({ modal, content, open: openShell } = createModal({
       id:        "definition-modal",
       title:     "Manage Definitions",
       size:      "large",
-      searchable:true,
+      searchable: true,
       onClose:   () => previewApi.hide()
     }));
     modal.classList.add("admin-only");
 
-    // 2) Type selector
+    // Type selector
     const labType = document.createElement("label");
     labType.textContent = "Type:";
     fldType = document.createElement("select");
@@ -35,15 +40,15 @@ export function initDefinitionModal(db) {
     `;
     labType.appendChild(fldType);
 
-    // 3) List + Form + Preview containers
+    // List + Form + Preview containers
     const listContainer = createDefListContainer("def-list");
-    const formContainer = document.createElement("div");
+    formContainer = document.createElement("div");
     formContainer.id = "def-form-container";
-    previewApi = createPreviewController("item");  // item for now
+    previewApi = createPreviewController("item");
 
     content.append(labType, listContainer, formContainer);
 
-    // 4) List manager
+    // List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -54,26 +59,40 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // 5) Type switch handler
-    fldType.addEventListener("change", async () => {
-      currentType = fldType.value;
+    // Search wiring
+    const searchInput = modal.querySelector(".modal__search");
+    if (searchInput) {
+      searchInput.addEventListener("input", () => {
+        listApi.filter(searchInput.value);
+      });
+    }
+  }
+
+  return {
+    /**
+     * Open the modal to create a new definition of the given type.
+     * @param {MouseEvent} evt
+     * @param {string}     type
+     */
+    async openCreate(evt, type) {
+      await build();
+      // Set up type and list
+      currentType = type || Object.keys(definitionTypes)[0];
+      fldType.value = currentType;
       await refreshList();
 
-      // Build form controller
+      // Build form controller for this type
       const cfg = definitionTypes[currentType];
       formContainer.innerHTML = "";
       formApi = cfg.controller({
-        onCancel: () => {
-          formApi.reset();
-          previewApi.hide();
-        },
-        onDelete: async id => {
+        onCancel:   () => { formApi.reset(); previewApi.hide(); },
+        onDelete:   async id   => {
           await cfg.del(db, id);
           await refreshList();
           formApi.reset();
           previewApi.hide();
         },
-        onSubmit: async payload => {
+        onSubmit:   async payload => {
           if (payload.id) {
             await cfg.save(db, payload.id, payload);
           } else {
@@ -85,41 +104,52 @@ export function initDefinitionModal(db) {
         },
         onFieldChange: data => previewApi.show(data)
       }, db);
-
       formContainer.appendChild(formApi.form);
-    });
 
-    // 6) Search wiring
-    const searchInput = modal.querySelector(".modal__search");
-    if (searchInput) {
-      searchInput.addEventListener("input", () => {
-        listApi.filter(searchInput.value);
-      });
+      // Initialize
+      currentId = null;
+      formApi.reset();
+      previewApi.hide();
+      openShell(evt);
+    },
+
+    /**
+     * Open the modal to edit an existing definition.
+     * @param {Object} def – existing definition object (must include .type and .id)
+     */
+    async openEdit(def) {
+      await build();
+      currentType = def.type;
+      fldType.value = currentType;
+      await refreshList();
+
+      // Build form controller
+      const cfg = definitionTypes[currentType];
+      formContainer.innerHTML = "";
+      formApi = cfg.controller({
+        onCancel:   () => { formApi.reset(); previewApi.hide(); },
+        onDelete:   async id   => {
+          await cfg.del(db, id);
+          await refreshList();
+          formApi.reset();
+          previewApi.hide();
+        },
+        onSubmit:   async payload => {
+          payload.id = def.id;
+          await cfg.save(db, payload.id, payload);
+          await refreshList();
+          formApi.reset();
+          previewApi.hide();
+        },
+        onFieldChange: data => previewApi.show(data)
+      }, db);
+      formContainer.appendChild(formApi.form);
+
+      // Populate and show
+      currentId = def.id;
+      formApi.populate(def);
+      previewApi.show(def);
+      openShell();
     }
-  }
-
-  async function refreshList() {
-    definitions = await definitionTypes[currentType].loadDefs(db);
-    listApi.refresh(definitions);
-  }
-
-  async function openCreate(evt, type) {
-    await build();
-    fldType.value = type || "Item";
-    fldType.dispatchEvent(new Event("change"));
-    currentId = null;
-    formApi.reset();
-    openModalAt(modal, evt);
-  }
-
-  async function openEdit(def) {
-    await build();
-    fldType.value = def.type || "Item";
-    fldType.dispatchEvent(new Event("change"));
-    currentId = def.id;
-    formApi.populate(def);
-    openModalAt(modal, event);
-  }
-
-  return { openCreate, openEdit };
+  };
 }
