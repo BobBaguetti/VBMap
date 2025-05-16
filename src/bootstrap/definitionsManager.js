@@ -1,5 +1,5 @@
 // @file: src/bootstrap/definitionsManager.js
-// @version: 1.1 — refactored to use markerTypes registry for dynamic definition handling
+// @version: 1.2 — refine filter rebuild logic to only rebuild item filters on item-definition changes
 
 import { markerTypes } from "../modules/marker/types.js";
 
@@ -10,7 +10,7 @@ const definitionsMap = {};
  * for all registered marker types.
  *
  * @param {import('firebase/firestore').Firestore} db
- * @param {() => Promise<void>} loadItemFilters   – rebuild sidebar filters
+ * @param {() => Promise<void>} loadItemFilters   – rebuild sidebar item filters
  * @param {() => void}         filterMarkers      – re‐apply current filters to markers
  */
 async function init(db, loadItemFilters, filterMarkers) {
@@ -20,8 +20,8 @@ async function init(db, loadItemFilters, filterMarkers) {
       // Update our in‐memory cache
       definitionsMap[type] = Object.fromEntries(defs.map(d => [d.id, d]));
 
-      // If this type has sidebar filters, rebuild them; otherwise just re‐filter
-      if (cfg.filterSetup) {
+      // Only rebuild the item-filters when Item definitions change
+      if (type === "Item") {
         loadItemFilters().then(filterMarkers);
       } else {
         filterMarkers();
@@ -35,7 +35,7 @@ async function init(db, loadItemFilters, filterMarkers) {
     definitionsMap[type] = Object.fromEntries(defs.map(d => [d.id, d]));
   }
 
-  // 3) Build filters once and draw initial markers
+  // 3) Build item filters once and draw initial markers
   await loadItemFilters();
   filterMarkers();
 }
