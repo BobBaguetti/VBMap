@@ -1,4 +1,4 @@
-// @file: src/modules/sidebar/index.js
+// @file: src/modules/sidebar/index.js 
 // @version: 12.0 — remove Settings section wiring; delegate only UI, filters, and admin
 
 import { setupSidebarUI }      from "./sidebarUI.js";
