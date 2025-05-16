@@ -9,7 +9,7 @@ import {
 } from "../../components/formControllerShell.js";
 import { initFormPickrs } from "../../components/formPickrManager.js";
 import { createFormState }  from "../../components/formStateManager.js";
-import { loadItemDefinitions } from "../../../modules/services/itemDefinitionsService.js";
+import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
 
 export function createNPCFormController(
   { onCancel, onSubmit, onDelete, onFieldChange },

@@ -12,7 +12,7 @@ import {
 } from "../components/uiKit/fieldKit.js";
 import { loadItemDefinitions }  from "../../services/itemDefinitionsService.js";
 import { loadChestDefinitions } from "../../services/chestDefinitionsService.js";
-import { loadNPCs }             from "../../modules/services/definitions/npcService.js";
+import { loadNPCs } from "../../services/definitions/npcService.js";
 import { createMarkerFormController } from "../forms/controllers/markerFormController.js";
 
 export function initMarkerModal(db) {
