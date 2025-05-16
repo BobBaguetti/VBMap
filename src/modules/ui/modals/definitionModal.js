@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/definitionModal.js
-// @version: 1.0 — unified, schema-driven definition modal
+// @version: 1.1 — defer previewController until type known
 
 import { createModal, openModal, closeModal }        from "../components/uiKit/modalKit.js";
 import { definitionTypes }                           from "../../definition/types.js";
@@ -29,7 +29,7 @@ export function initDefinitionModal(db) {
       title:      "Manage Definitions",
       size:       "large",
       searchable: true,
-      onClose:    () => previewApi.hide()
+      onClose:    () => previewApi?.hide()
     }));
     modal.classList.add("admin-only");
 
@@ -42,11 +42,10 @@ export function initDefinitionModal(db) {
       .join("");
     typeLabel.appendChild(fldType);
 
-    // 3) List, form container, and preview controller
+    // 3) List and form container
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
-    previewApi = createPreviewController(); // auto-detect type if needed
 
     content.append(typeLabel, listContainer, formContainer);
 
@@ -75,23 +74,24 @@ export function initDefinitionModal(db) {
   async function openCreate(evt, type = "Item") {
     await build();
 
-    // Select type and refresh list
     currentType = type;
     fldType.value = currentType;
     await refreshList();
 
+    // Initialize preview for this type
+    previewApi = createPreviewController(currentType);
+
     // Instantiate form for this type
     const cfg = definitionTypes[currentType];
     formContainer.innerHTML = "";
-    const { form, fields, colorables } = cfg.buildForm();
     formApi = cfg.controller({
-      onCancel:     () => { formApi.reset(); previewApi.hide(); },
-      onDelete:     async id => {
+      onCancel:   () => { formApi.reset(); previewApi.hide(); },
+      onDelete:   async id => {
         await cfg.del(db, id);
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
-      onSubmit:     async payload => {
+      onSubmit:   async payload => {
         if (payload.id) {
           await cfg.save(db, payload.id, payload);
         } else {
@@ -100,7 +100,7 @@ export function initDefinitionModal(db) {
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
-      onFieldChange:data => previewApi.show(data)
+      onFieldChange: data => previewApi.show(data)
     }, db);
     formContainer.appendChild(formApi.form);
 
@@ -117,28 +117,30 @@ export function initDefinitionModal(db) {
   async function openEdit(def) {
     await build();
 
-    // Select type and refresh list
     currentType = def.type;
     fldType.value = currentType;
     await refreshList();
+
+    // Initialize preview for this type
+    previewApi = createPreviewController(currentType);
 
     // Instantiate form for this type
     const cfg = definitionTypes[currentType];
     formContainer.innerHTML = "";
     formApi = cfg.controller({
-      onCancel:     () => { formApi.reset(); previewApi.hide(); },
-      onDelete:     async id => {
+      onCancel:   () => { formApi.reset(); previewApi.hide(); },
+      onDelete:   async id => {
         await cfg.del(db, id);
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
-      onSubmit:     async payload => {
+      onSubmit:   async payload => {
         payload.id = def.id;
         await cfg.save(db, payload.id, payload);
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
-      onFieldChange:data => previewApi.show(data)
+      onFieldChange: data => previewApi.show(data)
     }, db);
     formContainer.appendChild(formApi.form);
 
