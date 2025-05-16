@@ -1,17 +1,8 @@
 // @file: src/modules/ui/components/definitionListManager.js
-// @version: 6.3 — inline default simple renderer when none provided
+// @version: 6.4 — improved default entry styling
 
 /**
  * Creates and manages a sortable, filterable definition list.
- *
- * @param {Object} options
- * @param {HTMLElement} options.container        — the <div> that will hold entries
- * @param {() => Array}   options.getDefinitions — function returning all defs
- * @param {(def:Object) => void} options.onEntryClick
- * @param {(id:string) => Promise<void>} options.onDelete
- * @param {() => string} [options.getCurrentLayout]
- * @param {(def, layout, onClick, onDelete) => HTMLElement} [options.renderEntry]
- *        Optional custom renderer. If omitted, a simple default is used.
  */
 export function createDefinitionListManager({
   container,
@@ -24,59 +15,67 @@ export function createDefinitionListManager({
   let layout     = getCurrentLayout();
   let filterTerm = "";
 
-  // Simple default renderer
+  // Enhanced default renderer
   function defaultRenderer(def, layout, onClick, onDelete) {
+    // wrapper
     const entry = document.createElement("div");
-    entry.className = `def-entry layout-${layout}`;
-    entry.textContent = def.name || "(no name)";
+    entry.className = `def-entry def-entry--${layout}`;
+    entry.style.display = "flex";
+    entry.style.alignItems = "center";
+    entry.style.justifyContent = "space-between";
+    entry.style.padding = "0.4em 0.6em";
+    entry.style.margin = "0.2em 0";
+    entry.style.background = "var(--bg-20)";
+    entry.style.borderRadius = "4px";
     entry.style.cursor = "pointer";
 
-    entry.addEventListener("click", () => onClick(def));
+    // name
+    const nameSpan = document.createElement("span");
+    nameSpan.textContent = def.name || "(no name)";
+    nameSpan.style.flex = "1";
+    entry.appendChild(nameSpan);
 
-    const del = document.createElement("button");
-    del.textContent = "×";
-    del.title = "Delete";
-    del.style.marginLeft = "8px";
-    del.addEventListener("click", e => {
+    // delete button
+    const delBtn = document.createElement("button");
+    delBtn.className = "ui-button-delete";
+    delBtn.textContent = "×";
+    delBtn.title = "Delete";
+    delBtn.style.marginLeft = "0.5em";
+    delBtn.onclick = e => {
       e.stopPropagation();
       onDelete(def.id);
-    });
-    entry.appendChild(del);
+    };
+    entry.appendChild(delBtn);
 
+    // click handler
+    entry.addEventListener("click", () => onClick(def));
     return entry;
   }
 
   function render() {
     const data = getDefinitions();
     const q = filterTerm.trim().toLowerCase();
-
     const filtered = data.filter(d =>
       d.name?.toLowerCase().includes(q)
     );
 
     container.innerHTML = "";
-    container.className = `def-list layout-${layout}`;
-
     filtered.forEach(def => {
       const renderer = typeof renderEntry === "function"
         ? renderEntry
         : defaultRenderer;
-      const entry = renderer(def, layout, onEntryClick, onDelete);
-      container.appendChild(entry);
+      container.appendChild(
+        renderer(def, layout, onEntryClick, onDelete)
+      );
     });
   }
 
   return {
-    /** Refresh the list (e.g. after data changes) */
     refresh: render,
-
-    /** Change layout: "row", "gallery", etc. */
     setLayout(newLayout) {
       layout = newLayout;
       render();
     },
-
-    /** Set the current filter term (from an external search box) */
     filter(term) {
       filterTerm = term || "";
       render();
