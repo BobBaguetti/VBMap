@@ -1,5 +1,5 @@
 // @file: src/modules/ui/modals/definitionModal.js
-// @version: 1.1 — defer previewController until type known
+// @version: 1.2 — normalize type for previewController
 
 import { createModal, openModal, closeModal }        from "../components/uiKit/modalKit.js";
 import { definitionTypes }                           from "../../definition/types.js";
@@ -12,18 +12,15 @@ export function initDefinitionModal(db) {
   let fldType, listApi, formApi, previewApi, formContainer;
   let definitions = [], currentType, currentId;
 
-  // Fetch and refresh the list of definitions for the active type
   async function refreshList() {
     const cfg = definitionTypes[currentType];
     definitions = await cfg.loadDefs(db);
     listApi.refresh(definitions);
   }
 
-  // Build modal shell only once
   async function build() {
     if (modal) return;
 
-    // 1) Create modal shell
     ({ modal, content } = createModal({
       id:         "definition-modal",
       title:      "Manage Definitions",
@@ -33,7 +30,6 @@ export function initDefinitionModal(db) {
     }));
     modal.classList.add("admin-only");
 
-    // 2) Type selector
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
@@ -42,14 +38,12 @@ export function initDefinitionModal(db) {
       .join("");
     typeLabel.appendChild(fldType);
 
-    // 3) List and form container
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
 
     content.append(typeLabel, listContainer, formContainer);
 
-    // 4) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -61,7 +55,6 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // 5) Search within the modal
     const searchInput = modal.querySelector(".modal__search");
     if (searchInput) {
       searchInput.addEventListener("input", () => {
@@ -70,7 +63,6 @@ export function initDefinitionModal(db) {
     }
   }
 
-  // Open the modal to create a new definition
   async function openCreate(evt, type = "Item") {
     await build();
 
@@ -78,10 +70,10 @@ export function initDefinitionModal(db) {
     fldType.value = currentType;
     await refreshList();
 
-    // Initialize preview for this type
-    previewApi = createPreviewController(currentType);
+    // **normalize type for preview**:
+    const previewType = currentType.toLowerCase();
+    previewApi = createPreviewController(previewType);
 
-    // Instantiate form for this type
     const cfg = definitionTypes[currentType];
     formContainer.innerHTML = "";
     formApi = cfg.controller({
@@ -104,16 +96,13 @@ export function initDefinitionModal(db) {
     }, db);
     formContainer.appendChild(formApi.form);
 
-    // Reset for new entry
     currentId = null;
     formApi.reset();
     previewApi.hide();
 
-    // Show modal
     openModal(modal);
   }
 
-  // Open the modal to edit an existing definition
   async function openEdit(def) {
     await build();
 
@@ -121,10 +110,10 @@ export function initDefinitionModal(db) {
     fldType.value = currentType;
     await refreshList();
 
-    // Initialize preview for this type
-    previewApi = createPreviewController(currentType);
+    // **normalize type for preview**:
+    const previewType = currentType.toLowerCase();
+    previewApi = createPreviewController(previewType);
 
-    // Instantiate form for this type
     const cfg = definitionTypes[currentType];
     formContainer.innerHTML = "";
     formApi = cfg.controller({
@@ -144,12 +133,10 @@ export function initDefinitionModal(db) {
     }, db);
     formContainer.appendChild(formApi.form);
 
-    // Populate for editing
     currentId = def.id;
     formApi.populate(def);
     previewApi.show(def);
 
-    // Show modal
     openModal(modal);
   }
 
