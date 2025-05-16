@@ -1,61 +1,61 @@
 // @file: src/bootstrap/definitionsManager.js
-// @version: 1.0 — load & subscribe item and chest definitions
+// @version: 1.1 — refactored to use markerTypes registry for dynamic definition handling
 
-import {
-  subscribeChestDefinitions
-} from "../modules/services/chestDefinitionsService.js";
-import {
-  subscribeItemDefinitions,
-  loadItemDefinitions
-} from "../modules/services/itemDefinitionsService.js";
+import { markerTypes } from "../modules/marker/types.js";
 
-let chestDefMap = {};
-let itemDefMap = {};
+const definitionsMap = {};
 
 /**
- * Initialize definition loading and subscriptions.
- * @param {Firestore} db - Firestore database instance
- * @param {Function} loadItemFilters - callback to reload item filters in sidebar
- * @param {Function} filterMarkers - callback to apply current filters to markers
+ * Initialize definition loading and real-time subscriptions
+ * for all registered marker types.
+ *
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {() => Promise<void>} loadItemFilters   – rebuild sidebar filters
+ * @param {() => void}         filterMarkers      – re‐apply current filters to markers
  */
 async function init(db, loadItemFilters, filterMarkers) {
-  // Subscribe to chest definitions updates
-  subscribeChestDefinitions(db, defs => {
-    chestDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
+  // 1) Subscribe to updates for every marker type
+  Object.entries(markerTypes).forEach(([type, cfg]) => {
+    cfg.subscribeDefinitions(db, defs => {
+      // Update our in‐memory cache
+      definitionsMap[type] = Object.fromEntries(defs.map(d => [d.id, d]));
+
+      // If this type has sidebar filters, rebuild them; otherwise just re‐filter
+      if (cfg.filterSetup) {
+        loadItemFilters().then(filterMarkers);
+      } else {
+        filterMarkers();
+      }
+    });
   });
 
-  // Load initial item definitions
-  const initialDefs = await loadItemDefinitions(db);
-  itemDefMap = Object.fromEntries(initialDefs.map(d => [d.id, d]));
+  // 2) Load initial definitions for every type
+  for (const [type, cfg] of Object.entries(markerTypes)) {
+    const defs = await cfg.loadDefinitions(db);
+    definitionsMap[type] = Object.fromEntries(defs.map(d => [d.id, d]));
+  }
 
-  // Subscribe to item definitions updates
-  subscribeItemDefinitions(db, async () => {
-    const defs = await loadItemDefinitions(db);
-    itemDefMap = Object.fromEntries(defs.map(d => [d.id, d]));
-    // Refresh filters and reapply marker filtering
-    await loadItemFilters();
-    filterMarkers();
-  });
+  // 3) Build filters once and draw initial markers
+  await loadItemFilters();
+  filterMarkers();
 }
 
 /**
- * Get the current chest definition map.
- * @returns {Object} chestDefMap
+ * Retrieve the definition map for a given marker type.
+ * @param {string} type  – e.g. "Item", "Chest"
+ * @returns {Object<string, Object>} id→definition map
  */
-function getChestDefMap() {
-  return chestDefMap;
+function getDefinitions(type) {
+  return definitionsMap[type] || {};
 }
 
-/**
- * Get the current item definition map.
- * @returns {Object} itemDefMap
- */
-function getItemDefMap() {
-  return itemDefMap;
-}
+/** Convenience accessors for legacy callers */
+function getItemDefMap()  { return getDefinitions("Item"); }
+function getChestDefMap() { return getDefinitions("Chest"); }
 
 export default {
   init,
-  getChestDefMap,
-  getItemDefMap
+  getDefinitions,
+  getItemDefMap,
+  getChestDefMap
 };
