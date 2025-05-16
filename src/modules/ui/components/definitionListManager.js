@@ -1,6 +1,9 @@
 // @file: src/modules/ui/components/definitionListManager.js
-// @version: 6.5 — richer default entry with thumbnail, meta
+// @version: 6.6 — enhanced default entry: name | type • rarity; desc + value row
 
+/**
+ * Creates and manages a sortable, filterable definition list.
+ */
 export function createDefinitionListManager({
   container,
   getDefinitions,
@@ -15,69 +18,113 @@ export function createDefinitionListManager({
   function defaultRenderer(def, layout, onClick, onDelete) {
     const entry = document.createElement("div");
     entry.className = `def-entry def-entry--${layout}`;
-    entry.style.display = "flex";
-    entry.style.alignItems = "center";
-    entry.style.padding = "0.5em";
-    entry.style.margin = "0.2em 0";
-    entry.style.background = "var(--bg-20)";
-    entry.style.borderRadius = "4px";
-    entry.style.cursor = "pointer";
+    Object.assign(entry.style, {
+      display:       "flex",
+      alignItems:    "center",
+      padding:       "0.6em",
+      margin:        "0.3em 0",
+      background:    "var(--bg-20)",
+      borderRadius:  "6px",
+      cursor:        "pointer"
+    });
 
-    // thumbnail if available
+    // Thumbnail
     if (def.imageSmall) {
       const thumb = document.createElement("img");
-      thumb.src = def.imageSmall;
-      thumb.alt = def.name;
-      thumb.style.width = "32px";
-      thumb.style.height = "32px";
-      thumb.style.objectFit = "cover";
-      thumb.style.borderRadius = "4px";
-      thumb.style.marginRight = "0.6em";
+      thumb.src    = def.imageSmall;
+      thumb.alt    = def.name;
+      Object.assign(thumb.style, {
+        width:        "36px",
+        height:       "36px",
+        objectFit:    "cover",
+        borderRadius: "4px",
+        marginRight:  "0.8em"
+      });
       entry.appendChild(thumb);
     }
 
-    // text container
-    const textWrap = document.createElement("div");
-    textWrap.style.flex = "1";
+    // Main content
+    const main = document.createElement("div");
+    main.style.flex = "1";
 
-    // name
-    const nameEl = document.createElement("div");
+    // Header: name | type • rarity
+    const header = document.createElement("div");
+    Object.assign(header.style, {
+      display:       "flex",
+      alignItems:    "baseline",
+      gap:           "0.4em",
+      marginBottom:  "0.2em"
+    });
+    const nameEl = document.createElement("span");
     nameEl.textContent = def.name;
-    nameEl.style.fontWeight = "600";
-    textWrap.appendChild(nameEl);
+    Object.assign(nameEl.style, { fontWeight: "600" });
+    header.appendChild(nameEl);
 
-    // meta line (type, rarity or category/size)
-    const metaEl = document.createElement("div");
-    metaEl.style.fontSize = "0.85em";
-    metaEl.style.color = "var(--text-secondary)";
-    if (def.rarity) {
-      metaEl.textContent = def.rarity.toUpperCase();
-    } else if (def.category && def.size) {
-      metaEl.textContent = `${def.category} • ${def.size}`;
+    const metaEl = document.createElement("span");
+    const typeText   = def.itemType || def.category || "";
+    const rarityText = def.rarity ? def.rarity.toUpperCase() : "";
+    metaEl.textContent = `| ${typeText}${rarityText ? " • " + rarityText : ""}`;
+    Object.assign(metaEl.style, {
+      fontSize: "0.9em",
+      color:    "var(--text-secondary)"
+    });
+    header.appendChild(metaEl);
+    main.appendChild(header);
+
+    // Sub-row: description (left) and value (right)
+    const sub = document.createElement("div");
+    Object.assign(sub.style, {
+      display:        "flex",
+      alignItems:     "center",
+      justifyContent: "space-between",
+      gap:            "0.6em"
+    });
+    const descEl = document.createElement("span");
+    descEl.textContent = def.description || "";
+    Object.assign(descEl.style, {
+      fontSize: "0.9em",
+      color:    "var(--text-secondary)",
+      flex:     "1"
+    });
+    sub.appendChild(descEl);
+
+    if (def.value) {
+      const valEl = document.createElement("span");
+      valEl.innerHTML = `${def.value} <i class="fas fa-coins"></i>`;
+      Object.assign(valEl.style, {
+        fontSize:   "0.9em",
+        color:      "var(--text-primary)",
+        whiteSpace: "nowrap"
+      });
+      sub.appendChild(valEl);
     }
-    textWrap.appendChild(metaEl);
 
-    entry.appendChild(textWrap);
+    main.appendChild(sub);
+    entry.appendChild(main);
 
-    // delete button
+    // Delete button
     const delBtn = document.createElement("button");
     delBtn.className = "ui-button-delete";
-    delBtn.textContent = "×";
+    delBtn.innerHTML = '<i class="fas fa-trash"></i>';
     delBtn.title = "Delete";
-    delBtn.style.marginLeft = "0.6em";
+    Object.assign(delBtn.style, {
+      marginLeft: "0.8em",
+      flexShrink: 0
+    });
     delBtn.onclick = e => {
       e.stopPropagation();
       onDelete(def.id);
     };
     entry.appendChild(delBtn);
 
+    // Click handler
     entry.addEventListener("click", () => onClick(def));
     return entry;
   }
 
   function render() {
     const data = getDefinitions();
-    const q = filterTerm.trim().toLowerCase();
+    const q    = filterTerm.trim().toLowerCase();
     container.innerHTML = "";
     data
       .filter(d => d.name?.toLowerCase().includes(q))
@@ -88,8 +135,11 @@ export function createDefinitionListManager({
   }
 
   return {
+    /** Refresh the list (e.g. after data changes) */
     refresh: render,
+    /** Change layout: "row", "gallery", etc. */
     setLayout(newLayout) { layout = newLayout; render(); },
+    /** Set the current filter term (from an external search box) */
     filter(term) { filterTerm = term || ""; render(); }
   };
 }
