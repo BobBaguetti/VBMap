@@ -1,8 +1,8 @@
 // @file: src/modules/initializer/contextMenuHandler.js
 // @version: 1.0 — centralizes context‐menu setup and teardown
 
-import { map } from "../appInit.js";
-import { showContextMenu, hideContextMenu } from "../modules/ui/uiManager.js";
+import { map }                                    from "../../appInit.js";
+import { showContextMenu, hideContextMenu }       from "../ui/uiManager.js";
 
 /**
  * Initialize context‐menu behavior for marker creation and outside‐click hiding.

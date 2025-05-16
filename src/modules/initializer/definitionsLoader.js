@@ -1,10 +1,10 @@
 // @file: src/modules/initializer/definitionsLoader.js
 // @version: 1.0 — centralizes Firestore subscriptions for definitions
 
-import { db } from "../appInit.js";
-import { subscribeItemDefinitions } from "../modules/services/itemDefinitionsService.js";
-import { subscribeChestDefinitions } from "../modules/services/chestDefinitionsService.js";
-import { subscribeNPCs } from "../modules/services/definitions/npcService.js";
+import { db }                             from "../../appInit.js";
+import { subscribeItemDefinitions }       from "../services/itemDefinitionsService.js";
+import { subscribeChestDefinitions }      from "../services/chestDefinitionsService.js";
+import { subscribeNPCs }                  from "../services/definitions/npcService.js";
 
 // Live definition maps
 export let itemDefMap = {};
