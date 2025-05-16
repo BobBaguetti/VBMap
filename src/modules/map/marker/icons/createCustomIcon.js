@@ -1,10 +1,10 @@
 /* @file: src/modules/map/marker/icons/createCustomIcon.js */
-/* @version: 1.3 — dynamic border colors for Chest markers */
+/* @version: 1.4 — chest logic takes precedence over leftover rarityColor */
 
 const L = window.L;
 
-import { defaultNameColor } from "../../../utils/colorPresets.js";
-import { getBestImageUrl }  from "../utils.js";
+import { defaultNameColor }    from "../../../utils/colorPresets.js";
+import { getBestImageUrl }     from "../utils.js";
 import { CHEST_RARITY, rarityColors } from "../../markerManager.js";
 
 /**
@@ -18,17 +18,17 @@ export function createCustomIcon(m) {
   const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
   const size   = 32;
 
-  // Determine border color:
-  // 1) If the marker data has a rarityColor (items), use it.
-  // 2) Otherwise, if it's a Chest, compute via CHEST_RARITY & rarityColors.
-  // 3) Fallback to defaultNameColor.
+  // Determine border color: chest logic first, then item rarity
   let borderColor = defaultNameColor;
-  if (m.rarityColor) {
-    borderColor = m.rarityColor;
-  } else if (m.type === "Chest") {
+
+  if (m.type === "Chest") {
+    // Chest: derive color from category & size
     const catMap = CHEST_RARITY[m.category] || {};
     const key    = catMap[m.size]    || "common";
     borderColor  = rarityColors[key] || defaultNameColor;
+  } else if (m.rarityColor) {
+    // Item: use its rarityColor
+    borderColor = m.rarityColor;
   }
 
   // wrapper div to hold image and border
@@ -38,19 +38,19 @@ export function createCustomIcon(m) {
     position:     "relative",
     width:        `${size}px`,
     height:       `${size}px`,
-    borderRadius: "50%",    // ensure circular shape
-    overflow:     "hidden"  // clip anything outside the circle
+    borderRadius: "50%",
+    overflow:     "hidden"
   });
 
   // colored border
   const border = document.createElement("div");
   border.className = "marker-border";
   Object.assign(border.style, {
-    position:    "absolute",
-    inset:       0,
-    boxSizing:   "border-box",
-    border:      `2px solid ${borderColor}`,
-    borderRadius:"50%"     // match the wrapper’s circle
+    position:     "absolute",
+    inset:         0,
+    boxSizing:    "border-box",
+    border:        `2px solid ${borderColor}`,
+    borderRadius: "50%"
   });
   wrap.appendChild(border);
 
@@ -69,9 +69,9 @@ export function createCustomIcon(m) {
   }
 
   return L.divIcon({
-    html:       wrap.outerHTML,
-    className:  "",
-    iconSize:   [size, size],
-    iconAnchor: [size / 2, size / 2]
+    html:        wrap.outerHTML,
+    className:   "",
+    iconSize:    [size, size],
+    iconAnchor:  [size / 2, size / 2]
   });
 }
