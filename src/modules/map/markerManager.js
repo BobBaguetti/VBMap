@@ -1,27 +1,19 @@
 // @file: src/modules/map/markerManager.js
-// @version: 11.3 — consolidated new markers/* structure
+// @version: 11.0 — split out popups, icons, utils into dedicated modules
 
-// Core Leaflet factories
-export { default as createMarker }      from "./markers/common/createMarker.js";
-export { default as createCustomIcon }  from "./markers/common/createCustomIcon.js";
+import { createMarker }      from "./marker/icons/createMarker.js";
+import { renderItemPopup }   from "./marker/popups/itemPopup.js";
+import { renderChestPopup }  from "./marker/popups/chestPopup.js";
+import { createCustomIcon }  from "./marker/icons/createCustomIcon.js";
+import { CHEST_RARITY }      from "./marker/utils.js";
+import { rarityColors, defaultNameColor } from "../utils/colorPresets.js";
 
-// Chest
-export { default as createChestMarker } from "./markers/chest/factory.js";
-export { default as renderChestPopup }  from "./markers/chest/popup.js";
-
-// Item
-export { default as createItemMarker }  from "./markers/item/factory.js";
-export { default as renderItemPopup }   from "./markers/item/popup.js";
-
-// NPC
-export { default as createNPCMarker }   from "./markers/npc/factory.js";
-export { default as renderNPCPopup }    from "./markers/npc/popup.js";
-
-// Shared popup base
-export { default as popupBase }         from "./markers/common/popupBase.js";
-
-// (Quest & Misc to follow…)
-
-// Shared utils
-export { CHEST_RARITY, isImgUrl, getBestImageUrl } from "./markers/utils.js";
-export { rarityColors, defaultNameColor }           from "../utils/colorPresets.js";
+export {
+  createMarker,
+  renderItemPopup,
+  renderChestPopup,
+  createCustomIcon,
+  CHEST_RARITY,
+  rarityColors,
+  defaultNameColor
+};
