@@ -1,5 +1,5 @@
 // @file: src/modules/ui/components/definitionListManager.js
-// @version: 6.6 — enhanced default entry: name | type • rarity; desc + value row
+// @version: 6.7 — single‐line ellipsized desc & uppercase type
 
 /**
  * Creates and manages a sortable, filterable definition list.
@@ -47,7 +47,7 @@ export function createDefinitionListManager({
     const main = document.createElement("div");
     main.style.flex = "1";
 
-    // Header: name | type • rarity
+    // Header: name | TYPE • RARITY
     const header = document.createElement("div");
     Object.assign(header.style, {
       display:       "flex",
@@ -61,7 +61,7 @@ export function createDefinitionListManager({
     header.appendChild(nameEl);
 
     const metaEl = document.createElement("span");
-    const typeText   = def.itemType || def.category || "";
+    const typeText   = (def.itemType || def.category || "").toUpperCase();
     const rarityText = def.rarity ? def.rarity.toUpperCase() : "";
     metaEl.textContent = `| ${typeText}${rarityText ? " • " + rarityText : ""}`;
     Object.assign(metaEl.style, {
@@ -71,7 +71,7 @@ export function createDefinitionListManager({
     header.appendChild(metaEl);
     main.appendChild(header);
 
-    // Sub-row: description (left) and value (right)
+    // Sub-row: description (single line) and value
     const sub = document.createElement("div");
     Object.assign(sub.style, {
       display:        "flex",
@@ -82,9 +82,12 @@ export function createDefinitionListManager({
     const descEl = document.createElement("span");
     descEl.textContent = def.description || "";
     Object.assign(descEl.style, {
-      fontSize: "0.9em",
-      color:    "var(--text-secondary)",
-      flex:     "1"
+      fontSize:       "0.9em",
+      color:          "var(--text-secondary)",
+      flex:           "1",
+      whiteSpace:     "nowrap",
+      overflow:       "hidden",
+      textOverflow:   "ellipsis"
     });
     sub.appendChild(descEl);
 
@@ -135,11 +138,11 @@ export function createDefinitionListManager({
   }
 
   return {
-    /** Refresh the list (e.g. after data changes) */
+    /** Refresh the list */
     refresh: render,
-    /** Change layout: "row", "gallery", etc. */
+    /** Change layout */
     setLayout(newLayout) { layout = newLayout; render(); },
-    /** Set the current filter term (from an external search box) */
+    /** Apply filter term */
     filter(term) { filterTerm = term || ""; render(); }
   };
 }
