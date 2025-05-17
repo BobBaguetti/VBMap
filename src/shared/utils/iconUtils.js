@@ -1,3 +1,5 @@
+// @file: src\shared\utils\iconUtils.js
+
 /**
  * Utility to generate icon elements for use in the UI.
  * Now supports inline SVGs for custom icons.

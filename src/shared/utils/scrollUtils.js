@@ -1,5 +1,5 @@
 // @version: 2
-// @file: src/modules/utils/scrollUtils.js
+// @file: src\shared\utils\scrollUtils.js
 
 /**
  * Adds 'scrolling' class to elements while scrolling
