@@ -4,7 +4,7 @@
 import { createModal, openModal, closeModal }        from "../../ui/components/uiKit/modalKit.js";
 import { definitionTypes }                           from "../types.js";
 import { createDefListContainer }                     from "../../utils/listUtils.js";
-import { createPreviewController }                    from "../../ui/preview/previewController.js";
+import { createPreviewController }                    from "../preview/previewController.js";
 import { createDefinitionListManager }                from "../list/definitionListManager.js";
 import { loadItemDefinitions }                       from "../../services/itemDefinitionsService.js";
 
