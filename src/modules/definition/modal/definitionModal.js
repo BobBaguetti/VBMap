@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.14 — fix form rendering: only append to formContainer
+// @version: 1.15 — move search into header, cap entry‐list height
 
 import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
@@ -34,20 +34,17 @@ export function initDefinitionModal(db) {
     }));
 
     modal.classList.add("admin-only", "modal--definition");
-    content.classList.add("modal__body--definition");
 
-    // Left pane
-    const leftPane = slots.left;
-    leftPane.id = "definition-left-pane";
-
-    // Search bar
+    // 1) Search bar — moved into header
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
-    leftPane.append(searchInput);
+    header.append(searchInput);
 
-    // Type selector
+    // 2) Type selector stays in left pane
+    const leftPane = slots.left;
+    leftPane.id = "definition-left-pane";
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
@@ -57,17 +54,17 @@ export function initDefinitionModal(db) {
     typeLabel.append(fldType);
     leftPane.append(typeLabel);
 
-    // List & form containers
+    // 3) List & form containers
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
     leftPane.append(listContainer, formContainer);
 
-    // Preview pane
+    // 4) Preview pane
     previewContainer = slots.preview;
     previewContainer.id = "definition-preview-container";
 
-    // List manager
+    // 5) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -79,7 +76,7 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // Filter wiring
+    // Wire search to list filter
     searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );
@@ -99,7 +96,7 @@ export function initDefinitionModal(db) {
     const cfg = definitionTypes[type];
     previewApi = cfg.previewBuilder(previewContainer);
 
-    // Clear and render form inside formContainer only
+    // Clear & render form inside its pane
     formContainer.innerHTML = "";
     formApi = cfg.controller({
       onCancel:     () => { formApi.reset(); previewApi.hide(); },
@@ -109,8 +106,7 @@ export function initDefinitionModal(db) {
         formApi.reset(); previewApi.hide();
       },
       onSubmit:     async payload => {
-        const saveId = def?.id ?? null;
-        await cfg.save(db, saveId, payload);
+        await cfg.save(db, def?.id ?? null, payload);
         await refreshList();
         formApi.reset(); previewApi.hide();
       },

@@ -1,33 +1,42 @@
 /* @file: styles/components/modal/definition/header.css */
-/* @version: 1.0 — header styling for definition modal */
+/* @version: 1.2 — full header styling including search input positioning */
 
 .modal--definition .modal-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--bg-20);
+  border-bottom: 1px solid var(--border-soft);
 }
 
 .modal--definition .modal-header h2 {
+  flex: 0 0 auto;
   margin: 0;
-  font-size: 20px;
-  color: var(--text-primary);
-  font-weight: 600;
-}
-
-.modal--definition h3 {
-  font-weight: 500;
+  font-size: 1.25rem;
   color: var(--text-primary);
 }
 
 .modal--definition .modal-header .close {
-  font-size: 24px;
+  margin-left: auto;
   cursor: pointer;
+  font-size: 1.5rem;
   color: var(--text-primary);
 }
 
-.modal--definition .modal-header + hr {
-  margin: 6px 0;
-  border: 0;
-  border-top: 2px solid var(--bg-50);
+/* Search input inside header */
+.modal--definition .modal-header input.modal__search {
+  flex: 1 1 auto;
+  margin: 0 var(--space-3);
+  max-width: 200px;
+  background: var(--bg-30);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-small);
+  padding: var(--space-1) var(--space-2);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+}
+
+.modal--definition .modal-header input.modal__search:focus-visible {
+  outline: var(--border-width-thin) solid var(--focus-ring);
+  outline-offset: var(--space-1);
 }

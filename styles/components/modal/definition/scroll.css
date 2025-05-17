@@ -1,9 +1,15 @@
 /* @file: styles/components/modal/definition/scroll.css */
-/* @version: 1.1 — helper to allow left-pane flex scrolling */
+/* @version: 1.2 — cap entry list height for consistent list size */
 
-.modal--definition #definition-left-pane {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;
-  min-height: 0;
+.modal--definition #definition-list {
+  flex: 0 0 240px;      /* fixed height */
+  max-height: 240px;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.modal--definition #definition-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
