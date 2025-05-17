@@ -1,7 +1,7 @@
 // @file: src/modules/ui/modals/markerModal.js
 // @version: 22.1 — corrected import path for markerTypes registry
 
-import { createModal, closeModal, openModalAt } from "../../../shared/ui/core/index.js/modalKit.js";
+import { createModal, closeModal, openModalAt } from "../../../shared/ui/core/index.js";
 import { markerTypes }                         from "../types.js";
 
 export function initMarkerModal(db) {
