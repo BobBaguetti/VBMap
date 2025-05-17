@@ -1,4 +1,4 @@
-// @file: src/modules/ui/forms/formBuilder.js
+// @file: formBuilder.js
 // @version: 1.1 — add support for chipList fields
 
 import {

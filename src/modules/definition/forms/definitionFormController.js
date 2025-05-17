@@ -1,4 +1,4 @@
-// @file: src/modules/ui/forms/formController.js
+// @file: formController.js
 // @version: 1.1 — add chipList support in getPayload & populate
 
 import { createFormControllerHeader, wireFormEvents }
