@@ -197,3 +197,21 @@
   align-items: flex-start;
   gap: 1rem;
 }
+
+.modal.modal-large.modal--definitions #definition-preview-container {
+  flex: 1;
+  overflow-y: auto;
+  /* make sure child preview can size itself */
+  display: flex;
+  flex-direction: column;
+}
+
+.definition-preview-panel.embedded-preview-panel {
+  width: 100%;
+  /* allow the panel to grow/shrink within its parent */
+  flex: 1;
+  /* reset any floating positioning */
+  top: auto !important;
+  left: auto !important;
+  position: relative !important;
+}
