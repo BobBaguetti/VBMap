@@ -1,7 +1,7 @@
 // @file: src/bootstrap/contextMenu.js
 // @version: 1.0 — map right-click & outside-click context menu handling
 
-import { showContextMenu, hideContextMenu } from "../modules/ui/uiManager.js";
+import { showContextMenu, hideContextMenu } from "../shared/ui/managers/uiManager.js";
 
 /**
  * Initialize context menu behavior.
