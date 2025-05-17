@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.2 — sanitize undefined values to defaults/empty strings in defaultValues & populate
+// @version: 1.3 — tag form header as modal subheader for pinned layout
 
 import { createFormControllerHeader, wireFormEvents }
   from "../../../shared/ui/forms/formControllerShell.js";
@@ -30,6 +30,9 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
   });
+  // Tag this header as a modal subheader so it remains fixed
+  headerWrap.classList.add("modal-subheader");
+
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
@@ -69,7 +72,6 @@ export function createFormController(buildResult, schema, handlers) {
   // Prepare formState with sane defaults (no undefined)
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
-      // If schema.default provided, use it; otherwise empty string or false for checkboxes
       let dv = cfg.default;
       if (dv === undefined) {
         dv = cfg.type === "checkbox" ? false : "";

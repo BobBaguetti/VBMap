@@ -1,28 +1,30 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.4 — two‐column layout + scrollable definition list */
+/* @version: 1.5 — unified scroll & layout for list and form panels */
 
 .modal--definition .modal-content {
-  display: flex;               /* row by default */
-  flex-direction: row;
-  height: 90vh;                /* fill viewport height */
-  overflow: hidden;            /* prevent overall overflow */
+  display: flex;
+  flex-direction: column;
+  height: 90vh;            /* Fill most of the viewport height */
 }
 
-/* LEFT PANE: search, list, form */
+/* Left pane wrapper contains search, list, subheader + form */
 .modal--definition #definition-left-pane {
   display: flex;
   flex-direction: column;
-  flex: 1 1 0;                 /* take available width */
-  min-width: 0;                /* allow children to shrink below content width */
-  padding-right: 1rem;
+  flex: 1 1 auto;          /* Fill remaining space under header */
+  min-height: 0;           /* Allow children to shrink */
 }
 
-/* Search and Type selector get auto height, then: */
+/* 1) Search input and type selector sit at top of left pane */
+.modal--definition #definition-left-pane > input,
+.modal--definition #definition-left-pane > label {
+  flex: 0 0 auto;
+}
 
-/* Definition list should scroll */
+/* 2) Entry list: scrollable region */
 .modal--definition #definition-list {
-  flex: 1 1 0;                 /* fill remaining height above the form */
-  min-height: 0;               /* enable flex‐child shrinking for overflow to work */
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: none;
@@ -33,14 +35,21 @@
   height: 0;
 }
 
-/* Form sits below the list, static height */
-.modal--definition #definition-form-container {
-  flex: 0 0 auto;              /* shrink to fit its content */
-  margin-top: 1rem;
+/* 3) Form subheader: pinned just below list */
+.modal--definition .modal-subheader {
+  flex: 0 0 auto;
 }
 
-/* RIGHT PANE: preview */
-.modal--definition #definition-preview-container {
-  flex: 0 0 300px;             /* fixed width for preview (adjust as needed) */
+/* 4) Form body: scrollable region */
+.modal--definition #definition-form-container {
+  flex: 1 1 auto;
+  min-height: 0;
   overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.modal--definition #definition-form-container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }

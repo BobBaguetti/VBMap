@@ -1,25 +1,9 @@
 /* @file: styles/components/modal/definition/scroll.css */
-/* @version: 1.1 — make the definition list panel scrollable with hidden scrollbar */
+/* @version: 1.1 — helper to allow left-pane flex scrolling */
 
 .modal--definition #definition-left-pane {
-  /* enable flex‐layout for left pane so list can grow and scroll */
   display: flex;
   flex-direction: column;
   flex: 1 1 auto;
-  min-height: 0; /* needed so children can shrink */
-}
-
-.modal--definition #definition-list {
-  /* allow the entry list to fill remaining space and scroll */
-  flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-  scrollbar-width: none;        /* hide scrollbar in Firefox */
-  -ms-overflow-style: none;     /* hide scrollbar in IE/Edge */
-}
-
-.modal--definition #definition-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
