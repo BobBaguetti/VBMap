@@ -1,4 +1,4 @@
-// @file: src/modules/ui/components/uiKit/layoutSwitcher.js
+// @file: src\shared\ui\components\layoutSwitcher.js 
 // @version: 1.0 — header view‐mode toggles
 
 export function createLayoutSwitcher({

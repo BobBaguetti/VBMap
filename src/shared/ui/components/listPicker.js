@@ -1,7 +1,7 @@
-// @file: src/shared/ui/components/listPicker.js
-// @version: 1.1 — updated modal imports to explicit core module
+// @file: src\shared\ui\components\listPicker.js
+// @version: 1.2
 
-import { createModal, openModal, closeModal } from "../core/modalKit.js";
+import { createModal, openModal, closeModal } from "../core/modalFactory.js";
 
 /**
  * Opens a modal letting the user pick zero or more items.
