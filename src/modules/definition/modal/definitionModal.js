@@ -1,11 +1,11 @@
 // @file: src/modules/ui/modals/definitionModal.js
 // @version: 1.5 — chest lootPool hydration, preview reset, and Pickr init
 
-import { createModal, openModal, closeModal }        from "../components/uiKit/modalKit.js";
-import { definitionTypes }                           from "../../definition/types.js";
+import { createModal, openModal, closeModal }        from "../../ui/components/uiKit/modalKit.js";
+import { definitionTypes }                           from "../types.js";
 import { createDefListContainer }                     from "../../utils/listUtils.js";
-import { createPreviewController }                    from "../preview/previewController.js";
-import { createDefinitionListManager }                from "../components/definitionListManager.js";
+import { createPreviewController }                    from "../../ui/preview/previewController.js";
+import { createDefinitionListManager }                from "../list/definitionListManager.js";
 import { loadItemDefinitions }                       from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {

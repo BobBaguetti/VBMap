@@ -1,8 +1,8 @@
 // @file: src/modules/ui/modals/markerModal.js
 // @version: 22.1 — corrected import path for markerTypes registry
 
-import { createModal, closeModal, openModalAt } from "../components/uiKit/modalKit.js";
-import { markerTypes }                         from "../../marker/types.js";
+import { createModal, closeModal, openModalAt } from "../../ui/components/uiKit/modalKit.js";
+import { markerTypes }                         from "../types.js";
 
 export function initMarkerModal(db) {
   let modal, content, fldType, fldDef, btnCreate;
