@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.10 — use previewBuilder from definitionTypes registry
+// @version: 1.11 — drop “modal--definitions” plural, use singular “modal--definition”
 
 import { createModal, openModal, closeModal }
   from "../../../shared/ui/core/modalFactory.js";
@@ -34,25 +34,22 @@ export function initDefinitionModal(db) {
       slots:   ["left", "preview"]
     }));
 
-    modal.classList.add("admin-only", "modal--definitions");
-    content.classList.add("modal__body--definitions");
+    // Change here: use singular “modal--definition”
+    modal.classList.add("admin-only", "modal--definition");
+    content.classList.add("modal__body--definition");
 
-    // left pane slot
     const leftPane = slots.left;
     leftPane.id = "definition-left-pane";
 
-    // preview pane slot
     previewContainer = slots.preview;
     previewContainer.id = "definition-preview-container";
 
-    // search bar
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
     leftPane.append(searchInput);
 
-    // type selector
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
@@ -62,13 +59,11 @@ export function initDefinitionModal(db) {
     typeLabel.append(fldType);
     leftPane.append(typeLabel);
 
-    // definitions list & form container
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
     leftPane.append(listContainer, formContainer);
 
-    // list manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -80,7 +75,6 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // search filtering
     searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );

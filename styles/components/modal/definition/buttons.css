@@ -1,0 +1,24 @@
+/* @file: styles/components/modal/definition/buttons.css */
+/* @version: 1.1 — floating action‐row & button styles for definition modal */
+
+.modal--definition .floating-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.modal--definition .ui-button {
+  background-color: var(--bg-50);
+  color: var(--text-primary);
+  border: none;
+  padding: 6px 10px;
+  margin-left: 5px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 400;
+  font-family: 'Satoshi', sans-serif;
+}
+
+.modal--definition .ui-button:hover {
+  filter: brightness(1.15);
+}

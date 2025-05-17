@@ -1,0 +1,84 @@
+/* @file: styles/components/modal/definition/form.css */
+/* @version: 1.1 — form layout, field styles & image‐URL alignment */
+
+.modal--definition #definition-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal--definition .field-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+}
+
+.modal--definition .field-row label {
+  flex: 0 0 100px;
+  margin-right: 8px;
+}
+
+.modal--definition .field-row input[type="text"],
+.modal--definition .field-row input[type="number"],
+.modal--definition .field-row select,
+.modal--definition .field-row textarea,
+.modal--definition .field-row .ui-input {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-right: 8px;
+  background: var(--bg-30);
+  border: 1px solid var(--border-soft);
+  border-radius: 2px;
+  padding: 6px 8px;
+  color: var(--text-primary);
+}
+
+.modal--definition .field-row input[type="number"] {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  margin: 0;
+}
+
+/* Larger color picker swatch */
+.modal--definition .color-btn {
+  margin-left: 8px !important;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  background-color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+.modal--definition .field-row button.ui-button {
+  margin-left: 8px;
+}
+
+.modal--definition .field-row.extra-row {
+  align-items: flex-start;
+}
+
+.modal--definition .field-row.extra-row > label {
+  margin-top: 0;
+}
+
+.modal--definition .extra-info-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal--definition .extra-info-block > button {
+  align-self: flex-start;
+  margin-left: 0;
+  margin-top: 0;
+  padding: 6px 12px;
+}
+
+/* Fixed alignment for image URL fields */
+.modal--definition .field-row input[id^="def-image"] {
+  max-width: 100%;
+  box-sizing: border-box;
+}

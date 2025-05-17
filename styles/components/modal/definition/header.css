@@ -1,0 +1,33 @@
+/* @file: styles/components/modal/definition/header.css */
+/* @version: 1.0 — header styling for definition modal */
+
+.modal--definition .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.modal--definition .modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.modal--definition h3 {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.modal--definition .modal-header .close {
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+.modal--definition .modal-header + hr {
+  margin: 6px 0;
+  border: 0;
+  border-top: 2px solid var(--bg-50);
+}
