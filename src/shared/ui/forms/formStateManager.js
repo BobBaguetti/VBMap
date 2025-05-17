@@ -1,4 +1,4 @@
-// @file: src/modules/ui/components/formStateManager.js
+// @file: src\shared\ui\forms\formStateManager.js
 // @version: 1.0 — shared reset & populate scaffolding for form controllers
 
 /**

@@ -1,4 +1,4 @@
-// @file: src/shared/ui/components/extraInfoBlock.js
+// @file: src\shared\ui\components\extraInfoBlock.js
 // @version: 1.4 — updated Pickr import to shared pickrAdapter
 
 import { createPickr } from "../forms/pickrAdapter.js";

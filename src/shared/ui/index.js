@@ -1,4 +1,4 @@
-// @file: src/shared/ui/index.js
+// @file: src\shared\ui\index.js
 // @version: 1.1 — point barrels at explicit index.js files
 
 export * from "./components/index.js";

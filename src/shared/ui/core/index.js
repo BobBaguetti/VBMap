@@ -1,4 +1,4 @@
-// @file: src/shared/ui/core/index.js/index.js
+// @file: src\shared\ui\core\index.js
 // @version: 1
 
 export * from "./modalCore.js";

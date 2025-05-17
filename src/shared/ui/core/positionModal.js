@@ -1,4 +1,4 @@
-// @file:    src/shared/ui/core/index.js/positionModal.js
+// @file:    src\shared\ui\core\positionModal.js
 // @version: 1
 
 /**

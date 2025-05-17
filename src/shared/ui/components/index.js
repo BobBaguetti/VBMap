@@ -1,4 +1,4 @@
-// @file: src/shared/ui/components/index.js/index.js/index.js/index.js/index.js
+// @file: src\shared\ui\components\index.js
 // @version: 1
 
 export { default as chipListField }    from "./chipListField.js";

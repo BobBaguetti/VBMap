@@ -1,4 +1,4 @@
-// @file: src/modules/ui/components/uiKit/modalCore.js
+// @file: src\shared\ui\core\modalCore.js
 // @version: 1.0 — shared modal lifecycle & show/hide helpers
 
 /**

@@ -1,4 +1,4 @@
-// @file: src/modules/ui/components/chipListManager.js
+// @file: src\shared\ui\managers\chipListManager.js
 // @version: 1.2 — added drag-and-drop reordering with grab handles
 
 /**
