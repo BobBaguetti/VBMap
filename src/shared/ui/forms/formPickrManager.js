@@ -1,7 +1,7 @@
 // @file: src/modules/ui/components/formPickrManager.js
 // @version: 1.1 — shared Pickr wiring for forms
 
-import { createPickr } from "../pickrManager.js";
+import { createPickr } from "./pickrManager.js";
 
 /**
  * Initialize Pickr instances for a set of buttons in a form,

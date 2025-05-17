@@ -8,7 +8,7 @@ import {
   createImageField,
   createExtraInfoField,
   createChipListField
-} from "../../ui/components/uiKit/fieldKit.js";
+} from "../../../shared/ui/components/fieldKit.js";
 
 /**
  * Builds a <form> based on a schema.

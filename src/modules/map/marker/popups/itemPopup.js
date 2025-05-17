@@ -1,9 +1,9 @@
 // @file: src/modules/map/marker/popups/itemPopup.js
 // @version: 1.1 — add custom-popup wrapper for CSS
 
-import { formatRarity } from "../../../utils/utils.js";
-import { createIcon } from "../../../utils/iconUtils.js";
-import { defaultNameColor, rarityColors } from "../../../utils/colorPresets.js";
+import { formatRarity } from "../../../../shared/utils/utils.js";
+import { createIcon } from "../../../../shared/utils/iconUtils.js";
+import { defaultNameColor, rarityColors } from "../../../../shared/utils/color/colorPresets.js";
 import { isImgUrl, getBestImageUrl } from "../utils.js";
 
 export function renderItemPopup(m) {

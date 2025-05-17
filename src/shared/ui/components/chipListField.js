@@ -2,8 +2,8 @@
 // @version: 1.3 — fire form “input” event on any chip change
 
 import { createFieldRow } from "./fieldKit.js";
-import { createChipList } from "../chipListManager.js";
-import { pickItems }      from "../listPicker.js";
+import { createChipList } from "../managers/chipListManager.js";
+import { pickItems }      from "./listPicker.js";
 
 /**
  * Creates a labeled chip-list field with an “add” button that opens the list-picker.

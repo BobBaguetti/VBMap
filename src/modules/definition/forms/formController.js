@@ -2,9 +2,9 @@
 // @version: 1.1 — add chipList support in getPayload & populate
 
 import { createFormControllerHeader, wireFormEvents }
-  from "../../ui/components/formControllerShell.js";
-import { initFormPickrs } from "../../ui/components/formPickrManager.js";
-import { createFormState } from "../../ui/components/formStateManager.js";
+  from "../../../shared/ui/forms/formControllerShell.js";
+import { initFormPickrs } from "../../../shared/ui/forms/formPickrManager.js";
+import { createFormState } from "../../../shared/ui/forms/formStateManager.js";
 
 /**
  * Wraps a schema-built form, wiring header, state, and events.
