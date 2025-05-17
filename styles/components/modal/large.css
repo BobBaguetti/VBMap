@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/large.css */
-/* @version: 1.2 — scoped legacy list & form styles to non-definition modals; definition modal uses its own slots */
+/* @version: 1.3 — removed legacy entry layout rules */
 
 @import url('https://fonts.googleapis.com/css2?family=Satoshi:wght@400;500;600&display=swap');
 
@@ -65,8 +65,8 @@
   border-top: 2px solid var(--bg-50);
 }
 
-/* ─── Legacy list & form styling (exclude definition modal) ───────── */
-.modal.modal-large:not(.modal--definitions) .def-list {
+/* ─── Scrollable list & form areas ───────────────────────────────── */
+.modal.modal-large .def-list {
   flex: 0 0 240px;
   overflow-y: auto;
   padding-right: 4px;
@@ -75,12 +75,12 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.modal.modal-large:not(.modal--definitions) .def-list::-webkit-scrollbar {
+.modal.modal-large .def-list::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-.modal.modal-large:not(.modal--definitions) form {
+.modal.modal-large form {
   flex: 1 1 auto;
   min-height: 0;
   max-height: 100%;
@@ -88,7 +88,7 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.modal.modal-large:not(.modal--definitions) form::-webkit-scrollbar {
+.modal.modal-large form::-webkit-scrollbar {
   width: 0;
   height: 0;
 }

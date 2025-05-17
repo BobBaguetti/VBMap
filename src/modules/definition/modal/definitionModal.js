@@ -1,11 +1,10 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.9 — unified openCreate/openEdit into single openDefinition helper
+// @version: 1.10 — use previewBuilder from definitionTypes registry
 
 import { createModal, openModal, closeModal }
   from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes } from "../types.js";
 import { createDefListContainer } from "../../../shared/utils/listUtils.js";
-import { createPreviewController } from "../preview/previewController.js";
 import { createDefinitionListManager }
   from "../list/definitionListManager.js";
 import { loadItemDefinitions }
@@ -46,7 +45,7 @@ export function initDefinitionModal(db) {
     previewContainer = slots.preview;
     previewContainer.id = "definition-preview-container";
 
-    // search input
+    // search bar
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
@@ -63,7 +62,7 @@ export function initDefinitionModal(db) {
     typeLabel.append(fldType);
     leftPane.append(typeLabel);
 
-    // definitions list & form
+    // definitions list & form container
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
@@ -81,10 +80,10 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // filter wiring
-    searchInput.addEventListener("input", () => {
-      listApi.filter(searchInput.value);
-    });
+    // search filtering
+    searchInput.addEventListener("input", () =>
+      listApi.filter(searchInput.value)
+    );
   }
 
   async function openDefinition(type, def = null) {
@@ -98,12 +97,9 @@ export function initDefinitionModal(db) {
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    previewApi = createPreviewController(
-      currentType.toLowerCase(),
-      previewContainer
-    );
-
     const cfg = definitionTypes[currentType];
+    previewApi = cfg.previewBuilder(previewContainer);
+
     formContainer.innerHTML = "";
     formApi = cfg.controller({
       onCancel:     () => { formApi.reset(); previewApi.hide(); },
@@ -120,7 +116,10 @@ export function initDefinitionModal(db) {
       },
       onFieldChange: data => {
         let previewData = data;
-        if (currentType === "Chest" && Array.isArray(data.lootPool)) {
+        if (
+          currentType === "Chest" &&
+          Array.isArray(data.lootPool)
+        ) {
           previewData = {
             ...data,
             lootPool: data.lootPool
@@ -137,9 +136,15 @@ export function initDefinitionModal(db) {
 
     if (def) {
       formApi.populate(def);
-      const initialPreview = currentType === "Chest"
-        ? { ...def, lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean) }
-        : def;
+      const initialPreview =
+        currentType === "Chest"
+          ? {
+              ...def,
+              lootPool: (def.lootPool || [])
+                .map(id => itemMap[id])
+                .filter(Boolean)
+            }
+          : def;
       previewApi.show(initialPreview);
     } else {
       formApi.reset();
@@ -153,6 +158,6 @@ export function initDefinitionModal(db) {
 
   return {
     openCreate: (evt, type = "Item") => openDefinition(type),
-    openEdit:   def => openDefinition(currentType, def)
+    openEdit:   def                => openDefinition(currentType, def)
   };
 }
