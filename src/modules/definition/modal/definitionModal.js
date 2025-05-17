@@ -191,3 +191,4 @@ export function initDefinitionModal(db) {
 
   return { openCreate, openEdit };
 }
+ 
