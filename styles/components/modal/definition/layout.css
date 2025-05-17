@@ -1,7 +1,20 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.1 — remove two-column layout, revert to column flow */
+/* @version: 1.2 — adjust modal and left pane for scrollable list */
 
 .modal--definition .modal-content {
   display: flex;
   flex-direction: column;
+  height: 90vh;       /* ensure content can fill viewport height */
 }
+
+.modal--definition #definition-left-pane {
+  /* position below header */
+  margin-top: var(--space-2);
+  /* allow left pane (search, list, form) to scroll/form area if needed */
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/* preview container remains floating; no changes here */

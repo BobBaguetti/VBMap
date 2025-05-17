@@ -1,44 +1,25 @@
 /* @file: styles/components/modal/definition/scroll.css */
-/* @version: 1.1 — re-enable mouse‐wheel scrolling on modal and hide scrollbars */
+/* @version: 1.1 — make the definition list panel scrollable with hidden scrollbar */
 
-/* Apply to the modal’s main content area */
-.modal--definition .modal-content {
-  overflow-y: auto;           /* allow vertical scroll */
-  scrollbar-width: none;      /* Firefox */
-  -ms-overflow-style: none;   /* IE/Edge */
-}
-.modal--definition .modal-content::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+.modal--definition #definition-left-pane {
+  /* enable flex‐layout for left pane so list can grow and scroll */
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0; /* needed so children can shrink */
 }
 
-/* Definition list (left pane) */
-.modal--definition .def-list {
-  flex: 0 0 240px;
-  overflow-y: auto;
-  padding-right: 4px;
-  min-height: 0;
-  max-height: 240px;
-  scrollbar-width: none;      /* Firefox */
-  -ms-overflow-style: none;   /* IE/Edge */
-}
-.modal--definition .def-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-/* Form container scrolling */
-.modal--definition form {
+.modal--definition #definition-list {
+  /* allow the entry list to fill remaining space and scroll */
   flex: 1 1 auto;
   min-height: 0;
-  max-height: 100%;
-  padding-right: 4px;
   overflow-y: auto;
-  scrollbar-width: none;      /* Firefox */
-  -ms-overflow-style: none;   /* IE/Edge */
+  padding-right: 4px;
+  scrollbar-width: none;        /* hide scrollbar in Firefox */
+  -ms-overflow-style: none;     /* hide scrollbar in IE/Edge */
 }
-.modal--definition form::-webkit-scrollbar {
+
+.modal--definition #definition-list::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
- 
