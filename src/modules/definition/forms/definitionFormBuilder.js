@@ -1,5 +1,5 @@
-// @file: formBuilder.js
-// @version: 1.1 — add support for chipList fields
+// @file: src/modules/definition/forms/definitionFormBuilder.js
+// @version: 1.2 — updated shared imports to formFields
 
 import {
   createTextField,
@@ -8,7 +8,7 @@ import {
   createImageField,
   createExtraInfoField,
   createChipListField
-} from "../../../shared/ui/components/fieldKit.js";
+} from "../../../shared/ui/components/formFields.js";
 
 /**
  * Builds a <form> based on a schema.
@@ -76,9 +76,9 @@ export function buildForm(schema) {
             cfg.label,
             [],
             {
-              items:    [],            // controller seeds this
-              idKey:    cfg.idKey,
-              labelKey: cfg.labelKey,
+              items:      [],            // controller seeds this
+              idKey:      cfg.idKey,
+              labelKey:   cfg.labelKey,
               renderIcon: cfg.renderIcon
             }
           ));
