@@ -1,5 +1,6 @@
-/* @file: styles/components/modal/index.css */
-/* @version: 1.0 — aggregates all modal styles */
+/* @file: styles/components/modal/index.css
+   @version: 1.1 — import the new definition modal styles and remove old imports */
+
 @import "./base.css";
 @import "./form.css";
 @import "./entries.css";
@@ -12,3 +13,10 @@
 @import "./about.css";
 @import "./settings.css";
 @import "./small.css";
+
+/* Remove legacy definition-modal imports */
+/* @import "./definitionList.css"; */
+/* any other old modal-type specific CSS removed */
+
+/* Add the unified definition modal stylesheet: */
+@import "./definition.css";
