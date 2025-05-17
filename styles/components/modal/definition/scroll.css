@@ -1,27 +1,41 @@
 /* @file: styles/components/modal/definition/scroll.css */
-/* @version: 1.0 — scroll‐pane rules for definition modal */
+/* @version: 1.1 — re-enable mouse‐wheel scrolling on modal and hide scrollbars */
 
+/* Apply to the modal’s main content area */
+.modal--definition .modal-content {
+  overflow-y: auto;           /* allow vertical scroll */
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* IE/Edge */
+}
+.modal--definition .modal-content::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Definition list (left pane) */
 .modal--definition .def-list {
   flex: 0 0 240px;
   overflow-y: auto;
   padding-right: 4px;
   min-height: 0;
   max-height: 240px;
-  scrollbar-width: none;        /* Firefox */
-  -ms-overflow-style: none;     /* IE */
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* IE/Edge */
 }
 .modal--definition .def-list::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
+/* Form container scrolling */
 .modal--definition form {
   flex: 1 1 auto;
   min-height: 0;
   max-height: 100%;
   padding-right: 4px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  overflow-y: auto;
+  scrollbar-width: none;      /* Firefox */
+  -ms-overflow-style: none;   /* IE/Edge */
 }
 .modal--definition form::-webkit-scrollbar {
   width: 0;
