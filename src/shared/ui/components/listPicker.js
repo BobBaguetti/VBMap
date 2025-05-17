@@ -1,7 +1,7 @@
-// @file: src/modules/ui/components/listPicker.js
-// @version: 1.0 — generic multi-select list picker
+// @file: src/shared/ui/components/listPicker.js
+// @version: 1.1 — updated modal imports to explicit core module
 
-import { createModal, openModal, closeModal } from "../index.js";
+import { createModal, openModal, closeModal } from "../core/modalKit.js";
 
 /**
  * Opens a modal letting the user pick zero or more items.
