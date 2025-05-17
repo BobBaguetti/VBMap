@@ -9,7 +9,7 @@ import {
 import definitionsManager from "./definitionsManager.js";
 import { markerTypes }    from "../modules/marker/types.js";
 import { createMarker }    from "../modules/map/markerManager.js";
-import { showContextMenu, hideContextMenu } from "../modules/ui/uiManager.js";
+import { showContextMenu, hideContextMenu } from "'../shared/ui/managers/uiManager.js";
 
 /** @type {{ markerObj: L.Marker, data: object }[]} */
 export const allMarkers = [];
