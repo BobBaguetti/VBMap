@@ -1,4 +1,4 @@
-// @file:    /src/modules/ui/uiManager.js
+// @file:    /src/shared/ui/managers/uiManager.js
 // @version: 1 
 
 /**

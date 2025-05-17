@@ -1,5 +1,5 @@
-// @file        src/bootstrap/contextMenu.js
-// @version     1.1 — updated import to shared/ui, bumped version
+// @file: src/bootstrap/contextMenu.js
+// @version: 1.2
 
 import { showContextMenu, hideContextMenu } from "../shared/ui/managers/uiManager.js";
 
@@ -19,7 +19,6 @@ function init(map, db, isAdmin) {
       [{
         text: "Create New Marker",
         action: () =>
-          // open create marker modal with latlng and upsert callback
           import("./modalsManager.js").then(({ default: modals }) => {
             modals.init(db, map).markerForm.openCreate(
               [evt.latlng.lat, evt.latlng.lng],
