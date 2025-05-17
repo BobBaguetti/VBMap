@@ -1,30 +1,46 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.3 — ensure left pane takes full height & the list scrolls */
+/* @version: 1.4 — two‐column layout + scrollable definition list */
 
 .modal--definition .modal-content {
-  display: flex;
-  flex-direction: column;
-  height: 90vh;           /* fill most of the viewport */
+  display: flex;               /* row by default */
+  flex-direction: row;
+  height: 90vh;                /* fill viewport height */
+  overflow: hidden;            /* prevent overall overflow */
 }
 
+/* LEFT PANE: search, list, form */
 .modal--definition #definition-left-pane {
   display: flex;
   flex-direction: column;
-  flex: 1 1 auto;         /* fill all available space under header */
-  min-height: 0;          /* allow child flex items to shrink */
-  margin-top: var(--space-2);
+  flex: 1 1 0;                 /* take available width */
+  min-width: 0;                /* allow children to shrink below content width */
+  padding-right: 1rem;
 }
 
-/* the search input and type selector sit above; we target the list itself */
+/* Search and Type selector get auto height, then: */
+
+/* Definition list should scroll */
 .modal--definition #definition-list {
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 1 1 0;                 /* fill remaining height above the form */
+  min-height: 0;               /* enable flex‐child shrinking for overflow to work */
   overflow-y: auto;
   padding-right: 4px;
-  scrollbar-width: none;  
+  scrollbar-width: none;
   -ms-overflow-style: none;
 }
 .modal--definition #definition-list::-webkit-scrollbar {
   width: 0;
   height: 0;
+}
+
+/* Form sits below the list, static height */
+.modal--definition #definition-form-container {
+  flex: 0 0 auto;              /* shrink to fit its content */
+  margin-top: 1rem;
+}
+
+/* RIGHT PANE: preview */
+.modal--definition #definition-preview-container {
+  flex: 0 0 300px;             /* fixed width for preview (adjust as needed) */
+  overflow-y: auto;
 }
