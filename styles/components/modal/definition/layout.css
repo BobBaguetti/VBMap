@@ -1,20 +1,30 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.2 — adjust modal and left pane for scrollable list */
+/* @version: 1.3 — ensure left pane takes full height & the list scrolls */
 
 .modal--definition .modal-content {
   display: flex;
   flex-direction: column;
-  height: 90vh;       /* ensure content can fill viewport height */
+  height: 90vh;           /* fill most of the viewport */
 }
 
 .modal--definition #definition-left-pane {
-  /* position below header */
-  margin-top: var(--space-2);
-  /* allow left pane (search, list, form) to scroll/form area if needed */
-  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  flex: 1 1 auto;         /* fill all available space under header */
+  min-height: 0;          /* allow child flex items to shrink */
+  margin-top: var(--space-2);
 }
 
-/* preview container remains floating; no changes here */
+/* the search input and type selector sit above; we target the list itself */
+.modal--definition #definition-list {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 4px;
+  scrollbar-width: none;  
+  -ms-overflow-style: none;
+}
+.modal--definition #definition-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
