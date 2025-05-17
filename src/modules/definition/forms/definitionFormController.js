@@ -1,5 +1,5 @@
-// @file: src\modules\definition\forms\definitionFormController.js
-// @version: 1.1 — add chipList support in getPayload & populate
+// @file: src/modules/definition/forms/definitionFormController.js
+// @version: 1.2 — sanitize undefined values to defaults/empty strings in defaultValues & populate
 
 import { createFormControllerHeader, wireFormEvents }
   from "../../../shared/ui/forms/formControllerShell.js";
@@ -39,6 +39,7 @@ export function createFormController(buildResult, schema, handlers) {
   // Track current definition ID
   let payloadId = null;
 
+  // Build payload for submission
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
@@ -52,7 +53,6 @@ export function createFormController(buildResult, schema, handlers) {
           val = el.getLines();
           break;
         case "chipList":
-          // chipList field exposes getItems as .get()
           val = el.get();
           break;
         default:
@@ -66,17 +66,28 @@ export function createFormController(buildResult, schema, handlers) {
     return out;
   }
 
-  // Shared reset/populate via formStateManager
+  // Prepare formState with sane defaults (no undefined)
+  const defaultValues = Object.fromEntries(
+    Object.entries(schema).map(([key, cfg]) => {
+      // If schema.default provided, use it; otherwise empty string or false for checkboxes
+      let dv = cfg.default;
+      if (dv === undefined) {
+        dv = cfg.type === "checkbox" ? false : "";
+      }
+      return [key, dv];
+    })
+  );
+
+  const pickrClearKeys = Object.entries(schema)
+    .filter(([, cfg]) => cfg.colorable)
+    .map(([, cfg]) => cfg.colorable);
+
   const formState = createFormState({
     form,
     fields,
-    defaultValues: Object.fromEntries(
-      Object.entries(schema).map(([k,v]) => [k, v.default])
-    ),
+    defaultValues,
     pickrs,
-    pickrClearKeys: Object.entries(schema)
-      .filter(([,v]) => v.colorable)
-      .map(([,v]) => v.colorable),
+    pickrClearKeys,
     subheading,
     setDeleteVisible,
     getCustom: getPayload,
@@ -89,13 +100,26 @@ export function createFormController(buildResult, schema, handlers) {
   }
 
   async function populate(def) {
-    payloadId = def.id || null;
-    formState.populate(def);
+    payloadId = def.id ?? null;
 
-    // Handle chipList: set selected IDs
+    // Build a sanitized object using either def[key] or the schema default (never undefined)
+    const sanitized = {};
     for (const [key, cfg] of Object.entries(schema)) {
-      if (cfg.type === "chipList" && Array.isArray(def[key])) {
-        fields[key].set(def[key]);
+      if (def[key] !== undefined) {
+        sanitized[key] = def[key];
+      } else if (cfg.default !== undefined) {
+        sanitized[key] = cfg.default;
+      } else {
+        sanitized[key] = cfg.type === "checkbox" ? false : "";
+      }
+    }
+
+    formState.populate(sanitized);
+
+    // Handle chipList specially
+    for (const [key, cfg] of Object.entries(schema)) {
+      if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
+        fields[key].set(sanitized[key]);
       }
     }
   }
