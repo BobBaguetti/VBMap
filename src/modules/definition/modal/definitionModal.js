@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.7 — moved layout into CSS (added modal--definitions & modal__body--definitions classes)
+// @version: 1.8 — use named slots from modalFactory for left/right panes
 
 import { createModal, openModal, closeModal }
   from "../../../shared/ui/core/modalFactory.js";
@@ -12,7 +12,7 @@ import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  let modal, content;
+  let modal, content, header, slots;
   let fldType, listApi, formApi, previewApi;
   let formContainer, previewContainer, searchInput;
   let definitions = [], currentType;
@@ -27,18 +27,22 @@ export function initDefinitionModal(db) {
   async function build() {
     if (modal) return;
 
-    ({ modal, content } = createModal({
-      id:      "definition-modal",
-      title:   "Manage Definitions",
-      size:    "large",
-      onClose: () => previewApi?.hide()
+    // create large modal with two named slots: left and preview
+    ({ modal, content, header, slots } = createModal({
+      id:       "definition-modal",
+      title:    "Manage Definitions",
+      size:     "large",
+      onClose:  () => previewApi?.hide(),
+      slots:    ["left", "preview"]
     }));
     modal.classList.add("admin-only", "modal--definitions");
     content.classList.add("modal__body--definitions");
 
-    // Left pane wrapper
-    const leftPane = document.createElement("div");
+    // assign slot elements
+    const leftPane = slots.left;
     leftPane.id = "definition-left-pane";
+    previewContainer = slots.preview;
+    previewContainer.id = "definition-preview-container";
 
     // 1) Search bar
     searchInput = document.createElement("input");
@@ -57,20 +61,13 @@ export function initDefinitionModal(db) {
     typeLabel.append(fldType);
     leftPane.append(typeLabel);
 
-    // 3) List & form containers
+    // 3) Definitions list & form container
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
     leftPane.append(listContainer, formContainer);
 
-    // 4) Preview container
-    previewContainer = document.createElement("div");
-    previewContainer.id = "definition-preview-container";
-
-    // 5) Append panes
-    content.append(leftPane, previewContainer);
-
-    // 6) List manager
+    // 4) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -82,7 +79,7 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // 7) Search filtering
+    // 5) Search filtering
     searchInput.addEventListener("input", () => {
       listApi.filter(searchInput.value);
     });
