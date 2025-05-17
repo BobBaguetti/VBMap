@@ -1,4 +1,4 @@
-// @file: src\shared\utils\formUtils.js
+// @file: src/modules/ui/formUtils.js
 // @version: 2
 
 /**

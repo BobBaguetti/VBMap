@@ -1,7 +1,7 @@
 // @file: src/bootstrap/contextMenu.js
 // @version: 1.3 — updated shared UI import paths
 
-import { showContextMenu, hideContextMenu } from "../shared/ui/context-menu/index.js"
+import { showContextMenu, hideContextMenu } from "../shared/ui/context-menu/index.js";
 
 /**
  * Initialize context menu behavior.

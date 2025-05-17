@@ -1,4 +1,4 @@
-// @file: src\shared\ui\core\modalLarge.js
+// @file: src/modules/ui/components/uiKit/modalLarge.js
 // @version: 1.0 — large, centered modal creator
 
 import { openModal, closeModal } from "./modalCore.js";

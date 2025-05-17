@@ -1,5 +1,5 @@
 // @version: 1   The current file version is 1. Increase by 1 every time you update anything.
-// @file:    src\shared\utils\utils.js
+// @file:    src/modules/utils/utils.js 
 
 /**
  * Capitalizes the first letter of the given string.

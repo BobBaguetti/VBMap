@@ -1,5 +1,3 @@
-// @file: src\shared\utils\listUtils.js
-
 /**
  * Builds a row of filter buttons.
  *

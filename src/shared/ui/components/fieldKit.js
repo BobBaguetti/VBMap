@@ -1,4 +1,4 @@
-// @file: src\shared\ui\components\fieldKit.js
+// @file: src/modules/ui/components/uiKit/fieldKit.js
 // @version: 1.4 — export chip‐list field helper
 
 import { createPickr, disablePickr, getPickrHexColor } from "../forms/pickrAdapter.js";

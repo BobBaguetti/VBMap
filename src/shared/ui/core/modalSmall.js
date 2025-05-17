@@ -1,4 +1,4 @@
-// @file: src\shared\ui\core\modalSmall.js
+// @file: src/modules/ui/components/uiKit/modalSmall.js
 // @version: 1.1 — remove dark backdrop for small modals (default backdrop = false)
 
 import { openModal, closeModal } from "./modalCore.js";

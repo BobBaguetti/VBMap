@@ -1,4 +1,4 @@
-// @file: src\shared\utils\color\colorUtils.js
+// @file: /src/modules/utils/colorUtils.js
 // @version: 2
 
 

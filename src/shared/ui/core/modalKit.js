@@ -1,4 +1,4 @@
-// @file: src\shared\ui\core\modalKit.js
+// @file: src/modules/ui/components/uiKit/modalKit.js
 // @version: 1.1 — unified API re-exporting small/large modal creators
 
 import { openModal, closeModal, openModalAt } from "./modalCore.js";

@@ -1,4 +1,4 @@
-// @file:    src\shared\ui\forms\pickrAdapter.js
+// @file:    src/shared/ui/forms/pickrAdapter.js
 // @version: 1
 
 // ─── Low-level Pickr adapter ────────────────────────────────────────────────

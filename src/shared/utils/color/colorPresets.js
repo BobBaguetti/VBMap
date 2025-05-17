@@ -1,4 +1,4 @@
-// @file: src\shared\utils\color\colorPresets.js
+// @file: src/modules/utils/colorPresets.js
 // @version: 2
 
 /**

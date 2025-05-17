@@ -1,4 +1,4 @@
-// @file: src\shared\ui\forms\formControllerShell.js
+// @file: src/modules/ui/components/formControllerShell.js 
 // @version: 1.3 — add wireFormEvents to DRY form event wiring
 
 import { createIcon } from "../../utils/iconUtils.js";
