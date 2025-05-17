@@ -1,7 +1,7 @@
 // @file: src/modules/ui/components/uiKit/fieldKit.js
 // @version: 1.4 — export chip‐list field helper
 
-import { createPickr } from "../forms/pickrManager.js";
+import { createPickr, disablePickr, getPickrHexColor } from "../forms/pickrAdapter.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
 
 export function createFieldRow(labelText, inputEl) {

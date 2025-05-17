@@ -3,7 +3,7 @@
 
 import { createFormControllerHeader, wireFormEvents }
   from "../../../shared/ui/forms/formControllerShell.js";
-import { initFormPickrs } from "../../../shared/ui/forms/formPickrManager.js";
+import { initFormPickrs } from "../../../shared/ui/forms/pickrAdapter.js";
 import { createFormState } from "../../../shared/ui/forms/formStateManager.js";
 
 /**
