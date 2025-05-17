@@ -1,8 +1,8 @@
-// @file: src/modules/ui/index.js
-// @version: 1.4 — include chipListField
+// @file:    src/shared/ui/index.js
+// @version: 1
 
-export * from "./core/modalKit.js";
-export * from "./components/fieldKit.js";
-export * from "./components/extraInfoBlock.js";
-export * from "./components/layoutSwitcher.js";
-export * from "./components/chipListField.js";
+export * from "./components";
+export * from "./forms";
+export * from "./managers";
+export * from "./core";
+export * from "./context-menu";
