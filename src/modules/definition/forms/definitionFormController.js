@@ -1,10 +1,12 @@
-// @file: formController.js
-// @version: 1.1 — add chipList support in getPayload & populate
+// @file: src/modules/definition/forms/definitionFormController.js
+// @version: 1.2 — fixed shared/ui imports
 
-import { createFormControllerHeader, wireFormEvents }
-  from "../../../shared/ui/forms/index.js/index.js/index.js/formControllerShell.js";
-import { initFormPickrs } from "../../../shared/ui/forms/index.js/index.js/index.js/pickrAdapter.js";
-import { createFormState } from "../../../shared/ui/forms/index.js/index.js/index.js/formStateManager.js";
+import { createFormControllerHeader, wireFormEvents } 
+  from "../../../shared/ui/forms/formControllerShell.js";
+import { initFormPickrs } 
+  from "../../../shared/ui/forms/pickrAdapter.js";
+import { createFormState } 
+  from "../../../shared/ui/forms/formStateManager.js";
 
 /**
  * Wraps a schema-built form, wiring header, state, and events.
@@ -52,7 +54,6 @@ export function createFormController(buildResult, schema, handlers) {
           val = el.getLines();
           break;
         case "chipList":
-          // chipList field exposes getItems as .get()
           val = el.get();
           break;
         default:
