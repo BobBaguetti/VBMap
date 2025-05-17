@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.7 — two-column layout for form + preview
+// @version: 1.7 — moved layout into CSS (added modal--definitions & modal__body--definitions classes)
 
 import { createModal, openModal, closeModal }
   from "../../../shared/ui/core/modalFactory.js";
@@ -15,7 +15,7 @@ export function initDefinitionModal(db) {
   let modal, content;
   let fldType, listApi, formApi, previewApi;
   let formContainer, previewContainer, searchInput;
-  let definitions = [], currentType, currentId;
+  let definitions = [], currentType;
   let itemMap = {};
 
   async function refreshList() {
@@ -27,32 +27,27 @@ export function initDefinitionModal(db) {
   async function build() {
     if (modal) return;
 
-    // 1) modal shell
     ({ modal, content } = createModal({
       id:      "definition-modal",
       title:   "Manage Definitions",
       size:    "large",
       onClose: () => previewApi?.hide()
     }));
-    modal.classList.add("admin-only");
+    modal.classList.add("admin-only", "modal--definitions");
+    content.classList.add("modal__body--definitions");
 
-    // 2) two-column layout
-    content.style.display     = "flex";
-    content.style.alignItems  = "flex-start";
-    content.style.gap         = "1rem";
-
-    // 3) left pane for search, type selector, list, form
+    // Left pane wrapper
     const leftPane = document.createElement("div");
     leftPane.id = "definition-left-pane";
 
-    // 3.1 search bar
+    // 1) Search bar
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
     leftPane.append(searchInput);
 
-    // 3.2 type selector
+    // 2) Type selector
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
@@ -62,23 +57,20 @@ export function initDefinitionModal(db) {
     typeLabel.append(fldType);
     leftPane.append(typeLabel);
 
-    // 3.3 list container
+    // 3) List & form containers
     const listContainer = createDefListContainer("definition-list");
-    leftPane.append(listContainer);
-
-    // 3.4 form container
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
-    leftPane.append(formContainer);
+    leftPane.append(listContainer, formContainer);
 
-    // 4) preview container on the right
+    // 4) Preview container
     previewContainer = document.createElement("div");
     previewContainer.id = "definition-preview-container";
 
-    // 5) append both panes
+    // 5) Append panes
     content.append(leftPane, previewContainer);
 
-    // 6) list manager
+    // 6) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -90,7 +82,7 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // 7) filter wiring
+    // 7) Search filtering
     searchInput.addEventListener("input", () => {
       listApi.filter(searchInput.value);
     });
@@ -98,9 +90,7 @@ export function initDefinitionModal(db) {
 
   async function openCreate(evt, type = "Item") {
     await build();
-
     currentType   = type;
-    currentId     = null;
     fldType.value = currentType;
     await refreshList();
 
@@ -117,13 +107,13 @@ export function initDefinitionModal(db) {
     const cfg = definitionTypes[currentType];
     formContainer.innerHTML = "";
     formApi = cfg.controller({
-      onCancel: data => { formApi.reset(); previewApi.hide(); },
-      onDelete: async id => {
+      onCancel:     () => { formApi.reset(); previewApi.hide(); },
+      onDelete:     async id => {
         await cfg.del(db, id);
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
-      onSubmit: async payload => {
+      onSubmit:     async payload => {
         if (payload.id) await cfg.save(db, payload.id, payload);
         else             await cfg.save(db, null, payload);
         await refreshList();
@@ -134,9 +124,7 @@ export function initDefinitionModal(db) {
         if (currentType === "Chest" && Array.isArray(data.lootPool)) {
           previewData = {
             ...data,
-            lootPool: data.lootPool
-              .map(id => itemMap[id])
-              .filter(Boolean)
+            lootPool: data.lootPool.map(id => itemMap[id]).filter(Boolean)
           };
         }
         previewApi.show(previewData);
@@ -153,7 +141,6 @@ export function initDefinitionModal(db) {
 
   async function openEdit(def) {
     await build();
-
     fldType.value = currentType;
     await refreshList();
 
@@ -170,13 +157,13 @@ export function initDefinitionModal(db) {
     const cfg = definitionTypes[currentType];
     formContainer.innerHTML = "";
     formApi = cfg.controller({
-      onCancel: () => { formApi.reset(); previewApi.hide(); },
-      onDelete: async id => {
+      onCancel:     () => { formApi.reset(); previewApi.hide(); },
+      onDelete:     async id => {
         await cfg.del(db, id);
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
-      onSubmit: async payload => {
+      onSubmit:     async payload => {
         payload.id = def.id;
         await cfg.save(db, payload.id, payload);
         await refreshList();
@@ -187,9 +174,7 @@ export function initDefinitionModal(db) {
         if (currentType === "Chest" && Array.isArray(data.lootPool)) {
           previewData = {
             ...data,
-            lootPool: data.lootPool
-              .map(id => itemMap[id])
-              .filter(Boolean)
+            lootPool: data.lootPool.map(id => itemMap[id]).filter(Boolean)
           };
         }
         previewApi.show(previewData);
@@ -200,7 +185,7 @@ export function initDefinitionModal(db) {
     formApi.initPickrs?.();
     formApi.populate(def);
     const initialPreview = currentType === "Chest"
-      ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
+      ? { ...def, lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean) }
       : def;
     previewApi.show(initialPreview);
 

@@ -231,47 +231,24 @@
   width: 16px; height: 16px;
 }
 
-/* ─── Layout modes (row / stacked / gallery) ─────────────────────── */
-.modal-large .layout-row .item-def-entry{
-  display:flex; flex-direction:row; align-items:center;
-  justify-content:space-between; gap:12px; padding:6px 10px;
-}
-.modal-large .layout-row .item-def-entry > .entry-name{ flex:2; }
-.modal-large .layout-row .item-def-entry > .entry-meta,
-.modal-large .layout-row .item-def-entry > .entry-description,
-.modal-large .layout-row .item-def-entry > .entry-details{
-  flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
-}
-.modal-large .layout-row .item-def-entry > .entry-delete{
-  align-self:flex-start; margin-left:auto;
+/* Definition Modal: two-column layout */
+.modal.modal-large.modal--definitions .modal-content.modal__body--definitions {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
 }
 
-.modal-large .layout-stacked .item-def-entry{
-  display:flex; flex-direction:column; align-items:flex-start; padding:8px 10px;
-}
-.modal-large .layout-stacked .item-def-entry > .entry-delete{
-  align-self:flex-end; margin-top:4px;
+.modal.modal-large.modal--definitions #definition-left-pane {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  overflow-y: auto;
 }
 
-.modal-large .layout-gallery{
-  display:flex; flex-wrap:wrap; gap:10px; justify-content:space-evenly; padding:6px;
+.modal.modal-large.modal--definitions #definition-preview-container {
+  flex: 1;
+  overflow-y: auto;
 }
-.modal-large .layout-gallery .item-def-entry{
-  display:flex; flex-direction:column; align-items:center;
-  background: var(--bg-30);
-  border: 1px solid var(--bg-50);
-  padding: 10px; width: 110px; border-radius: 6px;
-  cursor: pointer; transition: background 0.2s;
-}
-.modal-large .layout-gallery .item-def-entry:hover{ background: var(--bg-40); }
-.modal-large .layout-gallery .item-def-entry > .entry-name{
-  font-size: 13px; font-weight:bold; text-align:center;
-}
-.modal-large .layout-gallery .item-def-entry > .entry-meta,
-.modal-large .layout-gallery .item-def-entry > .entry-details{
-  font-size: 11px; text-align:center;
-}
-.modal-large .layout-gallery .item-def-entry .entry-delete{ margin-top:6px; }
 
 /* Fixed alignment for image URL fields */
 .modal.modal-large .field-row input[id^="def-image"]{
