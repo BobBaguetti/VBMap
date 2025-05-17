@@ -1,4 +1,4 @@
-// @file:    src/shared/ui/managers/draggable.js
+// @file:    src/shared/ui/managers/index.js/draggable.js
 // @version: 1
 
 /**

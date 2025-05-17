@@ -5,8 +5,8 @@ import { getPickrHexColor }            from "../../../shared/utils/color/colorUt
 import {
   createFormControllerHeader,
   wireFormEvents
-}                                       from "../../../shared/ui/forms/formControllerShell.js";
-import { initFormPickrs }              from "../../../shared/ui/forms/formPickrManager.js";
+}                                       from "../../../shared/ui/forms/index.js/formControllerShell.js";
+import { initFormPickrs }              from "../../../shared/ui/forms/index.js/formPickrManager.js";
 import { createMarkerFormBuilder }     from "../../../shared/forms/builders/markerFormBuilder.js";
 
 /**

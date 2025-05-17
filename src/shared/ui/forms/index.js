@@ -1,4 +1,4 @@
-// @file: src/shared/ui/forms/index.js
+// @file: src/shared/ui/forms/index.js/index.js
 // @version: 1
 
 export { default as formControllerShell } from "./formControllerShell.js";

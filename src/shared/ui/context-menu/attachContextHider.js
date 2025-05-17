@@ -1,4 +1,4 @@
-// @file:    src/shared/ui/context-menu/attachContextHider.js
+// @file:    src/shared/ui/context-menu/index.js/attachContextHider.js
 // @version: 1
 
 import { hideContextMenu } from "./hideContextMenu.js";
