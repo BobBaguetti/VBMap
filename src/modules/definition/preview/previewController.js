@@ -1,30 +1,28 @@
 // @file: src/modules/definition/preview/previewController.js
-// @version: 1.2 — embed preview directly into the provided host container
+// @version: 1.3 — always float preview outside modal
 
 import { createPreviewPanel } from "./createPreviewPanel.js";
 
-export function createPreviewController(type, host) {
-  // If a host slot is provided, render into it; otherwise float alongside modal
-  const container = host || document.createElement("div");
-
-  if (host) {
-    // Embedded mode
-    container.classList.add("definition-preview-panel", "embedded-preview-panel");
-    // ensure static positioning so CSS flex handles layout
-    container.style.position = "relative";
-  } else {
-    // Floating mode
-    container.classList.add("definition-preview-panel");
-    container.style.zIndex = "1101";
-    document.body.appendChild(container);
-  }
+export function createPreviewController(type) {
+  // Floating container
+  const container = document.createElement("div");
+  container.classList.add("definition-preview-panel");
+  container.style.position = "absolute";
+  container.style.zIndex   = "1101";
+  document.body.append(container);
 
   const previewApi = createPreviewPanel(type, container);
 
   function show(def) {
-    // just render into container; CSS will place it
     previewApi.setFromDefinition(def);
     previewApi.show();
+    // Position to the right of the modal
+    const mc = document.querySelector(".modal-content")?.getBoundingClientRect();
+    const pr = container.getBoundingClientRect();
+    if (mc && pr.height) {
+      container.style.left = `${mc.right + 16}px`;
+      container.style.top  = `${mc.top + (mc.height - pr.height)/2}px`;
+    }
   }
 
   function hide() {

@@ -1,24 +1,7 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.0 — two‐column layout & preview placement for definition modal */
+/* @version: 1.1 — remove two-column layout, revert to column flow */
 
 .modal--definition .modal-content {
   display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-}
-
-.modal--definition #definition-preview-container {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
   flex-direction: column;
-}
-
-/* ensure embedded preview panel fills its slot */
-.definition-preview-panel.embedded-preview-panel {
-  width: 100%;
-  flex: 1;
-  position: relative !important;
-  top: auto !important;
-  left: auto !important;
 }
