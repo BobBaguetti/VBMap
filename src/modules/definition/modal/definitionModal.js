@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.11 — drop “modal--definitions” plural, use singular “modal--definition”
+// @version: 1.12 — remove unused content class and align with new CSS
 
 import { createModal, openModal, closeModal }
   from "../../../shared/ui/core/modalFactory.js";
@@ -34,9 +34,10 @@ export function initDefinitionModal(db) {
       slots:   ["left", "preview"]
     }));
 
-    // Change here: use singular “modal--definition”
+    // Apply admin & definition modal classes
     modal.classList.add("admin-only", "modal--definition");
-    content.classList.add("modal__body--definition");
+    // Removed content.classList.add("modal__body--definition"); 
+    // Layout now driven purely by .modal--definition .modal-content in CSS
 
     const leftPane = slots.left;
     leftPane.id = "definition-left-pane";
@@ -44,12 +45,14 @@ export function initDefinitionModal(db) {
     previewContainer = slots.preview;
     previewContainer.id = "definition-preview-container";
 
+    // Search input
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
     leftPane.append(searchInput);
 
+    // Type selector
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
@@ -59,11 +62,13 @@ export function initDefinitionModal(db) {
     typeLabel.append(fldType);
     leftPane.append(typeLabel);
 
+    // Definitions list & form container
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
     leftPane.append(listContainer, formContainer);
 
+    // List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -75,6 +80,7 @@ export function initDefinitionModal(db) {
       }
     });
 
+    // Filter wiring
     searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );
