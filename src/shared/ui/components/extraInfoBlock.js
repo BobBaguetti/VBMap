@@ -1,7 +1,7 @@
 // @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.3 — attach Pickr instance to line for correct getLines()
+// @version: 1.4 — updated Pickr import to shared pickrAdapter
 
-import { createPickr } from "../forms/pickrManager.js";
+import { createPickr } from "../../../shared/ui/forms/pickrAdapter.js";
 
 export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = false } = {}) {
   const wrap = document.createElement("div");
