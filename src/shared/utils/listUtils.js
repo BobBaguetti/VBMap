@@ -1,4 +1,6 @@
 /**
+ * src\shared\utils\listUtils.js
+ * 
  * Builds a row of filter buttons.
  *
  * @param {Array<{id:string,label:string}>} filters

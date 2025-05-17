@@ -1,7 +1,7 @@
 // @file: src/shared/ui/components/chipListField.js
 // @version: 1.3 — fire form “input” event on any chip change
 
-import { createFieldRow } from "./fieldKit.js";
+import { createFieldRow } from "./formFields.js";
 import { createChipList } from "../managers/chipListManager.js";
 import { pickItems }      from "./listPicker.js";
 
