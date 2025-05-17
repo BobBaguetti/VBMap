@@ -1,5 +1,5 @@
-// @file: src/modules/ui/components/uiKit/modalKit.js
-// @version: 1.1 — unified API re-exporting small/large modal creators
+// @file: src/shared/ui/core/modalFactory.js
+// @version: 1.2 — support named slots in createModal
 
 import { openModal, closeModal, openModalAt } from "./modalCore.js";
 import { createModalSmall } from "./modalSmall.js";
@@ -15,9 +15,15 @@ import { createModalLarge } from "./modalLarge.js";
  *   size?: "small" | "large",
  *   backdrop?: boolean,
  *   draggable?: boolean,     // only applies to small
- *   withDivider?: boolean
+ *   withDivider?: boolean,
+ *   slots?: string[]         // optional named slots to create within the content
  * }} opts
- * @returns {{ modal: HTMLElement, content: HTMLElement, header: HTMLElement }}
+ * @returns {{
+ *   modal: HTMLElement,
+ *   content: HTMLElement,
+ *   header: HTMLElement,
+ *   slots?: Record<string, HTMLElement>
+ * }}
  */
 export function createModal(opts) {
   const { size = "small" } = opts;
@@ -29,4 +35,3 @@ export function createModal(opts) {
 }
 
 export { openModal, closeModal, openModalAt };
- 

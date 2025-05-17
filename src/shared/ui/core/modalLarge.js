@@ -1,26 +1,33 @@
-// @file: src\shared\ui\core\modalLarge.js
-// @version: 1.0 — large, centered modal creator
+// @file: src/shared/ui/core/modalLarge.js
+// @version: 1.1 — add named-slot support
 
 import { openModal, closeModal } from "./modalCore.js";
 
 /**
- * Create a large, centered modal.
+ * Create a large, centered modal with optional named slots.
  *
  * @param {{
  *   id: string,
  *   title: string,
  *   onClose?: () => void,
  *   backdrop?: boolean,
- *   withDivider?: boolean
+ *   withDivider?: boolean,
+ *   slots?: string[]         // e.g. ["body","preview"]
  * }} opts
- * @returns {{ modal: HTMLElement, content: HTMLElement, header: HTMLElement }}
+ * @returns {{
+ *   modal: HTMLElement,
+ *   content: HTMLElement,
+ *   header: HTMLElement,
+ *   slots?: Record<string, HTMLElement>
+ * }}
  */
 export function createModalLarge({
   id,
   title,
   onClose,
   backdrop = true,
-  withDivider = false
+  withDivider = false,
+  slots = []
 }) {
   const modal = document.createElement("div");
   modal.id = id;
@@ -33,16 +40,16 @@ export function createModalLarge({
   const content = document.createElement("div");
   content.classList.add("modal-content");
   Object.assign(content.style, {
-    position:    "fixed",
-    top:         "50%",
-    left:        "50%",
-    transform:   "translate(-50%, -50%)",
-    maxWidth:    "550px",
-    maxHeight:   "90vh",
-    overflow:    "hidden",
-    display:     "flex",
+    position:     "fixed",
+    top:          "50%",
+    left:         "50%",
+    transform:    "translate(-50%, -50%)",
+    maxWidth:     "550px",
+    maxHeight:    "90vh",
+    overflow:     "hidden",
+    display:      "flex",
     flexDirection:"column",
-    zIndex:      "10001"
+    zIndex:       "10001"
   });
 
   const header = document.createElement("div");
@@ -63,6 +70,16 @@ export function createModalLarge({
   header.append(titleEl, closeBtn);
   content.append(header);
   if (withDivider) content.append(document.createElement("hr"));
+
+  // create named slots
+  const slotEls = {};
+  for (const name of slots) {
+    const slotEl = document.createElement("div");
+    slotEl.classList.add("modal-slot", `modal-slot--${name}`);
+    content.append(slotEl);
+    slotEls[name] = slotEl;
+  }
+
   modal.append(content);
   document.body.append(modal);
 
@@ -74,5 +91,7 @@ export function createModalLarge({
     }
   });
 
-  return { modal, content, header };
+  return slots.length
+    ? { modal, content, header, slots: slotEls }
+    : { modal, content, header };
 }

@@ -1,10 +1,10 @@
-// @file: src\shared\ui\core\modalSmall.js
-// @version: 1.1 — remove dark backdrop for small modals (default backdrop = false)
+// @file: src/shared/ui/core/modalSmall.js
+// @version: 1.2 — add named-slot support
 
 import { openModal, closeModal } from "./modalCore.js";
 
 /**
- * Create a small modal.
+ * Create a small modal with optional named slots.
  *
  * @param {{
  *   id: string,
@@ -12,17 +12,24 @@ import { openModal, closeModal } from "./modalCore.js";
  *   onClose?: () => void,
  *   backdrop?: boolean,    // now defaults to false
  *   draggable?: boolean,
- *   withDivider?: boolean
+ *   withDivider?: boolean,
+ *   slots?: string[]       // optional named slots
  * }} opts
- * @returns {{ modal: HTMLElement, content: HTMLElement, header: HTMLElement }}
+ * @returns {{
+ *   modal: HTMLElement,
+ *   content: HTMLElement,
+ *   header: HTMLElement,
+ *   slots?: Record<string, HTMLElement>
+ * }}
  */
 export function createModalSmall({
   id,
   title,
   onClose,
-  backdrop = false,   // no dark backdrop by default
+  backdrop = false,
   draggable = false,
-  withDivider = false
+  withDivider = false,
+  slots = []
 }) {
   const modal = document.createElement("div");
   modal.id = id;
@@ -58,10 +65,20 @@ export function createModalSmall({
   header.append(titleEl, closeBtn);
   content.append(header);
   if (withDivider) content.append(document.createElement("hr"));
+
+  // create named slots
+  const slotEls = {};
+  for (const name of slots) {
+    const slotEl = document.createElement("div");
+    slotEl.classList.add("modal-slot", `modal-slot--${name}`);
+    content.append(slotEl);
+    slotEls[name] = slotEl;
+  }
+
   modal.append(content);
   document.body.append(modal);
 
-  // Close on backdrop click (now transparent, so clicks pass through)
+  // Close on backdrop click
   modal.addEventListener("click", e => {
     if (e.target === modal) {
       closeModal(modal);
@@ -69,7 +86,7 @@ export function createModalSmall({
     }
   });
 
-  // Draggable logic for small modals
+  // Draggable logic
   if (draggable) {
     let dragging = false, offsetX = 0, offsetY = 0;
     header.addEventListener("mousedown", e => {
@@ -80,7 +97,6 @@ export function createModalSmall({
       document.addEventListener("mousemove", onMouseMove);
       document.addEventListener("mouseup", onMouseUp);
     });
-
     function onMouseMove(e) {
       if (!dragging) return;
       content.style.position = "absolute";
@@ -94,5 +110,7 @@ export function createModalSmall({
     }
   }
 
-  return { modal, content, header };
+  return slots.length
+    ? { modal, content, header, slots: slotEls }
+    : { modal, content, header };
 }
