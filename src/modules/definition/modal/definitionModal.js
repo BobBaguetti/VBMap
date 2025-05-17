@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.13 — single‐column modal, floating preview
+// @version: 1.14 — fix form rendering: only append to formContainer
 
 import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
@@ -10,9 +10,9 @@ import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  let modal, content, header;
+  let modal, content, header, slots;
   let fldType, listApi, formApi, previewApi;
-  let formContainer, searchInput;
+  let formContainer, previewContainer, searchInput;
   let definitions = [], currentType;
   let itemMap = {};
 
@@ -25,24 +25,29 @@ export function initDefinitionModal(db) {
   async function build() {
     if (modal) return;
 
-    ({ modal, content, header } = createModal({
+    ({ modal, content, header, slots } = createModal({
       id:      "definition-modal",
       title:   "Manage Definitions",
       size:    "large",
-      onClose: () => previewApi?.hide()
+      onClose: () => previewApi?.hide(),
+      slots:   ["left", "preview"]
     }));
 
     modal.classList.add("admin-only", "modal--definition");
-    // content is .modal-content; keep its flex‐column layout
+    content.classList.add("modal__body--definition");
 
-    // 1) Search bar
+    // Left pane
+    const leftPane = slots.left;
+    leftPane.id = "definition-left-pane";
+
+    // Search bar
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
-    content.append(searchInput);
+    leftPane.append(searchInput);
 
-    // 2) Type selector
+    // Type selector
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
@@ -50,27 +55,31 @@ export function initDefinitionModal(db) {
       .map(t => `<option value="${t}">${t}</option>`)
       .join("");
     typeLabel.append(fldType);
-    content.append(typeLabel);
+    leftPane.append(typeLabel);
 
-    // 3) List & form containers
+    // List & form containers
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
-    content.append(listContainer, formContainer);
+    leftPane.append(listContainer, formContainer);
 
-    // 4) List manager
+    // Preview pane
+    previewContainer = slots.preview;
+    previewContainer.id = "definition-preview-container";
+
+    // List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
       onEntryClick:   def => openDefinition(currentType, def),
-      onDelete: async id => {
+      onDelete:       async id => {
         const cfg = definitionTypes[currentType];
         await cfg.del(db, id);
         await refreshList();
       }
     });
 
-    // 5) Wire search
+    // Filter wiring
     searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );
@@ -88,9 +97,9 @@ export function initDefinitionModal(db) {
     }
 
     const cfg = definitionTypes[type];
-    previewApi = cfg.previewBuilder();  // no host => floating
+    previewApi = cfg.previewBuilder(previewContainer);
 
-    // Build form
+    // Clear and render form inside formContainer only
     formContainer.innerHTML = "";
     formApi = cfg.controller({
       onCancel:     () => { formApi.reset(); previewApi.hide(); },
@@ -100,7 +109,8 @@ export function initDefinitionModal(db) {
         formApi.reset(); previewApi.hide();
       },
       onSubmit:     async payload => {
-        await cfg.save(db, def?.id ?? null, payload);
+        const saveId = def?.id ?? null;
+        await cfg.save(db, saveId, payload);
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
@@ -115,10 +125,10 @@ export function initDefinitionModal(db) {
         previewApi.show(previewData);
       }
     }, db);
-    content.append(formApi.form);
 
-    // Init & populate
+    formContainer.append(formApi.form);
     formApi.initPickrs?.();
+
     if (def) {
       formApi.populate(def);
       const previewData = type === "Chest"
@@ -134,7 +144,7 @@ export function initDefinitionModal(db) {
   }
 
   return {
-    openCreate: (evt, type="Item") => openDefinition(type),
-    openEdit:   def               => openDefinition(currentType, def)
+    openCreate: (evt, type = "Item") => openDefinition(type),
+    openEdit:   def                => openDefinition(currentType, def)
   };
 }
