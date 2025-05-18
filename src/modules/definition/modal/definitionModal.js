@@ -1,4 +1,4 @@
-// @file: src/modules/definition/modals/definitionModal.js
+// @file: src/modules/definition/modals/definitionModal.js 
 // @version: 1.17 — import Form class and fix Form usage
 
 import { createDefinitionModal }    from "../../../shared/ui/core/createDefinitionModal.js";
