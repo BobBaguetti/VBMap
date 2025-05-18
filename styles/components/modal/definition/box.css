@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/box.css */
-/* @version: 2.4 — single-column modal, preview absolutely positioned to the right */
+/* @version: 2.5 — flexible rows for list+form, preview outside */
 
 .modal--definition {
   display: none;
@@ -14,7 +14,7 @@
 }
 
 .modal--definition .modal-content {
-  position: relative; /* needed for absolute children */
+  position: relative;
   width: 100%;
   max-width: 550px;
   max-height: 90vh;
@@ -26,11 +26,12 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
 
   display: grid;
+  /* header auto, list up to 240px, subheader auto, form fills rest */
   grid-template-rows:
-    auto    /* header */
-    240px   /* entry list */
-    auto    /* subheader */
-    1fr     /* form body */;
+    auto
+    minmax(0, 240px)
+    auto
+    minmax(0, 1fr);
   grid-template-areas:
     "header"
     "list"
@@ -39,13 +40,13 @@
   overflow: hidden;
 }
 
-/* Grid area assignments */
-.modal--definition .modal-header            { grid-area: header; }
-.modal--definition #definition-list         { grid-area: list; overflow-y: auto; }
-.modal--definition .modal-subheader         { grid-area: subheader; }
+/* Map areas */
+.modal--definition .modal-header              { grid-area: header; }
+.modal--definition #definition-list           { grid-area: list; overflow-y: auto; }
+.modal--definition .modal-subheader           { grid-area: subheader; }
 .modal--definition #definition-form-container { grid-area: form; overflow-y: auto; }
 
-/* Hide scrollbars in both scrollable areas */
+/* Hide scrollbars */
 .modal--definition #definition-list::-webkit-scrollbar,
 .modal--definition #definition-form-container::-webkit-scrollbar {
   width: 0; height: 0;
@@ -55,23 +56,23 @@
   scrollbar-width: none;
 }
 
-/* Preview pane */
+/* Preview pane sits outside to the right */
 #definition-preview-container {
   position: absolute;
-  top: var(--space-3);                     /* align beneath top padding */
-  left: calc(100% + var(--space-3));       /* just to the right of modal */
+  top: var(--space-3);
+  left: calc(100% + var(--space-3));
   width: var(--preview-width, 300px);
   max-height: 90vh;
   overflow-y: auto;
+
   background-color: var(--bg-30);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-small);
   padding: var(--space-2);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
-  z-index: var(--z-index-modal, 10000);
+  z-index: calc(var(--z-index-modal) + 1);
 }
 
-/* Hide scrollbar on preview */
 #definition-preview-container::-webkit-scrollbar {
   width: 0; height: 0;
 }
