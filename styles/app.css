@@ -43,7 +43,7 @@
 @import "components/utilities.css";
 
 /* ── Context menus & popups ──────────────────────────────────────────── */
-@import "components/context-menu.css";
+@import "components/context/context-menu.css";
 @import "components/map/leaflet-overrides.css";
 /* Fixed: popup CSS lives under components/popup/ */
 @import "components/popup/popup.css";
