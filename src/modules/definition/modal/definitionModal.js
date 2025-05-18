@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.3 — ensure only one subheader by updating reference after replace
+// @version: 1.4 — drop the in-form “Show in filters” row now that we have it in the subheader
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -59,7 +59,7 @@ export function initDefinitionModal(db) {
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
-      hasFilter: true,
+      hasFilter: true,   // subheader will show “Show in filters”
       onCancel:  () => { formApi.reset(); previewApi.hide(); },
       onDelete:  async id => {
         await definitionTypes[type].del(db, id);
@@ -83,10 +83,17 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
+    // Remove the now-duplicate “Show in filters” row from the form body
+    const extraFilter = formApi.form.querySelector(
+      '.modal-subheader + .field-row input[type="checkbox"]'
+    )?.closest(".field-row");
+    if (extraFilter) {
+      extraFilter.remove();
+    }
+
     // Replace placeholder header with generated one
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
-    // Update our reference so next time we replace the correct element
     subheader = generated;
 
     formContainer.append(formApi.form);
