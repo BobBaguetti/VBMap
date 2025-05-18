@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.6 — broadened selector to darken all form controls */
+/* @version: 1.6 — ensure all inputs, selects, textareas have dark background */
 
 .modal--definition #definition-form-container {
   display: flex;
@@ -7,55 +7,61 @@
   gap: 8px;
 }
 
-/* Rows remain transparent against the modal background */
+/* Rows remain transparent */
 .modal--definition .field-row {
   display: flex;
   align-items: center;
   margin-bottom: 0;
-  padding: 0; /* no extra row padding */
+  padding: 0;
   background: none;
 }
 
-/* Labels unchanged */
+/* Labels */
 .modal--definition .field-row label {
   flex: 0 0 100px;
   margin-right: 8px;
   color: var(--text-primary);
 }
 
-/* Darken all form controls for contrast */
-.modal--definition .field-row input,
-.modal--definition .field-row select,
-.modal--definition .field-row textarea,
-.modal--definition .field-row .ui-input {
-  flex: 1 1 auto;
-  min-width: 0;
-  margin-right: 8px;
-  background: var(--bg-40);          /* darker than modal bg */
+/* Standardize dark backgrounds on all form controls */
+.modal--definition input,
+.modal--definition select,
+.modal--definition textarea {
+  background: var(--bg-40) !important;
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-small);
-  padding: var(--space-2) var(--space-2);
   color: var(--text-primary);
 }
 
+/* Specific sizing/padding for text/number/select/textarea */
+.modal--definition .field-row input[type="text"],
+.modal--definition .field-row input[type="number"],
+.modal--definition .field-row select,
+.modal--definition .field-row textarea {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-right: 8px;
+  padding: 6px 8px;
+}
+
 /* Remove number spinners */
-.modal--definition .field-row input[type="number"]::-webkit-outer-spin-button,
-.modal--definition .field-row input[type="number"]::-webkit-inner-spin-button {
+.modal--definition input[type="number"]::-webkit-outer-spin-button,
+.modal--definition input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-.modal--definition .field-row input[type="number"] {
+.modal--definition input[type="number"] {
   -moz-appearance: none;
   appearance: none;
   margin: 0;
 }
 
 /* Allow textareas to resize vertically */
-.modal--definition .field-row textarea {
+.modal--definition textarea {
   resize: vertical;
 }
 
-/* Color-picker swatch unchanged */
+/* Color-picker swatches */
 .modal--definition .color-btn {
   margin-left: 8px !important;
   width: 24px;
@@ -66,12 +72,12 @@
   cursor: pointer;
 }
 
-/* Buttons in field-rows unchanged */
+/* Buttons in rows */
 .modal--definition .field-row button.ui-button {
   margin-left: 8px;
 }
 
-/* Extra-row alignment unchanged */
+/* Extra-row alignment */
 .modal--definition .field-row.extra-row {
   align-items: flex-start;
 }
@@ -79,7 +85,7 @@
   margin-top: 0;
 }
 
-/* Extra-info block & remove-line unchanged */
+/* Extra-info block & remove-line */
 .modal--definition .extra-info-block {
   display: block;
 }
@@ -101,8 +107,8 @@
   fill: var(--text-primary);
 }
 
-/* Image URL fields unchanged */
-.modal--definition .field-row input[id^="def-image"] {
+/* Image URL fields */
+.modal--definition input[id^="def-image"] {
   max-width: 100%;
   box-sizing: border-box;
 }
