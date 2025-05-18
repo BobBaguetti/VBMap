@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.15 — move search into header, cap entry‐list height
+// @version: 1.16 — Step 3b: use the new Form class instead of buildForm + controller
 
 import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
@@ -8,10 +8,11 @@ import { createDefinitionListManager }
   from "../list/definitionListManager.js";
 import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
+import { Form }                    from "../../../shared/ui/forms/Form.js";
 
 export function initDefinitionModal(db) {
   let modal, content, header, slots;
-  let fldType, listApi, formApi, previewApi;
+  let fldType, listApi, formObj, previewApi;
   let formContainer, previewContainer, searchInput;
   let definitions = [], currentType;
   let itemMap = {};
@@ -35,16 +36,17 @@ export function initDefinitionModal(db) {
 
     modal.classList.add("admin-only", "modal--definition");
 
-    // 1) Search bar — moved into header
+    // Search in header
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
     header.append(searchInput);
 
-    // 2) Type selector stays in left pane
+    // Left pane: type selector, list & form container
     const leftPane = slots.left;
     leftPane.id = "definition-left-pane";
+
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
@@ -54,17 +56,16 @@ export function initDefinitionModal(db) {
     typeLabel.append(fldType);
     leftPane.append(typeLabel);
 
-    // 3) List & form containers
     const listContainer = createDefListContainer("definition-list");
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
     leftPane.append(listContainer, formContainer);
 
-    // 4) Preview pane
+    // Preview pane
     previewContainer = slots.preview;
     previewContainer.id = "definition-preview-container";
 
-    // 5) List manager
+    // List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -76,7 +77,7 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // Wire search to list filter
+    // Wire search
     searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );
@@ -88,6 +89,7 @@ export function initDefinitionModal(db) {
     fldType.value = type;
     await refreshList();
 
+    // Preload items for Chest
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
@@ -96,19 +98,27 @@ export function initDefinitionModal(db) {
     const cfg = definitionTypes[type];
     previewApi = cfg.previewBuilder(previewContainer);
 
-    // Clear & render form inside its pane
+    // Clear previous form
     formContainer.innerHTML = "";
-    formApi = cfg.controller({
-      onCancel:     () => { formApi.reset(); previewApi.hide(); },
-      onDelete:     async id => {
+
+    // Instantiate new Form
+    formObj = new Form(cfg.schema, {
+      title:       def ? `Edit ${type}` : `Add ${type}`,
+      hasFilter:   false,
+      onFilter:    () => {},          // no filter in form
+      onCancel:    () => formObj.reset() && previewApi.hide(),
+      onDelete:    async id => {
         await cfg.del(db, id);
         await refreshList();
-        formApi.reset(); previewApi.hide();
+        formObj.reset();
+        previewApi.hide();
       },
-      onSubmit:     async payload => {
-        await cfg.save(db, def?.id ?? null, payload);
+      onSubmit:    async payload => {
+        const saveId = def?.id ?? null;
+        await cfg.save(db, saveId, payload);
         await refreshList();
-        formApi.reset(); previewApi.hide();
+        formObj.reset();
+        previewApi.hide();
       },
       onFieldChange: data => {
         let previewData = data;
@@ -120,19 +130,21 @@ export function initDefinitionModal(db) {
         }
         previewApi.show(previewData);
       }
-    }, db);
+    });
 
-    formContainer.append(formApi.form);
-    formApi.initPickrs?.();
+    // Add form element to container
+    formContainer.append(formObj.form);
 
+    // Initialize and populate
+    formObj.initPickrs?.();
     if (def) {
-      formApi.populate(def);
-      const previewData = type === "Chest"
+      formObj.populate(def);
+      const initialPreview = type === "Chest"
         ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
         : def;
-      previewApi.show(previewData);
+      previewApi.show(initialPreview);
     } else {
-      formApi.reset();
+      formObj.reset();
       previewApi.show(type === "Chest" ? { lootPool: [] } : {});
     }
 
