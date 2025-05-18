@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.2 — fix entry click callback to preserve currentType
+// @version: 1.3 — ensure only one subheader by updating reference after replace
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -11,7 +11,7 @@ import { loadItemDefinitions }
 
 export function initDefinitionModal(db) {
   const { modalEl, open, close } = createModalShell("definition-modal");
-  const {
+  let {
     header, searchInput, typeSelect,
     listContainer, subheader, formContainer,
     previewContainer
@@ -28,7 +28,7 @@ export function initDefinitionModal(db) {
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => definitions,
-      onEntryClick: def => openDefinition(currentType, def),  // ← fixed callback
+      onEntryClick: def => openDefinition(currentType, def),
       onDelete: async id => {
         await definitionTypes[currentType].del(db, id);
         await refresh();
@@ -55,6 +55,7 @@ export function initDefinitionModal(db) {
 
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
+    // Build and insert form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -82,8 +83,12 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
+    // Replace placeholder header with generated one
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
+    // Update our reference so next time we replace the correct element
+    subheader = generated;
+
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
