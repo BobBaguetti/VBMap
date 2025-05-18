@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.3 — full form layout, field styles, textarea resize, spinner removal, extra‐info flow & remove‐line button */
+/* @version: 1.4 — darker form controls for better visibility */
 
 .modal--definition #definition-form-container {
   display: flex;
@@ -26,14 +26,15 @@
   flex: 1 1 auto;
   min-width: 0;
   margin-right: 8px;
-  background: var(--bg-30);
+  /* Darker background for improved contrast */
+  background: var(--bg-50);
   border: 1px solid var(--border-soft);
   border-radius: 2px;
   padding: 6px 8px;
   color: var(--text-primary);
 }
 
-/* 1) Remove default number‐spinner arrows */
+/* 1) Remove default number-spinner arrows */
 .modal--definition .field-row input[type="number"]::-webkit-outer-spin-button,
 .modal--definition .field-row input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -66,7 +67,7 @@
   margin-left: 8px;
 }
 
-/* 4) Extra‐row layout tweaks */
+/* 4) Extra-row layout tweaks */
 .modal--definition .field-row.extra-row {
   align-items: flex-start;
 }
@@ -74,7 +75,7 @@
   margin-top: 0;
 }
 
-/* 5) Extra‐info block: stack lines vertically so new lines append at bottom */
+/* 5) Extra-info block: stack lines vertically so new lines append at bottom */
 .modal--definition .extra-info-block {
   display: block;
 }
@@ -82,7 +83,7 @@
   margin-bottom: var(--space-1);
 }
 
-/* 6) Remove‐line button for extra‐info lines */
+/* 6) Remove-line button for extra-info lines */
 .modal--definition .extra-info-line .remove-line-btn {
   width: 28px;
   height: 28px;
