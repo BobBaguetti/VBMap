@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.20 — remove duplicate filter row from form body, ensure only subheader has the filter
+// @version: 1.21 — rely on formControllerShell for Add/Edit titles and filter toggle
 
 import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
@@ -28,7 +28,7 @@ export function initDefinitionModal(db) {
     ({ modal, content, header, slots } = createModal({
       id:      "definition-modal",
       title:   "Manage Definitions",
-      size:    "large",
+      // size no longer matters in factory
       onClose: () => previewApi?.hide(),
       slots:   ["left", "preview"]
     }));
@@ -140,26 +140,11 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Extract generated subheader
+    // Slot generated subheader into placeholder
     const generatedHeader = formApi.form.querySelector(".modal-subheader");
     if (generatedHeader) {
-      // Replace placeholder with the real subheader
       subheaderEl.replaceWith(generatedHeader);
       subheaderEl = generatedHeader;
-
-      // Update Add/Edit text
-      const titleEl = generatedHeader.querySelector("h3, .subheading, span");
-      if (titleEl) {
-        titleEl.textContent = def ? `Edit ${type}` : `Add ${type}`;
-      }
-
-      // Remove the original filter row from the form body
-      const formFilterRow = formApi.form.querySelector(
-        '.form-row input[type="checkbox"]'
-      )?.closest(".form-row");
-      if (formFilterRow) {
-        formFilterRow.remove();
-      }
     }
 
     // Append the form beneath the subheader
