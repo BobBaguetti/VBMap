@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/box.css */
-/* @version: 2.2 — use minmax for proper scroll areas and restore centering */
+/* @version: 2.3 — two-column layout; left slot flex; fixed list + flexible form */
 
 .modal--definition {
   display: none;
@@ -8,7 +8,6 @@
   background: rgba(0, 0, 0, 0.5);
   z-index: var(--z-index-modal, 9999);
 
-  /* Flex-centering */
   display: flex;
   justify-content: center;
   align-items: center;
@@ -28,39 +27,36 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
 
   display: grid;
-  /* 
-    1) header: auto-height
-    2) list: up to 240px, but not more than available
-    3) subheader: auto-height
-    4) form: take remaining space
-  */
-  grid-template-rows:
-    auto
-    minmax(0, 240px)
-    auto
-    minmax(0, 1fr);
+  grid-template-columns: 1fr auto;  /* left slot (1fr) + preview (auto) */
+  grid-template-rows: auto 1fr;     /* header + content */
   grid-template-areas:
-    "header"
-    "list"
-    "subheader"
-    "form";
-  overflow: hidden;  /* ensure children scroll instead */
+    "header  header"
+    "left    preview";
+  gap: var(--space-3);
+  overflow: hidden;
 }
 
-/* Grid area assignments */
-.modal--definition .modal-header { grid-area: header; }
-.modal--definition #definition-list { grid-area: list; }
-.modal--definition .modal-subheader { grid-area: subheader; }
-.modal--definition #definition-form-container { grid-area: form; }
+/* Grid areas */
+.modal--definition .modal-header            { grid-area: header; }
+.modal--definition #definition-left-pane    { grid-area: left; display: flex; flex-direction: column; min-width: 0; }
+.modal--definition #definition-preview-container { grid-area: preview; }
 
-/* Scrollable areas */
-.modal--definition #definition-list,
-.modal--definition #definition-form-container {
+/* Left slot children */
+.modal--definition #definition-left-pane #definition-list {
+  flex: 0 0 240px;         /* fixed 240px height */
   overflow-y: auto;
-  scrollbar-width: none;
 }
-.modal--definition #definition-list::-webkit-scrollbar,
-.modal--definition #definition-form-container::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+.modal--definition #definition-left-pane #definition-form-container {
+  flex: 1 1 auto;          /* fill remaining vertical space */
+  overflow-y: auto;
+}
+
+/* Hide scrollbars */
+.modal--definition #definition-left-pane #definition-list::-webkit-scrollbar,
+.modal--definition #definition-left-pane #definition-form-container::-webkit-scrollbar {
+  width: 0; height: 0;
+}
+.modal--definition #definition-left-pane #definition-list,
+.modal--definition #definition-left-pane #definition-form-container {
+  scrollbar-width: none;
 }
