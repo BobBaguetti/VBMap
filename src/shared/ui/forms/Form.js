@@ -1,5 +1,5 @@
 // @file: src/shared/ui/forms/Form.js
-// @version: 1.3 — consolidated header via createFormControllerHeader; unified event wiring
+// @version: 1.4 — corrected import paths for formControllerShell
 
 import {
   createTextField,
@@ -15,7 +15,7 @@ import { initFormPickrs } from "./pickrAdapter.js";
 import {
   createFormControllerHeader,
   wireFormEvents
-} from "../components/formControllerShell.js";
+} from "../../../modules/ui/components/formControllerShell.js";
 
 /**
  * Unified form builder + controller + state manager.
