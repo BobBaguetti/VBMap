@@ -1,7 +1,9 @@
 /* @file: styles/components/modal/definition/header.css */
-/* @version: 1.7 — ensure all subheader children align center */
+/* @version: 1.8 — full main header + subheader, with filter row forced horizontal */
 
- /* Main header: Manage Definitions, Search, Type selector, Close */
+/* ─── Main Header ───────────────────────────────────────────────────────────── */
+
+/* Container for “Manage Definitions” title, search, type selector, and close button */
 .modal--definition .modal-header {
   display: flex;
   align-items: center;
@@ -11,6 +13,7 @@
   border-bottom: none;
 }
 
+/* “Manage Definitions” title */
 .modal--definition .modal-header h2 {
   margin: 0;
   font-size: 1.25rem;
@@ -18,6 +21,7 @@
   flex: 0 0 auto;
 }
 
+/* Search input in the main header */
 .modal--definition .modal-header input.modal__search {
   flex: 1 1 auto;
   max-width: 240px;
@@ -29,10 +33,12 @@
   font-size: var(--font-size-sm);
 }
 
+/* Type selector dropdown */
 .modal--definition .modal-header .modal__type-selector {
   flex: 0 0 auto;
 }
 
+/* Close “×” button */
 .modal--definition .modal-header .close {
   flex: 0 0 auto;
   font-size: 1.5rem;
@@ -40,21 +46,20 @@
   color: var(--text-primary);
 }
 
-/* Subheader: Add/Edit title, Show in filters, Save/Clear/Delete buttons */
+
+/* ─── Subheader (Add/Edit Row) ──────────────────────────────────────────────── */
+
+/* Container for Add/Edit title, Show in filters checkbox, and buttons */
 .modal--definition .modal-subheader {
   display: flex;
-  align-items: center;                /* ensure vertical centering */
+  align-items: center;
   padding: var(--space-1) var(--space-2);
   gap: var(--space-2);
   border-bottom: 1px solid var(--bg-50);
   background: var(--bg-40);
 }
 
-/* Force all direct children to align center */
-.modal--definition .modal-subheader > * {
-  align-self: center;
-}
-
+/* Add/Edit title */
 .modal--definition .modal-subheader h3 {
   margin: 0;
   font-size: 1.125rem;
@@ -63,21 +68,20 @@
   flex: 0 0 auto;
 }
 
-/* Label wrapping the checkbox */
-.modal--definition .modal-subheader label {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  margin: 0;                /* remove any default margins */
+/* Force the “Show in filters” wrapper to lay out its label + checkbox side by side */
+.modal--definition .modal-subheader > div:nth-of-type(2) {
+  display: flex !important;
+  align-items: center !important;
+  gap: var(--space-1) !important;
   flex: 0 0 auto;
 }
 
 /* The checkbox itself */
-.modal--definition .modal-subheader input[type="checkbox"] {
+.modal--definition .modal-subheader > div:nth-of-type(2) input[type="checkbox"] {
   margin: 0;
 }
 
-/* Button group */
+/* Button group (Save, Clear, Delete) pushed to the right */
 .modal--definition .modal-subheader .floating-buttons {
   margin-left: auto;
   display: flex;
