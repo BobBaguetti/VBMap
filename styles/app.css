@@ -34,7 +34,6 @@
 @import "components/scrollbar.css";
 @import "components/icons.css";
 @import "components/ui-controls.css";
-@import "components/entries.css";
 
 /* ── Map & Marker overrides ──────────────────────────────────────────── */
 @import "components/map/index.css";

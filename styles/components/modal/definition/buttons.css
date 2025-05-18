@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/buttons.css */
-/* @version: 1.1 — floating action‐row & button styles for definition modal */
+/* @version: 1.2 — floating action-row & button styles for definition modal; include delete variant */
 
 .modal--definition .floating-buttons {
   display: flex;
@@ -18,7 +18,28 @@
   font-weight: 400;
   font-family: 'Satoshi', sans-serif;
 }
-
 .modal--definition .ui-button:hover {
   filter: brightness(1.15);
+}
+
+/* Delete button variant, scoped to definition modal */
+.modal--definition .btn-delete {
+  background-color: var(--accent-error);
+  color: #fff;
+  border: none;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  font-size: 0.8125rem; /* ~13px */
+  transition: filter 0.3s, color 0.3s;
+}
+.modal--definition .btn-delete:hover:not(:disabled) {
+  filter: brightness(0.8);
+}
+.modal--definition .btn-delete svg {
+  width: 1rem;
+  height: 1rem;
 }
