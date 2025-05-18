@@ -1,26 +1,24 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 22.2 — updated modal import to modalFactory
+// @version: 22.3 — switch from modalFactory to createMarkerModal
 
-import { createModal, closeModal, openModalAt } from "../../../shared/ui/core/modalFactory.js";
-import { markerTypes }                         from "../types.js";
+import { createMarkerModal } from "../../../shared/ui/core/createMarkerModal.js";
+import { markerTypes }       from "../types.js";
 
 export function initMarkerModal(db) {
-  let modal, content, fldType, fldDef, btnCreate;
+  let modalApi, content, fldType, fldDef, btnCreate;
   let pendingCoords, onCreate, onSaveCallback;
 
   async function ensureBuilt() {
-    if (modal) return;
+    if (modalApi) return;
 
-    // 1) Create the modal shell
-    const m = createModal({
-      id:        "marker-modal",
-      title:     "Marker",
-      size:      "small",
-      draggable: true,
-      onClose:   () => closeModal(modal)
+    // 1) Instantiate via factory
+    modalApi = createMarkerModal({
+      id:      "marker-modal",
+      title:   "Marker",
+      onClose: () => modalApi.close()
     });
-    modal   = m.modal;
-    content = m.content;
+    const { modal, content: cnt, openAt } = modalApi;
+    content = cnt;
     modal.classList.add("admin-only");
 
     // 2) Type selector
@@ -43,12 +41,12 @@ export function initMarkerModal(db) {
     rowDef.appendChild(fldDef);
     rowDef.style.display = "none";
 
-    // 4) Buttons
+    // 4) Button row
     const btnRow = document.createElement("div");
     const btnCancel = document.createElement("button");
     btnCancel.textContent = "Cancel";
     btnCancel.type = "button";
-    btnCancel.onclick = () => closeModal(modal);
+    btnCancel.onclick = () => modalApi.close();
 
     btnCreate = document.createElement("button");
     btnCreate.textContent = "Create";
@@ -58,7 +56,7 @@ export function initMarkerModal(db) {
 
     content.append(rowType, rowDef, btnRow);
 
-    // 5) Handlers
+    // 5) Load definitions on type change
     fldType.addEventListener("change", async () => {
       const type = fldType.value;
       if (!type) return;
@@ -74,44 +72,48 @@ export function initMarkerModal(db) {
       rowDef.style.display = "";
     });
 
+    // 6) Create / Save handler
     btnCreate.addEventListener("click", () => {
       const type = fldType.value;
-      const cfg = markerTypes[type];
-      const defIdKey = cfg.defIdKey;
-      const defId = fldDef.value;
-      if (!type || !defIdKey || !defId) return;
-      const payload = { type, coords: pendingCoords, [defIdKey]: defId };
+      const cfg  = markerTypes[type];
+      const key  = cfg.defIdKey;
+      const def  = fldDef.value;
+      if (!type || !key || !def) return;
+      const payload = { type, coords: pendingCoords, [key]: def };
       if (onCreate) {
         onCreate(payload);
       } else if (onSaveCallback) {
         onSaveCallback(payload);
       }
-      closeModal(modal);
+      modalApi.close();
     });
+
+    // Expose openAt for outside use
+    modalApi.openAt = openAt;
   }
 
   return {
     openCreate(coords, type, evt, createCb) {
-      pendingCoords = coords;
-      onCreate      = createCb;
-      onSaveCallback= null;
+      pendingCoords   = coords;
+      onCreate        = createCb;
+      onSaveCallback  = null;
       ensureBuilt().then(() => {
         fldType.value = type || "";
         fldType.dispatchEvent(new Event("change"));
-        openModalAt(modal, evt);
+        modalApi.openAt(evt);
       });
     },
 
     openEdit(markerObj, data, evt, saveCb) {
-      pendingCoords  = data.coords;
-      onCreate       = null;
-      onSaveCallback = saveCb;
-      ensureBuilt().then(async () => {
+      pendingCoords   = data.coords;
+      onCreate        = null;
+      onSaveCallback  = saveCb;
+      ensureBuilt().then(() => {
         fldType.value = data.type;
         fldType.dispatchEvent(new Event("change"));
-        const defIdKey = markerTypes[data.type].defIdKey;
-        fldDef.value   = data[defIdKey] || "";
-        openModalAt(modal, evt);
+        const defKey = markerTypes[data.type].defIdKey;
+        fldDef.value = data[defKey] || "";
+        modalApi.openAt(evt);
       });
     }
   };

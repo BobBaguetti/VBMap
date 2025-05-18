@@ -1,12 +1,8 @@
 // @file: src/modules/sidebar/settingsModal.js
-// @version: 1.2 — offset = 64 px and cog button now toggles open/close
+// @version: 1.3 — switch to createSettingsModal()
 
-/**
- * Creates and wires a draggable, floating Settings panel.
- *
- * @param {object} params
- * @param {string} params.buttonSelector – selector for the Settings toolbar button
- */
+import { createSettingsModal } from "../../../shared/ui/core/createSettingsModal.js";
+
 export function setupSettingsModal({ buttonSelector }) {
   const btn = document.querySelector(buttonSelector);
   if (!btn) {
@@ -14,85 +10,30 @@ export function setupSettingsModal({ buttonSelector }) {
     return;
   }
 
-  /* ── Build panel markup ─────────────────────────────────────────── */
-  const panel = document.createElement("div");
-  panel.id = "settings-modal";
-  panel.classList.add("floating", "hidden"); // hidden by default
+  // 1) Instantiate modal via factory
+  const { modal, slots, position } = createSettingsModal({
+    id:      "settings-modal",
+    title:   "Settings",
+    onClose: null,
+    initialOffset: { x: 12, y: 64 }
+  });
 
-  panel.innerHTML = `
-    <div class="modal-content">
-      <header class="drag-handle">
-        <h3>Settings</h3>
-        <button class="modal-close" aria-label="Close">&times;</button>
-      </header>
-      <section class="modal-body">
-        <label>
-          <input type="checkbox" id="toggle-grouping"/>
-          Enable Marker Grouping
-        </label>
-        <label>
-          <input type="checkbox" id="toggle-small-markers"/>
-          Small Markers (50%)
-        </label>
-      </section>
-    </div>
-  `.trim();
+  // 2) Populate body
+  slots.body.innerHTML = `
+    <label>
+      <input type="checkbox" id="toggle-grouping"/>
+      Enable Marker Grouping
+    </label>
+    <label>
+      <input type="checkbox" id="toggle-small-markers"/>
+      Small Markers (50%)
+    </label>
+  `;
 
-  document.body.appendChild(panel);
-
-  const closeBtn = panel.querySelector(".modal-close");
-
-  /* ── Position: right of sidebar, 64 px down ─────────────────────── */
-  const INITIAL_TOP_OFFSET = 64; // tweak this to shift vertically
-  function positionNextToSidebar() {
+  // 3) Wire toolbar button
+  btn.addEventListener("click", () => {
     const sidebar = document.getElementById("sidebar");
-    if (!sidebar) return;
-    const rect = sidebar.getBoundingClientRect();
-    panel.style.left = `${rect.right + 12}px`;
-    panel.style.top  = `${rect.top + INITIAL_TOP_OFFSET}px`;
-  }
-
-  /* ── Open / Close helpers ───────────────────────────────────────── */
-  function open() {
-    panel.classList.remove("hidden");
-    if (!panel.dataset.moved) positionNextToSidebar();
-  }
-  function close() {
-    panel.classList.add("hidden");
-  }
-  function toggle() {
-    panel.classList.contains("hidden") ? open() : close();
-  }
-
-  /* ── Wire events ────────────────────────────────────────────────── */
-  btn.addEventListener("click", toggle);
-  closeBtn.addEventListener("click", close);
-
-  /* ── Drag behaviour (header acts as handle) ─────────────────────── */
-  const handle = panel.querySelector(".drag-handle");
-  let startX, startY, startLeft, startTop;
-
-  handle.addEventListener("pointerdown", (e) => {
-    e.preventDefault();
-    startX = e.clientX;
-    startY = e.clientY;
-    const rect = panel.getBoundingClientRect();
-    startLeft = rect.left;
-    startTop  = rect.top;
-
-    function onMove(ev) {
-      const dx = ev.clientX - startX;
-      const dy = ev.clientY - startY;
-      panel.style.left = `${startLeft + dx}px`;
-      panel.style.top  = `${startTop  + dy}px`;
-      panel.dataset.moved = "true";
-    }
-    function onUp() {
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-    }
-
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
+    position(sidebar?.getBoundingClientRect());
+    modal.open();
   });
 }

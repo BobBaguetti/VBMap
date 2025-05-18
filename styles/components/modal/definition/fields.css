@@ -1,0 +1,33 @@
+/* @file: styles/components/modal/definition/fields.css */
+/* @version: 1.1 — grid-based form layout for consistent row sizing */
+
+.modal--definition .field-row {
+  display: grid;
+  grid-template-columns: var(--field-label-width, 100px) 1fr;
+  gap: var(--space-2);
+  align-items: center;
+  background: none;
+  padding: 0;
+}
+
+.modal--definition .field-row > label {
+  /* label occupies first column; width controlled via --field-label-width */
+}
+
+.modal--definition .field-row input,
+.modal--definition .field-row select,
+.modal--definition .field-row textarea,
+.modal--definition .field-row .ui-input {
+  width: 100%;
+  background: var(--field-bg, var(--bg-40));
+  border: var(--border-width-hair) solid var(--border-soft);
+  border-radius: var(--radius-small);
+  padding: var(--space-2);
+  color: var(--text-primary);
+  box-sizing: border-box;
+}
+
+.modal--definition .field-row .color-btn {
+  /* position the color swatch to the far right */
+  justify-self: end;
+}

@@ -1,9 +1,9 @@
 /* @file: styles/components/modal/index.css */
-/* @version: 1.1 — refactored imports for per‐modal folders */
+/* @version: 1.2 — only per-modal imports */
 
 @import "./base.css";
 
-/* Definition modal styles */
+/* Definition modal */
 @import "./definition/box.css";
 @import "./definition/buttons.css";
 @import "./definition/entries.css";
@@ -13,8 +13,8 @@
 @import "./definition/layout.css";
 @import "./definition/scroll.css";
 
-/* About modal styles */
+/* About modal */
 @import "./about/about.css";
 
-/* Settings modal styles */
+/* Settings modal */
 @import "./settings/settings.css";
