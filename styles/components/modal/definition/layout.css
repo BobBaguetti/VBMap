@@ -1,33 +1,36 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.5 — unified scroll & layout for list and form panels */
+/* @version: 1.6 — switch to CSS Grid for header/list/subheader/form layout */
 
 .modal--definition .modal-content {
-  display: flex;
-  flex-direction: column;
-  height: 90vh;            /* Fill most of the viewport height */
+  display: grid;
+  grid-template-rows:
+    auto    /* 1) Modal header */
+    1fr     /* 2) Entry list */
+    auto    /* 3) Form subheader */
+    2fr;    /* 4) Form body */
+  grid-template-areas:
+    "header"
+    "list"
+    "subheader"
+    "form";
+  height: 90vh;           /* fill most of viewport */
+  overflow: hidden;       /* contain scrollable children */
 }
 
-/* Left pane wrapper contains search, list, subheader + form */
-.modal--definition #definition-left-pane {
-  display: flex;
-  flex-direction: column;
-  flex: 1 1 auto;          /* Fill remaining space under header */
-  min-height: 0;           /* Allow children to shrink */
+/* 1) Header */
+.modal--definition .modal-header {
+  grid-area: header;
+  /* existing header styles apply */
 }
 
-/* 1) Search input and type selector sit at top of left pane */
-.modal--definition #definition-left-pane > input,
-.modal--definition #definition-left-pane > label {
-  flex: 0 0 auto;
-}
-
-/* 2) Entry list: scrollable region */
+/* 2) Entry list */
 .modal--definition #definition-list {
-  flex: 1 1 auto;
-  min-height: 0;
+  grid-area: list;
+
+  min-height: 0;          /* allow list to shrink */
   overflow-y: auto;
   padding-right: 4px;
-  scrollbar-width: none;
+  scrollbar-width: none;  
   -ms-overflow-style: none;
 }
 .modal--definition #definition-list::-webkit-scrollbar {
@@ -35,15 +38,17 @@
   height: 0;
 }
 
-/* 3) Form subheader: pinned just below list */
+/* 3) Form subheader (“Add/Edit” row) */
 .modal--definition .modal-subheader {
-  flex: 0 0 auto;
+  grid-area: subheader;
+  /* existing subheader styles apply */
 }
 
-/* 4) Form body: scrollable region */
+/* 4) Form body */
 .modal--definition #definition-form-container {
-  flex: 1 1 auto;
-  min-height: 0;
+  grid-area: form;
+
+  min-height: 0;          /* allow form body to shrink */
   overflow-y: auto;
   padding-right: 4px;
   scrollbar-width: none;
