@@ -1,15 +1,11 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.0 — orchestrates Definition modal, uses lifecycle & UI builder
+// @version: 1.1 — initialize listApi before calling refresh()
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
 import { definitionTypes }  from "../types.js";
 import { createDefinitionListManager } 
   from "../list/definitionListManager.js";
-import { createFormControllerHeader, wireFormEvents }
-  from "../../../shared/ui/forms/formControllerShell.js";
-import { initFormPickrs } from "../../../shared/ui/forms/pickrAdapter.js";
-import { createFormState } from "../../../shared/ui/forms/formStateManager.js";
 import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
@@ -38,7 +34,7 @@ export function initDefinitionModal(db) {
         await refresh();
       }
     });
-    searchInput.addEventListener("input", () => 
+    searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );
   }
@@ -48,9 +44,10 @@ export function initDefinitionModal(db) {
     typeSelect.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option>${t}</option>`).join("");
     typeSelect.value = type;
-    await refresh();
 
+    // Ensure listApi is initialized before refresh
     if (!listApi) setupList();
+    await refresh();
 
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
@@ -59,28 +56,57 @@ export function initDefinitionModal(db) {
 
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // Build form
+    // Build and insert form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
-      title: type,
+      title:     type,
       hasFilter: true,
-      onCancel: () => { formApi.reset(); previewApi.hide(); },
-      onDelete: async id => { /* ... */ },
-      onSubmit: async payload => { /* ... */ },
-      onFieldChange: data => { /* ... */ }
+      onCancel:  () => { formApi.reset(); previewApi.hide(); },
+      onDelete:  async id => {
+        await definitionTypes[type].del(db, id);
+        await refresh();
+        formApi.reset(); previewApi.hide();
+      },
+      onSubmit:  async payload => {
+        await definitionTypes[type].save(db, payload.id ?? null, payload);
+        await refresh();
+        formApi.reset(); previewApi.hide();
+      },
+      onFieldChange: data => {
+        let pd = data;
+        if (type === "Chest" && Array.isArray(data.lootPool)) {
+          pd = {
+            ...data,
+            lootPool: data.lootPool.map(i => itemMap[i]).filter(Boolean)
+          };
+        }
+        previewApi.show(pd);
+      }
     }, db);
 
-    // Replace placeholder header
+    // Slot generated header
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    if (def) formApi.populate(def);
-    else formApi.reset();
+    if (def) {
+      formApi.populate(def);
+      previewApi.show(
+        type === "Chest"
+          ? { ...def, lootPool: (def.lootPool || []).map(i => itemMap[i]).filter(Boolean) }
+          : def
+      );
+    } else {
+      formApi.reset();
+      previewApi.show(type === "Chest" ? { lootPool: [] } : {});
+    }
 
     open();
   }
 
-  return { openCreate: (_evt, type="Item") => openDefinition(type) };
+  return {
+    openCreate: (_evt, type = "Item") => openDefinition(type),
+    openEdit:   def                  => openDefinition(currentType, def)
+  };
 }
