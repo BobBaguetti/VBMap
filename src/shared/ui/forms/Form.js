@@ -1,5 +1,5 @@
 // @file: src/shared/ui/forms/Form.js
-// @version: 1.2 — Step 5: lazy-load pickrAdapter dynamically
+// @version: 1.3 — consolidated header via createFormControllerHeader; unified event wiring
 
 import {
   createTextField,
@@ -9,16 +9,21 @@ import {
   createExtraInfoField,
   createChipListField
 } from "../components/formFields.js";
-import { createIcon }      from "../../utils/iconUtils.js";
+import { createIcon } from "../../utils/iconUtils.js";
 import { createFormState } from "./formStateManager.js";
+import { initFormPickrs } from "./pickrAdapter.js";
+import {
+  createFormControllerHeader,
+  wireFormEvents
+} from "../components/formControllerShell.js";
 
 /**
  * Unified form builder + controller + state manager.
  *
  * Handlers:
  *  - title
- *  - hasFilter?
- *  - onFilter?
+ *  - hasFilter
+ *  - onFilter
  *  - onCancel
  *  - onDelete
  *  - onSubmit
@@ -26,45 +31,59 @@ import { createFormState } from "./formStateManager.js";
  */
 export class Form {
   constructor(schema, handlers) {
-    const { title, hasFilter, onFilter, onCancel, onDelete, onSubmit, onFieldChange } = handlers;
-    this.schema   = schema;
+    const {
+      title,
+      hasFilter = false,
+      onFilter,
+      onCancel,
+      onDelete,
+      onSubmit,
+      onFieldChange
+    } = handlers;
+
+    this.schema = schema;
     this.handlers = handlers;
 
     // 1) Build the raw <form> and field inputs
     const { form, fields, colorables } = this._buildForm(schema);
-    this.form       = form;
-    this.fields     = fields;
+    this.form = form;
+    this.fields = fields;
     this.colorables = colorables;
 
-    // 2) Create header + buttons row
-    this._btnDelete = null;
-    const headerWrap = this._createHeader(title, hasFilter, onFilter, onCancel, onDelete);
-    headerWrap.classList.add("modal-subheader");
-    this.form.prepend(headerWrap);
+    // 2) Create header via shared controller
+    const headerObj = createFormControllerHeader({
+      title,
+      hasFilter,
+      onFilter,
+      onCancel,
+      onDelete
+    });
+    headerObj.container.classList.add("modal-subheader");
+    this._btnDelete = headerObj.setDeleteVisible; // setter function
+    this.form.prepend(headerObj.container);
 
     // 3) Lazy-load Pickr adapter and initialize swatches
     this.pickrs = {};
     (async () => {
       try {
-        const { initFormPickrs } = await import("./pickrAdapter.js");
         this.pickrs = initFormPickrs(this.form, this.colorables);
       } catch (e) {
-        console.warn("Failed to load pickrAdapter:", e);
+        console.warn("Failed to initialize Pickr swatches:", e);
       }
     })();
 
     // 4) Track current definition ID
     this.payloadId = null;
 
-    // 5) Form state setup
+    // 5) Form state setup (including dynamic subheader titles)
     const defaultValues = Object.fromEntries(
       Object.entries(schema).map(([k, cfg]) => [
         k,
         cfg.default !== undefined
           ? cfg.default
           : cfg.type === "checkbox"
-            ? false
-            : ""
+          ? false
+          : ""
       ])
     );
     const pickrClearKeys = Object.entries(schema)
@@ -72,19 +91,21 @@ export class Form {
       .map(([, cfg]) => cfg.colorable);
 
     this.state = createFormState({
-      form:             this.form,
-      fields:           this.fields,
+      form: this.form,
+      fields: this.fields,
       defaultValues,
-      pickrs:           this.pickrs,
+      pickrs: this.pickrs,
       pickrClearKeys,
-      subheading:       headerWrap.querySelector("h3"),
-      setDeleteVisible: v => { this._btnDelete.hidden = !v; },
-      getCustom:        () => this.getValues(),
+      subheading: headerObj.subheading,
+      setDeleteVisible: headerObj.setDeleteVisible,
+      addTitle: `Add ${title}`,
+      editTitle: `Edit ${title}`,
+      getCustom: () => this.getValues(),
       onFieldChange
     });
 
-    // 6) Wire submit & live-preview
-    this._wireEvents(onSubmit, onFieldChange);
+    // 6) Wire submit & live-preview using shared utility
+    wireFormEvents(this.form, () => this.getValues(), onSubmit, onFieldChange);
   }
 
   // Build the <form> rows from schema
@@ -98,7 +119,10 @@ export class Form {
       switch (cfg.type) {
         case "text":
         case "number":
-          ({ row, input, colorBtn: picker } = createTextField(cfg.label, `fld-${key}`));
+          ({ row, input, colorBtn: picker } = createTextField(
+            cfg.label,
+            `fld-${key}`
+          ));
           if (cfg.type === "number") input.type = "number";
           if (cfg.colorable) colorables[cfg.colorable] = picker;
           fields[key] = input;
@@ -107,7 +131,7 @@ export class Form {
           ({ row, select: input, colorBtn: picker } = createDropdownField(
             cfg.label,
             `fld-${key}`,
-            (cfg.options||[]).map(o=>({value:o,label:o})),
+            (cfg.options || []).map((o) => ({ value: o, label: o })),
             { showColor: !!cfg.colorable }
           ));
           if (cfg.colorable) colorables[cfg.colorable] = picker;
@@ -124,13 +148,20 @@ export class Form {
           fields[key] = input;
           break;
         case "extraInfo":
-          ({ row, extraInfo: input } = createExtraInfoField({ withDividers: cfg.withDividers }));
+          ({ row, extraInfo: input } = createExtraInfoField({
+            withDividers: cfg.withDividers
+          }));
           fields[key] = input;
           break;
         case "chipList":
           ({ row, getItems: get, setItems: set } = createChipListField(
-            cfg.label, [], {
-              items: [], idKey: cfg.idKey, labelKey: cfg.labelKey, renderIcon: cfg.renderIcon
+            cfg.label,
+            [],
+            {
+              items: [],
+              idKey: cfg.idKey,
+              labelKey: cfg.labelKey,
+              renderIcon: cfg.renderIcon
             }
           ));
           fields[key] = { get, set };
@@ -138,7 +169,7 @@ export class Form {
         case "checkbox":
           row = document.createElement("label");
           const cb = document.createElement("input");
-          cb.type    = "checkbox";
+          cb.type = "checkbox";
           cb.checked = cfg.default ?? false;
           row.innerHTML = `<span>${cfg.label}</span>`;
           row.prepend(cb);
@@ -153,88 +184,20 @@ export class Form {
     return { form, fields, colorables };
   }
 
-  // Create header (h3 + buttons)
-  _createHeader(title, hasFilter, onFilter, onCancel, onDelete) {
-    const wrap = document.createElement("div");
-    wrap.classList.add("form-subheader");
-    wrap.style.display        = "flex";
-    wrap.style.justifyContent = "space-between";
-    wrap.style.alignItems     = "center";
-
-    const h3 = document.createElement("h3");
-    h3.textContent = title;
-    wrap.append(h3);
-
-    if (hasFilter) {
-      const chk = document.createElement("input");
-      chk.type = "checkbox";
-      chk.id   = `fld-${title}-filter`;
-      chk.addEventListener("change", () => onFilter(chk.checked));
-      const lbl = document.createElement("label");
-      lbl.htmlFor    = chk.id;
-      lbl.textContent = "Add to filters";
-      const fc = document.createElement("div");
-      fc.style.display    = "flex";
-      fc.style.alignItems = "center";
-      fc.style.marginLeft = "1rem";
-      fc.append(lbl, chk);
-      wrap.append(fc);
-    }
-
-    // Buttons
-    const btnRow = document.createElement("div");
-    btnRow.className = "floating-buttons";
-
-    const btnSave = document.createElement("button");
-    btnSave.type      = "submit";
-    btnSave.className = "ui-button";
-    btnSave.textContent = "Save";
-
-    const btnClear = document.createElement("button");
-    btnClear.type      = "button";
-    btnClear.className = "ui-button";
-    btnClear.textContent = "Clear";
-    btnClear.onclick   = onCancel;
-
-    const btnDelete = document.createElement("button");
-    btnDelete.type        = "button";
-    btnDelete.className   = "ui-button-delete";
-    btnDelete.title       = "Delete";
-    btnDelete.appendChild(createIcon("trash"));
-    btnDelete.onclick     = () => onDelete();
-    btnDelete.hidden      = true;
-
-    btnRow.append(btnSave, btnClear, btnDelete);
-    wrap.append(btnRow);
-
-    this._btnDelete = btnDelete;
-    return wrap;
-  }
-
-  // Wire form events
-  _wireEvents(onSubmit, onFieldChange) {
-    this.form.addEventListener("submit", async e => {
-      e.preventDefault();
-      await onSubmit?.(this.getValues());
-    });
-    this.form.addEventListener("input", () => {
-      onFieldChange?.(this.getValues());
-    });
-  }
-
   /** Gather current payload */
   getValues() {
     const out = { id: this.payloadId };
     for (const [key, cfg] of Object.entries(this.schema)) {
       let val;
       const field = this.fields[key];
-      if (cfg.type === "checkbox")      val = field.checked;
+      if (cfg.type === "checkbox") val = field.checked;
       else if (cfg.type === "extraInfo") val = field.getLines();
-      else if (cfg.type === "chipList")  val = field.get();
-      else                               val = field.value;
+      else if (cfg.type === "chipList") val = field.get();
+      else val = field.value;
       out[key] = val;
       if (cfg.colorable) {
-        out[cfg.colorable] = this.pickrs[cfg.colorable]?.getColor() || null;
+        out[cfg.colorable] =
+          this.pickrs[cfg.colorable]?.getColor() || null;
       }
     }
     return out;
