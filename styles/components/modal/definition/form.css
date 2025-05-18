@@ -1,24 +1,25 @@
+/* @file: styles/components/modal/definition/form.css */
+/* @version: 1.7 — updated to .form-row and .form-control */
+
 .modal--definition #definition-form-container {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
 
-.modal--definition .field-row {
+.modal--definition .form-row {
   display: flex;
   align-items: center;
   padding: 8px 0;
 }
 
-.modal--definition .field-row label {
+.modal--definition .form-row > label {
   flex: 0 0 100px;
   margin-right: 8px;
 }
 
-/* catch *all* native and custom inputs/selects/textareas */
-.modal--definition .field-row input,
-.modal--definition .field-row select,
-.modal--definition .field-row textarea {
+/* catch-all controls */
+.modal--definition .form-row .form-control {
   flex: 1 1 auto;
   min-width: 0;
   margin-right: 8px;
@@ -29,29 +30,24 @@
   color: var(--text-primary);
 }
 
-/* ensure image URL fields don’t overflow */
-.modal--definition input[id^="def-image"] {
-  max-width: 100%;
-  box-sizing: border-box;
-}
-
-/* remove default number-spinner arrows */
-.modal--definition .field-row input[type="number"]::-webkit-outer-spin-button,
-.modal--definition .field-row input[type="number"]::-webkit-inner-spin-button {
+/* Remove spinner arrows on number inputs */
+.modal--definition .form-row .form-control[type="number"]::-webkit-outer-spin-button,
+.modal--definition .form-row .form-control[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-.modal--definition .field-row input[type="number"] {
+.modal--definition .form-row .form-control[type="number"] {
   -moz-appearance: none;
   appearance: none;
 }
 
-/* allow textareas to resize vertically */
-.modal--definition .field-row textarea {
+/* Allow textareas to resize vertically */
+.modal--definition .form-row .form-control[type="textarea"],
+.modal--definition .form-row textarea.form-control {
   resize: vertical;
 }
 
-/* larger, consistent color picker swatch */
+/* Color swatches */
 .modal--definition .color-btn {
   margin-left: 8px !important;
   flex: 0 0 24px;
@@ -63,25 +59,7 @@
   cursor: pointer;
 }
 
-/* any inline buttons on a field-row (e.g. remove-line) */
-.modal--definition .field-row button.ui-button,
-.modal--definition .extra-info-line .remove-line-btn {
-  margin-left: 8px;
-}
-
-/* ===== Extra-Info Block ===== */
-.modal--definition .extra-info-block {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.modal--definition .extra-info-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
+/* Remove-line buttons */
 .modal--definition .extra-info-line .remove-line-btn {
   width: 28px;
   height: 28px;
@@ -93,7 +71,24 @@
   justify-content: center;
   cursor: pointer;
 }
-
 .modal--definition .extra-info-line .remove-line-btn svg {
   fill: var(--text-primary);
+}
+
+/* Extra-info container tweaks */
+.modal--definition .extra-info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal--definition .extra-info-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Image URL fields */
+.modal--definition .form-row input[id^="def-image"] {
+  max-width: 100%;
+  box-sizing: border-box;
 }

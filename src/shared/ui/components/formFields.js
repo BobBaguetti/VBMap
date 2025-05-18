@@ -1,133 +1,137 @@
-// @file: src\shared\ui\components\formFields.js
-// @version: 1.4 — export chip‐list field helper
+// @file: src/shared/ui/components/formFields.js
+// @version: 2.0 — unified createFieldRow API
 
 import { createPickr, disablePickr, getPickrHexColor } from "../forms/pickrAdapter.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
-
-export function createFieldRow(labelText, inputEl) {
-  const row = document.createElement("div");
-  row.className = "field-row";
-
-  const label = document.createElement("label");
-  // ensure one trailing colon
-  label.textContent = labelText.endsWith(":")
-    ? labelText
-    : `${labelText}:`;
-
-  row.append(label, inputEl);
-  return row;
-}
-
-export function createColorButton(id) {
-  const btn = document.createElement("div");
-  btn.className = "color-btn color-swatch";
-  btn.id = id;
-  return btn;
-}
-
-export function createColorFieldRow(labelText, inputEl, colorId) {
-  const row = document.createElement("div");
-  row.className = "field-row";
-  const label = document.createElement("label");
-  label.textContent = labelText.endsWith(":")
-    ? labelText
-    : `${labelText}:`;
-  const colorBtn = createColorButton(colorId);
-  row.append(label, inputEl, colorBtn);
-  return { row, inputEl, colorBtn };
-}
-
-export function createTextField(labelText, id) {
-  const input = document.createElement("input");
-  input.id = id;
-  input.className = "ui-input";
-  const { row, colorBtn } = createColorFieldRow(labelText, input, `${id}-color`);
-  return { row, input, colorBtn };
-}
-
-export function createTextareaFieldWithColor(labelText, id) {
-  const textarea = document.createElement("textarea");
-  textarea.id = id;
-  const { row, colorBtn } = createColorFieldRow(labelText, textarea, `${id}-color`);
-  return { row, textarea, colorBtn };
-}
-
-export function createDropdownField(
-  labelText,
-  id,
-  options = [],
-  { showColor = true } = {}
-) {
-  const select = document.createElement("select");
-  select.id = id;
-  select.className = "ui-input";
-  options.forEach(opt => {
-    const o = document.createElement("option");
-    o.value = opt.value;
-    o.textContent = opt.label;
-    select.append(o);
-  });
-  const { row, inputEl: selectEl, colorBtn } = createColorFieldRow(
-    labelText,
-    select,
-    `${id}-color`
-  );
-  if (!showColor) colorBtn.style.visibility = "hidden";
-  return { row, select: selectEl, colorBtn };
-}
-
-export function createImageField(labelText, id) {
-  const input = document.createElement("input");
-  input.id = id;
-  input.type = "text";
-  const row = createFieldRow(labelText, input);
-  return { row, input };
-}
-
-export function createFormButtonRow(onCancel, saveText = "Save", cancelText = "Cancel") {
-  const row = document.createElement("div");
-  row.className = "field-row";
-  row.style.justifyContent = "center";
-  row.style.marginTop = "10px";
-
-  const btnSave = document.createElement("button");
-  btnSave.type = "submit";
-  btnSave.className = "ui-button";
-  btnSave.textContent = saveText;
-
-  const btnCancel = document.createElement("button");
-  btnCancel.type = "button";
-  btnCancel.className = "ui-button";
-  btnCancel.textContent = cancelText;
-  btnCancel.onclick = onCancel;
-
-  row.append(btnSave, btnCancel);
-  return row;
-}
+import { createChipListField } from "./chipListField.js";
 
 /**
- * Create a top-aligned “Extra Info” field row, with optional <hr> dividers.
+ * Creates one row in a form, wrapping the appropriate control
+ * and color-swatch if needed.
  *
- * @param {{ withDividers?: boolean }} opts
- * @returns {{ row: HTMLElement, extraInfo: ReturnType<typeof createExtraInfoBlock> }}
+ * @param {Object} opts
+ * @param {"text"|"number"|"select"|"textarea"|"imageUrl"|"extraInfo"|"chipList"|"checkbox"} opts.type
+ * @param {string} opts.label     — row label
+ * @param {string} [opts.id]      — id on the <input>/<select>/<textarea>
+ * @param {string[]} [opts.options] — for select
+ * @param {boolean} [opts.colorable] — show a color picker
+ * @param {boolean} [opts.withDividers] — extraInfo only
+ * @param {string} [opts.idKey]   — chipList only
+ * @param {string} [opts.labelKey]— chipList only
+ * @param {Function} [opts.renderIcon] — chipList only
+ *
+ * @returns {{ row:HTMLElement, input:HTMLElement, colorBtn?:HTMLElement }}
  */
-export function createExtraInfoField({ withDividers = false } = {}) {
-  const extraInfo = createExtraInfoBlock();
-  const row = createFieldRow("Extra Info", extraInfo.block);
-  row.style.alignItems = "flex-start";
+export function createFieldRow({
+  type,
+  label,
+  id,
+  options = [],
+  colorable = false,
+  withDividers = false,
+  idKey,
+  labelKey,
+  renderIcon
+}) {
+  const row = document.createElement("div");
+  row.className = "form-row";
 
-  if (!withDividers) {
-    return { row, extraInfo };
+  // label cell
+  const labelEl = document.createElement("label");
+  labelEl.textContent = label.endsWith(":") ? label : label + ":";
+  row.append(labelEl);
+
+  let input, colorBtn;
+
+  switch (type) {
+    case "text":
+    case "number":
+      input = document.createElement("input");
+      input.type = type;
+      input.id = id;
+      input.className = "form-control";
+      break;
+
+    case "select":
+      input = document.createElement("select");
+      input.id = id;
+      input.className = "form-control";
+      options.forEach(opt => {
+        const o = document.createElement("option");
+        o.value = opt;
+        o.textContent = opt;
+        input.append(o);
+      });
+      break;
+
+    case "textarea":
+      input = document.createElement("textarea");
+      input.id = id;
+      input.className = "form-control";
+      break;
+
+    case "imageUrl":
+      input = document.createElement("input");
+      input.type = "text";
+      input.id = id;
+      input.className = "form-control";
+      break;
+
+    case "extraInfo":
+      // raw block from helper
+      const extra = createExtraInfoBlock();
+      input = extra.block;
+      if (withDividers) {
+        const container = document.createElement("div");
+        const hr1 = document.createElement("hr");
+        const hr2 = document.createElement("hr");
+        container.append(hr1, row, hr2);
+        container.className = "form-row"; // keep row styling
+        row.append(input);
+        return { row: container, input: extra };
+      }
+      break;
+
+    case "chipList":
+      // re-use your existing helper
+      const { row: tmpRow, getItems, setItems } = createChipListField(
+        label,
+        [],
+        { items: [], idKey, labelKey, renderIcon }
+      );
+      row.className = "form-row";
+      // tmpRow already holds label+select; swap it in
+      tmpRow.classList.add("form-row");
+      input = getItems;       // getter fn
+      colorBtn = setItems;    // setter fn
+      return { row: tmpRow, input, colorBtn };
+
+    case "checkbox":
+      // inline label + box
+      const lbl = document.createElement("label");
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.id = id;
+      lbl.append(cb, document.createTextNode(` ${label}`));
+      input = cb;
+      // replace default row contents
+      row.innerHTML = "";
+      row.append(lbl);
+      break;
+
+    default:
+      throw new Error(`Unknown field type: ${type}`);
   }
 
-  const container = document.createElement("div");
-  const hrAbove   = document.createElement("hr");
-  const hrBelow   = document.createElement("hr");
-  container.append(hrAbove, row, hrBelow);
-  return { row: container, extraInfo };
-}
+  // if this type supports coloring, wire up a swatch
+  if (colorable && type !== "extraInfo" && type !== "chipList" && type !== "checkbox") {
+    colorBtn = document.createElement("div");
+    colorBtn.className = "color-btn";
+    colorBtn.id = `${id}-color`;
+    row.append(input, colorBtn);
+  } else {
+    row.append(input);
+  }
 
-// Re-export block factory
-export { createExtraInfoBlock } from "./extraInfoBlock.js";
-// **New**: re-export the chip-list field helper
-export { createChipListField } from "./chipListField.js";
+  return { row, input, colorBtn };
+}

@@ -30,7 +30,6 @@
 
 /* ── Core component skins ────────────────────────────────────────────── */
 @import "components/buttons.css";
-@import "components/forms.css";
 @import "components/surfaces.css";
 @import "components/scrollbar.css";
 @import "components/icons.css";
