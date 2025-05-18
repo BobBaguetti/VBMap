@@ -1,33 +1,109 @@
 /* @file: styles/components/modal/definition/fields.css */
-/* @version: 1.1 — grid-based form layout for consistent row sizing */
+/* @version: 2.1 — unified grid layout & control styling; removed deprecated prefixes */
+
+.modal--definition {
+  --field-label-width: 100px;            /* move your magic number into a variable */
+  --field-gap: var(--space-2);           /* consistent gap */
+  --control-bg: var(--bg-40);
+  --control-border: var(--border-soft);
+  --control-radius: var(--radius-small);
+  --control-padding: 6px 8px;
+}
 
 .modal--definition .field-row {
   display: grid;
-  grid-template-columns: var(--field-label-width, 100px) 1fr;
-  gap: var(--space-2);
+  grid-template-columns: var(--field-label-width) 1fr;
+  gap: var(--field-gap);
   align-items: center;
-  background: none;
+  margin: 0;
   padding: 0;
 }
 
 .modal--definition .field-row > label {
-  /* label occupies first column; width controlled via --field-label-width */
+  color: var(--text-primary);
+  /* automatically occupies first column */
 }
 
 .modal--definition .field-row input,
 .modal--definition .field-row select,
 .modal--definition .field-row textarea,
 .modal--definition .field-row .ui-input {
+  grid-column: 2;               /* span second column */
   width: 100%;
-  background: var(--field-bg, var(--bg-40));
-  border: var(--border-width-hair) solid var(--border-soft);
-  border-radius: var(--radius-small);
-  padding: var(--space-2);
+  background-color: var(--control-bg);
+  border: var(--border-width-hair) solid var(--control-border);
+  border-radius: var(--control-radius);
+  padding: var(--control-padding);
   color: var(--text-primary);
   box-sizing: border-box;
+  font-family: inherit;
+  font-size: inherit;
 }
 
+/* Remove native number spinners and default styling */
+.modal--definition .field-row input[type="number"] {
+  appearance: none;           /* Standard */
+  -webkit-appearance: none;   /* Chrome/Safari */
+  margin: 0;
+}
+
+/* Allow textareas to resize vertically */
+.modal--definition .field-row textarea {
+  resize: vertical;
+  min-height: 4em;
+}
+
+/* Color swatch (Pickr trigger) */
 .modal--definition .field-row .color-btn {
-  /* position the color swatch to the far right */
   justify-self: end;
+  width: 24px;
+  height: 24px;
+  background-color: var(--text-primary);
+  border: 1px solid var(--control-border);
+  border-radius: var(--control-radius);
+  cursor: pointer;
+  grid-column: 3;               /* place in a third implicit column */
+  margin-left: 0;               /* no extra margin needed */
+}
+
+/* Extra-info block rows */
+.modal--definition .extra-info-block {
+  grid-column: 1 / span 2;      /* full width under label+control */
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+.modal--definition .extra-info-block .field-row {
+  align-items: flex-start;      /* multiline inputs need top alignment */
+}
+.modal--definition .extra-info-block .remove-line-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.modal--definition .extra-info-block .remove-line-btn svg {
+  fill: var(--text-primary);
+}
+
+/* ChipList field (if present) */
+.modal--definition .field-row .chip-list-container {
+  grid-column: 2;
+}
+
+/* Button rows inside forms (if still used) */
+.modal--definition .field-row .ui-button,
+.modal--definition .field-row button.ui-button {
+  margin-left: var(--space-2);
+}
+
+/* Override any remaining flex-based rules from old form.css */
+.modal--definition .field-row[style*="display:flex"],
+.modal--definition form > .field-row[style*="display:flex"] {
+  display: grid !important;
 }
