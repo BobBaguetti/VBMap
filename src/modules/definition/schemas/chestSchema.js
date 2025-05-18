@@ -1,5 +1,5 @@
 // @file: src/modules/definition/schemas/chestSchema.js
-// @version: 1.3 — reordered imageSmall to bottom
+// @version: 1.2 — removed showInFilters; filter toggle now only in subheader
 
 export const chestSchema = {
   name:           { type: "text",     label: "Name",            colorable: "nameColor" },
@@ -13,6 +13,6 @@ export const chestSchema = {
     renderIcon:   item => item.imageSmall
   },
   description:    { type: "textarea", label: "Description",     colorable: "descriptionColor" },
-  extraLines:     { type: "extraInfo",label: "Extra Info",      withDividers: true },
-  imageSmall:     { type: "imageUrl", label: "Icon URL" }      // moved to bottom
+  imageSmall:     { type: "imageUrl", label: "Icon URL" },
+  extraLines:     { type: "extraInfo",label: "Extra Info",      withDividers: true }
 };

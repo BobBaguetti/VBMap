@@ -1,5 +1,5 @@
 // @file: src/modules/definition/schemas/itemSchema.js
-// @version: 1.3 — reordered image fields to bottom
+// @version: 1.2 — removed showInFilters; filter toggle now only in subheader
 
 export const itemSchema = {
   name: {
@@ -34,11 +34,6 @@ export const itemSchema = {
     label:     "Quantity",
     colorable: "quantityColor"
   },
-  extraLines: {
-    type:         "extraInfo",
-    label:        "Extra Info",
-    withDividers: true
-  },
   imageSmall: {
     type:  "imageUrl",
     label: "Image S"
@@ -46,5 +41,10 @@ export const itemSchema = {
   imageLarge: {
     type:  "imageUrl",
     label: "Image L"
+  },
+  extraLines: {
+    type:         "extraInfo",
+    label:        "Extra Info",
+    withDividers: true
   }
 };
