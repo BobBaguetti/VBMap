@@ -1,10 +1,10 @@
 // @file: src/shared/ui/core/modalCore.js
-// @version: 1.2 — toggle .is-open; CSS handles display & centering
+// @version: 1.3 — added Escape key handling for closing modals
 
 /**
- * Attaches a “restore focus & scroll” handler to a modal.
+ * Attaches lifecycle handlers to a modal: focus/scroll restore and Escape‐to‐close.
  */
-function attachModalLifecycle(modal) {
+function attachModalLifecycle(modal, onClose) {
   const prevFocused = document.activeElement;
   const scrollY     = window.scrollY;
   document.documentElement.style.overflow = "hidden";
@@ -13,7 +13,23 @@ function attachModalLifecycle(modal) {
     document.documentElement.style.overflow = "";
     window.scrollTo(0, scrollY);
     prevFocused?.focus?.();
+    // Remove Escape key listener
+    if (modal._escHandler) {
+      document.removeEventListener("keydown", modal._escHandler);
+      delete modal._escHandler;
+    }
   }
+
+  // Close on Escape key
+  const escHandler = (e) => {
+    if (e.key === "Escape") {
+      closeModal(modal);
+      onClose?.();
+    }
+  };
+  modal._escHandler = escHandler;
+  document.addEventListener("keydown", escHandler);
+
   modal.dataset.lifecycleAttached = "true";
   modal.addEventListener("close", restore, { once: true });
 }
@@ -21,11 +37,11 @@ function attachModalLifecycle(modal) {
 /**
  * Open a modal (any type) by toggling its .is-open class.
  */
-export function openModal(modal) {
+export function openModal(modal, onClose) {
   modal.classList.add("is-open");
   modal.style.zIndex = "9999";
   if (!modal.dataset.lifecycleAttached) {
-    attachModalLifecycle(modal);
+    attachModalLifecycle(modal, onClose);
   }
 }
 
@@ -40,8 +56,8 @@ export function closeModal(modal) {
 /**
  * Open a modal positioned near an event (e.g. context menu).
  */
-export function openModalAt(modal, evt) {
-  openModal(modal);
+export function openModalAt(modal, evt, onClose) {
+  openModal(modal, onClose);
   const content = modal.querySelector(".modal-content");
   const rect    = content.getBoundingClientRect();
   content.style.left = `${evt.clientX - rect.width}px`;
