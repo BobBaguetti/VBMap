@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/box.css */
-/* @version: 1.0 — wrapper & box dimensions for definition modal */
+/* @version: 1.2 — wrapper & box dimensions for definition modal, constrained width */
 
 .modal--definition {
   display: none;                /* toggled by JS */
@@ -20,7 +20,7 @@
 .modal--definition .modal-content {
   position: relative;
   width: 100%;
-  max-width: 550px;
+  max-width: 700px;             /* was 550px; now a bit wider but capped */
   height: 90vh;
   background-color: var(--bg-30);
   border: 1px solid var(--border-soft);
