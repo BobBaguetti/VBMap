@@ -1,5 +1,5 @@
 /* @file: styles/app.css */
-/* @version: 1.8 — updated sidebar import to components/sidebar/index.css */
+/* @version: 1.10 — corrected popup import paths */
 
 /* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
 @import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
@@ -37,7 +37,7 @@
 
 /* ── Map & Marker overrides ──────────────────────────────────────────── */
 @import "components/map/index.css";
-@import "components/markers.css";
+@import "components/map/markers.css";
 
 /* ── Utilities ───────────────────────────────────────────────────────── */
 @import "components/utilities.css";
@@ -45,8 +45,9 @@
 /* ── Context menus & popups ──────────────────────────────────────────── */
 @import "components/context-menu.css";
 @import "components/map/leaflet-overrides.css";
-@import "components/popup.css";
-@import "components/popup-chest-grid.css";
+/* Fixed: popup CSS lives under components/popup/ */
+@import "components/popup/popup.css";
+@import "components/popup/popup-chest-grid.css";
 
 /* ── Modal stack ─────────────────────────────────────────────────────── */
 @import "components/modal/index.css";
