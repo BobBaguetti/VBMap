@@ -1,8 +1,7 @@
 // @file: src/modules/definition/schemas/chestSchema.js
-// @version: 1.1 — add lootPool chipList field
+// @version: 1.2 — removed showInFilters; filter toggle now only in subheader
 
 export const chestSchema = {
-  showInFilters:  { type: "checkbox", label: "Show in filters",  default: true },
   name:           { type: "text",     label: "Name",            colorable: "nameColor" },
   category:       { type: "select",   label: "Category",        options: ["Normal","Dragonvault"] },
   size:           { type: "select",   label: "Size",            options: ["Small","Medium","Large"] },
