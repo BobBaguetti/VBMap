@@ -1,10 +1,10 @@
 // @file: src/shared/ui/core/createDefinitionModal.js
-// @version: 1.0 — dedicated factory for the Definition modal
+// @version: 1.1 — separate header from body row
 
 import { openModal, closeModal } from "./modalCore.js";
 
 export function createDefinitionModal({ id, title, onClose }) {
-  // 1) Modal container
+  // 1) Modal backdrop/container
   const modal = document.createElement("div");
   modal.id = id;
   modal.classList.add("modal", "modal--definition");
@@ -14,19 +14,18 @@ export function createDefinitionModal({ id, title, onClose }) {
   modal.style.zIndex = "9999";
   modal.style.backgroundColor = "rgba(0,0,0,0.5)";
 
-  // 2) Content pane
+  // 2) Content pane, stack header then body horizontally
   const content = document.createElement("div");
-  content.classList.add("modal-content", "modal__body--definition");
-  content.setAttribute("tabindex", "-1");
+  content.classList.add("modal-content");
   Object.assign(content.style, {
     position:     "fixed",
     top:          "50%",
     left:         "50%",
     transform:    "translate(-50%, -50%)",
-    maxWidth:     "550px",
-    maxHeight:    "var(--modal-definition-content-height)",
+    maxWidth:     "900px",            // widen to fit two panes
+    maxHeight:    "90vh",
     display:      "flex",
-    flexDirection:"row",
+    flexDirection:"column",          // <-- column now
     overflow:     "hidden",
     zIndex:       "10001"
   });
@@ -35,6 +34,13 @@ export function createDefinitionModal({ id, title, onClose }) {
   const header = document.createElement("div");
   header.classList.add("modal-header");
   header.id = `${id}__header`;
+  Object.assign(header.style, {
+    display:      "flex",
+    alignItems:   "center",
+    justifyContent:"space-between",
+    padding:      "0.75rem 1rem",
+    borderBottom: "1px solid var(--border-soft)"
+  });
   const titleEl = document.createElement("h2");
   titleEl.textContent = title;
   const closeBtn = document.createElement("button");
@@ -47,21 +53,41 @@ export function createDefinitionModal({ id, title, onClose }) {
   };
   header.append(titleEl, closeBtn);
 
-  // 4) Named slots
+  // 4) Body row container
+  const body = document.createElement("div");
+  body.classList.add("modal-body");
+  Object.assign(body.style, {
+    display:      "flex",
+    flex:         "1 1 auto",
+    overflow:     "hidden"
+  });
+
+  // 5) Named slots
   const left = document.createElement("div");
   left.classList.add("modal-slot", "modal-slot--left");
   left.id = "definition-left-pane";
+  Object.assign(left.style, {
+    flex:         "0 0 300px",
+    overflowY:    "auto",
+    borderRight:  "1px solid var(--border-soft)"
+  });
 
   const preview = document.createElement("div");
   preview.classList.add("modal-slot", "modal-slot--preview");
   preview.id = "definition-preview-container";
+  Object.assign(preview.style, {
+    flex:         "1 1 auto",
+    overflow:     "auto", 
+    position:     "relative"
+  });
 
-  // 5) Assemble and attach
-  content.append(header, left, preview);
+  // 6) Assemble
+  body.append(left, preview);
+  content.append(header, body);
   modal.append(content);
   document.body.append(modal);
 
-  // 6) Backdrop click = close
+  // 7) Backdrop click closes
   modal.addEventListener("click", e => {
     if (e.target === modal) {
       closeModal(modal);
@@ -69,7 +95,7 @@ export function createDefinitionModal({ id, title, onClose }) {
     }
   });
 
-  // 7) Focus-trap on open
+  // 8) Open helper with focus trap
   modal.open = () => {
     openModal(modal);
     content.focus();
