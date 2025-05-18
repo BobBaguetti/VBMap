@@ -1,64 +1,27 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.7 — two-column grid for definition modal (list + preview) */
+/* @version: 1.8 — remove obsolete grid layout; rely on JS flex body */
 
 .modal--definition .modal-content {
-  display: grid;
-  grid-template-columns: 300px 1fr;
-  grid-template-rows: auto auto 1fr;
-  grid-template-areas:
-    "header     header"
-    "list       preview"
-    "subheader  preview"
-    "form       preview";
-  height: var(--modal-definition-content-height, 90vh);
-  overflow: hidden; /* contain scrollable children */
+  /* reset to default (let JS apply flex via inline styles) */
+  display: block;
 }
 
-/* 1) Header spans both columns */
-.modal--definition .modal-header {
-  grid-area: header;
+.modal--definition .modal-body {
+  display: flex;
+  flex: 1 1 auto;
+  overflow: hidden;
 }
 
-/* 2) Entry list on the left, scrollable */
-.modal--definition #definition-list {
-  grid-area: list;
-  min-height: 0;          /* allow list to shrink */
+/* Left pane: entries + form scroll */
+.modal--definition .modal-slot--left {
+  flex: 0 0 300px;
   overflow-y: auto;
-  padding-right: 4px;
-  scrollbar-width: none;  
-  -ms-overflow-style: none;
-}
-.modal--definition #definition-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+  border-right: 1px solid var(--border-soft);
 }
 
-/* 3) Form subheader (“Add/Edit” row) beneath the list */
-.modal--definition .modal-subheader {
-  grid-area: subheader;
-}
-
-/* 4) Form body on the left, scrollable */
-.modal--definition #definition-form-container {
-  grid-area: form;
-  min-height: 0;          /* allow form body to shrink */
-  overflow-y: auto;
-  padding-right: 4px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.modal--definition #definition-form-container::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-/* 5) Preview pane on the right, scrollable */
+/* Preview pane: scrollable to right */
 .modal--definition .modal-slot--preview {
-  grid-area: preview;
-  min-height: 0;
+  flex: 1 1 auto;
   overflow: auto;
   padding-left: 16px;
-}
-.modal--definition .modal-slot--preview::-webkit-scrollbar {
-  width: 6px;
 }
