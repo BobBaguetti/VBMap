@@ -1,19 +1,19 @@
 /* @file: styles/components/modal/definition/header.css */
-/* @version: 1.3 — simplified header to original layout: title › search › close */
+/* @version: 1.4 — added subheader styling for Add/Edit row */
 
 .modal--definition .modal-header {
   display: flex;
   align-items: center;
   padding: var(--space-2) var(--space-3);
-  background: none;                  /* remove colored background */
-  border-bottom: none;               /* remove border */
+  background: none;
+  border-bottom: none;
 }
 
 .modal--definition .modal-header h2 {
   margin: 0;
   font-size: 1.25rem;
   color: var(--text-primary);
-  flex: 0 0 auto;                    /* don’t stretch */
+  flex: 0 0 auto;
 }
 
 .modal--definition .modal-header input.modal__search {
@@ -38,4 +38,35 @@
   cursor: pointer;
   font-size: 1.5rem;
   color: var(--text-primary);
+}
+
+/* ─── Subheader for Add/Edit form ───────────────────────────────────────── */
+
+.modal--definition .modal-subheader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--bg-30);
+  border-bottom: 1px solid var(--border-soft);
+  grid-area: subheader;
+}
+
+.modal--definition .modal-subheader h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: var(--text-primary);
+}
+
+.modal--definition .modal-subheader .floating-buttons {
+  display: flex;
+  gap: var(--space-2);
+  align-items: center;
+}
+
+/* Ensure buttons in subheader match design tokens */
+.modal--definition .modal-subheader .ui-button,
+.modal--definition .modal-subheader .ui-button-delete {
+  font-family: inherit;
+  font-size: inherit;
 }
