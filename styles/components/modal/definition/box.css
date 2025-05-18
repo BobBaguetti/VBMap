@@ -1,10 +1,11 @@
 /* @file: styles/components/modal/definition/box.css */
-/* @version: 1.2 — display controlled by .is-open, removed inline display */
+/* @version: 1.3 — always flex container; hide when not .is-open */
 
 .modal--definition {
-  /* display is now handled via .is-open */
+  /* Always a flex container for centering */
+  display: flex;
   position: fixed;
-  inset: 0;                     /* top/right/bottom/left: 0 */
+  inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: auto;
@@ -17,9 +18,9 @@
   color: var(--text-primary);
 }
 
-/* Show modal when .is-open is present */
-.modal--definition.is-open {
-  display: flex;
+/* Hide entirely when not open */
+.modal--definition:not(.is-open) {
+  display: none;
 }
 
 .modal--definition .modal-content {
