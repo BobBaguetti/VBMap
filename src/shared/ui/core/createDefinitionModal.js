@@ -1,5 +1,5 @@
 // @file: src/shared/ui/core/createDefinitionModal.js
-// @version: 1.0 — dedicated factory for the Definition modal
+// @version: 1.1 — removed inline styles; layout & sizing now handled entirely in CSS
 
 import { openModal, closeModal } from "./modalCore.js";
 
@@ -11,40 +11,29 @@ export function createDefinitionModal({ id, title, onClose }) {
   modal.setAttribute("role", "dialog");
   modal.setAttribute("aria-modal", "true");
   modal.setAttribute("aria-labelledby", `${id}__header`);
-  modal.style.zIndex = "9999";
-  modal.style.backgroundColor = "rgba(0,0,0,0.5)";
 
   // 2) Content pane
   const content = document.createElement("div");
   content.classList.add("modal-content", "modal__body--definition");
   content.setAttribute("tabindex", "-1");
-  Object.assign(content.style, {
-    position:     "fixed",
-    top:          "50%",
-    left:         "50%",
-    transform:    "translate(-50%, -50%)",
-    maxWidth:     "550px",
-    maxHeight:    "var(--modal-definition-content-height)",
-    display:      "flex",
-    flexDirection:"row",
-    overflow:     "hidden",
-    zIndex:       "10001"
-  });
 
   // 3) Header
   const header = document.createElement("div");
   header.classList.add("modal-header");
   header.id = `${id}__header`;
+
   const titleEl = document.createElement("h2");
   titleEl.textContent = title;
+
   const closeBtn = document.createElement("button");
   closeBtn.classList.add("close");
   closeBtn.innerHTML = `<span aria-hidden="true">&times;</span>`;
   closeBtn.setAttribute("aria-label", "Close dialog");
-  closeBtn.onclick = () => {
+  closeBtn.addEventListener("click", () => {
     closeModal(modal);
     onClose?.();
-  };
+  });
+
   header.append(titleEl, closeBtn);
 
   // 4) Named slots
@@ -56,7 +45,7 @@ export function createDefinitionModal({ id, title, onClose }) {
   preview.classList.add("modal-slot", "modal-slot--preview");
   preview.id = "definition-preview-container";
 
-  // 5) Assemble and attach
+  // 5) Assemble
   content.append(header, left, preview);
   modal.append(content);
   document.body.append(modal);

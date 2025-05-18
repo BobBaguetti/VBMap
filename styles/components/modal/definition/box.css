@@ -1,33 +1,58 @@
 /* @file: styles/components/modal/definition/box.css */
-/* @version: 1.0 — wrapper & box dimensions for definition modal */
+/* @version: 2.0 — merged backdrop, centering, sizing, and grid layout */
 
 .modal--definition {
-  display: none;                /* toggled by JS */
+  /* Backdrop & centering */
+  display: none;               /* toggled by JS */
   position: fixed;
-  inset: 0;                     /* top/right/bottom/left: 0 */
+  inset: 0;                    /* top/right/bottom/left: 0 */
   width: 100%;
   height: 100%;
+  background: rgba(0, 0, 0, 0.5);
   pointer-events: auto;
-  z-index: 9999;
+  z-index: var(--z-index-modal, 9999);
+
+  /* Center the modal-content */
+  display: flex;
   justify-content: center;
   align-items: center;
-  background: none;
   font-family: 'Satoshi', sans-serif;
-  font-weight: 400;
   color: var(--text-primary);
 }
 
 .modal--definition .modal-content {
-  position: relative;
+  /* Core dimensions */
   width: 100%;
   max-width: 550px;
-  height: 90vh;
+  max-height: var(--modal-definition-content-height, 90vh);
+
+  /* Appearance */
   background-color: var(--bg-30);
   border: 1px solid var(--border-soft);
-  border-radius: 6px;
-  padding: 16px;
+  border-radius: var(--radius-small);
+  padding: var(--space-3);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+
+  /* Grid layout: header → list → subheader → form */
+  display: grid;
+  grid-template-rows:
+    auto    /* header */
+    1fr     /* entry list */
+    auto    /* form subheader */
+    2fr     /* form body */;
+  grid-template-areas:
+    "header"
+    "list"
+    "subheader"
+    "form";
+  overflow: hidden;  /* contain scrollable children */
+
+  /* Ensure this container can scroll its children */
+  min-height: 0;
 }
+
+/* Map the existing structural IDs into grid areas */
+.modal--definition .modal-header        { grid-area: header; }
+.modal--definition #definition-list     { grid-area: list; }
+.modal--definition .modal-subheader     { grid-area: subheader; }
+.modal--definition #definition-form-container { grid-area: form; }
