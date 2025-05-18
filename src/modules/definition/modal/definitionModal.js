@@ -1,10 +1,10 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.4 — drop the in-form “Show in filters” row now that we have it in the subheader
+// @version: 1.4 — remove duplicate “Show in filters” field from form body
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
 import { definitionTypes }  from "../types.js";
-import { createDefinitionListManager } 
+import { createDefinitionListManager }
   from "../list/definitionListManager.js";
 import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
@@ -59,7 +59,7 @@ export function initDefinitionModal(db) {
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
-      hasFilter: true,   // subheader will show “Show in filters”
+      hasFilter: true,
       onCancel:  () => { formApi.reset(); previewApi.hide(); },
       onDelete:  async id => {
         await definitionTypes[type].del(db, id);
@@ -83,12 +83,12 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Remove the now-duplicate “Show in filters” row from the form body
-    const extraFilter = formApi.form.querySelector(
-      '.modal-subheader + .field-row input[type="checkbox"]'
-    )?.closest(".field-row");
-    if (extraFilter) {
-      extraFilter.remove();
+    // Remove the form’s own “Show in filters” row (we handle it in the subheader)
+    const duplicateFilterRow = formApi.form
+      .querySelector('#fld-showInFilters')
+      ?.closest('.field-row');
+    if (duplicateFilterRow) {
+      duplicateFilterRow.remove();
     }
 
     // Replace placeholder header with generated one
