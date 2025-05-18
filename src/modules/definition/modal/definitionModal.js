@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.16 — pin subheader as sibling of list & form
+// @version: 1.17 — insert search between title and close button
 
 import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
@@ -35,12 +35,17 @@ export function initDefinitionModal(db) {
 
     modal.classList.add("admin-only", "modal--definition");
 
-    // 1) Search bar — in global header
+    // 1) Search bar — in global header, inserted before the close button
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
-    header.append(searchInput);
+    const closeBtn = header.querySelector(".close");
+    if (closeBtn) {
+      header.insertBefore(searchInput, closeBtn);
+    } else {
+      header.append(searchInput);
+    }
 
     // 2) Left pane: type selector + list + (subheader) + form
     const leftPane = slots.left;
@@ -136,7 +141,6 @@ export function initDefinitionModal(db) {
     // Move the modal-subheader out of the <form> into our pinned spot
     const generatedHeader = formApi.form.querySelector(".modal-subheader");
     if (generatedHeader) {
-      // replace our placeholder
       subheaderEl.replaceWith(generatedHeader);
       subheaderEl = generatedHeader;
     }
