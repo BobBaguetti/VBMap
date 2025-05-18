@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.17 — insert search between title and close button
+// @version: 1.18 — type selector in header; filter checkbox in subheader; dynamic Add/Edit title
 
 import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
@@ -35,51 +35,50 @@ export function initDefinitionModal(db) {
 
     modal.classList.add("admin-only", "modal--definition");
 
-    // 1) Search bar — in global header, inserted before the close button
+    // 1) Type selector → header, after title, before close
+    const typeWrapper = document.createElement("div");
+    typeWrapper.className = "modal__type-selector";
+    const typeLabel = document.createElement("span");
+    typeLabel.textContent = "Type:";
+    fldType = document.createElement("select");
+    fldType.id = "definition-type";
+    fldType.innerHTML = Object.keys(definitionTypes)
+      .map(t => `<option value="${t}">${t}</option>`)
+      .join("");
+    typeWrapper.append(typeLabel, fldType);
+    const closeBtn = header.querySelector(".close");
+    header.insertBefore(typeWrapper, closeBtn);
+
+    // 2) Search bar — in header, before close button
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
-    const closeBtn = header.querySelector(".close");
-    if (closeBtn) {
-      header.insertBefore(searchInput, closeBtn);
-    } else {
-      header.append(searchInput);
-    }
+    header.insertBefore(searchInput, closeBtn);
 
-    // 2) Left pane: type selector + list + (subheader) + form
+    // 3) Left pane: list + subheader placeholder + form
     const leftPane = slots.left;
     leftPane.id = "definition-left-pane";
 
-    // 2a) Type selector
-    const typeLabel = document.createElement("label");
-    typeLabel.textContent = "Type:";
-    fldType = document.createElement("select");
-    fldType.innerHTML = Object.keys(definitionTypes)
-      .map(t => `<option value="${t}">${t}</option>`)
-      .join("");
-    typeLabel.append(fldType);
-    leftPane.append(typeLabel);
-
-    // 2b) Entry list
+    // entry list
     const listContainer = createDefListContainer("definition-list");
     leftPane.append(listContainer);
 
-    // 2c) Placeholder for form subheader
+    // placeholder for form subheader
     subheaderEl = document.createElement("div");
     subheaderEl.className = "modal-subheader";
     leftPane.append(subheaderEl);
 
-    // 2d) Form container
+    // form container
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
     leftPane.append(formContainer);
 
-    // 3) Preview pane
+    // preview pane
     previewContainer = slots.preview;
     previewContainer.id = "definition-preview-container";
 
-    // 4) List manager
+    // list manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -91,7 +90,7 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // Wire search to list filter
+    // wire search → list filter
     searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );
@@ -111,9 +110,11 @@ export function initDefinitionModal(db) {
     const cfg = definitionTypes[type];
     previewApi = cfg.previewBuilder(previewContainer);
 
-    // Clear & render form
+    // clear previous form
     formContainer.innerHTML = "";
-    const controllerResult = cfg.controller({
+
+    // create new form controller
+    formApi = cfg.controller({
       onCancel:     () => { formApi.reset(); previewApi.hide(); },
       onDelete:     async id => {
         await cfg.del(db, id);
@@ -137,18 +138,32 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    formApi = controllerResult;
-    // Move the modal-subheader out of the <form> into our pinned spot
+    // move generated subheader into placeholder
     const generatedHeader = formApi.form.querySelector(".modal-subheader");
     if (generatedHeader) {
       subheaderEl.replaceWith(generatedHeader);
       subheaderEl = generatedHeader;
+
+      // update title text to "Add X" or "Edit X"
+      const titleEl = subheaderEl.querySelector("h3, .subheading, span");
+      if (titleEl) {
+        titleEl.textContent = def ? `Edit ${type}` : `Add ${type}`;
+      }
+
+      // relocate "Show in filters" checkbox row into subheader
+      const filterRow = formApi.form.querySelector(
+        '.form-row input[type="checkbox"]'
+      )?.closest(".form-row");
+      if (filterRow) {
+        generatedHeader.append(filterRow);
+      }
     }
 
-    // Append the form itself under the subheader
+    // append the form beneath the subheader
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
+    // populate or reset form + show preview
     if (def) {
       formApi.populate(def);
       const previewData = type === "Chest"
