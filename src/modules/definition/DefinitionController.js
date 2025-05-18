@@ -1,10 +1,14 @@
 // @file: src/modules/definition/DefinitionController.js
-// @version: 1.0 — encapsulate all definition‐modal orchestration
+// @version: 1.1 — fixed import paths for formControllerShell
 
 import { createDefinitionModal } from "../../shared/ui/core/createDefinitionModal.js";
 import { openModal, closeModal } from "../../shared/ui/core/modalCore.js";
 import { createDefinitionListManager } from "./list/definitionListManager.js";
-import { createFormControllerHeader, wireFormEvents } from "../../shared/ui/components/formControllerShell.js";
+// Corrected import path: formControllerShell lives under shared/ui/forms, not components
+import {
+  createFormControllerHeader,
+  wireFormEvents
+} from "../../shared/ui/forms/formControllerShell.js";
 import { Form } from "../../shared/ui/forms/Form.js";
 import { loadItemDefinitions } from "../services/itemDefinitionsService.js";
 
@@ -86,7 +90,6 @@ export class DefinitionController {
 
     // 5) Switch type dropdown
     this.fldType.addEventListener("change", () => this.openCreate());
-
   }
 
   async openCreate(type = null) {
@@ -99,7 +102,6 @@ export class DefinitionController {
 
   async openEdit(def) {
     await this._buildModal();
-    // preserve currentType
     await this._openDefinition(this.currentType, def);
   }
 
@@ -107,7 +109,6 @@ export class DefinitionController {
     this.currentType = type || this.currentType;
     this.fldType.value = this.currentType;
 
-    // for Chests, preload item map
     if (this.currentType === "Chest") {
       const items = await loadItemDefinitions(this.db);
       this.itemMap = Object.fromEntries(items.map(i => [i.id, i]));
@@ -116,7 +117,6 @@ export class DefinitionController {
     const cfg = this.types[this.currentType];
     this.previewApi = cfg.previewBuilder(this.previewContainer);
 
-    // Clear and build form
     this.formContainer.innerHTML = "";
     this.formObj = new Form(cfg.schema, {
       title: this.currentType,
@@ -152,7 +152,6 @@ export class DefinitionController {
     // initialize pickers after attach
     this.formObj.initPickrs?.();
 
-    // Populate or reset
     if (def) {
       this.formObj.populate(def);
       const previewData = this.currentType === "Chest"
@@ -164,7 +163,6 @@ export class DefinitionController {
       this.previewApi.show(this.currentType === "Chest" ? { lootPool: [] } : {});
     }
 
-    // Finally, show modal
     this.modal.open();
   }
 }
