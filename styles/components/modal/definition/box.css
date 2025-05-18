@@ -1,10 +1,9 @@
 /* @file: styles/components/modal/definition/box.css */
-/* @version: 1.4 — remove absolute positioning so flex-centering works */
+/* @version: 1.5 — enforce flex-centering over base .modal.is-open rule */
 
 .modal--definition {
-  display: flex;               /* always a flex container */
   position: fixed;
-  inset: 0;                    /* top/right/bottom/left: 0 */
+  inset: 0;
   width: 100%;
   height: 100%;
   pointer-events: auto;
@@ -17,16 +16,18 @@
   color: var(--text-primary);
 }
 
+/* Always hide when not open */
 .modal--definition:not(.is-open) {
   display: none;
 }
 
+/* Ensure definition modals use flex display when open, overriding base .modal.is-open */
+.modal.is-open.modal--definition {
+  display: flex !important;
+}
+
 .modal--definition .modal-content {
-  /* Remove absolute positioning to allow flex-centering */
-  position: relative;          /* was absolute */
-  top: auto;
-  left: auto;
-  transform: none;
+  position: relative;
   width: 100%;
   max-width: 550px;
   height: 90vh;
