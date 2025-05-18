@@ -1,0 +1,21 @@
+/* @file: styles/components/modal/definition/fields.css */
+/* @version: 1.0 — field-row overrides for definition modal */
+
+.modal--definition .field-row {
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.modal--definition .field-row label {
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.modal--definition .field-row .color-btn {
+  width: 24px;
+  height: 24px;
+  background-color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  cursor: pointer;
+  border-radius: 2px;
+}
