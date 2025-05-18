@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.5 — swap row vs. input contrast: darker inputs on lighter rows */
+/* @version: 1.5 — restore original row background; darken input fields */
 
 .modal--definition #definition-form-container {
   display: flex;
@@ -7,24 +7,23 @@
   gap: 8px;
 }
 
-/* 1) Field-row container: lighter background for structure */
+/* Rows remain transparent against the modal background */
 .modal--definition .field-row {
   display: flex;
   align-items: center;
   margin-bottom: 0;
-  background: var(--bg-20);
-  padding: var(--space-2) var(--space-3);
-  border-radius: var(--radius-small);
+  padding: 0; /* remove extra row background/padding */
+  background: none;
 }
 
-/* 2) Labels */
+/* Labels unchanged */
 .modal--definition .field-row label {
   flex: 0 0 100px;
   margin-right: 8px;
   color: var(--text-primary);
 }
 
-/* 3) Inputs / selects / textareas: darker background for focus */
+/* Darker inputs for stronger contrast */
 .modal--definition .field-row input[type="text"],
 .modal--definition .field-row input[type="number"],
 .modal--definition .field-row select,
@@ -33,22 +32,14 @@
   flex: 1 1 auto;
   min-width: 0;
   margin-right: 8px;
-  background: var(--bg-10);
+  background: var(--bg-40);          /* darker than modal bg */
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-small);
-  padding: var(--space-1) var(--space-2);
+  padding: var(--space-2) var(--space-2);
   color: var(--text-primary);
 }
 
-/* 4) Focus outline on inputs */
-.modal--definition .field-row input:focus-visible,
-.modal--definition .field-row select:focus-visible,
-.modal--definition .field-row textarea:focus-visible {
-  outline: var(--border-width-thin) solid var(--focus-ring);
-  outline-offset: var(--space-1);
-}
-
-/* 5) Remove default number‐spinner arrows */
+/* Remove number spinners */
 .modal--definition .field-row input[type="number"]::-webkit-outer-spin-button,
 .modal--definition .field-row input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -60,12 +51,12 @@
   margin: 0;
 }
 
-/* 6) Textarea resizing */
+/* Allow textareas to resize vertically */
 .modal--definition .field-row textarea {
   resize: vertical;
 }
 
-/* 7) Color-pick button */
+/* Color-picker swatch unchanged */
 .modal--definition .color-btn {
   margin-left: 8px !important;
   width: 24px;
@@ -76,12 +67,12 @@
   cursor: pointer;
 }
 
-/* 8) Buttons in field-rows */
+/* Buttons in field-rows unchanged */
 .modal--definition .field-row button.ui-button {
   margin-left: 8px;
 }
 
-/* 9) Extra-row alignment */
+/* Extra-row alignment unchanged */
 .modal--definition .field-row.extra-row {
   align-items: flex-start;
 }
@@ -89,7 +80,7 @@
   margin-top: 0;
 }
 
-/* 10) Extra-info block & remove-line */
+/* Extra-info block & remove-line unchanged */
 .modal--definition .extra-info-block {
   display: block;
 }
@@ -111,7 +102,7 @@
   fill: var(--text-primary);
 }
 
-/* 11) Image URL fields full width */
+/* Image URL fields unchanged */
 .modal--definition .field-row input[id^="def-image"] {
   max-width: 100%;
   box-sizing: border-box;
