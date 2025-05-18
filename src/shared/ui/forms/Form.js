@@ -1,5 +1,5 @@
 // @file: src/shared/ui/forms/Form.js
-// @version: 1.1 — fix createIcon import path
+// @version: 1.2 — Step 5: lazy-load pickrAdapter dynamically
 
 import {
   createTextField,
@@ -9,9 +9,7 @@ import {
   createExtraInfoField,
   createChipListField
 } from "../components/formFields.js";
-
 import { createIcon }      from "../../utils/iconUtils.js";
-import { initFormPickrs }  from "./pickrAdapter.js";
 import { createFormState } from "./formStateManager.js";
 
 /**
@@ -33,10 +31,10 @@ export class Form {
     this.handlers = handlers;
 
     // 1) Build the raw <form> and field inputs
-    this.formResult = this._buildForm(schema);
-    this.form       = this.formResult.form;
-    this.fields     = this.formResult.fields;
-    this.colorables = this.formResult.colorables;
+    const { form, fields, colorables } = this._buildForm(schema);
+    this.form       = form;
+    this.fields     = fields;
+    this.colorables = colorables;
 
     // 2) Create header + buttons row
     this._btnDelete = null;
@@ -44,8 +42,16 @@ export class Form {
     headerWrap.classList.add("modal-subheader");
     this.form.prepend(headerWrap);
 
-    // 3) Init Pickr swatches
-    this.pickrs = initFormPickrs(this.form, this.colorables);
+    // 3) Lazy-load Pickr adapter and initialize swatches
+    this.pickrs = {};
+    (async () => {
+      try {
+        const { initFormPickrs } = await import("./pickrAdapter.js");
+        this.pickrs = initFormPickrs(this.form, this.colorables);
+      } catch (e) {
+        console.warn("Failed to load pickrAdapter:", e);
+      }
+    })();
 
     // 4) Track current definition ID
     this.payloadId = null;
@@ -66,14 +72,14 @@ export class Form {
       .map(([, cfg]) => cfg.colorable);
 
     this.state = createFormState({
-      form:            this.form,
-      fields:          this.fields,
+      form:             this.form,
+      fields:           this.fields,
       defaultValues,
-      pickrs:          this.pickrs,
+      pickrs:           this.pickrs,
       pickrClearKeys,
-      subheading:      headerWrap.querySelector("h3"),
+      subheading:       headerWrap.querySelector("h3"),
       setDeleteVisible: v => { this._btnDelete.hidden = !v; },
-      getCustom:       () => this.getValues(),
+      getCustom:        () => this.getValues(),
       onFieldChange
     });
 
@@ -97,7 +103,6 @@ export class Form {
           if (cfg.colorable) colorables[cfg.colorable] = picker;
           fields[key] = input;
           break;
-
         case "select":
           ({ row, select: input, colorBtn: picker } = createDropdownField(
             cfg.label,
@@ -108,24 +113,20 @@ export class Form {
           if (cfg.colorable) colorables[cfg.colorable] = picker;
           fields[key] = input;
           break;
-
         case "textarea":
           ({ row, textarea: input, colorBtn: picker } =
             createTextareaFieldWithColor(cfg.label, `fld-${key}`));
           if (cfg.colorable) colorables[cfg.colorable] = picker;
           fields[key] = input;
           break;
-
         case "imageUrl":
           ({ row, input } = createImageField(cfg.label, `fld-${key}`));
           fields[key] = input;
           break;
-
         case "extraInfo":
           ({ row, extraInfo: input } = createExtraInfoField({ withDividers: cfg.withDividers }));
           fields[key] = input;
           break;
-
         case "chipList":
           ({ row, getItems: get, setItems: set } = createChipListField(
             cfg.label, [], {
@@ -134,7 +135,6 @@ export class Form {
           ));
           fields[key] = { get, set };
           break;
-
         case "checkbox":
           row = document.createElement("label");
           const cb = document.createElement("input");
@@ -144,7 +144,6 @@ export class Form {
           row.prepend(cb);
           fields[key] = cb;
           break;
-
         default:
           continue;
       }
@@ -208,9 +207,7 @@ export class Form {
     btnRow.append(btnSave, btnClear, btnDelete);
     wrap.append(btnRow);
 
-    // Expose delete button to state manager
     this._btnDelete = btnDelete;
-
     return wrap;
   }
 
@@ -253,7 +250,6 @@ export class Form {
   populate(def) {
     this.payloadId = def.id ?? null;
     this.state.populate(def);
-    // Handle chip-lists
     Object.entries(this.schema).forEach(([key, cfg]) => {
       if (cfg.type === "chipList" && Array.isArray(def[key])) {
         this.fields[key].set(def[key]);
