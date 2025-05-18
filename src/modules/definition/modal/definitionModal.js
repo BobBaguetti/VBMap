@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.15 — move search into header, cap entry‐list height
+// @version: 1.16 — pin subheader as sibling of list & form
 
 import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
@@ -12,7 +12,7 @@ import { loadItemDefinitions }
 export function initDefinitionModal(db) {
   let modal, content, header, slots;
   let fldType, listApi, formApi, previewApi;
-  let formContainer, previewContainer, searchInput;
+  let formContainer, previewContainer, searchInput, subheaderEl;
   let definitions = [], currentType;
   let itemMap = {};
 
@@ -35,16 +35,18 @@ export function initDefinitionModal(db) {
 
     modal.classList.add("admin-only", "modal--definition");
 
-    // 1) Search bar — moved into header
+    // 1) Search bar — in global header
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
     header.append(searchInput);
 
-    // 2) Type selector stays in left pane
+    // 2) Left pane: type selector + list + (subheader) + form
     const leftPane = slots.left;
     leftPane.id = "definition-left-pane";
+
+    // 2a) Type selector
     const typeLabel = document.createElement("label");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
@@ -54,17 +56,25 @@ export function initDefinitionModal(db) {
     typeLabel.append(fldType);
     leftPane.append(typeLabel);
 
-    // 3) List & form containers
+    // 2b) Entry list
     const listContainer = createDefListContainer("definition-list");
+    leftPane.append(listContainer);
+
+    // 2c) Placeholder for form subheader
+    subheaderEl = document.createElement("div");
+    subheaderEl.className = "modal-subheader";
+    leftPane.append(subheaderEl);
+
+    // 2d) Form container
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
-    leftPane.append(listContainer, formContainer);
+    leftPane.append(formContainer);
 
-    // 4) Preview pane
+    // 3) Preview pane
     previewContainer = slots.preview;
     previewContainer.id = "definition-preview-container";
 
-    // 5) List manager
+    // 4) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -96,9 +106,9 @@ export function initDefinitionModal(db) {
     const cfg = definitionTypes[type];
     previewApi = cfg.previewBuilder(previewContainer);
 
-    // Clear & render form inside its pane
+    // Clear & render form
     formContainer.innerHTML = "";
-    formApi = cfg.controller({
+    const controllerResult = cfg.controller({
       onCancel:     () => { formApi.reset(); previewApi.hide(); },
       onDelete:     async id => {
         await cfg.del(db, id);
@@ -122,6 +132,16 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
+    formApi = controllerResult;
+    // Move the modal-subheader out of the <form> into our pinned spot
+    const generatedHeader = formApi.form.querySelector(".modal-subheader");
+    if (generatedHeader) {
+      // replace our placeholder
+      subheaderEl.replaceWith(generatedHeader);
+      subheaderEl = generatedHeader;
+    }
+
+    // Append the form itself under the subheader
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
