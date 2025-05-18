@@ -1,63 +1,45 @@
 /* @file: styles/components/modal/definition/entries.css */
-/* @version: 2.1 — removed empty rule, consolidated list container styling */
+/* @version: 1.1 — generic definition‐modal entry styles, scoped to .modal--definition */
 
-.modal--definition #definition-list {
-  grid-area: list;
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-2);
-  overflow-y: auto;
-  scrollbar-width: none;       /* Firefox */
-  -ms-overflow-style: none;    /* IE 10+ */
-}
-.modal--definition #definition-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-/* Individual entry */
 .modal--definition .entry {
-  padding: var(--space-2) var(--space-3);
+  padding: 6px 8px;
   cursor: pointer;
-  border-radius: var(--radius-small);
   transition: background 0.2s;
-  background: var(--bg-30);
+  border-radius: 4px;
 }
 .modal--definition .entry:hover {
   background-color: var(--bg-40);
 }
 
-/* Entry content */
 .modal--definition .entry .entry-name {
-  font-weight: 600;
-  font-size: 1rem;
+  font-weight: bold;
+  font-size: 15px;
   color: var(--text-primary);
 }
 .modal--definition .entry .entry-meta {
-  font-size: 0.75rem;
+  font-size: 12px;
   color: var(--text-secondary);
-  margin-top: var(--space-1);
+  margin-top: 2px;
 }
 .modal--definition .entry .entry-description {
   font-style: italic;
-  font-size: 0.8125rem;
+  font-size: 13px;
   color: var(--text-secondary);
-  margin-top: var(--space-1);
+  margin-top: 2px;
 }
 .modal--definition .entry .entry-details {
   display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-1);
-  font-size: 0.8125rem;
+  gap: 12px;
+  margin-top: 4px;
+  font-size: 13px;
   color: var(--text-secondary);
   align-items: center;
 }
 .modal--definition .entry .entry-value svg {
-  width: 0.875rem;
-  height: 0.875rem;
+  width: 14px;
+  height: 14px;
   vertical-align: middle;
-  margin-left: var(--space-1);
+  margin-left: 4px;
   fill: var(--accent-gold);
 }
 .modal--definition .entry .entry-quantity {
@@ -65,25 +47,24 @@
   color: var(--text-secondary);
 }
 
-/* Delete button within an entry */
 .modal--definition .entry .entry-delete {
-  margin-top: var(--space-2);
+  margin-top: 6px;
   background-color: var(--accent-error);
   color: var(--text-primary);
-  padding: var(--space-1) var(--space-2);
+  padding: 4px 10px;
   border: none;
-  border-radius: var(--radius-small);
-  font-size: 0.8125rem;
+  border-radius: 4px;
+  font-size: 13px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: var(--space-1);
+  gap: 6px;
   transition: filter 0.3s;
 }
 .modal--definition .entry .entry-delete:hover {
   filter: brightness(0.85);
 }
 .modal--definition .entry .entry-delete svg {
-  width: 1rem;
-  height: 1rem;
+  width: 16px;
+  height: 16px;
 }

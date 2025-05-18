@@ -1,17 +1,20 @@
 /* @file: styles/components/modal/index.css */
-/* @version: 1.3 — only per-modal imports; removed obsolete form.css */
+/* @version: 1.1 — refactored imports for per‐modal folders */
 
 @import "./base.css";
 
-/* Definition modal */
+/* Definition modal styles */
 @import "./definition/box.css";
-@import "./definition/header.css";
+@import "./definition/buttons.css";
 @import "./definition/entries.css";
 @import "./definition/fields.css";
-@import "./definition/buttons.css";
+@import "./definition/form.css";
+@import "./definition/header.css";
+@import "./definition/layout.css";
+@import "./definition/scroll.css";
 
-/* About modal */
+/* About modal styles */
 @import "./about/about.css";
 
-/* Settings modal */
+/* Settings modal styles */
 @import "./settings/settings.css";

@@ -1,35 +1,44 @@
 /* @file: styles/components/utilities.css */
-/* @version: 1.4 — focus outlines only under .using-keyboard */
+/* @version: 1.2 — migrated legacy utilities from styles/utilities.css */
 
-.text-primary { color: var(--text-primary); }
-.text-secondary { color: var(--text-secondary); }
-.text-disabled { color: var(--text-disabled); }
-
-.bg-surface-10 { background-color: var(--bg-10); }
-.bg-surface-20 { background-color: var(--bg-20); }
-.bg-surface-30 { background-color: var(--bg-30); }
-.bg-surface-40 { background-color: var(--bg-40); }
-.bg-surface-50 { background-color: var(--bg-50); }
-
-.ui-text-default { color: var(--text-primary); }
-.admin-only { display: none !important; }
-body.is-admin .admin-only { display: block !important; }
-[hidden] { display: none !important; }
-
-/* Only show outlines when navigating via keyboard */
-.modal :focus,
-.modal button:focus,
-.modal input:focus,
-.modal select:focus,
-.modal textarea:focus {
-  outline: none;
+/* 1) Text Helpers */
+.text-primary {
+  color: var(--text-primary);
+}
+.text-secondary {
+  color: var(--text-secondary);
+}
+.text-disabled {
+  color: var(--text-disabled);
 }
 
-.using-keyboard .modal :focus-visible,
-.using-keyboard .modal button:focus-visible,
-.using-keyboard .modal input:focus-visible,
-.using-keyboard .modal select:focus-visible,
-.using-keyboard .modal textarea:focus-visible {
-  outline: var(--border-width-thin) solid var(--focus-ring);
-  outline-offset: var(--space-1);
+/* 2) Background Surface Helpers */
+.bg-surface-10 {
+  background-color: var(--bg-10);
+}
+.bg-surface-20 {
+  background-color: var(--bg-20);
+}
+.bg-surface-30 {
+  background-color: var(--bg-30);
+}
+.bg-surface-40 {
+  background-color: var(--bg-40);
+}
+.bg-surface-50 {
+  background-color: var(--bg-50);
+}
+
+/* 3) Legacy UI Utilities */
+.ui-text-default {
+  color: var(--text-primary);
+}
+.admin-only {
+  display: none !important;
+}
+body.is-admin .admin-only {
+  display: block !important;
+}
+[hidden] {
+  display: none !important;
 }

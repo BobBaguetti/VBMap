@@ -1,48 +1,24 @@
 /* @file: styles/components/modal/definition/buttons.css */
-/* @version: 2.0 — use tokens for spacing, radii, and elevations */
+/* @version: 1.1 — floating action‐row & button styles for definition modal */
 
 .modal--definition .floating-buttons {
   display: flex;
-  gap: var(--space-2);
+  gap: 6px;
   align-items: center;
 }
 
-/* Primary action buttons (Save, Clear) */
 .modal--definition .ui-button {
   background-color: var(--bg-50);
   color: var(--text-primary);
   border: none;
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-small);
+  padding: 6px 10px;
+  margin-left: 5px;
+  border-radius: 4px;
   cursor: pointer;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: 1;
-  transition: filter 0.2s ease-in-out;
+  font-weight: 400;
+  font-family: 'Satoshi', sans-serif;
 }
 
-.modal--definition .ui-button:hover,
-.modal--definition .ui-button:focus-visible {
+.modal--definition .ui-button:hover {
   filter: brightness(1.15);
-  outline: none;
-}
-
-/* Danger/delete buttons */
-.modal--definition .ui-button-delete {
-  background-color: var(--accent-error);
-  color: var(--text-primary);
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-small);
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-1);
-  transition: filter 0.2s ease-in-out;
-}
-
-.modal--definition .ui-button-delete:hover,
-.modal--definition .ui-button-delete:focus-visible {
-  filter: brightness(0.85);
-  outline: none;
 }

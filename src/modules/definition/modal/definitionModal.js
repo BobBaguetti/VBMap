@@ -1,31 +1,146 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.18 — now delegates to DefinitionController
+// @version: 1.15 — move search into header, cap entry‐list height
 
-import { DefinitionController } from "../DefinitionController.js";
-import { definitionTypes } from "../types.js";
+import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
+import { definitionTypes }        from "../types.js";
+import { createDefListContainer }  from "../../../shared/utils/listUtils.js";
+import { createDefinitionListManager }
+  from "../list/definitionListManager.js";
+import { loadItemDefinitions }
+  from "../../services/itemDefinitionsService.js";
 
-/**
- * Initializes the Definition modal functionality.
- * Returns an object with two methods for opening the modal in create or edit mode.
- *
- * @param {import('../../bootstrap').db} db — Firestore database instance
- */
 export function initDefinitionModal(db) {
-  // Instantiate the controller once
-  const controller = new DefinitionController(db, definitionTypes, () => {});
+  let modal, content, header, slots;
+  let fldType, listApi, formApi, previewApi;
+  let formContainer, previewContainer, searchInput;
+  let definitions = [], currentType;
+  let itemMap = {};
+
+  async function refreshList() {
+    const cfg = definitionTypes[currentType];
+    definitions = await cfg.loadDefs(db);
+    listApi.refresh(definitions);
+  }
+
+  async function build() {
+    if (modal) return;
+
+    ({ modal, content, header, slots } = createModal({
+      id:      "definition-modal",
+      title:   "Manage Definitions",
+      size:    "large",
+      onClose: () => previewApi?.hide(),
+      slots:   ["left", "preview"]
+    }));
+
+    modal.classList.add("admin-only", "modal--definition");
+
+    // 1) Search bar — moved into header
+    searchInput = document.createElement("input");
+    searchInput.type        = "search";
+    searchInput.className   = "modal__search";
+    searchInput.placeholder = "Search definitions…";
+    header.append(searchInput);
+
+    // 2) Type selector stays in left pane
+    const leftPane = slots.left;
+    leftPane.id = "definition-left-pane";
+    const typeLabel = document.createElement("label");
+    typeLabel.textContent = "Type:";
+    fldType = document.createElement("select");
+    fldType.innerHTML = Object.keys(definitionTypes)
+      .map(t => `<option value="${t}">${t}</option>`)
+      .join("");
+    typeLabel.append(fldType);
+    leftPane.append(typeLabel);
+
+    // 3) List & form containers
+    const listContainer = createDefListContainer("definition-list");
+    formContainer = document.createElement("div");
+    formContainer.id = "definition-form-container";
+    leftPane.append(listContainer, formContainer);
+
+    // 4) Preview pane
+    previewContainer = slots.preview;
+    previewContainer.id = "definition-preview-container";
+
+    // 5) List manager
+    listApi = createDefinitionListManager({
+      container:      listContainer,
+      getDefinitions: () => definitions,
+      onEntryClick:   def => openDefinition(currentType, def),
+      onDelete:       async id => {
+        const cfg = definitionTypes[currentType];
+        await cfg.del(db, id);
+        await refreshList();
+      }
+    });
+
+    // Wire search to list filter
+    searchInput.addEventListener("input", () =>
+      listApi.filter(searchInput.value)
+    );
+  }
+
+  async function openDefinition(type, def = null) {
+    await build();
+    currentType   = type;
+    fldType.value = type;
+    await refreshList();
+
+    if (type === "Chest") {
+      const items = await loadItemDefinitions(db);
+      itemMap = Object.fromEntries(items.map(i => [i.id, i]));
+    }
+
+    const cfg = definitionTypes[type];
+    previewApi = cfg.previewBuilder(previewContainer);
+
+    // Clear & render form inside its pane
+    formContainer.innerHTML = "";
+    formApi = cfg.controller({
+      onCancel:     () => { formApi.reset(); previewApi.hide(); },
+      onDelete:     async id => {
+        await cfg.del(db, id);
+        await refreshList();
+        formApi.reset(); previewApi.hide();
+      },
+      onSubmit:     async payload => {
+        await cfg.save(db, def?.id ?? null, payload);
+        await refreshList();
+        formApi.reset(); previewApi.hide();
+      },
+      onFieldChange: data => {
+        let previewData = data;
+        if (type === "Chest" && Array.isArray(data.lootPool)) {
+          previewData = {
+            ...data,
+            lootPool: data.lootPool.map(id => itemMap[id]).filter(Boolean)
+          };
+        }
+        previewApi.show(previewData);
+      }
+    }, db);
+
+    formContainer.append(formApi.form);
+    formApi.initPickrs?.();
+
+    if (def) {
+      formApi.populate(def);
+      const previewData = type === "Chest"
+        ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
+        : def;
+      previewApi.show(previewData);
+    } else {
+      formApi.reset();
+      previewApi.show(type === "Chest" ? { lootPool: [] } : {});
+    }
+
+    openModal(modal);
+  }
 
   return {
-    /**
-     * Open the modal to create a new definition of the given type.
-     * @param {Event} [evt] — original click/event (unused here)
-     * @param {string} [type] — one of the keys in definitionTypes
-     */
-    openCreate: (evt, type) => controller.openCreate(type),
-
-    /**
-     * Open the modal to edit an existing definition.
-     * @param {object} def — the definition object to edit (must include .id)
-     */
-    openEdit: def => controller.openEdit(def)
+    openCreate: (evt, type = "Item") => openDefinition(type),
+    openEdit:   def                => openDefinition(currentType, def)
   };
 }

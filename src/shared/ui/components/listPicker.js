@@ -1,7 +1,7 @@
-// @file: src/shared/ui/components/listPicker.js
-// @version: 1.3 — switched to createListPickerModal
+// @file: src\shared\ui\components\listPicker.js
+// @version: 1.2
 
-import { createListPickerModal } from "../core/createListPickerModal.js";
+import { createModal, openModal, closeModal } from "../core/modalFactory.js";
 
 /**
  * Opens a modal letting the user pick zero or more items.
@@ -14,31 +14,34 @@ import { createListPickerModal } from "../core/createListPickerModal.js";
  * @returns {Promise<Array<string>>} resolves to the selected item ids when OK is clicked, rejects on Cancel
  */
 export function pickItems({ title, items, selected = [], labelKey = "name" }) {
-  // 1) Instantiate picker modal
-  const { modal, slots, open, close } = createListPickerModal({
+  // build base modal
+  const { modal, header, content } = createModal({
     id:          `picker-${Date.now()}`,
     title,
-    onClose:     null
+    size:        "small",
+    backdrop:    true,
+    withDivider: true
   });
 
-  // 2) Add header search input
+  // search bar
   const search = document.createElement("input");
   search.type        = "search";
   search.placeholder = "Search…";
   search.classList.add("ui-input");
-  const header = modal.querySelector("header");
   header.appendChild(search);
 
-  // 3) Container for list
+  // container for checkbox list
   const listContainer = document.createElement("div");
   Object.assign(listContainer.style, {
     maxHeight: "200px",
     overflowY: "auto",
     margin:    "8px 0"
   });
-  slots.body.appendChild(listContainer);
+  content.appendChild(listContainer);
 
   let checkboxes = [];
+
+  // render function
   function renderList(filter = "") {
     listContainer.innerHTML = "";
     checkboxes = items
@@ -46,15 +49,19 @@ export function pickItems({ title, items, selected = [], labelKey = "name" }) {
       .map(it => {
         const row = document.createElement("div");
         Object.assign(row.style, { display: "flex", alignItems: "center", padding: "4px 0" });
+
         const cb = document.createElement("input");
         cb.type        = "checkbox";
         cb.value       = it.id;
         cb.checked     = selected.includes(it.id);
         cb.style.marginRight = "8px";
+
         const lbl = document.createElement("label");
         lbl.textContent = it[labelKey];
+
         row.append(cb, lbl);
         listContainer.appendChild(row);
+
         return cb;
       });
   }
@@ -62,41 +69,41 @@ export function pickItems({ title, items, selected = [], labelKey = "name" }) {
 
   search.addEventListener("input", () => renderList(search.value));
 
-  // 4) Buttons row
+  // buttons row
   const btnRow = document.createElement("div");
   btnRow.style.textAlign = "right";
-  slots.body.appendChild(btnRow);
 
   const btnCancel = document.createElement("button");
-  btnCancel.type      = "button";
-  btnCancel.className = "ui-button";
+  btnCancel.type        = "button";
+  btnCancel.className   = "ui-button";
   btnCancel.textContent = "Cancel";
-  btnCancel.onclick = () => {
-    close();
-    pickerReject();
-  };
 
   const btnOk = document.createElement("button");
-  btnOk.type      = "button";
-  btnOk.className = "ui-button";
+  btnOk.type        = "button";
+  btnOk.className   = "ui-button";
   btnOk.textContent = "OK";
-  btnOk.onclick = () => {
-    close();
-    const picked = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
-    pickerResolve(picked);
-  };
 
   btnRow.append(btnCancel, btnOk);
+  content.appendChild(btnRow);
 
-  // 5) Return promise
-  let pickerResolve, pickerReject;
+  // promise logic
+  let resolvePick, rejectPick;
   const promise = new Promise((resolve, reject) => {
-    pickerResolve = resolve;
-    pickerReject  = reject;
+    resolvePick = resolve;
+    rejectPick  = reject;
   });
 
-  // 6) Open modal
-  open();
+  btnCancel.onclick = () => {
+    closeModal(modal);
+    rejectPick();
+  };
 
+  btnOk.onclick = () => {
+    const picked = checkboxes.filter(cb => cb.checked).map(cb => cb.value);
+    closeModal(modal);
+    resolvePick(picked);
+  };
+
+  openModal(modal);
   return promise;
 }

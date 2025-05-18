@@ -1,44 +1,36 @@
 // @file: src/modules/definition/preview/previewController.js
-// @version: 1.5 — Step 5b: lazy-load createPreviewPanel implementation
+// @version: 1.4 — float preview and position it to the right of the definition modal
+
+import { createPreviewPanel } from "./createPreviewPanel.js";
 
 export function createPreviewController(type) {
-  // Create the floating container up front
+  // Create a floating container for the preview
   const container = document.createElement("div");
   container.classList.add("definition-preview-panel");
   container.style.position = "absolute";
   container.style.zIndex   = "1101";
   document.body.append(container);
 
-  let previewApi = null;
+  const previewApi = createPreviewPanel(type, container);
 
-  // Ensure the heavy preview panel module is loaded once
-  async function ensureLoaded() {
-    if (!previewApi) {
-      const { createPreviewPanel } = await import("./createPreviewPanel.js");
-      previewApi = createPreviewPanel(type, container);
-    }
-  }
-
-  // Show and position the panel; dynamic-import on first call
-  async function show(def) {
-    await ensureLoaded();
+  function show(def) {
     previewApi.setFromDefinition(def);
     previewApi.show();
 
-    const modalContent = document.querySelector(
-      ".modal.modal--definition .modal-content"
-    );
+    // Find the definition modal's content box
+    const modalContent = document.querySelector(".modal.modal--definition .modal-content");
     if (!modalContent) return;
 
     const mc = modalContent.getBoundingClientRect();
     const pr = container.getBoundingClientRect();
+
+    // Position container to the right of the modal, vertically centered
     container.style.left = `${mc.right + 16}px`;
     container.style.top  = `${mc.top + (mc.height - pr.height) / 2}px`;
   }
 
-  // Hide (safe even if not yet loaded)
   function hide() {
-    previewApi?.hide();
+    previewApi.hide();
   }
 
   return { show, hide };

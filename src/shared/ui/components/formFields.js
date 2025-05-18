@@ -1,5 +1,5 @@
-// @file: src/shared/ui/components/formFields.js
-// @version: 1.5 — ensure all inputs use the .ui-input class for consistent styling
+// @file: src\shared\ui\components\formFields.js
+// @version: 1.4 — export chip‐list field helper
 
 import { createPickr, disablePickr, getPickrHexColor } from "../forms/pickrAdapter.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
@@ -9,6 +9,7 @@ export function createFieldRow(labelText, inputEl) {
   row.className = "field-row";
 
   const label = document.createElement("label");
+  // ensure one trailing colon
   label.textContent = labelText.endsWith(":")
     ? labelText
     : `${labelText}:`;
@@ -39,7 +40,7 @@ export function createColorFieldRow(labelText, inputEl, colorId) {
 export function createTextField(labelText, id) {
   const input = document.createElement("input");
   input.id = id;
-  input.className = "ui-input";             // ← ensure class for all text fields
+  input.className = "ui-input";
   const { row, colorBtn } = createColorFieldRow(labelText, input, `${id}-color`);
   return { row, input, colorBtn };
 }
@@ -47,7 +48,6 @@ export function createTextField(labelText, id) {
 export function createTextareaFieldWithColor(labelText, id) {
   const textarea = document.createElement("textarea");
   textarea.id = id;
-  textarea.className = "ui-input";         // ← ensure class
   const { row, colorBtn } = createColorFieldRow(labelText, textarea, `${id}-color`);
   return { row, textarea, colorBtn };
 }
@@ -60,7 +60,7 @@ export function createDropdownField(
 ) {
   const select = document.createElement("select");
   select.id = id;
-  select.className = "ui-input";           // ← ensure class
+  select.className = "ui-input";
   options.forEach(opt => {
     const o = document.createElement("option");
     o.value = opt.value;
@@ -80,7 +80,6 @@ export function createImageField(labelText, id) {
   const input = document.createElement("input");
   input.id = id;
   input.type = "text";
-  input.className = "ui-input";             // ← added ui-input class
   const row = createFieldRow(labelText, input);
   return { row, input };
 }
@@ -122,8 +121,8 @@ export function createExtraInfoField({ withDividers = false } = {}) {
   }
 
   const container = document.createElement("div");
-  const hrAbove = document.createElement("hr");
-  const hrBelow = document.createElement("hr");
+  const hrAbove   = document.createElement("hr");
+  const hrBelow   = document.createElement("hr");
   container.append(hrAbove, row, hrBelow);
   return { row: container, extraInfo };
 }

@@ -1,8 +1,0 @@
-/* @file: styles/tokens/modals.css */
-/* @version: 1.0 — modal size tokens */
-
-:root {
-  /* Definition modal dimensions */
-  --modal-definition-content-height: 90vh;
-  --modal-definition-list-max-height: 240px;
-}

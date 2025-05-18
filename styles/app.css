@@ -1,14 +1,17 @@
 /* @file: styles/app.css */
-/* @version: 1.9 — added modal tokens import */
+/* @version: 1.8 — updated sidebar import to components/sidebar/index.css */
 
+/* ── Leaflet & MarkerCluster ─────────────────────────────────────────── */
 @import url("https://unpkg.com/leaflet@1.9.4/dist/leaflet.css");
 @import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css");
 @import url("https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css");
 
+/* ── Third-party themes & icons ──────────────────────────────────────── */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 @import url("https://cdn.jsdelivr.net/npm/@simonwep/pickr/dist/themes/nano.min.css");
 @import url("https://unpkg.com/@phosphor-icons/web@2.0.3/src/regular/style.css");
 
+/* ── Token definitions ───────────────────────────────────────────────── */
 @import "tokens/colors.css";
 @import "tokens/typography.css";
 @import "tokens/spacing.css";
@@ -17,13 +20,15 @@
 @import "tokens/z-index.css";
 @import "tokens/markers.css";
 @import "tokens/popup.css";
-@import "tokens/modals.css";    /* <-- added for modal dimensions */
 
+/* ── Theme overrides ─────────────────────────────────────────────────── */
 @import "themes/lightmode.css";
-@import "themes/darkmode.css";
+@import "themes/darkmode.css";  /* default */
 
+/* ── Global base styles ──────────────────────────────────────────────── */
 @import "components/base.css";
 
+/* ── Core component skins ────────────────────────────────────────────── */
 @import "components/buttons.css";
 @import "components/forms.css";
 @import "components/surfaces.css";
@@ -32,20 +37,27 @@
 @import "components/ui-controls.css";
 @import "components/entries.css";
 
+/* ── Map & Marker overrides ──────────────────────────────────────────── */
 @import "components/map/index.css";
 @import "components/markers.css";
 
+/* ── Utilities ───────────────────────────────────────────────────────── */
 @import "components/utilities.css";
 
+/* ── Context menus & popups ──────────────────────────────────────────── */
 @import "components/context-menu.css";
 @import "components/map/leaflet-overrides.css";
 @import "components/popup.css";
 @import "components/popup-chest-grid.css";
 
+/* ── Modal stack ─────────────────────────────────────────────────────── */
 @import "components/modal/index.css";
 
+/* ── Inventory components ───────────────────────────────────────────── */
 @import "components/inventory/index.css";
 
+/* ── Preview panels ──────────────────────────────────────────────────── */
 @import "components/preview/index.css";
 
+/* ── Sidebar ─────────────────────────────────────────────────────────── */
 @import "components/sidebar/index.css";
