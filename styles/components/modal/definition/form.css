@@ -1,6 +1,3 @@
-/* @file: styles/components/modal/definition/form.css */
-/* @version: 1.4 — darker form controls for better visibility */
-
 .modal--definition #definition-form-container {
   display: flex;
   flex-direction: column;
@@ -10,7 +7,7 @@
 .modal--definition .field-row {
   display: flex;
   align-items: center;
-  margin-bottom: 0;
+  padding: 8px 0;
 }
 
 .modal--definition .field-row label {
@@ -18,15 +15,13 @@
   margin-right: 8px;
 }
 
-.modal--definition .field-row input[type="text"],
-.modal--definition .field-row input[type="number"],
+/* catch *all* native and custom inputs/selects/textareas */
+.modal--definition .field-row input,
 .modal--definition .field-row select,
-.modal--definition .field-row textarea,
-.modal--definition .field-row .ui-input {
+.modal--definition .field-row textarea {
   flex: 1 1 auto;
   min-width: 0;
   margin-right: 8px;
-  /* Darker background for improved contrast */
   background: var(--bg-50);
   border: 1px solid var(--border-soft);
   border-radius: 2px;
@@ -34,7 +29,13 @@
   color: var(--text-primary);
 }
 
-/* 1) Remove default number-spinner arrows */
+/* ensure image URL fields don’t overflow */
+.modal--definition input[id^="def-image"] {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* remove default number-spinner arrows */
 .modal--definition .field-row input[type="number"]::-webkit-outer-spin-button,
 .modal--definition .field-row input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -43,15 +44,14 @@
 .modal--definition .field-row input[type="number"] {
   -moz-appearance: none;
   appearance: none;
-  margin: 0;
 }
 
-/* 2) Allow textareas to resize vertically */
+/* allow textareas to resize vertically */
 .modal--definition .field-row textarea {
   resize: vertical;
 }
 
-/* 3) Larger color picker swatch */
+/* larger, consistent color picker swatch */
 .modal--definition .color-btn {
   margin-left: 8px !important;
   flex: 0 0 24px;
@@ -63,27 +63,25 @@
   cursor: pointer;
 }
 
-.modal--definition .field-row button.ui-button {
+/* any inline buttons on a field-row (e.g. remove-line) */
+.modal--definition .field-row button.ui-button,
+.modal--definition .extra-info-line .remove-line-btn {
   margin-left: 8px;
 }
 
-/* 4) Extra-row layout tweaks */
-.modal--definition .field-row.extra-row {
-  align-items: flex-start;
-}
-.modal--definition .field-row.extra-row > label {
-  margin-top: 0;
-}
-
-/* 5) Extra-info block: stack lines vertically so new lines append at bottom */
+/* ===== Extra-Info Block ===== */
 .modal--definition .extra-info-block {
-  display: block;
-}
-.modal--definition .extra-info-block .extra-info-line {
-  margin-bottom: var(--space-1);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* 6) Remove-line button for extra-info lines */
+.modal--definition .extra-info-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .modal--definition .extra-info-line .remove-line-btn {
   width: 28px;
   height: 28px;
@@ -95,12 +93,7 @@
   justify-content: center;
   cursor: pointer;
 }
+
 .modal--definition .extra-info-line .remove-line-btn svg {
   fill: var(--text-primary);
-}
-
-/* 7) Fixed alignment for image URL fields */
-.modal--definition .field-row input[id^="def-image"] {
-  max-width: 100%;
-  box-sizing: border-box;
 }
