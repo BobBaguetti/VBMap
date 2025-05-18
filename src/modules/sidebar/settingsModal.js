@@ -1,7 +1,7 @@
 // @file: src/modules/sidebar/settingsModal.js
-// @version: 1.3 — switch to createSettingsModal()
+// @version: 1.3 — fix import path to core factory
 
-import { createSettingsModal } from "../../../shared/ui/core/createSettingsModal.js";
+import { createSettingsModal } from "../../shared/ui/core/createSettingsModal.js";
 
 export function setupSettingsModal({ buttonSelector }) {
   const btn = document.querySelector(buttonSelector);

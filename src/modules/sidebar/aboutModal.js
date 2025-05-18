@@ -1,7 +1,7 @@
 // @file: src/modules/sidebar/aboutModal.js
-// @version: 1.2 — switch to createAboutModal()
+// @version: 1.2 — fix import path to core factory
 
-import { createAboutModal } from "../../../shared/ui/core/createAboutModal.js";
+import { createAboutModal } from "../../shared/ui/core/createAboutModal.js";
 
 export function setupAboutModal({ buttonSelector }) {
   const btn = document.querySelector(buttonSelector);
