@@ -1,17 +1,16 @@
 /* @file: styles/components/modal/definition/header.css */
-/* @version: 1.4 — compact header, explicit gap, title › search › close */
+/* @version: 1.5 — main header + subheader flex layouts */
 
+/* Main header: Manage Definitions, Search, Type selector, Close */
 .modal--definition .modal-header {
   display: flex;
   align-items: center;
-  /* tighter padding top/bottom, left/right */
   padding: var(--space-1) var(--space-2);
-  gap: var(--space-2);            /* explicit space between children */
+  gap: var(--space-2);
   background: none;
   border-bottom: none;
 }
 
-/* Title stays left */
 .modal--definition .modal-header h2 {
   margin: 0;
   font-size: 1.25rem;
@@ -19,10 +18,9 @@
   flex: 0 0 auto;
 }
 
-/* Search in the middle */
 .modal--definition .modal-header input.modal__search {
   flex: 1 1 auto;
-  max-width: 240px;               /* increase width if you like */
+  max-width: 240px;
   background: var(--bg-30);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-small);
@@ -31,10 +29,39 @@
   font-size: var(--font-size-sm);
 }
 
-/* Close button pinned right */
+.modal--definition .modal-header .modal__type-selector {
+  flex: 0 0 auto;
+}
+
 .modal--definition .modal-header .close {
   flex: 0 0 auto;
   font-size: 1.5rem;
   cursor: pointer;
   color: var(--text-primary);
+}
+
+/* Subheader: Add/Edit title, Show in filters, Save/Clear/Delete buttons */
+.modal--definition .modal-subheader {
+  display: flex;
+  align-items: center;
+  padding: var(--space-1) var(--space-2);
+  gap: var(--space-2);
+  border-bottom: 1px solid var(--bg-50);
+  background: var(--bg-40);
+}
+
+.modal--definition .modal-subheader h3 {
+  margin: 0;
+  font-size: 1rem;
+  flex: 0 0 auto;
+}
+
+.modal--definition .modal-subheader input[type="checkbox"] {
+  flex: 0 0 auto;
+}
+
+.modal--definition .modal-subheader .floating-buttons {
+  margin-left: auto;
+  display: flex;
+  gap: var(--space-1);
 }
