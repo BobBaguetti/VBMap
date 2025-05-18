@@ -1,163 +1,192 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.21 — rely on formControllerShell for Add/Edit titles and filter toggle
+// @version: 1.22 — fully self-contained modal (inlined factory + lifecycle)
 
-import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
 import { createDefListContainer }  from "../../../shared/utils/listUtils.js";
-import { createDefinitionListManager }
-  from "../list/definitionListManager.js";
+import { createFormControllerHeader, wireFormEvents }
+  from "../../../shared/ui/forms/formControllerShell.js";
+import { initFormPickrs }         from "../../../shared/ui/forms/pickrAdapter.js";
+import { createFormState }        from "../../../shared/ui/forms/formStateManager.js";
 import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  let modal, content, header, slots;
+  let modal, content, header, listSlot, previewSlot;
   let fldType, listApi, formApi, previewApi;
-  let formContainer, previewContainer, searchInput, subheaderEl;
+  let formContainer, previewContainer, searchInput;
   let definitions = [], currentType;
   let itemMap = {};
 
+  // Lifecycle & ESC handler
+  function attachLifecycle(modalEl) {
+    // Prevent background scroll & restore focus on close
+    const prevFocused = document.activeElement;
+    const scrollY     = window.scrollY;
+    document.documentElement.style.overflow = "hidden";
+    modalEl.addEventListener("close", () => {
+      document.documentElement.style.overflow = "";
+      window.scrollTo(0, scrollY);
+      prevFocused?.focus?.();
+    }, { once: true });
+  }
+  function onKey(e) {
+    if (e.key === "Escape" && modal) {
+      closeModal(modal);
+    }
+  }
+
+  // Open / close
+  function openModal(el) {
+    el.classList.add("is-open");
+    document.addEventListener("keydown", onKey);
+  }
+  function closeModal(el) {
+    el.classList.remove("is-open");
+    el.dispatchEvent(new Event("close"));
+    document.removeEventListener("keydown", onKey);
+  }
+
   async function refreshList() {
-    const cfg = definitionTypes[currentType];
-    definitions = await cfg.loadDefs(db);
+    definitions = await definitionTypes[currentType].loadDefs(db);
     listApi.refresh(definitions);
   }
 
-  async function build() {
+  function build() {
     if (modal) return;
 
-    ({ modal, content, header, slots } = createModal({
-      id:      "definition-modal",
-      title:   "Manage Definitions",
-      // size no longer matters in factory
-      onClose: () => previewApi?.hide(),
-      slots:   ["left", "preview"]
-    }));
+    // 1) Root modal container
+    modal = document.createElement("div");
+    modal.id = "definition-modal";
+    modal.className = "modal--definition";
+    // hidden by default in CSS
+    document.body.append(modal);
 
-    modal.classList.add("admin-only", "modal--definition");
+    // Attach lifecycle (focus restore)
+    attachLifecycle(modal);
 
-    // 1) Move type selector into header
+    // 2) Content wrapper
+    content = document.createElement("div");
+    content.className = "modal-content";
+    modal.append(content);
+
+    // 3) Header
+    header = document.createElement("div");
+    header.className = "modal-header";
+    const titleEl = document.createElement("h2");
+    titleEl.textContent = "Manage Definitions";
+    const closeBtn = document.createElement("span");
+    closeBtn.className = "close";
+    closeBtn.innerHTML = "&times;";
+    closeBtn.onclick = () => closeModal(modal);
+    header.append(titleEl, closeBtn);
+    content.append(header);
+
+    // 4) Slots: left & preview
+    listSlot = document.createElement("div");
+    listSlot.id = "definition-left-pane";
+    previewSlot = document.createElement("div");
+    previewSlot.id = "definition-preview-container";
+    content.append(listSlot, previewSlot);
+
+    // 5) Search & type in header
+    searchInput = document.createElement("input");
+    searchInput.type = "search";
+    searchInput.className = "modal__search";
+    searchInput.placeholder = "Search definitions…";
+    header.insertBefore(searchInput, closeBtn);
+
     const typeWrapper = document.createElement("div");
     typeWrapper.className = "modal__type-selector";
     const typeLabel = document.createElement("span");
     typeLabel.textContent = "Type:";
     fldType = document.createElement("select");
     fldType.id = "definition-type";
-    fldType.innerHTML = Object.keys(definitionTypes)
-      .map(t => `<option value="${t}">${t}</option>`)
-      .join("");
     typeWrapper.append(typeLabel, fldType);
-    const closeBtn = header.querySelector(".close");
     header.insertBefore(typeWrapper, closeBtn);
 
-    // 2) Insert search bar before close button
-    searchInput = document.createElement("input");
-    searchInput.type        = "search";
-    searchInput.className   = "modal__search";
-    searchInput.placeholder = "Search definitions…";
-    header.insertBefore(searchInput, closeBtn);
-
-    // 3) Setup left pane
-    const leftPane = slots.left;
-    leftPane.id = "definition-left-pane";
-
-    // 3a) Entry list
+    // 6) List container
     const listContainer = createDefListContainer("definition-list");
-    leftPane.append(listContainer);
+    listSlot.append(listContainer);
 
-    // 3b) Placeholder for subheader
-    subheaderEl = document.createElement("div");
+    // 7) Placeholder and form container
+    const subheaderEl = document.createElement("div");
     subheaderEl.className = "modal-subheader";
-    leftPane.append(subheaderEl);
-
-    // 3c) Form container
+    listSlot.append(subheaderEl);
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
-    leftPane.append(formContainer);
+    listSlot.append(formContainer);
 
-    // 4) Preview pane
-    previewContainer = slots.preview;
-    previewContainer.id = "definition-preview-container";
-
-    // 5) List manager
+    // 8) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
       onEntryClick:   def => openDefinition(currentType, def),
       onDelete:       async id => {
-        const cfg = definitionTypes[currentType];
-        await cfg.del(db, id);
+        await definitionTypes[currentType].del(db, id);
         await refreshList();
       }
     });
-
-    // Wire search input to list filter
     searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );
   }
 
   async function openDefinition(type, def = null) {
-    await build();
+    build();
     currentType   = type;
+    // Populate type dropdown
+    fldType.innerHTML = Object.keys(definitionTypes)
+      .map(t => `<option value="${t}">${t}</option>`).join("");
     fldType.value = type;
     await refreshList();
 
+    // Load items for Chest preview
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    const cfg = definitionTypes[type];
-    previewApi = cfg.previewBuilder(previewContainer);
+    // Setup preview pane
+    previewApi = definitionTypes[type].previewBuilder(previewSlot);
 
-    // Clear previous form
+    // Build form
     formContainer.innerHTML = "";
-
-    // Create form controller, passing title & hasFilter
-    formApi = cfg.controller({
-      title:        type,
-      hasFilter:    true,
-      onCancel:     () => { formApi.reset(); previewApi.hide(); },
-      onDelete:     async id => {
-        await cfg.del(db, id);
+    formApi = definitionTypes[type].controller({
+      title:     type,
+      hasFilter: true,
+      onCancel:  () => { formApi.reset(); previewApi.hide(); },
+      onDelete:  async id => {
+        await definitionTypes[type].del(db, id);
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
-      onSubmit:     async payload => {
-        await cfg.save(db, def?.id ?? null, payload);
+      onSubmit:  async payload => {
+        await definitionTypes[type].save(db, payload.id ?? null, payload);
         await refreshList();
         formApi.reset(); previewApi.hide();
       },
       onFieldChange: data => {
-        let previewData = data;
+        let pd = data;
         if (type === "Chest" && Array.isArray(data.lootPool)) {
-          previewData = {
-            ...data,
-            lootPool: data.lootPool.map(id => itemMap[id]).filter(Boolean)
-          };
+          pd = { ...data, lootPool: data.lootPool.map(id=>itemMap[id]).filter(Boolean) };
         }
-        previewApi.show(previewData);
+        previewApi.show(pd);
       }
     }, db);
 
-    // Slot generated subheader into placeholder
+    // Slot subheader
     const generatedHeader = formApi.form.querySelector(".modal-subheader");
-    if (generatedHeader) {
-      subheaderEl.replaceWith(generatedHeader);
-      subheaderEl = generatedHeader;
-    }
+    subheaderEl.replaceWith(generatedHeader);
 
-    // Append the form beneath the subheader
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    // Populate or reset, then show preview
     if (def) {
       formApi.populate(def);
-      const previewData = type === "Chest"
+      previewApi.show(type === "Chest"
         ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
-        : def;
-      previewApi.show(previewData);
+        : def
+      );
     } else {
       formApi.reset();
       previewApi.show(type === "Chest" ? { lootPool: [] } : {});
@@ -167,7 +196,7 @@ export function initDefinitionModal(db) {
   }
 
   return {
-    openCreate: (evt, type = "Item") => openDefinition(type),
-    openEdit:   def                => openDefinition(currentType, def)
+    openCreate: (evt, type="Item") => openDefinition(type),
+    openEdit:   def               => openDefinition(currentType, def)
   };
 }
