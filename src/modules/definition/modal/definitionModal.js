@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.18 — type selector in header; filter checkbox in subheader; dynamic Add/Edit title
+// @version: 1.19 — pass title & hasFilter to controller, show Add/Edit text, remove manual filter relocation
 
 import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
@@ -35,7 +35,7 @@ export function initDefinitionModal(db) {
 
     modal.classList.add("admin-only", "modal--definition");
 
-    // 1) Type selector → header, after title, before close
+    // Move "Type" selector into header
     const typeWrapper = document.createElement("div");
     typeWrapper.className = "modal__type-selector";
     const typeLabel = document.createElement("span");
@@ -49,36 +49,34 @@ export function initDefinitionModal(db) {
     const closeBtn = header.querySelector(".close");
     header.insertBefore(typeWrapper, closeBtn);
 
-    // 2) Search bar — in header, before close button
+    // Insert search bar
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
     header.insertBefore(searchInput, closeBtn);
 
-    // 3) Left pane: list + subheader placeholder + form
+    // Left pane setup
     const leftPane = slots.left;
     leftPane.id = "definition-left-pane";
-
-    // entry list
     const listContainer = createDefListContainer("definition-list");
     leftPane.append(listContainer);
 
-    // placeholder for form subheader
+    // Placeholder for form subheader
     subheaderEl = document.createElement("div");
     subheaderEl.className = "modal-subheader";
     leftPane.append(subheaderEl);
 
-    // form container
+    // Form container
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
     leftPane.append(formContainer);
 
-    // preview pane
+    // Preview pane
     previewContainer = slots.preview;
     previewContainer.id = "definition-preview-container";
 
-    // list manager
+    // List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -90,7 +88,7 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // wire search → list filter
+    // Search → filter
     searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );
@@ -110,11 +108,12 @@ export function initDefinitionModal(db) {
     const cfg = definitionTypes[type];
     previewApi = cfg.previewBuilder(previewContainer);
 
-    // clear previous form
     formContainer.innerHTML = "";
 
-    // create new form controller
+    // Pass title and hasFilter to controller so subheader shows title and filter toggle
     formApi = cfg.controller({
+      title:        type,
+      hasFilter:    true,
       onCancel:     () => { formApi.reset(); previewApi.hide(); },
       onDelete:     async id => {
         await cfg.del(db, id);
@@ -138,32 +137,24 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // move generated subheader into placeholder
+    // Slot the generated subheader in place of placeholder
     const generatedHeader = formApi.form.querySelector(".modal-subheader");
     if (generatedHeader) {
       subheaderEl.replaceWith(generatedHeader);
       subheaderEl = generatedHeader;
 
-      // update title text to "Add X" or "Edit X"
-      const titleEl = subheaderEl.querySelector("h3, .subheading, span");
+      // Update the Add/Edit text
+      const titleEl = generatedHeader.querySelector("h3, .subheading, span");
       if (titleEl) {
         titleEl.textContent = def ? `Edit ${type}` : `Add ${type}`;
       }
-
-      // relocate "Show in filters" checkbox row into subheader
-      const filterRow = formApi.form.querySelector(
-        '.form-row input[type="checkbox"]'
-      )?.closest(".form-row");
-      if (filterRow) {
-        generatedHeader.append(filterRow);
-      }
     }
 
-    // append the form beneath the subheader
+    // Append form beneath subheader
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    // populate or reset form + show preview
+    // Populate or reset form and show preview
     if (def) {
       formApi.populate(def);
       const previewData = type === "Chest"
