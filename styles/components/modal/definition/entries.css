@@ -1,9 +1,6 @@
 /* @file: styles/components/modal/definition/entries.css */
-/* @version: 2.0 — enhanced list container and entry styles using design tokens */
+/* @version: 2.1 — removed empty rule, consolidated list container styling */
 
-.modal--definition /* List container */ {
-  /* Ensure this maps to the grid-area in box.css */
-}
 .modal--definition #definition-list {
   grid-area: list;
   display: flex;

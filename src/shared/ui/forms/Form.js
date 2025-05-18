@@ -1,5 +1,5 @@
 // @file: src/shared/ui/forms/Form.js
-// @version: 1.4 — corrected import paths for formControllerShell
+// @version: 1.4 — fixed import path for formControllerShell
 
 import {
   createTextField,
@@ -15,7 +15,7 @@ import { initFormPickrs } from "./pickrAdapter.js";
 import {
   createFormControllerHeader,
   wireFormEvents
-} from "../../../modules/ui/components/formControllerShell.js";
+} from "./formControllerShell.js"; // corrected path
 
 /**
  * Unified form builder + controller + state manager.
@@ -59,7 +59,7 @@ export class Form {
       onDelete
     });
     headerObj.container.classList.add("modal-subheader");
-    this._btnDelete = headerObj.setDeleteVisible; // setter function
+    this._btnDelete = headerObj.setDeleteVisible;
     this.form.prepend(headerObj.container);
 
     // 3) Lazy-load Pickr adapter and initialize swatches
