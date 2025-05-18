@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.19 — pass title & hasFilter to controller, show Add/Edit text, remove manual filter relocation
+// @version: 1.20 — remove duplicate filter row from form body, ensure only subheader has the filter
 
 import { createModal, openModal } from "../../../shared/ui/core/modalFactory.js";
 import { definitionTypes }        from "../types.js";
@@ -35,7 +35,7 @@ export function initDefinitionModal(db) {
 
     modal.classList.add("admin-only", "modal--definition");
 
-    // Move "Type" selector into header
+    // 1) Move type selector into header
     const typeWrapper = document.createElement("div");
     typeWrapper.className = "modal__type-selector";
     const typeLabel = document.createElement("span");
@@ -49,34 +49,36 @@ export function initDefinitionModal(db) {
     const closeBtn = header.querySelector(".close");
     header.insertBefore(typeWrapper, closeBtn);
 
-    // Insert search bar
+    // 2) Insert search bar before close button
     searchInput = document.createElement("input");
     searchInput.type        = "search";
     searchInput.className   = "modal__search";
     searchInput.placeholder = "Search definitions…";
     header.insertBefore(searchInput, closeBtn);
 
-    // Left pane setup
+    // 3) Setup left pane
     const leftPane = slots.left;
     leftPane.id = "definition-left-pane";
+
+    // 3a) Entry list
     const listContainer = createDefListContainer("definition-list");
     leftPane.append(listContainer);
 
-    // Placeholder for form subheader
+    // 3b) Placeholder for subheader
     subheaderEl = document.createElement("div");
     subheaderEl.className = "modal-subheader";
     leftPane.append(subheaderEl);
 
-    // Form container
+    // 3c) Form container
     formContainer = document.createElement("div");
     formContainer.id = "definition-form-container";
     leftPane.append(formContainer);
 
-    // Preview pane
+    // 4) Preview pane
     previewContainer = slots.preview;
     previewContainer.id = "definition-preview-container";
 
-    // List manager
+    // 5) List manager
     listApi = createDefinitionListManager({
       container:      listContainer,
       getDefinitions: () => definitions,
@@ -88,7 +90,7 @@ export function initDefinitionModal(db) {
       }
     });
 
-    // Search → filter
+    // Wire search input to list filter
     searchInput.addEventListener("input", () =>
       listApi.filter(searchInput.value)
     );
@@ -108,9 +110,10 @@ export function initDefinitionModal(db) {
     const cfg = definitionTypes[type];
     previewApi = cfg.previewBuilder(previewContainer);
 
+    // Clear previous form
     formContainer.innerHTML = "";
 
-    // Pass title and hasFilter to controller so subheader shows title and filter toggle
+    // Create form controller, passing title & hasFilter
     formApi = cfg.controller({
       title:        type,
       hasFilter:    true,
@@ -137,24 +140,33 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Slot the generated subheader in place of placeholder
+    // Extract generated subheader
     const generatedHeader = formApi.form.querySelector(".modal-subheader");
     if (generatedHeader) {
+      // Replace placeholder with the real subheader
       subheaderEl.replaceWith(generatedHeader);
       subheaderEl = generatedHeader;
 
-      // Update the Add/Edit text
+      // Update Add/Edit text
       const titleEl = generatedHeader.querySelector("h3, .subheading, span");
       if (titleEl) {
         titleEl.textContent = def ? `Edit ${type}` : `Add ${type}`;
       }
+
+      // Remove the original filter row from the form body
+      const formFilterRow = formApi.form.querySelector(
+        '.form-row input[type="checkbox"]'
+      )?.closest(".form-row");
+      if (formFilterRow) {
+        formFilterRow.remove();
+      }
     }
 
-    // Append form beneath subheader
+    // Append the form beneath the subheader
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    // Populate or reset form and show preview
+    // Populate or reset, then show preview
     if (def) {
       formApi.populate(def);
       const previewData = type === "Chest"
