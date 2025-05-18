@@ -1,8 +1,8 @@
-// @file: src/modules/ui/components/uiKit/modalCore.js
-// @version: 1.0 — shared modal lifecycle & show/hide helpers
+// @file: src/shared/ui/core/modalCore.js
+// @version: 1.2 — toggle .is-open; CSS handles display & centering
 
 /**
- * Attaches a “restore focus & scroll” handler to a `<dialog>`-style modal.
+ * Attaches a “restore focus & scroll” handler to a modal.
  */
 function attachModalLifecycle(modal) {
   const prevFocused = document.activeElement;
@@ -19,22 +19,21 @@ function attachModalLifecycle(modal) {
 }
 
 /**
- * Open a modal (any size).
+ * Open a modal (any type) by toggling its .is-open class.
  */
 export function openModal(modal) {
-  modal.style.display = "block";
-  modal.style.zIndex  = "9999";
+  modal.classList.add("is-open");
+  modal.style.zIndex = "9999";
   if (!modal.dataset.lifecycleAttached) {
     attachModalLifecycle(modal);
   }
 }
 
 /**
- * Close a modal (any size).
+ * Close a modal by removing its .is-open class.
  */
 export function closeModal(modal) {
-  modal.style.display = "none";
-  modal.style.zIndex  = "-1";
+  modal.classList.remove("is-open");
   modal.dispatchEvent(new Event("close"));
 }
 

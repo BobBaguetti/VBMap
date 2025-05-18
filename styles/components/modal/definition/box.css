@@ -1,8 +1,8 @@
 /* @file: styles/components/modal/definition/box.css */
-/* @version: 1.0 — wrapper & box dimensions for definition modal */
+/* @version: 1.2 — display controlled by .is-open, removed inline display */
 
 .modal--definition {
-  display: none;                /* toggled by JS */
+  /* display is now handled via .is-open */
   position: fixed;
   inset: 0;                     /* top/right/bottom/left: 0 */
   width: 100%;
@@ -15,6 +15,11 @@
   font-family: 'Satoshi', sans-serif;
   font-weight: 400;
   color: var(--text-primary);
+}
+
+/* Show modal when .is-open is present */
+.modal--definition.is-open {
+  display: flex;
 }
 
 .modal--definition .modal-content {
