@@ -1,5 +1,5 @@
 // @file: src/shared/ui/components/formFields.js
-// @version: 2.0 — unified createFieldRow API
+// @version: 2.1 — always wrap extraInfo in dividers; remove withDividers option
 
 import { createPickr, disablePickr, getPickrHexColor } from "../forms/pickrAdapter.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
@@ -10,14 +10,14 @@ import { createChipListField } from "./chipListField.js";
  * and color-swatch if needed.
  *
  * @param {Object} opts
- * @param {"text"|"number"|"select"|"textarea"|"imageUrl"|"extraInfo"|"chipList"|"checkbox"} opts.type
- * @param {string} opts.label     — row label
- * @param {string} [opts.id]      — id on the <input>/<select>/<textarea>
+ * @param {"text"|"number"|"select"|"textarea"|"imageUrl"|"extraInfo"|
+ *         "chipList"|"checkbox"} opts.type
+ * @param {string} opts.label       — row label
+ * @param {string} [opts.id]        — id on the <input>/<select>/<textarea>
  * @param {string[]} [opts.options] — for select
- * @param {boolean} [opts.colorable] — show a color picker
- * @param {boolean} [opts.withDividers] — extraInfo only
- * @param {string} [opts.idKey]   — chipList only
- * @param {string} [opts.labelKey]— chipList only
+ * @param {boolean} [opts.colorable]— show a color picker
+ * @param {string} [opts.idKey]     — chipList only
+ * @param {string} [opts.labelKey]  — chipList only
  * @param {Function} [opts.renderIcon] — chipList only
  *
  * @returns {{ row:HTMLElement, input:HTMLElement, colorBtn?:HTMLElement }}
@@ -28,7 +28,6 @@ export function createFieldRow({
   id,
   options = [],
   colorable = false,
-  withDividers = false,
   idKey,
   labelKey,
   renderIcon
@@ -78,32 +77,30 @@ export function createFieldRow({
       break;
 
     case "extraInfo":
-      // raw block from helper
+      // always wrap extra-info block with dividers
       const extra = createExtraInfoBlock();
       input = extra.block;
-      if (withDividers) {
-        const container = document.createElement("div");
-        const hr1 = document.createElement("hr");
-        const hr2 = document.createElement("hr");
-        container.append(hr1, row, hr2);
-        container.className = "form-row"; // keep row styling
-        row.append(input);
-        return { row: container, input: extra };
-      }
-      break;
+
+      // wrap the row with <hr> above and below
+      const container = document.createElement("div");
+      const hr1 = document.createElement("hr");
+      const hr2 = document.createElement("hr");
+      container.append(hr1, row, hr2);
+      container.className = "form-row";
+
+      row.append(input);
+      return { row: container, input: extra };
 
     case "chipList":
-      // re-use your existing helper
+      // re-use existing helper
       const { row: tmpRow, getItems, setItems } = createChipListField(
         label,
         [],
         { items: [], idKey, labelKey, renderIcon }
       );
-      row.className = "form-row";
-      // tmpRow already holds label+select; swap it in
       tmpRow.classList.add("form-row");
-      input = getItems;       // getter fn
-      colorBtn = setItems;    // setter fn
+      input = getItems;
+      colorBtn = setItems;
       return { row: tmpRow, input, colorBtn };
 
     case "checkbox":
@@ -114,7 +111,6 @@ export function createFieldRow({
       cb.id = id;
       lbl.append(cb, document.createTextNode(` ${label}`));
       input = cb;
-      // replace default row contents
       row.innerHTML = "";
       row.append(lbl);
       break;
@@ -123,7 +119,7 @@ export function createFieldRow({
       throw new Error(`Unknown field type: ${type}`);
   }
 
-  // if this type supports coloring, wire up a swatch
+  // color swatch if needed
   if (colorable && type !== "extraInfo" && type !== "chipList" && type !== "checkbox") {
     colorBtn = document.createElement("div");
     colorBtn.className = "color-btn";
