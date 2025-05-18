@@ -1,76 +1,65 @@
 /* @file: styles/components/modal/definition/box.css */
-/* @version: 2.1 — fixed list height and centering, ensured both list and form scroll */
+/* @version: 2.2 — use minmax for proper scroll areas and restore centering */
 
 .modal--definition {
-  /* Backdrop & centering */
   display: none;
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: var(--z-index-modal, 9999);
-  font-family: 'Satoshi', sans-serif;
-  color: var(--text-primary);
 
-  /* Flex-centering of the modal-content */
+  /* Flex-centering */
   display: flex;
   justify-content: center;
   align-items: center;
+  font-family: 'Satoshi', sans-serif;
+  color: var(--text-primary);
 }
 
 .modal--definition .modal-content {
-  /* Core dimensions */
   width: 100%;
   max-width: 550px;
-  max-height: var(--modal-definition-content-height, 90vh);
+  max-height: 90vh;
 
-  /* Appearance */
   background-color: var(--bg-30);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-small);
   padding: var(--space-3);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
 
-  /* Grid layout: header → list → subheader → form */
   display: grid;
+  /* 
+    1) header: auto-height
+    2) list: up to 240px, but not more than available
+    3) subheader: auto-height
+    4) form: take remaining space
+  */
   grid-template-rows:
-    auto    /* 1) header */
-    240px   /* 2) fixed list height */
-    auto    /* 3) subheader */
-    1fr     /* 4) form body (fills remaining) */;
+    auto
+    minmax(0, 240px)
+    auto
+    minmax(0, 1fr);
   grid-template-areas:
     "header"
     "list"
     "subheader"
     "form";
-  overflow: hidden;  /* contain scrollable children */
+  overflow: hidden;  /* ensure children scroll instead */
 }
 
-/* Explicit centering in case inline styles removed it */
-.modal--definition .modal-content {
-  margin: auto;
-}
-
-/* Map areas */
-.modal--definition .modal-header            { grid-area: header; }
-.modal--definition #definition-list         { grid-area: list; }
-.modal--definition .modal-subheader         { grid-area: subheader; }
+/* Grid area assignments */
+.modal--definition .modal-header { grid-area: header; }
+.modal--definition #definition-list { grid-area: list; }
+.modal--definition .modal-subheader { grid-area: subheader; }
 .modal--definition #definition-form-container { grid-area: form; }
 
-/* Ensure list scrolls within its fixed height */
-.modal--definition #definition-list {
-  overflow-y: auto;
-  scrollbar-width: none;
-}
-.modal--definition #definition-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-}
-
-/* Ensure form area scrolls if overflow */
+/* Scrollable areas */
+.modal--definition #definition-list,
 .modal--definition #definition-form-container {
   overflow-y: auto;
   scrollbar-width: none;
 }
+.modal--definition #definition-list::-webkit-scrollbar,
 .modal--definition #definition-form-container::-webkit-scrollbar {
   width: 0;
   height: 0;
