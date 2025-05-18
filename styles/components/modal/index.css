@@ -2,7 +2,7 @@
 /* @version: 1.1 — refactored imports for per‐modal folders */
 
 @import "./base.css";
-
+ 
 /* Definition modal styles */
 @import "./definition/box.css";
 @import "./definition/buttons.css";
