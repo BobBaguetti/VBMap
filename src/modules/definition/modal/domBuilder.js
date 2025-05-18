@@ -1,6 +1,7 @@
 // @file: src/modules/definition/modal/domBuilder.js
+// @version: 1.1 — fix import path for listUtils
 
-import { createDefListContainer } from "../../utils/listUtils.js";
+import { createDefListContainer } from "../../../shared/utils/listUtils.js";
 
 export function buildModalUI(modalEl) {
   // CONTENT wrapper
