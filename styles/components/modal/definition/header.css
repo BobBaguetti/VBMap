@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/header.css */
-/* @version: 1.6 — increase subheader title size */
+/* @version: 1.7 — ensure all subheader children align center */
 
  /* Main header: Manage Definitions, Search, Type selector, Close */
 .modal--definition .modal-header {
@@ -43,34 +43,41 @@
 /* Subheader: Add/Edit title, Show in filters, Save/Clear/Delete buttons */
 .modal--definition .modal-subheader {
   display: flex;
-  align-items: center;
+  align-items: center;                /* ensure vertical centering */
   padding: var(--space-1) var(--space-2);
   gap: var(--space-2);
   border-bottom: 1px solid var(--bg-50);
   background: var(--bg-40);
 }
 
+/* Force all direct children to align center */
+.modal--definition .modal-subheader > * {
+  align-self: center;
+}
+
 .modal--definition .modal-subheader h3 {
   margin: 0;
-  /* bumped up for prominence */
   font-size: 1.125rem;
   font-weight: 500;
   color: var(--text-primary);
   flex: 0 0 auto;
 }
 
+/* Label wrapping the checkbox */
 .modal--definition .modal-subheader label {
-  /* ensure checkbox label doesn’t grow */
   display: flex;
   align-items: center;
   gap: var(--space-1);
+  margin: 0;                /* remove any default margins */
   flex: 0 0 auto;
 }
 
+/* The checkbox itself */
 .modal--definition .modal-subheader input[type="checkbox"] {
   margin: 0;
 }
 
+/* Button group */
 .modal--definition .modal-subheader .floating-buttons {
   margin-left: auto;
   display: flex;
