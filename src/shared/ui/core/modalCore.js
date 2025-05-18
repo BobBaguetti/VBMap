@@ -1,8 +1,8 @@
-// @file: src/modules/ui/components/uiKit/modalCore.js
-// @version: 1.0 — shared modal lifecycle & show/hide helpers
+// @file: src/shared/ui/core/modalCore.js
+// @version: 1.1 — open definition modals with flex layout
 
 /**
- * Attaches a “restore focus & scroll” handler to a `<dialog>`-style modal.
+ * Attaches a “restore focus & scroll” handler to a modal.
  */
 function attachModalLifecycle(modal) {
   const prevFocused = document.activeElement;
@@ -19,10 +19,12 @@ function attachModalLifecycle(modal) {
 }
 
 /**
- * Open a modal (any size).
+ * Open a modal (any type).
  */
 export function openModal(modal) {
-  modal.style.display = "block";
+  // Definition modals use flex to center; others use block
+  const isDefinition = modal.classList.contains("modal--definition");
+  modal.style.display = isDefinition ? "flex" : "block";
   modal.style.zIndex  = "9999";
   if (!modal.dataset.lifecycleAttached) {
     attachModalLifecycle(modal);
@@ -30,7 +32,7 @@ export function openModal(modal) {
 }
 
 /**
- * Close a modal (any size).
+ * Close a modal.
  */
 export function closeModal(modal) {
   modal.style.display = "none";
