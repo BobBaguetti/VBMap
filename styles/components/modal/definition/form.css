@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.5 — restore original row background; darken input fields */
+/* @version: 1.6 — broadened selector to darken all form controls */
 
 .modal--definition #definition-form-container {
   display: flex;
@@ -12,7 +12,7 @@
   display: flex;
   align-items: center;
   margin-bottom: 0;
-  padding: 0; /* remove extra row background/padding */
+  padding: 0; /* no extra row padding */
   background: none;
 }
 
@@ -23,9 +23,8 @@
   color: var(--text-primary);
 }
 
-/* Darker inputs for stronger contrast */
-.modal--definition .field-row input[type="text"],
-.modal--definition .field-row input[type="number"],
+/* Darken all form controls for contrast */
+.modal--definition .field-row input,
 .modal--definition .field-row select,
 .modal--definition .field-row textarea,
 .modal--definition .field-row .ui-input {
