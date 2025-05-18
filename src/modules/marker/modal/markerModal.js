@@ -1,64 +1,99 @@
 // @file: src/modules/ui/modals/markerModal.js
-// @version: 22.2 — updated modal import to modalFactory
+// @version: 22.3 — fully self-contained modal (inlined factory + lifecycle)
 
-import { createModal, closeModal, openModalAt } from "../../../shared/ui/core/modalFactory.js";
-import { markerTypes }                         from "../types.js";
+import { markerTypes } from "../types.js";
+import { createDefListContainer } from "../../../shared/utils/listUtils.js"; // if needed
+// Note: markerModal doesn’t use listUtils; remove import if unused.
 
 export function initMarkerModal(db) {
-  let modal, content, fldType, fldDef, btnCreate;
+  let modal, content;
+  let fldType, fldDef, btnCreate, btnCancel;
   let pendingCoords, onCreate, onSaveCallback;
 
-  async function ensureBuilt() {
+  // Lifecycle & ESC-to-close
+  function attachLifecycle(modalEl) {
+    const prevFocused = document.activeElement;
+    const scrollY     = window.scrollY;
+    document.documentElement.style.overflow = "hidden";
+    modalEl.addEventListener("close", () => {
+      document.documentElement.style.overflow = "";
+      window.scrollTo(0, scrollY);
+      prevFocused?.focus?.();
+    }, { once: true });
+  }
+  function onKey(e) {
+    if (e.key === "Escape" && modal) closeModal();
+  }
+
+  // Show/hide
+  function openModal() {
+    modal.classList.add("is-open");
+    document.addEventListener("keydown", onKey);
+  }
+  function closeModal() {
+    modal.classList.remove("is-open");
+    modal.dispatchEvent(new Event("close"));
+    document.removeEventListener("keydown", onKey);
+  }
+
+  // Build the modal shell once
+  function ensureBuilt() {
     if (modal) return;
 
-    // 1) Create the modal shell
-    const m = createModal({
-      id:        "marker-modal",
-      title:     "Marker",
-      size:      "small",
-      draggable: true,
-      onClose:   () => closeModal(modal)
-    });
-    modal   = m.modal;
-    content = m.content;
-    modal.classList.add("admin-only");
+    // 1) Modal backdrop container
+    modal = document.createElement("div");
+    modal.id = "marker-modal";
+    modal.className = "modal--marker";
+    document.body.append(modal);
+    attachLifecycle(modal);
 
-    // 2) Type selector
+    // 2) Content wrapper
+    content = document.createElement("div");
+    content.className = "modal-content";
+    modal.append(content);
+
+    // 3) Make modal draggable if desired
+    // (optional: replicate draggable logic from shared modalSmall)
+
+    // 4) Type selector
     const rowType = document.createElement("label");
     rowType.textContent = "Type:";
     fldType = document.createElement("select");
     fldType.innerHTML = `
       <option value="" disabled selected>Select type…</option>
-      ${Object.keys(markerTypes)
-        .map(type => `<option value="${type}">${type}</option>`)
-        .join("")}
+      ${Object.keys(markerTypes).map(
+        type => `<option value="${type}">${type}</option>`
+      ).join("")}
     `;
-    rowType.appendChild(fldType);
+    rowType.append(fldType);
+    content.append(rowType);
 
-    // 3) Definition selector
+    // 5) Definition selector
     const rowDef = document.createElement("label");
     rowDef.textContent = "Definition:";
     fldDef = document.createElement("select");
     fldDef.innerHTML = `<option value="" disabled>Select definition…</option>`;
-    rowDef.appendChild(fldDef);
+    rowDef.append(fldDef);
     rowDef.style.display = "none";
+    content.append(rowDef);
 
-    // 4) Buttons
+    // 6) Buttons row
     const btnRow = document.createElement("div");
-    const btnCancel = document.createElement("button");
-    btnCancel.textContent = "Cancel";
+    btnRow.className = "modal-buttons";
+
+    btnCancel = document.createElement("button");
     btnCancel.type = "button";
-    btnCancel.onclick = () => closeModal(modal);
+    btnCancel.textContent = "Cancel";
+    btnCancel.onclick = closeModal;
 
     btnCreate = document.createElement("button");
-    btnCreate.textContent = "Create";
     btnCreate.type = "button";
+    btnCreate.textContent = "Create";
 
     btnRow.append(btnCancel, btnCreate);
+    content.append(btnRow);
 
-    content.append(rowType, rowDef, btnRow);
-
-    // 5) Handlers
+    // 7) Handlers
     fldType.addEventListener("change", async () => {
       const type = fldType.value;
       if (!type) return;
@@ -86,33 +121,41 @@ export function initMarkerModal(db) {
       } else if (onSaveCallback) {
         onSaveCallback(payload);
       }
-      closeModal(modal);
+      closeModal();
     });
   }
 
   return {
-    openCreate(coords, type, evt, createCb) {
-      pendingCoords = coords;
-      onCreate      = createCb;
-      onSaveCallback= null;
-      ensureBuilt().then(() => {
-        fldType.value = type || "";
-        fldType.dispatchEvent(new Event("change"));
-        openModalAt(modal, evt);
-      });
+    openCreate(coords, type = "", evt, createCb) {
+      pendingCoords  = coords;
+      onCreate       = createCb;
+      onSaveCallback = null;
+      ensureBuilt();
+      fldType.value = type;
+      fldType.dispatchEvent(new Event("change"));
+      // Position near event
+      openModalAt(evt);
     },
 
     openEdit(markerObj, data, evt, saveCb) {
       pendingCoords  = data.coords;
       onCreate       = null;
       onSaveCallback = saveCb;
-      ensureBuilt().then(async () => {
-        fldType.value = data.type;
-        fldType.dispatchEvent(new Event("change"));
-        const defIdKey = markerTypes[data.type].defIdKey;
-        fldDef.value   = data[defIdKey] || "";
-        openModalAt(modal, evt);
-      });
+      ensureBuilt();
+      fldType.value = data.type;
+      fldType.dispatchEvent(new Event("change"));
+      const defIdKey = markerTypes[data.type].defIdKey;
+      fldDef.value   = data[defIdKey] || "";
+      openModalAt(evt);
     }
   };
+
+  // Helper to position and open
+  function openModalAt(evt) {
+    openModal();
+    const rect = content.getBoundingClientRect();
+    content.style.position = "absolute";
+    content.style.left     = `${evt.clientX - rect.width}px`;
+    content.style.top      = `${evt.clientY - rect.height / 2}px`;
+  }
 }
