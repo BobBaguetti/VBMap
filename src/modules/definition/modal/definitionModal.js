@@ -1,8 +1,10 @@
 // @file: src/modules/definition/modals/definitionModal.js
-// @version: 1.22 — fully self-contained modal (inlined factory + lifecycle)
+// @version: 1.23 — import createDefinitionListManager to fix ReferenceError
 
 import { definitionTypes }        from "../types.js";
 import { createDefListContainer }  from "../../../shared/utils/listUtils.js";
+import { createDefinitionListManager } 
+  from "../list/definitionListManager.js";           // ← added import
 import { createFormControllerHeader, wireFormEvents }
   from "../../../shared/ui/forms/formControllerShell.js";
 import { initFormPickrs }         from "../../../shared/ui/forms/pickrAdapter.js";
@@ -13,13 +15,12 @@ import { loadItemDefinitions }
 export function initDefinitionModal(db) {
   let modal, content, header, listSlot, previewSlot;
   let fldType, listApi, formApi, previewApi;
-  let formContainer, previewContainer, searchInput;
+  let formContainer, previewContainer, searchInput, subheaderEl;
   let definitions = [], currentType;
   let itemMap = {};
 
   // Lifecycle & ESC handler
   function attachLifecycle(modalEl) {
-    // Prevent background scroll & restore focus on close
     const prevFocused = document.activeElement;
     const scrollY     = window.scrollY;
     document.documentElement.style.overflow = "hidden";
@@ -54,17 +55,14 @@ export function initDefinitionModal(db) {
   function build() {
     if (modal) return;
 
-    // 1) Root modal container
+    // 1) Root modal
     modal = document.createElement("div");
     modal.id = "definition-modal";
     modal.className = "modal--definition";
-    // hidden by default in CSS
     document.body.append(modal);
-
-    // Attach lifecycle (focus restore)
     attachLifecycle(modal);
 
-    // 2) Content wrapper
+    // 2) Content
     content = document.createElement("div");
     content.className = "modal-content";
     modal.append(content);
@@ -81,14 +79,14 @@ export function initDefinitionModal(db) {
     header.append(titleEl, closeBtn);
     content.append(header);
 
-    // 4) Slots: left & preview
+    // 4) Slots
     listSlot = document.createElement("div");
     listSlot.id = "definition-left-pane";
     previewSlot = document.createElement("div");
     previewSlot.id = "definition-preview-container";
     content.append(listSlot, previewSlot);
 
-    // 5) Search & type in header
+    // 5) Header extras
     searchInput = document.createElement("input");
     searchInput.type = "search";
     searchInput.className = "modal__search";
@@ -108,8 +106,8 @@ export function initDefinitionModal(db) {
     const listContainer = createDefListContainer("definition-list");
     listSlot.append(listContainer);
 
-    // 7) Placeholder and form container
-    const subheaderEl = document.createElement("div");
+    // 7) Subheader + form container placeholders
+    subheaderEl = document.createElement("div");
     subheaderEl.className = "modal-subheader";
     listSlot.append(subheaderEl);
     formContainer = document.createElement("div");
@@ -134,22 +132,18 @@ export function initDefinitionModal(db) {
   async function openDefinition(type, def = null) {
     build();
     currentType   = type;
-    // Populate type dropdown
     fldType.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option value="${t}">${t}</option>`).join("");
     fldType.value = type;
     await refreshList();
 
-    // Load items for Chest preview
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // Setup preview pane
     previewApi = definitionTypes[type].previewBuilder(previewSlot);
 
-    // Build form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -168,23 +162,21 @@ export function initDefinitionModal(db) {
       onFieldChange: data => {
         let pd = data;
         if (type === "Chest" && Array.isArray(data.lootPool)) {
-          pd = { ...data, lootPool: data.lootPool.map(id=>itemMap[id]).filter(Boolean) };
+          pd = { ...data, lootPool: data.lootPool.map(i=>itemMap[i]).filter(Boolean) };
         }
         previewApi.show(pd);
       }
     }, db);
 
-    // Slot subheader
     const generatedHeader = formApi.form.querySelector(".modal-subheader");
     subheaderEl.replaceWith(generatedHeader);
-
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
     if (def) {
       formApi.populate(def);
       previewApi.show(type === "Chest"
-        ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
+        ? { ...def, lootPool: (def.lootPool||[]).map(i=>itemMap[i]).filter(Boolean) }
         : def
       );
     } else {
