@@ -1,5 +1,5 @@
 /* @file: styles/components/utilities.css */
-/* @version: 1.3 — migrated legacy utilities + added modal focus styles */
+/* @version: 1.4 — migrate focus outlines to :focus-visible and suppress on mouse click */
 
 /* 1) Text Helpers */
 .text-primary {
@@ -43,12 +43,20 @@ body.is-admin .admin-only {
   display: none !important;
 }
 
-/* 4) Modal & interactive focus outlines */
-.modal [tabindex="-1"]:focus,
-.modal button:focus,
-.modal input:focus,
-.modal select:focus,
-.modal textarea:focus {
+/* 4) Focus outlines only when navigating via keyboard */
+.modal :focus:not(:focus-visible),
+.modal button:focus:not(:focus-visible),
+.modal input:focus:not(:focus-visible),
+.modal select:focus:not(:focus-visible),
+.modal textarea:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.modal [tabindex="-1"]:focus-visible,
+.modal button:focus-visible,
+.modal input:focus-visible,
+.modal select:focus-visible,
+.modal textarea:focus-visible {
   outline: var(--border-width-thin) solid var(--focus-ring);
   outline-offset: var(--space-1);
 }
