@@ -1,5 +1,5 @@
 // @file: src/shared/ui/core/createDefinitionModal.js
-// @version: 1.2 — remove hard-coded maxWidth to defer to CSS
+// @version: 1.3 — restore comfortable maxWidth for definition modal
 
 import { openModal, closeModal } from "./modalCore.js";
 
@@ -22,7 +22,7 @@ export function createDefinitionModal({ id, title, onClose }) {
     top:           "50%",
     left:          "50%",
     transform:     "translate(-50%, -50%)",
-    /* maxWidth now controlled via CSS */
+    maxWidth:      "550px",    // restored max-width
     maxHeight:     "90vh",
     display:       "flex",
     flexDirection: "column",
@@ -35,11 +35,11 @@ export function createDefinitionModal({ id, title, onClose }) {
   header.classList.add("modal-header");
   header.id = `${id}__header`;
   Object.assign(header.style, {
-    display:       "flex",
-    alignItems:    "center",
-    justifyContent:"space-between",
-    padding:       "0.75rem 1rem",
-    borderBottom:  "1px solid var(--border-soft)"
+    display:        "flex",
+    alignItems:     "center",
+    justifyContent: "space-between",
+    padding:        "0.75rem 1rem",
+    borderBottom:   "1px solid var(--border-soft)"
   });
   const titleEl = document.createElement("h2");
   titleEl.textContent = title;
@@ -57,9 +57,9 @@ export function createDefinitionModal({ id, title, onClose }) {
   const body = document.createElement("div");
   body.classList.add("modal-body");
   Object.assign(body.style, {
-    display:   "flex",
-    flex:      "1 1 auto",
-    overflow:  "hidden"
+    display:  "flex",
+    flex:     "1 1 auto",
+    overflow: "hidden"
   });
 
   // 5) Named slots

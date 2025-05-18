@@ -10,10 +10,6 @@
   padding: 0;
 }
 
-.modal--definition .field-row > label {
-  /* label occupies first column; width controlled via --field-label-width */
-}
-
 .modal--definition .field-row input,
 .modal--definition .field-row select,
 .modal--definition .field-row textarea,

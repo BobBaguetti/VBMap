@@ -20,8 +20,8 @@
 .modal--definition .modal-content {
   position: relative;
   width: 100%;
-  max-width: 700px;             /* was 550px; now a bit wider but capped */
-  height: 90vh;
+  max-width: 550px;             /* restored comfortable width */
+  height: var(--modal-definition-content-height, 90vh);
   background-color: var(--bg-30);
   border: 1px solid var(--border-soft);
   border-radius: 6px;
