@@ -1,11 +1,14 @@
 // @file: src/modules/definition/forms/definitionFormBuilder.js
-// @version: 1.3 — now uses unified createFieldRow API
+// @version: 1.3.1 — support withDividers for extraInfo fields
 
-import { createFieldRow } from "../../../shared/ui/components/formFields.js";
+import {
+  createFieldRow,
+  createExtraInfoField
+} from "../../../shared/ui/components/formFields.js";
 
 /**
  * Builds a <form> based on a schema.
- * @param {Object} schema  — map of fieldName → {type, label, options?, colorable?, ...}
+ * @param {Object} schema  — map of fieldName → {type, label, options?, colorable?, withDividers?, …}
  * @returns {{ form: HTMLFormElement, fields: Object, colorables: Object }}
  */
 export function buildForm(schema) {
@@ -14,25 +17,28 @@ export function buildForm(schema) {
   const colorables = {};
 
   for (const [key, cfg] of Object.entries(schema)) {
-    // prepare options for chipList/select
+    let row, input, colorBtn;
+
+    if (cfg.type === "extraInfo") {
+      // Use createExtraInfoField to respect withDividers flag
+      ({ row, extraInfo: input } = createExtraInfoField({ withDividers: cfg.withDividers }));
+      fields[key] = input;
+      form.append(row);
+      continue;
+    }
+
+    // All other field types use the generic field row
     const opts = {
       ...cfg,
       id: `fld-${key}`,
-      options: cfg.options || [],
-      withDividers: cfg.withDividers || false
+      options: cfg.options || []
     };
+    ({ row, input, colorBtn } = createFieldRow(opts));
 
-    const { row, input, colorBtn } = createFieldRow(opts);
+    // Track fields
+    fields[key] = input;
 
-    // track fields
-    if (cfg.type === "chipList") {
-      // chipList gives get/set interface on input/colorBtn
-      fields[key] = { get: input.get, set: colorBtn };
-    } else {
-      fields[key] = input;
-    }
-
-    // track colorables by custom property name
+    // Track color pickers
     if (cfg.colorable && colorBtn) {
       colorables[cfg.colorable] = colorBtn;
     }
