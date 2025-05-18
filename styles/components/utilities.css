@@ -1,5 +1,5 @@
 /* @file: styles/components/utilities.css */
-/* @version: 1.2 — migrated legacy utilities from styles/utilities.css */
+/* @version: 1.3 — migrated legacy utilities + added modal focus styles */
 
 /* 1) Text Helpers */
 .text-primary {
@@ -41,4 +41,14 @@ body.is-admin .admin-only {
 }
 [hidden] {
   display: none !important;
+}
+
+/* 4) Modal & interactive focus outlines */
+.modal [tabindex="-1"]:focus,
+.modal button:focus,
+.modal input:focus,
+.modal select:focus,
+.modal textarea:focus {
+  outline: var(--border-width-thin) solid var(--focus-ring);
+  outline-offset: var(--space-1);
 }

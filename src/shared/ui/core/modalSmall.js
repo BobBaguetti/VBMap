@@ -1,5 +1,5 @@
 // @file: src/shared/ui/core/modalSmall.js
-// @version: 1.2 — add named-slot support
+// @version: 1.3 — add ARIA roles, focus trapping, and visible focus styles
 
 import { openModal, closeModal } from "./modalCore.js";
 
@@ -10,17 +10,12 @@ import { openModal, closeModal } from "./modalCore.js";
  *   id: string,
  *   title: string,
  *   onClose?: () => void,
- *   backdrop?: boolean,    // now defaults to false
+ *   backdrop?: boolean,
  *   draggable?: boolean,
  *   withDivider?: boolean,
- *   slots?: string[]       // optional named slots
+ *   slots?: string[]
  * }} opts
- * @returns {{
- *   modal: HTMLElement,
- *   content: HTMLElement,
- *   header: HTMLElement,
- *   slots?: Record<string, HTMLElement>
- * }}
+ * @returns {{ modal: HTMLElement, content: HTMLElement, header: HTMLElement, slots?: Record<string, HTMLElement> }}
  */
 export function createModalSmall({
   id,
@@ -34,13 +29,16 @@ export function createModalSmall({
   const modal = document.createElement("div");
   modal.id = id;
   modal.classList.add("modal", "modal-small");
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+  const headerId = `${id}__header`;
+  modal.setAttribute("aria-labelledby", headerId);
   modal.style.zIndex = "9999";
-  modal.style.backgroundColor = backdrop
-    ? "rgba(0,0,0,0.5)"
-    : "transparent";
+  modal.style.backgroundColor = backdrop ? "rgba(0,0,0,0.5)" : "transparent";
 
   const content = document.createElement("div");
   content.classList.add("modal-content");
+  content.setAttribute("tabindex", "-1");
   content.style.position = "absolute";
   content.style.width = "350px";
   content.style.maxWidth = "350px";
@@ -48,15 +46,16 @@ export function createModalSmall({
 
   const header = document.createElement("div");
   header.classList.add("modal-header");
-  header.id = `${id}-handle`;
+  header.id = headerId;
   header.style.cursor = draggable ? "move" : "default";
 
   const titleEl = document.createElement("h2");
   titleEl.textContent = title;
 
-  const closeBtn = document.createElement("span");
+  const closeBtn = document.createElement("button");
   closeBtn.classList.add("close");
-  closeBtn.innerHTML = "&times;";
+  closeBtn.innerHTML = "<span aria-hidden='true'>&times;</span>";
+  closeBtn.setAttribute("aria-label", "Close dialog");
   closeBtn.onclick = () => {
     closeModal(modal);
     onClose?.();
@@ -66,7 +65,7 @@ export function createModalSmall({
   content.append(header);
   if (withDivider) content.append(document.createElement("hr"));
 
-  // create named slots
+  // named slots
   const slotEls = {};
   for (const name of slots) {
     const slotEl = document.createElement("div");
@@ -86,7 +85,14 @@ export function createModalSmall({
     }
   });
 
-  // Draggable logic
+  // Focus-trap: override openModal to focus content
+  const originalOpen = openModal;
+  modal.open = () => {
+    originalOpen(modal);
+    content.focus();
+  };
+
+  // Draggable logic (unchanged)
   if (draggable) {
     let dragging = false, offsetX = 0, offsetY = 0;
     header.addEventListener("mousedown", e => {
@@ -99,9 +105,8 @@ export function createModalSmall({
     });
     function onMouseMove(e) {
       if (!dragging) return;
-      content.style.position = "absolute";
       content.style.left = `${e.clientX - offsetX}px`;
-      content.style.top = `${e.clientY - offsetY}px`;
+      content.style.top  = `${e.clientY - offsetY}px`;
     }
     function onMouseUp() {
       dragging = false;

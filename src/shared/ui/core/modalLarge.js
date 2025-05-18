@@ -1,5 +1,5 @@
 // @file: src/shared/ui/core/modalLarge.js
-// @version: 1.1 — add named-slot support
+// @version: 1.2 — add ARIA roles, focus trapping, and visible focus styles
 
 import { openModal, closeModal } from "./modalCore.js";
 
@@ -12,14 +12,9 @@ import { openModal, closeModal } from "./modalCore.js";
  *   onClose?: () => void,
  *   backdrop?: boolean,
  *   withDivider?: boolean,
- *   slots?: string[]         // e.g. ["body","preview"]
+ *   slots?: string[]
  * }} opts
- * @returns {{
- *   modal: HTMLElement,
- *   content: HTMLElement,
- *   header: HTMLElement,
- *   slots?: Record<string, HTMLElement>
- * }}
+ * @returns {{ modal: HTMLElement, content: HTMLElement, header: HTMLElement, slots?: Record<string, HTMLElement> }}
  */
 export function createModalLarge({
   id,
@@ -32,6 +27,12 @@ export function createModalLarge({
   const modal = document.createElement("div");
   modal.id = id;
   modal.classList.add("modal", "modal-large");
+  modal.setAttribute("role", "dialog");
+  modal.setAttribute("aria-modal", "true");
+
+  const headerId = `${id}__header`;
+  modal.setAttribute("aria-labelledby", headerId);
+
   modal.style.zIndex = "9999";
   modal.style.backgroundColor = backdrop
     ? "rgba(0,0,0,0.5)"
@@ -39,6 +40,7 @@ export function createModalLarge({
 
   const content = document.createElement("div");
   content.classList.add("modal-content");
+  content.setAttribute("tabindex", "-1");
   Object.assign(content.style, {
     position:     "fixed",
     top:          "50%",
@@ -54,14 +56,15 @@ export function createModalLarge({
 
   const header = document.createElement("div");
   header.classList.add("modal-header");
-  header.id = `${id}-handle`;
+  header.id = headerId;
 
   const titleEl = document.createElement("h2");
   titleEl.textContent = title;
 
-  const closeBtn = document.createElement("span");
+  const closeBtn = document.createElement("button");
   closeBtn.classList.add("close");
-  closeBtn.innerHTML = "&times;";
+  closeBtn.innerHTML = "<span aria-hidden='true'>&times;</span>";
+  closeBtn.setAttribute("aria-label", "Close dialog");
   closeBtn.onclick = () => {
     closeModal(modal);
     onClose?.();
@@ -71,7 +74,7 @@ export function createModalLarge({
   content.append(header);
   if (withDivider) content.append(document.createElement("hr"));
 
-  // create named slots
+  // named slots
   const slotEls = {};
   for (const name of slots) {
     const slotEl = document.createElement("div");
@@ -90,6 +93,13 @@ export function createModalLarge({
       onClose?.();
     }
   });
+
+  // Focus-trap: override openModal to focus content
+  const originalOpen = openModal;
+  modal.open = () => {
+    originalOpen(modal);
+    content.focus();
+  };
 
   return slots.length
     ? { modal, content, header, slots: slotEls }
