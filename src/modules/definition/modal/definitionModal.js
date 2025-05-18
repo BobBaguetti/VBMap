@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.1 — initialize listApi before calling refresh()
+// @version: 1.2 — fix entry click callback to preserve currentType
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -28,7 +28,7 @@ export function initDefinitionModal(db) {
     listApi = createDefinitionListManager({
       container: listContainer,
       getDefinitions: () => definitions,
-      onEntryClick: openDefinition,
+      onEntryClick: def => openDefinition(currentType, def),  // ← fixed callback
       onDelete: async id => {
         await definitionTypes[currentType].del(db, id);
         await refresh();
@@ -45,7 +45,6 @@ export function initDefinitionModal(db) {
       .map(t => `<option>${t}</option>`).join("");
     typeSelect.value = type;
 
-    // Ensure listApi is initialized before refresh
     if (!listApi) setupList();
     await refresh();
 
@@ -56,7 +55,6 @@ export function initDefinitionModal(db) {
 
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // Build and insert form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -84,7 +82,6 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Slot generated header
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
     formContainer.append(formApi.form);
