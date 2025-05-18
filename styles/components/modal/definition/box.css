@@ -1,20 +1,22 @@
 /* @file: styles/components/modal/definition/box.css */
-/* @version: 2.5 — flexible rows for list+form, preview outside */
+/* @version: 2.4 — absolute‐center the content pane and two‐column layout for list+form and preview */
 
 .modal--definition {
-  display: none;
+  /* Backdrop only */
+  display: none;             /* openModal will set inline display:block */
   position: fixed;
   inset: 0;
   background: rgba(0, 0, 0, 0.5);
   z-index: var(--z-index-modal, 9999);
-
-  display: flex;
-  justify-content: center;
-  align-items: center;
 }
 
+/* Center the content pane itself */
 .modal--definition .modal-content {
-  position: relative;
+  position: fixed;           /* pin to viewport */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
   width: 100%;
   max-width: 550px;
   max-height: 90vh;
@@ -26,56 +28,58 @@
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
 
   display: grid;
-  /* header auto, list up to 240px, subheader auto, form fills rest */
-  grid-template-rows:
-    auto
-    minmax(0, 240px)
-    auto
-    minmax(0, 1fr);
+  grid-template-columns: 1fr auto;  /* left slot (list+form) + preview pane */
+  grid-template-rows: auto 1fr;     /* header + content */
   grid-template-areas:
-    "header"
-    "list"
-    "subheader"
-    "form";
+    "header  header"
+    "left    preview";
+  gap: var(--space-3);
   overflow: hidden;
 }
 
-/* Map areas */
-.modal--definition .modal-header              { grid-area: header; }
-.modal--definition #definition-list           { grid-area: list; overflow-y: auto; }
-.modal--definition .modal-subheader           { grid-area: subheader; }
-.modal--definition #definition-form-container { grid-area: form; overflow-y: auto; }
-
-/* Hide scrollbars */
-.modal--definition #definition-list::-webkit-scrollbar,
-.modal--definition #definition-form-container::-webkit-scrollbar {
-  width: 0; height: 0;
+/* Grid area assignments */
+.modal--definition .modal-header {
+  grid-area: header;
 }
-.modal--definition #definition-list,
-.modal--definition #definition-form-container {
+
+.modal--definition #definition-left-pane {
+  grid-area: left;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;  /* allow children to shrink */
+}
+
+/* Fixed-height list, scrollable */
+.modal--definition #definition-left-pane #definition-list {
+  flex: 0 0 240px;
+  overflow-y: auto;
   scrollbar-width: none;
 }
+.modal--definition #definition-left-pane #definition-list::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
 
-/* Preview pane sits outside to the right */
-#definition-preview-container {
-  position: absolute;
-  top: var(--space-3);
-  left: calc(100% + var(--space-3));
-  width: var(--preview-width, 300px);
+/* Flexible form area, scrollable */
+.modal--definition #definition-left-pane #definition-form-container {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  scrollbar-width: none;
+}
+.modal--definition #definition-left-pane #definition-form-container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+/* Preview pane styling */
+.modal--definition #definition-preview-container {
+  grid-area: preview;
+  /* adjust as needed: width, max-height, overflow */
   max-height: 90vh;
   overflow-y: auto;
-
-  background-color: var(--bg-30);
-  border: 1px solid var(--border-soft);
-  border-radius: var(--radius-small);
-  padding: var(--space-2);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.85);
-  z-index: calc(var(--z-index-modal) + 1);
-}
-
-#definition-preview-container::-webkit-scrollbar {
-  width: 0; height: 0;
-}
-#definition-preview-container {
   scrollbar-width: none;
+}
+.modal--definition #definition-preview-container::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
