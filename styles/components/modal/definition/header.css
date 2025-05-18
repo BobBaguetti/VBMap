@@ -1,7 +1,7 @@
 /* @file: styles/components/modal/definition/header.css */
-/* @version: 1.5 — main header + subheader flex layouts */
+/* @version: 1.6 — increase subheader title size */
 
-/* Main header: Manage Definitions, Search, Type selector, Close */
+ /* Main header: Manage Definitions, Search, Type selector, Close */
 .modal--definition .modal-header {
   display: flex;
   align-items: center;
@@ -52,12 +52,23 @@
 
 .modal--definition .modal-subheader h3 {
   margin: 0;
-  font-size: 1rem;
+  /* bumped up for prominence */
+  font-size: 1.125rem;
+  font-weight: 500;
+  color: var(--text-primary);
+  flex: 0 0 auto;
+}
+
+.modal--definition .modal-subheader label {
+  /* ensure checkbox label doesn’t grow */
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
   flex: 0 0 auto;
 }
 
 .modal--definition .modal-subheader input[type="checkbox"] {
-  flex: 0 0 auto;
+  margin: 0;
 }
 
 .modal--definition .modal-subheader .floating-buttons {
