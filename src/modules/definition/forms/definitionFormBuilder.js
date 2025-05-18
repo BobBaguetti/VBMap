@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormBuilder.js
-// @version: 1.4 — remove withDividers (dividers now always in createExtraInfoField)
+// @version: 1.3 — now uses unified createFieldRow API
 
 import { createFieldRow } from "../../../shared/ui/components/formFields.js";
 
@@ -18,7 +18,8 @@ export function buildForm(schema) {
     const opts = {
       ...cfg,
       id: `fld-${key}`,
-      options: cfg.options || []
+      options: cfg.options || [],
+      withDividers: cfg.withDividers || false
     };
 
     const { row, input, colorBtn } = createFieldRow(opts);
