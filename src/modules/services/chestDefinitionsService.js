@@ -1,109 +1,94 @@
-// @file: /src/modules/services/chestDefinitionsService.js
-// @version: 1.2 – normalize showInFilters default on load & subscribe
-
-/**
- * Firestore service for chest definition documents.
- * Added `showInFilters` boolean that defaults to true.
- */
+// @file: src/modules/services/chestDefinitionsService.js
+// @version: 1.4 — removed showInFilters logic
 
 import {
   collection,
   getDocs,
   addDoc,
   doc,
-  updateDoc,
   setDoc,
   deleteDoc,
   onSnapshot
 } from "firebase/firestore";
 
-/** @param {import('firebase/firestore').Firestore} db */
-export function getChestDefinitionsCollection(db) {
+/**
+ * Helper: get the Firestore collection for chest definitions.
+ * @param {import('firebase/firestore').Firestore} db
+ */
+function getDefinitionsCollection(db) {
   return collection(db, "chestDefinitions");
 }
 
 /**
- * Load all chest definitions, defaulting `showInFilters` to true if missing.
+ * Load all chest definitions.
  * @param {import('firebase/firestore').Firestore} db
  * @returns {Promise<Array<Object>>}
  */
-export async function loadChestDefinitions(db) {
-  const col = getChestDefinitionsCollection(db);
-  const snap = await getDocs(col);
-  return snap.docs.map(d => {
-    const data = d.data();
-    return {
-      id: d.id,
-      ...data,
-      showInFilters: data.showInFilters ?? true
-    };
-  });
+export async function getDefinitions(db) {
+  const colRef = getDefinitionsCollection(db);
+  const snapshot = await getDocs(colRef);
+  return snapshot.docs.map(docSnap => ({
+    id: docSnap.id,
+    ...docSnap.data()
+  }));
 }
 
 /**
- * Save or update a chest definition.
- * Persists whatever `showInFilters` is in the payload.
+ * Subscribe to real-time updates on chest definitions.
  * @param {import('firebase/firestore').Firestore} db
- * @param {string|null} id
- * @param {Object} payload Must include any of the documented fields, including showInFilters.
- */
-export async function saveChestDefinition(db, id, payload) {
-  const { id: _ignore, ...data } = payload;
-  // ensure boolean default
-  data.showInFilters = payload.showInFilters ?? true;
-
-  if (id) {
-    const ref = doc(db, "chestDefinitions", id);
-    await updateDoc(ref, data);
-    return { id, ...data };
-  } else {
-    const ref = await addDoc(getChestDefinitionsCollection(db), data);
-    return { id: ref.id, ...data };
-  }
-}
-
-/**
- * Merge-upsert a chest definition by ID.
- * @param {import('firebase/firestore').Firestore} db
- * @param {string} id
- * @param {Object} data Fields to merge (including showInFilters).
- */
-export async function updateChestDefinition(db, id, data) {
-  // ensure boolean default
-  data.showInFilters = data.showInFilters ?? true;
-  const ref = doc(db, "chestDefinitions", id);
-  await setDoc(ref, data, { merge: true });
-  return { id, ...data };
-}
-
-/** @param {import('firebase/firestore').Firestore} db @param {string} id */
-export async function deleteChestDefinition(db, id) {
-  const ref = doc(db, "chestDefinitions", id);
-  await deleteDoc(ref);
-}
-
-/**
- * Subscribe in real-time to chestDefinitions,
- * mapping `showInFilters` to true if missing.
- * @param {import('firebase/firestore').Firestore} db
- * @param {(defs:Array<Object>)=>void} onUpdate
+ * @param {(defs: Array<Object>) => void} onUpdate
  * @returns {() => void} unsubscribe
  */
-export function subscribeChestDefinitions(db, onUpdate) {
-  const col = getChestDefinitionsCollection(db);
-  return onSnapshot(
-    col,
-    snap => {
-      const list = snap.docs.map(d => {
-        const data = d.data();
-        return {
-          id: d.id,
-          ...data,
-          showInFilters: data.showInFilters ?? true
-        };
-      });
-      onUpdate(list);
+export function subscribeDefinitions(db, onUpdate) {
+  const colRef = getDefinitionsCollection(db);
+  const unsubscribe = onSnapshot(
+    colRef,
+    snapshot => {
+      const defs = snapshot.docs.map(docSnap => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      }));
+      onUpdate(defs);
     },
-    err => console.error("subscribeChestDefinitions:", err)
+    err => {
+      console.error("ChestDefinitions subscription error:", err);
+    }
   );
+  return unsubscribe;
+}
+
+/**
+ * Create a new chest definition.
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {Object} payload — fields for the new definition
+ * @returns {Promise<Object>} the created definition with `id`
+ */
+export async function createDefinition(db, payload) {
+  const colRef = getDefinitionsCollection(db);
+  const docRef = await addDoc(colRef, payload);
+  return { id: docRef.id, ...payload };
+}
+
+/**
+ * Update an existing chest definition.
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string} id — document ID
+ * @param {Object} payload — updated fields
+ * @returns {Promise<Object>} the updated definition with `id`
+ */
+export async function updateDefinition(db, id, payload) {
+  const ref = doc(db, "chestDefinitions", id);
+  await setDoc(ref, payload, { merge: true });
+  return { id, ...payload };
+}
+
+/**
+ * Delete a chest definition.
+ * @param {import('firebase/firestore').Firestore} db
+ * @param {string} id — document ID
+ * @returns {Promise<void>}
+ */
+export async function deleteDefinition(db, id) {
+  const ref = doc(db, "chestDefinitions", id);
+  await deleteDoc(ref);
 }
