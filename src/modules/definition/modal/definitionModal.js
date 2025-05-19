@@ -137,3 +137,4 @@ export function initDefinitionModal(db) {
     openEdit:   def                   => openDefinition(currentType, def)
   };
 }
+ 
