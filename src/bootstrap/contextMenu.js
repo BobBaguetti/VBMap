@@ -1,10 +1,10 @@
 // @file: src/bootstrap/contextMenu.js
-// @version: 1.4 — updated context-menu import paths
+// @version: 1.4 — updated context-menu import paths to modules/context-menu
 
 import {
   showContextMenu,
   hideContextMenu
-} from "../modules/definition/modal/context-menu/index.js";
+} from "../modules/context-menu/index.js";
 
 /**
  * Initialize context menu behavior.
