@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.4.7 — manually paint Pickr preview button to reflect saved colors
+// @version: 1.4.8 — guard Pickr root querySelector to prevent errors on reset
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -61,7 +61,7 @@ export function createFormController(buildResult, schema, handlers) {
     return out;
   }
 
-  // Schema defaults
+  // Schema defaults & pickr-clear keys
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
@@ -86,28 +86,34 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   });
 
-  // Reset inputs + swatches
+  // Reset inputs + swatches + Pickr preview buttons
   function reset() {
     payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
-    // Clear inline backgrounds
+
+    // Clear swatch button backgrounds
     Object.values(colorables).forEach(btn => {
       btn.style.backgroundColor = "";
     });
-    // Also clear Pickr preview buttons
+
+    // Safely clear Pickr preview buttons if they exist
     Object.values(pickrs).forEach(p => {
       const root = p.getRoot?.();
-      const previewBtn = root?.querySelector(".pcr-button");
-      if (previewBtn) previewBtn.style.backgroundColor = "";
+      if (root && typeof root.querySelector === "function") {
+        const previewBtn = root.querySelector(".pcr-button");
+        if (previewBtn) {
+          previewBtn.style.backgroundColor = "";
+        }
+      }
     });
   }
 
-  // Populate inputs, Pickr + swatches
+  // Populate fields, Pickr + swatches
   async function populate(def) {
     payloadId = def.id ?? null;
 
-    // Sanitize using schema defaults
+    // Build sanitized payload for formState
     const sanitized = {};
     for (const [key, cfg] of Object.entries(schema)) {
       if (def[key] !== undefined) {
@@ -119,42 +125,43 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
-    // Fill fields
     formState.populate(sanitized);
 
-    // For each colorable field, apply to Pickr + swatch btn + Pickr preview
-    for (const [fieldKey, cfg] of Object.entries(schema)) {
-      if (!cfg.colorable) continue;
+    // Apply each color to swatch button
+    Object.entries(schema).forEach(([fieldKey, cfg]) => {
+      if (!cfg.colorable) return;
       const colorProp = cfg.colorable;
-      const savedColor = def[colorProp] ?? null;
-      const pr   = pickrs[colorProp];
-      const btn  = colorables[colorProp];
+      const savedColor = def[colorProp] || null;
+      const btn         = colorables[colorProp];
+      const pr          = pickrs[colorProp];
 
-      if (pr && savedColor) {
-        // 1) Update Pickr internal color
-        pr.setColor(savedColor);
-        // 2) Manually paint the Pickr preview button
-        const root = pr.getRoot?.();
-        const previewBtn = root?.querySelector(".pcr-button");
-        if (previewBtn) {
-          previewBtn.style.backgroundColor = savedColor;
-        }
-        // 3) Paint your swatch wrapper as well
+      if (savedColor) {
+        // Paint the swatch button
         if (btn) {
           btn.style.backgroundColor = savedColor;
         }
+        // Also update Pickr preview if available
+        if (pr) {
+          const root = pr.getRoot?.();
+          if (root && typeof root.querySelector === "function") {
+            const previewBtn = root.querySelector(".pcr-button");
+            if (previewBtn) {
+              previewBtn.style.backgroundColor = savedColor;
+            }
+          }
+        }
       }
-    }
+    });
 
-    // Restore filter-toggle
+    // Restore the showInFilters toggle
     filterCheckbox.checked = def.showInFilters ?? true;
 
     // Restore chipList fields
-    for (const [key, cfg] of Object.entries(schema)) {
+    Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
       }
-    }
+    });
   }
 
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
