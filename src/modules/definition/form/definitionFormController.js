@@ -1,8 +1,8 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.3 — tag form header as modal subheader for pinned layout
+// @version: 1.4.1 — include subheader “Show in Filters” toggle in payload
 
 import { createFormControllerHeader, wireFormEvents }
-from "../form/controller/formControllerShell.js";
+  from "../form/controller/formControllerShell.js";
 import { initFormPickrs } from "../form/controller/pickrAdapter.js";
 import { createFormState } from "../form/controller/formStateManager.js";
 
@@ -13,11 +13,11 @@ export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
   const { title, hasFilter, onCancel, onSubmit, onDelete, onFieldChange } = handlers;
 
-  // Header + filter & buttons
+  // HEADER + filter-toggle + buttons
   const {
     container: headerWrap,
     subheading,
-    filterCheckbox,
+    filterCheckbox,    // the “Show in Filters” toggle
     setDeleteVisible
   } = createFormControllerHeader({
     title,
@@ -30,19 +30,19 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
   });
-  // Tag this header as a modal subheader so it remains fixed
-  headerWrap.classList.add("modal-subheader");
 
+  // Pin header as the modal subheader
+  headerWrap.classList.add("modal-subheader");
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // Initialize Pickr swatches
+  // Initialize Pickr instances
   const pickrs = initFormPickrs(form, colorables);
 
-  // Track current definition ID
+  // Track current entry ID
   let payloadId = null;
 
-  // Build payload for submission
+  // Build the payload for save/update
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
@@ -66,10 +66,14 @@ export function createFormController(buildResult, schema, handlers) {
         out[cfg.colorable] = pickrs[cfg.colorable]?.getColor() || null;
       }
     }
+
+    // **Include the subheader toggle** here
+    out.showInFilters = filterCheckbox.checked;
+
     return out;
   }
 
-  // Prepare formState with sane defaults (no undefined)
+  // Defaults for schema fields
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
@@ -99,12 +103,14 @@ export function createFormController(buildResult, schema, handlers) {
   function reset() {
     payloadId = null;
     formState.reset();
+    // **Reset the filter-toggle to its default (on)**
+    filterCheckbox.checked = true;
   }
 
   async function populate(def) {
     payloadId = def.id ?? null;
 
-    // Build a sanitized object using either def[key] or the schema default (never undefined)
+    // Build sanitized object from def or schema default
     const sanitized = {};
     for (const [key, cfg] of Object.entries(schema)) {
       if (def[key] !== undefined) {
@@ -118,7 +124,10 @@ export function createFormController(buildResult, schema, handlers) {
 
     formState.populate(sanitized);
 
-    // Handle chipList specially
+    // **Set the filter-toggle off the existing value** (default true)
+    filterCheckbox.checked = def.showInFilters ?? true;
+
+    // chipList fields need the `.set()` call
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
