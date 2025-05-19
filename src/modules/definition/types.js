@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.4 — standardized service API names and unified save logic
+// @version: 1.5 — removed unused buildForm property
 
 import {
   getDefinitions,
@@ -20,7 +20,6 @@ import {
 import { itemSchema }  from "./schemas/itemSchema.js";
 import { chestSchema } from "./schemas/chestSchema.js";
 
-import { buildForm }            from "./forms/definitionFormBuilder.js";
 import { createFormController } from "./forms/definitionFormController.js";
 import { createPreviewController } from "./preview/previewController.js";
 
@@ -35,7 +34,13 @@ export const definitionTypes = {
                    : createDefinition(db, payload),
     del:       deleteDefinition,
     controller: (handlers, db) =>
-                  createFormController(buildForm(itemSchema), itemSchema, handlers),
+                  createFormController(
+                    // buildForm is invoked inside the controller
+                    // it reads itemSchema directly
+                    undefined,
+                    itemSchema,
+                    handlers
+                  ),
     previewBuilder: host =>
       createPreviewController("item", host)
   },
@@ -50,7 +55,11 @@ export const definitionTypes = {
                    : createChestDefinition(db, payload),
     del:       deleteChestDefinition,
     controller: (handlers, db) =>
-                  createFormController(buildForm(chestSchema), chestSchema, handlers),
+                  createFormController(
+                    undefined,
+                    chestSchema,
+                    handlers
+                  ),
     previewBuilder: host =>
       createPreviewController("chest", host)
   }
