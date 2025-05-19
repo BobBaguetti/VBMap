@@ -1,25 +1,28 @@
 // @file: src/modules/definition/preview/previewController.js
-// @version: 1.5 — embed preview inside modal instead of floating
+// @version: 1.5 — render inside modal host, remove fixed positioning
 
 import { createPreviewPanel } from "./createPreviewPanel.js";
 
+/**
+ * type:            "item" or "chest"
+ * host:            the <div id="definition-preview-container"> from domBuilder
+ */
 export function createPreviewController(type, host) {
-  // Create an inner container and hand it off to createPreviewPanel
-  const container = document.createElement("div");
-  container.classList.add("definition-preview");  // new class for embedded styling
-  host.append(container);
+  // Clear out any legacy wrapper
+  host.innerHTML = "";
+  // Start hidden
+  host.style.display = "none";
 
-  // Let the factory render its HTML and wire show/hide
-  const previewApi = createPreviewPanel(type, container);
+  // Build our type-specific panel *into* the host
+  const previewApi = createPreviewPanel(type, host);
 
-  function show(def) {
-    previewApi.setFromDefinition(def);
-    previewApi.show();   // just toggles .visible
-  }
-
-  function hide() {
-    previewApi.hide();
-  }
-
-  return { show, hide };
+  return {
+    show(def) {
+      previewApi.setFromDefinition(def);
+      host.style.display = "";      // uses whatever default (block/flex) from modal CSS
+    },
+    hide() {
+      host.style.display = "none";
+    }
+  };
 }

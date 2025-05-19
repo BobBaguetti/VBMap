@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/domBuilder.js
-// @version: 1.1 — fix import path for listUtils
+// @version: 1.2 — no inline styles; layout is driven by CSS
 
 import { createDefListContainer } from "../../../shared/utils/listUtils.js";
 
