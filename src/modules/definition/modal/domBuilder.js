@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/domBuilder.js
-// @version: 1.1 — fix import path for listUtils
+// @version: 1.2 — use a modal-scoped ID for the type selector to avoid collisions
 
 import { createDefListContainer } from "../../../shared/utils/listUtils.js";
 
@@ -31,8 +31,11 @@ export function buildModalUI(modalEl) {
   typeWrapper.className = "modal__type-selector";
   const typeLbl = document.createElement("span");
   typeLbl.textContent = "Type:";
+
+  // Use a modal-scoped ID instead of the generic "definition-type"
   const typeSel = document.createElement("select");
-  typeSel.id = "definition-type";
+  typeSel.id = `${modalEl.id}-type-select`;
+
   typeWrapper.append(typeLbl, typeSel);
   header.insertBefore(typeWrapper, closeBtn);
 
