@@ -10,7 +10,7 @@ import definitionsManager from "./definitionsManager.js";
 import { markerTypes }    from "../modules/marker/types.js";
 import { createMarker }   from "../modules/map/markerManager.js";
 import { showContextMenu, hideContextMenu } 
-  from "../shared/ui/context-menu/index.js";
+  from "../modules/context-menu/index.js";
 
 /** @type {{ markerObj: L.Marker, data: object }[]} */
 export const allMarkers = [];
