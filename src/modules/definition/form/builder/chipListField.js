@@ -1,9 +1,9 @@
 // @file: src/modules/definition/form/builder/chipListField.js
-// @version: 1.4 — relocated into definition module; updated import paths
+// @version: 1.5 — fixed imports for relocated helpers
 
 import { createFieldRow } from "./fieldRow.js";
-import { createChipList } from "../../../shared/ui/managers/chipListManager.js";
-import { pickItems }      from "../../../shared/ui/components/listPicker.js";
+import { createChipList } from "./chipListManager.js";
+import { pickItems }      from "./listPicker.js";
 
 /**
  * Creates a labeled chip-list field with an “add” button that opens the list-picker.
