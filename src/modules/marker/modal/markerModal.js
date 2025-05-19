@@ -1,4 +1,4 @@
-// @file: src/modules/ui/modals/markerModal.js
+// @file: src\modules\marker\modal\markerModal.js
 // @version: 22.3 — fully self-contained modal (inlined factory + lifecycle)
 
 import { markerTypes } from "../types.js";

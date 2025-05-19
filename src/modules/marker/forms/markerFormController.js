@@ -1,4 +1,4 @@
-// @file: markerFormController.js
+// @file: src\modules\marker\forms\markerFormController.js
 // @version: 1.3 — defer Pickr init until initPickrs(), guard against null
 
 import { getPickrHexColor }            from "../../../shared/utils/color/colorUtils.js";
