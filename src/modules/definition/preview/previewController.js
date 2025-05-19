@@ -1,4 +1,4 @@
-// @file: src/modules/definition/preview/previewController.js
+// @file: src\modules\definition\preview\previewController.js
 // @version: 1.4 — float preview and position it to the right of the definition modal
 
 import { createPreviewPanel } from "./createPreviewPanel.js";

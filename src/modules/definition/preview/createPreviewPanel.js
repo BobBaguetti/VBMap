@@ -1,5 +1,4 @@
-// comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed
-// @file: /src/modules/ui/preview/createPreviewPanel.js
+// @file: src\modules\definition\preview\createPreviewPanel.js
 // @version: 6
 
 import { createItemPreviewPanel } from "./itemPreview.js";

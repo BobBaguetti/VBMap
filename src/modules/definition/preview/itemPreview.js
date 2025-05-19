@@ -1,4 +1,4 @@
-// @file: /src/modules/ui/preview/itemPreview.js
+// @file: src\modules\definition\preview\itemPreview.js
 // @version: 5.1 — import renderItemPopup instead of renderPopup
 
 import { renderItemPopup } from "../../map/markerManager.js";
