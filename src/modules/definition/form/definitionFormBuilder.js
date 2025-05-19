@@ -1,5 +1,5 @@
-// @file: src/modules/definition/form/definitionFormBuilder.js
-// @version: 1.4 — updated import path for fieldRow
+// @file: src/modules/definition/forms/definitionFormBuilder.js
+// @version: 1.5 — fix chipList API so controller.el.get() is defined
 
 import { createFieldRow } from "../form/builder/fieldRow.js";
 
@@ -17,22 +17,22 @@ export function buildForm(schema) {
     // prepare options for chipList/select
     const opts = {
       ...cfg,
-      type: cfg.type,
-      label: cfg.label,
-      id: `fld-${key}`,
-      options: cfg.options || [],
+      type:         cfg.type,
+      label:        cfg.label,
+      id:           `fld-${key}`,
+      options:      cfg.options || [],
       withDividers: cfg.withDividers || false,
-      idKey: cfg.idKey,
-      labelKey: cfg.labelKey,
-      renderIcon: cfg.renderIcon
+      idKey:        cfg.idKey,
+      labelKey:     cfg.labelKey,
+      renderIcon:   cfg.renderIcon
     };
 
     const { row, input, colorBtn } = createFieldRow(opts);
 
     // track fields
     if (cfg.type === "chipList") {
-      // chipList gives get/set interface on input/colorBtn
-      fields[key] = { get: input.get, set: colorBtn };
+      // input is the getItems function, so expose it as .get()
+      fields[key] = { get: input, set: colorBtn };
     } else {
       fields[key] = input;
     }
