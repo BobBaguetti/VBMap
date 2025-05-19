@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.7 — ensure previewData includes all colorable fields with defaults
+// @version: 1.6 — support changing definition type on the fly
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -10,15 +10,14 @@ import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  const { modalEl, open, close } =
-    createModalShell("definition-modal");
+  const { modalEl, open, close } = createModalShell("definition-modal");
   let {
     header, searchInput, typeSelect,
     listContainer, subheader, formContainer,
     previewContainer
   } = buildModalUI(modalEl);
 
-  // allow switching types on the fly
+  // When the user picks a different type, reopen the modal for that type
   typeSelect.addEventListener("change", () => {
     openDefinition(typeSelect.value);
   });
@@ -28,17 +27,19 @@ export function initDefinitionModal(db) {
   let definitions = [];
   let itemMap = {};
 
+  // Load & refresh the list for the current type
   async function refresh() {
     definitions = await definitionTypes[currentType].loadDefs(db);
     listApi.refresh(definitions);
   }
 
+  // Initialize the sidebar list only once
   function setupList() {
     listApi = createDefinitionListManager({
-      container:      listContainer,
-      getDefinitions: () => definitions,
-      onEntryClick:   def => openDefinition(currentType, def),
-      onDelete:       async id => {
+      container:       listContainer,
+      getDefinitions:  () => definitions,
+      onEntryClick:    def => openDefinition(currentType, def),
+      onDelete:        async id => {
         await definitionTypes[currentType].del(db, id);
         await refresh();
       }
@@ -48,10 +49,11 @@ export function initDefinitionModal(db) {
     );
   }
 
+  // Main open routine
   async function openDefinition(type, def = null) {
     currentType = type;
 
-    // rebuild type selector
+    // Rebuild type selector options and set value
     typeSelect.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option>${t}</option>`)
       .join("");
@@ -60,15 +62,16 @@ export function initDefinitionModal(db) {
     if (!listApi) setupList();
     await refresh();
 
+    // For Chest definitions we need to load items for lootPool
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // reset preview controller
+    // Reset and recreate the preview controller
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // build form
+    // Build the form UI
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -77,12 +80,14 @@ export function initDefinitionModal(db) {
       onDelete:  async id => {
         await definitionTypes[type].del(db, id);
         await refresh();
-        formApi.reset(); previewApi.hide();
+        formApi.reset();
+        previewApi.hide();
       },
       onSubmit:  async payload => {
         await definitionTypes[type].save(db, payload.id ?? null, payload);
         await refresh();
-        formApi.reset(); previewApi.hide();
+        formApi.reset();
+        previewApi.hide();
       },
       onFieldChange: data => {
         let pd = data;
@@ -92,25 +97,17 @@ export function initDefinitionModal(db) {
             lootPool: data.lootPool.map(i => itemMap[i]).filter(Boolean)
           };
         }
-        // ensure all colorable props exist
-        const schema = definitionTypes[type].schema;
-        Object.values(schema)
-          .filter(cfg => cfg.colorable)
-          .forEach(cfg => {
-            if (pd[cfg.colorable] === undefined) pd[cfg.colorable] = "";
-          });
-
         previewApi.show(pd);
       }
     }, db);
 
-    // remove duplicate filter row
+    // Remove any stray showInFilters row from the form body
     const duplicateFilterRow = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
     if (duplicateFilterRow) duplicateFilterRow.remove();
 
-    // swap subheader
+    // Swap in the generated subheader
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
     subheader = generated;
@@ -118,33 +115,28 @@ export function initDefinitionModal(db) {
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    // populate or reset
+    // Populate or reset fields
     if (def) {
       formApi.populate(def);
     } else {
       formApi.reset();
     }
 
-    // open modal
+    // Open modal and immediately show the preview (even if empty)
     open();
 
-    // prepare previewData
-    const base = def
+    const previewData = def
       ? (type === "Chest"
-          ? { ...def, lootPool: (def.lootPool || []).map(id => itemMap[id]).filter(Boolean) }
+          ? {
+              ...def,
+              lootPool: (def.lootPool || [])
+                .map(id => itemMap[id])
+                .filter(Boolean)
+            }
           : def)
       : (type === "Chest" ? { lootPool: [] } : {});
 
-    // default missing color fields
-    const schema = definitionTypes[type].schema;
-    Object.values(schema)
-      .filter(cfg => cfg.colorable)
-      .forEach(cfg => {
-        if (base[cfg.colorable] === undefined) base[cfg.colorable] = "";
-      });
-
-    // show preview
-    previewApi.show(base);
+    previewApi.show(previewData);
   }
 
   return {
