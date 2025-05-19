@@ -1,5 +1,5 @@
-// @file: src/modules/definition/list/definitionListManager.js
-// @version: 6.9 — sync CSS classes for entries and delete button
+// @file: src/modules/definition/list/definitionListManager.js 
+// @version: 6.8 — enforce min-width on description so it ellipsizes before value
 
 /**
  * Creates and manages a sortable, filterable definition list.
@@ -17,7 +17,7 @@ export function createDefinitionListManager({
 
   function defaultRenderer(def, layout, onClick, onDelete) {
     const entry = document.createElement("div");
-    entry.className = `entry entry--${layout}`;  // was def-entry
+    entry.className = `def-entry def-entry--${layout}`;
     Object.assign(entry.style, {
       display:       "flex",
       alignItems:    "center",
@@ -75,7 +75,7 @@ export function createDefinitionListManager({
     header.appendChild(metaEl);
     main.appendChild(header);
 
-    // Sub-row: description + value
+    // Sub-row: description (single line, can shrink) and value
     const sub = document.createElement("div");
     Object.assign(sub.style, {
       display:        "flex",
@@ -98,8 +98,9 @@ export function createDefinitionListManager({
     });
     sub.appendChild(descEl);
 
+    let valEl;
     if (def.value) {
-      const valEl = document.createElement("span");
+      valEl = document.createElement("span");
       valEl.innerHTML = `${def.value} <i class="fas fa-coins"></i>`;
       Object.assign(valEl.style, {
         fontSize:     "0.9em",
@@ -113,9 +114,9 @@ export function createDefinitionListManager({
     main.appendChild(sub);
     entry.appendChild(main);
 
-    // Delete button, now using .btn-delete
+    // Delete button
     const delBtn = document.createElement("button");
-    delBtn.className = "btn-delete";
+    delBtn.className = "ui-button-delete";
     delBtn.innerHTML = '<i class="fas fa-trash"></i>';
     delBtn.title = "Delete";
     Object.assign(delBtn.style, {

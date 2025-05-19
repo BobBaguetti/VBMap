@@ -1,7 +1,7 @@
 // @file: src/bootstrap/contextMenu.js
-// @version: 1.3 — updated shared UI import paths
+// @version: 1.0 — map right-click & outside-click context menu handling
 
-import { showContextMenu, hideContextMenu } from "../shared/ui/context-menu/index.js";
+import { showContextMenu, hideContextMenu } from "../modules/ui/uiManager.js";
 
 /**
  * Initialize context menu behavior.
@@ -19,6 +19,7 @@ function init(map, db, isAdmin) {
       [{
         text: "Create New Marker",
         action: () =>
+          // open create marker modal with latlng and upsert callback
           import("./modalsManager.js").then(({ default: modals }) => {
             modals.init(db, map).markerForm.openCreate(
               [evt.latlng.lat, evt.latlng.lng],

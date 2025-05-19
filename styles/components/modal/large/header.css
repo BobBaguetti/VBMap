@@ -1,0 +1,38 @@
+/* @file: styles/components/modal/large/header.css */
+/* @version: 1.0 — header overrides for large modal */
+
+/* Header bar */
+.modal.modal-large .modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+/* Title */
+.modal.modal-large .modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* Section sub-heading inside modal */
+.modal.modal-large h3 {
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+/* Close “×” button */
+.modal.modal-large .modal-header .close {
+  font-size: 24px;
+  cursor: pointer;
+  color: var(--text-primary);
+}
+
+/* Divider under header */
+.modal.modal-large hr {
+  margin: 6px 0;
+  border: 0;
+  border-top: 2px solid var(--bg-50);
+}

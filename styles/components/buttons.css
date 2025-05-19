@@ -1,5 +1,5 @@
 /* @file: styles/components/buttons.css */
-/* @version: 1.2 — removed delete button; now scoped to definition modal only */
+/* @version: 1.1 — added delete button variant */
 
 /* Base button styles */
 .button,
@@ -54,4 +54,26 @@
   background-color: var(--bg-20);
   color: var(--text-disabled);
   cursor: not-allowed;
+}
+
+/* Delete button variant */
+.btn-delete {
+  background-color: var(--accent-error);
+  color: #fff;
+  border: none;
+  padding: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-small);
+  cursor: pointer;
+  font-size: 0.8125rem; /* ~13px */
+  transition: filter 0.3s, color 0.3s;
+}
+.btn-delete:hover:not(:disabled) {
+  filter: brightness(0.8);
+}
+.btn-delete svg {
+  width: 1rem;
+  height: 1rem;
 }

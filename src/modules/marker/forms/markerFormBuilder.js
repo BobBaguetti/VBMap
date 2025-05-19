@@ -1,4 +1,4 @@
-// @file: markerFormBuilder.js
+// @file: src/modules/ui/forms/builders/markerFormBuilder.js
 // @version: 1.0 — DOM builder for marker form (fields only)
 
 import {

@@ -1,8 +1,8 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
 // @version: 1.0 — extract renderChestPopup into its own module
 
-import { formatRarity } from "../../../../shared/utils/utils.js";
-import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
+import { formatRarity } from "../../../utils/utils.js";
+import { rarityColors, defaultNameColor } from "../../../utils/colorPresets.js";
 import { CHEST_RARITY } from "../utils.js";
 
 export function renderChestPopup(typeDef) {

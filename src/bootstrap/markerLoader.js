@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.10 — updated shared UI imports
+// @version: 1.9 — removed type-change recreation; rely on createCustomIcon for fresh border colors
 
 import {
   subscribeMarkers,
@@ -8,9 +8,8 @@ import {
 } from "../modules/services/firebaseService.js";
 import definitionsManager from "./definitionsManager.js";
 import { markerTypes }    from "../modules/marker/types.js";
-import { createMarker }   from "../modules/map/markerManager.js";
-import { showContextMenu, hideContextMenu } 
-  from "../shared/ui/context-menu/index.js";
+import { createMarker }    from "../modules/map/markerManager.js";
+import { showContextMenu, hideContextMenu } from "../modules/ui/uiManager.js";
 
 /** @type {{ markerObj: L.Marker, data: object }[]} */
 export const allMarkers = [];
@@ -32,7 +31,7 @@ export async function init(
 
   // 1) Marker data subscription
   subscribeMarkers(db, markers => {
-    // Clear existing
+    // Clear
     allMarkers.forEach(({ markerObj }) => {
       markerObj.remove();
       clusterItemLayer.removeLayer(markerObj);
@@ -40,12 +39,12 @@ export async function init(
     });
     allMarkers.length = 0;
 
-    // Rebuild all markers
+    // Rebuild
     markers.forEach(data => {
       const cfg = markerTypes[data.type];
       if (!cfg) return;
 
-      // Merge definition fields (preserve data.id)
+      // Merge definition fields WITHOUT overwriting data.id
       const defMap = definitionsManager.getDefinitions(data.type);
       const defKey = cfg.defIdKey;
       if (defKey && defMap[data[defKey]]) {
@@ -53,21 +52,18 @@ export async function init(
         Object.assign(data, fields);
       }
 
-      // Context‐menu callbacks
+      // Callbacks for context-menu
       const cb = {
-        onEdit: (markerObj, originalData, e) =>
+        onEdit:    (markerObj, originalData, e) =>
           markerForm.openEdit(markerObj, originalData, e, payload => {
             const updated = { ...originalData, ...payload };
             markerObj.setIcon(cfg.iconFactory(updated));
             markerObj.setPopupContent(cfg.popupRenderer(updated));
             firebaseUpdateMarker(db, updated);
           }),
-
-        onCopy: (_, d) => copyMgr.startCopy(d),
-
+        onCopy:    (_, d) => copyMgr.startCopy(d),
         onDragEnd: (_, d) => firebaseUpdateMarker(db, d),
-
-        onDelete: (markerObj, d) => {
+        onDelete:  (markerObj, d) => {
           firebaseDeleteMarker(db, d.id);
           hideContextMenu();
           markerObj.remove();
@@ -76,7 +72,7 @@ export async function init(
         }
       };
 
-      // Create marker instance
+      // Create + add
       const markerObj = createMarker(
         data,
         map,
@@ -85,12 +81,7 @@ export async function init(
         cb,
         isAdmin
       );
-
-      if (cfg.popupRenderer) {
-        markerObj.setPopupContent(cfg.popupRenderer(data));
-      }
-
-      // Add to appropriate layer
+      if (cfg.popupRenderer) markerObj.setPopupContent(cfg.popupRenderer(data));
       const layer = clusterItemLayer.hasLayer(markerObj)
         ? clusterItemLayer
         : flatItemLayer;
@@ -102,11 +93,11 @@ export async function init(
     filterMarkers();
   });
 
-  // 2) Re‐apply icon & popup when definitions update
+  // 2) Re-apply icon & popup on definition changes
   Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
-      // definitionsManager already updated
+      // definitionsManager updated already
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.type !== type) return;
         const defMap = definitionsManager.getDefinitions(type);

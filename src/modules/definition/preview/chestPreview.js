@@ -1,4 +1,4 @@
-// @file: src\modules\definition\preview\chestPreview.js
+// @file: src/modules/ui/preview/chestPreview.js
 // @version: 4.1 — pick up the new image fields for the header icon
 
 import { renderChestPopup } from "../../map/markerManager.js";

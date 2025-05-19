@@ -6,7 +6,7 @@ import { renderItemPopup }   from "./marker/popups/itemPopup.js";
 import { renderChestPopup }  from "./marker/popups/chestPopup.js";
 import { createCustomIcon }  from "./marker/icons/createCustomIcon.js";
 import { CHEST_RARITY }      from "./marker/utils.js";
-import { rarityColors, defaultNameColor } from "../../shared/utils/color/colorPresets.js";
+import { rarityColors, defaultNameColor } from "../utils/colorPresets.js";
 
 export {
   createMarker,
