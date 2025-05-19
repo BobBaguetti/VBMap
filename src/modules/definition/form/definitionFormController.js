@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.7 — populate extraInfo fields with setLines()
+// @version: 1.8 — populate extraInfo fields with backward-compat for extraLines vs extraInfo
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -34,15 +34,16 @@ export function createFormController(buildResult, schema, handlers) {
   headerWrap.classList.add("modal-subheader");
   setDeleteVisible(false);
 
-  // Prepend header into the form (buttons include our Save)
+  // Prepend header (with Save/Clear/Delete) into the <form>
   form.prepend(headerWrap);
 
-  // Initialize Pickr on colorable fields
+  // Initialize Pickr instances on any colorable fields
   const pickrs = initFormPickrs(form, colorables);
 
+  // Track current definition ID
   let payloadId = null;
 
-  // ─── Payload Builder ─────────────────────────────────────────────────────────
+  // ─── Build submission payload ────────────────────────────────────────────────
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
@@ -76,7 +77,7 @@ export function createFormController(buildResult, schema, handlers) {
     return out;
   }
 
-  // ─── Form State Defaults ─────────────────────────────────────────────────────
+  // ─── Defaults & Form State ───────────────────────────────────────────────────
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
@@ -135,9 +136,16 @@ export function createFormController(buildResult, schema, handlers) {
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
-      } else if (cfg.type === "extraInfo" && Array.isArray(sanitized[key])) {
-        // Populate extraInfo block
-        fields[key].setLines(sanitized[key]);
+      } else if (cfg.type === "extraInfo") {
+        // Backwards-compat: some entries used def.extraLines, others def.extraInfo
+        const fromExtraLines = Array.isArray(sanitized[key]) && sanitized[key];
+        const fromLegacyInfo  = Array.isArray(def.extraInfo)  && def.extraInfo;
+        const lines = fromExtraLines
+          ? sanitized[key]
+          : fromLegacyInfo
+            ? def.extraInfo
+            : [];
+        fields[key].setLines(lines);
       }
     }
   }
@@ -145,7 +153,6 @@ export function createFormController(buildResult, schema, handlers) {
   // ─── Wire Events & Ensure Save Works ────────────────────────────────────────
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
 
-  // Make sure the Save button always invokes onSubmit
   const saveBtn = headerWrap.querySelector('button[type="submit"]');
   if (saveBtn) {
     saveBtn.type = "button";
