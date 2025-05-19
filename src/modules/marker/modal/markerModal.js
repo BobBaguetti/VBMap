@@ -1,117 +1,70 @@
 // @file: src/modules/marker/modal/markerModal.js
-// @version: 22.6 — explicit inline styling for visible surface + draggable
+// @version: 22.7 — theme-aware, single instance, outside-click to close
 
 import { markerTypes } from "../types.js";
 
 /**
  * Initializes the Create/Edit Marker panel.
- * Returns an object with openCreate and openEdit methods.
+ * Returns { openCreate, openEdit }.
  */
 export function initMarkerModal(db) {
   let panel, fldType, fldDef, btnCreate, btnCancel, titleEl;
   let pendingCoords, onCreate, onSaveCallback;
+  let outsideClickListener;
 
   function ensureBuilt() {
     if (panel) return;
 
-    // 1) Container
+    // 1) Container (floating, hidden by default)
     panel = document.createElement("div");
     panel.id = "marker-modal";
-    Object.assign(panel.style, {
-      position: "absolute",
-      zIndex:   "2000",
-      display:  "none",
-      background: "#fff",
-      border: "1px solid #ccc",
-      borderRadius: "6px",
-      boxShadow: "0 2px 6px rgba(0,0,0,0.2)",
-      fontFamily: "sans-serif",
-      minWidth: "240px"
-    });
+    panel.classList.add("floating", "hidden");
     document.body.append(panel);
 
-    // 2) Header (drag handle)
-    const header = document.createElement("div");
-    header.style.cssText = `
-      cursor: move;
-      padding: 0.5em 0.75em;
-      background: #f5f5f5;
-      border-bottom: 1px solid #ddd;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-    `;
-    titleEl = document.createElement("span");
-    titleEl.textContent = "Create Marker";
-    const closeBtn = document.createElement("button");
-    closeBtn.innerHTML = "&times;";
-    closeBtn.style.cssText = `
-      background: transparent;
-      border: none;
-      font-size: 1.2em;
-      line-height: 1;
-      cursor: pointer;
-    `;
-    closeBtn.onclick = hide;
-    header.append(titleEl, closeBtn);
-    panel.append(header);
+    // 2) Inner structure matches your settingsModal for theme styling
+    panel.innerHTML = `
+      <div class="modal-content">
+        <header class="drag-handle modal-header">
+          <h3>Create Marker</h3>
+          <button class="modal-close" aria-label="Close">&times;</button>
+        </header>
+        <section class="modal-body">
+          <div class="form-row">
+            <label for="marker-type">Type:</label>
+            <select id="marker-type" class="form-control">
+              <option value="" disabled selected>Select type…</option>
+              ${Object.keys(markerTypes)
+                .map(t => `<option value="${t}">${t}</option>`)
+                .join("")}
+            </select>
+          </div>
+          <div class="form-row" id="marker-def-row" style="display:none">
+            <label for="marker-def">Definition:</label>
+            <select id="marker-def" class="form-control">
+              <option value="" disabled>Select definition…</option>
+            </select>
+          </div>
+          <div class="modal-buttons">
+            <button type="button" class="ui-button" id="marker-cancel">Cancel</button>
+            <button type="button" class="ui-button" id="marker-create">Save</button>
+          </div>
+        </section>
+      </div>
+    `.trim();
 
-    // 3) Body
-    const body = document.createElement("div");
-    body.style.padding = "0.75em";
-    panel.append(body);
+    // 3) Element refs
+    titleEl   = panel.querySelector("header.modal-header h3");
+    fldType   = panel.querySelector("#marker-type");
+    fldDef    = panel.querySelector("#marker-def");
+    btnCancel = panel.querySelector("#marker-cancel");
+    btnCreate = panel.querySelector("#marker-create");
+    const closeBtn = panel.querySelector(".modal-close");
 
-    // Type row
-    const rowType = document.createElement("div");
-    rowType.style.marginBottom = "0.6em";
-    rowType.innerHTML = `
-      <label style="display:block; margin-bottom:0.3em;">Type:</label>
-      <select id="marker-type" style="width:100%; padding:0.4em;">
-        <option value="" disabled selected>Select type…</option>
-        ${Object.keys(markerTypes)
-          .map(t => `<option value="${t}">${t}</option>`)
-          .join("")}
-      </select>
-    `;
-    body.append(rowType);
+    // 4) Close handlers
+    closeBtn.addEventListener("click", hide);
+    btnCancel.addEventListener("click", hide);
 
-    // Definition row
-    const rowDef = document.createElement("div");
-    rowDef.id = "marker-def-row";
-    rowDef.style.marginBottom = "0.6em";
-    rowDef.style.display = "none";
-    rowDef.innerHTML = `
-      <label style="display:block; margin-bottom:0.3em;">Definition:</label>
-      <select id="marker-def" style="width:100%; padding:0.4em;">
-        <option value="" disabled>Select definition…</option>
-      </select>
-    `;
-    body.append(rowDef);
-
-    // Buttons
-    const btnRow = document.createElement("div");
-    btnRow.style.textAlign = "right";
-    btnCreate = document.createElement("button");
-    btnCreate.textContent = "Save";
-    btnCreate.style.cssText = `
-      margin-left:0.5em; padding:0.4em 0.8em; 
-      background:#2a6; color:#fff; border:none; border-radius:4px;
-      cursor:pointer;
-    `;
-    btnCancel = document.createElement("button");
-    btnCancel.textContent = "Cancel";
-    btnCancel.style.cssText = `
-      padding:0.4em 0.8em; background:#eee; border:none; border-radius:4px;
-      cursor:pointer;
-    `;
-    btnCancel.onclick = hide;
-    btnRow.append(btnCancel, btnCreate);
-    body.append(btnRow);
-
-    // Wire events
-    fldType = panel.querySelector("#marker-type");
-    fldDef  = panel.querySelector("#marker-def");
-
+    // 5) Type→Definition wiring
     fldType.addEventListener("change", async () => {
       const type = fldType.value;
       if (!type) return;
@@ -124,12 +77,13 @@ export function initMarkerModal(db) {
           .map(d => `<option value="${d.id}">${d.name || d.id}</option>`)
           .join("")}
       `;
-      rowDef.style.display = "";
+      panel.querySelector("#marker-def-row").style.display = "";
       titleEl.textContent = onCreate
         ? `Create ${type} Marker`
         : `Edit ${type} Marker`;
     });
 
+    // 6) Save/Create
     btnCreate.addEventListener("click", () => {
       const type = fldType.value;
       const cfg  = markerTypes[type];
@@ -142,9 +96,10 @@ export function initMarkerModal(db) {
       hide();
     });
 
-    // Drag-to-move
-    let dragging = false, startX, startY, startLeft, startTop;
-    header.addEventListener("pointerdown", e => {
+    // 7) Draggable via header
+    const handle = panel.querySelector(".drag-handle");
+    let startX, startY, startLeft, startTop, dragging = false;
+    handle.addEventListener("pointerdown", e => {
       e.preventDefault();
       dragging = true;
       const rect = panel.getBoundingClientRect();
@@ -168,15 +123,40 @@ export function initMarkerModal(db) {
 
   function showAt(evt, mode) {
     ensureBuilt();
-    panel.style.display = "block";
+
+    // Close any existing before opening new
+    hide();
+
+    // Reset state
+    onCreate = mode === "create" ? onCreate : null;
+    onSaveCallback = mode === "edit" ? onSaveCallback : null;
+
+    panel.classList.remove("hidden");
+
     // Position to the left of click
     const rect = panel.getBoundingClientRect();
     panel.style.left = `${evt.clientX - rect.width}px`;
     panel.style.top  = `${evt.clientY - rect.height / 2}px`;
+
+    // Register outside-click listener
+    outsideClickListener = e => {
+      if (!panel.contains(e.target)) hide();
+    };
+    document.addEventListener("mousedown", outsideClickListener);
+
+    // Allow Esc to close
+    document.addEventListener("keydown", onKey);
   }
 
   function hide() {
-    if (panel) panel.style.display = "none";
+    if (!panel || panel.classList.contains("hidden")) return;
+    panel.classList.add("hidden");
+    document.removeEventListener("mousedown", outsideClickListener);
+    document.removeEventListener("keydown", onKey);
+  }
+
+  function onKey(e) {
+    if (e.key === "Escape") hide();
   }
 
   return {
@@ -195,7 +175,7 @@ export function initMarkerModal(db) {
       showAt(evt, "edit");
       fldType.value = data.type;
       fldType.dispatchEvent(new Event("change"));
-      fldDef.value = data[markerTypes[data.type].defIdKey] || "";
+      fldDef.value  = data[markerTypes[data.type].defIdKey] || "";
     }
   };
 }
