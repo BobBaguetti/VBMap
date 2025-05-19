@@ -1,23 +1,27 @@
 // @file: src/modules/marker/modal/markerModal.js
-// @version: 22.1 — add base “modal” class so backdrop & content styles apply
+// @version: 22.2 — undock from definition modal, add draggable, fix z-index
 
 import { markerTypes } from "../types.js";
 
 export function initMarkerModal(db) {
   let modal, content;
-  let fldType, fldDef, btnCreate, btnCancel;
+  let fldType, fldDef, rowType, rowDef, btnCreate, btnCancel;
   let pendingCoords, onCreate, onSaveCallback;
 
   // Lifecycle & ESC-to-close
   function attachLifecycle(modalEl) {
     const prevFocused = document.activeElement;
-    const scrollY     = window.scrollY;
+    const scrollY = window.scrollY;
     document.documentElement.style.overflow = "hidden";
-    modalEl.addEventListener("close", () => {
-      document.documentElement.style.overflow = "";
-      window.scrollTo(0, scrollY);
-      prevFocused?.focus?.();
-    }, { once: true });
+    modalEl.addEventListener(
+      "close",
+      () => {
+        document.documentElement.style.overflow = "";
+        window.scrollTo(0, scrollY);
+        prevFocused?.focus();
+      },
+      { once: true }
+    );
   }
   function onKey(e) {
     if (e.key === "Escape" && modal) closeModal();
@@ -25,11 +29,11 @@ export function initMarkerModal(db) {
 
   // Show/hide
   function openModal() {
-    modal.classList.add("is-open");
+    modal.style.display = "block";
     document.addEventListener("keydown", onKey);
   }
   function closeModal() {
-    modal.classList.remove("is-open");
+    modal.style.display = "none";
     modal.dispatchEvent(new Event("close"));
     document.removeEventListener("keydown", onKey);
   }
@@ -38,34 +42,39 @@ export function initMarkerModal(db) {
   function ensureBuilt() {
     if (modal) return;
 
-    // 1) Modal backdrop container
+    // Wrapper container (no full-screen backdrop)
     modal = document.createElement("div");
     modal.id = "marker-modal";
-    // Add base .modal plus your modifier
-    modal.classList.add("modal", "modal--marker");
+    modal.className = "modal--marker";
+    // Always on top
+    modal.style.position = "absolute";
+    modal.style.zIndex = "1500";
+    modal.style.display = "none";
     document.body.append(modal);
     attachLifecycle(modal);
 
-    // 2) Content wrapper
+    // Content box
     content = document.createElement("div");
     content.className = "modal-content";
+    // Make it clear it's draggable
+    content.style.cursor = "move";
     modal.append(content);
 
-    // 3) Type selector
-    const rowType = document.createElement("label");
+    // Type row (also serves as drag handle)
+    rowType = document.createElement("label");
     rowType.textContent = "Type:";
     fldType = document.createElement("select");
     fldType.innerHTML = `
       <option value="" disabled selected>Select type…</option>
-      ${Object.keys(markerTypes).map(
-        type => `<option value="${type}">${type}</option>`
-      ).join("")}
+      ${Object.keys(markerTypes)
+        .map(type => `<option value="${type}">${type}</option>`)
+        .join("")}
     `;
     rowType.append(fldType);
     content.append(rowType);
 
-    // 4) Definition selector
-    const rowDef = document.createElement("label");
+    // Definition row
+    rowDef = document.createElement("label");
     rowDef.textContent = "Definition:";
     fldDef = document.createElement("select");
     fldDef.innerHTML = `<option value="" disabled>Select definition…</option>`;
@@ -73,7 +82,7 @@ export function initMarkerModal(db) {
     rowDef.style.display = "none";
     content.append(rowDef);
 
-    // 5) Buttons row
+    // Buttons
     const btnRow = document.createElement("div");
     btnRow.className = "modal-buttons";
 
@@ -89,7 +98,7 @@ export function initMarkerModal(db) {
     btnRow.append(btnCancel, btnCreate);
     content.append(btnRow);
 
-    // 6) Handlers
+    // Populate definitions when type changes
     fldType.addEventListener("change", async () => {
       const type = fldType.value;
       if (!type) return;
@@ -105,6 +114,7 @@ export function initMarkerModal(db) {
       rowDef.style.display = "";
     });
 
+    // Create/Save logic
     btnCreate.addEventListener("click", () => {
       const type = fldType.value;
       const cfg = markerTypes[type];
@@ -112,44 +122,65 @@ export function initMarkerModal(db) {
       const defId = fldDef.value;
       if (!type || !defIdKey || !defId) return;
       const payload = { type, coords: pendingCoords, [defIdKey]: defId };
-      if (onCreate) {
-        onCreate(payload);
-      } else if (onSaveCallback) {
-        onSaveCallback(payload);
-      }
+      if (onCreate) onCreate(payload);
+      else if (onSaveCallback) onSaveCallback(payload);
       closeModal();
     });
+
+    // ─── Drag logic ─────────────────────────────────────
+    let dragging = false, offsetX = 0, offsetY = 0;
+    rowType.addEventListener("mousedown", e => {
+      dragging = true;
+      const rect = modal.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      document.addEventListener("mousemove", onDrag);
+      document.addEventListener("mouseup", stopDrag, { once: true });
+      e.preventDefault();
+    });
+    function onDrag(e) {
+      if (!dragging) return;
+      modal.style.left = `${e.clientX - offsetX}px`;
+      modal.style.top = `${e.clientY - offsetY}px`;
+    }
+    function stopDrag() {
+      dragging = false;
+      document.removeEventListener("mousemove", onDrag);
+    }
   }
 
+  // API
   return {
     openCreate(coords, type = "", evt, createCb) {
-      pendingCoords  = coords;
-      onCreate       = createCb;
+      pendingCoords = coords;
+      onCreate = createCb;
       onSaveCallback = null;
       ensureBuilt();
       fldType.value = type;
       fldType.dispatchEvent(new Event("change"));
+      // Position left of mouse
       openModalAt(evt);
     },
 
     openEdit(markerObj, data, evt, saveCb) {
-      pendingCoords  = data.coords;
-      onCreate       = null;
+      pendingCoords = data.coords;
+      onCreate = null;
       onSaveCallback = saveCb;
       ensureBuilt();
       fldType.value = data.type;
       fldType.dispatchEvent(new Event("change"));
       const defIdKey = markerTypes[data.type].defIdKey;
-      fldDef.value   = data[defIdKey] || "";
+      fldDef.value = data[defIdKey] || "";
       openModalAt(evt);
     }
   };
 
+  // Position & open
   function openModalAt(evt) {
+    // Place modal wrapper itself
     openModal();
     const rect = content.getBoundingClientRect();
-    content.style.position = "absolute";
-    content.style.left     = `${evt.clientX - rect.width}px`;
-    content.style.top      = `${evt.clientY - rect.height / 2}px`;
+    modal.style.left = `${evt.clientX - rect.width}px`;
+    modal.style.top = `${evt.clientY - rect.height / 2}px`;
   }
 }
