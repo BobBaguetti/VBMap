@@ -1,15 +1,15 @@
 // @file: src/modules/definition/modal/domBuilder.js
-// @version: 1.3 — moved layout rules to CSS; added .modal-body
+// @version: 1.1 — fix import path for listUtils
 
 import { createDefListContainer } from "../../../shared/utils/listUtils.js";
 
 export function buildModalUI(modalEl) {
-  // CONTENT wrapper (styled entirely via CSS)
+  // CONTENT wrapper
   const content = document.createElement("div");
   content.className = "modal-content";
   modalEl.append(content);
 
-  // HEADER (unchanged)
+  // HEADER
   const header = document.createElement("div");
   header.className = "modal-header";
   const title = document.createElement("h2");
@@ -36,30 +36,23 @@ export function buildModalUI(modalEl) {
   typeWrapper.append(typeLbl, typeSel);
   header.insertBefore(typeWrapper, closeBtn);
 
-  // BODY wrapper for side-by-side panes
-  const body = document.createElement("div");
-  body.className = "modal-body";
-  content.append(body);
-
-  // Left pane: list + form
+  // PANE slots
   const left = document.createElement("div");
   left.id = "definition-left-pane";
+  const preview = document.createElement("div");
+  preview.id = "definition-preview-container";
+  content.append(left, preview);
+
   // List
   const listContainer = createDefListContainer("definition-list");
   left.append(listContainer);
+
   // Form subheader placeholder + container
   const subheader = document.createElement("div");
   subheader.className = "modal-subheader";
-  const formCont = document.createElement("div");
-  formCont.id = "definition-form-container";
+  const formCont  = document.createElement("div");
+  formCont.id      = "definition-form-container";
   left.append(subheader, formCont);
-
-  // Preview pane
-  const preview = document.createElement("div");
-  preview.id = "definition-preview-container";
-
-  // Assemble body
-  body.append(left, preview);
 
   return {
     header,
