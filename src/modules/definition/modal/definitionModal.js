@@ -1,12 +1,13 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.6 — updated to use getDefinitions instead of loadItemDefinitions
+// @version: 1.4 — remove duplicate “Show in filters” field from form body
 
-import { createModalShell, buildModalUI }
-  from "./modalCore.js";
+import { createModalShell } from "./lifecycle.js";
+import { buildModalUI }     from "./domBuilder.js";
 import { definitionTypes }  from "../types.js";
 import { createDefinitionListManager }
   from "../list/definitionListManager.js";
-import { getDefinitions }    from "../../services/itemDefinitionsService.js";
+import { loadItemDefinitions }
+  from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
   const { modalEl, open, close } = createModalShell("definition-modal");
@@ -47,9 +48,8 @@ export function initDefinitionModal(db) {
     if (!listApi) setupList();
     await refresh();
 
-    // For Chest definitions, load Item definitions into a map
     if (type === "Chest") {
-      const items = await getDefinitions(db);
+      const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
@@ -83,7 +83,7 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Remove any duplicate “Show in filters” row (handled in subheader)
+    // Remove the form’s own “Show in filters” row (we handle it in the subheader)
     const duplicateFilterRow = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
