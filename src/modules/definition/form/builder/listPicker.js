@@ -1,5 +1,5 @@
-// @file: src/shared/ui/components/listPicker.js
-// @version: 1.3 — fully self-contained modal; removed shared modalFactory dependency
+// @file: src/modules/definition/form/builder/listPicker.js
+// @version: 1.3 — relocated into definition module
 
 /**
  * Opens a modal letting the user pick zero or more items.
@@ -102,11 +102,11 @@ export function pickItems({ title, items, selected = [], labelKey = "name" }) {
   // List container
   const listContainer = document.createElement("div");
   Object.assign(listContainer.style, {
-    flex:       "1 1 auto",
-    overflowY:  "auto",
-    display:    "flex",
-    flexDirection: "column",
-    gap:        "0.25em"
+    flex:           "1 1 auto",
+    overflowY:      "auto",
+    display:        "flex",
+    flexDirection:  "column",
+    gap:            "0.25em"
   });
   content.append(listContainer);
 

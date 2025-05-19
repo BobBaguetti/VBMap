@@ -1,7 +1,7 @@
 // @file: src/modules/definition/forms/definitionFormBuilder.js
-// @version: 1.3 — now uses unified createFieldRow API
+// @version: 1.4 — updated import path for fieldRow
 
-import { createFieldRow } from "../../../shared/ui/components/formFields.js";
+import { createFieldRow } from "../form/builder/fieldRow.js";
 
 /**
  * Builds a <form> based on a schema.
@@ -17,9 +17,14 @@ export function buildForm(schema) {
     // prepare options for chipList/select
     const opts = {
       ...cfg,
+      type: cfg.type,
+      label: cfg.label,
       id: `fld-${key}`,
       options: cfg.options || [],
-      withDividers: cfg.withDividers || false
+      withDividers: cfg.withDividers || false,
+      idKey: cfg.idKey,
+      labelKey: cfg.labelKey,
+      renderIcon: cfg.renderIcon
     };
 
     const { row, input, colorBtn } = createFieldRow(opts);

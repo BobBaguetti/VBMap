@@ -1,9 +1,9 @@
-// @file: src/shared/ui/components/chipListField.js
-// @version: 1.3 — fire form “input” event on any chip change
+// @file: src/modules/definition/form/builder/chipListField.js
+// @version: 1.4 — relocated into definition module; updated import paths
 
-import { createFieldRow } from "./formFields.js";
-import { createChipList } from "../managers/chipListManager.js";
-import { pickItems }      from "./listPicker.js";
+import { createFieldRow } from "./fieldRow.js";
+import { createChipList } from "../../../shared/ui/managers/chipListManager.js";
+import { pickItems }      from "../../../shared/ui/components/listPicker.js";
 
 /**
  * Creates a labeled chip-list field with an “add” button that opens the list-picker.
@@ -30,8 +30,16 @@ export function createChipListField(
   btnAdd.className   = "ui-button add-chip-btn";
   btnAdd.textContent = addBtnContent;
 
-  const row = createFieldRow(labelText, container);
-  row.append(btnAdd);
+  // Use createFieldRow to build the labeled row
+  const { row } = createFieldRow({
+    type:       "chipList",
+    label:      labelText,
+    idKey,
+    labelKey,
+    renderIcon
+  });
+
+  row.append(container, btnAdd);
 
   // 2) chip-list manager
   const listArray = [...initialItems];
@@ -41,10 +49,10 @@ export function createChipListField(
     renderLabel: item => item[labelKey],
     renderIcon,
     onChange: updated => {
-      // sync our backing array
+      // sync backing array
       listArray.splice(0, listArray.length, ...updated);
       onChange?.([...listArray]);
-      // 🔥 fire an “input” on the form for live-preview!
+      // fire form input for live-preview
       row.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
     }
   });
@@ -63,7 +71,6 @@ export function createChipListField(
       listArray.splice(0, listArray.length, ...picked);
       chipList.render();
       onChange?.([...listArray]);
-      // 🔥 also fire an “input” here
       row.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
     } catch {
       // user cancelled
@@ -76,7 +83,6 @@ export function createChipListField(
     setItems: newItems => {
       listArray.splice(0, listArray.length, ...newItems);
       chipList.render();
-      // and fire once on programmatic set
       row.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
     }
   };

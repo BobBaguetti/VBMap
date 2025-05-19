@@ -1,15 +1,15 @@
-// @file: src/modules/ui/components/uiKit/extraInfoBlock.js
-// @version: 1.4 — updated Pickr import to shared pickrAdapter
+// @file: src/modules/definition/form/builder/extraInfoBlock.js
+// @version: 1.5 — relocated into definition module; updated Pickr import
 
-import { createPickr } from "../../../shared/ui/forms/pickrAdapter.js";
+import { createPickr } from "../../controller/pickrAdapter.js";
 
 export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = false } = {}) {
   const wrap = document.createElement("div");
   wrap.className = "extra-info-block";
 
   const lineWrap = document.createElement("div");
-  const btnAdd = document.createElement("button");
-  btnAdd.type = "button";
+  const btnAdd   = document.createElement("button");
+  btnAdd.type    = "button";
   btnAdd.textContent = "+";
   btnAdd.classList.add("ui-button");
 
@@ -55,7 +55,7 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
 
       // ─── Pickr wiring ──────────────────────────────────────────
       const pickr = createPickr(`#${color.id}`);
-      line._pickr = pickr;  // ← attach instance for getLines()
+      line._pickr = pickr;  // attach instance for getLines()
 
       // initialize pickr *after* its DOM root exists
       setTimeout(() => {
@@ -81,10 +81,11 @@ export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = fals
 
   return {
     block: wrap,
-    getLines: () => lines.map(l => ({
-      text: l.text,
-      color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
-    })),
+    getLines: () =>
+      lines.map(l => ({
+        text:  l.text,
+        color: l._pickr?.getColor()?.toHEXA()?.toString() || defaultColor
+      })),
     setLines: (newLines, isReadonly = false) => {
       lines = newLines.map(l => ({ text: l.text || "", color: l.color || defaultColor }));
       render();
