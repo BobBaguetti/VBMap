@@ -1,13 +1,13 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.6 — refactored to use modalCore.js and standardized itemService
+// @version: 1.5 — refactored to use modalCore.js
 
 import { createModalShell, buildModalUI }
   from "./modalCore.js";
 import { definitionTypes }  from "../types.js";
 import { createDefinitionListManager }
   from "../list/definitionListManager.js";
-import { getDefinitions as loadItemDefinitions }
-  from "../services/itemService.js";
+import { loadItemDefinitions }
+  from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
   const { modalEl, open, close } = createModalShell("definition-modal");
