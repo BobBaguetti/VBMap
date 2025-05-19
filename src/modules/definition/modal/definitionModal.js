@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.5 — always show floating preview after modal opens
+// @version: 1.6 — support changing definition type on the fly
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -10,32 +10,36 @@ import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  const { modalEl, open, close } =
-    createModalShell("definition-modal");
+  const { modalEl, open, close } = createModalShell("definition-modal");
   let {
     header, searchInput, typeSelect,
     listContainer, subheader, formContainer,
     previewContainer
   } = buildModalUI(modalEl);
 
+  // When the user picks a different type, reopen the modal for that type
+  typeSelect.addEventListener("change", () => {
+    openDefinition(typeSelect.value);
+  });
+
   let listApi, formApi, previewApi;
   let currentType;
   let definitions = [];
   let itemMap = {};
 
-  // Fetch & cache definitions for sidebar list
+  // Load & refresh the list for the current type
   async function refresh() {
     definitions = await definitionTypes[currentType].loadDefs(db);
     listApi.refresh(definitions);
   }
 
-  // Wire up the left-hand list & search
+  // Initialize the sidebar list only once
   function setupList() {
     listApi = createDefinitionListManager({
-      container:    listContainer,
-      getDefinitions: () => definitions,
-      onEntryClick: def => openDefinition(currentType, def),
-      onDelete: async id => {
+      container:       listContainer,
+      getDefinitions:  () => definitions,
+      onEntryClick:    def => openDefinition(currentType, def),
+      onDelete:        async id => {
         await definitionTypes[currentType].del(db, id);
         await refresh();
       }
@@ -45,11 +49,11 @@ export function initDefinitionModal(db) {
     );
   }
 
-  // Core open-modal routine
+  // Main open routine
   async function openDefinition(type, def = null) {
     currentType = type;
 
-    // Type selector
+    // Rebuild type selector options and set value
     typeSelect.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option>${t}</option>`)
       .join("");
@@ -58,16 +62,16 @@ export function initDefinitionModal(db) {
     if (!listApi) setupList();
     await refresh();
 
-    // For chest previews, we need an item lookup
+    // For Chest definitions we need to load items for lootPool
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // Create a fresh preview controller for this type
+    // Reset and recreate the preview controller
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // Build the form
+    // Build the form UI
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -90,16 +94,14 @@ export function initDefinitionModal(db) {
         if (type === "Chest" && Array.isArray(data.lootPool)) {
           pd = {
             ...data,
-            lootPool: data.lootPool
-              .map(i => itemMap[i])
-              .filter(Boolean)
+            lootPool: data.lootPool.map(i => itemMap[i]).filter(Boolean)
           };
         }
         previewApi.show(pd);
       }
     }, db);
 
-    // Remove duplicate “Show in filters” row if present
+    // Remove any stray showInFilters row from the form body
     const duplicateFilterRow = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
@@ -113,17 +115,16 @@ export function initDefinitionModal(db) {
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    // Populate or reset form fields
+    // Populate or reset fields
     if (def) {
       formApi.populate(def);
     } else {
       formApi.reset();
     }
 
-    // **1) Open the modal (makes .modal-content visible)**
+    // Open modal and immediately show the preview (even if empty)
     open();
 
-    // **2) Now show our preview panel (positions it correctly)**
     const previewData = def
       ? (type === "Chest"
           ? {
@@ -133,9 +134,7 @@ export function initDefinitionModal(db) {
                 .filter(Boolean)
             }
           : def)
-      : (type === "Chest"
-          ? { lootPool: [] }
-          : {});
+      : (type === "Chest" ? { lootPool: [] } : {});
 
     previewApi.show(previewData);
   }
