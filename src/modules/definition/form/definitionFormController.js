@@ -1,10 +1,10 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.6 — serialize color values correctly for Firestore
+// @version: 1.7 — populate extraInfo fields with setLines()
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
 import { initFormPickrs, getPickrHexColor }
-  from "../form/controller/pickrAdapter.js";   // <-- import helper
+  from "../form/controller/pickrAdapter.js";
 import { createFormState } from "../form/controller/formStateManager.js";
 
 /**
@@ -14,7 +14,7 @@ export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
   const { title, hasFilter, onCancel, onSubmit, onDelete, onFieldChange } = handlers;
 
-  // HEADER + filter-toggle + buttons
+  // ─── Header + Filter & Buttons ───────────────────────────────────────────────
   const {
     container: headerWrap,
     subheading,
@@ -33,14 +33,16 @@ export function createFormController(buildResult, schema, handlers) {
   });
   headerWrap.classList.add("modal-subheader");
   setDeleteVisible(false);
+
+  // Prepend header into the form (buttons include our Save)
   form.prepend(headerWrap);
 
-  // Initialize Pickr on any colorable fields
+  // Initialize Pickr on colorable fields
   const pickrs = initFormPickrs(form, colorables);
 
   let payloadId = null;
 
-  // Build the payload for save/update
+  // ─── Payload Builder ─────────────────────────────────────────────────────────
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
@@ -51,6 +53,7 @@ export function createFormController(buildResult, schema, handlers) {
           val = el.checked;
           break;
         case "extraInfo":
+          // extraInfo API: el.getLines()
           val = el.getLines();
           break;
         case "chipList":
@@ -61,7 +64,7 @@ export function createFormController(buildResult, schema, handlers) {
       }
       out[key] = val;
 
-      // Correctly serialize any Pickr color to a hex string
+      // Serialize any Pickr color to hex string
       if (cfg.colorable) {
         const pickr = pickrs[cfg.colorable];
         out[cfg.colorable] = pickr
@@ -69,12 +72,11 @@ export function createFormController(buildResult, schema, handlers) {
           : null;
       }
     }
-
     out.showInFilters = filterCheckbox.checked;
     return out;
   }
 
-  // Prepare defaults for reset
+  // ─── Form State Defaults ─────────────────────────────────────────────────────
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
@@ -98,14 +100,23 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   });
 
+  // ─── Reset & Populate ────────────────────────────────────────────────────────
   function reset() {
     payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
+    // Clear extraInfo lines if any
+    for (const [key, cfg] of Object.entries(schema)) {
+      if (cfg.type === "extraInfo") {
+        fields[key].setLines([]);
+      }
+    }
   }
 
   async function populate(def) {
     payloadId = def.id ?? null;
+
+    // Build sanitized object (never undefined)
     const sanitized = {};
     for (const [key, cfg] of Object.entries(schema)) {
       if (def[key] !== undefined) {
@@ -116,18 +127,25 @@ export function createFormController(buildResult, schema, handlers) {
         sanitized[key] = cfg.type === "checkbox" ? false : "";
       }
     }
+
     formState.populate(sanitized);
     filterCheckbox.checked = def.showInFilters ?? true;
+
+    // Special wiring for multi-part fields
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
+      } else if (cfg.type === "extraInfo" && Array.isArray(sanitized[key])) {
+        // Populate extraInfo block
+        fields[key].setLines(sanitized[key]);
       }
     }
   }
 
+  // ─── Wire Events & Ensure Save Works ────────────────────────────────────────
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
 
-  // Ensure Save always triggers onSubmit
+  // Make sure the Save button always invokes onSubmit
   const saveBtn = headerWrap.querySelector('button[type="submit"]');
   if (saveBtn) {
     saveBtn.type = "button";
@@ -137,6 +155,7 @@ export function createFormController(buildResult, schema, handlers) {
     });
   }
 
+  // ─── Public API ───────────────────────────────────────────────────────────────
   return {
     form,
     reset,
