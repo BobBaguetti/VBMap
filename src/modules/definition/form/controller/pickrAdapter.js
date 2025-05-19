@@ -1,83 +1,103 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1.2 — sync swatch backgrounds on change/save
+// @version: 1 — relocated into definition module
 
 const activePickrs = [];
 
 /**
- * Create a Pickr instance on the given target.
- * If `target` is a string, treat as selector; if HTMLElement, bind directly.
+ * Create a Pickr instance on the given selector.
+ * Falls back to a stub if the element doesn't exist.
  */
-export function createPickr(target, defaultColor = "#E5E6E8") {
-  let el = null;
-  if (typeof target === "string") {
-    el = document.querySelector(target);
-  } else if (target instanceof HTMLElement) {
-    el = target;
-  }
-
+export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
+  const el = document.querySelector(targetSelector);
   if (!el) {
-    console.warn(`Pickr target ${target} not found`);
+    console.warn(`Pickr target ${targetSelector} not found`);
     return {
-      on:       () => {},
+      on: () => {},
       setColor: () => {},
       getColor: () => defaultColor,
-      getRoot:  () => null,
-      destroy:  () => {}
+      getRoot: () => null
     };
   }
 
   const p = window.Pickr.create({
     el,
-    theme:   "nano",
+    theme: "nano",
     default: defaultColor,
     components: {
-      preview:    true,
-      opacity:    true,
-      hue:        true,
-      interaction: { hex: true, rgba: true, input: true, save: true }
+      preview: true,
+      opacity: true,
+      hue: true,
+      interaction: {
+        hex: true,
+        rgba: true,
+        input: true,
+        save: true
+      }
     }
-  });
+  }).on("save", (_, instance) => instance.hide());
+
   activePickrs.push(p);
   return p;
 }
 
-/** Clean up all Pickr instances */
+/**
+ * Disable or enable a Pickr instance visually and interactively.
+ */
+export function disablePickr(pickr, disabled = true) {
+  const root = pickr?.getRoot?.();
+  if (root && root.style) {
+    root.style.pointerEvents = disabled ? "none" : "auto";
+    root.style.opacity = disabled ? 0.5 : 1;
+  }
+}
+
+/**
+ * Get the current color from a Pickr instance in HEXA format.
+ */
+export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
+  return pickr?.getColor?.()?.toHEXA?.()?.toString?.() || fallback;
+}
+
+/**
+ * Clean up all Pickrs created via this module.
+ */
 export function destroyAllPickrs() {
   activePickrs.forEach(p => p?.destroy?.());
   activePickrs.length = 0;
 }
 
 /**
- * Initialize Pickr for each swatch button, wiring change/save →
- * updating the button’s background + dispatching an “input” on the form.
+ * Scan the given root element for any color‐swatch buttons
+ * and attach Pickr to each one.
+ */
+export function initModalPickrs(root) {
+  const swatches = root.querySelectorAll(".color-swatch");
+  swatches.forEach(el => {
+    createPickr(`#${el.id}`);
+  });
+}
+
+/**
+ * Initialize Pickr instances for a set of buttons in a form,
+ * wiring change/save → form "input" events.
  */
 export function initFormPickrs(form, fieldMap) {
   const pickrs = {};
-  Object.entries(fieldMap).forEach(([key, btn]) => {
-    if (!btn || pickrs[key] || !document.body.contains(btn)) return;
 
-    // 1) Create the Pickr bound to the button
-    const p = createPickr(btn);
+  Object.entries(fieldMap).forEach(([key, btn]) => {
+    if (!btn || pickrs[key]) return;
+    if (!document.body.contains(btn)) return;
+
+    const p = createPickr(`#${btn.id}`);
     pickrs[key] = p;
 
-    // 2) Whenever the color changes or is saved, paint the button
-    p.on("change", (_color, instance) => {
-      try {
-        const hex = instance.getColor().toHEXA().toString();
-        btn.style.backgroundColor = hex;
-      } catch {}
-      form.dispatchEvent(new Event("input", { bubbles: true }));
-    });
-    p.on("save", (_color, instance) => {
-      try {
-        const hex = instance.getColor().toHEXA().toString();
-        btn.style.backgroundColor = hex;
-      } catch {}
-      form.dispatchEvent(new Event("input", { bubbles: true }));
-      instance.hide();
-    });
+    p.on("change", () =>
+      form.dispatchEvent(new Event("input", { bubbles: true }))
+    );
+    p.on("save", () =>
+      form.dispatchEvent(new Event("input", { bubbles: true }))
+    );
 
-    // 3) Clicking the swatch shows the picker
     btn.addEventListener("click", () => p.show());
   });
 

@@ -1,6 +1,8 @@
 // @file: src/modules/definition/form/builder/fieldRow.js
-// @version: 2.2 — removed unused Pickr imports
+// @version: 2.1 — relocated into definition module; updated import paths
 
+import { createPickr, disablePickr, getPickrHexColor }
+from "../controller/pickrAdapter.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
 import { createChipListField }  from "./chipListField.js";
 
@@ -116,7 +118,7 @@ export function createFieldRow({
       throw new Error(`Unknown field type: ${type}`);
   }
 
-  // Color swatch button (will be wired up in the form controller)
+  // Color swatch
   if (colorable && !["extraInfo", "chipList", "checkbox"].includes(type)) {
     colorBtn = document.createElement("div");
     colorBtn.className = "color-btn";
