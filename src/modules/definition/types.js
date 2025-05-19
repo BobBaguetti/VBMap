@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.5 — removed old loadXDefinitions imports and switched to standardized API
+// @version: 1.5 — switched to standardized service exports
 
 import {
   getDefinitions,
@@ -34,11 +34,7 @@ export const definitionTypes = {
                    : createDefinition(db, payload),
     del:       deleteDefinition,
     controller: (handlers, db) =>
-                  createFormController(
-                    undefined,
-                    itemSchema,
-                    handlers
-                  ),
+                  createFormController(undefined, itemSchema, handlers),
     previewBuilder: host =>
       createPreviewController("item", host)
   },
@@ -53,11 +49,7 @@ export const definitionTypes = {
                    : createChestDefinition(db, payload),
     del:       deleteChestDefinition,
     controller: (handlers, db) =>
-                  createFormController(
-                    undefined,
-                    chestSchema,
-                    handlers
-                  ),
+                  createFormController(undefined, chestSchema, handlers),
     previewBuilder: host =>
       createPreviewController("chest", host)
   }
