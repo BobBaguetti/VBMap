@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.5 — switched to standardized service exports
+// @version: 1.6 — fully switched to standardized service exports
 
 import {
   getDefinitions,

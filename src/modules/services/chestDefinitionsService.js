@@ -67,9 +67,8 @@ export function subscribeDefinitions(db, onUpdate) {
  * @returns {Promise<Object>} created definition with `id`
  */
 export async function createDefinition(db, data) {
-  const colRef = getCollection(db);
   const payload = { ...data, showInFilters: data.showInFilters ?? true };
-  const docRef  = await addDoc(colRef, payload);
+  const docRef  = await addDoc(getCollection(db), payload);
   return { id: docRef.id, ...payload };
 }
 
@@ -82,8 +81,8 @@ export async function createDefinition(db, data) {
  */
 export async function updateDefinition(db, id, data) {
   const payload = { ...data, showInFilters: data.showInFilters ?? true };
-  const docRef  = doc(db, "chestDefinitions", id);
-  await updateDoc(docRef, payload);
+  const ref     = doc(db, "chestDefinitions", id);
+  await updateDoc(ref, payload);
   return { id, ...payload };
 }
 
@@ -94,6 +93,6 @@ export async function updateDefinition(db, id, data) {
  * @returns {Promise<void>}
  */
 export async function deleteDefinition(db, id) {
-  const docRef = doc(db, "chestDefinitions", id);
-  await deleteDoc(docRef);
+  const ref = doc(db, "chestDefinitions", id);
+  await deleteDoc(ref);
 }
