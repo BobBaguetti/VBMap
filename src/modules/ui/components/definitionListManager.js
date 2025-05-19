@@ -1,4 +1,4 @@
-// @file: src/modules/definition/list/definitionListManager.js 
+// @file: src/modules/ui/components/definitionListManager.js
 // @version: 6.8 — enforce min-width on description so it ellipsizes before value
 
 /**

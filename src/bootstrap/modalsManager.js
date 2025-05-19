@@ -2,8 +2,8 @@
 // @version: 1.2 — switch to unified definition modal
 
 import { upsertMarker }                        from "../modules/services/firebaseService.js";
-import { initMarkerModal }                     from "../modules/marker/modal/markerModal.js";
-import { initDefinitionModal }                 from "../modules/definition/modal/definitionModal.js";
+import { initMarkerModal }                     from "../modules/ui/modals/markerModal.js";
+import { initDefinitionModal }                 from "../modules/ui/modals/definitionModal.js";
 import { initCopyPasteManager }                from "../modules/map/copyPasteManager.js";
 
 function init(db, map) {

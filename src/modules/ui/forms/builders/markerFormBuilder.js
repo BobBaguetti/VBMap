@@ -7,8 +7,8 @@ import {
   createTextareaFieldWithColor,
   createImageField,
   createFieldRow
-} from "../../ui/components/uiKit/fieldKit.js";
-import { createExtraInfoBlock } from "../../ui/components/uiKit/extraInfoBlock.js";
+} from "../../components/uiKit/fieldKit.js";
+import { createExtraInfoBlock } from "../../components/uiKit/extraInfoBlock.js";
 
 /**
  * Builds the marker form DOM and exposes its fields.

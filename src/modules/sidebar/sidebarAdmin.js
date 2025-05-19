@@ -1,7 +1,7 @@
 // @file: src/modules/sidebar/sidebarAdmin.js
 // @version: 1.1 — unified “Manage Definitions” button using definitionModal
 
-import { initDefinitionModal } from "../definition/modal/definitionModal.js";
+import { initDefinitionModal } from "../ui/modals/definitionModal.js";
 
 /**
  * Render and wire the “Admin Tools” section at the bottom of the sidebar.

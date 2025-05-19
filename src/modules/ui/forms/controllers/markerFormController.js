@@ -1,13 +1,13 @@
 // @file: src/modules/ui/forms/controllers/markerFormController.js
 // @version: 1.3 — defer Pickr init until initPickrs(), guard against null
 
-import { getPickrHexColor }            from "../../utils/colorUtils.js";
+import { getPickrHexColor }            from "../../../utils/colorUtils.js";
 import {
   createFormControllerHeader,
   wireFormEvents
-}                                       from "../../ui/components/formControllerShell.js";
-import { initFormPickrs }              from "../../ui/components/formPickrManager.js";
-import { createMarkerFormBuilder }     from "../../ui/forms/builders/markerFormBuilder.js";
+}                                       from "../../components/formControllerShell.js";
+import { initFormPickrs }              from "../../components/formPickrManager.js";
+import { createMarkerFormBuilder }     from "../builders/markerFormBuilder.js";
 
 /**
  * Controller for the marker form builder fields:
