@@ -1,21 +1,31 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1 — relocated into definition module
+// @version: 1.1 — bind Pickr directly to the element, not via selector
 
 const activePickrs = [];
 
 /**
- * Create a Pickr instance on the given selector.
- * Falls back to a stub if the element doesn't exist.
+ * Create a Pickr instance on the given target.
+ * - If `target` is a string, we treat it as a selector.
+ * - If `target` is an HTMLElement, we bind directly.
+ * Falls back to a stub if the element can't be found.
  */
-export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
-  const el = document.querySelector(targetSelector);
+export function createPickr(target, defaultColor = "#E5E6E8") {
+  let el = null;
+
+  if (typeof target === "string") {
+    el = document.querySelector(target);
+  } else if (target instanceof HTMLElement) {
+    el = target;
+  }
+
   if (!el) {
-    console.warn(`Pickr target ${targetSelector} not found`);
+    console.warn(`Pickr target ${target} not found`);
     return {
       on: () => {},
       setColor: () => {},
       getColor: () => defaultColor,
-      getRoot: () => null
+      getRoot: () => null,
+      destroy: () => {}
     };
   }
 
@@ -34,7 +44,11 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
         save: true
       }
     }
-  }).on("save", (_, instance) => instance.hide());
+  });
+
+  p.on("save", (color, instance) => {
+    instance.hide();
+  });
 
   activePickrs.push(p);
   return p;
@@ -73,7 +87,7 @@ export function destroyAllPickrs() {
 export function initModalPickrs(root) {
   const swatches = root.querySelectorAll(".color-swatch");
   swatches.forEach(el => {
-    createPickr(`#${el.id}`);
+    createPickr(el);
   });
 }
 
@@ -88,7 +102,8 @@ export function initFormPickrs(form, fieldMap) {
     if (!btn || pickrs[key]) return;
     if (!document.body.contains(btn)) return;
 
-    const p = createPickr(`#${btn.id}`);
+    // Bind directly to the button element
+    const p = createPickr(btn);
     pickrs[key] = p;
 
     p.on("change", () =>
