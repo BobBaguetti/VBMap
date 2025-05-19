@@ -1,40 +1,34 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.7 — switch to grid layout for side-by-side preview */
+/* @version: 1.6 — explicit 4-row layout inside left-pane */
 
 .modal--definition .modal-content {
-  display: grid;
-  grid-template-rows: auto 1fr;
-  grid-template-columns: 1fr minmax(300px, 40%);
-  height: 90vh;
-  overflow: hidden; /* prevent container from scrolling itself */
-}
-
-/* 1) Header spans both columns on row 1 */
-.modal--definition .modal-header {
-  grid-column: 1 / -1;
-  grid-row: 1;
-}
-
-/* 2) Left pane (list + form) occupies column 1, row 2 */
-.modal--definition #definition-left-pane {
-  grid-column: 1;
-  grid-row: 2;
   display: flex;
   flex-direction: column;
-  min-height: 0; /* allow inner flex children to shrink */
+  height: 90vh;
+  overflow: hidden; /* prevent double scrollbars */
 }
 
-/* 3) Preview pane occupies column 2, row 2 */
-.modal--definition #definition-preview-container {
-  grid-column: 2;
-  grid-row: 2;
-  overflow-y: auto;
-  border-left: 1px solid var(--border-soft);
-  padding-left: var(--space-2);
+/* 1) Global header at the top (Manage Definitions + search) */
+.modal--definition .modal-header {
+  flex: 0 0 auto;
 }
 
-/* 4a) Entry list (scrollable) */
-.modal--definition #definition-left-pane > #definition-list {
+/* 2) Left pane now holds rows 2–4 */
+#definition-left-pane {
+  flex: 1 1 auto;      /* fill the space under the header */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;       /* allow children to shrink */
+}
+
+/* 2a) Type selector (static) */
+#definition-left-pane > label {
+  flex: 0 0 auto;
+  margin-bottom: var(--space-2);
+}
+
+/* 2b) Entry list (scrollable) */
+#definition-left-pane > #definition-list {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -42,21 +36,21 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.modal--definition #definition-left-pane > #definition-list::-webkit-scrollbar {
+#definition-left-pane > #definition-list::-webkit-scrollbar {
   width: 0;
   height: 0;
 }
 
-/* 4b) Form subheader (injected by the form controller) */
-.modal--definition #definition-left-pane > .modal-subheader {
+/* 3) Form subheader (injected by your form controller) */
+#definition-left-pane > .modal-subheader {
   flex: 0 0 auto;
   border-top: 1px solid var(--border-soft);
   padding: var(--space-2) 0;
   background: var(--bg-30);
 }
 
-/* 4c) Form body (scrollable) */
-.modal--definition #definition-left-pane > #definition-form-container {
+/* 4) Form body (scrollable) */
+#definition-left-pane > #definition-form-container {
   flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
@@ -64,7 +58,7 @@
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-.modal--definition #definition-left-pane > #definition-form-container::-webkit-scrollbar {
+#definition-left-pane > #definition-form-container::-webkit-scrollbar {
   width: 0;
   height: 0;
 }

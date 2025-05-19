@@ -1,30 +1,23 @@
-// @file: src/modules/definition/preview/createPreviewPanel.js
-// @version: 6.1 — mount into provided host; drop the global “preview-panel” wrapper
+// comments should not be deleted unless they need updating due to specific commented code changing or the code part is removed
+// @file: /src/modules/ui/preview/createPreviewPanel.js
+// @version: 6
 
-import { createItemPreviewPanel }  from "./itemPreview.js";
+import { createItemPreviewPanel } from "./itemPreview.js";
 import { createChestPreviewPanel } from "./chestPreview.js";
 
 /**
- * @param {string} type        — "item" or "chest"
- * @param {HTMLElement|null} mountTo  — if provided, we render *into* this element
- * @returns {{ container: HTMLElement, setFromDefinition: Function }}
+ * Factory function that returns the appropriate preview panel API
+ * based on the provided type.
+ *
+ * @param {string} type - One of "item", "quest", "npc", or "chest".
+ * @param {HTMLElement|null} mountTo - Optional existing container.
+ * @returns {{ container: HTMLElement, setFromDefinition: Function, show: Function, hide: Function }}
  */
 export function createPreviewPanel(type, mountTo = null) {
-  // Use mountTo as our container, or fallback to a new element (legacy)
+  // Create or reuse container
   const container = mountTo || document.createElement("div");
-
-  // Always clear old content
-  container.innerHTML = "";
-
-  // Only add the type-specific class; skip the old .preview-panel entirely
-  container.classList.add(`${type}-preview-panel`);
-
-  // If no mountTo was passed, do the legacy behavior
-  if (!mountTo) {
-    // legacy global popup
-    container.classList.add("preview-panel");
-    document.body.appendChild(container);
-  }
+  container.style.zIndex = 10000;
+  if (!mountTo) document.body.appendChild(container);
 
   let api;
   switch (type) {
@@ -32,12 +25,16 @@ export function createPreviewPanel(type, mountTo = null) {
       api = createItemPreviewPanel(container);
       break;
     case "chest":
+      // clear any previous content
+      container.innerHTML = "";
+      // use chest-specific preview
       api = createChestPreviewPanel(container);
       break;
     default:
       throw new Error(`Unknown preview panel type: ${type}`);
   }
 
+  // Attach container reference for modals to position
   api.container = container;
   return api;
 }
