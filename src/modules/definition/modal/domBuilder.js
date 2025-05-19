@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/domBuilder.js
-// @version: 1.3 — remove id from type selector to avoid any duplicates
+// @version: 1.1 — fix import path for listUtils
 
 import { createDefListContainer } from "../../../shared/utils/listUtils.js";
 
@@ -31,11 +31,8 @@ export function buildModalUI(modalEl) {
   typeWrapper.className = "modal__type-selector";
   const typeLbl = document.createElement("span");
   typeLbl.textContent = "Type:";
-
-  // Create the <select> without any id
   const typeSel = document.createElement("select");
-  // no typeSel.id = ... 
-
+  typeSel.id = "definition-type";
   typeWrapper.append(typeLbl, typeSel);
   header.insertBefore(typeWrapper, closeBtn);
 
@@ -59,11 +56,11 @@ export function buildModalUI(modalEl) {
 
   return {
     header,
-    searchInput:    search,
-    typeSelect:     typeSel,
+    searchInput: search,
+    typeSelect: typeSel,
     listContainer,
     subheader,
-    formContainer:  formCont,
+    formContainer: formCont,
     previewContainer: preview
   };
 }
