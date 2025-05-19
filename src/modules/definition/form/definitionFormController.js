@@ -1,5 +1,5 @@
-// @file: src/modules/definition/form/definitionFormController.js
-// @version: 1.4.1 — include subheader “Show in Filters” toggle in payload
+// @file: src/modules/definition/forms/definitionFormController.js
+// @version: 1.5 — ensure Save button always triggers onSubmit
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -17,7 +17,7 @@ export function createFormController(buildResult, schema, handlers) {
   const {
     container: headerWrap,
     subheading,
-    filterCheckbox,    // the “Show in Filters” toggle
+    filterCheckbox,
     setDeleteVisible
   } = createFormControllerHeader({
     title,
@@ -30,19 +30,19 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
   });
-
-  // Pin header as the modal subheader
   headerWrap.classList.add("modal-subheader");
   setDeleteVisible(false);
+
+  // Prepend header (with Save/Clear/Delete) into the <form>
   form.prepend(headerWrap);
 
-  // Initialize Pickr instances
+  // Initialize Pickr instances on any colorable fields
   const pickrs = initFormPickrs(form, colorables);
 
-  // Track current entry ID
+  // Track current definition ID
   let payloadId = null;
 
-  // Build the payload for save/update
+  // Build the payload object to send to your service
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
@@ -66,28 +66,23 @@ export function createFormController(buildResult, schema, handlers) {
         out[cfg.colorable] = pickrs[cfg.colorable]?.getColor() || null;
       }
     }
-
-    // **Include the subheader toggle** here
     out.showInFilters = filterCheckbox.checked;
-
     return out;
   }
 
-  // Defaults for schema fields
+  // Prepare defaults for reset
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
-      if (dv === undefined) {
-        dv = cfg.type === "checkbox" ? false : "";
-      }
+      if (dv === undefined) dv = cfg.type === "checkbox" ? false : "";
       return [key, dv];
     })
   );
-
   const pickrClearKeys = Object.entries(schema)
     .filter(([, cfg]) => cfg.colorable)
     .map(([, cfg]) => cfg.colorable);
 
+  // Wire up formState (handles reset/populate/delete-visibility)
   const formState = createFormState({
     form,
     fields,
@@ -103,14 +98,11 @@ export function createFormController(buildResult, schema, handlers) {
   function reset() {
     payloadId = null;
     formState.reset();
-    // **Reset the filter-toggle to its default (on)**
     filterCheckbox.checked = true;
   }
 
   async function populate(def) {
     payloadId = def.id ?? null;
-
-    // Build sanitized object from def or schema default
     const sanitized = {};
     for (const [key, cfg] of Object.entries(schema)) {
       if (def[key] !== undefined) {
@@ -121,13 +113,9 @@ export function createFormController(buildResult, schema, handlers) {
         sanitized[key] = cfg.type === "checkbox" ? false : "";
       }
     }
-
     formState.populate(sanitized);
-
-    // **Set the filter-toggle off the existing value** (default true)
     filterCheckbox.checked = def.showInFilters ?? true;
-
-    // chipList fields need the `.set()` call
+    // chipList needs .set()
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
@@ -135,7 +123,19 @@ export function createFormController(buildResult, schema, handlers) {
     }
   }
 
+  // Standard wiring of form events
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
+
+  // === New: ensure Save always triggers onSubmit ===
+  const saveBtn = headerWrap.querySelector('button[type="submit"]');
+  if (saveBtn) {
+    // turn it into a regular button and handle click
+    saveBtn.type = "button";
+    saveBtn.addEventListener("click", async e => {
+      e.preventDefault();
+      await onSubmit?.(getPayload());
+    });
+  }
 
   return {
     form,
