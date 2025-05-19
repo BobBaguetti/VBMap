@@ -1,23 +1,21 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.5 — use consolidated modalCore; removed lifecycle + domBuilder imports
+// @version: 1.4 — remove duplicate “Show in filters” field from form body
 
-import { createModalCore } from "./modalCore.js";
-import { definitionTypes } from "../types.js";
+import { createModalShell } from "./lifecycle.js";
+import { buildModalUI }     from "./domBuilder.js";
+import { definitionTypes }  from "../types.js";
 import { createDefinitionListManager }
   from "../list/definitionListManager.js";
 import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  // 1) Build modal shell + DOM
-  const {
-    modalEl, open, close,
-    refs: {
-      searchInput, typeSelect,
-      listContainer, subheader,
-      formContainer, previewContainer
-    }
-  } = createModalCore("definition-modal");
+  const { modalEl, open, close } = createModalShell("definition-modal");
+  let {
+    header, searchInput, typeSelect,
+    listContainer, subheader, formContainer,
+    previewContainer
+  } = buildModalUI(modalEl);
 
   let listApi, formApi, previewApi, currentType, definitions = [], itemMap = {};
 
@@ -43,7 +41,6 @@ export function initDefinitionModal(db) {
 
   async function openDefinition(type, def = null) {
     currentType = type;
-    // populate type selector
     typeSelect.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option>${t}</option>`).join("");
     typeSelect.value = type;
@@ -51,7 +48,6 @@ export function initDefinitionModal(db) {
     if (!listApi) setupList();
     await refresh();
 
-    // load extra data for Chest previews
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
@@ -87,7 +83,15 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Swap in the generated subheader
+    // Remove the form’s own “Show in filters” row (we handle it in the subheader)
+    const duplicateFilterRow = formApi.form
+      .querySelector('#fld-showInFilters')
+      ?.closest('.field-row');
+    if (duplicateFilterRow) {
+      duplicateFilterRow.remove();
+    }
+
+    // Replace placeholder header with generated one
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
     subheader = generated;
