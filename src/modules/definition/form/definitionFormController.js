@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.4.8 — guard Pickr root querySelector to prevent errors on reset
+// @version: 1.4.9 — force inline !important styling on swatches
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -13,7 +13,6 @@ export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
   const { title, hasFilter, onCancel, onSubmit, onDelete, onFieldChange } = handlers;
 
-  // HEADER + filter-toggle + buttons
   const {
     container: headerWrap,
     subheading,
@@ -35,22 +34,21 @@ export function createFormController(buildResult, schema, handlers) {
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // Initialize all Pickr instances
+  // Init Pickr instances
   const pickrs = initFormPickrs(form, colorables);
 
   let payloadId = null;
 
-  // Build the save/update payload
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
-      let val;
       const el = fields[key];
+      let val;
       switch (cfg.type) {
-        case "checkbox":    val = el.checked; break;
-        case "extraInfo":   val = el.getLines(); break;
-        case "chipList":    val = el.get();      break;
-        default:            val = el.value;
+        case "checkbox":  val = el.checked;    break;
+        case "extraInfo": val = el.getLines();  break;
+        case "chipList":  val = el.get();       break;
+        default:          val = el.value;
       }
       out[key] = val;
       if (cfg.colorable) {
@@ -61,7 +59,6 @@ export function createFormController(buildResult, schema, handlers) {
     return out;
   }
 
-  // Schema defaults & pickr-clear keys
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
@@ -73,7 +70,6 @@ export function createFormController(buildResult, schema, handlers) {
     .filter(([, cfg]) => cfg.colorable)
     .map(([, cfg]) => cfg.colorable);
 
-  // Form state manager
   const formState = createFormState({
     form,
     fields,
@@ -86,77 +82,57 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   });
 
-  // Reset inputs + swatches + Pickr preview buttons
   function reset() {
     payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
-
-    // Clear swatch button backgrounds
+    // Clear inline backgrounds
     Object.values(colorables).forEach(btn => {
-      btn.style.backgroundColor = "";
-    });
-
-    // Safely clear Pickr preview buttons if they exist
-    Object.values(pickrs).forEach(p => {
-      const root = p.getRoot?.();
-      if (root && typeof root.querySelector === "function") {
-        const previewBtn = root.querySelector(".pcr-button");
-        if (previewBtn) {
-          previewBtn.style.backgroundColor = "";
-        }
-      }
+      btn.style.removeProperty("background-color");
     });
   }
 
-  // Populate fields, Pickr + swatches
   async function populate(def) {
     payloadId = def.id ?? null;
 
-    // Build sanitized payload for formState
+    // Sanitize for formState
     const sanitized = {};
     for (const [key, cfg] of Object.entries(schema)) {
-      if (def[key] !== undefined) {
-        sanitized[key] = def[key];
-      } else if (cfg.default !== undefined) {
-        sanitized[key] = cfg.default;
-      } else {
-        sanitized[key] = cfg.type === "checkbox" ? false : "";
-      }
+      sanitized[key] = def[key] !== undefined
+        ? def[key]
+        : (cfg.default !== undefined
+            ? cfg.default
+            : (cfg.type === "checkbox" ? false : ""));
     }
-
     formState.populate(sanitized);
 
-    // Apply each color to swatch button
+    // Apply saved colors
     Object.entries(schema).forEach(([fieldKey, cfg]) => {
       if (!cfg.colorable) return;
       const colorProp = cfg.colorable;
-      const savedColor = def[colorProp] || null;
-      const btn         = colorables[colorProp];
-      const pr          = pickrs[colorProp];
+      const savedColor = def[colorProp] ?? null;
+      const pr  = pickrs[colorProp];
+      const btn = colorables[colorProp];
 
       if (savedColor) {
-        // Paint the swatch button
-        if (btn) {
-          btn.style.backgroundColor = savedColor;
+        // Try updating Pickr internals
+        if (pr?.setColor) {
+          pr.setColor(savedColor);
         }
-        // Also update Pickr preview if available
-        if (pr) {
-          const root = pr.getRoot?.();
-          if (root && typeof root.querySelector === "function") {
-            const previewBtn = root.querySelector(".pcr-button");
-            if (previewBtn) {
-              previewBtn.style.backgroundColor = savedColor;
-            }
-          }
+        // Force the button background with !important
+        if (btn) {
+          btn.style.setProperty(
+            "background-color",
+            savedColor,
+            "important"
+          );
         }
       }
     });
 
-    // Restore the showInFilters toggle
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // Restore chipList fields
+    // Restore chipList
     Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
@@ -171,6 +147,7 @@ export function createFormController(buildResult, schema, handlers) {
     reset,
     populate,
     getPayload,
-    initPickrs: () => Object.assign(pickrs, initFormPickrs(form, colorables))
+    initPickrs: () =>
+      Object.assign(pickrs, initFormPickrs(form, colorables))
   };
 }
