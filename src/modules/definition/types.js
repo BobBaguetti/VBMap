@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.5 — removed unused buildForm property
+// @version: 1.5 — removed old loadXDefinitions imports and switched to standardized API
 
 import {
   getDefinitions,
@@ -35,8 +35,6 @@ export const definitionTypes = {
     del:       deleteDefinition,
     controller: (handlers, db) =>
                   createFormController(
-                    // buildForm is invoked inside the controller
-                    // it reads itemSchema directly
                     undefined,
                     itemSchema,
                     handlers
