@@ -1,24 +1,29 @@
 // @file: src/modules/definition/preview/previewController.js
-// @version: 1.5 — mount floating preview to body and position off #definition-modal
+// @version: 1.5 — ensure only one floating preview panel exists
 
 import { createPreviewPanel } from "./createPreviewPanel.js";
 
 export function createPreviewController(type) {
-  // Create a floating container for the preview (appended to <body>)
+  // Remove any existing preview-panel-wrapper to avoid duplicates
+  document
+    .querySelectorAll(".preview-panel-wrapper")
+    .forEach(el => el.remove());
+
+  // Create a fresh floating container for the preview
   const container = document.createElement("div");
   container.classList.add("preview-panel-wrapper");
   container.style.position = "absolute";
   container.style.zIndex   = "1101";
   document.body.append(container);
 
-  // Use the existing preview‐factory to populate it
+  // Initialize preview API in our new container
   const previewApi = createPreviewPanel(type, container);
 
   function show(def) {
     previewApi.setFromDefinition(def);
     previewApi.show();
 
-    // Position to the right of our definition modal
+    // Position to the right of the definition modal
     const modalEl = document.getElementById("definition-modal");
     if (!modalEl) return;
     const modalContent = modalEl.querySelector(".modal-content");
