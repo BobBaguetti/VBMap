@@ -1,9 +1,10 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.5 — ensure Save button always triggers onSubmit
+// @version: 1.6 — serialize color values correctly for Firestore
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
-import { initFormPickrs } from "../form/controller/pickrAdapter.js";
+import { initFormPickrs, getPickrHexColor }
+  from "../form/controller/pickrAdapter.js";   // <-- import helper
 import { createFormState } from "../form/controller/formStateManager.js";
 
 /**
@@ -32,17 +33,14 @@ export function createFormController(buildResult, schema, handlers) {
   });
   headerWrap.classList.add("modal-subheader");
   setDeleteVisible(false);
-
-  // Prepend header (with Save/Clear/Delete) into the <form>
   form.prepend(headerWrap);
 
-  // Initialize Pickr instances on any colorable fields
+  // Initialize Pickr on any colorable fields
   const pickrs = initFormPickrs(form, colorables);
 
-  // Track current definition ID
   let payloadId = null;
 
-  // Build the payload object to send to your service
+  // Build the payload for save/update
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
@@ -62,10 +60,16 @@ export function createFormController(buildResult, schema, handlers) {
           val = el.value;
       }
       out[key] = val;
+
+      // Correctly serialize any Pickr color to a hex string
       if (cfg.colorable) {
-        out[cfg.colorable] = pickrs[cfg.colorable]?.getColor() || null;
+        const pickr = pickrs[cfg.colorable];
+        out[cfg.colorable] = pickr
+          ? getPickrHexColor(pickr)
+          : null;
       }
     }
+
     out.showInFilters = filterCheckbox.checked;
     return out;
   }
@@ -82,7 +86,6 @@ export function createFormController(buildResult, schema, handlers) {
     .filter(([, cfg]) => cfg.colorable)
     .map(([, cfg]) => cfg.colorable);
 
-  // Wire up formState (handles reset/populate/delete-visibility)
   const formState = createFormState({
     form,
     fields,
@@ -115,7 +118,6 @@ export function createFormController(buildResult, schema, handlers) {
     }
     formState.populate(sanitized);
     filterCheckbox.checked = def.showInFilters ?? true;
-    // chipList needs .set()
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
@@ -123,13 +125,11 @@ export function createFormController(buildResult, schema, handlers) {
     }
   }
 
-  // Standard wiring of form events
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
 
-  // === New: ensure Save always triggers onSubmit ===
+  // Ensure Save always triggers onSubmit
   const saveBtn = headerWrap.querySelector('button[type="submit"]');
   if (saveBtn) {
-    // turn it into a regular button and handle click
     saveBtn.type = "button";
     saveBtn.addEventListener("click", async e => {
       e.preventDefault();
