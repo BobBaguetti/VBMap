@@ -1,8 +1,0 @@
-/* @file: styles/components/modal/large/buttons.css */
-/* @version: 1.0 — floating action-row for large modal */
-
-.modal-large .floating-buttons {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}

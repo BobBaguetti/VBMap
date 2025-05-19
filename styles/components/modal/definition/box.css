@@ -1,0 +1,66 @@
+/* @file: styles/components/modal/definition/box.css */
+/* @version: 1.7 — constrain .modal-content to 550px wide as before */
+
+.modal--definition {
+  /* backdrop & container */
+  position: fixed;
+  inset: 0;                     
+  background: transparent;
+  display: none;                
+  z-index: 9999;
+  pointer-events: auto;
+
+  /* flex centering when open */
+  justify-content: center;
+  align-items: center;
+}
+
+.modal--definition.is-open {
+  display: flex;
+}
+
+/* content wrapper */
+.modal--definition .modal-content {
+  /* absolute centering */
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+
+  /* constrain width to 550px */
+  width: 100%;
+  max-width: 550px;
+  height: 90vh;
+
+  background: var(--bg-30);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  padding: 10px 16px 16px;
+  color: var(--text-primary);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+
+  display: flex;
+  flex-direction: column;
+  overflow: auto;
+}
+
+/* header & divider */
+.modal--definition .modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.modal--definition .modal-header h2 {
+  font-size: 1em;
+  margin: 0;
+}
+.modal--definition .modal-header .close {
+  position: static;
+  font-size: 1.4em;
+  cursor: pointer;
+}
+.modal--definition .modal-header + hr {
+  border: none;
+  border-top: 2px solid var(--bg-50);
+  margin: 4px 0;
+}

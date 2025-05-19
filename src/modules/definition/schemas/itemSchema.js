@@ -1,12 +1,7 @@
 // @file: src/modules/definition/schemas/itemSchema.js
-// @version: 1.1 — include extraInfo dividers in schema
+// @version: 1.2 — removed showInFilters; filter toggle now only in subheader
 
 export const itemSchema = {
-  showInFilters: {
-    type:    "checkbox",
-    label:   "Show in filters",
-    default: true
-  },
   name: {
     type:      "text",
     label:     "Name",

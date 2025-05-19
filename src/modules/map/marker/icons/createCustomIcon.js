@@ -3,7 +3,7 @@
 
 const L = window.L;
 
-import { defaultNameColor }    from "../../../utils/colorPresets.js";
+import { defaultNameColor }    from "../../../../shared/utils/color/colorPresets.js";
 import { getBestImageUrl }     from "../utils.js";
 import { CHEST_RARITY, rarityColors } from "../../markerManager.js";
 

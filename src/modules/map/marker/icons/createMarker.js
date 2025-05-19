@@ -9,7 +9,7 @@ import { renderChestPopup } from "../popups/chestPopup.js";
 import { createCustomIcon } from "./createCustomIcon.js";
 import { CHEST_RARITY }     from "../utils.js";
 // climb up three levels to reach src/modules/utils/colorPresets.js
-import { rarityColors, defaultNameColor } from "../../../utils/colorPresets.js";
+import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Create a Leaflet marker with custom icon, popup, drag, and context menu.

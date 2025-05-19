@@ -1,0 +1,172 @@
+/* @file: styles\components\popup\popup.css */ 
+/* @version: 1.2 — switch popup font to Satoshi (font-body token) */
+
+@import "../../tokens/popup.css";
+
+/* ───────────────────────────────────────────────── Custom Popup ──── */
+.custom-popup {
+  position: relative;
+  background: var(--bg-40);
+  border-radius: var(--popup-border-radius);
+  padding: var(--popup-padding);
+  width: var(--popup-width);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--popup-font-size);
+  line-height: var(--popup-line-height);
+}
+
+/* Header */
+.popup-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--popup-header-gap);
+  margin-bottom: var(--popup-header-margin-bottom);
+  border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
+  padding: 0;
+}
+.popup-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--popup-header-gap);
+  flex: 1;
+}
+.popup-image {
+  width: var(--popup-image-size);
+  height: var(--popup-image-size);
+  object-fit: contain;
+  background: var(--bg-20);
+  border: var(--popup-image-border-thickness) solid var(--bg-50);
+  border-radius: var(--popup-image-border-radius);
+  flex-shrink: 0;
+}
+
+/* Info Block */
+.popup-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--popup-info-gap);
+  margin-top: 0;
+  padding-top: 0;
+}
+.popup-info > * {
+  margin: 0;
+  padding: 0;
+  line-height: var(--popup-info-line-height);
+}
+.popup-name {
+  font-family: var(--font-body);
+  font-size: var(--popup-name-font-size);
+  font-weight: 520;
+  font-variant: small-caps;
+  text-transform: uppercase;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+.popup-type,
+.popup-rarity {
+  font-family: var(--font-body);
+  font-size: var(--popup-variant-font-size);
+  font-weight: 520;
+  transform: translateY(-1px);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+/* Value (coins) block */
+.popup-value-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--popup-value-gap);
+  margin-top: var(--popup-value-margin-top);
+  margin-right: var(--popup-value-margin-right);
+  font-family: var(--font-body);
+  font-size: var(--popup-value-font-size);
+  font-weight: 520;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+.popup-value-icon svg {
+  width: var(--popup-close-icon-size);
+  height: var(--popup-close-icon-size);
+  fill: #d4af37;
+}
+
+/* Body (with box style) */
+.popup-body.popup-info-box {
+  font-family: var(--font-body);
+  font-weight: var(--popup-info-box-font-weight);
+  font-size: var(--popup-info-box-font-size);
+  background: var(--bg-30);
+  border: var(--border-width-hair) solid var(--border-soft);
+  border-radius: var(--popup-info-box-border-radius);
+  padding: var(--popup-info-box-padding);
+  margin-top: var(--popup-info-box-margin-top);
+  display: flex;
+  flex-direction: column;
+  gap: var(--popup-info-box-gap);
+}
+.popup-body p {
+  margin: 0;
+  padding: 2px 0;
+  font-family: var(--font-body);
+  font-weight: var(--popup-info-box-font-weight);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+.popup-desc {
+  font-family: var(--font-body);
+  font-size: var(--popup-info-box-font-size);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Extras + Meta */
+.popup-extra-line {
+  font-family: var(--font-body);
+  font-size: var(--popup-info-box-font-size);
+  font-weight: var(--popup-info-box-font-weight);
+}
+.popup-meta {
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  font-weight: var(--popup-info-box-font-weight);
+  color: var(--text-primary);
+}
+
+/* Divider after description */
+.popup-divider {
+  border: none;
+  height: 1px;
+  background: var(--bg-50);
+  margin: 1px 0;
+}
+
+/* Close Button */
+.popup-close-btn {
+  position: absolute;
+  top: var(--popup-close-offset);
+  right: var(--popup-close-offset);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 10;
+  transition: color var(--popup-close-transition),
+              transform var(--popup-close-transition);
+  color: var(--text-secondary);
+}
+.popup-close-btn svg {
+  width: var(--popup-close-icon-size);
+  height: var(--popup-close-icon-size);
+  fill: var(--text-secondary);
+  transition: fill var(--popup-close-transition),
+              transform var(--popup-close-transition);
+}
+.popup-close-btn:hover {
+  color: var(--text-primary);
+  transform: scale(var(--popup-close-hover-scale));
+}
+.popup-close-btn:hover svg {
+  fill: var(--text-primary);
+  transform: scale(var(--popup-close-hover-scale));
+}

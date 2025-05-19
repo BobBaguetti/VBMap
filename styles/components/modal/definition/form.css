@@ -1,0 +1,94 @@
+/* @file: styles/components/modal/definition/form.css */
+/* @version: 1.7 — updated to .form-row and .form-control */
+
+.modal--definition #definition-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.modal--definition .form-row {
+  display: flex;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.modal--definition .form-row > label {
+  flex: 0 0 100px;
+  margin-right: 8px;
+}
+
+/* catch-all controls */
+.modal--definition .form-row .form-control {
+  flex: 1 1 auto;
+  min-width: 0;
+  margin-right: 8px;
+  background: var(--bg-50);
+  border: 1px solid var(--border-soft);
+  border-radius: 2px;
+  padding: 6px 8px;
+  color: var(--text-primary);
+}
+
+/* Remove spinner arrows on number inputs */
+.modal--definition .form-row .form-control[type="number"]::-webkit-outer-spin-button,
+.modal--definition .form-row .form-control[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.modal--definition .form-row .form-control[type="number"] {
+  -moz-appearance: none;
+  appearance: none;
+}
+
+/* Allow textareas to resize vertically */
+.modal--definition .form-row .form-control[type="textarea"],
+.modal--definition .form-row textarea.form-control {
+  resize: vertical;
+}
+
+/* Color swatches */
+.modal--definition .color-btn {
+  margin-left: 8px !important;
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  background-color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 2px;
+  cursor: pointer;
+}
+
+/* Remove-line buttons */
+.modal--definition .extra-info-line .remove-line-btn {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: none;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.modal--definition .extra-info-line .remove-line-btn svg {
+  fill: var(--text-primary);
+}
+
+/* Extra-info container tweaks */
+.modal--definition .extra-info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.modal--definition .extra-info-line {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Image URL fields */
+.modal--definition .form-row input[id^="def-image"] {
+  max-width: 100%;
+  box-sizing: border-box;
+}

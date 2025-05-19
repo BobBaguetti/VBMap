@@ -1,7 +1,0 @@
-/* @file: styles/components/modal/small.css */
-/* @version: 1.0 — extracted small-modal width override */
-
-.modal.modal-small .modal-content {
-  width: 400px !important;
-  max-width: 400px !important;
-}
