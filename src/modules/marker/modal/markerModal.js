@@ -1,161 +1,136 @@
-// @file: src\modules\marker\modal\markerModal.js
-// @version: 22.3 — fully self-contained modal (inlined factory + lifecycle)
+// @file: src/modules/marker/modal/markerModal.js
+// @version: 1.0 — rewrite using createModalShell for consistent open/close
 
-import { markerTypes } from "../types.js";
-import { createDefListContainer } from "../../../shared/utils/listUtils.js"; // if needed
-// Note: markerModal doesn’t use listUtils; remove import if unused.
+import { createModalShell } from "../../definition/modal/lifecycle.js";
+import { markerTypes }     from "../types.js";
 
+/**
+ * Initializes the Marker modal, returning openCreate and openEdit functions.
+ *
+ * openCreate(coords, type, evt, createCb)
+ * openEdit(markerObj, data, evt, saveCb)
+ */
 export function initMarkerModal(db) {
-  let modal, content;
-  let fldType, fldDef, btnCreate, btnCancel;
-  let pendingCoords, onCreate, onSaveCallback;
+  // 1) Create the shell
+  const { modalEl, open, close } = createModalShell("marker-modal");
+  modalEl.classList.add("modal--marker");
 
-  // Lifecycle & ESC-to-close
-  function attachLifecycle(modalEl) {
-    const prevFocused = document.activeElement;
-    const scrollY     = window.scrollY;
-    document.documentElement.style.overflow = "hidden";
-    modalEl.addEventListener("close", () => {
-      document.documentElement.style.overflow = "";
-      window.scrollTo(0, scrollY);
-      prevFocused?.focus?.();
-    }, { once: true });
-  }
-  function onKey(e) {
-    if (e.key === "Escape" && modal) closeModal();
-  }
+  // 2) Build static DOM
+  const content = document.createElement("div");
+  content.className = "modal-content";
+  modalEl.append(content);
 
-  // Show/hide
-  function openModal() {
-    modal.classList.add("is-open");
-    document.addEventListener("keydown", onKey);
-  }
-  function closeModal() {
-    modal.classList.remove("is-open");
-    modal.dispatchEvent(new Event("close"));
-    document.removeEventListener("keydown", onKey);
-  }
+  // Type selector
+  const lblType = document.createElement("label");
+  lblType.textContent = "Type:";
+  const fldType = document.createElement("select");
+  fldType.innerHTML = `
+    <option value="" disabled>Select type…</option>
+    ${Object.keys(markerTypes).map(
+      t => `<option value="${t}">${t}</option>`
+    ).join("")}
+  `;
+  lblType.appendChild(fldType);
+  content.appendChild(lblType);
 
-  // Build the modal shell once
-  function ensureBuilt() {
-    if (modal) return;
+  // Definition selector
+  const lblDef = document.createElement("label");
+  lblDef.textContent = "Definition:";
+  const fldDef = document.createElement("select");
+  fldDef.innerHTML = `<option value="" disabled>Select definition…</option>`;
+  lblDef.style.display = "none";
+  lblDef.appendChild(fldDef);
+  content.appendChild(lblDef);
 
-    // 1) Modal backdrop container
-    modal = document.createElement("div");
-    modal.id = "marker-modal";
-    modal.className = "modal--marker";
-    document.body.append(modal);
-    attachLifecycle(modal);
+  // Buttons
+  const btnRow = document.createElement("div");
+  btnRow.className = "modal-buttons";
+  const btnCancel = document.createElement("button");
+  btnCancel.type = "button";
+  btnCancel.textContent = "Cancel";
+  btnCancel.onclick = () => { close(); };
+  const btnAction = document.createElement("button");
+  btnAction.type = "button";
+  btnAction.textContent = "Create";
+  btnRow.append(btnCancel, btnAction);
+  content.append(btnRow);
 
-    // 2) Content wrapper
-    content = document.createElement("div");
-    content.className = "modal-content";
-    modal.append(content);
+  // 3) State
+  let pendingCoords, onCreate, onSave;
+  let currentMode = "create"; // or "edit"
 
-    // 3) Make modal draggable if desired
-    // (optional: replicate draggable logic from shared modalSmall)
-
-    // 4) Type selector
-    const rowType = document.createElement("label");
-    rowType.textContent = "Type:";
-    fldType = document.createElement("select");
-    fldType.innerHTML = `
-      <option value="" disabled selected>Select type…</option>
-      ${Object.keys(markerTypes).map(
-        type => `<option value="${type}">${type}</option>`
-      ).join("")}
+  // 4) Handlers
+  fldType.addEventListener("change", async () => {
+    const type = fldType.value;
+    if (!type) return;
+    // Load definitions for this type
+    const defs = await markerTypes[type].loadDefinitions(db);
+    fldDef.innerHTML = `
+      <option value="" disabled selected>Select ${type}…</option>
+      ${defs
+        .filter(markerTypes[type].showInSidebar)
+        .map(d => `<option value="${d.id}">${d.name || d.id}</option>`)
+        .join("")}
     `;
-    rowType.append(fldType);
-    content.append(rowType);
+    lblDef.style.display = "";
+  });
 
-    // 5) Definition selector
-    const rowDef = document.createElement("label");
-    rowDef.textContent = "Definition:";
-    fldDef = document.createElement("select");
-    fldDef.innerHTML = `<option value="" disabled>Select definition…</option>`;
-    rowDef.append(fldDef);
-    rowDef.style.display = "none";
-    content.append(rowDef);
+  btnAction.addEventListener("click", () => {
+    const type = fldType.value;
+    const defId = fldDef.value;
+    if (!type || !defId) return;
+    const key = markerTypes[type].defIdKey;
+    const payload = { type, coords: pendingCoords, [key]: defId };
 
-    // 6) Buttons row
-    const btnRow = document.createElement("div");
-    btnRow.className = "modal-buttons";
+    if (currentMode === "create") {
+      onCreate?.(payload);
+    } else {
+      onSave?.(payload);
+    }
+    close();
+  });
 
-    btnCancel = document.createElement("button");
-    btnCancel.type = "button";
-    btnCancel.textContent = "Cancel";
-    btnCancel.onclick = closeModal;
+  // 5) Public API
+  function openCreate(coords, type = "", evt, createCb) {
+    currentMode  = "create";
+    onCreate     = createCb;
+    onSave       = null;
+    btnAction.textContent = "Create";
 
-    btnCreate = document.createElement("button");
-    btnCreate.type = "button";
-    btnCreate.textContent = "Create";
+    pendingCoords = coords;
+    fldType.value = type;
+    fldType.dispatchEvent(new Event("change"));
 
-    btnRow.append(btnCancel, btnCreate);
-    content.append(btnRow);
-
-    // 7) Handlers
-    fldType.addEventListener("change", async () => {
-      const type = fldType.value;
-      if (!type) return;
-      const cfg = markerTypes[type];
-      const defs = await cfg.loadDefinitions(db);
-      fldDef.innerHTML = `
-        <option value="" disabled selected>Select ${type}…</option>
-        ${defs
-          .filter(cfg.showInSidebar)
-          .map(d => `<option value="${d.id}">${d.name || d.id}</option>`)
-          .join("")}
-      `;
-      rowDef.style.display = "";
-    });
-
-    btnCreate.addEventListener("click", () => {
-      const type = fldType.value;
-      const cfg = markerTypes[type];
-      const defIdKey = cfg.defIdKey;
-      const defId = fldDef.value;
-      if (!type || !defIdKey || !defId) return;
-      const payload = { type, coords: pendingCoords, [defIdKey]: defId };
-      if (onCreate) {
-        onCreate(payload);
-      } else if (onSaveCallback) {
-        onSaveCallback(payload);
-      }
-      closeModal();
-    });
+    // Position & open
+    open();
+    positionAtEvent(evt);
   }
 
-  return {
-    openCreate(coords, type = "", evt, createCb) {
-      pendingCoords  = coords;
-      onCreate       = createCb;
-      onSaveCallback = null;
-      ensureBuilt();
-      fldType.value = type;
-      fldType.dispatchEvent(new Event("change"));
-      // Position near event
-      openModalAt(evt);
-    },
+  function openEdit(_markerObj, data, evt, saveCb) {
+    currentMode  = "edit";
+    onCreate     = null;
+    onSave       = saveCb;
+    btnAction.textContent = "Save";
 
-    openEdit(markerObj, data, evt, saveCb) {
-      pendingCoords  = data.coords;
-      onCreate       = null;
-      onSaveCallback = saveCb;
-      ensureBuilt();
-      fldType.value = data.type;
-      fldType.dispatchEvent(new Event("change"));
-      const defIdKey = markerTypes[data.type].defIdKey;
-      fldDef.value   = data[defIdKey] || "";
-      openModalAt(evt);
-    }
-  };
+    pendingCoords = data.coords;
+    fldType.value = data.type;
+    fldType.dispatchEvent(new Event("change"));
 
-  // Helper to position and open
-  function openModalAt(evt) {
-    openModal();
+    // After defs load, set the correct definition value
+    setTimeout(() => {
+      fldDef.value = data[markerTypes[data.type].defIdKey] || "";
+    }, 0);
+
+    open();
+    positionAtEvent(evt);
+  }
+
+  function positionAtEvent(evt) {
     const rect = content.getBoundingClientRect();
     content.style.position = "absolute";
     content.style.left     = `${evt.clientX - rect.width}px`;
     content.style.top      = `${evt.clientY - rect.height / 2}px`;
   }
+
+  return { openCreate, openEdit };
 }
