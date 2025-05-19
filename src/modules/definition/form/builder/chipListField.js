@@ -1,12 +1,22 @@
 // @file: src/modules/definition/form/builder/chipListField.js
-// @version: 1.5 — fixed imports for relocated helpers
+// @version: 1.6 — avoid recursion by not using createFieldRow
 
-import { createFieldRow } from "./fieldRow.js";
 import { createChipList } from "./chipListManager.js";
 import { pickItems }      from "./listPicker.js";
 
 /**
  * Creates a labeled chip-list field with an “add” button that opens the list-picker.
+ *
+ * @param {string} labelText
+ * @param {Array} initialItems
+ * @param {Object} options
+ * @param {Array} options.items
+ * @param {string} options.idKey
+ * @param {string} options.labelKey
+ * @param {Function} options.renderIcon
+ * @param {Function} options.onChange
+ * @param {string} options.addBtnContent
+ * @param {Object} options.pickOptions
  */
 export function createChipListField(
   labelText,
@@ -21,27 +31,28 @@ export function createChipListField(
     pickOptions   = { size: "large" }
   } = {}
 ) {
-  // 1) build DOM
+  // 1) Build the form-row container
+  const row = document.createElement("div");
+  row.className = "form-row";
+
+  // Label cell
+  const labelEl = document.createElement("label");
+  labelEl.textContent = labelText.endsWith(":")
+    ? labelText
+    : labelText + ":";
+  row.append(labelEl);
+
+  // Chip-list container + add button
   const container = document.createElement("div");
   container.classList.add("chip-list-container");
-
   const btnAdd = document.createElement("button");
-  btnAdd.type        = "button";
-  btnAdd.className   = "ui-button add-chip-btn";
+  btnAdd.type      = "button";
+  btnAdd.className = "ui-button add-chip-btn";
   btnAdd.textContent = addBtnContent;
-
-  // Use createFieldRow to build the labeled row
-  const { row } = createFieldRow({
-    type:       "chipList",
-    label:      labelText,
-    idKey,
-    labelKey,
-    renderIcon
-  });
 
   row.append(container, btnAdd);
 
-  // 2) chip-list manager
+  // 2) Initialize chip-list manager
   const listArray = [...initialItems];
   const chipList = createChipList({
     container,
@@ -49,15 +60,16 @@ export function createChipListField(
     renderLabel: item => item[labelKey],
     renderIcon,
     onChange: updated => {
-      // sync backing array
       listArray.splice(0, listArray.length, ...updated);
       onChange?.([...listArray]);
-      // fire form input for live-preview
-      row.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      // trigger form input for live-preview
+      row.closest("form")?.dispatchEvent(
+        new Event("input", { bubbles: true })
+      );
     }
   });
 
-  // 3) “add” button → picker
+  // 3) “Add” button → list-picker
   btnAdd.addEventListener("click", async () => {
     try {
       const selectedIds = await pickItems({
@@ -67,11 +79,15 @@ export function createChipListField(
         labelKey,
         ...pickOptions
       });
-      const picked = allItems.filter(it => selectedIds.includes(it[idKey]));
+      const picked = allItems.filter(it =>
+        selectedIds.includes(it[idKey])
+      );
       listArray.splice(0, listArray.length, ...picked);
       chipList.render();
       onChange?.([...listArray]);
-      row.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      row.closest("form")?.dispatchEvent(
+        new Event("input", { bubbles: true })
+      );
     } catch {
       // user cancelled
     }
@@ -83,7 +99,9 @@ export function createChipListField(
     setItems: newItems => {
       listArray.splice(0, listArray.length, ...newItems);
       chipList.render();
-      row.closest("form")?.dispatchEvent(new Event("input", { bubbles: true }));
+      row.closest("form")?.dispatchEvent(
+        new Event("input", { bubbles: true })
+      );
     }
   };
 }
