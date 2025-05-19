@@ -1,4 +1,4 @@
-// @file: src/modules/definition/forms/definitionFormBuilder.js
+// @file: src/modules/definition/form/definitionFormBuilder.js
 // @version: 1.4 — updated import path for fieldRow
 
 import { createFieldRow } from "../form/builder/fieldRow.js";

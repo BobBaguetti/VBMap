@@ -1,4 +1,4 @@
-// @file: src/modules/definition/forms/definitionFormController.js
+// @file: src/modules/definition/form/definitionFormController.js
 // @version: 1.4.1 — include subheader “Show in Filters” toggle in payload
 
 import { createFormControllerHeader, wireFormEvents }
