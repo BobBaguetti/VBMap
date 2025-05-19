@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.6 — preserve original def on live‐preview updates
+// @version: 1.5 — always show floating preview after modal opens
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -22,18 +22,19 @@ export function initDefinitionModal(db) {
   let currentType;
   let definitions = [];
   let itemMap = {};
-  let baseDef = {};       // will hold the original def for merges
 
+  // Fetch & cache definitions for sidebar list
   async function refresh() {
     definitions = await definitionTypes[currentType].loadDefs(db);
     listApi.refresh(definitions);
   }
 
+  // Wire up the left-hand list & search
   function setupList() {
     listApi = createDefinitionListManager({
-      container:       listContainer,
-      getDefinitions:  () => definitions,
-      onEntryClick:    def => openDefinition(currentType, def),
+      container:    listContainer,
+      getDefinitions: () => definitions,
+      onEntryClick: def => openDefinition(currentType, def),
       onDelete: async id => {
         await definitionTypes[currentType].del(db, id);
         await refresh();
@@ -44,12 +45,11 @@ export function initDefinitionModal(db) {
     );
   }
 
+  // Core open-modal routine
   async function openDefinition(type, def = null) {
     currentType = type;
-    // reset baseDef
-    baseDef = {};
 
-    // populate type selector
+    // Type selector
     typeSelect.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option>${t}</option>`)
       .join("");
@@ -58,30 +58,16 @@ export function initDefinitionModal(db) {
     if (!listApi) setupList();
     await refresh();
 
-    // load items for Chest mapping
+    // For chest previews, we need an item lookup
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // instantiate a fresh preview controller
+    // Create a fresh preview controller for this type
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // capture the “original” def with full shape
-    if (def) {
-      if (type === "Chest") {
-        baseDef = {
-          ...def,
-          lootPool: (def.lootPool || [])
-            .map(id => itemMap[id])
-            .filter(Boolean)
-        };
-      } else {
-        baseDef = { ...def };
-      }
-    }
-
-    // build & wire the form
+    // Build the form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -100,27 +86,26 @@ export function initDefinitionModal(db) {
         previewApi.hide();
       },
       onFieldChange: data => {
-        // merge edits onto the original definition
-        let pd = { ...baseDef, ...data };
-
-        // for Chest, remap lootPool ids → full items
+        let pd = data;
         if (type === "Chest" && Array.isArray(data.lootPool)) {
-          pd.lootPool = data.lootPool
-            .map(id => itemMap[id])
-            .filter(Boolean);
+          pd = {
+            ...data,
+            lootPool: data.lootPool
+              .map(i => itemMap[i])
+              .filter(Boolean)
+          };
         }
-
         previewApi.show(pd);
       }
     }, db);
 
-    // remove the duplicate “Show in Filters” row if it sneaks in
+    // Remove duplicate “Show in filters” row if present
     const duplicateFilterRow = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
     if (duplicateFilterRow) duplicateFilterRow.remove();
 
-    // swap in the form’s generated header
+    // Swap in the generated subheader
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
     subheader = generated;
@@ -128,23 +113,31 @@ export function initDefinitionModal(db) {
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    // populate or reset
+    // Populate or reset form fields
     if (def) {
       formApi.populate(def);
     } else {
       formApi.reset();
     }
 
-    // open modal
+    // **1) Open the modal (makes .modal-content visible)**
     open();
 
-    // show preview immediately, merging in defaults if needed
-    const initialPreview = def
-      ? baseDef
+    // **2) Now show our preview panel (positions it correctly)**
+    const previewData = def
+      ? (type === "Chest"
+          ? {
+              ...def,
+              lootPool: (def.lootPool || [])
+                .map(id => itemMap[id])
+                .filter(Boolean)
+            }
+          : def)
       : (type === "Chest"
           ? { lootPool: [] }
           : {});
-    previewApi.show(initialPreview);
+
+    previewApi.show(previewData);
   }
 
   return {
