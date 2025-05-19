@@ -1,12 +1,12 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.7 — side-by-side preview + override for embedded preview */
+/* @version: 1.7 — side-by-side preview + embedded preview overrides */
 
-/* 1) Modal content as a row (left pane + preview pane) */
+/* 1) Modal content side-by-side layout */
 .modal--definition .modal-content {
   display: flex;
   flex-direction: row;
   height: 90vh;
-  overflow: hidden;
+  overflow: hidden; /* prevent double scrollbars */
 }
 
 /* 2) Left pane (list + form) */
@@ -14,22 +14,38 @@
   flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  min-height: 0;
+  min-height: 0;    /* allow children to shrink */
 }
 
-/* 3) Right pane (preview container) */
+/* 2a) Entry list (scroll block) */
+/* kept in scroll.css as before */
+
+/* 2b) Form subheader and form container remain scrollable as before */
+
+/* 3) Right pane (preview) */
 #definition-preview-container {
   flex: 1 1 0;
-  min-width: 0;
+  min-width: 0;     /* allow shrinking */
   overflow-y: auto;
   border-left: 1px solid var(--border-soft);
   padding-left: var(--space-2);
 }
 
 /* 4) Override global preview-panel styles when embedded */
-.modal--definition .definition-preview {
-  /* undo the fixed/432px from .preview-panel */
+.modal--definition #definition-preview-container .preview-panel {
   position: static !important;
-  width: 100%        !important;
-  height: auto      !important;
+  top:      auto !important;
+  left:     auto !important;
+  width:    100% !important;
+  height:   auto !important;
+  box-shadow: none !important;
+  /* Preserve its own background/border via per-type CSS if desired */
+  background: transparent !important;
+  border:     none !important;
+  padding:    0 !important;
+}
+
+/* 5) Ensure visibility toggle still works */
+.modal--definition #definition-preview-container .preview-panel.visible {
+  display: block !important;
 }
