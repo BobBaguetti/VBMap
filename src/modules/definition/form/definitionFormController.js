@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.4.5 — paint swatch backgrounds to reflect saved colors
+// @version: 1.4.6 — force-refresh Pickr + swatch backgrounds on populate
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -31,34 +31,26 @@ export function createFormController(buildResult, schema, handlers) {
     }
   });
 
-  // Pin that header as the modal subheader
   headerWrap.classList.add("modal-subheader");
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // Initialize Pickr instances for all colorables
+  // Initialize Pickr instances
   const pickrs = initFormPickrs(form, colorables);
 
   let payloadId = null;
 
-  // Build submission payload (including the showInFilters toggle)
+  // Build submission payload (incl. showInFilters)
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
       let val;
       const el = fields[key];
       switch (cfg.type) {
-        case "checkbox":
-          val = el.checked;
-          break;
-        case "extraInfo":
-          val = el.getLines();
-          break;
-        case "chipList":
-          val = el.get();
-          break;
-        default:
-          val = el.value;
+        case "checkbox":    val = el.checked; break;
+        case "extraInfo":   val = el.getLines(); break;
+        case "chipList":    val = el.get();      break;
+        default:            val = el.value;
       }
       out[key] = val;
       if (cfg.colorable) {
@@ -97,18 +89,17 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   });
 
-  // Reset both inputs and swatch backgrounds
+  // Reset inputs + swatches
   function reset() {
     payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
-    // Clear swatch backgrounds
     Object.values(colorables).forEach(btn => {
       btn.style.backgroundColor = "";
     });
   }
 
-  // Populate form fields, pickrs AND swatch backgrounds
+  // Populate inputs, Pickr, **and** swatch backgrounds
   async function populate(def) {
     payloadId = def.id ?? null;
 
@@ -124,31 +115,39 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
-    // Populate normal inputs
     formState.populate(sanitized);
 
-    // Apply each color to the Pickr AND the swatch button
+    // Force‐refresh each pickr + paint its button
     for (const [fieldKey, cfg] of Object.entries(schema)) {
-      if (cfg.colorable) {
-        const colorProp = cfg.colorable;
-        const savedColor = def[colorProp] ?? null;
-        const pr = pickrs[colorProp];
-        const btn = colorables[colorProp];
+      if (!cfg.colorable) continue;
+      const colorProp = cfg.colorable;
+      const savedColor = def[colorProp] ?? null;
+      const pr = pickrs[colorProp];
+      const btn = colorables[colorProp];
 
-        if (pr && savedColor) {
-          pr.setColor(savedColor);
-          // paint the button’s background so it shows the color
-          if (btn) {
-            btn.style.backgroundColor = savedColor;
-          }
+      if (pr && savedColor) {
+        // 1) set with silent flag
+        pr.setColor(savedColor, true);
+
+        // 2) force internal apply if available
+        if (typeof pr.applyColor === "function") {
+          pr.applyColor();
+        }
+
+        // 3) manually paint the swatch element
+        if (btn) {
+          // inline !important to override any CSS
+          btn.setAttribute(
+            "style",
+            `background-color: ${savedColor} !important;`
+          );
         }
       }
     }
 
-    // Restore the subheader toggle
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // Chip-list fields need manual .set()
+    // chipList fields
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
@@ -156,7 +155,6 @@ export function createFormController(buildResult, schema, handlers) {
     }
   }
 
-  // Wire up form events
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
 
   return {
@@ -164,6 +162,7 @@ export function createFormController(buildResult, schema, handlers) {
     reset,
     populate,
     getPayload,
-    initPickrs: () => Object.assign(pickrs, initFormPickrs(form, colorables))
+    initPickrs: () =>
+        Object.assign(pickrs, initFormPickrs(form, colorables))
   };
 }
