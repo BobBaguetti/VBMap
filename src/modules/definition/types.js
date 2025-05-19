@@ -17,8 +17,8 @@ import {
 import { itemSchema }  from "./schemas/itemSchema.js";
 import { chestSchema } from "./schemas/chestSchema.js";
 
-import { buildForm }            from "./forms/definitionFormBuilder.js";
-import { createFormController } from "./forms/definitionFormController.js";
+import { buildForm }            from "./form/definitionFormBuilder.js";
+import { createFormController } from "./form/definitionFormController.js";
 import { createPreviewController } from "./preview/previewController.js";
 
 export const definitionTypes = {
