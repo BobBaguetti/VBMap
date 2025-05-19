@@ -2,7 +2,7 @@
 // @version: 2.1 — relocated into definition module; updated import paths
 
 import { createPickr, disablePickr, getPickrHexColor }
-  from "../../controller/pickrAdapter.js";
+from "../controller/pickrAdapter.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
 import { createChipListField }  from "./chipListField.js";
 

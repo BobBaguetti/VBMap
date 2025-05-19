@@ -1,5 +1,5 @@
-// @file: src/shared/ui/managers/chipListManager.js
-// @version: 1.2 — added drag-and-drop reordering with grab handles
+// @file: src/modules/definition/form/builder/chipListManager.js
+// @version: 1.2 — relocated into definition module
 
 /**
  * Creates a chip-list UI inside a container, backed by a mutable array.

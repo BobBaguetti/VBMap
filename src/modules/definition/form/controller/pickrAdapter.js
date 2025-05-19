@@ -1,7 +1,5 @@
-// @file:    src/shared/ui/forms/pickrAdapter.js
-// @version: 1
-
-// ─── Low-level Pickr adapter ────────────────────────────────────────────────
+// @file: src/modules/definition/form/controller/pickrAdapter.js
+// @version: 1 — relocated into definition module
 
 const activePickrs = [];
 
@@ -78,8 +76,6 @@ export function initModalPickrs(root) {
     createPickr(`#${el.id}`);
   });
 }
-
-// ─── Form-level wiring ────────────────────────────────────────────────────────
 
 /**
  * Initialize Pickr instances for a set of buttons in a form,

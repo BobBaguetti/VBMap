@@ -1,7 +1,7 @@
-// @file: src/modules/ui/components/formControllerShell.js
-// @version: 1.4 — use CSS classes, rename filter label, support addTitle/editTitle
+// @file: src/modules/definition/form/controller/formControllerShell.js
+// @version: 1.5 — relocated into definition module; updated import paths
 
-import { createIcon } from "../../utils/iconUtils.js";
+import { createIcon } from "../../../../shared/utils/iconUtils.js";
 
 /**
  * Builds the H3 subheading + floating-buttons row.

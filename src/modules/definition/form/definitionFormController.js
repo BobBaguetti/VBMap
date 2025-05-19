@@ -2,9 +2,9 @@
 // @version: 1.3 — tag form header as modal subheader for pinned layout
 
 import { createFormControllerHeader, wireFormEvents }
-  from "../../../shared/ui/forms/formControllerShell.js";
-import { initFormPickrs } from "../../../shared/ui/forms/pickrAdapter.js";
-import { createFormState } from "../../../shared/ui/forms/formStateManager.js";
+from "../form/controller/formControllerShell.js";
+import { initFormPickrs } from "../form/controller/pickrAdapter.js";
+import { createFormState } from "../form/controller/formStateManager.js";
 
 /**
  * Wraps a schema-built form, wiring header, state, and events.

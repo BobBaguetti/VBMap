@@ -1,7 +1,7 @@
 // @file: src/modules/definition/form/builder/extraInfoBlock.js
 // @version: 1.5 — relocated into definition module; updated Pickr import
 
-import { createPickr } from "../../controller/pickrAdapter.js";
+import { createPickr } from "../controller/pickrAdapter.js";
 
 export function createExtraInfoBlock({ defaultColor = "#E5E6E8", readonly = false } = {}) {
   const wrap = document.createElement("div");
