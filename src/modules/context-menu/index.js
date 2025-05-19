@@ -1,4 +1,4 @@
-// @file:    src/shared/ui/context-menu/index.js
+// @file:    src\modules\context-menu\index.js
 // @version: 1
 
 export { showContextMenu }         from "./showContextMenu.js";

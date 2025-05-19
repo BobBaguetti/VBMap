@@ -1,4 +1,4 @@
-// @file:    src/shared/ui/context-menu/hideContextMenu.js
+// @file:    src\modules\context-menu\hideContextMenu.js
 // @version: 1
 
 /**

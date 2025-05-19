@@ -1,7 +1,10 @@
 // @file: src/bootstrap/contextMenu.js
-// @version: 1.3 — updated shared UI import paths
+// @version: 1.4 — updated context-menu import paths
 
-import { showContextMenu, hideContextMenu } from "../shared/ui/context-menu/index.js";
+import {
+  showContextMenu,
+  hideContextMenu
+} from "../modules/definition/modal/context-menu/index.js";
 
 /**
  * Initialize context menu behavior.
@@ -24,7 +27,7 @@ function init(map, db, isAdmin) {
               [evt.latlng.lat, evt.latlng.lng],
               undefined,
               evt.originalEvent,
-              (data) => import("../modules/services/firebaseService.js")
+              data => import("../modules/services/firebaseService.js")
                 .then(m => m.upsertMarker(db, data))
             );
           })
@@ -41,6 +44,4 @@ function init(map, db, isAdmin) {
   });
 }
 
-export default {
-  init
-};
+export default { init };
