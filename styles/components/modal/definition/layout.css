@@ -1,64 +1,35 @@
 /* @file: styles/components/modal/definition/layout.css */
-/* @version: 1.6 — explicit 4-row layout inside left-pane */
+/* @version: 1.7 — side-by-side preview + override for embedded preview */
 
+/* 1) Modal content as a row (left pane + preview pane) */
 .modal--definition .modal-content {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   height: 90vh;
-  overflow: hidden; /* prevent double scrollbars */
+  overflow: hidden;
 }
 
-/* 1) Global header at the top (Manage Definitions + search) */
-.modal--definition .modal-header {
-  flex: 0 0 auto;
-}
-
-/* 2) Left pane now holds rows 2–4 */
+/* 2) Left pane (list + form) */
 #definition-left-pane {
-  flex: 1 1 auto;      /* fill the space under the header */
+  flex: 1 1 0;
   display: flex;
   flex-direction: column;
-  min-height: 0;       /* allow children to shrink */
-}
-
-/* 2a) Type selector (static) */
-#definition-left-pane > label {
-  flex: 0 0 auto;
-  margin-bottom: var(--space-2);
-}
-
-/* 2b) Entry list (scrollable) */
-#definition-left-pane > #definition-list {
-  flex: 1 1 auto;
   min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-#definition-left-pane > #definition-list::-webkit-scrollbar {
-  width: 0;
-  height: 0;
 }
 
-/* 3) Form subheader (injected by your form controller) */
-#definition-left-pane > .modal-subheader {
-  flex: 0 0 auto;
-  border-top: 1px solid var(--border-soft);
-  padding: var(--space-2) 0;
-  background: var(--bg-30);
+/* 3) Right pane (preview container) */
+#definition-preview-container {
+  flex: 1 1 0;
+  min-width: 0;
+  overflow-y: auto;
+  border-left: 1px solid var(--border-soft);
+  padding-left: var(--space-2);
 }
 
-/* 4) Form body (scrollable) */
-#definition-left-pane > #definition-form-container {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
-  padding-right: 4px;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-#definition-left-pane > #definition-form-container::-webkit-scrollbar {
-  width: 0;
-  height: 0;
+/* 4) Override global preview-panel styles when embedded */
+.modal--definition .definition-preview {
+  /* undo the fixed/432px from .preview-panel */
+  position: static !important;
+  width: 100%        !important;
+  height: auto      !important;
 }

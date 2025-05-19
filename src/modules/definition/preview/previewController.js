@@ -1,32 +1,20 @@
 // @file: src/modules/definition/preview/previewController.js
-// @version: 1.4 — float preview and position it to the right of the definition modal
+// @version: 1.5 — embed preview inside modal instead of floating
 
 import { createPreviewPanel } from "./createPreviewPanel.js";
 
-export function createPreviewController(type) {
-  // Create a floating container for the preview
+export function createPreviewController(type, host) {
+  // Create an inner container and hand it off to createPreviewPanel
   const container = document.createElement("div");
-  container.classList.add("definition-preview-panel");
-  container.style.position = "absolute";
-  container.style.zIndex   = "1101";
-  document.body.append(container);
+  container.classList.add("definition-preview");  // new class for embedded styling
+  host.append(container);
 
+  // Let the factory render its HTML and wire show/hide
   const previewApi = createPreviewPanel(type, container);
 
   function show(def) {
     previewApi.setFromDefinition(def);
-    previewApi.show();
-
-    // Find the definition modal's content box
-    const modalContent = document.querySelector(".modal.modal--definition .modal-content");
-    if (!modalContent) return;
-
-    const mc = modalContent.getBoundingClientRect();
-    const pr = container.getBoundingClientRect();
-
-    // Position container to the right of the modal, vertically centered
-    container.style.left = `${mc.right + 16}px`;
-    container.style.top  = `${mc.top + (mc.height - pr.height) / 2}px`;
+    previewApi.show();   // just toggles .visible
   }
 
   function hide() {
