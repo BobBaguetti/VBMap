@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.6 — support changing definition type on the fly
+// @version: 1.7 — hide floating preview when modal closes
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -10,30 +10,34 @@ import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  const { modalEl, open, close } = createModalShell("definition-modal");
+  const { modalEl, open, close } =
+    createModalShell("definition-modal");
   let {
     header, searchInput, typeSelect,
     listContainer, subheader, formContainer,
     previewContainer
   } = buildModalUI(modalEl);
 
-  // When the user picks a different type, reopen the modal for that type
-  typeSelect.addEventListener("change", () => {
-    openDefinition(typeSelect.value);
-  });
-
   let listApi, formApi, previewApi;
   let currentType;
   let definitions = [];
   let itemMap = {};
 
-  // Load & refresh the list for the current type
+  // Hide preview whenever the modal closes
+  modalEl.addEventListener("close", () => {
+    if (previewApi) previewApi.hide();
+  });
+
+  // Reopen on type change
+  typeSelect.addEventListener("change", () => {
+    openDefinition(typeSelect.value);
+  });
+
   async function refresh() {
     definitions = await definitionTypes[currentType].loadDefs(db);
     listApi.refresh(definitions);
   }
 
-  // Initialize the sidebar list only once
   function setupList() {
     listApi = createDefinitionListManager({
       container:       listContainer,
@@ -49,29 +53,25 @@ export function initDefinitionModal(db) {
     );
   }
 
-  // Main open routine
   async function openDefinition(type, def = null) {
     currentType = type;
 
-    // Rebuild type selector options and set value
     typeSelect.innerHTML = Object.keys(definitionTypes)
-      .map(t => `<option>${t}</option>`)
-      .join("");
+      .map(t => `<option>${t}</option>`).join("");
     typeSelect.value = type;
 
     if (!listApi) setupList();
     await refresh();
 
-    // For Chest definitions we need to load items for lootPool
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // Reset and recreate the preview controller
+    // Recreate previewApi for this type
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // Build the form UI
+    // Build the form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -101,13 +101,13 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Remove any stray showInFilters row from the form body
-    const duplicateFilterRow = formApi.form
+    // Remove stray filter row
+    const dup = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
-    if (duplicateFilterRow) duplicateFilterRow.remove();
+    if (dup) dup.remove();
 
-    // Swap in the generated subheader
+    // Swap in subheader
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
     subheader = generated;
@@ -115,27 +115,20 @@ export function initDefinitionModal(db) {
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    // Populate or reset fields
     if (def) {
       formApi.populate(def);
     } else {
       formApi.reset();
     }
 
-    // Open modal and immediately show the preview (even if empty)
+    // Open modal and show preview
     open();
 
     const previewData = def
       ? (type === "Chest"
-          ? {
-              ...def,
-              lootPool: (def.lootPool || [])
-                .map(id => itemMap[id])
-                .filter(Boolean)
-            }
+          ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
           : def)
-      : (type === "Chest" ? { lootPool: [] } : {});
-
+      : (type==="Chest" ? { lootPool: [] } : {});
     previewApi.show(previewData);
   }
 
