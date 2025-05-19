@@ -1,8 +1,8 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.4 — remove duplicate “Show in filters” field from form body
+// @version: 1.5 — refactored to use modalCore.js
 
-import { createModalShell } from "./lifecycle.js";
-import { buildModalUI }     from "./domBuilder.js";
+import { createModalShell, buildModalUI }
+  from "./modalCore.js";
 import { definitionTypes }  from "../types.js";
 import { createDefinitionListManager }
   from "../list/definitionListManager.js";
@@ -83,7 +83,7 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Remove the form’s own “Show in filters” row (we handle it in the subheader)
+    // Remove any duplicate “Show in filters” row (handled in subheader)
     const duplicateFilterRow = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
