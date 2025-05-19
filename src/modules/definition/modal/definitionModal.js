@@ -1,13 +1,12 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.5 — refactored to use modalCore.js
+// @version: 1.6 — updated to use getDefinitions instead of loadItemDefinitions
 
 import { createModalShell, buildModalUI }
   from "./modalCore.js";
 import { definitionTypes }  from "../types.js";
 import { createDefinitionListManager }
   from "../list/definitionListManager.js";
-import { loadItemDefinitions }
-  from "../../services/itemDefinitionsService.js";
+import { getDefinitions }    from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
   const { modalEl, open, close } = createModalShell("definition-modal");
@@ -48,8 +47,9 @@ export function initDefinitionModal(db) {
     if (!listApi) setupList();
     await refresh();
 
+    // For Chest definitions, load Item definitions into a map
     if (type === "Chest") {
-      const items = await loadItemDefinitions(db);
+      const items = await getDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
