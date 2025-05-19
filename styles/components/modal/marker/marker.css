@@ -1,0 +1,109 @@
+/* @file: styles/modals/marker.css */
+/* @version: 1.0 — floating, draggable marker panel with dropdowns and form rows */
+
+/* Hide when .hidden */
+#marker-modal.hidden {
+  display: none;
+}
+
+/* Floating container */
+#marker-modal.floating {
+  position: fixed;
+  z-index: 1250;           /* above other UI but below any full-screen overlays */
+  width: 280px;            /* narrower than settings for compactness */
+  pointer-events: all;     /* allow clicks */
+}
+
+/* Draggable card surface */
+#marker-modal .modal-content {
+  background: var(--bg-20);
+  color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.45);
+  user-select: none;       /* prevent text selection while dragging */
+}
+
+/* Header / drag handle */
+#marker-modal .modal-header,
+#marker-modal .drag-handle {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5em 0.75em;
+  cursor: move;
+  background: var(--bg-25);
+  border-bottom: 1px solid var(--border-soft);
+}
+#marker-modal .modal-header h3 {
+  margin: 0;
+  font-size: 1em;
+  letter-spacing: 0.04em;
+}
+#marker-modal .modal-close {
+  background: none;
+  border: none;
+  font-size: 1.2em;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+#marker-modal .modal-close:hover,
+#marker-modal .modal-close:focus {
+  color: var(--text-primary);
+  outline: none;
+}
+
+/* Body */
+#marker-modal .modal-body {
+  padding: 0.75em;
+}
+
+/* Form rows */
+#marker-modal .form-row {
+  margin-bottom: 0.75em;
+}
+#marker-modal .form-row label {
+  display: block;
+  margin-bottom: 0.3em;
+  font-size: 0.9em;
+  color: var(--text-secondary);
+}
+#marker-modal .form-row select.form-control {
+  width: 100%;
+  padding: 0.4em;
+  border: 1px solid var(--border-soft);
+  border-radius: 3px;
+  background: var(--bg-10);
+  color: var(--text-primary);
+  font-size: 0.95em;
+}
+
+/* Buttons row */
+#marker-modal .modal-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5em;
+  margin-top: 0.5em;
+}
+#marker-modal .modal-buttons .ui-button {
+  padding: 0.4em 0.8em;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.95em;
+}
+#marker-modal .modal-buttons .ui-button:first-child {
+  background: var(--bg-10);
+  color: var(--text-secondary);
+}
+#marker-modal .modal-buttons .ui-button:last-child {
+  background: var(--accent-primary);
+  color: var(--accent-on-primary);
+}
+
+/* Ensure dropdowns and buttons inherit theme colors */
+#marker-modal select.form-control:focus,
+#marker-modal .modal-buttons .ui-button:focus,
+#marker-modal .modal-close:focus {
+  outline: 2px solid var(--focus-ring);
+}

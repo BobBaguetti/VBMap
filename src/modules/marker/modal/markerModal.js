@@ -1,5 +1,5 @@
 // @file: src/modules/marker/modal/markerModal.js
-// @version: 22.7 — theme-aware, single instance, outside-click to close
+// @version: 22.8 — apply marker-specific CSS from styles/components/modal/marker/marker.css
 
 import { markerTypes } from "../types.js";
 
@@ -15,16 +15,16 @@ export function initMarkerModal(db) {
   function ensureBuilt() {
     if (panel) return;
 
-    // 1) Container (floating, hidden by default)
+    // Container
     panel = document.createElement("div");
     panel.id = "marker-modal";
     panel.classList.add("floating", "hidden");
     document.body.append(panel);
 
-    // 2) Inner structure matches your settingsModal for theme styling
+    // Inner structure
     panel.innerHTML = `
       <div class="modal-content">
-        <header class="drag-handle modal-header">
+        <header class="modal-header drag-handle">
           <h3>Create Marker</h3>
           <button class="modal-close" aria-label="Close">&times;</button>
         </header>
@@ -38,33 +38,37 @@ export function initMarkerModal(db) {
                 .join("")}
             </select>
           </div>
-          <div class="form-row" id="marker-def-row" style="display:none">
+          <div class="form-row" id="marker-def-row">
             <label for="marker-def">Definition:</label>
             <select id="marker-def" class="form-control">
-              <option value="" disabled>Select definition…</option>
+              <option value="" disabled selected>Select definition…</option>
             </select>
           </div>
           <div class="modal-buttons">
-            <button type="button" class="ui-button" id="marker-cancel">Cancel</button>
-            <button type="button" class="ui-button" id="marker-create">Save</button>
+            <button type="button" class="ui-button secondary" id="marker-cancel">Cancel</button>
+            <button type="button" class="ui-button primary" id="marker-create">Save</button>
           </div>
         </section>
       </div>
     `.trim();
 
-    // 3) Element refs
-    titleEl   = panel.querySelector("header.modal-header h3");
+    // Element refs
+    titleEl   = panel.querySelector(".modal-header h3");
     fldType   = panel.querySelector("#marker-type");
     fldDef    = panel.querySelector("#marker-def");
     btnCancel = panel.querySelector("#marker-cancel");
     btnCreate = panel.querySelector("#marker-create");
     const closeBtn = panel.querySelector(".modal-close");
+    const defRow   = panel.querySelector("#marker-def-row");
 
-    // 4) Close handlers
+    // Initially hide definition row
+    defRow.style.display = "none";
+
+    // Close handlers
     closeBtn.addEventListener("click", hide);
     btnCancel.addEventListener("click", hide);
 
-    // 5) Type→Definition wiring
+    // Type → Definition wiring
     fldType.addEventListener("change", async () => {
       const type = fldType.value;
       if (!type) return;
@@ -77,13 +81,13 @@ export function initMarkerModal(db) {
           .map(d => `<option value="${d.id}">${d.name || d.id}</option>`)
           .join("")}
       `;
-      panel.querySelector("#marker-def-row").style.display = "";
+      defRow.style.display = "";
       titleEl.textContent = onCreate
         ? `Create ${type} Marker`
         : `Edit ${type} Marker`;
     });
 
-    // 6) Save/Create
+    // Save/Create
     btnCreate.addEventListener("click", () => {
       const type = fldType.value;
       const cfg  = markerTypes[type];
@@ -96,7 +100,7 @@ export function initMarkerModal(db) {
       hide();
     });
 
-    // 7) Draggable via header
+    // Draggable via header
     const handle = panel.querySelector(".drag-handle");
     let startX, startY, startLeft, startTop, dragging = false;
     handle.addEventListener("pointerdown", e => {
@@ -123,28 +127,23 @@ export function initMarkerModal(db) {
 
   function showAt(evt, mode) {
     ensureBuilt();
-
-    // Close any existing before opening new
+    // Close any existing
     hide();
-
-    // Reset state
-    onCreate = mode === "create" ? onCreate : null;
-    onSaveCallback = mode === "edit" ? onSaveCallback : null;
 
     panel.classList.remove("hidden");
 
-    // Position to the left of click
+    // Position to left of click
     const rect = panel.getBoundingClientRect();
     panel.style.left = `${evt.clientX - rect.width}px`;
     panel.style.top  = `${evt.clientY - rect.height / 2}px`;
 
-    // Register outside-click listener
+    // Outside click closes
     outsideClickListener = e => {
       if (!panel.contains(e.target)) hide();
     };
     document.addEventListener("mousedown", outsideClickListener);
 
-    // Allow Esc to close
+    // Esc closes
     document.addEventListener("keydown", onKey);
   }
 

@@ -15,3 +15,5 @@
 
 /* Settings modal styles */
 @import "./settings/settings.css";
+
+@import "./marker/marker.css";
