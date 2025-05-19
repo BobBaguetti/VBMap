@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.4.1 — include subheader “Show in Filters” toggle in payload
+// @version: 1.4.3 — ensure Pickr instances reflect saved colors on populate
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -13,11 +13,11 @@ export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
   const { title, hasFilter, onCancel, onSubmit, onDelete, onFieldChange } = handlers;
 
-  // HEADER + filter-toggle + buttons
+  // Header + filter-toggle + buttons
   const {
     container: headerWrap,
     subheading,
-    filterCheckbox,    // the “Show in Filters” toggle
+    filterCheckbox,
     setDeleteVisible
   } = createFormControllerHeader({
     title,
@@ -31,18 +31,18 @@ export function createFormController(buildResult, schema, handlers) {
     }
   });
 
-  // Pin header as the modal subheader
+  // Pin header as modal subheader
   headerWrap.classList.add("modal-subheader");
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // Initialize Pickr instances
+  // Initialize all Pickr swatches
   const pickrs = initFormPickrs(form, colorables);
 
   // Track current entry ID
   let payloadId = null;
 
-  // Build the payload for save/update
+  // Build submission payload, including the subheader toggle
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
@@ -66,14 +66,12 @@ export function createFormController(buildResult, schema, handlers) {
         out[cfg.colorable] = pickrs[cfg.colorable]?.getColor() || null;
       }
     }
-
-    // **Include the subheader toggle** here
+    // Include the “Show in Filters” toggle
     out.showInFilters = filterCheckbox.checked;
-
     return out;
   }
 
-  // Defaults for schema fields
+  // Default values for all schema fields
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
@@ -84,10 +82,12 @@ export function createFormController(buildResult, schema, handlers) {
     })
   );
 
+  // Keys to clear when resetting Pickr
   const pickrClearKeys = Object.entries(schema)
     .filter(([, cfg]) => cfg.colorable)
     .map(([, cfg]) => cfg.colorable);
 
+  // Form state manager (handles reset/populate of inputs & pickrs)
   const formState = createFormState({
     form,
     fields,
@@ -100,17 +100,18 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   });
 
+  // Reset to blank form + default colors + filter-toggle on
   function reset() {
     payloadId = null;
     formState.reset();
-    // **Reset the filter-toggle to its default (on)**
     filterCheckbox.checked = true;
   }
 
+  // Populate form & Pickr with loaded definition
   async function populate(def) {
     payloadId = def.id ?? null;
 
-    // Build sanitized object from def or schema default
+    // Build sanitized object from def and schema defaults
     const sanitized = {};
     for (const [key, cfg] of Object.entries(schema)) {
       if (def[key] !== undefined) {
@@ -122,12 +123,24 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
+    // Populate normal fields
     formState.populate(sanitized);
 
-    // **Set the filter-toggle off the existing value** (default true)
+    // **Explicitly set each Pickr to the saved color**
+    for (const [, cfg] of Object.entries(schema)) {
+      if (cfg.colorable) {
+        const col = def[cfg.colorable] ?? null;
+        const pr  = pickrs[cfg.colorable];
+        if (pr && col) {
+          pr.setColor(col);
+        }
+      }
+    }
+
+    // Restore the “Show in Filters” toggle value
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // chipList fields need the `.set()` call
+    // chipList fields need manual `.set()`
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
@@ -135,6 +148,7 @@ export function createFormController(buildResult, schema, handlers) {
     }
   }
 
+  // Wire up submit/cancel/filter events
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
 
   return {
