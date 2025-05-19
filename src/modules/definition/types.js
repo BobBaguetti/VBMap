@@ -1,18 +1,21 @@
 // @file: src/modules/definition/types.js
-// @version: 1.3 — add previewBuilder for type-specific previews
+// @version: 1.4 — switched to standardized service API
 
 import {
-  loadItemDefinitions,
-  subscribeItemDefinitions,
-  saveItemDefinition,
-  deleteItemDefinition
-} from "../services/itemDefinitionsService.js";
+  getDefinitions as loadItemDefinitions,
+  subscribeDefinitions as subscribeItemDefinitions,
+  createDefinition as createItemDefinition,
+  updateDefinition as updateItemDefinition,
+  deleteDefinition as deleteItemDefinition
+} from "./services/itemService.js";
+
 import {
-  loadChestDefinitions,
-  subscribeChestDefinitions,
-  saveChestDefinition,
-  deleteChestDefinition
-} from "../services/chestDefinitionsService.js";
+  getDefinitions as loadChestDefinitions,
+  subscribeDefinitions as subscribeChestDefinitions,
+  createDefinition as createChestDefinition,
+  updateDefinition as updateChestDefinition,
+  deleteDefinition as deleteChestDefinition
+} from "./services/chestService.js";
 
 import { itemSchema }  from "./schemas/itemSchema.js";
 import { chestSchema } from "./schemas/chestSchema.js";
@@ -23,12 +26,16 @@ import { createPreviewController } from "./preview/previewController.js";
 
 export const definitionTypes = {
   Item: {
-    schema:     itemSchema,
-    loadDefs:   loadItemDefinitions,
-    subscribe:  subscribeItemDefinitions,
-    save:       saveItemDefinition,
-    del:        deleteItemDefinition,
-    buildForm:  () => buildForm(itemSchema),
+    schema:    itemSchema,
+    // Data methods
+    loadDefs:  loadItemDefinitions,
+    subscribe: subscribeItemDefinitions,
+    save:      (db, id, data) =>
+                 id
+                   ? updateItemDefinition(db, id, data)
+                   : createItemDefinition(db, data),
+    del:       deleteItemDefinition,
+    // UI hooks
     controller: (handlers, db) =>
                   createFormController(buildForm(itemSchema), itemSchema, handlers),
     previewBuilder: host =>
@@ -36,12 +43,14 @@ export const definitionTypes = {
   },
 
   Chest: {
-    schema:     chestSchema,
-    loadDefs:   loadChestDefinitions,
-    subscribe:  subscribeChestDefinitions,
-    save:       saveChestDefinition,
-    del:        deleteChestDefinition,
-    buildForm:  () => buildForm(chestSchema),
+    schema:    chestSchema,
+    loadDefs:  loadChestDefinitions,
+    subscribe: subscribeChestDefinitions,
+    save:      (db, id, data) =>
+                 id
+                   ? updateChestDefinition(db, id, data)
+                   : createChestDefinition(db, data),
+    del:       deleteChestDefinition,
     controller: (handlers, db) =>
                   createFormController(buildForm(chestSchema), chestSchema, handlers),
     previewBuilder: host =>
