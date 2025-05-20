@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1.4 — re-add disablePickr export for fieldRow usage
+// @version: 1.5 — explicitly set initial color on each Pickr instance
 
 const activePickrs = [];
 
@@ -44,15 +44,15 @@ export function createPickr(target, defaultColor = "#E5E6E8") {
     }
   }).on("save", (_, instance) => instance.hide());
 
+  // *** Ensure the swatch button shows the defaultColor immediately ***
+  p.setColor(defaultColor);
+
   activePickrs.push(p);
   return p;
 }
 
 /**
  * Disable or enable a Pickr instance visually and interactively.
- *
- * @param {Pickr} pickr — the Pickr instance to disable/enable
- * @param {boolean} [disabled=true]
  */
 export function disablePickr(pickr, disabled = true) {
   const root = pickr?.getRoot?.();
@@ -95,10 +95,6 @@ export function initFormPickrs(form, fieldMap, initialColors = {}) {
 
 /**
  * Safely retrieve a hex string from a Pickr instance.
- *
- * @param {Pickr} pickr
- * @param {string} [fallback="#E5E6E8"]
- * @returns {string}
  */
 export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
   try {
