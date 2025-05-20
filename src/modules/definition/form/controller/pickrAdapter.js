@@ -1,12 +1,12 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1.1 — support initial colors in initFormPickrs
+// @version: 1.2 — apply saved colors immediately in initFormPickrs
 
 const activePickrs = [];
 
 /**
  * Create a Pickr instance on the given selector.
- * @param {string} targetSelector — CSS selector for the .color-btn element
- * @param {string} defaultColor — initial color hex
+ * @param {string} targetSelector — CSS selector for the color‐button element
+ * @param {string} defaultColor   — initial color hex
  */
 export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
   const el = document.querySelector(targetSelector);
@@ -43,12 +43,13 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
 }
 
 /**
- * Initialize Pickr instances for form fields.
+ * Initialize Pickr instances for form fields,
+ * wiring change/save → form input events and applying any saved colors.
  *
  * @param {HTMLFormElement} form
- * @param {Object<string, HTMLElement>} fieldMap — map of colorable fieldKey to its button element
- * @param {Object<string, string>} [initialColors] — map of fieldKey to initial hex color
- * @returns {Object<string, Pickr>} — map of fieldKey to Pickr instance
+ * @param {Object<string, HTMLElement>} fieldMap — map of colorKey → button element
+ * @param {Object<string, string>} [initialColors={}] — map of colorKey → saved hex
+ * @returns {Object<string, Pickr>} — map of colorKey → Pickr instance
  */
 export function initFormPickrs(form, fieldMap, initialColors = {}) {
   const pickrs = {};
@@ -57,12 +58,18 @@ export function initFormPickrs(form, fieldMap, initialColors = {}) {
     if (!btn || pickrs[key]) return;
     if (!document.body.contains(btn)) return;
 
-    // Use saved color if provided, otherwise default
-    const defaultColor = initialColors[key] || "#E5E6E8";
+    // Create with default fallback
+    const defaultColor = "#E5E6E8";
     const p = createPickr(`#${btn.id}`, defaultColor);
     pickrs[key] = p;
 
-    // Wire up form "input" events on color change
+    // Immediately apply saved color if provided
+    const saved = initialColors[key];
+    if (typeof saved === "string" && saved) {
+      p.setColor(saved);
+    }
+
+    // Wire form-input events on change/save
     p.on("change", () =>
       form.dispatchEvent(new Event("input", { bubbles: true }))
     );
@@ -70,6 +77,7 @@ export function initFormPickrs(form, fieldMap, initialColors = {}) {
       form.dispatchEvent(new Event("input", { bubbles: true }))
     );
 
+    // Show picker on button click
     btn.addEventListener("click", () => p.show());
   });
 
@@ -77,7 +85,7 @@ export function initFormPickrs(form, fieldMap, initialColors = {}) {
 }
 
 /**
- * Disable or enable a Pickr instance visually.
+ * Disable or enable a Pickr instance visually and interactively.
  */
 export function disablePickr(pickr, disabled = true) {
   const root = pickr?.getRoot?.();
