@@ -1,8 +1,36 @@
 // @file: src/modules/definition/form/controller/formStateManager.js
-// @version: 1.3 — use picker._swatchEl to repaint button on populate
+// @version: 1.0 — relocated into definition module
 
 /**
  * Creates shared reset() and populate(def) handlers for a form.
+ *
+ * @param {object} params
+ * @param {HTMLFormElement} params.form
+ * @param {object} params.fields           — map of field keys to their input elements
+ * @param {string[]} [params.defaultFieldKeys] 
+ *        keys in `fields` to reset to empty string on reset()
+ * @param {object<string, any>} [params.defaultValues] 
+ *        map of field keys to default values on reset()
+ * @param {object<string, Pickr>} [params.pickrs] 
+ *        map of pickr instances by key
+ * @param {string[]} [params.pickrClearKeys] 
+ *        pickr keys to reset to "#E5E6E8" on reset()
+ * @param {Array<{ fieldArray: any[], renderFn: Function, defKey: string }>} [params.chipLists]
+ *        for each list of chips, the array property, its render function, and the def object key
+ * @param {HTMLElement} params.subheading
+ *        the <h3> element whose text is toggled
+ * @param {Function} params.setDeleteVisible
+ *        callback to show/hide the delete button
+ * @param {string} params.addTitle
+ *        subheading text for add mode
+ * @param {string} params.editTitle
+ *        subheading text for edit mode
+ * @param {Function} params.getCustom
+ *        function returning the current form payload
+ * @param {Function} [params.onFieldChange]
+ *        called with getCustom() after reset() or populate()
+ *
+ * @returns {{ reset: Function, populate: Function }}
  */
 export function createFormState({
   form,
@@ -22,76 +50,75 @@ export function createFormState({
   function reset() {
     form.reset();
 
-    // Reset text/number/select/textarea fields
+    // reset simple fields
     defaultFieldKeys.forEach(key => {
-      if (fields[key]?.value !== undefined) fields[key].value = "";
+      if (fields[key]?.value !== undefined) {
+        fields[key].value = "";
+      }
     });
 
-    // Apply defaultValues
+    // reset to specified defaults
     Object.entries(defaultValues).forEach(([key, val]) => {
-      if (fields[key]?.value !== undefined) fields[key].value = val;
+      if (fields[key]?.value !== undefined) {
+        fields[key].value = val;
+      }
     });
 
-    // Reset chip-lists
+    // reset any chip-list arrays
     chipLists.forEach(({ fieldArray, renderFn }) => {
       fieldArray.length = 0;
       renderFn();
     });
 
-    // Clear pickr colors + swatches
+    // clear pickr colors
     pickrClearKeys.forEach(key => {
-      const p = pickrs[key];
-      if (p) {
-        p.setColor("#E5E6E8");
-        if (p._swatchEl) p._swatchEl.style.backgroundColor = "#E5E6E8";
-      }
+      pickrs[key]?.setColor("#E5E6E8");
     });
 
-    // Header & delete button
+    // header & delete button
     subheading.textContent = addTitle;
     setDeleteVisible(false);
 
+    // notify live-preview
     onFieldChange?.(getCustom());
   }
 
   function populate(def) {
     form.reset();
 
-    // Populate simple fields
+    // populate fields from definition
     Object.keys(fields).forEach(key => {
       if (def[key] !== undefined && fields[key]?.value !== undefined) {
         fields[key].value = def[key];
       }
     });
 
-    // Apply defaults for missing
+    // apply defaults for missing keys
     Object.entries(defaultValues).forEach(([key, val]) => {
       if (def[key] === undefined && fields[key]?.value !== undefined) {
         fields[key].value = val;
       }
     });
 
-    // Populate chip-lists
+    // populate chip-lists
     chipLists.forEach(({ fieldArray, renderFn, defKey }) => {
       fieldArray.splice(0, fieldArray.length, ...(def[defKey] || []));
       renderFn();
     });
 
-    // Restore pickr colors + repaint swatches
+    // apply pickr colors
     Object.entries(pickrs).forEach(([key, p]) => {
-      const saved = def[key];
-      if (saved) {
-        p.setColor(saved);
-        if (p._swatchEl) {
-          p._swatchEl.style.backgroundColor = saved;
-        }
+      const colorKey = `${key}Color`;
+      if (def[colorKey]) {
+        p.setColor(def[colorKey]);
       }
     });
 
-    // Header & delete button
+    // header & delete button
     subheading.textContent = editTitle;
     setDeleteVisible(true);
 
+    // notify live-preview
     onFieldChange?.(getCustom());
   }
 
