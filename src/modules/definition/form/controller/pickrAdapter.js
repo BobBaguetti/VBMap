@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1 — relocated into definition module
+// @version: 2.0 — initialize swatch backgrounds and keep them in sync with Pickr
 
 const activePickrs = [];
 
@@ -67,19 +67,13 @@ export function destroyAllPickrs() {
 }
 
 /**
- * Scan the given root element for any color‐swatch buttons
- * and attach Pickr to each one.
- */
-export function initModalPickrs(root) {
-  const swatches = root.querySelectorAll(".color-swatch");
-  swatches.forEach(el => {
-    createPickr(`#${el.id}`);
-  });
-}
-
-/**
  * Initialize Pickr instances for a set of buttons in a form,
- * wiring change/save → form "input" events.
+ * wiring change/save → form "input" events, and keeping
+ * the button's background in sync with the color.
+ *
+ * @param {HTMLFormElement} form
+ * @param {Object<string, HTMLElement>} fieldMap   // map of colorableKey → button element
+ * @returns {Object<string, Pickr>}
  */
 export function initFormPickrs(form, fieldMap) {
   const pickrs = {};
@@ -88,16 +82,24 @@ export function initFormPickrs(form, fieldMap) {
     if (!btn || pickrs[key]) return;
     if (!document.body.contains(btn)) return;
 
+    // 1) Create Pickr
     const p = createPickr(`#${btn.id}`);
     pickrs[key] = p;
 
-    p.on("change", () =>
-      form.dispatchEvent(new Event("input", { bubbles: true }))
-    );
-    p.on("save", () =>
-      form.dispatchEvent(new Event("input", { bubbles: true }))
-    );
+    // 2) Initialize the button's background to the pickr's default color
+    const initial = getPickrHexColor(p);
+    btn.style.backgroundColor = initial;
 
+    // 3) Wire Pickr events to update button color and trigger form input
+    const sync = () => {
+      const c = getPickrHexColor(p);
+      btn.style.backgroundColor = c;
+      form.dispatchEvent(new Event("input", { bubbles: true }));
+    };
+    p.on("change", sync);
+    p.on("save", sync);
+
+    // 4) Clicking the button shows the picker
     btn.addEventListener("click", () => p.show());
   });
 
