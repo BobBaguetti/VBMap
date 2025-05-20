@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.8 — extra-info block now matches other form rows */
+/* @version: 1.9 — extra-info inputs & buttons now match standard fields */
 
 .modal--definition #definition-form-container {
   display: flex;
@@ -59,34 +59,19 @@
   cursor: pointer;
 }
 
-/* Remove-line buttons */
-.modal--definition .extra-info-line .remove-line-btn {
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  background: none;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-}
-.modal--definition .extra-info-line .remove-line-btn svg {
-  fill: var(--text-primary);
-}
+/* **************************************************************** */
+/*                  Extra‐Info row adjustments                     */
+/* **************************************************************** */
 
-/* Extra-info container tweaks */
+/* Container in the form‐row */
 .modal--definition .form-row .extra-info-block {
-  /* inline with other fields */
   display: flex;
-  flex-direction: row;
   align-items: center;
   gap: 8px;
   flex: 1 1 auto;
-  margin: 0;
 }
 
-/* each existing extra-info “line” (when you’ve added info) */
+/* Each inner “line” */
 .modal--definition .form-row .extra-info-block .field-row {
   display: flex;
   align-items: center;
@@ -95,19 +80,20 @@
   flex: 1 1 auto;
 }
 
-/* style the inputs inside extra-info to match .form-control */
+/* Text input matches .form-control, overriding ui-kit */
 .modal--definition .form-row .extra-info-block .ui-input {
   flex: 1 1 auto;
   min-width: 0;
   margin-right: 8px;
-  background: var(--bg-50);
-  border: 1px solid var(--border-soft);
-  border-radius: 2px;
-  padding: 6px 8px;
-  color: var(--text-primary);
+  background-color: var(--bg-50) !important;
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 2px !important;
+  padding: 6px 8px !important;
+  color: var(--text-primary) !important;
+  box-sizing: border-box;
 }
 
-/* style color buttons inside extra-info */
+/* Color swatch inside extra-info (same as above) */
 .modal--definition .form-row .extra-info-block .color-btn {
   flex: 0 0 24px;
   width: 24px;
@@ -119,25 +105,27 @@
   margin-left: 8px !important;
 }
 
-/* style the + and × buttons inside extra-info */
+/* + and × buttons bumped to 28×28 to match remove-line-btn */
 .modal--definition .form-row .extra-info-block .ui-button {
-  flex: 0 0 24px;
-  width: 24px;
-  height: 24px;
+  flex: 0 0 28px;
+  width: 28px !important;
+  height: 28px !important;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   background-color: var(--bg-40) !important;
   color: var(--text-primary) !important;
-  border: var(--border-width-hair) solid var(--border-soft) !important;
-  border-radius: var(--radius-small) !important;
-  padding: 0;
-  font-size: 14px;
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 2px !important;
+  padding: 0 !important;
+  font-size: 16px;
   margin-left: 8px !important;
 }
 
-/* Image URL fields */
-.modal--definition .form-row input[id^="def-image"] {
-  max-width: 100%;
+/* Reset any leftover ui-kit boxing on the + button */
+.modal--definition .form-row .extra-info-block button.ui-button {
   box-sizing: border-box;
 }
+
+/* **************************************************************** */
+
