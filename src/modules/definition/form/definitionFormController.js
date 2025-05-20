@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.8 — populate extraInfo fields with backward-compat for extraLines vs extraInfo
+// @version: 1.9 — initialize Pickr colours on populate to preserve saved values
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -33,14 +33,11 @@ export function createFormController(buildResult, schema, handlers) {
   });
   headerWrap.classList.add("modal-subheader");
   setDeleteVisible(false);
-
-  // Prepend header (with Save/Clear/Delete) into the <form>
   form.prepend(headerWrap);
 
-  // Initialize Pickr instances on any colorable fields
+  // Initialize Pickr on colorable fields
   const pickrs = initFormPickrs(form, colorables);
 
-  // Track current definition ID
   let payloadId = null;
 
   // ─── Build submission payload ────────────────────────────────────────────────
@@ -54,7 +51,6 @@ export function createFormController(buildResult, schema, handlers) {
           val = el.checked;
           break;
         case "extraInfo":
-          // extraInfo API: el.getLines()
           val = el.getLines();
           break;
         case "chipList":
@@ -65,7 +61,7 @@ export function createFormController(buildResult, schema, handlers) {
       }
       out[key] = val;
 
-      // Serialize any Pickr color to hex string
+      // Serialize Pickr color to hex string
       if (cfg.colorable) {
         const pickr = pickrs[cfg.colorable];
         out[cfg.colorable] = pickr
@@ -106,12 +102,16 @@ export function createFormController(buildResult, schema, handlers) {
     payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
-    // Clear extraInfo lines if any
-    for (const [key, cfg] of Object.entries(schema)) {
+    // Clear extraInfo rows
+    Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.type === "extraInfo") {
         fields[key].setLines([]);
       }
-    }
+      // Reset colour swatches to default
+      if (cfg.colorable && pickrs[cfg.colorable]) {
+        pickrs[cfg.colorable].setColor(cfg.default || "#E5E6E8");
+      }
+    });
   }
 
   async function populate(def) {
@@ -119,7 +119,7 @@ export function createFormController(buildResult, schema, handlers) {
 
     // Build sanitized object (never undefined)
     const sanitized = {};
-    for (const [key, cfg] of Object.entries(schema)) {
+    Object.entries(schema).forEach(([key, cfg]) => {
       if (def[key] !== undefined) {
         sanitized[key] = def[key];
       } else if (cfg.default !== undefined) {
@@ -127,30 +127,37 @@ export function createFormController(buildResult, schema, handlers) {
       } else {
         sanitized[key] = cfg.type === "checkbox" ? false : "";
       }
-    }
+    });
 
     formState.populate(sanitized);
     filterCheckbox.checked = def.showInFilters ?? true;
 
+    // Initialize colour pickers to saved values
+    Object.entries(schema).forEach(([key, cfg]) => {
+      if (cfg.colorable && pickrs[cfg.colorable]) {
+        // use saved color or default fallback
+        const saved = def[cfg.colorable] || cfg.default || "#E5E6E8";
+        pickrs[cfg.colorable].setColor(saved);
+      }
+    });
+
     // Special wiring for multi-part fields
-    for (const [key, cfg] of Object.entries(schema)) {
+    Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
       } else if (cfg.type === "extraInfo") {
-        // Backwards-compat: some entries used def.extraLines, others def.extraInfo
-        const fromExtraLines = Array.isArray(sanitized[key]) && sanitized[key];
-        const fromLegacyInfo  = Array.isArray(def.extraInfo)  && def.extraInfo;
-        const lines = fromExtraLines
+        // backward compat: extraLines vs extraInfo
+        const lines = Array.isArray(sanitized[key]) && sanitized[key]
           ? sanitized[key]
-          : fromLegacyInfo
+          : Array.isArray(def.extraInfo) && def.extraInfo
             ? def.extraInfo
             : [];
         fields[key].setLines(lines);
       }
-    }
+    });
   }
 
-  // ─── Wire Events & Ensure Save Works ────────────────────────────────────────
+  // ─── Events & Save Button ────────────────────────────────────────────────────
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
 
   const saveBtn = headerWrap.querySelector('button[type="submit"]');
@@ -171,4 +178,3 @@ export function createFormController(buildResult, schema, handlers) {
     initPickrs: () => Object.assign(pickrs, initFormPickrs(form, colorables))
   };
 }
- 
