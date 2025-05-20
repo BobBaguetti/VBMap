@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.2 — use rarityColors & itemTypeColors exports
+// @version: 1.9.3 — load saved colors for colorable fields
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -137,6 +137,7 @@ export function createFormController(buildResult, schema, handlers) {
   async function populate(def) {
     payloadId = def.id ?? null;
 
+    // Build sanitized data for form fields
     const sanitized = {};
     for (const [key, cfg] of Object.entries(schema)) {
       if (def[key] !== undefined) {
@@ -148,10 +149,11 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
+    // Populate input fields
     formState.populate(sanitized);
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // Multi-part fields
+    // Populate multi-part fields
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
@@ -167,7 +169,18 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
-    // Apply presets on populate
+    // ─── NEW: Apply saved colors to pickr instances ─────────────────────
+    Object.entries(schema).forEach(([key, cfg]) => {
+      if (cfg.colorable) {
+        const colorKey = cfg.colorable;
+        const colorVal = sanitized[colorKey];
+        if (colorVal && pickrs[colorKey]) {
+          pickrs[colorKey].setColor(colorVal);
+        }
+      }
+    });
+
+    // Apply presets on populate for rarity & itemType
     if (schema.rarity) {
       const preset = rarityColors[sanitized.rarity];
       if (preset) {
@@ -203,4 +216,3 @@ export function createFormController(buildResult, schema, handlers) {
     initPickrs: () => Object.assign(pickrs, initFormPickrs(form, colorables))
   };
 }
- 
