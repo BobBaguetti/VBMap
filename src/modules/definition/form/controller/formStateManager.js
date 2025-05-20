@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/controller/formStateManager.js
-// @version: 1.1 — fix populate color loading into Pickr
+// @version: 1.0 — relocated into definition module
 
 /**
  * Creates shared reset() and populate(def) handlers for a form.
@@ -7,25 +7,35 @@
  * @param {object} params
  * @param {HTMLFormElement} params.form
  * @param {object} params.fields           — map of field keys to their input elements
+ * @param {string[]} [params.defaultFieldKeys] 
+ *        keys in `fields` to reset to empty string on reset()
  * @param {object<string, any>} [params.defaultValues] 
  *        map of field keys to default values on reset()
  * @param {object<string, Pickr>} [params.pickrs] 
- *        map of Pickr instances by key (e.g. "nameColor", "rarityColor")
+ *        map of pickr instances by key
  * @param {string[]} [params.pickrClearKeys] 
- *        pickr keys to reset to default color on reset()
+ *        pickr keys to reset to "#E5E6E8" on reset()
  * @param {Array<{ fieldArray: any[], renderFn: Function, defKey: string }>} [params.chipLists]
+ *        for each list of chips, the array property, its render function, and the def object key
  * @param {HTMLElement} params.subheading
+ *        the <h3> element whose text is toggled
  * @param {Function} params.setDeleteVisible
+ *        callback to show/hide the delete button
  * @param {string} params.addTitle
+ *        subheading text for add mode
  * @param {string} params.editTitle
+ *        subheading text for edit mode
  * @param {Function} params.getCustom
+ *        function returning the current form payload
  * @param {Function} [params.onFieldChange]
+ *        called with getCustom() after reset() or populate()
  *
  * @returns {{ reset: Function, populate: Function }}
  */
 export function createFormState({
   form,
   fields,
+  defaultFieldKeys = [],
   defaultValues    = {},
   pickrs           = {},
   pickrClearKeys   = [],
@@ -40,60 +50,75 @@ export function createFormState({
   function reset() {
     form.reset();
 
-    // Reset simple fields to defaults
+    // reset simple fields
+    defaultFieldKeys.forEach(key => {
+      if (fields[key]?.value !== undefined) {
+        fields[key].value = "";
+      }
+    });
+
+    // reset to specified defaults
     Object.entries(defaultValues).forEach(([key, val]) => {
       if (fields[key]?.value !== undefined) {
         fields[key].value = val;
       }
     });
 
-    // Clear chip-list arrays
+    // reset any chip-list arrays
     chipLists.forEach(({ fieldArray, renderFn }) => {
       fieldArray.length = 0;
       renderFn();
     });
 
-    // Reset Pickr colors
+    // clear pickr colors
     pickrClearKeys.forEach(key => {
       pickrs[key]?.setColor("#E5E6E8");
     });
 
-    // Header & delete button
+    // header & delete button
     subheading.textContent = addTitle;
     setDeleteVisible(false);
 
-    // Live-preview update
+    // notify live-preview
     onFieldChange?.(getCustom());
   }
 
   function populate(def) {
     form.reset();
 
-    // Populate simple fields
+    // populate fields from definition
     Object.keys(fields).forEach(key => {
       if (def[key] !== undefined && fields[key]?.value !== undefined) {
         fields[key].value = def[key];
       }
     });
 
-    // Populate chip-lists
+    // apply defaults for missing keys
+    Object.entries(defaultValues).forEach(([key, val]) => {
+      if (def[key] === undefined && fields[key]?.value !== undefined) {
+        fields[key].value = val;
+      }
+    });
+
+    // populate chip-lists
     chipLists.forEach(({ fieldArray, renderFn, defKey }) => {
       fieldArray.splice(0, fieldArray.length, ...(def[defKey] || []));
       renderFn();
     });
 
-    // Populate Pickr colors from def[key]
+    // apply pickr colors
     Object.entries(pickrs).forEach(([key, p]) => {
-      if (def[key]) {
-        p.setColor(def[key]);
+      const colorKey = `${key}Color`;
+      if (def[colorKey]) {
+        p.setColor(def[colorKey]);
       }
     });
 
-    // Header & delete button
+    // header & delete button
     subheading.textContent = editTitle;
     setDeleteVisible(true);
 
-    // Live-preview update
+    // notify live-preview
     onFieldChange?.(getCustom());
   }
 

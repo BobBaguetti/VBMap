@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.11 — drop initPickrs call
+// @version: 1.7 — hide floating preview when modal closes
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -10,7 +10,8 @@ import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  const { modalEl, open, close } = createModalShell("definition-modal");
+  const { modalEl, open, close } =
+    createModalShell("definition-modal");
   let {
     header, searchInput, typeSelect,
     listContainer, subheader, formContainer,
@@ -22,10 +23,15 @@ export function initDefinitionModal(db) {
   let definitions = [];
   let itemMap = {};
 
-  modalEl.addEventListener("close", () => previewApi?.hide());
-  typeSelect.addEventListener("change", () =>
-    openDefinition(typeSelect.value)
-  );
+  // Hide preview whenever the modal closes
+  modalEl.addEventListener("close", () => {
+    if (previewApi) previewApi.hide();
+  });
+
+  // Reopen on type change
+  typeSelect.addEventListener("change", () => {
+    openDefinition(typeSelect.value);
+  });
 
   async function refresh() {
     definitions = await definitionTypes[currentType].loadDefs(db);
@@ -34,10 +40,10 @@ export function initDefinitionModal(db) {
 
   function setupList() {
     listApi = createDefinitionListManager({
-      container:      listContainer,
-      getDefinitions: () => definitions,
-      onEntryClick:   d => openDefinition(currentType, d),
-      onDelete:       async id => {
+      container:       listContainer,
+      getDefinitions:  () => definitions,
+      onEntryClick:    def => openDefinition(currentType, def),
+      onDelete:        async id => {
         await definitionTypes[currentType].del(db, id);
         await refresh();
       }
@@ -49,6 +55,7 @@ export function initDefinitionModal(db) {
 
   async function openDefinition(type, def = null) {
     currentType = type;
+
     typeSelect.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option>${t}</option>`).join("");
     typeSelect.value = type;
@@ -61,8 +68,10 @@ export function initDefinitionModal(db) {
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
+    // Recreate previewApi for this type
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
+    // Build the form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -92,27 +101,29 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // remove stray filter row
+    // Remove stray filter row
     const dup = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
     if (dup) dup.remove();
 
-    // swap in subheader
-    const gen = formApi.form.querySelector(".modal-subheader");
-    subheader.replaceWith(gen);
-    subheader = gen;
+    // Swap in subheader
+    const generated = formApi.form.querySelector(".modal-subheader");
+    subheader.replaceWith(generated);
+    subheader = generated;
 
     formContainer.append(formApi.form);
+    formApi.initPickrs?.();
 
-    // — NO initPickrs() HERE — rely on formApi.populate to wire colors
     if (def) {
       formApi.populate(def);
     } else {
       formApi.reset();
     }
 
+    // Open modal and show preview
     open();
+
     const previewData = def
       ? (type === "Chest"
           ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
@@ -122,7 +133,8 @@ export function initDefinitionModal(db) {
   }
 
   return {
-    openCreate: (_e, t = "Item") => openDefinition(t),
-    openEdit:    d              => openDefinition(currentType, d)
+    openCreate: (_evt, type = "Item") => openDefinition(type),
+    openEdit:   def                   => openDefinition(currentType, def)
   };
 }
+ 
