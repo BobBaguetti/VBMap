@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.8 — pass saved def into initPickrs so swatches load their saved colors
+// @version: 1.9 — defer Pickr init (no args) and let populate() set saved colors
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -10,8 +10,7 @@ import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  const { modalEl, open, close } =
-    createModalShell("definition-modal");
+  const { modalEl, open, close } = createModalShell("definition-modal");
   let {
     header, searchInput, typeSelect,
     listContainer, subheader, formContainer,
@@ -23,15 +22,13 @@ export function initDefinitionModal(db) {
   let definitions = [];
   let itemMap = {};
 
-  // Hide preview when the modal closes
-  modalEl.addEventListener("close", () => {
-    previewApi?.hide();
-  });
+  // Hide preview on modal close
+  modalEl.addEventListener("close", () => previewApi?.hide());
 
-  // Reopen on type change
-  typeSelect.addEventListener("change", () => {
-    openDefinition(typeSelect.value);
-  });
+  // Switch types
+  typeSelect.addEventListener("change", () =>
+    openDefinition(typeSelect.value)
+  );
 
   async function refresh() {
     definitions = await definitionTypes[currentType].loadDefs(db);
@@ -40,10 +37,10 @@ export function initDefinitionModal(db) {
 
   function setupList() {
     listApi = createDefinitionListManager({
-      container:       listContainer,
-      getDefinitions:  () => definitions,
-      onEntryClick:    def => openDefinition(currentType, def),
-      onDelete:        async id => {
+      container:      listContainer,
+      getDefinitions: () => definitions,
+      onEntryClick:   d => openDefinition(currentType, d),
+      onDelete:       async id => {
         await definitionTypes[currentType].del(db, id);
         await refresh();
       }
@@ -55,7 +52,7 @@ export function initDefinitionModal(db) {
 
   async function openDefinition(type, def = null) {
     currentType = type;
-
+    // rebuild selector
     typeSelect.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option>${t}</option>`).join("");
     typeSelect.value = type;
@@ -68,10 +65,10 @@ export function initDefinitionModal(db) {
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // Recreate previewApi for this type
+    // preview
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // Build the form
+    // build form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -101,32 +98,31 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Remove stray filter row
+    // remove stray filter row
     const dup = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
     if (dup) dup.remove();
 
-    // Swap in subheader
-    const generated = formApi.form.querySelector(".modal-subheader");
-    subheader.replaceWith(generated);
-    subheader = generated;
+    // swap in subheader
+    const gen = formApi.form.querySelector(".modal-subheader");
+    subheader.replaceWith(gen);
+    subheader = gen;
 
     formContainer.append(formApi.form);
 
-    // ←──────▶
-    // **Here:** initialize Pickr, passing in `def` so saved colors load
-    formApi.initPickrs(def);
+    // ─── ONLY initialize pickrs once, with no initialColors arg ─────────────
+    formApi.initPickrs();
 
+    // populate (or reset) will now set each Pickr from def[colorKey]
     if (def) {
       formApi.populate(def);
     } else {
       formApi.reset();
     }
 
-    // Open and show preview
+    // open and show preview
     open();
-
     const previewData = def
       ? (type === "Chest"
           ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
@@ -136,7 +132,7 @@ export function initDefinitionModal(db) {
   }
 
   return {
-    openCreate: (_evt, type = "Item") => openDefinition(type),
-    openEdit:   def                   => openDefinition(currentType, def)
+    openCreate: (_e, t = "Item") => openDefinition(t),
+    openEdit:    d              => openDefinition(currentType, d)
   };
 }
