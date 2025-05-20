@@ -33,8 +33,6 @@
 @import "components/surfaces.css";
 @import "components/scrollbar.css";
 @import "components/icons.css";
-/* ── Modal stack ─────────────────────────────────────────────────────── */
-@import "components/modal/index.css";
 
 @import "components/ui-controls.css";
 
