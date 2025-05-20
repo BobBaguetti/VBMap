@@ -6,7 +6,7 @@ import { createFormControllerHeader, wireFormEvents }
 import { initFormPickrs, getPickrHexColor }
   from "../form/controller/pickrAdapter.js";
 import { createFormState } from "../form/controller/formStateManager.js";
-import { colorPresets } from "../../../../shared/utils/color/colorPresets.js";
+import { colorPresets } from "../../../shared/utils/color/colorPresets.js";
 
 /**
  * Wraps a schema-built form, wiring header, state, and events.
