@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/controller/formStateManager.js
-// @version: 1.0 — relocated into definition module
+// @version: 1.1 — fix picking up saved colors into Pickr on populate
 
 /**
  * Creates shared reset() and populate(def) handlers for a form.
@@ -12,25 +12,16 @@
  * @param {object<string, any>} [params.defaultValues] 
  *        map of field keys to default values on reset()
  * @param {object<string, Pickr>} [params.pickrs] 
- *        map of pickr instances by key
+ *        map of Pickr instances by key (e.g. "nameColor", "rarityColor")
  * @param {string[]} [params.pickrClearKeys] 
- *        pickr keys to reset to "#E5E6E8" on reset()
+ *        pickr keys to reset to default color on reset()
  * @param {Array<{ fieldArray: any[], renderFn: Function, defKey: string }>} [params.chipLists]
- *        for each list of chips, the array property, its render function, and the def object key
  * @param {HTMLElement} params.subheading
- *        the <h3> element whose text is toggled
  * @param {Function} params.setDeleteVisible
- *        callback to show/hide the delete button
  * @param {string} params.addTitle
- *        subheading text for add mode
  * @param {string} params.editTitle
- *        subheading text for edit mode
  * @param {Function} params.getCustom
- *        function returning the current form payload
  * @param {Function} [params.onFieldChange]
- *        called with getCustom() after reset() or populate()
- *
- * @returns {{ reset: Function, populate: Function }}
  */
 export function createFormState({
   form,
@@ -50,75 +41,74 @@ export function createFormState({
   function reset() {
     form.reset();
 
-    // reset simple fields
+    // Reset simple fields
     defaultFieldKeys.forEach(key => {
       if (fields[key]?.value !== undefined) {
         fields[key].value = "";
       }
     });
 
-    // reset to specified defaults
+    // Reset to specified defaults
     Object.entries(defaultValues).forEach(([key, val]) => {
       if (fields[key]?.value !== undefined) {
         fields[key].value = val;
       }
     });
 
-    // reset any chip-list arrays
+    // Clear chip-list arrays
     chipLists.forEach(({ fieldArray, renderFn }) => {
       fieldArray.length = 0;
       renderFn();
     });
 
-    // clear pickr colors
+    // Reset Pickr colors to default
     pickrClearKeys.forEach(key => {
       pickrs[key]?.setColor("#E5E6E8");
     });
 
-    // header & delete button
+    // Header & delete button
     subheading.textContent = addTitle;
     setDeleteVisible(false);
 
-    // notify live-preview
+    // Live-preview update
     onFieldChange?.(getCustom());
   }
 
   function populate(def) {
     form.reset();
 
-    // populate fields from definition
+    // Populate simple fields
     Object.keys(fields).forEach(key => {
       if (def[key] !== undefined && fields[key]?.value !== undefined) {
         fields[key].value = def[key];
       }
     });
 
-    // apply defaults for missing keys
+    // Apply defaults for missing keys
     Object.entries(defaultValues).forEach(([key, val]) => {
       if (def[key] === undefined && fields[key]?.value !== undefined) {
         fields[key].value = val;
       }
     });
 
-    // populate chip-lists
+    // Populate chip-lists
     chipLists.forEach(({ fieldArray, renderFn, defKey }) => {
       fieldArray.splice(0, fieldArray.length, ...(def[defKey] || []));
       renderFn();
     });
 
-    // apply pickr colors
+    // Populate Pickr colors from def[key] where key matches pickr map
     Object.entries(pickrs).forEach(([key, p]) => {
-      const colorKey = `${key}Color`;
-      if (def[colorKey]) {
-        p.setColor(def[colorKey]);
+      if (def[key]) {
+        p.setColor(def[key]);
       }
     });
 
-    // header & delete button
+    // Header & delete button
     subheading.textContent = editTitle;
     setDeleteVisible(true);
 
-    // notify live-preview
+    // Live-preview update
     onFieldChange?.(getCustom());
   }
 
