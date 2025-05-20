@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.10 — pass `def` into initPickrs so saved colors load
+// @version: 1.11 — drop initPickrs call
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -22,10 +22,7 @@ export function initDefinitionModal(db) {
   let definitions = [];
   let itemMap = {};
 
-  // Hide preview on modal close
   modalEl.addEventListener("close", () => previewApi?.hide());
-
-  // Switch types
   typeSelect.addEventListener("change", () =>
     openDefinition(typeSelect.value)
   );
@@ -95,23 +92,20 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Remove stray filter row
+    // remove stray filter row
     const dup = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
     if (dup) dup.remove();
 
-    // Replace subheader
+    // swap in subheader
     const gen = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(gen);
     subheader = gen;
 
     formContainer.append(formApi.form);
 
-    // ←── Here's the only change:
-    // Pass in the loaded def so initPickrs can seed saved colors
-    formApi.initPickrs(def);
-
+    // — NO initPickrs() HERE — rely on formApi.populate to wire colors
     if (def) {
       formApi.populate(def);
     } else {
@@ -119,7 +113,6 @@ export function initDefinitionModal(db) {
     }
 
     open();
-
     const previewData = def
       ? (type === "Chest"
           ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
