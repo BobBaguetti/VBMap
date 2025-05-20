@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1.3 — accept Element or selector, avoid querySelector collisions
+// @version: 1.4 — re-add disablePickr export for fieldRow usage
 
 const activePickrs = [];
 
@@ -49,6 +49,20 @@ export function createPickr(target, defaultColor = "#E5E6E8") {
 }
 
 /**
+ * Disable or enable a Pickr instance visually and interactively.
+ *
+ * @param {Pickr} pickr — the Pickr instance to disable/enable
+ * @param {boolean} [disabled=true]
+ */
+export function disablePickr(pickr, disabled = true) {
+  const root = pickr?.getRoot?.();
+  if (root && root.style) {
+    root.style.pointerEvents = disabled ? "none" : "auto";
+    root.style.opacity       = disabled ? 0.5 : 1;
+  }
+}
+
+/**
  * Initialize Pickr instances for form fields.
  *
  * @param {HTMLFormElement} form
@@ -81,6 +95,10 @@ export function initFormPickrs(form, fieldMap, initialColors = {}) {
 
 /**
  * Safely retrieve a hex string from a Pickr instance.
+ *
+ * @param {Pickr} pickr
+ * @param {string} [fallback="#E5E6E8"]
+ * @returns {string}
  */
 export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
   try {
@@ -91,7 +109,7 @@ export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
 }
 
 /**
- * (Unchanged) Destroy all Pickr instances
+ * Destroy all Pickr instances created via this module.
  */
 export function destroyAllPickrs() {
   activePickrs.forEach(p => p?.destroy?.());
