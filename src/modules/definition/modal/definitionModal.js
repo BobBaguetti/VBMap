@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.7 — force-sync swatch buttons after populate
+// @version: 1.8 — direct swatch-sync using schema colorable props
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -17,7 +17,6 @@ export function initDefinitionModal(db) {
     previewContainer
   } = buildModalUI(modalEl);
 
-  // When the user picks a different type, reopen the modal for that type
   typeSelect.addEventListener("change", () => {
     openDefinition(typeSelect.value);
   });
@@ -49,11 +48,8 @@ export function initDefinitionModal(db) {
 
   async function openDefinition(type, def = null) {
     currentType = type;
-
-    // Rebuild type selector
     typeSelect.innerHTML = Object.keys(definitionTypes)
-      .map(t => `<option>${t}</option>`)
-      .join("");
+      .map(t => `<option>${t}</option>`).join("");
     typeSelect.value = type;
 
     if (!listApi) setupList();
@@ -64,10 +60,8 @@ export function initDefinitionModal(db) {
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // Recreate preview controller
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // Build form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -97,13 +91,11 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Remove any stray showInFilters row
     const dup = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
     if (dup) dup.remove();
 
-    // Swap in generated subheader
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
     subheader = generated;
@@ -114,13 +106,17 @@ export function initDefinitionModal(db) {
     if (def) {
       formApi.populate(def);
 
-      // ─── New: Force-sync swatch buttons to saved colors ──────────
-      Object.entries(formApi.pickrs).forEach(([key, p]) => {
-        const saved = def[key];
-        if (saved) {
-          p.setColor(saved);
-          if (p._swatchEl) {
-            p._swatchEl.style.backgroundColor = saved;
+      // ─── New: direct swatch sync from schema ─────────────────────────────
+      const schema = definitionTypes[type].schema;
+      Object.entries(schema).forEach(([fieldKey, cfg]) => {
+        if (cfg.colorable) {
+          const colorProp = cfg.colorable;            // e.g. "nameColor"
+          const saved     = def[colorProp];           // e.g. "#ff00aa"
+          const btn = formApi.form.querySelector(
+            `#fld-${fieldKey}-color`
+          );
+          if (saved && btn) {
+            btn.style.backgroundColor = saved;
           }
         }
       });
@@ -128,18 +124,17 @@ export function initDefinitionModal(db) {
       formApi.reset();
     }
 
-    // Open and show preview
     open();
     const previewData = def
       ? (type === "Chest"
-          ? { ...def, lootPool: (def.lootPool || []).map(id => itemMap[id]).filter(Boolean) }
+          ? { ...def, lootPool: (def.lootPool||[]).map(id => itemMap[id]).filter(Boolean) }
           : def)
       : (type === "Chest" ? { lootPool: [] } : {});
     previewApi.show(previewData);
   }
 
   return {
-    openCreate: (_evt, t = "Item") => openDefinition(t),
-    openEdit:   def              => openDefinition(currentType, def)
+    openCreate: (_evt, t="Item") => openDefinition(t),
+    openEdit:   def             => openDefinition(currentType, def)
   };
 }
