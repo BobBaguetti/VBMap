@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1 — relocated into definition module
+// @version: 1.1 — sync swatch button backgrounds on init, change, and save
 
 const activePickrs = [];
 
@@ -19,6 +19,12 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
     };
   }
 
+  // Ensure the swatch element is styled
+  el.style.width = "1.5rem";
+  el.style.height = "1.5rem";
+  el.style.borderRadius = "0.25rem";
+  el.style.backgroundColor = defaultColor;
+
   const p = window.Pickr.create({
     el,
     theme: "nano",
@@ -34,7 +40,19 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
         save: true
       }
     }
-  }).on("save", (_, instance) => instance.hide());
+  });
+
+  // When Pickr changes or saves, update both the swatch and fire events
+  p.on("change", instance => {
+    const hex = instance.getColor().toHEXA().toString();
+    el.style.backgroundColor = hex;
+    instance.hide();
+  });
+  p.on("save", instance => {
+    const hex = instance.getColor().toHEXA().toString();
+    el.style.backgroundColor = hex;
+    instance.hide();
+  });
 
   activePickrs.push(p);
   return p;
@@ -79,7 +97,7 @@ export function initModalPickrs(root) {
 
 /**
  * Initialize Pickr instances for a set of buttons in a form,
- * wiring change/save → form "input" events.
+ * wiring change/save → form "input" events, and syncing button styles.
  */
 export function initFormPickrs(form, fieldMap) {
   const pickrs = {};
@@ -88,9 +106,11 @@ export function initFormPickrs(form, fieldMap) {
     if (!btn || pickrs[key]) return;
     if (!document.body.contains(btn)) return;
 
-    const p = createPickr(`#${btn.id}`);
+    // Create Pickr on the button
+    const p = createPickr(`#${btn.id}`, btn.dataset.defaultColor || "#E5E6E8");
     pickrs[key] = p;
 
+    // On change/save: dispatch input event for live-preview
     p.on("change", () =>
       form.dispatchEvent(new Event("input", { bubbles: true }))
     );
@@ -98,6 +118,7 @@ export function initFormPickrs(form, fieldMap) {
       form.dispatchEvent(new Event("input", { bubbles: true }))
     );
 
+    // Clicking the button shows the picker
     btn.addEventListener("click", () => p.show());
   });
 
