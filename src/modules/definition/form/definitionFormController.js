@@ -1,17 +1,20 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 2.1 — reinitialize Pickrs on populate using data-default-color
+// @version: 1.8 — populate extraInfo fields with backward-compat for extraLines vs extraInfo
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
-import { initFormPickrs, destroyAllPickrs, getPickrHexColor }
+import { initFormPickrs, getPickrHexColor }
   from "../form/controller/pickrAdapter.js";
 import { createFormState } from "../form/controller/formStateManager.js";
 
+/**
+ * Wraps a schema-built form, wiring header, state, and events.
+ */
 export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
   const { title, hasFilter, onCancel, onSubmit, onDelete, onFieldChange } = handlers;
 
-  // Header + filter & buttons
+  // ─── Header + Filter & Buttons ───────────────────────────────────────────────
   const {
     container: headerWrap,
     subheading,
@@ -30,13 +33,17 @@ export function createFormController(buildResult, schema, handlers) {
   });
   headerWrap.classList.add("modal-subheader");
   setDeleteVisible(false);
+
+  // Prepend header (with Save/Clear/Delete) into the <form>
   form.prepend(headerWrap);
 
-  // We will initPickrs on each populate, so no initial call here
+  // Initialize Pickr instances on any colorable fields
+  const pickrs = initFormPickrs(form, colorables);
 
-  let pickrs = {};
+  // Track current definition ID
   let payloadId = null;
 
+  // ─── Build submission payload ────────────────────────────────────────────────
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
@@ -47,6 +54,7 @@ export function createFormController(buildResult, schema, handlers) {
           val = el.checked;
           break;
         case "extraInfo":
+          // extraInfo API: el.getLines()
           val = el.getLines();
           break;
         case "chipList":
@@ -56,11 +64,12 @@ export function createFormController(buildResult, schema, handlers) {
           val = el.value;
       }
       out[key] = val;
+
+      // Serialize any Pickr color to hex string
       if (cfg.colorable) {
-        // ensure pickrs is up-to-date
-        const p = pickrs[cfg.colorable];
-        out[cfg.colorable] = p
-          ? getPickrHexColor(p)
+        const pickr = pickrs[cfg.colorable];
+        out[cfg.colorable] = pickr
+          ? getPickrHexColor(pickr)
           : null;
       }
     }
@@ -68,12 +77,12 @@ export function createFormController(buildResult, schema, handlers) {
     return out;
   }
 
-  // Form State defaults
+  // ─── Defaults & Form State ───────────────────────────────────────────────────
   const defaultValues = Object.fromEntries(
-    Object.entries(schema).map(([k, cfg]) => {
+    Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
       if (dv === undefined) dv = cfg.type === "checkbox" ? false : "";
-      return [k, dv];
+      return [key, dv];
     })
   );
   const pickrClearKeys = Object.entries(schema)
@@ -92,75 +101,58 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   });
 
+  // ─── Reset & Populate ────────────────────────────────────────────────────────
   function reset() {
     payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
-    // clear extra info
-    for (const [k, cfg] of Object.entries(schema)) {
+    // Clear extraInfo lines if any
+    for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "extraInfo") {
-        fields[k].setLines([]);
+        fields[key].setLines([]);
       }
     }
-    // destroy pickrs so next populate re-inits
-    destroyAllPickrs();
   }
 
   async function populate(def) {
     payloadId = def.id ?? null;
 
-    // sanitized base
+    // Build sanitized object (never undefined)
     const sanitized = {};
-    for (const [k, cfg] of Object.entries(schema)) {
-      sanitized[k] = def[k] !== undefined
-        ? def[k]
-        : cfg.default !== undefined
-          ? cfg.default
-          : cfg.type === "checkbox"
-            ? false
-            : "";
-    }
-
-    // populate simple fields & subheader
-    formState.populate(sanitized);
-    filterCheckbox.checked = def.showInFilters ?? true;
-
-    // clear old pickrs before re-init
-    destroyAllPickrs();
-
-    // set data-default-color on each button
-    for (const [k, cfg] of Object.entries(schema)) {
-      if (cfg.colorable) {
-        const btn = colorables[cfg.colorable];
-        const saved = def[cfg.colorable] ?? cfg.default ?? "#E5E6E8";
-        if (btn) {
-          btn.dataset.defaultColor = saved;
-          btn.style.backgroundColor = saved;
-        }
+    for (const [key, cfg] of Object.entries(schema)) {
+      if (def[key] !== undefined) {
+        sanitized[key] = def[key];
+      } else if (cfg.default !== undefined) {
+        sanitized[key] = cfg.default;
+      } else {
+        sanitized[key] = cfg.type === "checkbox" ? false : "";
       }
     }
 
-    // now initialize Pickrs with correct defaults
-    pickrs = initFormPickrs(form, colorables);
+    formState.populate(sanitized);
+    filterCheckbox.checked = def.showInFilters ?? true;
 
-    // chipList and extraInfo
-    for (const [k, cfg] of Object.entries(schema)) {
-      if (cfg.type === "chipList" && Array.isArray(sanitized[k])) {
-        fields[k].set(sanitized[k]);
+    // Special wiring for multi-part fields
+    for (const [key, cfg] of Object.entries(schema)) {
+      if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
+        fields[key].set(sanitized[key]);
       } else if (cfg.type === "extraInfo") {
-        const lines = Array.isArray(sanitized[k]) && sanitized[k]
-          ? sanitized[k]
-          : Array.isArray(def.extraInfo) && def.extraInfo
+        // Backwards-compat: some entries used def.extraLines, others def.extraInfo
+        const fromExtraLines = Array.isArray(sanitized[key]) && sanitized[key];
+        const fromLegacyInfo  = Array.isArray(def.extraInfo)  && def.extraInfo;
+        const lines = fromExtraLines
+          ? sanitized[key]
+          : fromLegacyInfo
             ? def.extraInfo
             : [];
-        fields[k].setLines(lines);
+        fields[key].setLines(lines);
       }
     }
   }
 
+  // ─── Wire Events & Ensure Save Works ────────────────────────────────────────
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
 
-  // ensure Save always fires
   const saveBtn = headerWrap.querySelector('button[type="submit"]');
   if (saveBtn) {
     saveBtn.type = "button";
@@ -170,11 +162,13 @@ export function createFormController(buildResult, schema, handlers) {
     });
   }
 
+  // ─── Public API ───────────────────────────────────────────────────────────────
   return {
     form,
     reset,
     populate,
     getPayload,
-    initPickrs: () => (pickrs = initFormPickrs(form, colorables))
+    initPickrs: () => Object.assign(pickrs, initFormPickrs(form, colorables))
   };
 }
+ 
