@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1.1 — sync swatch button backgrounds on init, change, and save
+// @version: 1.2 — fix change/save signature and sync swatch backgrounds on setColor
 
 const activePickrs = [];
 
@@ -19,12 +19,13 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
     };
   }
 
-  // Ensure the swatch element is styled
-  el.style.width = "1.5rem";
-  el.style.height = "1.5rem";
-  el.style.borderRadius = "0.25rem";
-  el.style.backgroundColor = defaultColor;
+  // Style the swatch button for visibility
+  el.style.width             = "1.5rem";
+  el.style.height            = "1.5rem";
+  el.style.borderRadius      = "0.25rem";
+  el.style.backgroundColor   = defaultColor;
 
+  // Instantiate Pickr
   const p = window.Pickr.create({
     el,
     theme: "nano",
@@ -34,23 +35,33 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
       opacity: true,
       hue: true,
       interaction: {
-        hex: true,
-        rgba: true,
+        hex:   true,
+        rgba:  true,
         input: true,
-        save: true
+        save:  true
       }
     }
   });
 
-  // When Pickr changes or saves, update both the swatch and fire events
-  p.on("change", instance => {
-    const hex = instance.getColor().toHEXA().toString();
-    el.style.backgroundColor = hex;
-    instance.hide();
+  // When the color changes (including manually via .setColor), sync background
+  // Pickr's change signature is (color, instance)
+  p.on("change", (color, instance) => {
+    try {
+      const hex = color.toHEXA().toString();
+      el.style.backgroundColor = hex;
+    } catch {
+      // ignore
+    }
   });
-  p.on("save", instance => {
-    const hex = instance.getColor().toHEXA().toString();
-    el.style.backgroundColor = hex;
+
+  // When the user clicks "Save" in the picker UI, also sync & hide
+  p.on("save", (color, instance) => {
+    try {
+      const hex = color.toHEXA().toString();
+      el.style.backgroundColor = hex;
+    } catch {
+      // ignore
+    }
     instance.hide();
   });
 
@@ -65,7 +76,7 @@ export function disablePickr(pickr, disabled = true) {
   const root = pickr?.getRoot?.();
   if (root && root.style) {
     root.style.pointerEvents = disabled ? "none" : "auto";
-    root.style.opacity = disabled ? 0.5 : 1;
+    root.style.opacity       = disabled ? 0.5    : 1;
   }
 }
 
@@ -73,7 +84,11 @@ export function disablePickr(pickr, disabled = true) {
  * Get the current color from a Pickr instance in HEXA format.
  */
 export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
-  return pickr?.getColor?.()?.toHEXA?.()?.toString?.() || fallback;
+  try {
+    return pickr.getColor().toHEXA().toString();
+  } catch {
+    return fallback;
+  }
 }
 
 /**
@@ -85,8 +100,7 @@ export function destroyAllPickrs() {
 }
 
 /**
- * Scan the given root element for any color‐swatch buttons
- * and attach Pickr to each one.
+ * Scan a root element for any .color-swatch buttons and attach Pickr to each.
  */
 export function initModalPickrs(root) {
   const swatches = root.querySelectorAll(".color-swatch");
@@ -106,11 +120,12 @@ export function initFormPickrs(form, fieldMap) {
     if (!btn || pickrs[key]) return;
     if (!document.body.contains(btn)) return;
 
-    // Create Pickr on the button
-    const p = createPickr(`#${btn.id}`, btn.dataset.defaultColor || "#E5E6E8");
+    // Create Pickr on the button, using any data-default-color if present
+    const defaultColor = btn.dataset.defaultColor || "#E5E6E8";
+    const p = createPickr(`#${btn.id}`, defaultColor);
     pickrs[key] = p;
 
-    // On change/save: dispatch input event for live-preview
+    // Fire form input on change and save, so preview & state update
     p.on("change", () =>
       form.dispatchEvent(new Event("input", { bubbles: true }))
     );
@@ -118,7 +133,7 @@ export function initFormPickrs(form, fieldMap) {
       form.dispatchEvent(new Event("input", { bubbles: true }))
     );
 
-    // Clicking the button shows the picker
+    // Show the picker when the button is clicked
     btn.addEventListener("click", () => p.show());
   });
 
