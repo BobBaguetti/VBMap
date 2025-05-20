@@ -1,23 +1,29 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1.2 — guard against null initialColors in initFormPickrs
+// @version: 1.3 — accept Element or selector, avoid querySelector collisions
 
 const activePickrs = [];
 
 /**
- * Create a Pickr instance on the given selector.
- * @param {string} targetSelector — CSS selector for the .color-btn element
- * @param {string} defaultColor — initial color hex
+ * Create a Pickr instance on the given target.
+ *
+ * @param {string|HTMLElement} target — CSS selector or the .color-btn element itself
+ * @param {string} defaultColor — initial HEX color
  */
-export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
-  const el = document.querySelector(targetSelector);
+export function createPickr(target, defaultColor = "#E5E6E8") {
+  let el;
+  if (typeof target === "string") {
+    el = document.querySelector(target);
+  } else if (target instanceof HTMLElement) {
+    el = target;
+  }
   if (!el) {
-    console.warn(`Pickr target ${targetSelector} not found`);
+    console.warn(`Pickr target not found:`, target);
     return {
-      on: () => {},
+      on:       () => {},
       setColor: () => {},
       getColor: () => defaultColor,
-      getRoot: () => null,
-      destroy: () => {}
+      getRoot:  () => null,
+      destroy:  () => {}
     };
   }
 
@@ -30,10 +36,10 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
       opacity: true,
       hue: true,
       interaction: {
-        hex: true,
-        rgba: true,
+        hex:   true,
+        rgba:  true,
         input: true,
-        save: true
+        save:  true
       }
     }
   }).on("save", (_, instance) => instance.hide());
@@ -46,24 +52,21 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
  * Initialize Pickr instances for form fields.
  *
  * @param {HTMLFormElement} form
- * @param {Object<string, HTMLElement>} fieldMap — map of colorable fieldKey to its button element
- * @param {Object<string, string>} [initialColors] — map of fieldKey to initial hex color
- * @returns {Object<string, Pickr>} — map of fieldKey to Pickr instance
+ * @param {Object<string, HTMLElement>} fieldMap — map of colorKey → its button element
+ * @param {Object<string, string>} [initialColors] — map of colorKey → initial HEX
+ * @returns {Object<string, Pickr>} map of colorKey → Pickr instance
  */
-export function initFormPickrs(form, fieldMap, initialColors) {
+export function initFormPickrs(form, fieldMap, initialColors = {}) {
   const pickrs = {};
-  const colors = initialColors || {};
-
   Object.entries(fieldMap).forEach(([key, btn]) => {
     if (!btn || pickrs[key]) return;
-    if (!document.body.contains(btn)) return;
+    if (!form.contains(btn)) return;
 
-    // Use saved color if provided, otherwise default
-    const defaultColor = colors[key] || "#E5E6E8";
-    const p = createPickr(`#${btn.id}`, defaultColor);
+    // use saved color if present
+    const defaultColor = initialColors[key] || "#E5E6E8";
+    const p = createPickr(btn, defaultColor);
     pickrs[key] = p;
 
-    // Wire up form "input" events on color change
     p.on("change", () =>
       form.dispatchEvent(new Event("input", { bubbles: true }))
     );
@@ -73,23 +76,11 @@ export function initFormPickrs(form, fieldMap, initialColors) {
 
     btn.addEventListener("click", () => p.show());
   });
-
   return pickrs;
 }
 
 /**
- * Disable or enable a Pickr instance visually.
- */
-export function disablePickr(pickr, disabled = true) {
-  const root = pickr?.getRoot?.();
-  if (root && root.style) {
-    root.style.pointerEvents = disabled ? "none" : "auto";
-    root.style.opacity = disabled ? 0.5 : 1;
-  }
-}
-
-/**
- * Get the current color from a Pickr instance in HEXA format.
+ * Safely retrieve a hex string from a Pickr instance.
  */
 export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
   try {
@@ -100,7 +91,7 @@ export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
 }
 
 /**
- * Destroy all Pickr instances created via this module.
+ * (Unchanged) Destroy all Pickr instances
  */
 export function destroyAllPickrs() {
   activePickrs.forEach(p => p?.destroy?.());
