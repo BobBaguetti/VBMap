@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.3 — load saved colors for colorable fields
+// @version: 1.9.4 — load saved colors from def instead of sanitized
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -88,10 +88,8 @@ export function createFormController(buildResult, schema, handlers) {
       }
       out[key] = val;
       if (cfg.colorable) {
-        const pickr = pickrs[cfg.colorable];
-        out[cfg.colorable] = pickr
-          ? getPickrHexColor(pickr)
-          : null;
+        const p = pickrs[cfg.colorable];
+        out[cfg.colorable] = p ? getPickrHexColor(p) : null;
       }
     }
     out.showInFilters = filterCheckbox.checked;
@@ -169,13 +167,14 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
-    // ─── NEW: Apply saved colors to pickr instances ─────────────────────
+    // ─── FIXED: Apply saved colors using def[colorKey] ───────────────────
     Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.colorable) {
         const colorKey = cfg.colorable;
-        const colorVal = sanitized[colorKey];
-        if (colorVal && pickrs[colorKey]) {
-          pickrs[colorKey].setColor(colorVal);
+        // grab the Firestore‐loaded color directly
+        const saved = def[colorKey];
+        if (saved && pickrs[colorKey]) {
+          pickrs[colorKey].setColor(saved);
         }
       }
     });
