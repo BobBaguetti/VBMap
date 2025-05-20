@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 2.0 — scoped Pickr init and deferred initialization for saved colors
+// @version: 2.1 — scope Pickr init into a shared map and apply saved colors correctly
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -18,7 +18,7 @@ export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
   const { title, hasFilter, onCancel, onSubmit, onDelete, onFieldChange } = handlers;
 
-  // ─── Header + Filter & Buttons ───────────────────────────────────────────────
+  // — Header + Filter & Buttons —
   const {
     container: headerWrap,
     subheading,
@@ -39,30 +39,34 @@ export function createFormController(buildResult, schema, handlers) {
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // ─── Prepare for scoped Pickr instances (deferred init) ────────────────────
-  let pickrs = {};
+  // — Shared Pickr map (passed to formState) —
+  const pickrs = {};
+
+  // Initialize or re-initialize Pickr instances on the form
   function initPickrs(initialColors = {}) {
-    // Initialize Pickr on each color-btn inside the form,
-    // using any saved color from initialColors or default.
-    pickrs = initFormPickrs(form, colorables, initialColors);
+    // Create fresh instances scoped to this form
+    const newPickrs = initFormPickrs(form, colorables, initialColors);
+    // Clear old entries
+    Object.keys(pickrs).forEach(key => delete pickrs[key]);
+    // Copy in new ones
+    Object.assign(pickrs, newPickrs);
   }
 
-  // ─── Preset coloring on select change ────────────────────────────────────────
+  // — Preset coloring on select change —
   Object.entries(schema).forEach(([key, cfg]) => {
     if (cfg.type === "select" && cfg.colorable) {
-      const selectEl = fields[key];
-      selectEl.addEventListener("change", () => {
+      fields[key].addEventListener("change", () => {
         let preset;
         if (key === "rarity") {
-          preset = rarityColors[selectEl.value];
+          preset = rarityColors[fields.rarity.value];
           if (preset) {
-            pickrs["rarityColor"]?.setColor(preset);
-            pickrs["nameColor"]?.setColor(preset);
+            pickrs.rarityColor?.setColor(preset);
+            pickrs.nameColor?.setColor(preset);
           }
         } else if (key === "itemType") {
-          preset = itemTypeColors[selectEl.value];
+          preset = itemTypeColors[fields.itemType.value];
           if (preset) {
-            pickrs["itemTypeColor"]?.setColor(preset);
+            pickrs.itemTypeColor?.setColor(preset);
           }
         }
         form.dispatchEvent(new Event("input", { bubbles: true }));
@@ -72,7 +76,7 @@ export function createFormController(buildResult, schema, handlers) {
 
   let payloadId = null;
 
-  // ─── Build submission payload ────────────────────────────────────────────────
+  // — Build submission payload —
   function getPayload() {
     const out = { id: payloadId };
     for (const [key, cfg] of Object.entries(schema)) {
@@ -103,7 +107,7 @@ export function createFormController(buildResult, schema, handlers) {
     return out;
   }
 
-  // ─── Defaults & Form State ───────────────────────────────────────────────────
+  // — Defaults & Form State —
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
@@ -127,34 +131,33 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   });
 
-  // ─── Reset & Populate ────────────────────────────────────────────────────────
+  // — Reset & Populate —
   function reset() {
     payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
-    for (const [key, cfg] of Object.entries(schema)) {
+    // clear extraInfo
+    Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.type === "extraInfo") {
         fields[key].setLines([]);
       }
-    }
-    // Reset pickr to defaults
-    pickrClearKeys.forEach(key => {
-      pickrs[key]?.setColor("#E5E6E8");
     });
+    // reset swatches to default
+    pickrClearKeys.forEach(key => pickrs[key]?.setColor("#E5E6E8"));
   }
 
   async function populate(def) {
     payloadId = def.id ?? null;
 
-    // 1) Initialize pickers now that the form is in DOM, using saved colors
+    // 1) init pickers with saved colors from def
     initPickrs(def);
 
-    // 2) Populate all fields & Pickr from the full def (including colors)
+    // 2) populate all fields and pickrs from full def
     formState.populate(def);
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // 3) Handle chipList & extraInfo
-    for (const [key, cfg] of Object.entries(schema)) {
+    // 3) handle chipList & extraInfo
+    Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.type === "chipList" && Array.isArray(def[key])) {
         fields[key].set(def[key]);
       } else if (cfg.type === "extraInfo") {
@@ -165,25 +168,25 @@ export function createFormController(buildResult, schema, handlers) {
             : [];
         fields[key].setLines(lines);
       }
-    }
+    });
 
-    // 4) Fallback presets only if no saved colors
+    // 4) apply fallback presets only if no saved color
     if (schema.rarity) {
       const preset = rarityColors[def.rarity];
       if (preset) {
-        if (!def.rarityColor) pickrs["rarityColor"]?.setColor(preset);
-        if (!def.nameColor)   pickrs["nameColor"]?.setColor(preset);
+        if (!def.rarityColor) pickrs.rarityColor?.setColor(preset);
+        if (!def.nameColor)   pickrs.nameColor?.setColor(preset);
       }
     }
     if (schema.itemType) {
       const preset = itemTypeColors[def.itemType];
       if (preset && !def.itemTypeColor) {
-        pickrs["itemTypeColor"]?.setColor(preset);
+        pickrs.itemTypeColor?.setColor(preset);
       }
     }
   }
 
-  // ─── Events & Save Handler ──────────────────────────────────────────────────
+  // — Wire events & Save handler —
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
   const saveBtn = headerWrap.querySelector('button[type="submit"]');
   if (saveBtn) {
@@ -194,12 +197,12 @@ export function createFormController(buildResult, schema, handlers) {
     });
   }
 
-  // ─── Public API ───────────────────────────────────────────────────────────────
+  // — Public API —
   return {
     form,
     reset,
     populate,
     getPayload,
-    initPickrs
+    initPickrs  // now accepts an initialColors object
   };
 }
