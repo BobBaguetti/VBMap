@@ -1,10 +1,8 @@
 // @file: src/modules/definition/form/controller/formStateManager.js
-// @version: 1.2 — restore swatch backgrounds when populating saved colors
+// @version: 1.3 — use picker._swatchEl to repaint button on populate
 
 /**
  * Creates shared reset() and populate(def) handlers for a form.
- *
- * @param {object} params
  */
 export function createFormState({
   form,
@@ -24,34 +22,32 @@ export function createFormState({
   function reset() {
     form.reset();
 
-    // simple fields
+    // Reset text/number/select/textarea fields
     defaultFieldKeys.forEach(key => {
       if (fields[key]?.value !== undefined) fields[key].value = "";
     });
 
-    // defaults
+    // Apply defaultValues
     Object.entries(defaultValues).forEach(([key, val]) => {
       if (fields[key]?.value !== undefined) fields[key].value = val;
     });
 
-    // chip-lists
+    // Reset chip-lists
     chipLists.forEach(({ fieldArray, renderFn }) => {
       fieldArray.length = 0;
       renderFn();
     });
 
-    // clear pickrs & swatches
+    // Clear pickr colors + swatches
     pickrClearKeys.forEach(key => {
       const p = pickrs[key];
       if (p) {
         p.setColor("#E5E6E8");
-        // update button
-        const btn = document.getElementById(`fld-${key}-color`);
-        if (btn) btn.style.backgroundColor = "#E5E6E8";
+        if (p._swatchEl) p._swatchEl.style.backgroundColor = "#E5E6E8";
       }
     });
 
-    // header & delete
+    // Header & delete button
     subheading.textContent = addTitle;
     setDeleteVisible(false);
 
@@ -61,40 +57,38 @@ export function createFormState({
   function populate(def) {
     form.reset();
 
-    // fill inputs
+    // Populate simple fields
     Object.keys(fields).forEach(key => {
       if (def[key] !== undefined && fields[key]?.value !== undefined) {
         fields[key].value = def[key];
       }
     });
 
-    // defaults for missing
+    // Apply defaults for missing
     Object.entries(defaultValues).forEach(([key, val]) => {
       if (def[key] === undefined && fields[key]?.value !== undefined) {
         fields[key].value = val;
       }
     });
 
-    // chip-lists
+    // Populate chip-lists
     chipLists.forEach(({ fieldArray, renderFn, defKey }) => {
       fieldArray.splice(0, fieldArray.length, ...(def[defKey] || []));
       renderFn();
     });
 
-    // pickr colors + swatches
+    // Restore pickr colors + repaint swatches
     Object.entries(pickrs).forEach(([key, p]) => {
       const saved = def[key];
       if (saved) {
         p.setColor(saved);
-        // Immediately sync the button swatch
-        const btn = document.getElementById(`fld-${key}-color`);
-        if (btn) {
-          btn.style.backgroundColor = saved;
+        if (p._swatchEl) {
+          p._swatchEl.style.backgroundColor = saved;
         }
       }
     });
 
-    // header & delete
+    // Header & delete button
     subheading.textContent = editTitle;
     setDeleteVisible(true);
 
