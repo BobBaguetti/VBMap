@@ -1,5 +1,5 @@
-// @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.2 — use rarityColors & itemTypeColors exports
+// @file: src/modules/definition/form/definitionFormController.js
+// @version: 1.9.3 — now respects saved custom colors on load
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -127,6 +127,7 @@ export function createFormController(buildResult, schema, handlers) {
     payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
+    // clear any extraInfo rows
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "extraInfo") {
         fields[key].setLines([]);
@@ -137,6 +138,7 @@ export function createFormController(buildResult, schema, handlers) {
   async function populate(def) {
     payloadId = def.id ?? null;
 
+    // only pick the schema keys for actual inputs
     const sanitized = {};
     for (const [key, cfg] of Object.entries(schema)) {
       if (def[key] !== undefined) {
@@ -148,10 +150,11 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
+    // use the sanitized values for native form inputs
     formState.populate(sanitized);
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // Multi-part fields
+    // multi-part fields (chipList, extraInfo)
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
@@ -167,17 +170,28 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
-    // Apply presets on populate
+    // ─── NEW: first load any saved custom colors ───────────────────────────────
+    Object.entries(pickrs).forEach(([colorKey, p]) => {
+      if (def[colorKey]) {
+        p.setColor(def[colorKey]);
+      }
+    });
+
+    // ─── THEN fall back to the default presets if no custom color was saved ────
     if (schema.rarity) {
       const preset = rarityColors[sanitized.rarity];
       if (preset) {
-        pickrs["rarityColor"]?.setColor(preset);
-        pickrs["nameColor"]?.setColor(preset);
+        if (!def.rarityColor) {
+          pickrs["rarityColor"]?.setColor(preset);
+        }
+        if (!def.nameColor) {
+          pickrs["nameColor"]?.setColor(preset);
+        }
       }
     }
     if (schema.itemType) {
       const preset = itemTypeColors[sanitized.itemType];
-      if (preset) {
+      if (preset && !def.itemTypeColor) {
         pickrs["itemTypeColor"]?.setColor(preset);
       }
     }
@@ -203,4 +217,3 @@ export function createFormController(buildResult, schema, handlers) {
     initPickrs: () => Object.assign(pickrs, initFormPickrs(form, colorables))
   };
 }
- 
