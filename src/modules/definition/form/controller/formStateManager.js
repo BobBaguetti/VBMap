@@ -1,8 +1,10 @@
 // @file: src/modules/definition/form/controller/formStateManager.js
-// @version: 1.1 — fix populate to restore saved pickr colors
+// @version: 1.2 — restore swatch backgrounds when populating saved colors
 
 /**
  * Creates shared reset() and populate(def) handlers for a form.
+ *
+ * @param {object} params
  */
 export function createFormState({
   form,
@@ -22,77 +24,80 @@ export function createFormState({
   function reset() {
     form.reset();
 
-    // reset simple fields
+    // simple fields
     defaultFieldKeys.forEach(key => {
-      if (fields[key]?.value !== undefined) {
-        fields[key].value = "";
-      }
+      if (fields[key]?.value !== undefined) fields[key].value = "";
     });
 
-    // reset to specified defaults
+    // defaults
     Object.entries(defaultValues).forEach(([key, val]) => {
-      if (fields[key]?.value !== undefined) {
-        fields[key].value = val;
-      }
+      if (fields[key]?.value !== undefined) fields[key].value = val;
     });
 
-    // reset any chip-list arrays
+    // chip-lists
     chipLists.forEach(({ fieldArray, renderFn }) => {
       fieldArray.length = 0;
       renderFn();
     });
 
-    // clear pickr colors
+    // clear pickrs & swatches
     pickrClearKeys.forEach(key => {
-      pickrs[key]?.setColor("#E5E6E8");
+      const p = pickrs[key];
+      if (p) {
+        p.setColor("#E5E6E8");
+        // update button
+        const btn = document.getElementById(`fld-${key}-color`);
+        if (btn) btn.style.backgroundColor = "#E5E6E8";
+      }
     });
 
-    // header & delete button
+    // header & delete
     subheading.textContent = addTitle;
     setDeleteVisible(false);
 
-    // notify live-preview
     onFieldChange?.(getCustom());
   }
 
   function populate(def) {
     form.reset();
 
-    // populate fields from definition
+    // fill inputs
     Object.keys(fields).forEach(key => {
       if (def[key] !== undefined && fields[key]?.value !== undefined) {
         fields[key].value = def[key];
       }
     });
 
-    // apply defaults for missing keys
+    // defaults for missing
     Object.entries(defaultValues).forEach(([key, val]) => {
       if (def[key] === undefined && fields[key]?.value !== undefined) {
         fields[key].value = val;
       }
     });
 
-    // populate chip-lists
+    // chip-lists
     chipLists.forEach(({ fieldArray, renderFn, defKey }) => {
       fieldArray.splice(0, fieldArray.length, ...(def[defKey] || []));
       renderFn();
     });
 
-    // apply pickr colors
-    // Previously we did const colorKey = `${key}Color`, which was wrong.
+    // pickr colors + swatches
     Object.entries(pickrs).forEach(([key, p]) => {
-      // Use the exact key (e.g. "nameColor", "rarityColor")
       const saved = def[key];
       if (saved) {
         p.setColor(saved);
+        // Immediately sync the button swatch
+        const btn = document.getElementById(`fld-${key}-color`);
+        if (btn) {
+          btn.style.backgroundColor = saved;
+        }
       }
     });
 
-    // header & delete button
+    // header & delete
     subheading.textContent = editTitle;
     setDeleteVisible(true);
 
-    // notify live-preview
     onFieldChange?.(getCustom());
   }
 
