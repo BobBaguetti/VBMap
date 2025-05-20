@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1.3 — store swatch element reference on Pickr instances
+// @version: 1.4 — wrap setColor to always repaint swatch immediately
 
 const activePickrs = [];
 
@@ -19,13 +19,13 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
     };
   }
 
-  // Style the swatch button initially
+  // Initial swatch styling
   el.style.width           = "1.5rem";
   el.style.height          = "1.5rem";
   el.style.borderRadius    = "0.25rem";
   el.style.backgroundColor = defaultColor;
 
-  // Instantiate Pickr
+  // Create Pickr
   const p = window.Pickr.create({
     el,
     theme: "nano",
@@ -46,21 +46,30 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
   // Keep a direct reference to the swatch element
   p._swatchEl = el;
 
-  // On change: repaint swatch background
-  // signature: (color, instance)
-  p.on("change", (color, instance) => {
-    try {
-      const hex = color.toHEXA().toString();
-      el.style.backgroundColor = hex;
-    } catch {}
-  });
+  // Wrap setColor to also repaint the swatch’s background immediately
+  const origSetColor = p.setColor.bind(p);
+  p.setColor = (color) => {
+    origSetColor(color);
+    let hex;
+    if (typeof color === "string") {
+      hex = color;
+    } else {
+      try {
+        hex = color.toHEXA().toString();
+      } catch {
+        hex = defaultColor;
+      }
+    }
+    p._swatchEl.style.backgroundColor = hex;
+  };
 
-  // On save: repaint and hide
+  // Wire change/save events to dispatch custom events
+  p.on("change", (color, instance) => {
+    // we don’t need to repaint here since setColor covers both programmatic and user changes
+    el.dispatchEvent(new Event("pickr-change"));
+  });
   p.on("save", (color, instance) => {
-    try {
-      const hex = color.toHEXA().toString();
-      el.style.backgroundColor = hex;
-    } catch {}
+    el.dispatchEvent(new Event("pickr-save"));
     instance.hide();
   });
 
@@ -123,13 +132,15 @@ export function initFormPickrs(form, fieldMap) {
     const p = createPickr(`#${btn.id}`, defaultColor);
     pickrs[key] = p;
 
-    p.on("change", () =>
+    // On our custom pickr-change/save, trigger form input for live preview
+    btn.addEventListener("pickr-change", () =>
       form.dispatchEvent(new Event("input", { bubbles: true }))
     );
-    p.on("save", () =>
+    btn.addEventListener("pickr-save", () =>
       form.dispatchEvent(new Event("input", { bubbles: true }))
     );
 
+    // Show the picker when button clicked
     btn.addEventListener("click", () => p.show());
   });
 
