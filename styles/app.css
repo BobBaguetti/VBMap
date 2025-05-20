@@ -33,7 +33,6 @@
 @import "components/surfaces.css";
 @import "components/scrollbar.css";
 @import "components/icons.css";
-
 @import "components/ui-controls.css";
 
 /* ── Map & Marker overrides ──────────────────────────────────────────── */
@@ -50,7 +49,8 @@
 @import "components/popup/popup.css";
 @import "components/popup/popup-chest-grid.css";
 
-
+/* ── Modal stack ─────────────────────────────────────────────────────── */
+@import "components/modal/index.css";
 
 /* ── Inventory components ───────────────────────────────────────────── */
 @import "components/inventory/index.css";
