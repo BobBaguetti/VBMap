@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.4 — load saved colors from def instead of sanitized
+// @version: 1.9.5 — mirror extraInfoBlock’s deferred color application
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -45,17 +45,16 @@ export function createFormController(buildResult, schema, handlers) {
   // Auto-apply preset colors when selects change
   Object.entries(schema).forEach(([key, cfg]) => {
     if (cfg.type === "select" && cfg.colorable) {
-      const selectEl = fields[key];
-      selectEl.addEventListener("change", () => {
+      fields[key].addEventListener("change", () => {
         let preset;
         if (key === "rarity") {
-          preset = rarityColors[selectEl.value];
+          preset = rarityColors[fields[key].value];
           if (preset) {
             pickrs["rarityColor"]?.setColor(preset);
             pickrs["nameColor"]?.setColor(preset);
           }
         } else if (key === "itemType") {
-          preset = itemTypeColors[selectEl.value];
+          preset = itemTypeColors[fields[key].value];
           if (preset) {
             pickrs["itemTypeColor"]?.setColor(preset);
           }
@@ -157,27 +156,28 @@ export function createFormController(buildResult, schema, handlers) {
         fields[key].set(sanitized[key]);
       } else if (cfg.type === "extraInfo") {
         const fromExtraLines = Array.isArray(sanitized[key]) && sanitized[key];
-        const fromLegacyInfo  = Array.isArray(def.extraInfo)  && def.extraInfo;
+        const fromLegacyInfo  = Array.isArray(def.extraLines)  && def.extraLines;
         const lines = fromExtraLines
           ? sanitized[key]
           : fromLegacyInfo
-            ? def.extraInfo
+            ? def.extraLines
             : [];
         fields[key].setLines(lines);
       }
     }
 
-    // ─── FIXED: Apply saved colors using def[colorKey] ───────────────────
-    Object.entries(schema).forEach(([key, cfg]) => {
-      if (cfg.colorable) {
-        const colorKey = cfg.colorable;
-        // grab the Firestore‐loaded color directly
-        const saved = def[colorKey];
-        if (saved && pickrs[colorKey]) {
-          pickrs[colorKey].setColor(saved);
+    // ─── DEFERRED: mirror extraInfoBlock's setTimeout color load ───────────
+    setTimeout(() => {
+      Object.entries(schema).forEach(([key, cfg]) => {
+        if (cfg.colorable) {
+          const colorKey = cfg.colorable;
+          const saved = def[colorKey];
+          if (saved && pickrs[colorKey]) {
+            pickrs[colorKey].setColor(saved);
+          }
         }
-      }
-    });
+      });
+    }, 0);
 
     // Apply presets on populate for rarity & itemType
     if (schema.rarity) {
