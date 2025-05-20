@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9 — initialize Pickr colours on populate to preserve saved values
+// @version: 2.0 — apply loaded colors to swatch backgrounds as well as Pickr
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -102,14 +102,18 @@ export function createFormController(buildResult, schema, handlers) {
     payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
-    // Clear extraInfo rows
+
+    // Reset extraInfo and color swatches
     Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.type === "extraInfo") {
         fields[key].setLines([]);
       }
-      // Reset colour swatches to default
-      if (cfg.colorable && pickrs[cfg.colorable]) {
-        pickrs[cfg.colorable].setColor(cfg.default || "#E5E6E8");
+      if (cfg.colorable) {
+        const btn = colorables[cfg.colorable];
+        const pickr = pickrs[cfg.colorable];
+        const defaultColor = cfg.default || "#E5E6E8";
+        if (pickr) pickr.setColor(defaultColor);
+        if (btn)   btn.style.backgroundColor = defaultColor;
       }
     });
   }
@@ -129,24 +133,26 @@ export function createFormController(buildResult, schema, handlers) {
       }
     });
 
+    // Populate basic fields & subheader
     formState.populate(sanitized);
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // Initialize colour pickers to saved values
+    // Initialize and display saved colors
     Object.entries(schema).forEach(([key, cfg]) => {
-      if (cfg.colorable && pickrs[cfg.colorable]) {
-        // use saved color or default fallback
-        const saved = def[cfg.colorable] || cfg.default || "#E5E6E8";
-        pickrs[cfg.colorable].setColor(saved);
+      if (cfg.colorable) {
+        const saved = def[cfg.colorable] ?? cfg.default ?? "#E5E6E8";
+        const pickr = pickrs[cfg.colorable];
+        const btn   = colorables[cfg.colorable];
+        if (pickr) pickr.setColor(saved);
+        if (btn)   btn.style.backgroundColor = saved;
       }
     });
 
-    // Special wiring for multi-part fields
+    // Wire chipList and extraInfo fields
     Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
         fields[key].set(sanitized[key]);
       } else if (cfg.type === "extraInfo") {
-        // backward compat: extraLines vs extraInfo
         const lines = Array.isArray(sanitized[key]) && sanitized[key]
           ? sanitized[key]
           : Array.isArray(def.extraInfo) && def.extraInfo
