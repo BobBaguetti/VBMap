@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.9 — defer Pickr init (no args) and let populate() set saved colors
+// @version: 1.10 — pass `def` into initPickrs so saved colors load
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -52,7 +52,6 @@ export function initDefinitionModal(db) {
 
   async function openDefinition(type, def = null) {
     currentType = type;
-    // rebuild selector
     typeSelect.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option>${t}</option>`).join("");
     typeSelect.value = type;
@@ -65,10 +64,8 @@ export function initDefinitionModal(db) {
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // preview
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // build form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -98,31 +95,31 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // remove stray filter row
+    // Remove stray filter row
     const dup = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
     if (dup) dup.remove();
 
-    // swap in subheader
+    // Replace subheader
     const gen = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(gen);
     subheader = gen;
 
     formContainer.append(formApi.form);
 
-    // ─── ONLY initialize pickrs once, with no initialColors arg ─────────────
-    formApi.initPickrs();
+    // ←── Here's the only change:
+    // Pass in the loaded def so initPickrs can seed saved colors
+    formApi.initPickrs(def);
 
-    // populate (or reset) will now set each Pickr from def[colorKey]
     if (def) {
       formApi.populate(def);
     } else {
       formApi.reset();
     }
 
-    // open and show preview
     open();
+
     const previewData = def
       ? (type === "Chest"
           ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
