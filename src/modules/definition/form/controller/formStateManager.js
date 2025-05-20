@@ -1,36 +1,8 @@
 // @file: src/modules/definition/form/controller/formStateManager.js
-// @version: 1.0 — relocated into definition module
+// @version: 1.1 — fix populate to restore saved pickr colors
 
 /**
  * Creates shared reset() and populate(def) handlers for a form.
- *
- * @param {object} params
- * @param {HTMLFormElement} params.form
- * @param {object} params.fields           — map of field keys to their input elements
- * @param {string[]} [params.defaultFieldKeys] 
- *        keys in `fields` to reset to empty string on reset()
- * @param {object<string, any>} [params.defaultValues] 
- *        map of field keys to default values on reset()
- * @param {object<string, Pickr>} [params.pickrs] 
- *        map of pickr instances by key
- * @param {string[]} [params.pickrClearKeys] 
- *        pickr keys to reset to "#E5E6E8" on reset()
- * @param {Array<{ fieldArray: any[], renderFn: Function, defKey: string }>} [params.chipLists]
- *        for each list of chips, the array property, its render function, and the def object key
- * @param {HTMLElement} params.subheading
- *        the <h3> element whose text is toggled
- * @param {Function} params.setDeleteVisible
- *        callback to show/hide the delete button
- * @param {string} params.addTitle
- *        subheading text for add mode
- * @param {string} params.editTitle
- *        subheading text for edit mode
- * @param {Function} params.getCustom
- *        function returning the current form payload
- * @param {Function} [params.onFieldChange]
- *        called with getCustom() after reset() or populate()
- *
- * @returns {{ reset: Function, populate: Function }}
  */
 export function createFormState({
   form,
@@ -107,10 +79,12 @@ export function createFormState({
     });
 
     // apply pickr colors
+    // Previously we did const colorKey = `${key}Color`, which was wrong.
     Object.entries(pickrs).forEach(([key, p]) => {
-      const colorKey = `${key}Color`;
-      if (def[colorKey]) {
-        p.setColor(def[colorKey]);
+      // Use the exact key (e.g. "nameColor", "rarityColor")
+      const saved = def[key];
+      if (saved) {
+        p.setColor(saved);
       }
     });
 
