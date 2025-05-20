@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.7 — hide floating preview when modal closes
+// @version: 1.8 — pass saved def into initPickrs so swatches load their saved colors
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -23,9 +23,9 @@ export function initDefinitionModal(db) {
   let definitions = [];
   let itemMap = {};
 
-  // Hide preview whenever the modal closes
+  // Hide preview when the modal closes
   modalEl.addEventListener("close", () => {
-    if (previewApi) previewApi.hide();
+    previewApi?.hide();
   });
 
   // Reopen on type change
@@ -113,7 +113,10 @@ export function initDefinitionModal(db) {
     subheader = generated;
 
     formContainer.append(formApi.form);
-    formApi.initPickrs?.();
+
+    // ←──────▶
+    // **Here:** initialize Pickr, passing in `def` so saved colors load
+    formApi.initPickrs(def);
 
     if (def) {
       formApi.populate(def);
@@ -121,7 +124,7 @@ export function initDefinitionModal(db) {
       formApi.reset();
     }
 
-    // Open modal and show preview
+    // Open and show preview
     open();
 
     const previewData = def
@@ -137,4 +140,3 @@ export function initDefinitionModal(db) {
     openEdit:   def                   => openDefinition(currentType, def)
   };
 }
- 
