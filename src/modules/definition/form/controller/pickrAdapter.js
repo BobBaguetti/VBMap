@@ -1,11 +1,12 @@
 // @file: src/modules/definition/form/controller/pickrAdapter.js
-// @version: 1 — relocated into definition module
+// @version: 1.1 — support initial colors in initFormPickrs
 
 const activePickrs = [];
 
 /**
  * Create a Pickr instance on the given selector.
- * Falls back to a stub if the element doesn't exist.
+ * @param {string} targetSelector — CSS selector for the .color-btn element
+ * @param {string} defaultColor — initial color hex
  */
 export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
   const el = document.querySelector(targetSelector);
@@ -15,7 +16,8 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
       on: () => {},
       setColor: () => {},
       getColor: () => defaultColor,
-      getRoot: () => null
+      getRoot: () => null,
+      destroy: () => {}
     };
   }
 
@@ -41,7 +43,41 @@ export function createPickr(targetSelector, defaultColor = "#E5E6E8") {
 }
 
 /**
- * Disable or enable a Pickr instance visually and interactively.
+ * Initialize Pickr instances for form fields.
+ *
+ * @param {HTMLFormElement} form
+ * @param {Object<string, HTMLElement>} fieldMap — map of colorable fieldKey to its button element
+ * @param {Object<string, string>} [initialColors] — map of fieldKey to initial hex color
+ * @returns {Object<string, Pickr>} — map of fieldKey to Pickr instance
+ */
+export function initFormPickrs(form, fieldMap, initialColors = {}) {
+  const pickrs = {};
+
+  Object.entries(fieldMap).forEach(([key, btn]) => {
+    if (!btn || pickrs[key]) return;
+    if (!document.body.contains(btn)) return;
+
+    // Use saved color if provided, otherwise default
+    const defaultColor = initialColors[key] || "#E5E6E8";
+    const p = createPickr(`#${btn.id}`, defaultColor);
+    pickrs[key] = p;
+
+    // Wire up form "input" events on color change
+    p.on("change", () =>
+      form.dispatchEvent(new Event("input", { bubbles: true }))
+    );
+    p.on("save", () =>
+      form.dispatchEvent(new Event("input", { bubbles: true }))
+    );
+
+    btn.addEventListener("click", () => p.show());
+  });
+
+  return pickrs;
+}
+
+/**
+ * Disable or enable a Pickr instance visually.
  */
 export function disablePickr(pickr, disabled = true) {
   const root = pickr?.getRoot?.();
@@ -55,51 +91,17 @@ export function disablePickr(pickr, disabled = true) {
  * Get the current color from a Pickr instance in HEXA format.
  */
 export function getPickrHexColor(pickr, fallback = "#E5E6E8") {
-  return pickr?.getColor?.()?.toHEXA?.()?.toString?.() || fallback;
+  try {
+    return pickr?.getColor?.()?.toHEXA?.()?.toString?.() || fallback;
+  } catch {
+    return fallback;
+  }
 }
 
 /**
- * Clean up all Pickrs created via this module.
+ * Destroy all Pickr instances created via this module.
  */
 export function destroyAllPickrs() {
   activePickrs.forEach(p => p?.destroy?.());
   activePickrs.length = 0;
-}
-
-/**
- * Scan the given root element for any color‐swatch buttons
- * and attach Pickr to each one.
- */
-export function initModalPickrs(root) {
-  const swatches = root.querySelectorAll(".color-swatch");
-  swatches.forEach(el => {
-    createPickr(`#${el.id}`);
-  });
-}
-
-/**
- * Initialize Pickr instances for a set of buttons in a form,
- * wiring change/save → form "input" events.
- */
-export function initFormPickrs(form, fieldMap) {
-  const pickrs = {};
-
-  Object.entries(fieldMap).forEach(([key, btn]) => {
-    if (!btn || pickrs[key]) return;
-    if (!document.body.contains(btn)) return;
-
-    const p = createPickr(`#${btn.id}`);
-    pickrs[key] = p;
-
-    p.on("change", () =>
-      form.dispatchEvent(new Event("input", { bubbles: true }))
-    );
-    p.on("save", () =>
-      form.dispatchEvent(new Event("input", { bubbles: true }))
-    );
-
-    btn.addEventListener("click", () => p.show());
-  });
-
-  return pickrs;
 }
