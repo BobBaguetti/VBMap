@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.7 — hide floating preview when modal closes
+// @version: 1.7 — force-sync swatch buttons after populate
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -10,28 +10,22 @@ import { loadItemDefinitions }
   from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
-  const { modalEl, open, close } =
-    createModalShell("definition-modal");
+  const { modalEl, open, close } = createModalShell("definition-modal");
   let {
     header, searchInput, typeSelect,
     listContainer, subheader, formContainer,
     previewContainer
   } = buildModalUI(modalEl);
 
+  // When the user picks a different type, reopen the modal for that type
+  typeSelect.addEventListener("change", () => {
+    openDefinition(typeSelect.value);
+  });
+
   let listApi, formApi, previewApi;
   let currentType;
   let definitions = [];
   let itemMap = {};
-
-  // Hide preview whenever the modal closes
-  modalEl.addEventListener("close", () => {
-    if (previewApi) previewApi.hide();
-  });
-
-  // Reopen on type change
-  typeSelect.addEventListener("change", () => {
-    openDefinition(typeSelect.value);
-  });
 
   async function refresh() {
     definitions = await definitionTypes[currentType].loadDefs(db);
@@ -40,10 +34,10 @@ export function initDefinitionModal(db) {
 
   function setupList() {
     listApi = createDefinitionListManager({
-      container:       listContainer,
-      getDefinitions:  () => definitions,
-      onEntryClick:    def => openDefinition(currentType, def),
-      onDelete:        async id => {
+      container:      listContainer,
+      getDefinitions: () => definitions,
+      onEntryClick:   def => openDefinition(currentType, def),
+      onDelete:       async id => {
         await definitionTypes[currentType].del(db, id);
         await refresh();
       }
@@ -56,8 +50,10 @@ export function initDefinitionModal(db) {
   async function openDefinition(type, def = null) {
     currentType = type;
 
+    // Rebuild type selector
     typeSelect.innerHTML = Object.keys(definitionTypes)
-      .map(t => `<option>${t}</option>`).join("");
+      .map(t => `<option>${t}</option>`)
+      .join("");
     typeSelect.value = type;
 
     if (!listApi) setupList();
@@ -68,10 +64,10 @@ export function initDefinitionModal(db) {
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // Recreate previewApi for this type
+    // Recreate preview controller
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // Build the form
+    // Build form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -101,13 +97,13 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Remove stray filter row
+    // Remove any stray showInFilters row
     const dup = formApi.form
       .querySelector('#fld-showInFilters')
       ?.closest('.field-row');
     if (dup) dup.remove();
 
-    // Swap in subheader
+    // Swap in generated subheader
     const generated = formApi.form.querySelector(".modal-subheader");
     subheader.replaceWith(generated);
     subheader = generated;
@@ -117,24 +113,33 @@ export function initDefinitionModal(db) {
 
     if (def) {
       formApi.populate(def);
+
+      // ─── New: Force-sync swatch buttons to saved colors ──────────
+      Object.entries(formApi.pickrs).forEach(([key, p]) => {
+        const saved = def[key];
+        if (saved) {
+          p.setColor(saved);
+          if (p._swatchEl) {
+            p._swatchEl.style.backgroundColor = saved;
+          }
+        }
+      });
     } else {
       formApi.reset();
     }
 
-    // Open modal and show preview
+    // Open and show preview
     open();
-
     const previewData = def
       ? (type === "Chest"
-          ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
+          ? { ...def, lootPool: (def.lootPool || []).map(id => itemMap[id]).filter(Boolean) }
           : def)
-      : (type==="Chest" ? { lootPool: [] } : {});
+      : (type === "Chest" ? { lootPool: [] } : {});
     previewApi.show(previewData);
   }
 
   return {
-    openCreate: (_evt, type = "Item") => openDefinition(type),
-    openEdit:   def                   => openDefinition(currentType, def)
+    openCreate: (_evt, t = "Item") => openDefinition(t),
+    openEdit:   def              => openDefinition(currentType, def)
   };
 }
- 
