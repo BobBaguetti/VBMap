@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.10 — extra-info row width, button ordering and indent */
+/* @version: 1.11 — extra-info alignment, icon centering, remove margin-top */
 
 .modal--definition #definition-form-container {
   display: flex;
@@ -63,13 +63,14 @@
 /*                  Extra-Info row adjustments                     */
 /* **************************************************************** */
 
-/* Container: vertical so “+” drops under the line */
+/* Container: align to top of row */
 .modal--definition .form-row .extra-info-block {
   display: flex;
   flex-direction: column;
   gap: 0;
   width: 100%;
   flex: 1 1 auto;
+  align-self: flex-start; /* ensure block is top-aligned */
 }
 
 /* The actual extra-info “line” */
@@ -96,13 +97,19 @@
   order: 0;
 }
 
-/* Remove “×” button sits immediately before the color */
+/* Remove “×” button sits immediately before the color, icons centered */
 .modal--definition .form-row .extra-info-block .field-row button.ui-button {
   order: 1;
   margin-left: 8px !important;
   margin-right: 0 !important;
   width: 28px !important;
   height: 28px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: normal !important;
+  font-size: 16px !important;
 }
 
 /* Color swatch always last */
@@ -113,9 +120,16 @@
 
 /* “+” button under the input, indented to align with other swatches */
 .modal--definition .form-row .extra-info-block > button.ui-button {
-  align-self: flex-start;
-  margin-left: calc(100px + 8px) !important;
-  margin-top: 8px !important;
+  flex: 0 0 28px;
   width: 28px !important;
   height: 28px !important;
+  align-self: flex-start;
+  margin-left: calc(100px + 8px) !important;
+  margin-top: 4px !important; /* bring it closer to the field */
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: normal !important;
+  font-size: 16px !important;
 }
