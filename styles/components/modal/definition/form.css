@@ -1,7 +1,12 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 2.1 — restore normal form rows; extra-info scoped properly */
+/* @version: 1.10 — extra-info row width, button ordering and indent */
 
-/* ── Original form-row styling ───────────────────────────────────────── */
+.modal--definition #definition-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .modal--definition .form-row {
   display: flex;
   align-items: center;
@@ -13,6 +18,7 @@
   margin-right: 8px;
 }
 
+/* catch-all controls */
 .modal--definition .form-row .form-control {
   flex: 1 1 auto;
   min-width: 0;
@@ -24,6 +30,7 @@
   color: var(--text-primary);
 }
 
+/* Remove spinner arrows on number inputs */
 .modal--definition .form-row .form-control[type="number"]::-webkit-outer-spin-button,
 .modal--definition .form-row .form-control[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -34,13 +41,15 @@
   appearance: none;
 }
 
+/* Allow textareas to resize vertically */
 .modal--definition .form-row .form-control[type="textarea"],
 .modal--definition .form-row textarea.form-control {
   resize: vertical;
 }
 
+/* Color swatches */
 .modal--definition .form-row .color-btn {
-  margin-left: 8px;
+  margin-left: 8px !important;
   flex: 0 0 24px;
   width: 24px;
   height: 24px;
@@ -50,91 +59,63 @@
   cursor: pointer;
 }
 
-/* ── Extra-Info adjustments ──────────────────────────────────────────── */
+/* **************************************************************** */
+/*                  Extra-Info row adjustments                     */
+/* **************************************************************** */
 
-/* 1) The wrapper we tagged in JS */
-.modal--definition .form-row.extra-info-container {
+/* Container: vertical so “+” drops under the line */
+.modal--definition .form-row .extra-info-block {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  padding: 8px 0;
+  gap: 0;
+  width: 100%;
+  flex: 1 1 auto;
 }
 
-/* 2) Keep the “Extra Info:” label locked at the top */
-.modal--definition .form-row.extra-info-container > label {
-  align-self: flex-start;
-}
-
-/* 3) Indent the entire block under the input column */
-.modal--definition .form-row.extra-info-container .extra-info-block {
-  margin-left: calc(100px + 8px);
-  width: calc(100% - (100px + 8px));
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-/* 4) Each extra-info line: input → remove → swatch */
-.modal--definition .extra-info-block .field-row {
+/* The actual extra-info “line” */
+.modal--definition .form-row .extra-info-block .field-row {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  margin-bottom: 0 !important;
+  width: 100%;
+  flex: 1 1 auto;
 }
 
-/* 5) Match standard input styling */
-.modal--definition .extra-info-block .ui-input {
-  flex: 1 1 auto;
+/* Text input matches .form-control */
+.modal--definition .form-row .extra-info-block .ui-input {
+  flex: 1 1 auto !important;
   min-width: 0;
   margin-right: 8px;
-  background: var(--bg-50);
-  border: 1px solid var(--border-soft);
-  border-radius: 2px;
-  padding: 6px 8px;
-  color: var(--text-primary);
+  background-color: var(--bg-50) !important;
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 2px !important;
+  padding: 6px 8px !important;
+  color: var(--text-primary) !important;
   box-sizing: border-box;
+  order: 0;
 }
 
-/* 6) Tidy remove-line (“×”) button */
-.modal--definition .extra-info-remove-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: none;
-  background: none;
-}
-.modal--definition .extra-info-remove-btn i {
-  line-height: 1;
-  vertical-align: middle;
+/* Remove “×” button sits immediately before the color */
+.modal--definition .form-row .extra-info-block .field-row button.ui-button {
+  order: 1;
+  margin-left: 8px !important;
+  margin-right: 0 !important;
+  width: 28px !important;
+  height: 28px !important;
 }
 
-/* 7) Color swatch same as other fields */
-.modal--definition .extra-info-block .color-btn {
-  flex: 0 0 24px;
-  width: 24px;
-  height: 24px;
-  background-color: var(--text-primary);
-  border: 1px solid var(--border-soft);
-  border-radius: 2px;
-  cursor: pointer;
+/* Color swatch always last */
+.modal--definition .form-row .extra-info-block .field-row .color-btn {
+  order: 2;
+  margin-left: 8px !important;
 }
 
-/* 8) “+” button under inputs column */
-.modal--definition .extra-info-add-btn {
-  margin-left: calc(100px + 8px);
-  margin-top: 4px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 28px;
-  height: 28px;
-  padding: 0;
-  border: none;
-  background: none;
-}
-.modal--definition .extra-info-add-btn i {
-  line-height: 1;
-  vertical-align: middle;
+/* “+” button under the input, indented to align with other swatches */
+.modal--definition .form-row .extra-info-block > button.ui-button {
+  align-self: flex-start;
+  margin-left: calc(100px + 8px) !important;
+  margin-top: 8px !important;
+  width: 28px !important;
+  height: 28px !important;
 }
