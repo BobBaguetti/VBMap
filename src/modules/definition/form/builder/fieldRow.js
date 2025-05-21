@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/builder/fieldRow.js
-// @version: 2.2 — removed divider (<hr>) wrappers for extraInfo; simplified extraInfo row
+// @version: 2.3 — wire up extraInfo helper correctly so getLines()/setLines() work
 
 import { createPickr }
   from "../controller/pickrAdapter.js";
@@ -15,12 +15,12 @@ import { createChipListField }  from "./chipListField.js";
  * @param {string} opts.label     — row label
  * @param {string} [opts.id]      — id on the <input>/<select>/<textarea>
  * @param {string[]} [opts.options] — for select
- * @param {boolean} [opts.colorable] — show a color picker
+ * @param {string} [opts.colorable] — name of the color field (e.g. "nameColor")
  * @param {string} [opts.idKey]   — chipList only
  * @param {string} [opts.labelKey]— chipList only
  * @param {Function} [opts.renderIcon] — chipList only
  *
- * @returns {{ row:HTMLElement, input:HTMLElement, colorBtn?:HTMLElement }}
+ * @returns {{ row:HTMLElement, input:HTMLElement|Object, colorBtn?:HTMLElement }}
  */
 export function createFieldRow({
   type,
@@ -77,10 +77,12 @@ export function createFieldRow({
       break;
 
     case "extraInfo":
-      // Simplified: no dividers, single .form-row containing the extra-info block
+      // Create the extra-info helper (with getLines/setLines) and its block
       const extra = createExtraInfoBlock();
-      input = extra.block;
-      break;
+      input = extra;
+      row.append(extra.block);
+      // We return early so we don't go through the generic append logic
+      return { row, input, colorBtn: null };
 
     case "chipList":
       const { row: tmpRow, getItems, setItems } = createChipListField(
@@ -106,8 +108,8 @@ export function createFieldRow({
       throw new Error(`Unknown field type: ${type}`);
   }
 
-  // Color swatch for non-extra/chipList/checkbox
-  if (colorable && type !== "extraInfo" && type !== "chipList" && type !== "checkbox") {
+  // Color swatch for non-extraInfo/chipList/checkbox fields
+  if (colorable) {
     colorBtn = document.createElement("div");
     colorBtn.className = "color-btn";
     colorBtn.id = `${id}-color`;
