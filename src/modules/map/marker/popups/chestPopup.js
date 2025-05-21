@@ -1,9 +1,9 @@
-// @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.0 — extract renderChestPopup into its own module
+// @file: src/modules/definition/map/marker/popups/chestPopup.js
+// @version: 1.1 — use getBestImageUrl for chest-slot images
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
-import { CHEST_RARITY } from "../utils.js";
+import { CHEST_RARITY, getBestImageUrl } from "../utils.js";
 
 export function renderChestPopup(typeDef) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
@@ -41,10 +41,16 @@ export function renderChestPopup(typeDef) {
     const clr = it.rarityColor
       || rarityColors[(it.rarity || "").toLowerCase()]
       || defaultNameColor;
+
+    // Use getBestImageUrl to pick the proper thumbnail
+    const imgUrl = getBestImageUrl(it, "imageLarge", "imageSmall") || "";
+
     cells += `
       <div class="chest-slot" data-index="${idx}"
            style="border-color:${clr}">
-        <img src="${it.imageSmall || ""}" class="chest-slot-img">
+        ${imgUrl
+          ? `<img src="${imgUrl}" class="chest-slot-img" onerror="this.style.display='none'">`
+          : ""}
         ${it.quantity > 1 ? `<span class="chest-slot-qty">${it.quantity}</span>` : ""}
       </div>`;
   });
