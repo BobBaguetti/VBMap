@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.0 — extract renderChestPopup into its own module
+// @version: 1.1 — fallback to imageLarge & hide broken imgs
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
@@ -17,9 +17,10 @@ export function renderChestPopup(typeDef) {
 
   // 2) Header (icon + Name, Category, Rarity)
   const bigImg = typeDef.imageSmall || typeDef.imageLarge
-    ? `<img src="${typeDef.imageSmall || typeDef.imageLarge}" class="popup-image"
-             style="border-color:${rarityColor}"
-             onerror="this.style.display='none'">`
+    ? `<img src="${typeDef.imageSmall || typeDef.imageLarge}"
+            class="popup-image"
+            style="border-color:${rarityColor}"
+            onerror="this.style.display='none'">`
     : "";
 
   const titleColor = typeDef.nameColor || rarityColor;
@@ -41,17 +42,27 @@ export function renderChestPopup(typeDef) {
     const clr = it.rarityColor
       || rarityColors[(it.rarity || "").toLowerCase()]
       || defaultNameColor;
+
+    // use imageSmall if present, otherwise imageLarge; hide on error
+    const imgSrc = it.imageSmall || it.imageLarge || "";
     cells += `
       <div class="chest-slot" data-index="${idx}"
            style="border-color:${clr}">
-        <img src="${it.imageSmall || ""}" class="chest-slot-img">
-        ${it.quantity > 1 ? `<span class="chest-slot-qty">${it.quantity}</span>` : ""}
+        <img src="${imgSrc}"
+             class="chest-slot-img"
+             onerror="this.style.display='none'">
+        ${it.quantity > 1
+          ? `<span class="chest-slot-qty">${it.quantity}</span>`
+          : ""
+        }
       </div>`;
   });
-  // fill remaining slots
+
+  // fill remaining empty slots
   for (let i = pool.length; i < COLS; i++) {
     cells += `<div class="chest-slot" data-index=""></div>`;
   }
+
   const lootBox = `
     <div class="popup-info-box loot-box">
       <div class="chest-grid" style="--cols:${COLS};">
