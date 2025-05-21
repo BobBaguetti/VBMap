@@ -1,5 +1,5 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.13 — indent extra-info lines under the input column, remove full-width stretch */
+/* @version: 1.10 — extra-info row width, button ordering and indent */
 
 .modal--definition #definition-form-container {
   display: flex;
@@ -30,23 +30,24 @@
   color: var(--text-primary);
 }
 
-/* number spinners off */
+/* Remove spinner arrows on number inputs */
 .modal--definition .form-row .form-control[type="number"]::-webkit-outer-spin-button,
 .modal--definition .form-row .form-control[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
 .modal--definition .form-row .form-control[type="number"] {
+  -moz-appearance: none;
   appearance: none;
 }
 
-/* allow vertical resize */
+/* Allow textareas to resize vertically */
 .modal--definition .form-row .form-control[type="textarea"],
 .modal--definition .form-row textarea.form-control {
   resize: vertical;
 }
 
-/* color swatch */
+/* Color swatches */
 .modal--definition .form-row .color-btn {
   margin-left: 8px !important;
   flex: 0 0 24px;
@@ -62,26 +63,28 @@
 /*                  Extra-Info row adjustments                     */
 /* **************************************************************** */
 
-/* container: stack lines vertically, top-align under label */
+/* Container: vertical so “+” drops under the line */
 .modal--definition .form-row .extra-info-block {
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  align-self: flex-start; /* stick to top of the form-row */
+  gap: 0;
+  width: 100%;
+  flex: 1 1 auto;
 }
 
-/* each nested line: indent under the input column (100px label + 8px gap) */
+/* The actual extra-info “line” */
 .modal--definition .form-row .extra-info-block .field-row {
   display: flex;
   align-items: center;
   gap: 8px;
-  margin: 0;
-  margin-left: calc(100px + 8px);
+  margin-bottom: 0 !important;
+  width: 100%;
+  flex: 1 1 auto;
 }
 
-/* style the text inputs like .form-control */
+/* Text input matches .form-control */
 .modal--definition .form-row .extra-info-block .ui-input {
-  flex: 1 1 auto;
+  flex: 1 1 auto !important;
   min-width: 0;
   margin-right: 8px;
   background-color: var(--bg-50) !important;
@@ -90,41 +93,29 @@
   padding: 6px 8px !important;
   color: var(--text-primary) !important;
   box-sizing: border-box;
+  order: 0;
 }
 
-/* remove-line (×) button sits immediately before the swatch, icons centered */
-.modal--definition .form-row .extra-info-block .extra-info-remove-btn {
-  width: 28px !important;
-  height: 28px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+/* Remove “×” button sits immediately before the color */
+.modal--definition .form-row .extra-info-block .field-row button.ui-button {
   order: 1;
-  margin-left: 0 !important;
-  margin-right: 8px !important;
-}
-.modal--definition .extra-info-remove-btn i {
-  line-height: 1;
-  vertical-align: middle;
-}
-
-/* color swatch last */
-.modal--definition .form-row .extra-info-block .color-btn {
-  order: 2;
-}
-
-/* “+” add button: indent under the input column, no full-width */
-.modal--definition .form-row .extra-info-block > .extra-info-add-btn {
+  margin-left: 8px !important;
+  margin-right: 0 !important;
   width: 28px !important;
   height: 28px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  margin: 4px 0 0 calc(100px + 8px) !important;
-}
-.modal--definition .extra-info-add-btn i {
-  line-height: 1;
-  vertical-align: middle;
 }
 
-/* end of file */
+/* Color swatch always last */
+.modal--definition .form-row .extra-info-block .field-row .color-btn {
+  order: 2;
+  margin-left: 8px !important;
+}
+
+/* “+” button under the input, indented to align with other swatches */
+.modal--definition .form-row .extra-info-block > button.ui-button {
+  align-self: flex-start;
+  margin-left: calc(100px + 8px) !important;
+  margin-top: 8px !important;
+  width: 28px !important;
+  height: 28px !important;
+}
