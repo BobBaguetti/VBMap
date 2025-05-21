@@ -1,9 +1,5 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.9.2 — extra-info input & button colors now match standard fields */
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* BASE LAYOUT (unchanged)                                                  */
-/* ────────────────────────────────────────────────────────────────────────── */
+/* @version: 1.9.3 — restore top-alignment of nested extra-info row */
 
 .modal--definition #definition-form-container {
   display: flex;
@@ -86,14 +82,12 @@
   flex: 1 1 auto;
 }
 
-/* ─── MAKE EXTRA-INFO INPUTS LOOK LIKE .form-control ───────────────────── */
-
-/* Override legacy UI-kit background, border, text color */
+/* override ui-kit so inputs match .form-control */
 .modal--definition .form-row .extra-info-block .ui-input {
   flex: 1 1 auto !important;
   min-width: 0;
   margin-right: 8px;
-  background: var(--bg-50) !important;
+  background-color: var(--bg-50) !important;
   border: 1px solid var(--border-soft) !important;
   border-radius: 2px !important;
   padding: 6px 8px !important;
@@ -101,27 +95,7 @@
   box-sizing: border-box;
 }
 
-/* ─── MAKE +/× BUTTONS MATCH STYLE & COLOR ────────────────────────────── */
-
-/* Override background, border, text color */
-.modal--definition .form-row .extra-info-block .ui-button {
-  flex: 0 0 24px;
-  width: 24px !important;
-  height: 24px !important;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background-color: var(--bg-40) !important;
-  border: 1px solid var(--border-soft) !important;
-  border-radius: 2px !important;
-  padding: 0 !important;
-  color: var(--text-primary) !important;
-  font-size: 14px;
-  margin-left: 8px !important;
-  box-sizing: border-box;
-}
-
-/* extra-info color swatch (same as above) */
+/* extra-info color swatch */
 .modal--definition .form-row .extra-info-block .color-btn {
   flex: 0 0 24px;
   width: 24px;
@@ -131,4 +105,33 @@
   border-radius: 2px;
   cursor: pointer;
   margin-left: 8px !important;
+}
+
+/* extra-info add/remove buttons */
+.modal--definition .form-row .extra-info-block .ui-button {
+  flex: 0 0 24px;
+  width: 24px !important;
+  height: 24px !important;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--bg-40) !important;
+  color: var(--text-primary) !important;
+  border: var(--border-width-hair) solid var(--border-soft) !important;
+  border-radius: var(--radius-small) !important;
+  padding: 0 !important;
+  font-size: 14px;
+  margin-left: 8px !important;
+}
+
+/* reset leftover ui-kit boxing */
+.modal--definition .form-row .extra-info-block button.ui-button {
+  box-sizing: border-box;
+}
+
+/* ────────────────────────────────────────────────────────────────────────── */
+/* Keep the NESTED extra-info form-row aligned to the top of its container  */
+/* ────────────────────────────────────────────────────────────────────────── */
+.modal--definition .form-row > hr + .form-row {
+  align-items: flex-start !important;
 }
