@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.1 — fallback to imageLarge & hide broken imgs
+// @version: 1.2 — fallback to imageBig if imageLarge missing
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
@@ -16,8 +16,13 @@ export function renderChestPopup(typeDef) {
   const rarityColor = rarityColors[key] || defaultNameColor;
 
   // 2) Header (icon + Name, Category, Rarity)
-  const bigImg = typeDef.imageSmall || typeDef.imageLarge
-    ? `<img src="${typeDef.imageSmall || typeDef.imageLarge}"
+  // now also fall back to typeDef.imageBig
+  const headerImgSrc = typeDef.imageSmall
+    || typeDef.imageLarge
+    || typeDef.imageBig
+    || "";
+  const bigImg = headerImgSrc
+    ? `<img src="${headerImgSrc}"
             class="popup-image"
             style="border-color:${rarityColor}"
             onerror="this.style.display='none'">`
@@ -43,8 +48,11 @@ export function renderChestPopup(typeDef) {
       || rarityColors[(it.rarity || "").toLowerCase()]
       || defaultNameColor;
 
-    // use imageSmall if present, otherwise imageLarge; hide on error
-    const imgSrc = it.imageSmall || it.imageLarge || "";
+    // try small, then large, then Big
+    const imgSrc = it.imageSmall
+      || it.imageLarge
+      || it.imageBig
+      || "";
     cells += `
       <div class="chest-slot" data-index="${idx}"
            style="border-color:${clr}">
