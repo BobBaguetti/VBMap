@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.2 — fallback to imageBig if imageLarge missing
+// @version: 1.0 — extract renderChestPopup into its own module
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
@@ -16,16 +16,10 @@ export function renderChestPopup(typeDef) {
   const rarityColor = rarityColors[key] || defaultNameColor;
 
   // 2) Header (icon + Name, Category, Rarity)
-  // now also fall back to typeDef.imageBig
-  const headerImgSrc = typeDef.imageSmall
-    || typeDef.imageLarge
-    || typeDef.imageBig
-    || "";
-  const bigImg = headerImgSrc
-    ? `<img src="${headerImgSrc}"
-            class="popup-image"
-            style="border-color:${rarityColor}"
-            onerror="this.style.display='none'">`
+  const bigImg = typeDef.imageSmall || typeDef.imageLarge
+    ? `<img src="${typeDef.imageSmall || typeDef.imageLarge}" class="popup-image"
+             style="border-color:${rarityColor}"
+             onerror="this.style.display='none'">`
     : "";
 
   const titleColor = typeDef.nameColor || rarityColor;
@@ -47,30 +41,17 @@ export function renderChestPopup(typeDef) {
     const clr = it.rarityColor
       || rarityColors[(it.rarity || "").toLowerCase()]
       || defaultNameColor;
-
-    // try small, then large, then Big
-    const imgSrc = it.imageSmall
-      || it.imageLarge
-      || it.imageBig
-      || "";
     cells += `
       <div class="chest-slot" data-index="${idx}"
            style="border-color:${clr}">
-        <img src="${imgSrc}"
-             class="chest-slot-img"
-             onerror="this.style.display='none'">
-        ${it.quantity > 1
-          ? `<span class="chest-slot-qty">${it.quantity}</span>`
-          : ""
-        }
+        <img src="${it.imageSmall || ""}" class="chest-slot-img">
+        ${it.quantity > 1 ? `<span class="chest-slot-qty">${it.quantity}</span>` : ""}
       </div>`;
   });
-
-  // fill remaining empty slots
+  // fill remaining slots
   for (let i = pool.length; i < COLS; i++) {
     cells += `<div class="chest-slot" data-index=""></div>`;
   }
-
   const lootBox = `
     <div class="popup-info-box loot-box">
       <div class="chest-grid" style="--cols:${COLS};">
