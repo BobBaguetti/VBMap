@@ -2,7 +2,7 @@
 // @version: 2.1 — relocated into definition module; updated import paths
 
 import { createPickr, disablePickr, getPickrHexColor }
-from "../controller/pickrAdapter.js";
+  from "../controller/pickrAdapter.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
 import { createChipListField }  from "./chipListField.js";
 
@@ -86,7 +86,8 @@ export function createFieldRow({
         const hr1 = document.createElement("hr");
         const hr2 = document.createElement("hr");
         container.append(hr1, row, hr2);
-        container.className = "form-row";
+        // mark this as the extra-info wrapper
+        container.className = "form-row extra-info-container";
         row.append(input);
         return { row: container, input: extra };
       }

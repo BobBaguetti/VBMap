@@ -1,25 +1,17 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.13 — align extra-info add button under inputs */
+/* @version: 2.0 — scoped standard rows & extra-info-container styling */
 
-.modal--definition #definition-form-container {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.modal--definition .form-row {
+/* ── Standard form rows ─────────────────────────────────────────────── */
+.modal--definition #definition-form-container > .form-row:not(.extra-info-container) {
   display: flex;
   align-items: center;
   padding: 8px 0;
 }
-
-.modal--definition .form-row > label {
+.modal--definition #definition-form-container > .form-row:not(.extra-info-container) > label {
   flex: 0 0 100px;
   margin-right: 8px;
 }
-
-/* catch-all controls */
-.modal--definition .form-row .form-control {
+.modal--definition #definition-form-container > .form-row:not(.extra-info-container) .form-control {
   flex: 1 1 auto;
   min-width: 0;
   margin-right: 8px;
@@ -29,27 +21,21 @@
   padding: 6px 8px;
   color: var(--text-primary);
 }
-
-/* Remove spinner arrows on number inputs */
-.modal--definition .form-row .form-control[type="number"]::-webkit-outer-spin-button,
-.modal--definition .form-row .form-control[type="number"]::-webkit-inner-spin-button {
+.modal--definition #definition-form-container > .form-row:not(.extra-info-container) .form-control[type="number"]::-webkit-outer-spin-button,
+.modal--definition #definition-form-container > .form-row:not(.extra-info-container) .form-control[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-.modal--definition .form-row .form-control[type="number"] {
+.modal--definition #definition-form-container > .form-row:not(.extra-info-container) .form-control[type="number"] {
   -moz-appearance: none;
   appearance: none;
 }
-
-/* Allow textareas to resize vertically */
-.modal--definition .form-row .form-control[type="textarea"],
-.modal--definition .form-row textarea.form-control {
+.modal--definition #definition-form-container > .form-row:not(.extra-info-container) .form-control[type="textarea"],
+.modal--definition #definition-form-container > .form-row:not(.extra-info-container) textarea.form-control {
   resize: vertical;
 }
-
-/* Color swatches */
-.modal--definition .form-row .color-btn {
-  margin-left: 8px !important;
+.modal--definition #definition-form-container > .form-row:not(.extra-info-container) .color-btn {
+  margin-left: 8px;
   flex: 0 0 24px;
   width: 24px;
   height: 24px;
@@ -59,79 +45,92 @@
   cursor: pointer;
 }
 
-/* **************************************************************** */
-/*                  Extra-Info row adjustments                     */
-/* **************************************************************** */
-
-/* top-align the extra-info block inside its form-row */
-.modal--definition .form-row .extra-info-block {
+/* ── Extra-Info container row ──────────────────────────────────────── */
+.modal--definition #definition-form-container > .form-row.extra-info-container {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  width: 100%;
-  flex: 1 1 auto;
+  align-items: flex-start;
+  padding: 8px 0;
+}
+.modal--definition #definition-form-container > .form-row.extra-info-container > label {
   align-self: flex-start;
 }
 
-/* each inner “line” */
-.modal--definition .form-row .extra-info-block .field-row {
+/* indent block under input column (100px label + 8px gap) */
+.modal--definition #definition-form-container
+  > .form-row.extra-info-container
+  .extra-info-block {
+  margin-left: calc(100px + 8px);
+  width: calc(100% - (100px + 8px));
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* ── Inner extra-info lines & controls ───────────────────────────── */
+.modal--definition .extra-info-block .field-row {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 0 !important;
-  width: 100%;
-  flex: 1 1 auto;
+  gap: 4px;
 }
 
-/* inputs matching .form-control */
-.modal--definition .form-row .extra-info-block .ui-input {
-  flex: 1 1 auto !important;
+/* text input matches form-control */
+.modal--definition .extra-info-block .ui-input {
+  flex: 1 1 auto;
   min-width: 0;
   margin-right: 8px;
-  background-color: var(--bg-50) !important;
-  border: 1px solid var(--border-soft) !important;
-  border-radius: 2px !important;
-  padding: 6px 8px !important;
-  color: var(--text-primary) !important;
+  background: var(--bg-50);
+  border: 1px solid var(--border-soft);
+  border-radius: 2px;
+  padding: 6px 8px;
+  color: var(--text-primary);
   box-sizing: border-box;
-  order: 0;
 }
 
-/* remove-line “×” button before swatch, icons centered */
-.modal--definition .form-row .extra-info-block .extra-info-remove-btn {
-  order: 1;
-  margin-left: 8px !important;
-  margin-right: 0 !important;
-  width: 28px !important;
-  height: 28px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+/* remove-line button */
+.modal--definition .extra-info-remove-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  padding: 0;
 }
+/* center its FontAwesome icon */
 .modal--definition .extra-info-remove-btn i {
   line-height: 1;
   vertical-align: middle;
 }
 
-/* swatch always last */
-.modal--definition .form-row .extra-info-block .color-btn {
-  order: 2;
-  margin-left: 8px !important;
+/* color swatch */
+.modal--definition .extra-info-block .color-btn {
+  flex: 0 0 24px;
+  width: 24px;
+  height: 24px;
+  background-color: var(--text-primary);
+  border: 1px solid var(--border-soft);
+  border-radius: 2px;
+  cursor: pointer;
 }
 
-/* “+” button under the inputs, indented to input column */
-.modal--definition .form-row .extra-info-block > .extra-info-add-btn {
-  flex: 0 0 28px;
-  width: 28px !important;
-  height: 28px !important;
-  align-self: flex-start;
-  /* 100px label + 8px gap aligns with all other inputs */
-  margin-left: calc(100px + 8px) !important;
-  margin-top: 4px !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
+/* add-line button under inputs */
+.modal--definition #definition-form-container
+  > .form-row.extra-info-container
+  > .extra-info-add-btn {
+  margin-left: calc(100px + 8px);
+  margin-top: 4px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: none;
+  border: none;
+  padding: 0;
 }
+/* center its FontAwesome icon */
 .modal--definition .extra-info-add-btn i {
   line-height: 1;
   vertical-align: middle;
