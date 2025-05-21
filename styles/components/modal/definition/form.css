@@ -1,9 +1,5 @@
 /* @file: styles/components/modal/definition/form.css */
-/* @version: 1.9.1 — keep Extra Info label at top when multiple rows */
-
-/* ────────────────────────────────────────────────────────────────────────── */
-/* BASE LAYOUT (unchanged from v1.9)                                       */
-/* ────────────────────────────────────────────────────────────────────────── */
+/* @version: 1.9.2 — extra-info inputs fully match .form-control colors */
 
 .modal--definition #definition-form-container {
   display: flex;
@@ -67,11 +63,11 @@
 /*                  Extra-Info row adjustments                     */
 /* **************************************************************** */
 
-/* Container in the form-row (horizontal flex) */
+/* Container in the form-row */
 .modal--definition .form-row .extra-info-block {
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
   flex: 1 1 auto;
   margin: 0;
@@ -86,19 +82,20 @@
   flex: 1 1 auto;
 }
 
-/* extra-info text inputs match .form-control */
+/* ---- NEW: force UI-inputs to match .form-control styling ---- */
 .modal--definition .form-row .extra-info-block .ui-input {
-  flex: 1 1 auto;
+  flex: 1 1 auto !important;
   min-width: 0;
   margin-right: 8px;
-  background: var(--bg-50);
-  border: 1px solid var(--border-soft);
-  border-radius: 2px;
-  padding: 6px 8px;
-  color: var(--text-primary);
+  background-color: var(--bg-50) !important;
+  border: 1px solid var(--border-soft) !important;
+  border-radius: 2px !important;
+  padding: 6px 8px !important;
+  color: var(--text-primary) !important;
+  box-sizing: border-box;
 }
 
-/* extra-info color swatches */
+/* extra-info color swatch */
 .modal--definition .form-row .extra-info-block .color-btn {
   flex: 0 0 24px;
   width: 24px;
@@ -127,15 +124,7 @@
   margin-left: 8px !important;
 }
 
-/* reset any leftover ui-kit boxing */
+/* reset leftover ui-kit boxing */
 .modal--definition .form-row .extra-info-block button.ui-button {
   box-sizing: border-box;
 }
-
-/* ────────────────────────────── NEW ──────────────────────────────────────── */
-/* keep the INNER extra-info row aligned to the top, not centered vertically */
-.modal--definition .form-row > hr + .form-row {
-  align-items: flex-start !important;
-}
-/* ────────────────────────────────────────────────────────────────────────── */
- 
