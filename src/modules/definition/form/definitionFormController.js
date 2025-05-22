@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.5 — mirror extraInfoBlock’s deferred color application
+// @version: 1.9.6 — auto-apply chest nameColor based on category+size
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -10,6 +10,7 @@ import {
   rarityColors,
   itemTypeColors
 } from "../../../shared/utils/color/colorPresets.js";
+import { CHEST_RARITY } from "../../../map/marker/utils.js";
 
 /**
  * Wraps a schema-built form, wiring header, state, and events.
@@ -42,29 +43,44 @@ export function createFormController(buildResult, schema, handlers) {
   // Initialize Pickr on colorable fields
   const pickrs = initFormPickrs(form, colorables);
 
-  // Auto-apply preset colors when selects change
+  // ─── Auto-apply preset colors when selects change ─────────────────────────────
   Object.entries(schema).forEach(([key, cfg]) => {
     if (cfg.type === "select" && cfg.colorable) {
-      fields[key].addEventListener("change", () => {
+      const selectEl = fields[key];
+      selectEl.addEventListener("change", () => {
         let preset;
+
+        // Existing per-field presets
         if (key === "rarity") {
-          preset = rarityColors[fields[key].value];
+          preset = rarityColors[selectEl.value];
           if (preset) {
             pickrs["rarityColor"]?.setColor(preset);
             pickrs["nameColor"]?.setColor(preset);
           }
         } else if (key === "itemType") {
-          preset = itemTypeColors[fields[key].value];
+          preset = itemTypeColors[selectEl.value];
           if (preset) {
             pickrs["itemTypeColor"]?.setColor(preset);
           }
         }
+        // ─── NEW: Chest definitions derive rarity from category+size ──────
+        else if (title === "Chest" && (key === "category" || key === "size")) {
+          const cat = fields.category.value;
+          const sz  = fields.size.value;
+          const rarKey = CHEST_RARITY[cat]?.[sz];
+          preset = rarityColors[rarKey];
+          if (preset) {
+            // only bump the name (no stored rarity field)
+            pickrs["nameColor"]?.setColor(preset);
+          }
+        }
+
         form.dispatchEvent(new Event("input", { bubbles: true }));
       });
     }
   });
 
-  let payloadId = null; 
+  let payloadId = null;
 
   // ─── Build submission payload ────────────────────────────────────────────────
   function getPayload() {
@@ -156,17 +172,17 @@ export function createFormController(buildResult, schema, handlers) {
         fields[key].set(sanitized[key]);
       } else if (cfg.type === "extraInfo") {
         const fromExtraLines = Array.isArray(sanitized[key]) && sanitized[key];
-        const fromLegacyInfo  = Array.isArray(def.extraLines)  && def.extraLines;
+        const fromLegacyInfo  = Array.isArray(def.extraInfo)  && def.extraInfo;
         const lines = fromExtraLines
           ? sanitized[key]
           : fromLegacyInfo
-            ? def.extraLines
+            ? def.extraInfo
             : [];
         fields[key].setLines(lines);
       }
     }
 
-    // ─── DEFERRED: mirror extraInfoBlock's setTimeout color load ───────────
+    // ─── Apply saved colors to pickr instances ───────────────────────────────
     setTimeout(() => {
       Object.entries(schema).forEach(([key, cfg]) => {
         if (cfg.colorable) {
@@ -177,9 +193,20 @@ export function createFormController(buildResult, schema, handlers) {
           }
         }
       });
+
+      // Also re-apply chest nameColor from def if present
+      if (title === "Chest") {
+        const cat = def.category;
+        const sz  = def.size;
+        const rarKey = CHEST_RARITY[cat]?.[sz];
+        const preset = rarityColors[rarKey];
+        if (preset) {
+          pickrs["nameColor"]?.setColor(preset);
+        }
+      }
     }, 0);
 
-    // Apply presets on populate for rarity & itemType
+    // Apply presets on populate for rarity & itemType (unchanged)
     if (schema.rarity) {
       const preset = rarityColors[sanitized.rarity];
       if (preset) {
