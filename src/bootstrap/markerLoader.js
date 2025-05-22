@@ -52,22 +52,22 @@ export async function init(
         const { id: _ignore, ...fields } = defMap[data[defKey]];
         Object.assign(data, fields);
 
-        // ─── FIXED: Enrich lootPool items even if stored as ID strings ────
+        // ─── FIXED: Enrich lootPool entries even when stored as simple IDs ───
         if (data.type === "Chest" && Array.isArray(data.lootPool)) {
           const itemMap = definitionsManager.getDefinitions("Item");
           data.lootPool = data.lootPool.map(entry => {
-            // entry might be a string ID or a partial object {id, quantity,...}
+            // entry could be "abc123" or { id: "abc123", quantity: 2, … }
             const id = typeof entry === "string" ? entry : entry.id;
             const full = itemMap[id];
-            // If we found a full definition, use that (it includes id, imageSmall, etc.)
+            // If we found the full Item def, use it (has imageSmall/imageLarge)
             if (full) return full;
-            // Otherwise, preserve any existing properties (e.g. quantity)
+            // Otherwise preserve whatever partial data existed
             return typeof entry === "object" ? entry : { id };
           });
         }
       }
 
-      // Context‐menu callbacks
+      // Context-menu callbacks
       const cb = {
         onEdit: (markerObj, originalData, e) =>
           markerForm.openEdit(markerObj, originalData, e, payload => {
@@ -90,7 +90,7 @@ export async function init(
         }
       };
 
-      // Create marker instance
+      // Create the Leaflet marker
       const markerObj = createMarker(
         data,
         map,
@@ -100,11 +100,12 @@ export async function init(
         isAdmin
       );
 
+      // Set its popup to the rendered HTML
       if (cfg.popupRenderer) {
         markerObj.setPopupContent(cfg.popupRenderer(data));
       }
 
-      // Add to appropriate layer
+      // Add to the right layer
       const layer = clusterItemLayer.hasLayer(markerObj)
         ? clusterItemLayer
         : flatItemLayer;
@@ -116,11 +117,10 @@ export async function init(
     filterMarkers();
   });
 
-  // 2) Re‐apply icon & popup when definitions update
+  // 2) Re‐apply icon & popup when definitions update (same enrichment)
   Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
-      // definitionsManager already updated
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.type !== type) return;
         const defMap = definitionsManager.getDefinitions(type);
@@ -129,7 +129,7 @@ export async function init(
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
 
-          // ─── FIXED: Also re‐enrich lootPool on definition changes ─────────
+          // Re-enrich lootPool the same way
           if (data.type === "Chest" && Array.isArray(data.lootPool)) {
             const itemMap = definitionsManager.getDefinitions("Item");
             data.lootPool = data.lootPool.map(entry => {
@@ -140,7 +140,6 @@ export async function init(
             });
           }
         }
-        // Always reset icon & popup
         markerObj.setIcon(cfg.iconFactory(data));
         markerObj.setPopupContent(cfg.popupRenderer(data));
       });
@@ -152,4 +151,4 @@ export async function init(
 export default {
   init,
   allMarkers
-}; 
+};
