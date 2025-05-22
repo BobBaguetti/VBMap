@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.7 — hide floating preview when modal closes
+// @version: 1.8 — ask for confirmation before deleting
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -40,10 +40,14 @@ export function initDefinitionModal(db) {
 
   function setupList() {
     listApi = createDefinitionListManager({
-      container:       listContainer,
-      getDefinitions:  () => definitions,
-      onEntryClick:    def => openDefinition(currentType, def),
-      onDelete:        async id => {
+      container:      listContainer,
+      getDefinitions: () => definitions,
+      onEntryClick:   def => openDefinition(currentType, def),
+      onDelete:       async id => {
+        // Confirmation before deleting from the list
+        if (!confirm("Are you sure you want to delete this definition?")) {
+          return;
+        }
         await definitionTypes[currentType].del(db, id);
         await refresh();
       }
@@ -78,6 +82,10 @@ export function initDefinitionModal(db) {
       hasFilter: true,
       onCancel:  () => { formApi.reset(); previewApi.hide(); },
       onDelete:  async id => {
+        // Confirmation before deleting from the form
+        if (!confirm(`Are you sure you want to delete this ${type}?`)) {
+          return;
+        }
         await definitionTypes[type].del(db, id);
         await refresh();
         formApi.reset();
@@ -137,4 +145,3 @@ export function initDefinitionModal(db) {
     openEdit:   def                   => openDefinition(currentType, def)
   };
 }
- 
