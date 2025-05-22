@@ -1,9 +1,10 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.2 — add imageBig fallback for slot images
+// @version: 1.3 — merge in full Item defs for lootPool entries
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 import { CHEST_RARITY } from "../utils.js";
+import definitionsManager from "../../../../bootstrap/definitionsManager.js";
 
 export function renderChestPopup(typeDef) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
@@ -19,7 +20,7 @@ export function renderChestPopup(typeDef) {
   const bigImgUrl =
     typeDef.imageSmall ||
     typeDef.imageLarge ||
-    typeDef.imageBig    ||  // ← new fallback
+    typeDef.imageBig    ||
     typeDef.iconUrl     ||
     "";
   const bigImg = bigImgUrl
@@ -41,14 +42,24 @@ export function renderChestPopup(typeDef) {
   const COLS = 5;
   const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
   let cells = pool.map((it, idx) => {
+    // If this entry doesn’t have its own image, pull the full Item def
+    let item = it;
+    if (!item.imageSmall && item.id) {
+      const itemMap = definitionsManager.getDefinitions("Item");
+      if (itemMap[item.id]) {
+        item = itemMap[item.id];
+      }
+    }
+
     const imgUrl =
-      it.imageSmall ||
-      it.imageLarge ||
-      it.imageBig    ||  // ← new fallback
-      it.iconUrl     ||
+      item.imageSmall ||
+      item.imageLarge ||
+      item.imageBig    ||
+      item.iconUrl     ||
       "";
-    const clr = it.rarityColor
-      || rarityColors[(it.rarity || "").toLowerCase()]
+
+    const clr = item.rarityColor
+      || rarityColors[(item.rarity || "").toLowerCase()]
       || defaultNameColor;
 
     return `
@@ -57,13 +68,13 @@ export function renderChestPopup(typeDef) {
         <img src="${imgUrl}"
              class="chest-slot-img"
              onerror="this.style.display='none'">
-        ${it.quantity > 1
-          ? `<span class="chest-slot-qty">${it.quantity}</span>`
+        ${item.quantity > 1
+          ? `<span class="chest-slot-qty">${item.quantity}</span>`
           : ""}
       </div>`;
   }).join("");
 
-  // fill remaining slots
+  // fill empty slots
   for (let i = pool.length; i < COLS; i++) {
     cells += `<div class="chest-slot" data-index=""></div>`;
   }
