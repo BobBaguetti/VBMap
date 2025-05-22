@@ -20,11 +20,11 @@ export const chestSchema = {
     colorable: "sizeColor"
   },
   lootPool: {
-    type:         "chipList",
-    label:        "Loot Pool",
-    idKey:        "id",
-    labelKey:     "name",
-    renderIcon:   item => item.imageSmall
+    type:       "chipList",
+    label:      "Loot Pool",
+    idKey:      "id",
+    labelKey:   "name",
+    renderIcon: item => item.imageSmall
   },
   description: {
     type:      "textarea",
@@ -32,9 +32,5 @@ export const chestSchema = {
     colorable: "descriptionColor"
   },
   imageSmall:    { type: "imageUrl", label: "Icon URL" },
-  extraLines: {
-    type:         "extraInfo",
-    label:        "Extra Info",
-    withDividers: true
-  }
+  extraLines:    { type: "extraInfo", label: "Extra Info", withDividers: true }
 };
