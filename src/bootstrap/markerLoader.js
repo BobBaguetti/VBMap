@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.12 — enrich lootPool entries with full Item defs + debug logs
+// @version: 1.13 — correctly enrich lootPool entries when they’re IDs
 
 import {
   subscribeMarkers,
@@ -52,18 +52,18 @@ export async function init(
         const { id: _ignore, ...fields } = defMap[data[defKey]];
         Object.assign(data, fields);
 
-        // ─── NEW: Enrich lootPool items with full Item defs ─────────────
+        // ─── FIXED: Enrich lootPool items even if stored as ID strings ────
         if (data.type === "Chest" && Array.isArray(data.lootPool)) {
           const itemMap = definitionsManager.getDefinitions("Item");
           data.lootPool = data.lootPool.map(entry => {
-            const full = itemMap[entry.id];
-            return full ? { ...entry, ...full } : entry;
+            // entry might be a string ID or a partial object {id, quantity,...}
+            const id = typeof entry === "string" ? entry : entry.id;
+            const full = itemMap[id];
+            // If we found a full definition, use that (it includes id, imageSmall, etc.)
+            if (full) return full;
+            // Otherwise, preserve any existing properties (e.g. quantity)
+            return typeof entry === "object" ? entry : { id };
           });
-
-          // ─── DEBUG LOGS ───────────────────────────────────────────────
-          console.log("🔍 Chest marker data:", data);
-          console.log("🔍 Loot pool entries:", data.lootPool);
-          // ─────────────────────────────────────────────────────────────
         }
       }
 
@@ -129,12 +129,14 @@ export async function init(
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
 
-          // ─── NEW: Also re‐enrich lootPool on def changes ─────────────
+          // ─── FIXED: Also re‐enrich lootPool on definition changes ─────────
           if (data.type === "Chest" && Array.isArray(data.lootPool)) {
             const itemMap = definitionsManager.getDefinitions("Item");
             data.lootPool = data.lootPool.map(entry => {
-              const full = itemMap[entry.id];
-              return full ? { ...entry, ...full } : entry;
+              const id = typeof entry === "string" ? entry : entry.id;
+              const full = itemMap[id];
+              if (full) return full;
+              return typeof entry === "object" ? entry : { id };
             });
           }
         }
