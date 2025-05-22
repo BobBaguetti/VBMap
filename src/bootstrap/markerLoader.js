@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.10 — updated shared UI imports
+// @version: 1.11 — enrich lootPool entries with full Item defs
 
 import {
   subscribeMarkers,
@@ -51,6 +51,15 @@ export async function init(
       if (defKey && defMap[data[defKey]]) {
         const { id: _ignore, ...fields } = defMap[data[defKey]];
         Object.assign(data, fields);
+
+        // ─── NEW: Enrich lootPool items with full Item defs ─────────────
+        if (data.type === "Chest" && Array.isArray(data.lootPool)) {
+          const itemMap = definitionsManager.getDefinitions("Item");
+          data.lootPool = data.lootPool.map(entry => {
+            const full = itemMap[entry.id];
+            return full ? { ...entry, ...full } : entry;
+          });
+        }
       }
 
       // Context‐menu callbacks
@@ -114,6 +123,15 @@ export async function init(
         if (defKey && defMap[data[defKey]]) {
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
+
+          // ─── NEW: Also re‐enrich lootPool on def changes ─────────────
+          if (data.type === "Chest" && Array.isArray(data.lootPool)) {
+            const itemMap = definitionsManager.getDefinitions("Item");
+            data.lootPool = data.lootPool.map(entry => {
+              const full = itemMap[entry.id];
+              return full ? { ...entry, ...full } : entry;
+            });
+          }
         }
         // Always reset icon & popup
         markerObj.setIcon(cfg.iconFactory(data));
