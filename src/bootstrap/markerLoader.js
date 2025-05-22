@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.11 — enrich lootPool entries with full Item defs
+// @version: 1.12 — enrich lootPool entries with full Item defs + debug logs
 
 import {
   subscribeMarkers,
@@ -7,9 +7,9 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "../modules/services/firebaseService.js";
 import definitionsManager from "./definitionsManager.js";
-import { markerTypes }    from "../modules/marker/types.js";
-import { createMarker }   from "../modules/map/markerManager.js";
-import { showContextMenu, hideContextMenu } 
+import { markerTypes } from "../modules/marker/types.js";
+import { createMarker } from "../modules/map/markerManager.js";
+import { showContextMenu, hideContextMenu }
   from "../modules/context-menu/index.js";
 
 /** @type {{ markerObj: L.Marker, data: object }[]} */
@@ -59,6 +59,11 @@ export async function init(
             const full = itemMap[entry.id];
             return full ? { ...entry, ...full } : entry;
           });
+
+          // ─── DEBUG LOGS ───────────────────────────────────────────────
+          console.log("🔍 Chest marker data:", data);
+          console.log("🔍 Loot pool entries:", data.lootPool);
+          // ─────────────────────────────────────────────────────────────
         }
       }
 
