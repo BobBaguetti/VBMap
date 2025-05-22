@@ -1,10 +1,12 @@
 // @file: src/modules/definition/form/controller/formPickrManager.js
+// @version: 1.1 — fix import paths for pickrAdapter and colorPresets
+
 import { initFormPickrs, getPickrHexColor }
-  from "../controller/pickrAdapter.js";
+  from "./pickrAdapter.js";
 import {
   rarityColors,
   itemTypeColors
-} from "../../../../shared/utils/color/colorPresets.js";
+} from "../../../shared/utils/color/colorPresets.js";
 
 /**
  * Set up Pickr instances for colorable fields and auto-apply presets.
@@ -45,7 +47,9 @@ export function applySavedColors(def, pickrs, schema) {
       if (!cfg.colorable) return;
       const key = cfg.colorable;
       const val = def[key];
-      if (val && pickrs[key]) pickrs[key].setColor(val);
+      if (val && pickrs[key]) {
+        pickrs[key].setColor(val);
+      }
     });
   }, 0);
 }

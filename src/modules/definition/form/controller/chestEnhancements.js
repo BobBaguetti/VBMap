@@ -1,9 +1,11 @@
 // @file: src/modules/definition/form/controller/chestEnhancements.js
+// @version: 1.1 — fix import path for colorPresets
+
 import { CHEST_RARITY } from "../../../map/marker/utils.js";
-import { rarityColors } from "../../../../shared/utils/color/colorPresets.js";
+import { rarityColors } from "../../../shared/utils/color/colorPresets.js";
 
 /**
- * Auto-apply the chest Name color based on Category+Size selects.
+ * Auto-apply chest Name color based on Category+Size selects.
  */
 export function applyChestRarityLink(fields, pickrs) {
   const catEl = fields.category;
