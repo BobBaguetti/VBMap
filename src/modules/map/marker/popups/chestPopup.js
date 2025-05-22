@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.1 — fallback to iconUrl & hide missing slot images
+// @version: 1.2 — add imageBig fallback for slot images
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
@@ -16,7 +16,12 @@ export function renderChestPopup(typeDef) {
   const rarityColor = rarityColors[key] || defaultNameColor;
 
   // 2) Header (icon + Name, Category, Rarity)
-  const bigImgUrl = typeDef.imageSmall || typeDef.imageLarge || typeDef.iconUrl || "";
+  const bigImgUrl =
+    typeDef.imageSmall ||
+    typeDef.imageLarge ||
+    typeDef.imageBig    ||  // ← new fallback
+    typeDef.iconUrl     ||
+    "";
   const bigImg = bigImgUrl
     ? `<img src="${bigImgUrl}" class="popup-image"
              style="border-color:${rarityColor}"
@@ -36,8 +41,12 @@ export function renderChestPopup(typeDef) {
   const COLS = 5;
   const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
   let cells = pool.map((it, idx) => {
-    // pick up the correct image field
-    const imgUrl = it.imageSmall || it.imageLarge || it.iconUrl || "";
+    const imgUrl =
+      it.imageSmall ||
+      it.imageLarge ||
+      it.imageBig    ||  // ← new fallback
+      it.iconUrl     ||
+      "";
     const clr = it.rarityColor
       || rarityColors[(it.rarity || "").toLowerCase()]
       || defaultNameColor;
