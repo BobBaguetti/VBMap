@@ -1,9 +1,9 @@
-// @file: src/modules/definition/map/marker/popups/chestPopup.js
-// @version: 1.1 — use getBestImageUrl for chest-slot images
+// @file: src/modules/map/marker/popups/chestPopup.js
+// @version: 1.1 — fallback to iconUrl & hide missing slot images
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
-import { CHEST_RARITY, getBestImageUrl } from "../utils.js";
+import { CHEST_RARITY } from "../utils.js";
 
 export function renderChestPopup(typeDef) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
@@ -16,48 +16,49 @@ export function renderChestPopup(typeDef) {
   const rarityColor = rarityColors[key] || defaultNameColor;
 
   // 2) Header (icon + Name, Category, Rarity)
-  const bigImg = typeDef.imageSmall || typeDef.imageLarge
-    ? `<img src="${typeDef.imageSmall || typeDef.imageLarge}" class="popup-image"
+  const bigImgUrl = typeDef.imageSmall || typeDef.imageLarge || typeDef.iconUrl || "";
+  const bigImg = bigImgUrl
+    ? `<img src="${bigImgUrl}" class="popup-image"
              style="border-color:${rarityColor}"
              onerror="this.style.display='none'">`
     : "";
 
   const titleColor = typeDef.nameColor || rarityColor;
-  const nameHTML = `
-    <div class="popup-name" style="color:${titleColor};">
-      ${typeDef.name || ""}
-    </div>`;
+  const nameHTML = `<div class="popup-name" style="color:${titleColor};">
+                      ${typeDef.name || ""}
+                    </div>`;
   const typeHTML   = `<div class="popup-type">${cat}</div>`;
-  const rarityHTML = `
-    <div class="popup-rarity" style="color:${rarityColor};">
-      ${rarityLabel}
-    </div>`;
+  const rarityHTML = `<div class="popup-rarity" style="color:${rarityColor};">
+                        ${rarityLabel}
+                      </div>`;
 
   // 3) Loot grid (5 columns)
   const COLS = 5;
-  const pool = typeDef.lootPool || [];
-  let cells = "";
-  pool.forEach((it, idx) => {
+  const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
+  let cells = pool.map((it, idx) => {
+    // pick up the correct image field
+    const imgUrl = it.imageSmall || it.imageLarge || it.iconUrl || "";
     const clr = it.rarityColor
       || rarityColors[(it.rarity || "").toLowerCase()]
       || defaultNameColor;
 
-    // Use getBestImageUrl to pick the proper thumbnail
-    const imgUrl = getBestImageUrl(it, "imageLarge", "imageSmall") || "";
-
-    cells += `
+    return `
       <div class="chest-slot" data-index="${idx}"
            style="border-color:${clr}">
-        ${imgUrl
-          ? `<img src="${imgUrl}" class="chest-slot-img" onerror="this.style.display='none'">`
+        <img src="${imgUrl}"
+             class="chest-slot-img"
+             onerror="this.style.display='none'">
+        ${it.quantity > 1
+          ? `<span class="chest-slot-qty">${it.quantity}</span>`
           : ""}
-        ${it.quantity > 1 ? `<span class="chest-slot-qty">${it.quantity}</span>` : ""}
       </div>`;
-  });
+  }).join("");
+
   // fill remaining slots
   for (let i = pool.length; i < COLS; i++) {
     cells += `<div class="chest-slot" data-index=""></div>`;
   }
+
   const lootBox = `
     <div class="popup-info-box loot-box">
       <div class="chest-grid" style="--cols:${COLS};">
@@ -72,10 +73,9 @@ export function renderChestPopup(typeDef) {
        </p>`
     : "";
   const extraHTML = (typeDef.extraLines || [])
-    .map(l => `
-      <p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
-        ${l.text}
-      </p>`)
+    .map(l => `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
+                  ${l.text}
+                </p>`)
     .join("");
   const textBox = (descHTML || extraHTML)
     ? `<div class="popup-info-box">
