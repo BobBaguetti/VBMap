@@ -10,7 +10,7 @@ import {
   rarityColors,
   itemTypeColors
 } from "../../../shared/utils/color/colorPresets.js";
-import { CHEST_RARITY } from "../../../map/marker/utils.js";
+import { CHEST_RARITY } from "../../map/marker/utils.js";
 
 /**
  * Wraps a schema-built form, wiring header, state, and events.
@@ -43,14 +43,30 @@ export function createFormController(buildResult, schema, handlers) {
   // Initialize Pickr on colorable fields
   const pickrs = initFormPickrs(form, colorables);
 
-  // ─── Auto-apply preset colors when selects change ─────────────────────────────
+  // ─── NEW: Auto-apply chest nameColor when category/size change ─────────────
+  if (schema.category && schema.size) {
+    const catEl = fields.category;
+    const sizeEl = fields.size;
+    const applyChestColor = () => {
+      const cat = catEl.value;
+      const size = sizeEl.value;
+      const key = CHEST_RARITY[cat]?.[size];
+      const preset = key ? rarityColors[key] : null;
+      if (preset) {
+        pickrs["nameColor"]?.setColor(preset);
+        form.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    };
+    catEl.addEventListener("change", applyChestColor);
+    sizeEl.addEventListener("change", applyChestColor);
+  }
+
+  // ─── Auto-apply preset colors when selects change ────────────────────────────
   Object.entries(schema).forEach(([key, cfg]) => {
     if (cfg.type === "select" && cfg.colorable) {
       const selectEl = fields[key];
       selectEl.addEventListener("change", () => {
         let preset;
-
-        // Existing per-field presets
         if (key === "rarity") {
           preset = rarityColors[selectEl.value];
           if (preset) {
@@ -63,18 +79,6 @@ export function createFormController(buildResult, schema, handlers) {
             pickrs["itemTypeColor"]?.setColor(preset);
           }
         }
-        // ─── NEW: Chest definitions derive rarity from category+size ──────
-        else if (title === "Chest" && (key === "category" || key === "size")) {
-          const cat = fields.category.value;
-          const sz  = fields.size.value;
-          const rarKey = CHEST_RARITY[cat]?.[sz];
-          preset = rarityColors[rarKey];
-          if (preset) {
-            // only bump the name (no stored rarity field)
-            pickrs["nameColor"]?.setColor(preset);
-          }
-        }
-
         form.dispatchEvent(new Event("input", { bubbles: true }));
       });
     }
@@ -182,7 +186,7 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
-    // ─── Apply saved colors to pickr instances ───────────────────────────────
+    // ─── NEW: Apply saved colors from Firestore ──────────────────────────────
     setTimeout(() => {
       Object.entries(schema).forEach(([key, cfg]) => {
         if (cfg.colorable) {
@@ -193,20 +197,9 @@ export function createFormController(buildResult, schema, handlers) {
           }
         }
       });
-
-      // Also re-apply chest nameColor from def if present
-      if (title === "Chest") {
-        const cat = def.category;
-        const sz  = def.size;
-        const rarKey = CHEST_RARITY[cat]?.[sz];
-        const preset = rarityColors[rarKey];
-        if (preset) {
-          pickrs["nameColor"]?.setColor(preset);
-        }
-      }
     }, 0);
 
-    // Apply presets on populate for rarity & itemType (unchanged)
+    // Apply presets on populate for rarity & itemType
     if (schema.rarity) {
       const preset = rarityColors[sanitized.rarity];
       if (preset) {
