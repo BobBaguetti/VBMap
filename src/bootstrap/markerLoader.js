@@ -151,4 +151,4 @@ export async function init(
 export default {
   init,
   allMarkers
-};
+}; 
