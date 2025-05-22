@@ -1,238 +1,35 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.6 — auto-apply chest nameColor based on category+size
+// @version: 2.0 — refactored to use core, pickrManager & chestEnhancements
 
-import { createFormControllerHeader, wireFormEvents }
-  from "../form/controller/formControllerShell.js";
-import { initFormPickrs, getPickrHexColor }
-  from "../form/controller/pickrAdapter.js";
-import { createFormState } from "../form/controller/formStateManager.js";
-import {
-  rarityColors,
-  itemTypeColors
-} from "../../../shared/utils/color/colorPresets.js";
-import { CHEST_RARITY } from "../../map/marker/utils.js";
+import { createBaseController } from "../form/controller/formControllerCore.js";
+import { setupPickrs, applySavedColors }
+  from "../form/controller/formPickrManager.js";
+import { applyChestRarityLink }
+  from "../form/controller/chestEnhancements.js";
 
 /**
- * Wraps a schema-built form, wiring header, state, and events.
+ * Wraps a schema-built form, wiring header, state, pickrs, and optional enhancements.
  */
 export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
-  const { title, hasFilter, onCancel, onSubmit, onDelete, onFieldChange } = handlers;
 
-  // ─── Header + Filter & Buttons ───────────────────────────────────────────────
-  const {
-    container: headerWrap,
-    subheading,
-    filterCheckbox,
-    setDeleteVisible
-  } = createFormControllerHeader({
-    title,
-    hasFilter: !!hasFilter,
-    onFilter: () => onFieldChange?.(getPayload()),
-    onCancel,
-    onDelete: () => {
-      if (payloadId != null && confirm(`Delete this ${title}?`)) {
-        onDelete(payloadId);
-      }
-    }
-  });
-  headerWrap.classList.add("modal-subheader");
-  setDeleteVisible(false);
-  form.prepend(headerWrap);
+  // Core: header, payload, state, reset, populate, events
+  const core = createBaseController({ form, fields, schema, handlers });
 
-  // Initialize Pickr on colorable fields
-  const pickrs = initFormPickrs(form, colorables);
+  // Pickr: set up color pickers & auto-presets
+  const pickrs = setupPickrs(form, colorables, schema);
 
-  // ─── NEW: Auto-apply chest nameColor when category/size change ─────────────
-  if (schema.category && schema.size) {
-    const catEl = fields.category;
-    const sizeEl = fields.size;
-    const applyChestColor = () => {
-      const cat = catEl.value;
-      const size = sizeEl.value;
-      const key = CHEST_RARITY[cat]?.[size];
-      const preset = key ? rarityColors[key] : null;
-      if (preset) {
-        pickrs["nameColor"]?.setColor(preset);
-        form.dispatchEvent(new Event("input", { bubbles: true }));
-      }
-    };
-    catEl.addEventListener("change", applyChestColor);
-    sizeEl.addEventListener("change", applyChestColor);
+  // Chest-specific: auto-link nameColor → computed rarity
+  if (handlers.title === "Chest") {
+    applyChestRarityLink(fields, pickrs);
   }
 
-  // ─── Auto-apply preset colors when selects change ────────────────────────────
-  Object.entries(schema).forEach(([key, cfg]) => {
-    if (cfg.type === "select" && cfg.colorable) {
-      const selectEl = fields[key];
-      selectEl.addEventListener("change", () => {
-        let preset;
-        if (key === "rarity") {
-          preset = rarityColors[selectEl.value];
-          if (preset) {
-            pickrs["rarityColor"]?.setColor(preset);
-            pickrs["nameColor"]?.setColor(preset);
-          }
-        } else if (key === "itemType") {
-          preset = itemTypeColors[selectEl.value];
-          if (preset) {
-            pickrs["itemTypeColor"]?.setColor(preset);
-          }
-        }
-        form.dispatchEvent(new Event("input", { bubbles: true }));
-      });
-    }
-  });
-
-  let payloadId = null;
-
-  // ─── Build submission payload ────────────────────────────────────────────────
-  function getPayload() {
-    const out = { id: payloadId };
-    for (const [key, cfg] of Object.entries(schema)) {
-      let val;
-      const el = fields[key];
-      switch (cfg.type) {
-        case "checkbox":
-          val = el.checked;
-          break;
-        case "extraInfo":
-          val = el.getLines();
-          break;
-        case "chipList":
-          val = el.get();
-          break;
-        default:
-          val = el.value;
-      }
-      out[key] = val;
-      if (cfg.colorable) {
-        const p = pickrs[cfg.colorable];
-        out[cfg.colorable] = p ? getPickrHexColor(p) : null;
-      }
-    }
-    out.showInFilters = filterCheckbox.checked;
-    return out;
-  }
-
-  // ─── Defaults & State ────────────────────────────────────────────────────────
-  const defaultValues = Object.fromEntries(
-    Object.entries(schema).map(([key, cfg]) => {
-      let dv = cfg.default;
-      if (dv === undefined) dv = cfg.type === "checkbox" ? false : "";
-      return [key, dv];
-    })
-  );
-  const pickrClearKeys = Object.entries(schema)
-    .filter(([, cfg]) => cfg.colorable)
-    .map(([, cfg]) => cfg.colorable);
-
-  const formState = createFormState({
-    form,
-    fields,
-    defaultValues,
-    pickrs,
-    pickrClearKeys,
-    subheading,
-    setDeleteVisible,
-    getCustom: getPayload,
-    onFieldChange
-  });
-
-  // ─── Reset & Populate ────────────────────────────────────────────────────────
-  function reset() {
-    payloadId = null;
-    formState.reset();
-    filterCheckbox.checked = true;
-    for (const [key, cfg] of Object.entries(schema)) {
-      if (cfg.type === "extraInfo") {
-        fields[key].setLines([]);
-      }
-    }
-  }
-
-  async function populate(def) {
-    payloadId = def.id ?? null;
-
-    // Build sanitized data for form fields
-    const sanitized = {};
-    for (const [key, cfg] of Object.entries(schema)) {
-      if (def[key] !== undefined) {
-        sanitized[key] = def[key];
-      } else if (cfg.default !== undefined) {
-        sanitized[key] = cfg.default;
-      } else {
-        sanitized[key] = cfg.type === "checkbox" ? false : "";
-      }
-    }
-
-    // Populate input fields
-    formState.populate(sanitized);
-    filterCheckbox.checked = def.showInFilters ?? true;
-
-    // Populate multi-part fields
-    for (const [key, cfg] of Object.entries(schema)) {
-      if (cfg.type === "chipList" && Array.isArray(sanitized[key])) {
-        fields[key].set(sanitized[key]);
-      } else if (cfg.type === "extraInfo") {
-        const fromExtraLines = Array.isArray(sanitized[key]) && sanitized[key];
-        const fromLegacyInfo  = Array.isArray(def.extraInfo)  && def.extraInfo;
-        const lines = fromExtraLines
-          ? sanitized[key]
-          : fromLegacyInfo
-            ? def.extraInfo
-            : [];
-        fields[key].setLines(lines);
-      }
-    }
-
-    // ─── NEW: Apply saved colors from Firestore ──────────────────────────────
-    setTimeout(() => {
-      Object.entries(schema).forEach(([key, cfg]) => {
-        if (cfg.colorable) {
-          const colorKey = cfg.colorable;
-          const saved = def[colorKey];
-          if (saved && pickrs[colorKey]) {
-            pickrs[colorKey].setColor(saved);
-          }
-        }
-      });
-    }, 0);
-
-    // Apply presets on populate for rarity & itemType
-    if (schema.rarity) {
-      const preset = rarityColors[sanitized.rarity];
-      if (preset) {
-        pickrs["rarityColor"]?.setColor(preset);
-        pickrs["nameColor"]?.setColor(preset);
-      }
-    }
-    if (schema.itemType) {
-      const preset = itemTypeColors[sanitized.itemType];
-      if (preset) {
-        pickrs["itemTypeColor"]?.setColor(preset);
-      }
-    }
-  }
-
-  // ─── Wire Events & Save Handler ───────────────────────────────────────────────
-  wireFormEvents(form, getPayload, onSubmit, onFieldChange);
-  const saveBtn = headerWrap.querySelector('button[type="submit"]');
-  if (saveBtn) {
-    saveBtn.type = "button";
-    saveBtn.addEventListener("click", async e => {
-      e.preventDefault();
-      await onSubmit?.(getPayload());
-    });
-  }
-
-  // ─── Public API ───────────────────────────────────────────────────────────────
-  return {
-    form,
-    reset,
-    populate,
-    getPayload,
-    initPickrs: () => Object.assign(pickrs, initFormPickrs(form, colorables))
+  // Wrap populate to also apply saved Firestore colors
+  const originalPopulate = core.populate;
+  core.populate = async def => {
+    await originalPopulate(def);
+    applySavedColors(def, pickrs, schema);
   };
+
+  return core;
 }
- 
