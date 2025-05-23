@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.8 — uses formPayloadBuilder for getPayload
+// @version: 1.9.9 — include payloadId so edits update existing entries
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -11,8 +11,10 @@ import { CHEST_RARITY }
   from "../../map/marker/utils.js";
 import { applyChestRarityLink }
   from "../form/controller/chestFormEnhancements.js";
-import { setupPickrs, populateSavedColors }
-  from "../form/controller/formPickrManager.js";
+import {
+  setupPickrs,
+  populateSavedColors
+} from "../form/controller/formPickrManager.js";
 import { populateMultiFields }
   from "../form/controller/formMultiFieldManager.js";
 import { createGetPayload }
@@ -59,9 +61,14 @@ export function createFormController(buildResult, schema, handlers) {
   // Chest-specific: auto-link nameColor to computed rarity
   applyChestRarityLink(fields, pickrs);
 
-  // ─── Build payload via helper ──────────────────────────────────────────────
+  // ─── Payload builder (wrapped to include id) ────────────────────────────────
   let payloadId = null;
-  const getPayload = createGetPayload(fields, schema, pickrs, filterCheckbox);
+  const rawGetPayload = createGetPayload(fields, schema, pickrs, filterCheckbox);
+  function getPayload() {
+    const out = rawGetPayload();
+    out.id = payloadId;
+    return out;
+  }
 
   // ─── Defaults & Form State ─────────────────────────────────────────────────
   const defaultValues = Object.fromEntries(
@@ -106,7 +113,7 @@ export function createFormController(buildResult, schema, handlers) {
     formState.populate(def);
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // 2) Multi-part fields (chipList, extraInfo)
+    // 2) Multi-part fields
     populateMultiFields(fields, schema, def);
 
     // 3) Apply saved Firestore colors
