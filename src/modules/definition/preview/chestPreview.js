@@ -1,10 +1,14 @@
-// @file: src\modules\definition\preview\chestPreview.js
-// @version: 4.1 — pick up the new image fields for the header icon
+// @file: src/modules/definition/preview/chestPreview.js
+// @version: 4.2 — preserve wrapper class so old previews get removed
 
+import { createPickr } from "../form/controller/pickrAdapter.js"; // if needed
 import { renderChestPopup } from "../../map/markerManager.js";
 
 export function createChestPreviewPanel(container) {
-  container.className = "preview-panel chest-preview-panel";
+  // Instead of overwriting className, add these
+  container.classList.add("preview-panel", "chest-preview-panel");
+
+  // Create inner wrapper
   const wrapper = document.createElement("div");
   wrapper.className = "preview-popup-wrapper";
   container.appendChild(wrapper);
