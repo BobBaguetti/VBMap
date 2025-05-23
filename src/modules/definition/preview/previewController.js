@@ -43,3 +43,4 @@ export function createPreviewController(type) {
 
   return { show, hide };
 }
+ 
