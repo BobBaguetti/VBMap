@@ -22,7 +22,7 @@ export const markerTypes = {
   Item: {
     defIdKey:             "predefinedItemId",
     loadDefinitions:      loadItemDefinitions,
-    subscribeDefinitions: subscribeItemDefinitions,
+    subscribeDefinitions: subscribeItemDefinitions, 
     popupRenderer:        renderItemPopup,
     iconFactory:          createCustomIcon,
     filterSetup:          setupItemFilters,

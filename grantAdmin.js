@@ -2,14 +2,13 @@
 // @version: 2
 
 const admin = require("firebase-admin");
-const path  = require("path");
 
-// Load your downloaded key (which is git-ignored)
-const serviceAccount = require(path.join(__dirname, "serviceAccountKey.json"));
+// Pull in your service account JSON from the env var instead of a local file
+const serviceAccount = JSON.parse(process.env.FIREBASE_SA_KEY);
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount),
-  projectId:  "vbmap-cc834"    // ← your Firebase project ID
+  projectId: "vbmap-cc834"
 });
 
 // **Use the UID that appears in your browser console on sign-in**
