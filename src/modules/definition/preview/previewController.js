@@ -1,63 +1,68 @@
 // @file: src/modules/definition/preview/previewController.js
-// @version: 1.7 — fix inline‐ vs. floating‐preview positioning
+// @version: 1.7 — position inline & floating previews; only remove floating
 
 import { createPreviewPanel } from "./createPreviewPanel.js";
 
 /**
  * Factory for definition previews.
- * - Inline: renders inside the provided host (no repositioning).
- * - Floating: creates ONE .preview-panel-wrapper, absolute‐positions it, and cleans up.
+ * If a host container is provided, use it but still position absolutely.
+ * Otherwise, create a floating preview panel.
  *
- * @param {string} type      – "item" or "chest"
- * @param {HTMLElement} [host] – container inside the modal for inline preview
+ * @param {string} type      — "item" or "chest"
+ * @param {HTMLElement} [host] — inline container inside modal
  * @returns {{ show: Function, hide: Function }}
  */
 export function createPreviewController(type, host) {
   let container;
-  let isFloating = false;
+  const isHost = Boolean(host);
 
-  if (host) {
-    // INLINE PREVIEW: reuse the host container
+  if (isHost) {
+    // Reuse the host container, but make it absolute so we can position it
     container = host;
     container.innerHTML = "";
-    // remove any floating styles if they were accidentally applied
-    container.classList.remove("preview-panel-wrapper");
+    container.classList.add("preview-panel-container");
+    container.style.position = "absolute";
+    container.style.zIndex   = "1101";
   } else {
-    // FLOATING PREVIEW: ensure only one exists
+    // Remove any previous floating panels
     document
       .querySelectorAll(".preview-panel-wrapper")
       .forEach(el => el.remove());
 
+    // Create a fresh floating container
     container = document.createElement("div");
     container.classList.add("preview-panel-wrapper");
-    Object.assign(container.style, {
-      position: "absolute",
-      zIndex:   "1101"
-    });
+    container.style.position = "absolute";
+    container.style.zIndex   = "1101";
     document.body.append(container);
-    isFloating = true;
   }
 
+  // Initialize the type‐specific preview into our container
   const previewApi = createPreviewPanel(type, container);
 
   function show(def) {
     previewApi.setFromDefinition(def);
     previewApi.show();
 
-    if (isFloating) {
-      // Position the floating panel beside the modal
-      const modalEl = document.getElementById("definition-modal");
-      if (!modalEl) return;
-      const mc = modalEl.querySelector(".modal-content")?.getBoundingClientRect();
-      const pr = container.getBoundingClientRect();
-      container.style.left = `${mc.right + 16}px`;
-      container.style.top  = `${mc.top + (mc.height - pr.height) / 2}px`;
-    }
+    // Now position to the right of the modal
+    const modalEl = document.getElementById("definition-modal");
+    if (!modalEl) return;
+    const modalContent = modalEl.querySelector(".modal-content");
+    if (!modalContent) return;
+
+    const mc = modalContent.getBoundingClientRect();
+    const pr = container.getBoundingClientRect();
+    const left = mc.right + 16;
+    const top  = mc.top + (mc.height - pr.height) / 2;
+
+    container.style.left = `${left}px`;
+    container.style.top  = `${top}px`;
   }
 
   function hide() {
     previewApi.hide();
-    if (isFloating) {
+    // Only remove the element if it was dynamically created
+    if (!isHost) {
       container.remove();
     }
   }
