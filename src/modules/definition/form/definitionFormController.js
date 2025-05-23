@@ -1,26 +1,22 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.7 — refactored with formPickrManager & formMultiFieldManager
+// @version: 1.9.8 — uses formPayloadBuilder for getPayload
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
-import { getPickrHexColor }
-  from "../form/controller/pickrAdapter.js";
 import { createFormState }
   from "../form/controller/formStateManager.js";
-import {
-  rarityColors,
-  itemTypeColors
-} from "../../../shared/utils/color/colorPresets.js";
+import { rarityColors, itemTypeColors }
+  from "../../../shared/utils/color/colorPresets.js";
 import { CHEST_RARITY }
   from "../../map/marker/utils.js";
 import { applyChestRarityLink }
   from "../form/controller/chestFormEnhancements.js";
-import {
-  setupPickrs,
-  populateSavedColors
-} from "../form/controller/formPickrManager.js";
+import { setupPickrs, populateSavedColors }
+  from "../form/controller/formPickrManager.js";
 import { populateMultiFields }
   from "../form/controller/formMultiFieldManager.js";
+import { createGetPayload }
+  from "../form/controller/formPayloadBuilder.js";
 
 /**
  * Wraps a schema-built form, wiring header, state, events, and Pickr.
@@ -36,7 +32,7 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   } = handlers;
 
-  // ─── Header + Buttons ───────────────────────────────────────────────────────
+  // ─── Header + Filter & Buttons ─────────────────────────────────────────────
   const {
     container: headerWrap,
     subheading,
@@ -45,7 +41,7 @@ export function createFormController(buildResult, schema, handlers) {
   } = createFormControllerHeader({
     title,
     hasFilter: !!hasFilter,
-    onFilter: () => onFieldChange?.(getPayload()),
+    onFilter: () => onFieldChange(getPayload()),
     onCancel,
     onDelete: () => {
       if (payloadId != null && confirm(`Delete this ${title}?`)) {
@@ -57,42 +53,15 @@ export function createFormController(buildResult, schema, handlers) {
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // ─── Pickr Initialization & Wiring ──────────────────────────────────────────
+  // ─── Init Pickr instances & wiring ─────────────────────────────────────────
   const pickrs = setupPickrs(form, fields, colorables, schema);
 
   // Chest-specific: auto-link nameColor to computed rarity
   applyChestRarityLink(fields, pickrs);
 
+  // ─── Build payload via helper ──────────────────────────────────────────────
   let payloadId = null;
-
-  // ─── Build submission payload ───────────────────────────────────────────────
-  function getPayload() {
-    const out = { id: payloadId };
-    for (const [key, cfg] of Object.entries(schema)) {
-      let val;
-      const el = fields[key];
-      switch (cfg.type) {
-        case "checkbox":
-          val = el.checked;
-          break;
-        case "extraInfo":
-          val = el.getLines();
-          break;
-        case "chipList":
-          val = el.get();
-          break;
-        default:
-          val = el.value;
-      }
-      out[key] = val;
-      if (cfg.colorable) {
-        const p = pickrs[cfg.colorable];
-        out[cfg.colorable] = p ? getPickrHexColor(p) : null;
-      }
-    }
-    out.showInFilters = filterCheckbox.checked;
-    return out;
-  }
+  const getPayload = createGetPayload(fields, schema, pickrs, filterCheckbox);
 
   // ─── Defaults & Form State ─────────────────────────────────────────────────
   const defaultValues = Object.fromEntries(
@@ -164,7 +133,7 @@ export function createFormController(buildResult, schema, handlers) {
     saveBtn.type = "button";
     saveBtn.addEventListener("click", async e => {
       e.preventDefault();
-      await onSubmit?.(getPayload());
+      await onSubmit(getPayload());
     });
   }
 
