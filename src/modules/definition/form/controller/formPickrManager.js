@@ -1,12 +1,12 @@
 // @file: src/modules/definition/form/controller/formPickrManager.js
-// @version: 1.1 — fix import paths for pickrAdapter and colorPresets
+// @version: 1.2 — correct import path for colorPresets
 
 import { initFormPickrs, getPickrHexColor }
   from "./pickrAdapter.js";
 import {
   rarityColors,
   itemTypeColors
-} from "../../../shared/utils/color/colorPresets.js";
+} from "../../../../shared/utils/color/colorPresets.js";  // ← up four levels to /src/shared
 
 /**
  * Set up Pickr instances for colorable fields and auto-apply presets.
