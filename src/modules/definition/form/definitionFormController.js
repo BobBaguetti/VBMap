@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.6-refactor — uses formPickrManager & chestFormEnhancements
+// @version: 1.9.7 — refactored with formPickrManager & formMultiFieldManager
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -19,6 +19,8 @@ import {
   setupPickrs,
   populateSavedColors
 } from "../form/controller/formPickrManager.js";
+import { populateMultiFields }
+  from "../form/controller/formMultiFieldManager.js";
 
 /**
  * Wraps a schema-built form, wiring header, state, events, and Pickr.
@@ -34,7 +36,7 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   } = handlers;
 
-  // ─── Header + Filter & Buttons ─────────────────────────────────────────────
+  // ─── Header + Buttons ───────────────────────────────────────────────────────
   const {
     container: headerWrap,
     subheading,
@@ -55,10 +57,10 @@ export function createFormController(buildResult, schema, handlers) {
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // ─── Init Pickr instances & wiring ─────────────────────────────────────────
+  // ─── Pickr Initialization & Wiring ──────────────────────────────────────────
   const pickrs = setupPickrs(form, fields, colorables, schema);
 
-  // Chest-specific: auto-link nameColor based on category+size
+  // Chest-specific: auto-link nameColor to computed rarity
   applyChestRarityLink(fields, pickrs);
 
   let payloadId = null;
@@ -92,7 +94,7 @@ export function createFormController(buildResult, schema, handlers) {
     return out;
   }
 
-  // ─── Defaults & State ────────────────────────────────────────────────────────
+  // ─── Defaults & Form State ─────────────────────────────────────────────────
   const defaultValues = Object.fromEntries(
     Object.entries(schema).map(([key, cfg]) => {
       let dv = cfg.default;
@@ -116,7 +118,7 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   });
 
-  // ─── Reset & Populate ────────────────────────────────────────────────────────
+  // ─── Reset & Populate ───────────────────────────────────────────────────────
   function reset() {
     payloadId = null;
     formState.reset();
@@ -131,30 +133,17 @@ export function createFormController(buildResult, schema, handlers) {
   async function populate(def) {
     payloadId = def.id ?? null;
 
-    // 1) Populate basic inputs & state
+    // 1) Basic populate
     formState.populate(def);
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // 2) Populate chipList & extraInfo fields
-    for (const [key, cfg] of Object.entries(schema)) {
-      if (cfg.type === "chipList" && Array.isArray(def[key])) {
-        fields[key].set(def[key]);
-      } else if (cfg.type === "extraInfo") {
-        const fromLines = Array.isArray(def[key]) && def[key];
-        const fromLegacy = Array.isArray(def.extraInfo) && def.extraInfo;
-        const lines = fromLines
-          ? def[key]
-          : fromLegacy
-            ? def.extraInfo
-            : [];
-        fields[key].setLines(lines);
-      }
-    }
+    // 2) Multi-part fields (chipList, extraInfo)
+    populateMultiFields(fields, schema, def);
 
     // 3) Apply saved Firestore colors
     populateSavedColors(pickrs, def, schema);
 
-    // 4) Auto‐presets for rarity & itemType selects
+    // 4) Select-presets for rarity & itemType
     if (schema.rarity) {
       const preset = rarityColors[def.rarity];
       if (preset) {
@@ -164,13 +153,11 @@ export function createFormController(buildResult, schema, handlers) {
     }
     if (schema.itemType) {
       const preset = itemTypeColors[def.itemType];
-      if (preset) {
-        pickrs["itemTypeColor"]?.setColor(preset);
-      }
+      if (preset) pickrs["itemTypeColor"]?.setColor(preset);
     }
   }
 
-  // ─── Wire form events & submit handler ───────────────────────────────────────
+  // ─── Wire Events & Save Handler ─────────────────────────────────────────────
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
   const saveBtn = headerWrap.querySelector('button[type="submit"]');
   if (saveBtn) {
@@ -181,13 +168,13 @@ export function createFormController(buildResult, schema, handlers) {
     });
   }
 
-  // ─── Public API ───────────────────────────────────────────────────────────────
+  // ─── Public API ─────────────────────────────────────────────────────────────
   return {
     form,
     reset,
     populate,
     getPayload,
-    initPickrs: () => Object.assign(pickrs, setupPickrs(form, fields, colorables, schema))
+    initPickrs: () =>
+      Object.assign(pickrs, setupPickrs(form, fields, colorables, schema))
   };
 }
- 
