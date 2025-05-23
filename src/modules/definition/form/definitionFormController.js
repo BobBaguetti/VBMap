@@ -1,17 +1,14 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.10 — refactored to use formControllerCore and formPickrManager
+// @version: 1.10.1 — re-inline deferred saved colors in populate
 
 import { createFormCore } from "../form/controller/formControllerCore.js";
-import { setupPickrs, populateSavedColors }
-  from "../form/controller/formPickrManager.js";
-import { applyChestRarityLink }
-  from "../form/controller/chestFormEnhancements.js";
+import { setupPickrs } from "../form/controller/formPickrManager.js";
+import { applyChestRarityLink } from "../form/controller/chestFormEnhancements.js";
 import {
   rarityColors,
   itemTypeColors
 } from "../../../shared/utils/color/colorPresets.js";
-import { CHEST_RARITY }
-  from "../../map/marker/utils.js";
+import { CHEST_RARITY } from "../../map/marker/utils.js";
 
 /**
  * High-level controller that builds the definition form,
@@ -45,8 +42,9 @@ export function createFormController(buildResult, schema, handlers) {
     handlers
   });
 
-  // 5) Full populate handler includes multi-fields and colors
+  // 5) Full populate handler includes multi-fields, deferred colors, and presets
   async function populate(def) {
+    // Basic population of inputs & filter checkbox
     populateBasic(def);
 
     // Multi-part: chipList and extraInfo
@@ -63,10 +61,23 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
-    // Apply saved Firestore colors
-    populateSavedColors(pickrs, def, schema);
+    // ─── DEFERRED SAVED COLORS ────────────────────────────────────
+    setTimeout(() => {
+      Object.entries(schema).forEach(([key, cfg]) => {
+        if (cfg.colorable) {
+          const clrKey = cfg.colorable;
+          const saved = def[clrKey];
+          if (saved && pickrs[clrKey]) {
+            pickrs[clrKey].setColor(saved);
+          }
+        }
+      });
+      // trigger form input so preview updates
+      form.dispatchEvent(new Event("input", { bubbles: true }));
+    }, 0);
+    // ──────────────────────────────────────────────────────────────
 
-    // Select-based presets
+    // Auto‐presets for rarity & itemType selects
     if (schema.rarity) {
       const preset = rarityColors[def.rarity];
       if (preset) {
