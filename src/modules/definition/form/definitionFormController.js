@@ -1,7 +1,7 @@
-// @file: src/modules/definition/form/definitionFormController.js
-// @version: 1.9.10 — fully refactored with helper modules
+// @file: src/modules/definition/forms/definitionFormController.js
+// @version: 1.9.11 — header logic extracted to formHeaderManager
 
-import { createFormControllerHeader, wireFormEvents }
+import { wireFormEvents }
   from "../form/controller/formControllerShell.js";
 import { createFormState }
   from "../form/controller/formStateManager.js";
@@ -9,6 +9,8 @@ import { rarityColors, itemTypeColors }
   from "../../../shared/utils/color/colorPresets.js";
 import { CHEST_RARITY }
   from "../../map/marker/utils.js";
+import { setupFormHeader }
+  from "../form/controller/formHeaderManager.js";
 import { applyChestRarityLink }
   from "../form/controller/chestFormEnhancements.js";
 import {
@@ -38,26 +40,22 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   } = handlers;
 
-  // ─── Header + Filter & Buttons ─────────────────────────────────────────────
+  // ─── Header + Subheader Setup ────────────────────────────────────────────────
+  // payloadId will be captured by onDelete and onFilter closures below
+  let payloadId = null;
   const {
-    container: headerWrap,
+    headerWrap,
     subheading,
     filterCheckbox,
     setDeleteVisible
-  } = createFormControllerHeader({
+  } = setupFormHeader({
+    form,
     title,
-    hasFilter: !!hasFilter,
-    onFilter: () => onFieldChange(getPayload()),
+    hasFilter,
     onCancel,
-    onDelete: () => {
-      if (payloadId != null && confirm(`Delete this ${title}?`)) {
-        onDelete(payloadId);
-      }
-    }
+    onDelete: () => onDelete(payloadId),
+    onFilter: () => onFieldChange(getPayload())
   });
-  headerWrap.classList.add("modal-subheader");
-  setDeleteVisible(false);
-  form.prepend(headerWrap);
 
   // ─── Init Pickr instances & wiring ──────────────────────────────────────────
   const pickrs = setupPickrs(form, fields, colorables, schema);
@@ -69,7 +67,6 @@ export function createFormController(buildResult, schema, handlers) {
   applyChestRarityLink(fields, pickrs);
 
   // ─── Payload builder (wrapped to include id) ────────────────────────────────
-  let payloadId = null;
   const rawGetPayload = createGetPayload(fields, schema, pickrs, filterCheckbox);
   function getPayload() {
     const out = rawGetPayload();
