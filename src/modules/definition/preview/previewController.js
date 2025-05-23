@@ -1,15 +1,15 @@
 // @file: src/modules/definition/preview/previewController.js
-// @version: 1.6 — respect host container for inline previews and clean up floating ones
+// @version: 1.7 — fix inline‐ vs. floating‐preview positioning
 
 import { createPreviewPanel } from "./createPreviewPanel.js";
 
 /**
  * Factory for definition previews.
- * If a host container is provided, use it for inline preview.
- * Otherwise, create a floating preview panel.
+ * - Inline: renders inside the provided host (no repositioning).
+ * - Floating: creates ONE .preview-panel-wrapper, absolute‐positions it, and cleans up.
  *
- * @param {string} type      — "item" or "chest"
- * @param {HTMLElement} [host] — inline container inside modal
+ * @param {string} type      – "item" or "chest"
+ * @param {HTMLElement} [host] – container inside the modal for inline preview
  * @returns {{ show: Function, hide: Function }}
  */
 export function createPreviewController(type, host) {
@@ -17,39 +17,38 @@ export function createPreviewController(type, host) {
   let isFloating = false;
 
   if (host) {
-    // Inline preview inside the modal
+    // INLINE PREVIEW: reuse the host container
     container = host;
     container.innerHTML = "";
-    container.classList.add("preview-panel-container");
+    // remove any floating styles if they were accidentally applied
+    container.classList.remove("preview-panel-wrapper");
   } else {
-    // Floating preview outside the modal
+    // FLOATING PREVIEW: ensure only one exists
     document
       .querySelectorAll(".preview-panel-wrapper")
       .forEach(el => el.remove());
 
     container = document.createElement("div");
     container.classList.add("preview-panel-wrapper");
-    container.style.position = "absolute";
-    container.style.zIndex   = "1101";
+    Object.assign(container.style, {
+      position: "absolute",
+      zIndex:   "1101"
+    });
     document.body.append(container);
     isFloating = true;
   }
 
-  // Delegate to the type-specific panel creator
   const previewApi = createPreviewPanel(type, container);
 
   function show(def) {
     previewApi.setFromDefinition(def);
     previewApi.show();
 
-    // Position the floating panel, if used
     if (isFloating) {
+      // Position the floating panel beside the modal
       const modalEl = document.getElementById("definition-modal");
       if (!modalEl) return;
-      const modalContent = modalEl.querySelector(".modal-content");
-      if (!modalContent) return;
-
-      const mc = modalContent.getBoundingClientRect();
+      const mc = modalEl.querySelector(".modal-content")?.getBoundingClientRect();
       const pr = container.getBoundingClientRect();
       container.style.left = `${mc.right + 16}px`;
       container.style.top  = `${mc.top + (mc.height - pr.height) / 2}px`;
