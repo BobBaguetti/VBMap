@@ -1,20 +1,14 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.13 — uses formDataManager for payload & multi-fields
+// @version: 1.9.12 — uses formHeaderManager & formColorManager
 
 import { setupFormHeader } from "../form/controller/formHeaderManager.js";
-import { createFormState }
-  from "../form/controller/formStateManager.js";
-import { wireFormEvents }
-  from "../form/controller/formControllerShell.js";
-import {
-  setupFormColors,
-  populateSavedColors,
-  applySelectPresetsOnPopulate
-} from "../form/controller/formColorManager.js";
-import { setupFormData } from "../form/controller/formDataManager.js";
+import { createFormState } from "../form/controller/formStateManager.js";
+import { wireFormEvents }  from "../form/controller/formControllerShell.js";
+import { setupFormColors, populateSavedColors, applySelectPresetsOnPopulate }
+  from "../form/controller/formColorManager.js";
 
 /**
- * Wraps a schema-built form, wiring header, state, events, and helpers.
+ * Wraps a schema-built form, wiring header, state, events, and colors.
  */
 export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
@@ -23,65 +17,123 @@ export function createFormController(buildResult, schema, handlers) {
     onCancel, onSubmit, onDelete, onFieldChange
   } = handlers;
 
-  // ─── Header + Buttons ──────────────────────────────────────────────────────
+  // ─── Header + Filter + Save/Delete ────────────────────────────────────────
   const {
-    headerWrap, subheading,
-    filterCheckbox, setDeleteVisible
+    headerWrap,
+    subheading,
+    filterCheckbox,
+    setDeleteVisible
   } = setupFormHeader({
-    form, title, hasFilter: !!hasFilter,
-    onFilter: () => onFieldChange(getPayload()),
-    onCancel, onDelete, getPayload, onSubmit
+    form,
+    title,
+    hasFilter: !!hasFilter,
+    onFilter:   () => onFieldChange(getPayload()),
+    onCancel,
+    onDelete,
+    getPayload,
+    onSubmit
   });
 
-  // ─── Color-pickers & presets ───────────────────────────────────────────────
+  // ─── Color-pickers & Presets wiring ────────────────────────────────────────
   const pickrs = setupFormColors(form, fields, colorables, schema);
 
-  // ─── Data helpers (payload + multi-fields) ─────────────────────────────────
-  const { getPayload, populateFields } = setupFormData(
-    fields, schema, pickrs, filterCheckbox
-  );
+  // ─── Payload builder (wrapped to include id) ────────────────────────────────
+  let payloadId = null;
+  function getPayload() {
+    const out = {};
+    for (const [key, cfg] of Object.entries(schema)) {
+      let val;
+      const el = fields[key];
+      switch (cfg.type) {
+        case "checkbox":
+          val = el.checked;
+          break;
+        case "extraInfo":
+          val = el.getLines();
+          break;
+        case "chipList":
+          val = el.get();
+          break;
+        default:
+          val = el.value;
+      }
+      out[key] = val;
+      if (cfg.colorable) {
+        const p = pickrs[cfg.colorable];
+        out[cfg.colorable] = p?.getColor()?.toHEXA?.()?.toString?.() || null;
+      }
+    }
+    out.showInFilters = filterCheckbox.checked;
+    out.id = payloadId;
+    return out;
+  }
 
-  // ─── Form State ─────────────────────────────────────────────────────────────
+  // ─── Defaults & Form State ─────────────────────────────────────────────────
   const defaultValues = Object.fromEntries(
-    Object.entries(schema).map(([key, cfg]) => {
-      let dv = cfg.default;
-      if (dv === undefined) dv = cfg.type === "checkbox" ? false : "";
-      return [key, dv];
+    Object.entries(schema).map(([k,c]) => {
+      let dv = c.default;
+      if (dv === undefined) dv = c.type === "checkbox" ? false : "";
+      return [k, dv];
     })
   );
   const pickrClearKeys = Object.entries(schema)
-    .filter(([, cfg]) => cfg.colorable)
-    .map(([, cfg]) => cfg.colorable);
+    .filter(([,c]) => c.colorable)
+    .map(([,c]) => c.colorable);
 
   const formState = createFormState({
-    form, fields, defaultValues,
-    pickrs, pickrClearKeys,
-    subheading, setDeleteVisible,
+    form,
+    fields,
+    defaultValues,
+    pickrs,
+    pickrClearKeys,
+    subheading,
+    setDeleteVisible,
     getCustom: getPayload,
     onFieldChange
   });
 
-  // ─── Reset & Populate ──────────────────────────────────────────────────────
+  // ─── Reset & Populate ───────────────────────────────────────────────────────
   function reset() {
-    populateFields({ id: null, showInFilters: true });
+    payloadId = null;
     formState.reset();
     filterCheckbox.checked = true;
   }
 
   async function populate(def) {
+    payloadId = def.id ?? null;
+
+    // 1) Basic populate into form controls
     formState.populate(def);
     filterCheckbox.checked = def.showInFilters ?? true;
-    populateFields(def);
+
+    // 2) Multi-part fields: chipList, extraInfo
+    Object.entries(schema).forEach(([key,cfg]) => {
+      if (cfg.type === "chipList" && Array.isArray(def[key])) {
+        fields[key].set(def[key]);
+      } else if (cfg.type === "extraInfo") {
+        const lines = Array.isArray(def[key])
+          ? def[key]
+          : (Array.isArray(def.extraInfo) ? def.extraInfo : []);
+        fields[key].setLines(lines);
+      }
+    });
+
+    // 3) Re-apply saved Firestore colors
     populateSavedColors(pickrs, def, schema);
+
+    // 4) Apply select-based presets from loaded def
     applySelectPresetsOnPopulate(schema, def, pickrs);
   }
 
-  // ─── Wire Live Updates & Submission ────────────────────────────────────────
+  // ─── Wire form events & submit handler ─────────────────────────────────────
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
 
-  // ─── Public API ────────────────────────────────────────────────────────────
+  // ─── Public API ─────────────────────────────────────────────────────────────
   return {
-    form, reset, populate, getPayload,
+    form,
+    reset,
+    populate,
+    getPayload,
     initPickrs: () =>
       Object.assign(pickrs, setupFormColors(form, fields, colorables, schema))
   };

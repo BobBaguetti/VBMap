@@ -1,37 +1,39 @@
 // @file: src/modules/definition/form/controller/formDataManager.js
-// @version: 1.0 — consolidate payload builder and multi‐field populators
+// @version: 1.0 — manage payload ID, payload builder, and multi-field population
 
 import { createGetPayload } from "./formPayloadBuilder.js";
 import { populateMultiFields } from "./formMultiFieldManager.js";
 
 /**
- * Sets up data-related helpers for a form:
- *  - builds payload including ID
- *  - populates multi-part fields (chipList, extraInfo)
+ * Sets up data handling for a form:
+ *  - tracks current payload ID
+ *  - builds submission payload including ID
+ *  - populates chipList & extraInfo fields
  *
- * @param {Object} fields           — map of fieldName→HTMLElement/controller
+ * @param {Object} fields           — fieldName → control
  * @param {Object} schema           — definition schema
- * @param {Object} pickrs           — map of colorKey→Pickr instance
+ * @param {Object} pickrs           — colorKey → Pickr instance
  * @param {HTMLInputElement} filterCheckbox
- * @returns {{
- *   getPayload: Function,
- *   populateFields: Function
- * }}
+ * @returns {{ setPayloadId:Function, getPayload:Function, runPopulateMulti:Function }}
  */
 export function setupFormData(fields, schema, pickrs, filterCheckbox) {
   let payloadId = null;
-  const rawGetPayload = createGetPayload(fields, schema, pickrs, filterCheckbox);
+  const rawGet = createGetPayload(fields, schema, pickrs, filterCheckbox);
 
   function getPayload() {
-    const out = rawGetPayload();
+    const out = rawGet();
     out.id = payloadId;
     return out;
   }
 
-  function populateFields(def) {
-    payloadId = def.id ?? null;
+  function setPayloadId(id) {
+    payloadId = id;
+  }
+
+  function runPopulateMulti(def) {
+    setPayloadId(def.id ?? null);
     populateMultiFields(fields, schema, def);
   }
 
-  return { getPayload, populateFields };
+  return { setPayloadId, getPayload, runPopulateMulti };
 }
