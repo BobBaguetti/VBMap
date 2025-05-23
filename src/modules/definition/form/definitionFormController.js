@@ -1,5 +1,5 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.10.1 — defer Pickr setup into initPickrs so saved colors stick
+// @version: 1.10.2 — re-dispatch form input after loading saved Pickr colors
 
 import { createFormCore } from "../form/controller/formControllerCore.js";
 import { setupPickrs, populateSavedColors }
@@ -16,39 +16,30 @@ import { CHEST_RARITY }
 export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
 
-  // We'll populate this only once the form is in the DOM
+  // 1) Pickr setup deferred into initPickrs()
   let pickrs = {};
-
-  // Keys to clear when resetting pickrs
   const pickrClearKeys = Object.entries(schema)
     .filter(([, cfg]) => cfg.colorable)
     .map(([, cfg]) => cfg.colorable);
 
-  // Initialize header, state, and payload logic
+  // 2) Core wiring
   const { reset, populateBasic, getPayload } = createFormCore({
-    form,
-    fields,
-    schema,
-    pickrs,
-    pickrClearKeys,
-    handlers
+    form, fields, schema, pickrs: pickrs, pickrClearKeys, handlers
   });
 
-  // This will be called by your openDefinition logic *after* the form is appended
+  // 3) initPickrs called by modal code
   function initPickrs() {
-    // Actually wire up Pickr on the real DOM buttons
     pickrs = setupPickrs(form, fields, colorables, schema);
-    // Re-apply chest nameColor linkage now that pickrs exist
     applyChestRarityLink(fields, pickrs);
     return pickrs;
   }
 
-  // Full populate: basic fields, multi-fields, then colors
+  // 4) Full populate: basics, multi-fields, colors, then preview update
   async function populate(def) {
-    // 1) Populate simple inputs + filter checkbox
+    // A) Basic input fields + filter checkbox
     populateBasic(def);
 
-    // 2) Populate chipList & extraInfo
+    // B) Multi-part fields
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(def[key])) {
         fields[key].set(def[key]);
@@ -62,10 +53,17 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
-    // 3) Apply saved Firestore colors to the pickrs
+    // C) Apply saved Pickr colors (deferred)
     populateSavedColors(pickrs, def, schema);
 
-    // 4) Auto-presets for rarity & itemType selects
+    // ───────────── NEW ──────────────────────────
+    // Force a form "input" event so preview updates with those colors
+    setTimeout(() => {
+      form.dispatchEvent(new Event("input", { bubbles: true }));
+    }, 0);
+    // ─────────────────────────────────────────────
+
+    // D) Select-based presets for rarity & itemType
     if (schema.rarity) {
       const preset = rarityColors[def.rarity];
       if (preset) {
