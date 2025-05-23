@@ -1,4 +1,4 @@
-// @file: src/modules/definition/forms/definitionFormController.js
+// @file: src/modules/definition/form/definitionFormController.js
 // @version: 1.9.14 — uses formHeaderManager, formColorManager, formDataManager & formStateConfigurator
 
 import { setupFormHeader } from "../form/controller/formHeaderManager.js";

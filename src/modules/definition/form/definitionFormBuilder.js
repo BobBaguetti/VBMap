@@ -1,4 +1,4 @@
-// @file: src/modules/definition/forms/definitionFormBuilder.js
+// @file: src/modules/definition/form/definitionFormBuilder.js
 // @version: 1.5 — fix chipList API so controller.el.get() is defined
 
 import { createFieldRow } from "../form/builder/fieldRow.js";
