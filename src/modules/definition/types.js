@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.3 — add previewBuilder for type-specific previews
+// @version: 1.4 — unified previewController usage for Item & Chest
 
 import {
   loadItemDefinitions,
@@ -7,6 +7,7 @@ import {
   saveItemDefinition,
   deleteItemDefinition
 } from "../services/itemDefinitionsService.js";
+
 import {
   loadChestDefinitions,
   subscribeChestDefinitions,
@@ -17,8 +18,8 @@ import {
 import { itemSchema }  from "./schemas/itemSchema.js";
 import { chestSchema } from "./schemas/chestSchema.js";
 
-import { buildForm }            from "./form/definitionFormBuilder.js";
-import { createFormController } from "./form/definitionFormController.js";
+import { buildForm }              from "./form/definitionFormBuilder.js";
+import { createFormController }   from "./form/definitionFormController.js";
 import { createPreviewController } from "./preview/previewController.js";
 
 export const definitionTypes = {
