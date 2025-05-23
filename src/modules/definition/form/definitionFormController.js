@@ -1,39 +1,31 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.10.1 — re-inline deferred saved colors in populate
+// @version: 1.10.1 — defer Pickr setup into initPickrs so saved colors stick
 
 import { createFormCore } from "../form/controller/formControllerCore.js";
-import { setupPickrs } from "../form/controller/formPickrManager.js";
-import { applyChestRarityLink } from "../form/controller/chestFormEnhancements.js";
+import { setupPickrs, populateSavedColors }
+  from "../form/controller/formPickrManager.js";
+import { applyChestRarityLink }
+  from "../form/controller/chestFormEnhancements.js";
 import {
   rarityColors,
   itemTypeColors
 } from "../../../shared/utils/color/colorPresets.js";
-import { CHEST_RARITY } from "../../map/marker/utils.js";
+import { CHEST_RARITY }
+  from "../../map/marker/utils.js";
 
-/**
- * High-level controller that builds the definition form,
- * wires header, state, Pickr, and custom logic.
- */
 export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
 
-  // 1) Initialize all Pickr instances + preset wiring
-  const pickrs = setupPickrs(form, fields, colorables, schema);
+  // We'll populate this only once the form is in the DOM
+  let pickrs = {};
 
-  // 2) Chest-specific nameColor linkage
-  applyChestRarityLink(fields, pickrs);
-
-  // 3) Keys to clear on form reset
+  // Keys to clear when resetting pickrs
   const pickrClearKeys = Object.entries(schema)
     .filter(([, cfg]) => cfg.colorable)
     .map(([, cfg]) => cfg.colorable);
 
-  // 4) Core header, state, and payload logic
-  const {
-    reset,
-    populateBasic,
-    getPayload
-  } = createFormCore({
+  // Initialize header, state, and payload logic
+  const { reset, populateBasic, getPayload } = createFormCore({
     form,
     fields,
     schema,
@@ -42,12 +34,21 @@ export function createFormController(buildResult, schema, handlers) {
     handlers
   });
 
-  // 5) Full populate handler includes multi-fields, deferred colors, and presets
+  // This will be called by your openDefinition logic *after* the form is appended
+  function initPickrs() {
+    // Actually wire up Pickr on the real DOM buttons
+    pickrs = setupPickrs(form, fields, colorables, schema);
+    // Re-apply chest nameColor linkage now that pickrs exist
+    applyChestRarityLink(fields, pickrs);
+    return pickrs;
+  }
+
+  // Full populate: basic fields, multi-fields, then colors
   async function populate(def) {
-    // Basic population of inputs & filter checkbox
+    // 1) Populate simple inputs + filter checkbox
     populateBasic(def);
 
-    // Multi-part: chipList and extraInfo
+    // 2) Populate chipList & extraInfo
     for (const [key, cfg] of Object.entries(schema)) {
       if (cfg.type === "chipList" && Array.isArray(def[key])) {
         fields[key].set(def[key]);
@@ -61,23 +62,10 @@ export function createFormController(buildResult, schema, handlers) {
       }
     }
 
-    // ─── DEFERRED SAVED COLORS ────────────────────────────────────
-    setTimeout(() => {
-      Object.entries(schema).forEach(([key, cfg]) => {
-        if (cfg.colorable) {
-          const clrKey = cfg.colorable;
-          const saved = def[clrKey];
-          if (saved && pickrs[clrKey]) {
-            pickrs[clrKey].setColor(saved);
-          }
-        }
-      });
-      // trigger form input so preview updates
-      form.dispatchEvent(new Event("input", { bubbles: true }));
-    }, 0);
-    // ──────────────────────────────────────────────────────────────
+    // 3) Apply saved Firestore colors to the pickrs
+    populateSavedColors(pickrs, def, schema);
 
-    // Auto‐presets for rarity & itemType selects
+    // 4) Auto-presets for rarity & itemType selects
     if (schema.rarity) {
       const preset = rarityColors[def.rarity];
       if (preset) {
@@ -98,6 +86,6 @@ export function createFormController(buildResult, schema, handlers) {
     reset,
     populate,
     getPayload,
-    initPickrs: () => setupPickrs(form, fields, colorables, schema)
+    initPickrs
   };
 }
