@@ -40,4 +40,4 @@ export function createGetPayload(fields, schema, pickrs, filterCheckbox) {
     out.showInFilters = filterCheckbox?.checked ?? true;
     return out;
   };
-}
+} 
