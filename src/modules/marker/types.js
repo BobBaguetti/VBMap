@@ -1,5 +1,5 @@
 // @file: src/modules/marker/types.js
-// @version: 1.6 — use service loaders directly to avoid circular import
+// @version: 1.7 
 
 import {
   loadItemDefinitions,
@@ -35,9 +35,6 @@ export const markerTypes = {
     subscribeDefinitions: subscribeChestDefinitions,
     popupRenderer:        renderChestPopup,
     iconFactory:          createCustomIcon,
-    filterSetup:          setupChestFilters,
-    showInSidebar:        () => true
+    filterSetup:          setupChestFilters
   }
-
-  // …add future types here…
 };
