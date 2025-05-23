@@ -190,3 +190,4 @@ export function createFormController(buildResult, schema, handlers) {
     initPickrs: () => Object.assign(pickrs, setupPickrs(form, fields, colorables, schema))
   };
 }
+ 
