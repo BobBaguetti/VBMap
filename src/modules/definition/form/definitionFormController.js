@@ -1,16 +1,15 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.11 — header logic extracted to formHeaderManager
+// @version: 1.9.11 — use formHeaderManager for header & buttons
 
-import { wireFormEvents }
-  from "../form/controller/formControllerShell.js";
+import { setupFormHeader } from "../form/controller/formHeaderManager.js";
 import { createFormState }
   from "../form/controller/formStateManager.js";
+import { wireFormEvents }
+  from "../form/controller/formControllerShell.js";
 import { rarityColors, itemTypeColors }
   from "../../../shared/utils/color/colorPresets.js";
 import { CHEST_RARITY }
   from "../../map/marker/utils.js";
-import { setupFormHeader }
-  from "../form/controller/formHeaderManager.js";
 import { applyChestRarityLink }
   from "../form/controller/chestFormEnhancements.js";
 import {
@@ -40,9 +39,7 @@ export function createFormController(buildResult, schema, handlers) {
     onFieldChange
   } = handlers;
 
-  // ─── Header + Subheader Setup ────────────────────────────────────────────────
-  // payloadId will be captured by onDelete and onFilter closures below
-  let payloadId = null;
+  // ─── Header + Filter & Buttons ─────────────────────────────────────────────
   const {
     headerWrap,
     subheading,
@@ -51,10 +48,12 @@ export function createFormController(buildResult, schema, handlers) {
   } = setupFormHeader({
     form,
     title,
-    hasFilter,
+    hasFilter: !!hasFilter,
+    onFilter: () => onFieldChange(getPayload()),
     onCancel,
-    onDelete: () => onDelete(payloadId),
-    onFilter: () => onFieldChange(getPayload())
+    onDelete,
+    getPayload,
+    onSubmit
   });
 
   // ─── Init Pickr instances & wiring ──────────────────────────────────────────
@@ -67,6 +66,7 @@ export function createFormController(buildResult, schema, handlers) {
   applyChestRarityLink(fields, pickrs);
 
   // ─── Payload builder (wrapped to include id) ────────────────────────────────
+  let payloadId = null;
   const rawGetPayload = createGetPayload(fields, schema, pickrs, filterCheckbox);
   function getPayload() {
     const out = rawGetPayload();
@@ -129,14 +129,6 @@ export function createFormController(buildResult, schema, handlers) {
 
   // ─── Wire Events & Save Handler ─────────────────────────────────────────────
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
-  const saveBtn = headerWrap.querySelector('button[type="submit"]');
-  if (saveBtn) {
-    saveBtn.type = "button";
-    saveBtn.addEventListener("click", async e => {
-      e.preventDefault();
-      await onSubmit(getPayload());
-    });
-  }
 
   // ─── Public API ─────────────────────────────────────────────────────────────
   return {
