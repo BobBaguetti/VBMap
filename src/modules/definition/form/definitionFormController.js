@@ -1,5 +1,5 @@
-// @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.9 — include payloadId so edits update existing entries
+// @file: src/modules/definition/form/definitionFormController.js
+// @version: 1.9.10 — fully refactored with helper modules
 
 import { createFormControllerHeader, wireFormEvents }
   from "../form/controller/formControllerShell.js";
@@ -17,6 +17,10 @@ import {
 } from "../form/controller/formPickrManager.js";
 import { populateMultiFields }
   from "../form/controller/formMultiFieldManager.js";
+import {
+  setupSelectPresets,
+  applySelectPresetsOnPopulate
+} from "../form/controller/formPresetManager.js";
 import { createGetPayload }
   from "../form/controller/formPayloadBuilder.js";
 
@@ -55,10 +59,13 @@ export function createFormController(buildResult, schema, handlers) {
   setDeleteVisible(false);
   form.prepend(headerWrap);
 
-  // ─── Init Pickr instances & wiring ─────────────────────────────────────────
+  // ─── Init Pickr instances & wiring ──────────────────────────────────────────
   const pickrs = setupPickrs(form, fields, colorables, schema);
 
-  // Chest-specific: auto-link nameColor to computed rarity
+  // ─── Wire select-based presets ──────────────────────────────────────────────
+  setupSelectPresets(schema, fields, pickrs);
+
+  // ─── Chest-specific: auto-link nameColor to computed rarity ────────────────
   applyChestRarityLink(fields, pickrs);
 
   // ─── Payload builder (wrapped to include id) ────────────────────────────────
@@ -109,28 +116,18 @@ export function createFormController(buildResult, schema, handlers) {
   async function populate(def) {
     payloadId = def.id ?? null;
 
-    // 1) Basic populate
+    // 1) Basic populate into inputs & state
     formState.populate(def);
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // 2) Multi-part fields
+    // 2) Multi-part fields: chipList, extraInfo
     populateMultiFields(fields, schema, def);
 
     // 3) Apply saved Firestore colors
     populateSavedColors(pickrs, def, schema);
 
-    // 4) Select-presets for rarity & itemType
-    if (schema.rarity) {
-      const preset = rarityColors[def.rarity];
-      if (preset) {
-        pickrs["rarityColor"]?.setColor(preset);
-        pickrs["nameColor"]?.setColor(preset);
-      }
-    }
-    if (schema.itemType) {
-      const preset = itemTypeColors[def.itemType];
-      if (preset) pickrs["itemTypeColor"]?.setColor(preset);
-    }
+    // 4) Apply select-based presets from loaded def
+    applySelectPresetsOnPopulate(schema, def, pickrs);
   }
 
   // ─── Wire Events & Save Handler ─────────────────────────────────────────────
@@ -154,4 +151,3 @@ export function createFormController(buildResult, schema, handlers) {
       Object.assign(pickrs, setupPickrs(form, fields, colorables, schema))
   };
 }
- 
