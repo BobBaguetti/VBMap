@@ -1,8 +1,8 @@
 // @file: src/modules/definition/form/controller/chestFormEnhancements.js
-// @version: 1.0 — auto-apply nameColor based on category+size for Chests
+// @version: 1.1 — fix import paths for shared presets and chest utils
 
-import { rarityColors } from "../../../shared/utils/color/colorPresets.js";
-import { CHEST_RARITY } from "../../../../map/marker/utils.js";
+import { rarityColors } from "../../../../shared/utils/color/colorPresets.js";
+import { CHEST_RARITY } from "../../../map/marker/utils.js";
 
 /**
  * Sets up auto-application of the nameColor pickr
