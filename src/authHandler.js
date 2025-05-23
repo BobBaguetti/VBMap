@@ -6,7 +6,7 @@ import { getAuth, onAuthStateChanged, getIdTokenResult } from "firebase/auth";
 import { initAdminAuth } from "./authSetup.js";
 
 // Point bootstrapUI at the new orchestrator
-import { bootstrapUI } from "../bootstrap/index.js";
+import { bootstrapUI } from "./bootstrap/index.js";
 
 export function handleAuth() {
   const auth = getAuth();
