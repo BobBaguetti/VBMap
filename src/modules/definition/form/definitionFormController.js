@@ -1,11 +1,12 @@
 // @file: src/modules/definition/forms/definitionFormController.js
-// @version: 1.9.12 — uses formHeaderManager & formColorManager
+// @version: 1.9.13 — uses formHeaderManager, formColorManager & formDataManager
 
 import { setupFormHeader } from "../form/controller/formHeaderManager.js";
 import { createFormState } from "../form/controller/formStateManager.js";
 import { wireFormEvents }  from "../form/controller/formControllerShell.js";
 import { setupFormColors, populateSavedColors, applySelectPresetsOnPopulate }
   from "../form/controller/formColorManager.js";
+import { setupFormData }   from "../form/controller/formDataManager.js";
 
 /**
  * Wraps a schema-built form, wiring header, state, events, and colors.
@@ -37,44 +38,18 @@ export function createFormController(buildResult, schema, handlers) {
   // ─── Color-pickers & Presets wiring ────────────────────────────────────────
   const pickrs = setupFormColors(form, fields, colorables, schema);
 
-  // ─── Payload builder (wrapped to include id) ────────────────────────────────
-  let payloadId = null;
-  function getPayload() {
-    const out = {};
-    for (const [key, cfg] of Object.entries(schema)) {
-      let val;
-      const el = fields[key];
-      switch (cfg.type) {
-        case "checkbox":
-          val = el.checked;
-          break;
-        case "extraInfo":
-          val = el.getLines();
-          break;
-        case "chipList":
-          val = el.get();
-          break;
-        default:
-          val = el.value;
-      }
-      out[key] = val;
-      if (cfg.colorable) {
-        const p = pickrs[cfg.colorable];
-        out[cfg.colorable] = p?.getColor()?.toHEXA?.()?.toString?.() || null;
-      }
-    }
-    out.showInFilters = filterCheckbox.checked;
-    out.id = payloadId;
-    return out;
-  }
+  // ─── Data handling: payload ID, payload builder & multi-fields ───────────
+  const dataMgr = setupFormData(fields, schema, pickrs, filterCheckbox);
+  const { setPayloadId, getPayload, runPopulateMulti } = dataMgr;
 
-  // ─── Defaults & Form State ─────────────────────────────────────────────────
+  // ─── Form State Initialization ─────────────────────────────────────────────
   const defaultValues = Object.fromEntries(
-    Object.entries(schema).map(([k,c]) => {
-      let dv = c.default;
-      if (dv === undefined) dv = c.type === "checkbox" ? false : "";
-      return [k, dv];
-    })
+    Object.entries(schema).map(([k,c]) => [
+      k,
+      c.default !== undefined
+        ? c.default
+        : (c.type === "checkbox" ? false : "")
+    ])
   );
   const pickrClearKeys = Object.entries(schema)
     .filter(([,c]) => c.colorable)
@@ -88,44 +63,35 @@ export function createFormController(buildResult, schema, handlers) {
     pickrClearKeys,
     subheading,
     setDeleteVisible,
-    getCustom: getPayload,
+    getCustom:    getPayload,
     onFieldChange
   });
 
   // ─── Reset & Populate ───────────────────────────────────────────────────────
   function reset() {
-    payloadId = null;
+    setPayloadId(null);
     formState.reset();
     filterCheckbox.checked = true;
   }
 
   async function populate(def) {
-    payloadId = def.id ?? null;
+    setPayloadId(def.id ?? null);
 
-    // 1) Basic populate into form controls
+    // 1) Populate chipList & extraInfo
+    runPopulateMulti(def);
+
+    // 2) Populate basic fields & filter checkbox
     formState.populate(def);
     filterCheckbox.checked = def.showInFilters ?? true;
 
-    // 2) Multi-part fields: chipList, extraInfo
-    Object.entries(schema).forEach(([key,cfg]) => {
-      if (cfg.type === "chipList" && Array.isArray(def[key])) {
-        fields[key].set(def[key]);
-      } else if (cfg.type === "extraInfo") {
-        const lines = Array.isArray(def[key])
-          ? def[key]
-          : (Array.isArray(def.extraInfo) ? def.extraInfo : []);
-        fields[key].setLines(lines);
-      }
-    });
-
-    // 3) Re-apply saved Firestore colors
+    // 3) Re-apply any saved colors
     populateSavedColors(pickrs, def, schema);
 
     // 4) Apply select-based presets from loaded def
     applySelectPresetsOnPopulate(schema, def, pickrs);
   }
 
-  // ─── Wire form events & submit handler ─────────────────────────────────────
+  // ─── Wire form events & save handler ───────────────────────────────────────
   wireFormEvents(form, getPayload, onSubmit, onFieldChange);
 
   // ─── Public API ─────────────────────────────────────────────────────────────
