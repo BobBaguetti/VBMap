@@ -1,12 +1,11 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.1 — apply custom-popup wrapper & chest CSS styling
+// @version: 1.2 — color faction by disposition
 
 import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Renders an HTML string for NPC markers on the map,
- * using the same structure and classes as chest popups
- * so the existing CSS applies.
+ * coloring the faction text based on disposition.
  *
  * @param {Object} def NPC definition data
  * @returns {string} HTML content for Leaflet popup
@@ -20,11 +19,16 @@ export function renderNpcPopup(def) {
     ? `<img src="${imgUrl}" class="popup-image" onerror="this.style.display='none'">`
     : "";
 
-  // Title and metadata
-  const titleColor   = def.nameColor || defaultNameColor;
-  const nameHTML     = `<div class="popup-name" style="color:${titleColor}">${def.name || ""}</div>`;
-  const factionHTML  = `<div class="popup-type">${def.faction}</div>`;
-  const tierHTML     = `<div class="popup-rarity">${def.tier}</div>`;
+  // Title and metadata colors
+  const titleColor       = def.nameColor || defaultNameColor;
+  const dispositionColor = def.dispositionColor
+    || (def.disposition === "Hostile" ? "#d9534f" : "#5cb85c")
+    || defaultNameColor;
+
+  // Name, faction (colored by disposition), and tier
+  const nameHTML    = `<div class="popup-name" style="color:${titleColor}">${def.name || ""}</div>`;
+  const factionHTML = `<div class="popup-type" style="color:${dispositionColor}">${def.faction}</div>`;
+  const tierHTML    = `<div class="popup-rarity">${def.tier}</div>`;
 
   // Loot grid (reuse chest grid styling)
   const cells = (def.lootPool || []).map((item, idx) => {
@@ -73,4 +77,3 @@ export function renderNpcPopup(def) {
     </div>
   `;
 }
- 
