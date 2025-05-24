@@ -1,13 +1,10 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.8 — ask for confirmation before deleting
+// @version: 1.9 — unified real-time definition subscriptions
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
 import { definitionTypes }  from "../types.js";
-import { createDefinitionListManager }
-  from "../list/definitionListManager.js";
-import { loadItemDefinitions }
-  from "../../services/itemDefinitionsService.js";
+import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 
 export function initDefinitionModal(db) {
   const { modalEl, open, close } =
@@ -21,11 +18,17 @@ export function initDefinitionModal(db) {
   let listApi, formApi, previewApi;
   let currentType;
   let definitions = [];
+  let definitionsUnsub = null;
   let itemMap = {};
 
   // Hide preview whenever the modal closes
   modalEl.addEventListener("close", () => {
     if (previewApi) previewApi.hide();
+    // Unsubscribe definitions updates
+    if (definitionsUnsub) {
+      definitionsUnsub();
+      definitionsUnsub = null;
+    }
   });
 
   // Reopen on type change
@@ -33,9 +36,20 @@ export function initDefinitionModal(db) {
     openDefinition(typeSelect.value);
   });
 
-  async function refresh() {
-    definitions = await definitionTypes[currentType].loadDefs(db);
-    listApi.refresh(definitions);
+  function bindDefinitionUpdates(type) {
+    // clean up old subscription
+    if (definitionsUnsub) {
+      definitionsUnsub();
+      definitionsUnsub = null;
+    }
+    // subscribe to real-time definitions
+    const { subscribe } = definitionTypes[type];
+    if (typeof subscribe === "function") {
+      definitionsUnsub = subscribe(db, defs => {
+        definitions = defs;
+        listApi.refresh(definitions);
+      });
+    }
   }
 
   function setupList() {
@@ -44,12 +58,11 @@ export function initDefinitionModal(db) {
       getDefinitions: () => definitions,
       onEntryClick:   def => openDefinition(currentType, def),
       onDelete:       async id => {
-        // Confirmation before deleting from the list
         if (!confirm("Are you sure you want to delete this definition?")) {
           return;
         }
         await definitionTypes[currentType].del(db, id);
-        await refresh();
+        // subscription will handle list refresh
       }
     });
     searchInput.addEventListener("input", () =>
@@ -59,20 +72,18 @@ export function initDefinitionModal(db) {
 
   async function openDefinition(type, def = null) {
     currentType = type;
-
     typeSelect.innerHTML = Object.keys(definitionTypes)
       .map(t => `<option>${t}</option>`).join("");
     typeSelect.value = type;
 
     if (!listApi) setupList();
-    await refresh();
+    bindDefinitionUpdates(type);
 
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     }
 
-    // Recreate previewApi for this type
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
     // Build the form
@@ -82,18 +93,15 @@ export function initDefinitionModal(db) {
       hasFilter: true,
       onCancel:  () => { formApi.reset(); previewApi.hide(); },
       onDelete:  async id => {
-        // Confirmation before deleting from the form
         if (!confirm(`Are you sure you want to delete this ${type}?`)) {
           return;
         }
         await definitionTypes[type].del(db, id);
-        await refresh();
         formApi.reset();
         previewApi.hide();
       },
       onSubmit:  async payload => {
         await definitionTypes[type].save(db, payload.id ?? null, payload);
-        await refresh();
         formApi.reset();
         previewApi.hide();
       },
@@ -109,16 +117,12 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Remove stray filter row
-    const dup = formApi.form
-      .querySelector('#fld-showInFilters')
-      ?.closest('.field-row');
-    if (dup) dup.remove();
-
     // Swap in subheader
     const generated = formApi.form.querySelector(".modal-subheader");
-    subheader.replaceWith(generated);
-    subheader = generated;
+    if (generated && subheader) {
+      subheader.replaceWith(generated);
+      subheader = generated;
+    }
 
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
@@ -129,9 +133,7 @@ export function initDefinitionModal(db) {
       formApi.reset();
     }
 
-    // Open modal and show preview
     open();
-
     const previewData = def
       ? (type === "Chest"
           ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
