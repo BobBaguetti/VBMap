@@ -1,5 +1,5 @@
 // @file: src/modules/definition/preview/npcPreview.js
-// @version: 1.0 — preview panel for NPC definitions
+// @version: 1.1 — only render when def.id exists
 
 import { renderNpcPopup } from "../../map/markerManager.js";
 
@@ -11,8 +11,12 @@ export function createNpcPreviewPanel(container) {
 
   return {
     setFromDefinition(def) {
-      // Render popup HTML or clear if no definition
-      wrapper.innerHTML = def ? renderNpcPopup(def) : "";
+      // Only render when a valid definition (with id) is provided
+      if (!def || !def.id) {
+        wrapper.innerHTML = "";
+        return;
+      }
+      wrapper.innerHTML = renderNpcPopup(def);
     },
     show() {
       container.classList.add("visible");
