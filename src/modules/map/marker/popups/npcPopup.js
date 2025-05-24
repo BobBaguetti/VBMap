@@ -1,11 +1,12 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.2 — color faction by disposition
+// @version: 1.3 — default values for missing fields & empty loot slots
 
 import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Renders an HTML string for NPC markers on the map,
- * coloring the faction text based on disposition.
+ * coloring the faction text based on disposition,
+ * and handling missing fields & empty lootPool.
  *
  * @param {Object} def NPC definition data
  * @returns {string} HTML content for Leaflet popup
@@ -13,38 +14,53 @@ import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js
 export function renderNpcPopup(def) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
 
-  // Header image
+  // 1) Header image
   const imgUrl = def.imageSmall || def.imageLarge || "";
   const bigImg = imgUrl
     ? `<img src="${imgUrl}" class="popup-image" onerror="this.style.display='none'">`
     : "";
 
-  // Title and metadata colors
+  // 2) Fallback values
+  const nameVal    = def.name    || "Unnamed";
+  const factionVal = def.faction || "";
+  const tierVal    = def.tier    || "";
+
+  // 3) Colors
   const titleColor       = def.nameColor || defaultNameColor;
   const dispositionColor = def.dispositionColor
     || (def.disposition === "Hostile" ? "#d9534f" : "#5cb85c")
     || defaultNameColor;
 
-  // Name, faction (colored by disposition), and tier
-  const nameHTML    = `<div class="popup-name" style="color:${titleColor}">${def.name || ""}</div>`;
-  const factionHTML = `<div class="popup-type" style="color:${dispositionColor}">${def.faction}</div>`;
-  const tierHTML    = `<div class="popup-rarity">${def.tier}</div>`;
+  // 4) Name, faction, tier HTML
+  const nameHTML    = `<div class="popup-name" style="color:${titleColor}">${nameVal}</div>`;
+  const factionHTML = factionVal
+    ? `<div class="popup-type" style="color:${dispositionColor}">${factionVal}</div>`
+    : "";
+  const tierHTML    = tierVal
+    ? `<div class="popup-rarity">${tierVal}</div>`
+    : "";
 
-  // Loot grid (reuse chest grid styling)
-  const cells = (def.lootPool || []).map((item, idx) => {
+  // 5) Loot grid with empty slots
+  const pool = Array.isArray(def.lootPool) ? def.lootPool : [];
+  const COLS = 5;
+  let cells = pool.map((item, idx) => {
     const thumb = item.imageSmall
       ? `<img src="${item.imageSmall}" class="chest-slot-img" onerror="this.style.display='none'">`
       : "";
     return `<div class="chest-slot" data-index="${idx}">${thumb}</div>`;
   }).join("");
+  // fill empty slots
+  for (let i = pool.length; i < COLS; i++) {
+    cells += `<div class="chest-slot" data-index=""></div>`;
+  }
   const lootBox = `
     <div class="popup-info-box loot-box">
-      <div class="chest-grid" style="--cols:5;">
+      <div class="chest-grid" style="--cols:${COLS};">
         ${cells}
       </div>
     </div>`;
 
-  // Description & extra info
+  // 6) Description & extra-info
   const descHTML = def.description
     ? `<p class="popup-desc" style="color:${def.descriptionColor || defaultNameColor};">
          ${def.description}
@@ -60,7 +76,7 @@ export function renderNpcPopup(def) {
     ? `<div class="popup-info-box">${descHTML}${divider}${extraHTML}</div>`
     : "";
 
-  // Assemble full popup
+  // 7) Assemble full popup
   return `
     <div class="custom-popup" style="position:relative;">
       ${closeBtn}
@@ -74,6 +90,5 @@ export function renderNpcPopup(def) {
       </div>
       ${lootBox}
       ${textBox}
-    </div>
-  `;
+    </div>`;
 }
