@@ -1,5 +1,5 @@
 // @file: src/modules/definition/preview/createPreviewPanel.js
-// @version: 6.2 — support NPC previews and prevent duplicate panels
+// @version: 6.2 — support NPC, clear old panels, position container
 
 import { createItemPreviewPanel }  from "./itemPreview.js";
 import { createChestPreviewPanel } from "./chestPreview.js";
@@ -28,7 +28,7 @@ export function createPreviewPanel(type, mountTo = null) {
   if (!mountTo) {
     document.body.appendChild(container);
   } else {
-    // if reusing an existing node, clear out stale content
+    // clear out stale content
     container.innerHTML = "";
   }
 
@@ -48,7 +48,7 @@ export function createPreviewPanel(type, mountTo = null) {
       throw new Error(`Unknown preview panel type: ${type}`);
   }
 
-  // 3) Expose the container for external positioning logic
+  // 3) Expose the container for positioning
   api.container = container;
   return api;
 }
