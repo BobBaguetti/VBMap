@@ -1,5 +1,5 @@
 /* @file: styles/components/markers.css */
-/* @version: 1.2 — added hover brightness effect */
+/* @version: 1.1 — token-driven marker styles + hover effects */
 
 /* Container reset for custom markers */
 .custom-marker-container {
@@ -12,9 +12,8 @@
   position: relative;
   width: var(--marker-size);
   height: var(--marker-size);
-  /* hover transitions */
-  transition: transform 0.1s ease-out,
-              filter 0.1s ease-out;
+  /* hover transition */
+  transition: transform 0.12s ease-out;
 }
 
 /* Circular border around marker */
@@ -26,7 +25,7 @@
   border-radius: 50%;
   background: transparent !important;
   /* hover transition */
-  transition: box-shadow 0.1s ease-out;
+  transition: box-shadow 0.12s ease-out;
 }
 
 /* Icon inside marker */
@@ -49,10 +48,9 @@
   transform-origin: center bottom;
 }
 
-/* Hover effects: subtle scale, glow, and brightness */
+/* Hover effects: subtle scale and glow */
 .custom-marker:hover {
   transform: scale(1.08);
-  filter: brightness(1.1);
 }
 
 .custom-marker:hover .marker-border {
