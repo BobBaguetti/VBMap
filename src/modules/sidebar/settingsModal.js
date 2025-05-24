@@ -1,5 +1,13 @@
 // @file: src/modules/sidebar/settingsModal.js
-// @version: 1.2 — offset = 64 px and cog button now toggles open/close
+// @version: 1.3 — added login/logout button
+
+import {
+  getAuth,
+  onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
+  signOut
+} from "firebase/auth";
 
 /**
  * Creates and wires a draggable, floating Settings panel.
@@ -34,16 +42,19 @@ export function setupSettingsModal({ buttonSelector }) {
           <input type="checkbox" id="toggle-small-markers"/>
           Small Markers (50%)
         </label>
+        <hr/>
+        <div id="auth-button-container">
+          <button id="auth-button">Log In</button>
+        </div>
       </section>
     </div>
   `.trim();
 
   document.body.appendChild(panel);
-
   const closeBtn = panel.querySelector(".modal-close");
 
   /* ── Position: right of sidebar, 64 px down ─────────────────────── */
-  const INITIAL_TOP_OFFSET = 64; // tweak this to shift vertically
+  const INITIAL_TOP_OFFSET = 64;
   function positionNextToSidebar() {
     const sidebar = document.getElementById("sidebar");
     if (!sidebar) return;
@@ -64,15 +75,14 @@ export function setupSettingsModal({ buttonSelector }) {
     panel.classList.contains("hidden") ? open() : close();
   }
 
-  /* ── Wire events ────────────────────────────────────────────────── */
+  /* ── Wire open/close events ─────────────────────────────────────── */
   btn.addEventListener("click", toggle);
   closeBtn.addEventListener("click", close);
 
-  /* ── Drag behaviour (header acts as handle) ─────────────────────── */
+  /* ── Drag behavior ──────────────────────────────────────────────── */
   const handle = panel.querySelector(".drag-handle");
   let startX, startY, startLeft, startTop;
-
-  handle.addEventListener("pointerdown", (e) => {
+  handle.addEventListener("pointerdown", e => {
     e.preventDefault();
     startX = e.clientX;
     startY = e.clientY;
@@ -94,5 +104,23 @@ export function setupSettingsModal({ buttonSelector }) {
 
     window.addEventListener("pointermove", onMove);
     window.addEventListener("pointerup", onUp);
+  });
+
+  /* ── Auth button logic ──────────────────────────────────────────── */
+  const auth = getAuth();
+  const authButton = panel.querySelector("#auth-button");
+
+  function updateAuthButton(user) {
+    authButton.textContent = user ? "Log Out" : "Log In";
+  }
+  onAuthStateChanged(auth, user => updateAuthButton(user));
+
+  authButton.addEventListener("click", async () => {
+    if (auth.currentUser) {
+      await signOut(auth);
+    } else {
+      const provider = new GoogleAuthProvider();
+      await signInWithPopup(auth, provider);
+    }
   });
 }
