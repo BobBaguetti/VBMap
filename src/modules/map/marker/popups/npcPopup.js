@@ -1,23 +1,20 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.2 — include chest styling for NPC popup
+// @version: 1.0 — NPC popup renderer
 
 /**
- * Renders an HTML string for NPC markers on the map,
- * re-using the chest popup styling via the .popup-chest class.
+ * Renders an HTML string for NPC markers on the map.
+ * Mirrors the Chest popup layout, substituting NPC fields.
  *
  * @param {Object} def NPC definition data
  * @returns {string} HTML content for Leaflet popup
  */
 export function renderNpcPopup(def) {
-  const nameColor      = def.nameColor || "";
-  const alignColor     = def.alignmentColor || "";
+  const nameColor = def.nameColor || "";
   return `
-    <div class="popup-chest popup-npc">
+    <div class="popup-npc">
       <h3 style="color:${nameColor}">${def.name}</h3>
       <div class="popup-npc-meta" style="display:flex; gap:0.5em; margin-bottom:0.5em;">
-        <span style="color:${alignColor}">
-          <strong>Faction:</strong> ${def.faction}
-        </span>
+        <span><strong>Faction:</strong> ${def.faction}</span>
         <span><strong>Tier:</strong> ${def.tier}</span>
       </div>
       <div class="popup-npc-stats" style="display:flex; gap:1em; margin-bottom:0.5em;">
@@ -32,7 +29,7 @@ export function renderNpcPopup(def) {
       <div class="popup-npc-desc" style="margin-bottom:0.5em;">
         ${def.description || ""}
       </div>
-      ${(def.extraLines || []).map(line =>
+      ${(def.extraLines || []).map(line => 
         `<div class="popup-npc-extra">${line.text}</div>`
       ).join("")}
     </div>

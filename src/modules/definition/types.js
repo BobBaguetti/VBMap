@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.5 — use createPreviewPanel for modal previews
+// @version: 1.4 — add NPC type support
 
 import {
   loadItemDefinitions,
@@ -26,7 +26,7 @@ import { npcSchema }   from "./schemas/npcSchema.js";
 
 import { buildForm }            from "./form/definitionFormBuilder.js";
 import { createFormController } from "./form/definitionFormController.js";
-import { createPreviewPanel }   from "./preview/createPreviewPanel.js";
+import { createPreviewController } from "./preview/previewController.js";
 
 export const definitionTypes = {
   Item: {
@@ -39,7 +39,7 @@ export const definitionTypes = {
     controller: (handlers, db) =>
                   createFormController(buildForm(itemSchema), itemSchema, handlers),
     previewBuilder: host =>
-      createPreviewPanel("item", host)
+      createPreviewController("item", host)
   },
 
   Chest: {
@@ -52,7 +52,7 @@ export const definitionTypes = {
     controller: (handlers, db) =>
                   createFormController(buildForm(chestSchema), chestSchema, handlers),
     previewBuilder: host =>
-      createPreviewPanel("chest", host)
+      createPreviewController("chest", host)
   },
 
   NPC: {
@@ -65,6 +65,6 @@ export const definitionTypes = {
     controller:    (handlers, db) =>
                       createFormController(buildForm(npcSchema), npcSchema, handlers),
     previewBuilder: host =>
-      createPreviewPanel("npc", host)
+      createPreviewController("npc", host)
   }
 };
