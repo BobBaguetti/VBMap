@@ -1,5 +1,5 @@
-// @version: 10
-// @file:    /src/modules/services/itemDefinitionsService.js
+// @file: src/modules/services/itemDefinitionsService.js
+// @version: 10.1 — standardized subscription logging
 
 /**
  * Firestore service for item definitions.
@@ -10,7 +10,7 @@
  *   - description: string
  *   - extraLines: Array<{ text: string, color: string }>
  *   - imageSmall: string
- *   - imageBig: string
+ *   - imageLarge: string
  *   - value: string           // sell price
  *   - quantity: string
  *   - showInFilters: boolean  // whether this item appears in the sidebar filters
@@ -136,24 +136,19 @@ export async function deleteItemDefinition(db, id) {
  */
 export function subscribeItemDefinitions(db, onUpdate) {
   const colRef = getItemDefinitionsCollection(db);
-  const unsubscribe = onSnapshot(
+  return onSnapshot(
     colRef,
     snapshot => {
-      const defs = snapshot.docs
-        .map(docSnap => {
-          const data = docSnap.data();
-          return {
-            id: docSnap.id,
-            ...data,
-            showInFilters: data.showInFilters ?? true
-          };
-        })
-        .filter(def => !!def.id);
+      const defs = snapshot.docs.map(docSnap => {
+        const data = docSnap.data();
+        return {
+          id: docSnap.id,
+          ...data,
+          showInFilters: data.showInFilters ?? true
+        };
+      });
       onUpdate(defs);
     },
-    err => {
-      console.error("ItemDefinitions subscription error:", err);
-    }
+    err => console.error("subscribeDefinitions error:", err)
   );
-  return unsubscribe;
 }

@@ -1,5 +1,5 @@
-// @file: /src/modules/services/chestDefinitionsService.js
-// @version: 1.2 – normalize showInFilters default on load & subscribe
+// @file: src/modules/services/chestDefinitionsService.js
+// @version: 1.3 — standardized subscription logging
 
 /**
  * Firestore service for chest definition documents.
@@ -104,6 +104,6 @@ export function subscribeChestDefinitions(db, onUpdate) {
       });
       onUpdate(list);
     },
-    err => console.error("subscribeChestDefinitions:", err)
+    err => console.error("subscribeDefinitions error:", err)
   );
 }
