@@ -1,5 +1,5 @@
 // @file: src/modules/definition/preview/npcPreview.js
-// @version: 1.0 — NPC definition preview panel
+// @version: 1.1 — only render for existing definitions, hide for new entries
 
 import { renderNpcPopup } from "../../map/markerManager.js";
 
@@ -18,7 +18,17 @@ export function createNpcPreviewPanel(container) {
      * @param {Object|null} def NPC definition or null to clear.
      */
     setFromDefinition(def) {
-      popupWrapper.innerHTML = def ? renderNpcPopup(def) : "";
+      // Only render a preview when editing an existing NPC (has an id).
+      if (!def || def.id == null) {
+        popupWrapper.innerHTML = "";
+      } else {
+        // Ensure lootPool is at least an empty array
+        const previewDef = {
+          ...def,
+          lootPool: Array.isArray(def.lootPool) ? def.lootPool : []
+        };
+        popupWrapper.innerHTML = renderNpcPopup(previewDef);
+      }
     },
     /** Show the panel */
     show() { container.classList.add("visible"); },
