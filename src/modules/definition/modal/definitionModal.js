@@ -1,10 +1,11 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.9 — unified real-time definition subscriptions
+// @version: 1.10 — fix missing import for definition list
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
 import { definitionTypes }  from "../types.js";
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
+import { createDefinitionListManager } from "../list/definitionListManager.js";  // ← added
 
 export function initDefinitionModal(db) {
   const { modalEl, open, close } =
@@ -24,7 +25,6 @@ export function initDefinitionModal(db) {
   // Hide preview whenever the modal closes
   modalEl.addEventListener("close", () => {
     if (previewApi) previewApi.hide();
-    // Unsubscribe definitions updates
     if (definitionsUnsub) {
       definitionsUnsub();
       definitionsUnsub = null;
@@ -37,15 +37,13 @@ export function initDefinitionModal(db) {
   });
 
   function bindDefinitionUpdates(type) {
-    // clean up old subscription
     if (definitionsUnsub) {
       definitionsUnsub();
       definitionsUnsub = null;
     }
-    // subscribe to real-time definitions
-    const { subscribe } = definitionTypes[type];
-    if (typeof subscribe === "function") {
-      definitionsUnsub = subscribe(db, defs => {
+    const { subscribeDefinitions } = definitionTypes[type];
+    if (typeof subscribeDefinitions === "function") {
+      definitionsUnsub = subscribeDefinitions(db, defs => {
         definitions = defs;
         listApi.refresh(definitions);
       });
@@ -62,7 +60,7 @@ export function initDefinitionModal(db) {
           return;
         }
         await definitionTypes[currentType].del(db, id);
-        // subscription will handle list refresh
+        // subscription will refresh
       }
     });
     searchInput.addEventListener("input", () =>
@@ -86,7 +84,6 @@ export function initDefinitionModal(db) {
 
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
 
-    // Build the form
     formContainer.innerHTML = "";
     formApi = definitionTypes[type].controller({
       title:     type,
@@ -117,7 +114,6 @@ export function initDefinitionModal(db) {
       }
     }, db);
 
-    // Swap in subheader
     const generated = formApi.form.querySelector(".modal-subheader");
     if (generated && subheader) {
       subheader.replaceWith(generated);
