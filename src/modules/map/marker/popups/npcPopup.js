@@ -1,37 +1,75 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.0 — NPC popup renderer
+// @version: 1.1 — apply custom-popup wrapper & chest CSS styling
+
+import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 
 /**
- * Renders an HTML string for NPC markers on the map.
- * Mirrors the Chest popup layout, substituting NPC fields.
+ * Renders an HTML string for NPC markers on the map,
+ * using the same structure and classes as chest popups
+ * so the existing CSS applies.
  *
  * @param {Object} def NPC definition data
  * @returns {string} HTML content for Leaflet popup
  */
 export function renderNpcPopup(def) {
-  const nameColor = def.nameColor || "";
+  const closeBtn = `<span class="popup-close-btn">✖</span>`;
+
+  // Header image
+  const imgUrl = def.imageSmall || def.imageLarge || "";
+  const bigImg = imgUrl
+    ? `<img src="${imgUrl}" class="popup-image" onerror="this.style.display='none'">`
+    : "";
+
+  // Title and metadata
+  const titleColor   = def.nameColor || defaultNameColor;
+  const nameHTML     = `<div class="popup-name" style="color:${titleColor}">${def.name || ""}</div>`;
+  const factionHTML  = `<div class="popup-type">${def.faction}</div>`;
+  const tierHTML     = `<div class="popup-rarity">${def.tier}</div>`;
+
+  // Loot grid (reuse chest grid styling)
+  const cells = (def.lootPool || []).map((item, idx) => {
+    const thumb = item.imageSmall
+      ? `<img src="${item.imageSmall}" class="chest-slot-img" onerror="this.style.display='none'">`
+      : "";
+    return `<div class="chest-slot" data-index="${idx}">${thumb}</div>`;
+  }).join("");
+  const lootBox = `
+    <div class="popup-info-box loot-box">
+      <div class="chest-grid" style="--cols:5;">
+        ${cells}
+      </div>
+    </div>`;
+
+  // Description & extra info
+  const descHTML = def.description
+    ? `<p class="popup-desc" style="color:${def.descriptionColor || defaultNameColor};">
+         ${def.description}
+       </p>`
+    : "";
+  const extraHTML = (def.extraLines || []).map(l =>
+    `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
+       ${l.text}
+     </p>`
+  ).join("");
+  const divider = descHTML && extraHTML ? '<hr class="popup-divider">' : "";
+  const textBox = (descHTML || extraHTML)
+    ? `<div class="popup-info-box">${descHTML}${divider}${extraHTML}</div>`
+    : "";
+
+  // Assemble full popup
   return `
-    <div class="popup-npc">
-      <h3 style="color:${nameColor}">${def.name}</h3>
-      <div class="popup-npc-meta" style="display:flex; gap:0.5em; margin-bottom:0.5em;">
-        <span><strong>Faction:</strong> ${def.faction}</span>
-        <span><strong>Tier:</strong> ${def.tier}</span>
+    <div class="custom-popup" style="position:relative;">
+      ${closeBtn}
+      <div class="popup-header">
+        <div class="popup-header-left">
+          ${bigImg}
+          <div class="popup-info">
+            ${nameHTML}${factionHTML}${tierHTML}
+          </div>
+        </div>
       </div>
-      <div class="popup-npc-stats" style="display:flex; gap:1em; margin-bottom:0.5em;">
-        <span><strong>Damage:</strong> ${def.damage}</span>
-        <span><strong>HP:</strong> ${def.hp}</span>
-      </div>
-      <div class="popup-npc-loot" style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:0.5em;">
-        ${(def.lootPool || []).map(item =>
-          `<img src="${item.imageSmall}" title="${item.name}" class="popup-npc-loot-item" style="width:24px; height:24px; border-radius:4px;"/>`
-        ).join("")}
-      </div>
-      <div class="popup-npc-desc" style="margin-bottom:0.5em;">
-        ${def.description || ""}
-      </div>
-      ${(def.extraLines || []).map(line => 
-        `<div class="popup-npc-extra">${line.text}</div>`
-      ).join("")}
+      ${lootBox}
+      ${textBox}
     </div>
   `;
 }
