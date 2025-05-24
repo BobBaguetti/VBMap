@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/index.js 
-// @version: 12.0 — remove Settings section wiring; delegate only UI, filters, and admin
+// @version: 12.1 — await async filter setup
 
 import { setupSidebarUI }      from "./sidebarUI.js";
 import { setupSidebarFilters } from "./sidebarFilters.js";
@@ -20,10 +20,10 @@ import { setupSidebarAdmin }   from "./sidebarAdmin.js";
  * @param {() => void} params.opts.enableGrouping
  * @param {() => void} params.opts.disableGrouping
  *
- * @returns {{
+ * @returns {Promise<{
  *   filterMarkers: () => void,
  *   loadItemFilters: () => Promise<void>
- * }}
+ * }>}
  */
 export async function initSidebar(
   { map, layers, allMarkers, db, opts: { enableGrouping, disableGrouping } }
@@ -32,18 +32,22 @@ export async function initSidebar(
   setupSidebarUI({ map });
 
   // 2) Filtering Section
-  const { filterMarkers, loadItemFilters } = setupSidebarFilters({
-    searchBarSelector:      "#search-bar",
-    mainFiltersSelector:    "#main-filters .toggle-group",
-    pveToggleSelector:      "#toggle-pve",
-    itemFilterListSelector: "#item-filter-list",
-    chestFilterListSelector:"#chest-filter-list",
-    npcHostileListSelector: "#npc-hostile-list",
-    npcFriendlyListSelector:"#npc-friendly-list",
-    layers,
-    allMarkers,
-    db
-  });
+  // ← await here so we get back the real functions, not a Promise
+  const { filterMarkers, loadItemFilters } = 
+    await setupSidebarFilters({
+      searchBarSelector:      "#search-bar",
+      mainFiltersSelector:    "#main-filters .toggle-group",
+      pveToggleSelector:      "#toggle-pve",
+      itemFilterListSelector: "#item-filter-list",
+      chestFilterListSelector:"#chest-filter-list",
+      npcHostileListSelector: "#npc-hostile-list",
+      npcFriendlyListSelector:"#npc-friendly-list",
+      layers,
+      allMarkers,
+      db
+    });
+
+  // Now these exist for real:
   await loadItemFilters();
 
   // 3) Admin Tools
