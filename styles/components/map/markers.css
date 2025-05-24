@@ -1,5 +1,5 @@
 /* @file: styles/components/markers.css */
-/* @version: 1.0 — token-driven marker styles */
+/* @version: 1.1 — token-driven marker styles + hover effects */
 
 /* Container reset for custom markers */
 .custom-marker-container {
@@ -12,6 +12,8 @@
   position: relative;
   width: var(--marker-size);
   height: var(--marker-size);
+  /* hover transition */
+  transition: transform 0.15s ease-out;
 }
 
 /* Circular border around marker */
@@ -22,6 +24,8 @@
   border: var(--marker-border-thickness) solid var(--bg-50);
   border-radius: 50%;
   background: transparent !important;
+  /* hover transition */
+  transition: box-shadow 0.15s ease-out;
 }
 
 /* Icon inside marker */
@@ -42,4 +46,13 @@
 #map.small-markers .custom-marker {
   transform: scale(var(--marker-small-scale));
   transform-origin: center bottom;
+}
+
+/* Hover effects: subtle scale and glow */
+.custom-marker:hover {
+  transform: scale(1.05);
+}
+
+.custom-marker:hover .marker-border {
+  box-shadow: 0 0 6px rgba(255, 255, 255, 0.6);
 }
