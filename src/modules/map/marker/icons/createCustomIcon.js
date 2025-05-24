@@ -1,5 +1,5 @@
 /* @file: src/modules/map/marker/icons/createCustomIcon.js */
-/* @version: 1.4 — chest logic takes precedence over leftover rarityColor */
+/* @version: 1.5 — add drop-shadow to marker wrapper */
 
 const L = window.L;
 
@@ -18,7 +18,7 @@ export function createCustomIcon(m) {
   const imgUrl = getBestImageUrl(m, "imageSmall", "imageBig", "imageLarge");
   const size   = 32;
 
-  // Determine border color: chest logic first, then item rarity
+  // Determine border color: chest logic first, then item rarity/NPC disposition
   let borderColor = defaultNameColor;
 
   if (m.type === "Chest") {
@@ -27,7 +27,7 @@ export function createCustomIcon(m) {
     const key    = catMap[m.size]    || "common";
     borderColor  = rarityColors[key] || defaultNameColor;
   } else if (m.rarityColor) {
-    // Item: use its rarityColor
+    // Item or NPC: use its rarityColor
     borderColor = m.rarityColor;
   }
 
@@ -39,7 +39,8 @@ export function createCustomIcon(m) {
     width:        `${size}px`,
     height:       `${size}px`,
     borderRadius: "50%",
-    overflow:     "hidden"
+    overflow:     "hidden",
+    boxShadow:    "0 2px 6px rgba(0,0,0,0.3)"
   });
 
   // colored border

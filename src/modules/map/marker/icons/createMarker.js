@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/icons/createMarker.js
-// @version: 1.3 — use global L and fix module imports
+// @version: 1.4 — apply NPC dispositionColor as border
 
 // Assumes Leaflet is loaded via a <script> tag and exposes window.L
 const L = window.L;
@@ -8,7 +8,6 @@ import { renderItemPopup }  from "../popups/itemPopup.js";
 import { renderChestPopup } from "../popups/chestPopup.js";
 import { createCustomIcon } from "./createCustomIcon.js";
 import { CHEST_RARITY }     from "../utils.js";
-// climb up three levels to reach src/modules/utils/colorPresets.js
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 
 /**
@@ -17,7 +16,7 @@ import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/c
  * @param {object} m           – marker data object
  * @param {L.Map} map
  * @param {object<string,L.LayerGroup>} layers
- * @param {function(number,number,Array<object>)} ctxMenu – showContextMenu(x,y,items)
+ * @param {function} ctxMenu   – showContextMenu(x,y,items)
  * @param {object} callbacks   – { onEdit, onCopy, onDelete, onDragEnd }
  * @param {boolean} isAdmin
  * @returns {L.Marker}
@@ -32,7 +31,12 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
     m.rarityColor = rarityColors[key] || defaultNameColor;
   }
 
-  // 2) Instantiate the Leaflet marker
+  // 1a) If this is an NPC, use dispositionColor for the marker border
+  if (m.type === "NPC") {
+    m.rarityColor = m.dispositionColor || m.rarityColor || defaultNameColor;
+  }
+
+  // 2) Instantiate the Leaflet marker with our custom icon
   const markerObj = L.marker(m.coords, {
     icon:      createCustomIcon(m),
     draggable: false
