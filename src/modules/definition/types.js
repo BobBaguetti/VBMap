@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.3 — add previewBuilder for type-specific previews
+// @version: 1.4 — add NPC type support
 
 import {
   loadItemDefinitions,
@@ -13,9 +13,16 @@ import {
   saveChestDefinition,
   deleteChestDefinition
 } from "../services/chestDefinitionsService.js";
+import {
+  loadNpcDefinitions,
+  subscribeNpcDefinitions,
+  saveNpcDefinition,
+  deleteNpcDefinition
+} from "../services/npcDefinitionsService.js";
 
 import { itemSchema }  from "./schemas/itemSchema.js";
 import { chestSchema } from "./schemas/chestSchema.js";
+import { npcSchema }   from "./schemas/npcSchema.js";
 
 import { buildForm }            from "./form/definitionFormBuilder.js";
 import { createFormController } from "./form/definitionFormController.js";
@@ -25,7 +32,7 @@ export const definitionTypes = {
   Item: {
     schema:     itemSchema,
     loadDefs:   loadItemDefinitions,
-    subscribe:  subscribeItemDefinitions,
+    subscribeDefinitions: subscribeItemDefinitions,
     save:       saveItemDefinition,
     del:        deleteItemDefinition,
     buildForm:  () => buildForm(itemSchema),
@@ -38,7 +45,7 @@ export const definitionTypes = {
   Chest: {
     schema:     chestSchema,
     loadDefs:   loadChestDefinitions,
-    subscribe:  subscribeChestDefinitions,
+    subscribeDefinitions: subscribeChestDefinitions,
     save:       saveChestDefinition,
     del:        deleteChestDefinition,
     buildForm:  () => buildForm(chestSchema),
@@ -46,5 +53,18 @@ export const definitionTypes = {
                   createFormController(buildForm(chestSchema), chestSchema, handlers),
     previewBuilder: host =>
       createPreviewController("chest", host)
+  },
+
+  NPC: {
+    schema:        npcSchema,
+    loadDefs:      loadNpcDefinitions,
+    subscribeDefinitions: subscribeNpcDefinitions,
+    save:          saveNpcDefinition,
+    del:           deleteNpcDefinition,
+    buildForm:     () => buildForm(npcSchema),
+    controller:    (handlers, db) =>
+                      createFormController(buildForm(npcSchema), npcSchema, handlers),
+    previewBuilder: host =>
+      createPreviewController("npc", host)
   }
 };

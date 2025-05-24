@@ -1,5 +1,5 @@
 // @file: src/modules/marker/types.js
-// @version: 2
+// @version: 1.7 — add NPC marker type
 
 import {
   loadItemDefinitions,
@@ -42,7 +42,7 @@ export const markerTypes = {
     popupRenderer:        renderChestPopup,
     iconFactory:          createCustomIcon,
     filterSetup:          setupChestFilters
-    // showInSidebar removed: Chest filters derive solely from schema
+    // Chest filters derive from schema; no showInSidebar flag needed
   },
 
   NPC: {

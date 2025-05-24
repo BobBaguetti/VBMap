@@ -1,16 +1,17 @@
-// @file: src\modules\definition\preview\createPreviewPanel.js
-// @version: 6
+// @file: src/modules/definition/preview/createPreviewPanel.js
+// @version: 6.1 — added NPC preview panel support
 
-import { createItemPreviewPanel } from "./itemPreview.js";
+import { createItemPreviewPanel }  from "./itemPreview.js";
 import { createChestPreviewPanel } from "./chestPreview.js";
+import { createNpcPreviewPanel }   from "./npcPreview.js";
 
 /**
  * Factory function that returns the appropriate preview panel API
- * based on the provided type.
+ * based on the provided type ("item", "chest", "npc").
  *
- * @param {string} type - One of "item", "quest", "npc", or "chest".
- * @param {HTMLElement|null} mountTo - Optional existing container.
- * @returns {{ container: HTMLElement, setFromDefinition: Function, show: Function, hide: Function }}
+ * @param {string} type    One of "item", "chest", or "npc".
+ * @param {HTMLElement|null} mountTo Optional existing container.
+ * @returns {{ setFromDefinition: Function, show: Function, hide: Function, container: HTMLElement }}
  */
 export function createPreviewPanel(type, mountTo = null) {
   // Create or reuse container
@@ -24,16 +25,18 @@ export function createPreviewPanel(type, mountTo = null) {
       api = createItemPreviewPanel(container);
       break;
     case "chest":
-      // clear any previous content
       container.innerHTML = "";
-      // use chest-specific preview
       api = createChestPreviewPanel(container);
+      break;
+    case "npc":
+      container.innerHTML = "";
+      api = createNpcPreviewPanel(container);
       break;
     default:
       throw new Error(`Unknown preview panel type: ${type}`);
   }
 
-  // Attach container reference for modals to position
+  // Attach container for external positioning
   api.container = container;
   return api;
 }

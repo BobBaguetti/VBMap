@@ -13,7 +13,7 @@ export {
   createMarker,
   renderItemPopup,
   renderChestPopup,
-  renderNpcPopup,        
+  renderNpcPopup,
   createCustomIcon,
   CHEST_RARITY,
   rarityColors,
