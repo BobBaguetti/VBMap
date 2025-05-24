@@ -1,5 +1,5 @@
 // @file: src/modules/definition/schemas/npcSchema.js
-// @version: 1.1 — added disposition field
+// @version: 1.2 — unified image labels
 
 export const npcSchema = {
   name: {
@@ -51,11 +51,11 @@ export const npcSchema = {
   },
   imageSmall: {
     type:  "imageUrl",
-    label: "Image URL (Small)"
+    label: "Image S:"
   },
   imageLarge: {
     type:  "imageUrl",
-    label: "Image URL (Large)"
+    label: "Image L:"
   },
   isVendor: {
     type:  "checkbox",

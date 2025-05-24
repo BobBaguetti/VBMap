@@ -1,5 +1,5 @@
 // @file: src/modules/definition/schemas/chestSchema.js
-// @version: 1.3 — add colorable fields for category & size
+// @version: 1.4 — unified image labels
 
 export const chestSchema = {
   name: {
@@ -31,6 +31,17 @@ export const chestSchema = {
     label:     "Description",
     colorable: "descriptionColor"
   },
-  imageSmall:    { type: "imageUrl", label: "Icon URL" },
-  extraLines:    { type: "extraInfo", label: "Extra Info", withDividers: true }
+  imageSmall: {
+    type:  "imageUrl",
+    label: "Image S:"
+  },
+  imageLarge: {
+    type:  "imageUrl",
+    label: "Image L:"
+  },
+  extraLines: {
+    type:         "extraInfo",
+    label:        "Extra Info",
+    withDividers: true
+  }
 };

@@ -1,5 +1,5 @@
 // @file: src/modules/definition/schemas/itemSchema.js
-// @version: 1.2 — removed showInFilters; filter toggle now only in subheader
+// @version: 1.3 — unified image labels
 
 export const itemSchema = {
   name: {
@@ -36,11 +36,11 @@ export const itemSchema = {
   },
   imageSmall: {
     type:  "imageUrl",
-    label: "Image S"
+    label: "Image S:"
   },
   imageLarge: {
     type:  "imageUrl",
-    label: "Image L"
+    label: "Image L:"
   },
   extraLines: {
     type:         "extraInfo",
