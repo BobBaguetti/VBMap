@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.13 — correctly enrich lootPool entries when they’re IDs
+// @version: 1.15 — using enrichLootPool from lootUtils.js
 
 import {
   subscribeMarkers,
@@ -11,6 +11,7 @@ import { markerTypes } from "../modules/marker/types.js";
 import { createMarker } from "../modules/map/markerManager.js";
 import { showContextMenu, hideContextMenu }
   from "../modules/context-menu/index.js";
+import { enrichLootPool } from "./lootUtils.js";  // new helper
 
 /** @type {{ markerObj: L.Marker, data: object }[]} */
 export const allMarkers = [];
@@ -45,26 +46,14 @@ export async function init(
       const cfg = markerTypes[data.type];
       if (!cfg) return;
 
-      // Merge definition fields (preserve data.id)
+      // Merge definition fields
       const defMap = definitionsManager.getDefinitions(data.type);
       const defKey = cfg.defIdKey;
       if (defKey && defMap[data[defKey]]) {
         const { id: _ignore, ...fields } = defMap[data[defKey]];
         Object.assign(data, fields);
-
-        // ─── FIXED: Enrich lootPool entries even when stored as simple IDs ───
-        if (data.type === "Chest" && Array.isArray(data.lootPool)) {
-          const itemMap = definitionsManager.getDefinitions("Item");
-          data.lootPool = data.lootPool.map(entry => {
-            // entry could be "abc123" or { id: "abc123", quantity: 2, … }
-            const id = typeof entry === "string" ? entry : entry.id;
-            const full = itemMap[id];
-            // If we found the full Item def, use it (has imageSmall/imageLarge)
-            if (full) return full;
-            // Otherwise preserve whatever partial data existed
-            return typeof entry === "object" ? entry : { id };
-          });
-        }
+        // Enrich loot pool for Chest and NPC
+        enrichLootPool(data, "Item");
       }
 
       // Context-menu callbacks
@@ -100,12 +89,12 @@ export async function init(
         isAdmin
       );
 
-      // Set its popup to the rendered HTML
+      // Set its popup
       if (cfg.popupRenderer) {
         markerObj.setPopupContent(cfg.popupRenderer(data));
       }
 
-      // Add to the right layer
+      // Add to layer
       const layer = clusterItemLayer.hasLayer(markerObj)
         ? clusterItemLayer
         : flatItemLayer;
@@ -117,7 +106,7 @@ export async function init(
     filterMarkers();
   });
 
-  // 2) Re‐apply icon & popup when definitions update (same enrichment)
+  // 2) Re-apply icon & popup when definitions update
   Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
@@ -128,17 +117,7 @@ export async function init(
         if (defKey && defMap[data[defKey]]) {
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
-
-          // Re-enrich lootPool the same way
-          if (data.type === "Chest" && Array.isArray(data.lootPool)) {
-            const itemMap = definitionsManager.getDefinitions("Item");
-            data.lootPool = data.lootPool.map(entry => {
-              const id = typeof entry === "string" ? entry : entry.id;
-              const full = itemMap[id];
-              if (full) return full;
-              return typeof entry === "object" ? entry : { id };
-            });
-          }
+          enrichLootPool(data, "Item");
         }
         markerObj.setIcon(cfg.iconFactory(data));
         markerObj.setPopupContent(cfg.popupRenderer(data));
@@ -151,4 +130,4 @@ export async function init(
 export default {
   init,
   allMarkers
-}; 
+};
