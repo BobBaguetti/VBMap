@@ -13,8 +13,8 @@
   width: var(--marker-size);
   height: var(--marker-size);
   /* hover transitions */
-  transition: transform 0.15s ease-out,
-              filter 0.15s ease-out;
+  transition: transform 0.12s ease-out,
+              filter 0.12s ease-out;
 }
 
 /* Circular border around marker */
@@ -26,7 +26,7 @@
   border-radius: 50%;
   background: transparent !important;
   /* hover transition */
-  transition: box-shadow 0.15s ease-out;
+  transition: box-shadow 0.12s ease-out;
 }
 
 /* Icon inside marker */
@@ -51,8 +51,8 @@
 
 /* Hover effects: subtle scale, glow, and brightness */
 .custom-marker:hover {
-  transform: scale(1.05);
-  filter: brightness(1.1);
+  transform: scale(1.08);
+  filter: brightness(1.08);
 }
 
 .custom-marker:hover .marker-border {
