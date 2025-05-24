@@ -1,5 +1,5 @@
 // @file: src/modules/definition/schemas/npcSchema.js
-// @version: 1.0 — NPC definition schema
+// @version: 1.1 — separate alignment from faction
 
 export const npcSchema = {
   name: {
@@ -7,24 +7,33 @@ export const npcSchema = {
     label:     "Name",
     colorable: "nameColor"
   },
+  alignment: {
+    type:      "select",
+    label:     "Alignment",
+    options:   ["Friendly", "Hostile"],
+    colorable: "alignmentColor"
+  },
   faction: {
     type:      "select",
     label:     "Faction",
-    options:   ["Scrat", "Wild", "Bandit", "Werewolf", "Void", "Friendly"],
+    options:   ["Scrat", "Wild", "Bandit", "Werewolf", "Void"],
     colorable: "factionColor"
   },
   tier: {
     type:    "select",
     label:   "Tier",
-    options: ["Normal", "Elite", "Boss"]
+    options: ["Normal", "Elite", "Boss"],
+    colorable: "tierColor"
   },
   damage: {
-    type:  "number",
-    label: "Damage"
+    type:      "number",
+    label:     "Damage",
+    colorable: "damageColor"
   },
   hp: {
-    type:  "number",
-    label: "HP"
+    type:      "number",
+    label:     "HP",
+    colorable: "hpColor"
   },
   lootPool: {
     type:       "chipList",
