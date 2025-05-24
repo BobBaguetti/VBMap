@@ -1,5 +1,5 @@
-// @file: src\modules\marker\forms\markerFormController.js
-// @version: 1.3 — defer Pickr init until initPickrs(), guard against null
+// @file: src/modules/marker/forms/markerFormController.js
+// @version: 1.4 — use imageLarge instead of imageBig
 
 import { getPickrHexColor }            from "../../../shared/utils/color/colorUtils.js";
 import {
@@ -7,7 +7,7 @@ import {
   wireFormEvents
 }                                       from "../../../shared/ui/forms/formControllerShell.js";
 import { initFormPickrs }              from "../../../shared/ui/forms/formPickrManager.js";
-import { createMarkerFormBuilder }     from "../../../shared/forms/builders/markerFormBuilder.js";
+import { createMarkerFormBuilder }     from "../../../shared/marker/forms/markerFormBuilder.js";
 
 /**
  * Controller for the marker form builder fields:
@@ -55,7 +55,7 @@ export function createMarkerFormController(
       descriptionColor:  getPickrHexColor(pickrs.description),
       extraLines:        fields.extraInfo.getLines(),
       imageSmall:        fields.fldImgS.value.trim(),
-      imageBig:          fields.fldImgL.value.trim()
+      imageLarge:        fields.fldImgL.value.trim()
     };
   }
 
@@ -76,7 +76,7 @@ export function createMarkerFormController(
     fields.extraInfo.setLines(def.extraLines || [], false);
 
     fields.fldImgS.value        = def.imageSmall || "";
-    fields.fldImgL.value        = def.imageBig || "";
+    fields.fldImgL.value        = def.imageLarge || "";
   }
 
   // Wire up form events to onSubmit and onFieldChange

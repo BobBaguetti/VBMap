@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.3 — merge in full Item defs for lootPool entries
+// @version: 1.4 — only use imageSmall and imageLarge, drop imageBig and iconUrl fallback
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
@@ -17,14 +17,9 @@ export function renderChestPopup(typeDef) {
   const rarityColor = rarityColors[key] || defaultNameColor;
 
   // 2) Header (icon + Name, Category, Rarity)
-  const bigImgUrl =
-    typeDef.imageSmall ||
-    typeDef.imageLarge ||
-    typeDef.imageBig    ||
-    typeDef.iconUrl     ||
-    "";
-  const bigImg = bigImgUrl
-    ? `<img src="${bigImgUrl}" class="popup-image"
+  const imgUrl = typeDef.imageLarge || typeDef.imageSmall || "";
+  const bigImg = imgUrl
+    ? `<img src="${imgUrl}" class="popup-image"
              style="border-color:${rarityColor}"
              onerror="this.style.display='none'">`
     : "";
@@ -42,22 +37,14 @@ export function renderChestPopup(typeDef) {
   const COLS = 5;
   const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
   let cells = pool.map((it, idx) => {
-    // If this entry doesn’t have its own image, pull the full Item def
+    // If this entry doesn’t have its own imageSmall, try imageLarge
     let item = it;
     if (!item.imageSmall && item.id) {
       const itemMap = definitionsManager.getDefinitions("Item");
-      if (itemMap[item.id]) {
-        item = itemMap[item.id];
-      }
+      if (itemMap[item.id]) item = itemMap[item.id];
     }
 
-    const imgUrl =
-      item.imageSmall ||
-      item.imageLarge ||
-      item.imageBig    ||
-      item.iconUrl     ||
-      "";
-
+    const slotImg = item.imageSmall || item.imageLarge || "";
     const clr = item.rarityColor
       || rarityColors[(item.rarity || "").toLowerCase()]
       || defaultNameColor;
@@ -65,7 +52,7 @@ export function renderChestPopup(typeDef) {
     return `
       <div class="chest-slot" data-index="${idx}"
            style="border-color:${clr}">
-        <img src="${imgUrl}"
+        <img src="${slotImg}"
              class="chest-slot-img"
              onerror="this.style.display='none'">
         ${item.quantity > 1
