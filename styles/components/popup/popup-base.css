@@ -1,0 +1,47 @@
+/* @file: styles/components/popup/popup-base.css */
+/* @version: 1.0 — popup container & close button */
+
+@import "../../tokens/popup.css";
+
+/* Container for all custom popups */
+.custom-popup {
+  position: relative;
+  background: var(--bg-40);
+  border-radius: var(--popup-border-radius);
+  padding: var(--popup-padding);
+  width: var(--popup-width);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  font-size: var(--popup-font-size);
+  line-height: var(--popup-line-height);
+}
+
+/* Close Button */
+.popup-close-btn {
+  position: absolute;
+  top: var(--popup-close-offset);
+  right: var(--popup-close-offset);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  z-index: 10;
+  transition: color var(--popup-close-transition),
+              transform var(--popup-close-transition);
+  color: var(--text-secondary);
+}
+.popup-close-btn svg {
+  width: var(--popup-close-icon-size);
+  height: var(--popup-close-icon-size);
+  fill: var(--text-secondary);
+  transition: fill var(--popup-close-transition),
+              transform var(--popup-close-transition);
+}
+.popup-close-btn:hover {
+  color: var(--text-primary);
+  transform: scale(var(--popup-close-hover-scale));
+}
+.popup-close-btn:hover svg {
+  fill: var(--text-primary);
+  transform: scale(var(--popup-close-hover-scale));
+}

@@ -1,0 +1,51 @@
+/* @file: styles/components/popup/popup-body.css */
+/* @version: 1.0 — popup body, description, extra info, divider */
+
+@import "../../tokens/popup.css";
+
+/* Body info box */
+.popup-body.popup-info-box {
+  font-family: var(--font-body);
+  font-weight: var(--popup-info-box-font-weight);
+  font-size: var(--popup-info-box-font-size);
+  background: var(--bg-30);
+  border: var(--border-width-hair) solid var(--border-soft);
+  border-radius: var(--popup-info-box-border-radius);
+  padding: var(--popup-info-box-padding);
+  margin-top: var(--popup-info-box-margin-top);
+  display: flex;
+  flex-direction: column;
+  gap: var(--popup-info-box-gap);
+}
+
+/* Paragraphs inside body */
+.popup-body p {
+  margin: 0;
+  padding: 2px 0;
+  font-family: var(--font-body);
+  font-weight: var(--popup-info-box-font-weight);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+/* Description */
+.popup-desc {
+  font-family: var(--font-body);
+  font-size: var(--popup-info-box-font-size);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Extra lines */
+.popup-extra-line {
+  font-family: var(--font-body);
+  font-size: var(--popup-info-box-font-size);
+  font-weight: var(--popup-info-box-font-weight);
+}
+
+/* Divider after description */
+.popup-divider {
+  border: none;
+  height: 1px;
+  background: var(--bg-50);
+  margin: var(--space-1) 0;
+}

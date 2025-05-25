@@ -1,0 +1,69 @@
+/* @file: styles/components/popup/popup-header.css */
+/* @version: 1.0 — popup header & title styles */
+
+@import "../../tokens/popup.css";
+
+/* Header container */
+.popup-header {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--popup-header-gap);
+  margin-bottom: var(--popup-header-margin-bottom);
+  border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
+  padding: 0;
+  /* align stats block (right) to the baseline of the header text */
+  align-items: baseline;
+}
+
+/* Left side of header: image + info */
+.popup-header-left {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--popup-header-gap);
+  flex: 1;
+}
+
+/* Header image styling */
+.popup-image {
+  width: var(--popup-image-size);
+  height: var(--popup-image-size);
+  object-fit: contain;
+  background: var(--bg-20);
+  border: var(--popup-image-border-thickness) solid var(--bg-50);
+  border-radius: var(--popup-image-border-radius);
+  flex-shrink: 0;
+}
+
+/* Info block (name, type, rarity) */
+.popup-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--popup-info-gap);
+  margin-top: 0;
+  padding-top: 0;
+}
+.popup-info > * {
+  margin: 0;
+  padding: 0;
+  line-height: var(--popup-info-line-height);
+}
+
+/* Name styling */
+.popup-name {
+  font-family: var(--font-body);
+  font-size: var(--popup-name-font-size);
+  font-weight: 520;
+  font-variant: small-caps;
+  text-transform: uppercase;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+/* Type and rarity styling */
+.popup-type,
+.popup-rarity {
+  font-family: var(--font-body);
+  font-size: var(--popup-variant-font-size);
+  font-weight: 520;
+  transform: translateY(-1px);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}

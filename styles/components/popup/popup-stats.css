@@ -1,0 +1,31 @@
+/* @file: styles/components/popup/popup-stats.css */
+/* @version: 1.0 — popup stats/value icon styling */
+
+@import "../../tokens/popup.css";
+
+/* Stats and value icon container */
+.popup-value-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--popup-value-gap);
+  margin-top: var(--popup-value-margin-top);
+  margin-right: var(--popup-value-margin-right);
+  font-family: var(--font-body);
+  font-size: var(--popup-value-font-size);
+  font-weight: 520;
+  white-space: nowrap;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+
+/* Icon sizing and color */
+.popup-value-icon svg {
+  width: var(--popup-close-icon-size);
+  height: var(--popup-close-icon-size);
+  fill: #d4af37;
+}
+
+/* Number next to icon */
+.popup-value-number {
+  display: inline-block;
+  margin-right: 0.2em;
+}
