@@ -1,9 +1,7 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 2.4 — unify stats font-size & line-height, adjust vertical-align */
+/* @version: 2.6 — remove rarity nudge so stats baseline aligns correctly */
 
 @import "../../tokens/popup.css";
-
-/* ───────────────────────────────────────────────── Popup Header ────── */
 
 /* Header as 2×2 grid */
 .popup-header {
@@ -27,7 +25,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--popup-header-gap);
-  min-width: 0; /* allow info to shrink for ellipsis */
+  min-width: 0; /* allow ellipsis */
 }
 
 /* Close button top-right */
@@ -42,12 +40,11 @@
   grid-area: stats;
   justify-self: end;
   align-self: baseline;
-  /* use same size as rarity text for perfect baseline alignment */
   font-size: var(--popup-variant-font-size);
   line-height: var(--popup-variant-font-size);
 }
 .popup-value-icon svg {
-  vertical-align: middle; /* center icon with text */
+  vertical-align: middle;
 }
 
 /* Header image */
@@ -89,12 +86,12 @@
   text-overflow: ellipsis;
 }
 
-/* Type & rarity */
+/* Type & rarity (no more translateY) */
 .popup-type,
 .popup-rarity {
   font-family: var(--font-body);
   font-size: var(--popup-variant-font-size);
   font-weight: 520;
-  transform: translateY(-1px);
+  /* transform: translateY(-1px);  ← removed */
   text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
