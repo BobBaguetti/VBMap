@@ -1,5 +1,8 @@
-/* @file: styles\components\popup\popup-chest-grid.css */
-/* @version: 1.1 — migrated values to popup tokens */
+/* @file: styles/components/popup/popup-inventory-grid.css */
+/* @version: 1.2 — renamed from popup-chest-grid.css; legacy class names */
+/* Note: Although this file is now named “inventory,” the CSS selectors
+   still use “chest” prefixes (e.g., .chest-grid, .chest-slot) for
+   backwards compatibility with existing HTML/JS. */
 
 @import "../../tokens/popup.css";
 
