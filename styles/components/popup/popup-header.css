@@ -1,14 +1,16 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 2.6 — remove rarity nudge so stats baseline aligns correctly */
+/* @version: 2.6 — separate row/column gaps in popup-info for tighter vertical spacing */
 
 @import "../../tokens/popup.css";
 
-/* Header as 2×2 grid */
+/* ───────────────────────────────────────────────── Popup Header ────── */
+
+/* Header container stays as a 2×2 grid */
 .popup-header {
   display: grid;
   grid-template-areas:
     "info  close"
-    "info  stats";
+    "info  .";
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   column-gap: var(--popup-header-gap);
@@ -35,18 +37,6 @@
   align-self: start;
 }
 
-/* Stats/value at bottom-right */
-.popup-value-icon {
-  grid-area: stats;
-  justify-self: end;
-  align-self: baseline;
-  font-size: var(--popup-variant-font-size);
-  line-height: var(--popup-variant-font-size);
-}
-.popup-value-icon svg {
-  vertical-align: middle;
-}
-
 /* Header image */
 .popup-image {
   width: var(--popup-image-size);
@@ -58,22 +48,28 @@
   flex-shrink: 0;
 }
 
-/* Info block: name, type, rarity */
+/* Info block: name, type, rarity+stats */
 .popup-info {
   display: flex;
   flex-direction: column;
-  gap: var(--popup-info-gap);
+
+  /* horizontal gap (e.g. between meta-row items) */
+  column-gap: var(--popup-info-gap);
+
+  /* tighter vertical gap between each line */
+  row-gap: 4px;
   margin: 0;
   padding: 0;
   min-width: 0;
 }
+
 .popup-info > * {
   margin: 0;
   padding: 0;
   line-height: var(--popup-info-line-height);
 }
 
-/* Name styling */
+/* Name styling (Line 1) */
 .popup-name {
   font-family: var(--font-body);
   font-size: var(--popup-name-font-size);
@@ -86,12 +82,18 @@
   text-overflow: ellipsis;
 }
 
-/* Type & rarity (no more translateY) */
-.popup-type,
+/* Type (Line 2) */
+.popup-type {
+  font-family: var(--font-body);
+  font-size: var(--popup-variant-font-size);
+  font-weight: 520;
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+}
+
+/* Rarity & Stats are now in .popup-meta-row (Line 3) — see popup-meta-row.css */
 .popup-rarity {
   font-family: var(--font-body);
   font-size: var(--popup-variant-font-size);
   font-weight: 520;
-  /* transform: translateY(-1px);  ← removed */
   text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
