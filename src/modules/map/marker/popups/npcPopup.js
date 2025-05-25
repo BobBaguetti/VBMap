@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.3 — default missing fields and render empty loot slots
+// @version: 1.3 — default missing fields, render empty loot slots, color tier, and show Damage/HP
 
 import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 
@@ -16,6 +16,8 @@ export function renderNpcPopup(def = {}) {
   const disposition     = def.disposition || "Friendly";
   const factionText     = def.faction     || "";
   const tierText        = def.tier        || "";
+  const dmgText         = def.damage      != null ? def.damage : "";
+  const hpText          = def.hp          != null ? def.hp : "";
   const pool            = Array.isArray(def.lootPool) ? def.lootPool : [];
   const descriptionText = def.description || "";
   const extraLines      = Array.isArray(def.extraLines) ? def.extraLines : [];
@@ -25,7 +27,8 @@ export function renderNpcPopup(def = {}) {
   const dispositionColor = def.dispositionColor
     || (disposition === "Hostile" ? "#d9534f" : "#5cb85c")
     || defaultNameColor;
-  const nameColor = def.nameColor || defaultNameColor;
+  const nameColor = def.nameColor     || defaultNameColor;
+  const tierColor = def.tierColor     || defaultNameColor;
 
   // 2) Build header HTML
   const imgHTML = imgUrl
@@ -38,10 +41,18 @@ export function renderNpcPopup(def = {}) {
     ? `<div class="popup-type" style="color:${dispositionColor}">${factionText}</div>`
     : "";
   const tierHTML = tierText
-    ? `<div class="popup-rarity">${tierText}</div>`
+    ? `<div class="popup-rarity" style="color:${tierColor}">${tierText}</div>`
     : "";
 
-  // 3) Build loot grid (5 columns, always show empty slots)
+  // 3) Build Damage/HP block (right side, similar to item value)
+  const statsHTML = (dmgText || hpText)
+    ? `<div class="popup-value-icon" title="Stats">
+         ${dmgText !== "" ? `<span>DMG: ${dmgText}</span>` : ""}
+         ${hpText  !== "" ? `<span>HP: ${hpText}</span>`   : ""}
+       </div>`
+    : "";
+
+  // 4) Build loot grid (5 columns, always show empty slots)
   const COLS = 5;
   let cells = pool.map((item, idx) => {
     const thumb = item.imageSmall || item.imageLarge || "";
@@ -60,7 +71,7 @@ export function renderNpcPopup(def = {}) {
       </div>
     </div>`;
 
-  // 4) Description & extra-info
+  // 5) Description & extra-info
   const descHTML = descriptionText
     ? `<p class="popup-desc" style="color:${def.descriptionColor || defaultNameColor};">
          ${descriptionText}
@@ -70,10 +81,14 @@ export function renderNpcPopup(def = {}) {
     .map(l => `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">${l.text}</p>`)
     .join("");
   const textBox = (descHTML || extraHTML)
-    ? `<div class="popup-info-box">${descHTML}${descHTML && extraHTML ? '<hr class="popup-divider">' : ''}${extraHTML}</div>`
+    ? `<div class="popup-info-box">
+         ${descHTML}
+         ${descHTML && extraHTML ? '<hr class="popup-divider">' : ''}
+         ${extraHTML}
+       </div>`
     : "";
 
-  // 5) Assemble
+  // 6) Assemble and return
   return `
     <div class="custom-popup" style="position:relative;">
       <span class="popup-close-btn">✖</span>
@@ -84,6 +99,7 @@ export function renderNpcPopup(def = {}) {
             ${nameHTML}${factionHTML}${tierHTML}
           </div>
         </div>
+        ${statsHTML}
       </div>
       ${lootBox}
       ${textBox}
