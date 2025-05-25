@@ -1,30 +1,30 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 1.2 — allow title to fill full header-left space */
+/* @version: 1.3 — absolute‐position stats at header bottom */
 
 @import "../../tokens/popup.css";
 
 /* Header container */
 .popup-header {
+  position: relative;                /* allow absolute child */
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;       /* left‐align header-left */
+  align-items: flex-start;           /* top‐align contents */
   gap: var(--popup-header-gap);
   margin-bottom: var(--popup-header-margin-bottom);
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
-  align-items: baseline;
-  width: 100%;
 }
 
-/* Left side of header: image + info */
+/* Left side: image + info */
 .popup-header-left {
   display: flex;
   align-items: flex-start;
   gap: var(--popup-header-gap);
-  flex: 1 1 auto;
-  min-width: 0; /* allow shrinking below content width */
+  flex: 1 1 auto;                    /* fill available width */
+  min-width: 0;                      /* allow shrinking for ellipsis */
 }
 
-/* Header image styling */
+/* Popup image */
 .popup-image {
   width: var(--popup-image-size);
   height: var(--popup-image-size);
@@ -35,15 +35,15 @@
   flex-shrink: 0;
 }
 
-/* Info block (name, type, rarity) */
+/* Info block */
 .popup-info {
   display: flex;
   flex-direction: column;
   gap: var(--popup-info-gap);
   margin: 0;
   padding: 0;
-  flex: 1 1 auto;  /* key: fill remaining space next to image */
-  min-width: 0;     /* allow text to ellipsize instead of wrap early */
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .popup-info > * {
   margin: 0;
@@ -51,25 +51,32 @@
   line-height: var(--popup-info-line-height);
 }
 
-/* Name styling */
+/* Name */
 .popup-name {
   font-family: var(--font-body);
   font-size: var(--popup-name-font-size);
   font-weight: 520;
   font-variant: small-caps;
   text-transform: uppercase;
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
 
-/* Type and rarity styling */
+/* Type & rarity */
 .popup-type,
 .popup-rarity {
   font-family: var(--font-body);
   font-size: var(--popup-variant-font-size);
   font-weight: 520;
   transform: translateY(-1px);
-  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
+  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+}
+
+/* Stats/value icon: absolute bottom-right of header */
+.popup-header .popup-value-icon {
+  position: absolute;
+  right: var(--popup-value-margin-right);
+  bottom: var(--popup-header-border-thickness);
 }
