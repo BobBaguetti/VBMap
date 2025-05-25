@@ -1,30 +1,56 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 1.4 — tweak stats vertical position */
+/* @version: 2.0 — switch to CSS Grid for precise header layout */
 
 @import "../../tokens/popup.css";
 
-/* Header container */
+/* ───────────────────────────────────────────────── Popup Header ────── */
+
+/* Header container as 2×2 grid:
+   - info  spans rows 1–2 in column 1
+   - close spans row 1, column 2
+   - stats spans row 2, column 2
+*/
 .popup-header {
-  position: relative;
-  display: flex;
-  justify-content: flex-start;
-  align-items: flex-start;
+  display: grid;
+  grid-template-areas:
+    "info  close"
+    "info  stats";
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
   gap: var(--popup-header-gap);
   margin-bottom: var(--popup-header-margin-bottom);
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
+  position: relative; /* for any absolute children if needed */
 }
 
-/* Left side: image + info */
+/* Left side: image + info (name/type/rarity) */
 .popup-header-left {
+  grid-area: info;
   display: flex;
   align-items: flex-start;
   gap: var(--popup-header-gap);
-  flex: 1 1 auto;
-  min-width: 0;
+  flex: none;      /* grid controls sizing */
+  min-width: 0;    /* allow child (.popup-info) to shrink for ellipsis */
 }
 
-/* Header image */
+/* Close button at top-right */
+.popup-close-btn {
+  grid-area: close;
+  justify-self: end;
+  align-self: start;
+}
+
+/* Stats/value icon at bottom-right */
+.popup-value-icon {
+  grid-area: stats;
+  justify-self: end;
+  align-self: end;
+}
+
+/* ───────────────────────────────────────────────── Popup Header Elements ────── */
+
+/* Header image styling (unchanged) */
 .popup-image {
   width: var(--popup-image-size);
   height: var(--popup-image-size);
@@ -35,14 +61,13 @@
   flex-shrink: 0;
 }
 
-/* Info block */
+/* Info block (name, type, rarity) */
 .popup-info {
   display: flex;
   flex-direction: column;
   gap: var(--popup-info-gap);
   margin: 0;
   padding: 0;
-  flex: 1 1 auto;
   min-width: 0;
 }
 .popup-info > * {
@@ -51,7 +76,7 @@
   line-height: var(--popup-info-line-height);
 }
 
-/* Name */
+/* Name styling */
 .popup-name {
   font-family: var(--font-body);
   font-size: var(--popup-name-font-size);
@@ -64,7 +89,7 @@
   text-overflow: ellipsis;
 }
 
-/* Type & rarity */
+/* Type and rarity styling */
 .popup-type,
 .popup-rarity {
   font-family: var(--font-body);
@@ -73,11 +98,3 @@
   transform: translateY(-1px);
   text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
-
-/* Stats/value icon: absolute at bottom-right, nudged up by 2px */
-.popup-header .popup-value-icon {
-  position: absolute;
-  right: var(--popup-value-margin-right);
-  /* raise up slightly so it lines with row-3 baseline */
-  bottom: calc(var(--popup-header-border-thickness) + 1px);
-} 
