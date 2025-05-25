@@ -1,9 +1,9 @@
 /* @file: styles/components/popup/popup-meta-row.css */
-/* @version: 1.0 — flex container to baseline-align rarity & stats */
+/* @version: 1.1 — ensure no implicit margins */
 
 .popup-meta-row {
-  display: flex;
+  display:        flex;
   justify-content: space-between;
-  align-items: baseline;
-  gap: var(--popup-info-gap);
+  align-items:    baseline;
+  gap:            var(--popup-info-gap);
 }

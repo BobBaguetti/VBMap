@@ -1,47 +1,27 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 3.2 — header as single flex-row for stable layout */
+/* @version: 3.3 — fix horizontal layout and stats margin override */
 
 @import "../../tokens/popup.css";
 
-/* ───────────────────────────────────────────────── Popup Header ────── */
-
-/* Entire header is one flex row: thumbnail + info */
+/* Entire header as a flex row: thumbnail + info */
 .popup-header {
   display: flex;
-  align-items: flex-start;    /* top-align thumbnail & info */
-  position: relative;         /* for absolute-close */
+  align-items: flex-start;
+  position: relative;
   padding-right: calc(var(--popup-close-offset) + var(--popup-close-icon-size));
-  gap: var(--popup-info-gap); /* horizontal gap between thumb & info */
-}
-
-/* Thumbnail image */
-.popup-image {
-  flex-shrink: 0;
-  width: var(--popup-image-size);
-  height: var(--popup-image-size);
-  object-fit: contain;
-  background: var(--bg-20);
-  border: var(--popup-image-border-thickness) solid var(--bg-50);
-  border-radius: var(--popup-image-border-radius);
-}
-
-/* Info block: vertical stack of name, type, and rarity+stats */
-.popup-info {
-  display: flex;
-  flex-direction: column;
-  gap: var(--popup-info-gap);
-  min-width: 0; /* allow name to truncate with ellipsis */
-}
-
-/* Row for rarity + stats, baseline-aligned */
-.popup-meta-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: baseline;
   gap: var(--popup-info-gap);
 }
 
-/* Close button top-right, removed from flex flow */
+/* Flex row: thumbnail and info block */
+.popup-header-left {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: var(--popup-info-gap);
+  min-width: 0;
+}
+
+/* Close button top-right */
 .popup-close-btn {
   position: absolute;
   top:    var(--popup-close-offset);
@@ -52,33 +32,63 @@
   cursor:     pointer;
 }
 
-/* ───────────────────────────────────────────────── Popup Header Text ────── */
+/* Thumbnail image */
+.popup-image {
+  flex-shrink: 0;
+  width:       var(--popup-image-size);
+  height:      var(--popup-image-size);
+  object-fit:  contain;
+  background:  var(--bg-20);
+  border:      var(--popup-image-border-thickness) solid var(--bg-50);
+  border-radius: var(--popup-image-border-radius);
+}
 
-/* Name (row 1) */
+/* Info block: name, type, and rarity+stats */
+.popup-info {
+  display:        flex;
+  flex-direction: column;
+  gap:            calc(var(--popup-info-gap) / 2);
+  min-width:      0;
+}
+
+/* Rarity + stats row */
+.popup-meta-row {
+  display:        flex;
+  justify-content: space-between;
+  align-items:    baseline;
+  gap:            var(--popup-info-gap);
+}
+
+/* Override any top margin on stats when inside meta-row */
+.popup-meta-row .popup-value-icon {
+  margin-top: 0 !important;
+}
+
+/* Name styling */
 .popup-name {
-  font-family:       var(--font-body);
-  font-size:         var(--popup-name-font-size);
-  font-weight:       520;
-  font-variant:      small-caps;
-  text-transform:    uppercase;
-  text-shadow:       0 1px 1px rgba(0,0,0,0.5);
-  white-space:       nowrap;
-  overflow:          hidden;
-  text-overflow:     ellipsis;
+  font-family:      var(--font-body);
+  font-size:        var(--popup-name-font-size);
+  font-weight:      520;
+  font-variant:     small-caps;
+  text-transform:   uppercase;
+  text-shadow:      0 1px 1px rgba(0,0,0,0.5);
+  white-space:      nowrap;
+  overflow:         hidden;
+  text-overflow:    ellipsis;
 }
 
-/* Type (row 2) */
+/* Type styling */
 .popup-type {
-  font-family:       var(--font-body);
-  font-size:         var(--popup-variant-font-size);
-  font-weight:       520;
-  color:             var(--text-secondary);
-  margin:            0;
+  font-family: var(--font-body);
+  font-size:   var(--popup-variant-font-size);
+  font-weight: 520;
+  color:       var(--text-secondary);
+  margin:      0;
 }
 
-/* Rarity (row 3, left side of popup-meta-row) */
+/* Rarity styling */
 .popup-rarity {
-  font-family:       var(--font-body);
-  font-size:         var(--popup-variant-font-size);
-  font-weight:       520;
+  font-family: var(--font-body);
+  font-size:   var(--popup-variant-font-size);
+  font-weight: 520;
 }
