@@ -1,5 +1,5 @@
-/* @file: styles\components\popup\popup.css */ 
-/* @version: 1.2 — switch popup font to Satoshi (font-body token) */
+/* @file: styles/components/popup/popup.css */
+/* @version: 1.3 — align stats block to text baseline */
 
 @import "../../tokens/popup.css";
 
@@ -19,12 +19,13 @@
 /* Header */
 .popup-header {
   display: flex;
-  align-items: flex-start;
   justify-content: space-between;
   gap: var(--popup-header-gap);
   margin-bottom: var(--popup-header-margin-bottom);
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
+  /* ALIGN THE RIGHT‐HAND STATS WITH THE TEXT BASELINE */
+  align-items: baseline;
 }
 .popup-header-left {
   display: flex;
@@ -32,6 +33,7 @@
   gap: var(--popup-header-gap);
   flex: 1;
 }
+
 .popup-image {
   width: var(--popup-image-size);
   height: var(--popup-image-size);
@@ -55,6 +57,7 @@
   padding: 0;
   line-height: var(--popup-info-line-height);
 }
+
 .popup-name {
   font-family: var(--font-body);
   font-size: var(--popup-name-font-size);
@@ -63,6 +66,7 @@
   text-transform: uppercase;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
+
 .popup-type,
 .popup-rarity {
   font-family: var(--font-body);
@@ -72,7 +76,7 @@
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Value (coins) block */
+/* Value (coins) & Stats block */
 .popup-value-icon {
   display: inline-flex;
   align-items: center;
@@ -138,7 +142,7 @@
   border: none;
   height: 1px;
   background: var(--bg-50);
-  margin: 1px 0;
+  margin: var(--space-1) 0;
 }
 
 /* Close Button */
