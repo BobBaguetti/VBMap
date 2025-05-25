@@ -1,35 +1,39 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 3.0 — simplified flex layout; remove grid */
+/* @version: 3.2 — header as single flex-row for stable layout */
 
 @import "../../tokens/popup.css";
 
-/* Container for header elements */
+/* ───────────────────────────────────────────────── Popup Header ────── */
+
+/* Entire header is one flex row: thumbnail + info */
 .popup-header {
-  position: relative;  
-  /* reserve room for the close-button */
+  display: flex;
+  align-items: flex-start;    /* top-align thumbnail & info */
+  position: relative;         /* for absolute-close */
   padding-right: calc(var(--popup-close-offset) + var(--popup-close-icon-size));
+  gap: var(--popup-info-gap); /* horizontal gap between thumb & info */
 }
 
-/* Flex column for image, name, type, and rarity+stats */
-.popup-header-left {
+/* Thumbnail image */
+.popup-image {
+  flex-shrink: 0;
+  width: var(--popup-image-size);
+  height: var(--popup-image-size);
+  object-fit: contain;
+  background: var(--bg-20);
+  border: var(--popup-image-border-thickness) solid var(--bg-50);
+  border-radius: var(--popup-image-border-radius);
+}
+
+/* Info block: vertical stack of name, type, and rarity+stats */
+.popup-info {
   display: flex;
   flex-direction: column;
   gap: var(--popup-info-gap);
-  min-width: 0; /* enable ellipsis on long text */
+  min-width: 0; /* allow name to truncate with ellipsis */
 }
 
-/* Close button positioned top-right */
-.popup-close-btn {
-  position: absolute;
-  top: var(--popup-close-offset);
-  right: var(--popup-close-offset);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-}
-
-/* Rarity + stats (value icon) row, baseline-aligned */
+/* Row for rarity + stats, baseline-aligned */
 .popup-meta-row {
   display: flex;
   justify-content: space-between;
@@ -37,43 +41,44 @@
   gap: var(--popup-info-gap);
 }
 
-/* Header image (thumb) */
-.popup-image {
-  width: var(--popup-image-size);
-  height: var(--popup-image-size);
-  object-fit: contain;
-  background: var(--bg-20);
-  border: var(--popup-image-border-thickness) solid var(--bg-50);
-  border-radius: var(--popup-image-border-radius);
-  flex-shrink: 0;
-  margin-bottom: var(--popup-info-gap);
+/* Close button top-right, removed from flex flow */
+.popup-close-btn {
+  position: absolute;
+  top:    var(--popup-close-offset);
+  right:  var(--popup-close-offset);
+  background: none;
+  border:     none;
+  padding:    0;
+  cursor:     pointer;
 }
 
-/* Name styling */
+/* ───────────────────────────────────────────────── Popup Header Text ────── */
+
+/* Name (row 1) */
 .popup-name {
-  font-family: var(--font-body);
-  font-size: var(--popup-name-font-size);
-  font-weight: 520;
-  font-variant: small-caps;
-  text-transform: uppercase;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  font-family:       var(--font-body);
+  font-size:         var(--popup-name-font-size);
+  font-weight:       520;
+  font-variant:      small-caps;
+  text-transform:    uppercase;
+  text-shadow:       0 1px 1px rgba(0,0,0,0.5);
+  white-space:       nowrap;
+  overflow:          hidden;
+  text-overflow:     ellipsis;
 }
 
-/* Type styling */
+/* Type (row 2) */
 .popup-type {
-  font-family: var(--font-body);
-  font-size: var(--popup-variant-font-size);
-  font-weight: 520;
-  color: var(--text-secondary);
-  margin: 0;
+  font-family:       var(--font-body);
+  font-size:         var(--popup-variant-font-size);
+  font-weight:       520;
+  color:             var(--text-secondary);
+  margin:            0;
 }
 
-/* Rarity styling */
+/* Rarity (row 3, left side of popup-meta-row) */
 .popup-rarity {
-  font-family: var(--font-body);
-  font-size: var(--popup-variant-font-size);
-  font-weight: 520;
+  font-family:       var(--font-body);
+  font-size:         var(--popup-variant-font-size);
+  font-weight:       520;
 }
