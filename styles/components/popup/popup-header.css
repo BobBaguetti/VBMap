@@ -1,13 +1,14 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 1.4 — revert stats to flex flow, align baseline */
+/* @version: 1.4 — tweak stats vertical position */
 
 @import "../../tokens/popup.css";
 
 /* Header container */
 .popup-header {
+  position: relative;
   display: flex;
-  justify-content: space-between;      /* left & right flex items */
-  align-items: baseline;               /* align stats with text baseline */
+  justify-content: flex-start;
+  align-items: flex-start;
   gap: var(--popup-header-gap);
   margin-bottom: var(--popup-header-margin-bottom);
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
@@ -19,11 +20,11 @@
   display: flex;
   align-items: flex-start;
   gap: var(--popup-header-gap);
-  flex: 1 1 auto;     /* fill space before stats */
-  min-width: 0;       /* allow content to shrink for ellipsis */
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
-/* Popup image */
+/* Header image */
 .popup-image {
   width: var(--popup-image-size);
   height: var(--popup-image-size);
@@ -34,13 +35,15 @@
   flex-shrink: 0;
 }
 
-/* Info block: name/type/rarity */
+/* Info block */
 .popup-info {
   display: flex;
   flex-direction: column;
   gap: var(--popup-info-gap);
-  flex: 1 1 auto;     /* fill remaining space */
-  min-width: 0;       /* allow ellipsis */
+  margin: 0;
+  padding: 0;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 .popup-info > * {
   margin: 0;
@@ -48,7 +51,7 @@
   line-height: var(--popup-info-line-height);
 }
 
-/* Name styling */
+/* Name */
 .popup-name {
   font-family: var(--font-body);
   font-size: var(--popup-name-font-size);
@@ -61,7 +64,7 @@
   text-overflow: ellipsis;
 }
 
-/* Type & rarity styling */
+/* Type & rarity */
 .popup-type,
 .popup-rarity {
   font-family: var(--font-body);
@@ -71,9 +74,10 @@
   text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
 
-/* Stats/value icon: back in flex flow */
+/* Stats/value icon: absolute at bottom-right, nudged up by 2px */
 .popup-header .popup-value-icon {
-  position: static;   /* remove absolute positioning */
-  margin: var(--popup-value-margin-top) var(--popup-value-margin-right) 0 0;
-  font-size: var(--popup-value-font-size);
+  position: absolute;
+  right: var(--popup-value-margin-right);
+  /* raise up slightly so it lines with row-3 baseline */
+  bottom: calc(var(--popup-header-border-thickness) + 2px);
 }
