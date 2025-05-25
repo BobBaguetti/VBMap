@@ -1,58 +1,67 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.3 — default missing fields, render empty loot slots, color tier, and show Damage/HP
+// @version: 1.4 — use icons for stats, smaller font, align bottom-right
 
 import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
+import { createIcon }       from "../../../../shared/utils/iconUtils.js";
 
 /**
  * Renders an HTML string for NPC markers on the map
- * and in previews, with sensible defaults.
+ * and in previews, with icon stats.
  *
  * @param {Object} def NPC definition data
  * @returns {string} HTML content for Leaflet popup
  */
 export function renderNpcPopup(def = {}) {
-  // 1) Safe defaults
-  const nameText        = def.name        || "Unnamed";
-  const disposition     = def.disposition || "Friendly";
-  const factionText     = def.faction     || "";
-  const tierText        = def.tier        || "";
-  const dmgText         = def.damage      != null ? def.damage : "";
-  const hpText          = def.hp          != null ? def.hp : "";
-  const pool            = Array.isArray(def.lootPool) ? def.lootPool : [];
-  const descriptionText = def.description || "";
-  const extraLines      = Array.isArray(def.extraLines) ? def.extraLines : [];
-  const imgUrl          = def.imageLarge || def.imageSmall || "";
+  // Safe defaults
+  const nameText    = def.name        || "Unnamed";
+  const disposition = def.disposition || "Friendly";
+  const factionText = def.faction     || "";
+  const tierText    = def.tier        || "";
+  const dmgText     = def.damage      != null ? def.damage : "";
+  const hpText      = def.hp          != null ? def.hp : "";
+  const pool        = Array.isArray(def.lootPool) ? def.lootPool : [];
+  const description = def.description || "";
+  const extras      = Array.isArray(def.extraLines) ? def.extraLines : [];
+  const imgUrl      = def.imageLarge || def.imageSmall || "";
 
   // Colors
-  const dispositionColor = def.dispositionColor
+  const dispColor = def.dispositionColor
     || (disposition === "Hostile" ? "#d9534f" : "#5cb85c")
     || defaultNameColor;
-  const nameColor = def.nameColor     || defaultNameColor;
-  const tierColor = def.tierColor     || defaultNameColor;
+  const nameColor = def.nameColor || defaultNameColor;
+  const tierColor = def.tierColor || defaultNameColor;
 
-  // 2) Build header HTML
+  // 1) Header image
   const imgHTML = imgUrl
     ? `<img src="${imgUrl}" class="popup-image"
-             style="border-color:${dispositionColor}"
+             style="border-color:${dispColor}"
              onerror="this.style.display='none'">`
     : "";
-  const nameHTML = `<div class="popup-name" style="color:${nameColor}">${nameText}</div>`;
+
+  // 2) Name / faction / tier
+  const nameHTML    = `<div class="popup-name" style="color:${nameColor}">${nameText}</div>`;
   const factionHTML = factionText
-    ? `<div class="popup-type" style="color:${dispositionColor}">${factionText}</div>`
+    ? `<div class="popup-type" style="color:${dispColor}">${factionText}</div>`
     : "";
-  const tierHTML = tierText
+  const tierHTML    = tierText
     ? `<div class="popup-rarity" style="color:${tierColor}">${tierText}</div>`
     : "";
 
-  // 3) Build Damage/HP block (right side, similar to item value)
-  const statsHTML = (dmgText || hpText)
-    ? `<div class="popup-value-icon" title="Stats">
-         ${dmgText !== "" ? `<span>DMG: ${dmgText}</span>` : ""}
-         ${hpText  !== "" ? `<span>HP: ${hpText}</span>`   : ""}
+  // 3) Stats icons (aligned like item value)
+  const statsItems = [];
+  if (dmgText !== "") statsItems.push(
+    `<span class="popup-value-number">${dmgText}</span>${createIcon("sword",{inline:true}).outerHTML}`
+  );
+  if (hpText  !== "") statsItems.push(
+    `<span class="popup-value-number">${hpText}</span>${createIcon("heart",{inline:true}).outerHTML}`
+  );
+  const statsHTML = statsItems.length
+    ? `<div class="popup-value-icon" title="Stats" style="font-size:0.85rem;">
+         ${statsItems.join("")}
        </div>`
     : "";
 
-  // 4) Build loot grid (5 columns, always show empty slots)
+  // 4) Loot grid (5 columns, always show empty slots)
   const COLS = 5;
   let cells = pool.map((item, idx) => {
     const thumb = item.imageSmall || item.imageLarge || "";
@@ -71,15 +80,15 @@ export function renderNpcPopup(def = {}) {
       </div>
     </div>`;
 
-  // 5) Description & extra-info
-  const descHTML = descriptionText
+  // 5) Description & extra info
+  const descHTML = description
     ? `<p class="popup-desc" style="color:${def.descriptionColor || defaultNameColor};">
-         ${descriptionText}
+         ${description}
        </p>`
     : "";
-  const extraHTML = extraLines
-    .map(l => `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">${l.text}</p>`)
-    .join("");
+  const extraHTML = extras.map(l =>
+    `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">${l.text}</p>`
+  ).join("");
   const textBox = (descHTML || extraHTML)
     ? `<div class="popup-info-box">
          ${descHTML}
