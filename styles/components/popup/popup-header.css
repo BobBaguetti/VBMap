@@ -1,7 +1,9 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 2.6 — remove rarity nudge so stats baseline aligns correctly */
+/* @version: 2.6 — reduce vertical gap inside popup-info */
 
 @import "../../tokens/popup.css";
+
+/* ───────────────────────────────────────────────── Popup Header ────── */
 
 /* Header as 2×2 grid */
 .popup-header {
@@ -25,7 +27,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--popup-header-gap);
-  min-width: 0; /* allow ellipsis */
+  min-width: 0;
 }
 
 /* Close button top-right */
@@ -42,6 +44,7 @@
   align-self: baseline;
   font-size: var(--popup-variant-font-size);
   line-height: var(--popup-variant-font-size);
+  transform: translateY(-1px);
 }
 .popup-value-icon svg {
   vertical-align: middle;
@@ -58,11 +61,12 @@
   flex-shrink: 0;
 }
 
-/* Info block: name, type, rarity */
+/* Info block: name, type, rarity & stats container */
 .popup-info {
   display: flex;
   flex-direction: column;
-  gap: var(--popup-info-gap);
+  /* reduce vertical gap between rows by half */
+  gap: calc(var(--popup-info-gap) / 2);
   margin: 0;
   padding: 0;
   min-width: 0;
@@ -86,12 +90,11 @@
   text-overflow: ellipsis;
 }
 
-/* Type & rarity (no more translateY) */
+/* Type & rarity */
 .popup-type,
 .popup-rarity {
   font-family: var(--font-body);
   font-size: var(--popup-variant-font-size);
   font-weight: 520;
-  /* transform: translateY(-1px);  ← removed */
   text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
