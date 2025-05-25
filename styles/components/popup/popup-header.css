@@ -1,5 +1,5 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 2.3 — nudge stats up for perfect baseline align */
+/* @version: 2.4 — unify stats font-size & line-height, adjust vertical-align */
 
 @import "../../tokens/popup.css";
 
@@ -37,12 +37,17 @@
   align-self: start;
 }
 
-/* Stats/value at bottom-right, nudged up slightly */
+/* Stats/value at bottom-right */
 .popup-value-icon {
   grid-area: stats;
   justify-self: end;
   align-self: baseline;
-  transform: translateY(-2px); /* lift it 2px for perfect align */
+  /* use same size as rarity text for perfect baseline alignment */
+  font-size: var(--popup-variant-font-size);
+  line-height: var(--popup-variant-font-size);
+}
+.popup-value-icon svg {
+  vertical-align: middle; /* center icon with text */
 }
 
 /* Header image */
