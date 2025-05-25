@@ -1,15 +1,11 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 2.0 — switch to CSS Grid for precise header layout */
+/* @version: 2.1 — align stats block baseline */
 
 @import "../../tokens/popup.css";
 
 /* ───────────────────────────────────────────────── Popup Header ────── */
 
-/* Header container as 2×2 grid:
-   - info  spans rows 1–2 in column 1
-   - close spans row 1, column 2
-   - stats spans row 2, column 2
-*/
+/* Header as 2×2 grid */
 .popup-header {
   display: grid;
   grid-template-areas:
@@ -21,36 +17,34 @@
   margin-bottom: var(--popup-header-margin-bottom);
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
-  position: relative; /* for any absolute children if needed */
+  position: relative;
 }
 
-/* Left side: image + info (name/type/rarity) */
+/* Left side: image + stacked info */
 .popup-header-left {
   grid-area: info;
   display: flex;
   align-items: flex-start;
   gap: var(--popup-header-gap);
-  flex: none;      /* grid controls sizing */
-  min-width: 0;    /* allow child (.popup-info) to shrink for ellipsis */
+  flex: none;
+  min-width: 0; /* allow ellipsis */
 }
 
-/* Close button at top-right */
+/* Close button top-right */
 .popup-close-btn {
   grid-area: close;
   justify-self: end;
   align-self: start;
 }
 
-/* Stats/value icon at bottom-right */
+/* Stats/value at bottom-right, baseline-aligned */
 .popup-value-icon {
   grid-area: stats;
   justify-self: end;
-  align-self: end;
+  align-self: baseline;
 }
 
-/* ───────────────────────────────────────────────── Popup Header Elements ────── */
-
-/* Header image styling (unchanged) */
+/* Header image */
 .popup-image {
   width: var(--popup-image-size);
   height: var(--popup-image-size);
@@ -61,7 +55,7 @@
   flex-shrink: 0;
 }
 
-/* Info block (name, type, rarity) */
+/* Info block: name, type, rarity */
 .popup-info {
   display: flex;
   flex-direction: column;
@@ -89,7 +83,7 @@
   text-overflow: ellipsis;
 }
 
-/* Type and rarity styling */
+/* Type & rarity */
 .popup-type,
 .popup-rarity {
   font-family: var(--font-body);
