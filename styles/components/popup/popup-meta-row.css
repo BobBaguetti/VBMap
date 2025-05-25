@@ -1,9 +1,10 @@
 /* @file: styles/components/popup/popup-meta-row.css */
-/* @version: 1.1 — ensure no implicit margins */
+/* @version: 1.2 — ensure no implicit margins */
 
 .popup-meta-row {
   display:        flex;
   justify-content: space-between;
   align-items:    baseline;
   gap:            var(--popup-info-gap);
+  margin-top:     auto;   /* for bottom-alignment inside .popup-info */
 }

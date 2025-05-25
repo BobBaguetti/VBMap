@@ -1,18 +1,20 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 3.3 — fix horizontal layout and stats margin override */
+/* @version: 3.4 — constrain info height and push stats to bottom */
 
 @import "../../tokens/popup.css";
 
-/* Entire header as a flex row: thumbnail + info */
+/* ───────────────────────────────────────────────── Popup Header ────── */
+
+/* Header as flex row: thumbnail + info */
 .popup-header {
   display: flex;
   align-items: flex-start;
-  position: relative;
+  position: relative;  
   padding-right: calc(var(--popup-close-offset) + var(--popup-close-icon-size));
   gap: var(--popup-info-gap);
 }
 
-/* Flex row: thumbnail and info block */
+/* Container for thumbnail and info */
 .popup-header-left {
   display: flex;
   flex-direction: row;
@@ -35,46 +37,43 @@
 /* Thumbnail image */
 .popup-image {
   flex-shrink: 0;
-  width:       var(--popup-image-size);
-  height:      var(--popup-image-size);
-  object-fit:  contain;
-  background:  var(--bg-20);
-  border:      var(--popup-image-border-thickness) solid var(--bg-50);
+  width: var(--popup-image-size);
+  height: var(--popup-image-size);
+  object-fit: contain;
+  background: var(--bg-20);
+  border: var(--popup-image-border-thickness) solid var(--bg-50);
   border-radius: var(--popup-image-border-radius);
 }
 
-/* Info block: name, type, and rarity+stats */
+/* Info block: stack of name, type, and stats+rarity, bounded to image height */
 .popup-info {
-  display:        flex;
+  display: flex;
   flex-direction: column;
-  gap:            calc(var(--popup-info-gap) / 2);
-  min-width:      0;
+  gap: var(--popup-info-gap);
+  min-width: 0;
+  min-height: var(--popup-image-size);
 }
 
-/* Rarity + stats row */
+/* Flex row for rarity + stats */
 .popup-meta-row {
   display:        flex;
   justify-content: space-between;
   align-items:    baseline;
   gap:            var(--popup-info-gap);
-}
-
-/* Override any top margin on stats when inside meta-row */
-.popup-meta-row .popup-value-icon {
-  margin-top: 0 !important;
+  margin-top:     auto;   /* push this row to bottom of .popup-info */
 }
 
 /* Name styling */
 .popup-name {
-  font-family:      var(--font-body);
-  font-size:        var(--popup-name-font-size);
-  font-weight:      520;
-  font-variant:     small-caps;
-  text-transform:   uppercase;
-  text-shadow:      0 1px 1px rgba(0,0,0,0.5);
-  white-space:      nowrap;
-  overflow:         hidden;
-  text-overflow:    ellipsis;
+  font-family:       var(--font-body);
+  font-size:         var(--popup-name-font-size);
+  font-weight:       520;
+  font-variant:      small-caps;
+  text-transform:    uppercase;
+  text-shadow:       0 1px 1px rgba(0,0,0,0.5);
+  white-space:       nowrap;
+  overflow:          hidden;
+  text-overflow:     ellipsis;
 }
 
 /* Type styling */
