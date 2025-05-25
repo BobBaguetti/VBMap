@@ -1,7 +1,9 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 2.2 — remove vertical grid gap so stats sits flush under row 3 */
+/* @version: 2.3 — nudge stats up for perfect baseline align */
 
 @import "../../tokens/popup.css";
+
+/* ───────────────────────────────────────────────── Popup Header ────── */
 
 /* Header as 2×2 grid */
 .popup-header {
@@ -12,7 +14,7 @@
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
   column-gap: var(--popup-header-gap);
-  row-gap: 0;                                       /* <— no extra vertical gap */
+  row-gap:    0;
   margin-bottom: var(--popup-header-margin-bottom);
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
@@ -25,8 +27,7 @@
   display: flex;
   align-items: flex-start;
   gap: var(--popup-header-gap);
-  flex: none;
-  min-width: 0; /* allow ellipsis */
+  min-width: 0; /* allow info to shrink for ellipsis */
 }
 
 /* Close button top-right */
@@ -36,11 +37,12 @@
   align-self: start;
 }
 
-/* Stats/value at bottom-right, baseline-aligned */
+/* Stats/value at bottom-right, nudged up slightly */
 .popup-value-icon {
   grid-area: stats;
   justify-self: end;
   align-self: baseline;
+  transform: translateY(-2px); /* lift it 2px for perfect align */
 }
 
 /* Header image */
