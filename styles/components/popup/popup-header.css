@@ -1,56 +1,43 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 2.6 — reduce vertical gap inside popup-info */
+/* @version: 3.0 — simplified flex layout; remove grid */
 
 @import "../../tokens/popup.css";
 
-/* ───────────────────────────────────────────────── Popup Header ────── */
-
-/* Header as 2×2 grid */
+/* Container for header elements */
 .popup-header {
-  display: grid;
-  grid-template-areas:
-    "info  close"
-    "info  stats";
-  grid-template-columns: 1fr auto;
-  grid-template-rows: auto auto;
-  column-gap: var(--popup-header-gap);
-  row-gap:    0;
-  margin-bottom: var(--popup-header-margin-bottom);
-  border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
-  padding: 0;
-  position: relative;
+  position: relative;  
+  /* reserve room for the close-button */
+  padding-right: calc(var(--popup-close-offset) + var(--popup-close-icon-size));
 }
 
-/* Left side: image + stacked info */
+/* Flex column for image, name, type, and rarity+stats */
 .popup-header-left {
-  grid-area: info;
   display: flex;
-  align-items: flex-start;
-  gap: var(--popup-header-gap);
-  min-width: 0;
+  flex-direction: column;
+  gap: var(--popup-info-gap);
+  min-width: 0; /* enable ellipsis on long text */
 }
 
-/* Close button top-right */
+/* Close button positioned top-right */
 .popup-close-btn {
-  grid-area: close;
-  justify-self: end;
-  align-self: start;
+  position: absolute;
+  top: var(--popup-close-offset);
+  right: var(--popup-close-offset);
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
 }
 
-/* Stats/value at bottom-right */
-.popup-value-icon {
-  grid-area: stats;
-  justify-self: end;
-  align-self: baseline;
-  font-size: var(--popup-variant-font-size);
-  line-height: var(--popup-variant-font-size);
-  transform: translateY(-1px);
-}
-.popup-value-icon svg {
-  vertical-align: middle;
+/* Rarity + stats (value icon) row, baseline-aligned */
+.popup-meta-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--popup-info-gap);
 }
 
-/* Header image */
+/* Header image (thumb) */
 .popup-image {
   width: var(--popup-image-size);
   height: var(--popup-image-size);
@@ -59,22 +46,7 @@
   border: var(--popup-image-border-thickness) solid var(--bg-50);
   border-radius: var(--popup-image-border-radius);
   flex-shrink: 0;
-}
-
-/* Info block: name, type, rarity & stats container */
-.popup-info {
-  display: flex;
-  flex-direction: column;
-  /* reduce vertical gap between rows by half */
-  gap: calc(var(--popup-info-gap) / 2);
-  margin: 0;
-  padding: 0;
-  min-width: 0;
-}
-.popup-info > * {
-  margin: 0;
-  padding: 0;
-  line-height: var(--popup-info-line-height);
+  margin-bottom: var(--popup-info-gap);
 }
 
 /* Name styling */
@@ -90,11 +62,18 @@
   text-overflow: ellipsis;
 }
 
-/* Type & rarity */
-.popup-type,
+/* Type styling */
+.popup-type {
+  font-family: var(--font-body);
+  font-size: var(--popup-variant-font-size);
+  font-weight: 520;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Rarity styling */
 .popup-rarity {
   font-family: var(--font-body);
   font-size: var(--popup-variant-font-size);
   font-weight: 520;
-  text-shadow: 0 1px 1px rgba(0,0,0,0.5);
 }
