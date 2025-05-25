@@ -1,9 +1,7 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 2.1 — align stats block baseline */
+/* @version: 2.2 — remove vertical grid gap so stats sits flush under row 3 */
 
 @import "../../tokens/popup.css";
-
-/* ───────────────────────────────────────────────── Popup Header ────── */
 
 /* Header as 2×2 grid */
 .popup-header {
@@ -13,7 +11,8 @@
     "info  stats";
   grid-template-columns: 1fr auto;
   grid-template-rows: auto auto;
-  gap: var(--popup-header-gap);
+  column-gap: var(--popup-header-gap);
+  row-gap: 0;                                       /* <— no extra vertical gap */
   margin-bottom: var(--popup-header-margin-bottom);
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
