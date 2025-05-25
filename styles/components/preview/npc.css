@@ -1,0 +1,8 @@
+/* @file: styles/components/preview/npc.css */
+/* @version: 1.0 — NPC-specific preview background */
+
+.npc-preview-panel {
+  background: var(--bg-00)
+              url("/assets/images/npcPreview.png")
+              center/cover no-repeat;
+}
