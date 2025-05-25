@@ -79,5 +79,5 @@
   position: absolute;
   right: var(--popup-value-margin-right);
   /* raise up slightly so it lines with row-3 baseline */
-  bottom: calc(var(--popup-header-border-thickness) + 2px);
+  bottom: calc(var(--popup-header-border-thickness) + 1px);
 }
