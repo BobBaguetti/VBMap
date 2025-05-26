@@ -45,9 +45,8 @@
 /* ── Context menus & popups ──────────────────────────────────────────── */
 @import "components/context/context-menu.css";
 @import "components/map/leaflet-overrides.css";
-/* Fixed: popup CSS lives under components/popup/ */
 @import "components/popup/popup.css";
-@import "components/popup/popup-chest-grid.css";
+@import "components/popup/popup-inventory-grid.css";
 
 /* ── Modal stack ─────────────────────────────────────────────────────── */
 @import "components/modal/index.css";
