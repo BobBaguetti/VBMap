@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/controller/formPickrManager.js
-// @version: 1.3 — added chest category and NPC tier presets; re-export populateSavedColors
+// @version: 1.4 — removed duplicate export
 
 import { initFormPickrs } from "./pickrAdapter.js";
 import {
@@ -86,6 +86,3 @@ export function populateSavedColors(pickrs, def, schema) {
     });
   }, 0);
 }
-
-// Re-export populateSavedColors for modules that import alongside setupPickrs
-export { populateSavedColors };
