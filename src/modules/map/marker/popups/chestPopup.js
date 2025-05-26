@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.4 — only use imageSmall and imageLarge, drop imageBig and iconUrl fallback
+// @version: 1.5 — split header into left/right; drop absolute positioning
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
@@ -33,22 +33,19 @@ export function renderChestPopup(typeDef) {
                         ${rarityLabel}
                       </div>`;
 
-  // 3) Loot grid (5 columns)
+  // 3) Loot grid (unchanged)…
   const COLS = 5;
   const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
   let cells = pool.map((it, idx) => {
-    // If this entry doesn’t have its own imageSmall, try imageLarge
     let item = it;
     if (!item.imageSmall && item.id) {
       const itemMap = definitionsManager.getDefinitions("Item");
       if (itemMap[item.id]) item = itemMap[item.id];
     }
-
     const slotImg = item.imageSmall || item.imageLarge || "";
     const clr = item.rarityColor
       || rarityColors[(item.rarity || "").toLowerCase()]
       || defaultNameColor;
-
     return `
       <div class="chest-slot" data-index="${idx}"
            style="border-color:${clr}">
@@ -60,12 +57,9 @@ export function renderChestPopup(typeDef) {
           : ""}
       </div>`;
   }).join("");
-
-  // fill empty slots
   for (let i = pool.length; i < COLS; i++) {
     cells += `<div class="chest-slot" data-index=""></div>`;
   }
-
   const lootBox = `
     <div class="popup-info-box loot-box">
       <div class="chest-grid" style="--cols:${COLS};">
@@ -73,7 +67,7 @@ export function renderChestPopup(typeDef) {
       </div>
     </div>`;
 
-  // 4) Description & extra-info
+  // 4) Description & extra-info (unchanged)…
   const descHTML = typeDef.description
     ? `<p class="popup-desc" style="color:${typeDef.descriptionColor || defaultNameColor};">
          ${typeDef.description}
@@ -92,13 +86,15 @@ export function renderChestPopup(typeDef) {
        </div>`
     : "";
 
-  // 5) Assemble and return
+  // 5) Assemble header + rest
   return `
     <div class="custom-popup" style="position:relative;">
       ${closeBtn}
       <div class="popup-header">
         <div class="popup-header-left">
           ${bigImg}
+        </div>
+        <div class="popup-header-right">
           <div class="popup-info">
             ${nameHTML}${typeHTML}${rarityHTML}
           </div>

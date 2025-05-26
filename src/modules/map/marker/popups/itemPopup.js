@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/itemPopup.js
-// @version: 1.2 — drop imageBig fallback; use only imageLarge and imageSmall
+// @version: 1.3 — split header into left/right; drop absolute positioning
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { createIcon } from "../../../../shared/utils/iconUtils.js";
@@ -7,7 +7,6 @@ import { defaultNameColor, rarityColors } from "../../../../shared/utils/color/c
 import { getBestImageUrl } from "../utils.js";
 
 export function renderItemPopup(m) {
-  // Choose only the large or small image (no more imageBig)
   const imgUrl = getBestImageUrl(m, "imageLarge", "imageSmall");
   const bigImg = imgUrl
     ? `<img src="${imgUrl}" class="popup-image"
@@ -58,10 +57,13 @@ export function renderItemPopup(m) {
         <div class="popup-header">
           <div class="popup-header-left">
             ${bigImg}
+          </div>
+          <div class="popup-header-right">
             <div class="popup-info">
               ${nameHTML}${typeHTML}${rarityHTML}
             </div>
-          </div>${valueHTML}
+            ${valueHTML}
+          </div>
         </div>
         <div class="popup-body popup-info-box">
           ${descHTML}

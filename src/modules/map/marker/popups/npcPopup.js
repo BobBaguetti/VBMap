@@ -1,16 +1,9 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.4 — use icons for stats, smaller font, align bottom-right
+// @version: 1.5 — split header into left/right; drop absolute positioning
 
 import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 import { createIcon }       from "../../../../shared/utils/iconUtils.js";
 
-/**
- * Renders an HTML string for NPC markers on the map
- * and in previews, with icon stats.
- *
- * @param {Object} def NPC definition data
- * @returns {string} HTML content for Leaflet popup
- */
 export function renderNpcPopup(def = {}) {
   // Safe defaults
   const nameText    = def.name        || "Unnamed";
@@ -47,7 +40,7 @@ export function renderNpcPopup(def = {}) {
     ? `<div class="popup-rarity" style="color:${tierColor}">${tierText}</div>`
     : "";
 
-  // 3) Stats icons (aligned like item value)
+  // 3) Stats icons (now moved into header-right)
   const statsItems = [];
   if (dmgText !== "") statsItems.push(
     `<span class="popup-value-number">${dmgText}</span>${createIcon("sword",{inline:true}).outerHTML}`
@@ -61,7 +54,7 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 4) Loot grid (5 columns, always show empty slots)
+  // 4) Loot grid & 5) Description (unchanged)…  
   const COLS = 5;
   let cells = pool.map((item, idx) => {
     const thumb = item.imageSmall || item.imageLarge || "";
@@ -79,8 +72,6 @@ export function renderNpcPopup(def = {}) {
         ${cells}
       </div>
     </div>`;
-
-  // 5) Description & extra info
   const descHTML = description
     ? `<p class="popup-desc" style="color:${def.descriptionColor || defaultNameColor};">
          ${description}
@@ -97,18 +88,20 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 6) Assemble and return
+  // 6) Assemble
   return `
     <div class="custom-popup" style="position:relative;">
       <span class="popup-close-btn">✖</span>
       <div class="popup-header">
         <div class="popup-header-left">
           ${imgHTML}
+        </div>
+        <div class="popup-header-right">
           <div class="popup-info">
             ${nameHTML}${factionHTML}${tierHTML}
           </div>
+          ${statsHTML}
         </div>
-        ${statsHTML}
       </div>
       ${lootBox}
       ${textBox}
