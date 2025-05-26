@@ -14,7 +14,7 @@ export const goldColor = "#D4AF37";
 /**
  * Health (HP) icon color.
  */
-export const healthColor = "#e05252";  // a nice red—adjust as you like
+export const healthColor = "#70ca3d";  
 
 /**
  * Rarity colors
