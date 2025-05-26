@@ -1,5 +1,5 @@
 // @file: src/shared/utils/color/colorPresets.js
-// @version: 5 — added npcTypeColors and tierColors
+// @version: 6 — added healthColor preset
 
 /**
  * Default color for names when none is specified or on reset.
@@ -10,6 +10,11 @@ export const defaultNameColor = "#E5E6E8";
  * Gold coins color.
  */
 export const goldColor = "#D4AF37";
+
+/**
+ * Health (HP) icon color.
+ */
+export const healthColor = "#e05252";  // a nice red—adjust as you like
 
 /**
  * Rarity colors

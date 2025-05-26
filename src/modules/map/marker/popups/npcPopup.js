@@ -1,9 +1,15 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.5 — apply factionColor & tierColor in popup
+// @version: 1.6 — full file with healthColor preset applied
 
-import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
-import { createIcon }       from "../../../../shared/utils/iconUtils.js";
-import { dispositionColors, tierColors } from "../../../../shared/utils/color/colorPresets.js";
+import {
+  defaultNameColor,
+  healthColor
+} from "../../../../shared/utils/color/colorPresets.js";
+import { createIcon } from "../../../../shared/utils/iconUtils.js";
+import {
+  dispositionColors,
+  tierColors
+} from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Renders an HTML string for NPC markers on the map
@@ -26,11 +32,11 @@ export function renderNpcPopup(def = {}) {
   const imgUrl      = def.imageLarge || def.imageSmall || "";
 
   // Determine colors: use saved or preset fallback
-  const nameColor      = def.nameColor     || defaultNameColor;
-  const factionColor   = def.factionColor
-    || dispositionColors[disposition] 
+  const nameColor    = def.nameColor     || defaultNameColor;
+  const factionColor = def.factionColor
+    || dispositionColors[disposition]
     || defaultNameColor;
-  const tierColor      = def.tierColor
+  const tierColor    = def.tierColor
     || tierColors[tierText]
     || defaultNameColor;
 
@@ -42,22 +48,43 @@ export function renderNpcPopup(def = {}) {
     : "";
 
   // 2) Name / faction / tier
-  const nameHTML    = `<div class="popup-name" style="color:${nameColor}">${nameText}</div>`;
+  const nameHTML = `<div class="popup-name" style="color:${nameColor}">
+                      ${nameText}
+                    </div>`;
   const factionHTML = factionText
-    ? `<div class="popup-type" style="color:${factionColor}">${factionText}</div>`
+    ? `<div class="popup-type" style="color:${factionColor}">
+         ${factionText}
+       </div>`
     : "";
-  const tierHTML    = tierText
-    ? `<div class="popup-rarity" style="color:${tierColor}">${tierText}</div>`
+  const tierHTML = tierText
+    ? `<div class="popup-rarity" style="color:${tierColor}">
+         ${tierText}
+       </div>`
     : "";
 
   // 3) Stats icons
   const statsItems = [];
-  if (dmgText !== "") statsItems.push(
-    `<span class="popup-value-number">${dmgText}</span>${createIcon("sword",{inline:true}).outerHTML}`
-  );
-  if (hpText  !== "") statsItems.push(
-    `<span class="popup-value-number">${hpText}</span>${createIcon("heart",{inline:true}).outerHTML}`
-  );
+
+  if (dmgText !== "") {
+    statsItems.push(
+      `<span class="popup-value-number">${dmgText}</span>`
+      + createIcon("sword", { inline: true }).outerHTML
+    );
+  }
+
+  if (hpText !== "") {
+    // apply healthColor to heart SVG
+    const heartSvg = createIcon("heart", {
+      inline: true,
+      style: { fill: healthColor }
+    }).outerHTML;
+
+    statsItems.push(
+      `<span class="popup-value-number">${hpText}</span>`
+      + heartSvg
+    );
+  }
+
   const statsHTML = statsItems.length
     ? `<div class="popup-value-icon" title="Stats">
          ${statsItems.join("")}
@@ -75,9 +102,11 @@ export function renderNpcPopup(def = {}) {
           : ""}
       </div>`;
   }).join("");
+
   for (let i = pool.length; i < COLS; i++) {
     cells += `<div class="chest-slot" data-index=""></div>`;
   }
+
   const lootBox = `
     <div class="popup-info-box loot-box">
       <div class="chest-grid" style="--cols:${COLS};">
@@ -92,7 +121,9 @@ export function renderNpcPopup(def = {}) {
        </p>`
     : "";
   const extraHTML = extras.map(l =>
-    `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">${l.text}</p>`
+    `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
+       ${l.text}
+     </p>`
   ).join("");
   const textBox = (descHTML || extraHTML)
     ? `<div class="popup-info-box">
