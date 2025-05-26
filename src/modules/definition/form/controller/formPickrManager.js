@@ -1,12 +1,12 @@
 // @file: src/modules/definition/form/controller/formPickrManager.js
-// @version: 1.1 — handle chest category presets
+// @version: 1.2 — re-export populateSavedColors; chest category support
 
+import { initFormPickrs } from "./pickrAdapter.js";
 import {
   rarityColors,
   itemTypeColors,
   chestCategoryColors
 } from "../../../../shared/utils/color/colorPresets.js";
-import { initFormPickrs } from "./pickrAdapter.js";
 
 /**
  * Initialize Pickr instances for colorable fields and
@@ -44,7 +44,7 @@ export function setupPickrs(form, fields, colorables, schema) {
           preset = chestCategoryColors[el.value];
           if (preset) {
             pickrs["categoryColor"]?.setColor(preset);
-            // optionally:
+            // optionally sync nameColor:
             // pickrs["nameColor"]?.setColor(preset);
           }
         }
@@ -55,4 +55,25 @@ export function setupPickrs(form, fields, colorables, schema) {
   });
 
   return pickrs;
+}
+
+/**
+ * Apply saved Firestore colors to Pickr instances, deferred to next tick.
+ *
+ * @param {Object} pickrs — map of colorKey→Pickr instance
+ * @param {Object} def — the definition object with saved values
+ * @param {Object} schema — your form schema
+ */
+export function populateSavedColors(pickrs, def, schema) {
+  setTimeout(() => {
+    Object.entries(schema).forEach(([key, cfg]) => {
+      if (cfg.colorable) {
+        const colorKey = cfg.colorable;
+        const saved = def[colorKey];
+        if (saved && pickrs[colorKey]) {
+          pickrs[colorKey].setColor(saved);
+        }
+      }
+    });
+  }, 0);
 }
