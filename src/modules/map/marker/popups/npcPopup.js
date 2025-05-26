@@ -1,12 +1,12 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.5 — remove inline font-size override for stats icons
+// @version: 1.6 — apply dispositionColor, factionColor, and tierColor presets
 
 import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 import { createIcon }       from "../../../../shared/utils/iconUtils.js";
 
 /**
  * Renders an HTML string for NPC markers on the map
- * and in previews, with icon stats.
+ * and in previews, with icon stats and colored labels.
  *
  * @param {Object} def NPC definition data
  * @returns {string} HTML content for Leaflet popup
@@ -24,12 +24,11 @@ export function renderNpcPopup(def = {}) {
   const extras      = Array.isArray(def.extraLines) ? def.extraLines : [];
   const imgUrl      = def.imageLarge || def.imageSmall || "";
 
-  // Colors
-  const dispColor = def.dispositionColor
-    || (disposition === "Hostile" ? "#d9534f" : "#5cb85c")
-    || defaultNameColor;
-  const nameColor = def.nameColor || defaultNameColor;
-  const tierColor = def.tierColor || defaultNameColor;
+  // Colors (with fallbacks)
+  const dispColor    = def.dispositionColor || defaultNameColor;
+  const factionColor = def.factionColor     || defaultNameColor;
+  const nameColor    = def.nameColor        || defaultNameColor;
+  const tierColor    = def.tierColor        || defaultNameColor;
 
   // 1) Header image
   const imgHTML = imgUrl
@@ -38,16 +37,25 @@ export function renderNpcPopup(def = {}) {
              onerror="this.style.display='none'">`
     : "";
 
-  // 2) Name / faction / tier
-  const nameHTML    = `<div class="popup-name" style="color:${nameColor}">${nameText}</div>`;
+  // 2) Name / Disposition / Faction / Tier
+  const nameHTML    = `<div class="popup-name" style="color:${nameColor};">
+                         ${nameText}
+                       </div>`;
+  const dispHTML    = `<div class="popup-type" style="color:${dispColor};">
+                         ${disposition}
+                       </div>`;
   const factionHTML = factionText
-    ? `<div class="popup-type" style="color:${dispColor}">${factionText}</div>`
+    ? `<div class="popup-type" style="color:${factionColor};">
+         ${factionText}
+       </div>`
     : "";
   const tierHTML    = tierText
-    ? `<div class="popup-rarity" style="color:${tierColor}">${tierText}</div>`
+    ? `<div class="popup-rarity" style="color:${tierColor};">
+         ${tierText}
+       </div>`
     : "";
 
-  // 3) Stats icons (aligned like item value)
+  // 3) Stats icons
   const statsItems = [];
   if (dmgText !== "") statsItems.push(
     `<span class="popup-value-number">${dmgText}</span>${createIcon("sword",{inline:true}).outerHTML}`
@@ -61,7 +69,7 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 4) Loot grid (5 columns, always show empty slots)
+  // 4) Loot grid (5 columns)
   const COLS = 5;
   let cells = pool.map((item, idx) => {
     const thumb = item.imageSmall || item.imageLarge || "";
@@ -87,7 +95,9 @@ export function renderNpcPopup(def = {}) {
        </p>`
     : "";
   const extraHTML = extras.map(l =>
-    `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">${l.text}</p>`
+    `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
+       ${l.text}
+     </p>`
   ).join("");
   const textBox = (descHTML || extraHTML)
     ? `<div class="popup-info-box">
@@ -97,7 +107,7 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 6) Assemble and return
+  // Assemble and return
   return `
     <div class="custom-popup" style="position:relative;">
       <span class="popup-close-btn">✖</span>
@@ -105,7 +115,7 @@ export function renderNpcPopup(def = {}) {
         <div class="popup-header-left">
           ${imgHTML}
           <div class="popup-info">
-            ${nameHTML}${factionHTML}${tierHTML}
+            ${nameHTML}${dispHTML}${factionHTML}${tierHTML}
           </div>
         </div>
         ${statsHTML}
