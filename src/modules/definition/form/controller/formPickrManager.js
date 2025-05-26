@@ -1,11 +1,12 @@
 // @file: src/modules/definition/form/controller/formPickrManager.js
-// @version: 1.4 — removed duplicate export
+// @version: 1.3 — add disposition & tier preset support
 
 import { initFormPickrs } from "./pickrAdapter.js";
 import {
   rarityColors,
   itemTypeColors,
   chestCategoryColors,
+  dispositionColors,
   tierColors
 } from "../../../../shared/utils/color/colorPresets.js";
 
@@ -28,36 +29,47 @@ export function setupPickrs(form, fields, colorables, schema) {
       el.addEventListener("change", () => {
         let preset;
 
-        // Rarity
-        if (key === "rarity") {
-          preset = rarityColors[el.value];
-          if (preset) {
-            pickrs["rarityColor"]?.setColor(preset);
-            pickrs["nameColor"]?.setColor(preset);
-          }
+        switch (key) {
+          case "rarity":
+            preset = rarityColors[el.value];
+            if (preset) {
+              pickrs["rarityColor"]?.setColor(preset);
+              pickrs["nameColor"]?.setColor(preset);
+            }
+            break;
 
-        // Item Type
-        } else if (key === "itemType") {
-          preset = itemTypeColors[el.value];
-          if (preset) {
-            pickrs["itemTypeColor"]?.setColor(preset);
-          }
+          case "itemType":
+            preset = itemTypeColors[el.value];
+            if (preset) {
+              pickrs["itemTypeColor"]?.setColor(preset);
+            }
+            break;
 
-        // Chest Category
-        } else if (key === "category") {
-          preset = chestCategoryColors[el.value];
-          if (preset) {
-            pickrs["categoryColor"]?.setColor(preset);
-          }
+          case "category":
+            preset = chestCategoryColors[el.value];
+            if (preset) {
+              pickrs["categoryColor"]?.setColor(preset);
+            }
+            break;
 
-        // NPC Tier
-        } else if (key === "tier") {
-          preset = tierColors[el.value];
-          if (preset) {
-            pickrs["tierColor"]?.setColor(preset);
-          }
+          case "disposition":
+            // disposition drives the factionColor swatch
+            preset = dispositionColors[el.value];
+            if (preset) {
+              pickrs["factionColor"]?.setColor(preset);
+            }
+            break;
+
+          case "tier":
+            // tier drives its own tierColor swatch
+            preset = tierColors[el.value];
+            if (preset) {
+              pickrs["tierColor"]?.setColor(preset);
+            }
+            break;
         }
 
+        // Trigger live‐preview update
         form.dispatchEvent(new Event("input", { bubbles: true }));
       });
     }
@@ -67,7 +79,7 @@ export function setupPickrs(form, fields, colorables, schema) {
 }
 
 /**
- * Apply saved Firestore colors to Pickr instances, deferred to next tick.
+ * Apply saved Firestore colors to Pickr instances.
  *
  * @param {Object} pickrs — map of colorKey→Pickr instance
  * @param {Object} def    — the definition object with saved values
@@ -78,7 +90,7 @@ export function populateSavedColors(pickrs, def, schema) {
     Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.colorable) {
         const colorKey = cfg.colorable;
-        const saved    = def[colorKey];
+        const saved = def[colorKey];
         if (saved && pickrs[colorKey]) {
           pickrs[colorKey].setColor(saved);
         }

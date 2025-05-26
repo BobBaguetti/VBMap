@@ -1,5 +1,5 @@
 // @file: src/shared/utils/color/colorPresets.js
-// @version: 4 — added npcTypeColors and tierColors
+// @version: 5 — added npcTypeColors and tierColors
 
 /**
  * Default color for names when none is specified or on reset.
@@ -54,9 +54,9 @@ export const chestCategoryColors = {
 };
 
 /**
- * Preset colors for NPC dispositions (“type”).
+ * NPC disposition colors
  */
-export const npcTypeColors = {
+export const dispositionColors = {
   Friendly: "#b0f0b0",
   Neutral:  "#f0f0b0",
   Hostile:  "#f0b0b0",
@@ -64,11 +64,11 @@ export const npcTypeColors = {
 };
 
 /**
- * Preset colors for NPC tiers.
+ * NPC type colors
  */
 export const tierColors = {
   Normal: "#b4b4b4",
-  Elite:  "#70ca3d",
-  Boss:   "#a845d4",
-  "":      "#bbb"
+  Elite:  "#d4af37",
+  Boss:   "#e05252",
+  "":     "#bbb"
 };

@@ -1,5 +1,5 @@
 // @file: src/modules/definition/schemas/npcSchema.js
-// @version: 1.3 — made “Tier” colorable so tierColor flows through presets & popups
+// @version: 1.3 — remove disposition colorable; add tier colorable
 
 export const npcSchema = {
   name: {
@@ -10,8 +10,8 @@ export const npcSchema = {
   disposition: {
     type:      "select",
     label:     "Disposition",
-    options:   ["Hostile", "Friendly"],
-    colorable: "dispositionColor"
+    options:   ["Hostile", "Neutral", "Friendly"],
+    // No colorable here—Disposition drives Faction’s color
   },
   faction: {
     type:      "select",
@@ -23,7 +23,7 @@ export const npcSchema = {
     type:      "select",
     label:     "Tier",
     options:   ["Normal", "Elite", "Boss"],
-    colorable: "tierColor"       
+    colorable: "tierColor"
   },
   damage: {
     type:  "number",

@@ -1,12 +1,13 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.6 — apply dispositionColor, factionColor, and tierColor presets
+// @version: 1.5 — apply factionColor & tierColor in popup
 
 import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 import { createIcon }       from "../../../../shared/utils/iconUtils.js";
+import { dispositionColors, tierColors } from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Renders an HTML string for NPC markers on the map
- * and in previews, with icon stats and colored labels.
+ * and in previews, with icon stats.
  *
  * @param {Object} def NPC definition data
  * @returns {string} HTML content for Leaflet popup
@@ -14,7 +15,7 @@ import { createIcon }       from "../../../../shared/utils/iconUtils.js";
 export function renderNpcPopup(def = {}) {
   // Safe defaults
   const nameText    = def.name        || "Unnamed";
-  const disposition = def.disposition || "Friendly";
+  const disposition = def.disposition || "";
   const factionText = def.faction     || "";
   const tierText    = def.tier        || "";
   const dmgText     = def.damage      != null ? def.damage : "";
@@ -24,35 +25,29 @@ export function renderNpcPopup(def = {}) {
   const extras      = Array.isArray(def.extraLines) ? def.extraLines : [];
   const imgUrl      = def.imageLarge || def.imageSmall || "";
 
-  // Colors (with fallbacks)
-  const dispColor    = def.dispositionColor || defaultNameColor;
-  const factionColor = def.factionColor     || defaultNameColor;
-  const nameColor    = def.nameColor        || defaultNameColor;
-  const tierColor    = def.tierColor        || defaultNameColor;
+  // Determine colors: use saved or preset fallback
+  const nameColor      = def.nameColor     || defaultNameColor;
+  const factionColor   = def.factionColor
+    || dispositionColors[disposition] 
+    || defaultNameColor;
+  const tierColor      = def.tierColor
+    || tierColors[tierText]
+    || defaultNameColor;
 
   // 1) Header image
   const imgHTML = imgUrl
     ? `<img src="${imgUrl}" class="popup-image"
-             style="border-color:${dispColor}"
+             style="border-color:${factionColor}"
              onerror="this.style.display='none'">`
     : "";
 
-  // 2) Name / Disposition / Faction / Tier
-  const nameHTML    = `<div class="popup-name" style="color:${nameColor};">
-                         ${nameText}
-                       </div>`;
-  const dispHTML    = `<div class="popup-type" style="color:${dispColor};">
-                         ${disposition}
-                       </div>`;
+  // 2) Name / faction / tier
+  const nameHTML    = `<div class="popup-name" style="color:${nameColor}">${nameText}</div>`;
   const factionHTML = factionText
-    ? `<div class="popup-type" style="color:${factionColor};">
-         ${factionText}
-       </div>`
+    ? `<div class="popup-type" style="color:${factionColor}">${factionText}</div>`
     : "";
   const tierHTML    = tierText
-    ? `<div class="popup-rarity" style="color:${tierColor};">
-         ${tierText}
-       </div>`
+    ? `<div class="popup-rarity" style="color:${tierColor}">${tierText}</div>`
     : "";
 
   // 3) Stats icons
@@ -75,7 +70,9 @@ export function renderNpcPopup(def = {}) {
     const thumb = item.imageSmall || item.imageLarge || "";
     return `
       <div class="chest-slot" data-index="${idx}">
-        ${thumb ? `<img src="${thumb}" class="chest-slot-img" onerror="this.style.display='none'">` : ""}
+        ${thumb
+          ? `<img src="${thumb}" class="chest-slot-img" onerror="this.style.display='none'>`
+          : ""}
       </div>`;
   }).join("");
   for (let i = pool.length; i < COLS; i++) {
@@ -95,9 +92,7 @@ export function renderNpcPopup(def = {}) {
        </p>`
     : "";
   const extraHTML = extras.map(l =>
-    `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
-       ${l.text}
-     </p>`
+    `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">${l.text}</p>`
   ).join("");
   const textBox = (descHTML || extraHTML)
     ? `<div class="popup-info-box">
@@ -107,7 +102,7 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // Assemble and return
+  // 6) Assemble and return
   return `
     <div class="custom-popup" style="position:relative;">
       <span class="popup-close-btn">✖</span>
@@ -115,7 +110,7 @@ export function renderNpcPopup(def = {}) {
         <div class="popup-header-left">
           ${imgHTML}
           <div class="popup-info">
-            ${nameHTML}${dispHTML}${factionHTML}${tierHTML}
+            ${nameHTML}${factionHTML}${tierHTML}
           </div>
         </div>
         ${statsHTML}
