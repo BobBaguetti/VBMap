@@ -1,5 +1,5 @@
 /* @file: styles/components/popup/popup-stats.css */
-/* @version: 1.0 — popup stats/value icon styling */
+/* @version: 1.1 — force font-icons and SVGs to same size/alignment */
 
 @import "../../tokens/popup.css";
 
@@ -17,10 +17,16 @@
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Icon sizing and color */
-.popup-value-icon svg {
+/* Icon sizing and color for both SVGs and font-icons */
+.popup-value-icon svg,
+.popup-value-icon i {
+  display: inline-block;
   width: var(--popup-close-icon-size);
   height: var(--popup-close-icon-size);
+}
+
+/* Only SVGs get the gold fill */
+.popup-value-icon svg {
   fill: #d4af37;
 }
 

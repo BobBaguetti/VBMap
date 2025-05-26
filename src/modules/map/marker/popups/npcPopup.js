@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.4 — use icons for stats, smaller font, align bottom-right
+// @version: 1.5 — remove inline font-size override for stats icons
 
 import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
 import { createIcon }       from "../../../../shared/utils/iconUtils.js";
@@ -56,7 +56,7 @@ export function renderNpcPopup(def = {}) {
     `<span class="popup-value-number">${hpText}</span>${createIcon("heart",{inline:true}).outerHTML}`
   );
   const statsHTML = statsItems.length
-    ? `<div class="popup-value-icon" title="Stats" style="font-size:0.85rem;">
+    ? `<div class="popup-value-icon" title="Stats">
          ${statsItems.join("")}
        </div>`
     : "";
