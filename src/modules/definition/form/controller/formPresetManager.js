@@ -1,7 +1,11 @@
 // @file: src/modules/definition/form/controller/formPresetManager.js
-// @version: 1.0 — centralize select-based color presets
+// @version: 1.1 — handle chest category presets
 
-import { rarityColors, itemTypeColors } from "../../../../shared/utils/color/colorPresets.js";
+import {
+  rarityColors,
+  itemTypeColors,
+  chestCategoryColors
+} from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Wire selects to apply preset colors on change.
@@ -16,19 +20,31 @@ export function setupSelectPresets(schema, fields, pickrs) {
       const selectEl = fields[key];
       selectEl.addEventListener("change", () => {
         let preset;
+
         if (key === "rarity") {
           preset = rarityColors[selectEl.value];
           if (preset) {
             pickrs["rarityColor"]?.setColor(preset);
             pickrs["nameColor"]?.setColor(preset);
           }
+
         } else if (key === "itemType") {
           preset = itemTypeColors[selectEl.value];
           if (preset) {
             pickrs["itemTypeColor"]?.setColor(preset);
           }
+
+        } else if (key === "category") {
+          // Chest category presets
+          preset = chestCategoryColors[selectEl.value];
+          if (preset) {
+            pickrs["categoryColor"]?.setColor(preset);
+            // you might also want to link nameColor if desired:
+            // pickrs["nameColor"]?.setColor(preset);
+          }
         }
-        // Trigger input event for live preview
+
+        // Trigger live‐preview update
         selectEl.dispatchEvent(new Event("input", { bubbles: true }));
       });
     }
@@ -36,7 +52,7 @@ export function setupSelectPresets(schema, fields, pickrs) {
 }
 
 /**
- * Apply presets on populate for rarity and itemType.
+ * Apply presets on populate for rarity, itemType, and chest category.
  *
  * @param {Object} schema — your form schema
  * @param {Object} def — the definition object
@@ -50,10 +66,20 @@ export function applySelectPresetsOnPopulate(schema, def, pickrs) {
       pickrs["nameColor"]?.setColor(preset);
     }
   }
+
   if (schema.itemType) {
     const preset = itemTypeColors[def.itemType];
     if (preset) {
       pickrs["itemTypeColor"]?.setColor(preset);
+    }
+  }
+
+  if (schema.category) {
+    const preset = chestCategoryColors[def.category];
+    if (preset) {
+      pickrs["categoryColor"]?.setColor(preset);
+      // optionally sync nameColor:
+      // pickrs["nameColor"]?.setColor(preset);
     }
   }
 }

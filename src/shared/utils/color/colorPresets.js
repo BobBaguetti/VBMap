@@ -1,5 +1,5 @@
-// @file: src\shared\utils\color\colorPresets.js
-// @version: 2
+// @file: src/shared/utils/color/colorPresets.js
+// @version: 3 — added chestCategoryColors
 
 /**
  * Default color for names when none is specified or on reset.
@@ -24,13 +24,11 @@ export const itemTypeColors = {
   "":                "#bbb"
 };
 
-export const goldColor = "#D4AF37"; 
-
 export const questTypeColors = {
-  Main:  "#ffdf91",
-  Side:  "#c1dfff",
-  Daily: "#d1ffd1",
-  "":    "#bbb"
+  Main:   "#ffdf91",
+  Side:   "#c1dfff",
+  Daily:  "#d1ffd1",
+  "":     "#bbb"
 };
 
 export const npcTypeColors = {
@@ -39,3 +37,15 @@ export const npcTypeColors = {
   Hostile:  "#f0b0b0",
   "":       "#bbb"
 };
+
+/**
+ * NEW: Preset colors for chest categories.
+ * Adjust these values as desired.
+ */
+export const chestCategoryColors = {
+  Normal:     "#8cb369",
+  Dragonvault:"#d45f5f",
+  "":         "#bbb"
+};
+
+export const goldColor = "#D4AF37";
