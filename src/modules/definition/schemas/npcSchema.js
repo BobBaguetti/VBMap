@@ -1,5 +1,5 @@
 // @file: src/modules/definition/schemas/npcSchema.js
-// @version: 1.3 — make `tier` colorable
+// @version: 1.2 — unified image labels
 
 export const npcSchema = {
   name: {
@@ -20,10 +20,9 @@ export const npcSchema = {
     colorable: "factionColor"
   },
   tier: {
-    type:      "select",
-    label:     "Tier",
-    options:   ["Normal", "Elite", "Boss"],
-    colorable: "tierColor"
+    type:    "select",
+    label:   "Tier",
+    options: ["Normal", "Elite", "Boss"]
   },
   damage: {
     type:  "number",
