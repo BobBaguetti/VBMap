@@ -1,8 +1,11 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.4 — only use imageSmall and imageLarge, drop imageBig and iconUrl fallback
+// @version: 1.5 — apply categoryColor to Category label
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
-import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
+import {
+  rarityColors,
+  defaultNameColor
+} from "../../../../shared/utils/color/colorPresets.js";
 import { CHEST_RARITY } from "../utils.js";
 import definitionsManager from "../../../../bootstrap/definitionsManager.js";
 
@@ -10,25 +13,30 @@ export function renderChestPopup(typeDef) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
 
   // 1) Compute chest rarity from category & size
-  const cat  = typeDef.category || "Normal";
-  const size = typeDef.size     || "Small";
-  const key  = CHEST_RARITY[cat]?.[size] || "common";
-  const rarityLabel = formatRarity(key);
-  const rarityColor = rarityColors[key] || defaultNameColor;
+  const cat           = typeDef.category   || "Normal";
+  const size          = typeDef.size       || "Small";
+  const rarityKey     = CHEST_RARITY[cat]?.[size] || "common";
+  const rarityLabel   = formatRarity(rarityKey);
+  const rarityColor   = rarityColors[rarityKey] || defaultNameColor;
 
   // 2) Header (icon + Name, Category, Rarity)
-  const imgUrl = typeDef.imageLarge || typeDef.imageSmall || "";
-  const bigImg = imgUrl
+  const imgUrl    = typeDef.imageLarge || typeDef.imageSmall || "";
+  const bigImg    = imgUrl
     ? `<img src="${imgUrl}" class="popup-image"
              style="border-color:${rarityColor}"
              onerror="this.style.display='none'">`
     : "";
 
-  const titleColor = typeDef.nameColor || rarityColor;
-  const nameHTML = `<div class="popup-name" style="color:${titleColor};">
-                      ${typeDef.name || ""}
-                    </div>`;
-  const typeHTML   = `<div class="popup-type">${cat}</div>`;
+  const titleColor    = typeDef.nameColor     || rarityColor;
+  const categoryColor = typeDef.categoryColor || defaultNameColor;
+
+  const nameHTML   = `<div class="popup-name" style="color:${titleColor};">
+                        ${typeDef.name || ""}
+                      </div>`;
+  // Apply the categoryColor here:
+  const typeHTML   = `<div class="popup-type" style="color:${categoryColor};">
+                        ${cat}
+                      </div>`;
   const rarityHTML = `<div class="popup-rarity" style="color:${rarityColor};">
                         ${rarityLabel}
                       </div>`;
@@ -37,7 +45,6 @@ export function renderChestPopup(typeDef) {
   const COLS = 5;
   const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
   let cells = pool.map((it, idx) => {
-    // If this entry doesn’t have its own imageSmall, try imageLarge
     let item = it;
     if (!item.imageSmall && item.id) {
       const itemMap = definitionsManager.getDefinitions("Item");
@@ -61,7 +68,6 @@ export function renderChestPopup(typeDef) {
       </div>`;
   }).join("");
 
-  // fill empty slots
   for (let i = pool.length; i < COLS; i++) {
     cells += `<div class="chest-slot" data-index=""></div>`;
   }
