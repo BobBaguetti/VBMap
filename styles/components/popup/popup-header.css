@@ -1,5 +1,5 @@
 /* @file: styles/components/popup/popup-header.css */
-/* @version: 1.5 — flex‐based two‐column header, no absolute stats */
+/* @version: 1.4 — tweak stats vertical position */
 
 @import "../../tokens/popup.css";
 
@@ -8,27 +8,20 @@
   position: relative;
   display: flex;
   justify-content: flex-start;
-  align-items: stretch;               /* stretch so both columns match height */
+  align-items: flex-start;
   gap: var(--popup-header-gap);
   margin-bottom: var(--popup-header-margin-bottom);
   border-bottom: var(--popup-header-border-thickness) solid var(--bg-50);
   padding: 0;
 }
 
-/* Left side: just the image now */
+/* Left side: image + info */
 .popup-header-left {
   display: flex;
   align-items: flex-start;
-  flex: 0 0 auto;                     /* shrink‐to‐image only */
   gap: var(--popup-header-gap);
-}
-
-/* Right side: info + stats stacked with space-between */
-.popup-header-right {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;     /* pushes stats to bottom */
-  flex: 1 1 auto;                     /* take remaining width */
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 /* Header image */
@@ -42,7 +35,7 @@
   flex-shrink: 0;
 }
 
-/* Info block (unchanged) */
+/* Info block */
 .popup-info {
   display: flex;
   flex-direction: column;
@@ -79,4 +72,12 @@
   font-weight: 520;
   transform: translateY(-1px);
   text-shadow: 0 1px 1px rgba(0,0,0,0.5);
+}
+
+/* Stats/value icon: absolute at bottom-right, nudged up by 2px */
+.popup-header .popup-value-icon {
+  position: absolute;
+  right: var(--popup-value-margin-right);
+  /* raise up slightly so it lines with row-3 baseline */
+  bottom: calc(var(--popup-header-border-thickness) + 1px);
 }
