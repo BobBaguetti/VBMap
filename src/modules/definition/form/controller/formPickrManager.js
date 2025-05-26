@@ -1,11 +1,12 @@
 // @file: src/modules/definition/form/controller/formPickrManager.js
-// @version: 1.2 — re-export populateSavedColors; chest category support
+// @version: 1.3 — added chest category and NPC tier presets; re-export populateSavedColors
 
 import { initFormPickrs } from "./pickrAdapter.js";
 import {
   rarityColors,
   itemTypeColors,
-  chestCategoryColors
+  chestCategoryColors,
+  tierColors
 } from "../../../../shared/utils/color/colorPresets.js";
 
 /**
@@ -13,9 +14,9 @@ import {
  * wire select-based presets.
  *
  * @param {HTMLFormElement} form
- * @param {Object} fields — map of fieldName→HTMLElement
- * @param {Object} colorables — map of colorKey→buttonElement
- * @param {Object} schema — your form schema
+ * @param {Object} fields      — map of fieldName→HTMLElement
+ * @param {Object} colorables  — map of colorKey→buttonElement
+ * @param {Object} schema      — your form schema
  * @returns {Object} map of colorKey→Pickr instance
  */
 export function setupPickrs(form, fields, colorables, schema) {
@@ -27,6 +28,7 @@ export function setupPickrs(form, fields, colorables, schema) {
       el.addEventListener("change", () => {
         let preset;
 
+        // Rarity
         if (key === "rarity") {
           preset = rarityColors[el.value];
           if (preset) {
@@ -34,18 +36,25 @@ export function setupPickrs(form, fields, colorables, schema) {
             pickrs["nameColor"]?.setColor(preset);
           }
 
+        // Item Type
         } else if (key === "itemType") {
           preset = itemTypeColors[el.value];
           if (preset) {
             pickrs["itemTypeColor"]?.setColor(preset);
           }
 
+        // Chest Category
         } else if (key === "category") {
           preset = chestCategoryColors[el.value];
           if (preset) {
             pickrs["categoryColor"]?.setColor(preset);
-            // optionally sync nameColor:
-            // pickrs["nameColor"]?.setColor(preset);
+          }
+
+        // NPC Tier
+        } else if (key === "tier") {
+          preset = tierColors[el.value];
+          if (preset) {
+            pickrs["tierColor"]?.setColor(preset);
           }
         }
 
@@ -61,7 +70,7 @@ export function setupPickrs(form, fields, colorables, schema) {
  * Apply saved Firestore colors to Pickr instances, deferred to next tick.
  *
  * @param {Object} pickrs — map of colorKey→Pickr instance
- * @param {Object} def — the definition object with saved values
+ * @param {Object} def    — the definition object with saved values
  * @param {Object} schema — your form schema
  */
 export function populateSavedColors(pickrs, def, schema) {
@@ -69,7 +78,7 @@ export function populateSavedColors(pickrs, def, schema) {
     Object.entries(schema).forEach(([key, cfg]) => {
       if (cfg.colorable) {
         const colorKey = cfg.colorable;
-        const saved = def[colorKey];
+        const saved    = def[colorKey];
         if (saved && pickrs[colorKey]) {
           pickrs[colorKey].setColor(saved);
         }
@@ -77,3 +86,6 @@ export function populateSavedColors(pickrs, def, schema) {
     });
   }, 0);
 }
+
+// Re-export populateSavedColors for modules that import alongside setupPickrs
+export { populateSavedColors };

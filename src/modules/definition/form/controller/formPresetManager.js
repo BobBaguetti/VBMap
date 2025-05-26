@@ -1,10 +1,11 @@
 // @file: src/modules/definition/form/controller/formPresetManager.js
-// @version: 1.1 — handle chest category presets
+// @version: 1.2 — added chest category and NPC tier presets
 
 import {
   rarityColors,
   itemTypeColors,
-  chestCategoryColors
+  chestCategoryColors,
+  tierColors
 } from "../../../../shared/utils/color/colorPresets.js";
 
 /**
@@ -21,6 +22,7 @@ export function setupSelectPresets(schema, fields, pickrs) {
       selectEl.addEventListener("change", () => {
         let preset;
 
+        // Item rarity
         if (key === "rarity") {
           preset = rarityColors[selectEl.value];
           if (preset) {
@@ -28,23 +30,29 @@ export function setupSelectPresets(schema, fields, pickrs) {
             pickrs["nameColor"]?.setColor(preset);
           }
 
+        // Item type
         } else if (key === "itemType") {
           preset = itemTypeColors[selectEl.value];
           if (preset) {
             pickrs["itemTypeColor"]?.setColor(preset);
           }
 
+        // Chest category
         } else if (key === "category") {
-          // Chest category presets
           preset = chestCategoryColors[selectEl.value];
           if (preset) {
             pickrs["categoryColor"]?.setColor(preset);
-            // you might also want to link nameColor if desired:
-            // pickrs["nameColor"]?.setColor(preset);
+          }
+
+        // NPC tier
+        } else if (key === "tier") {
+          preset = tierColors[selectEl.value];
+          if (preset) {
+            pickrs["tierColor"]?.setColor(preset);
           }
         }
 
-        // Trigger live‐preview update
+        // Trigger input event for live preview
         selectEl.dispatchEvent(new Event("input", { bubbles: true }));
       });
     }
@@ -52,13 +60,14 @@ export function setupSelectPresets(schema, fields, pickrs) {
 }
 
 /**
- * Apply presets on populate for rarity, itemType, and chest category.
+ * Apply presets on populate for rarity, itemType, chest category, and tier.
  *
  * @param {Object} schema — your form schema
  * @param {Object} def — the definition object
  * @param {Object} pickrs — map of colorKey→Pickr instance
  */
 export function applySelectPresetsOnPopulate(schema, def, pickrs) {
+  // Rarity
   if (schema.rarity) {
     const preset = rarityColors[def.rarity];
     if (preset) {
@@ -67,6 +76,7 @@ export function applySelectPresetsOnPopulate(schema, def, pickrs) {
     }
   }
 
+  // Item type
   if (schema.itemType) {
     const preset = itemTypeColors[def.itemType];
     if (preset) {
@@ -74,12 +84,19 @@ export function applySelectPresetsOnPopulate(schema, def, pickrs) {
     }
   }
 
+  // Chest category
   if (schema.category) {
     const preset = chestCategoryColors[def.category];
     if (preset) {
       pickrs["categoryColor"]?.setColor(preset);
-      // optionally sync nameColor:
-      // pickrs["nameColor"]?.setColor(preset);
+    }
+  }
+
+  // NPC tier
+  if (schema.tier) {
+    const preset = tierColors[def.tier];
+    if (preset) {
+      pickrs["tierColor"]?.setColor(preset);
     }
   }
 }
