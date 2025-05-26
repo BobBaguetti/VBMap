@@ -1,7 +1,12 @@
 // @file: src/modules/definition/form/controller/formPresetManager.js
-// @version: 1.0 — centralize select-based color presets
+// @version: 1.1 — wire up chest `category` & npc `tier` presets
 
-import { rarityColors, itemTypeColors } from "../../../../shared/utils/color/colorPresets.js";
+import {
+  rarityColors,
+  itemTypeColors,
+  npcTierColors,
+  chestCategoryColors
+} from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Wire selects to apply preset colors on change.
@@ -16,18 +21,33 @@ export function setupSelectPresets(schema, fields, pickrs) {
       const selectEl = fields[key];
       selectEl.addEventListener("change", () => {
         let preset;
+
         if (key === "rarity") {
           preset = rarityColors[selectEl.value];
           if (preset) {
             pickrs["rarityColor"]?.setColor(preset);
             pickrs["nameColor"]?.setColor(preset);
           }
-        } else if (key === "itemType") {
+        }
+        else if (key === "itemType") {
           preset = itemTypeColors[selectEl.value];
           if (preset) {
             pickrs["itemTypeColor"]?.setColor(preset);
           }
         }
+        else if (key === "tier") {
+          preset = npcTierColors[selectEl.value];
+          if (preset) {
+            pickrs["tierColor"]?.setColor(preset);
+          }
+        }
+        else if (key === "category") {
+          preset = chestCategoryColors[selectEl.value];
+          if (preset) {
+            pickrs["categoryColor"]?.setColor(preset);
+          }
+        }
+
         // Trigger input event for live preview
         selectEl.dispatchEvent(new Event("input", { bubbles: true }));
       });
@@ -36,11 +56,7 @@ export function setupSelectPresets(schema, fields, pickrs) {
 }
 
 /**
- * Apply presets on populate for rarity and itemType.
- *
- * @param {Object} schema — your form schema
- * @param {Object} def — the definition object
- * @param {Object} pickrs — map of colorKey→Pickr instance
+ * Apply presets on populate.
  */
 export function applySelectPresetsOnPopulate(schema, def, pickrs) {
   if (schema.rarity) {
@@ -54,6 +70,18 @@ export function applySelectPresetsOnPopulate(schema, def, pickrs) {
     const preset = itemTypeColors[def.itemType];
     if (preset) {
       pickrs["itemTypeColor"]?.setColor(preset);
+    }
+  }
+  if (schema.tier) {
+    const preset = npcTierColors[def.tier];
+    if (preset) {
+      pickrs["tierColor"]?.setColor(preset);
+    }
+  }
+  if (schema.category) {
+    const preset = chestCategoryColors[def.category];
+    if (preset) {
+      pickrs["categoryColor"]?.setColor(preset);
     }
   }
 }
