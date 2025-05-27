@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.2.1 — fix NPC checkbox selector for filtering markers
+// @version: 1.2.2 — NPC filter now matches either npcDefinitionId or marker id
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -88,7 +88,7 @@ export async function setupSidebarFilters(params) {
           });
       }
 
-      // NPC-specific (fixed selector)
+      // NPC-specific (match either npcDefinitionId or marker id)
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
@@ -96,8 +96,9 @@ export async function setupSidebarFilters(params) {
           `${npcHostileListSelector} input[data-npc-id], ` +
           `${npcFriendlyListSelector} input[data-npc-id]`
         );
+        const dataId = data.npcDefinitionId ?? data.id;
         npcCheckboxes.forEach(cb => {
-          if (cb.dataset.npcId === data.npcDefinitionId && cb.checked) {
+          if (cb.dataset.npcId === dataId && cb.checked) {
             npcVisible = true;
           }
         });
