@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/icons/createMarker.js
-// @version: 1.5 — Friendly uses dispositionColor, Hostile/Neutral use tierColor
+// @version: 1.6 — copy definition ID for NPCs so filters can match
 
 // Assumes Leaflet is loaded via a <script> tag and exposes window.L
 const L = window.L;
@@ -36,13 +36,16 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
     m.rarityColor = rarityColors[key] || defaultNameColor;
   }
 
-  // 2) NPC logic: Friendly → dispositionColor; Hostile/Neutral → tierColor
+  // 2) NPC logic: copy ID for filtering, then Friendly → dispositionColor; else → tierColor
   if (m.type === "NPC") {
+    // ensure filterMarkers can match this marker to its checkbox
+    m.npcDefinitionId = m.id;
+
     if (m.disposition === "Friendly") {
       m.rarityColor = dispositionColors.Friendly;
     } else {
       m.rarityColor = m.tierColor
-        || tierColors[m.tier] 
+        || tierColors[m.tier]
         || defaultNameColor;
     }
   }
@@ -73,11 +76,9 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
 
   // 6) When popup opens, wire close button and chest‐slot previews
   markerObj.on("popupopen", () => {
-    // Close button
     document.querySelector(".custom-popup .popup-close-btn")
       ?.addEventListener("click", () => markerObj.closePopup());
 
-    // Chest slot hover previews
     document.querySelectorAll(".custom-popup .chest-slot[data-index]")
       .forEach(el => {
         el.removeAttribute("title");
