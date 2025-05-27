@@ -1,11 +1,15 @@
-/* @file: src/modules/map/marker/icons/createCustomIcon.js */
-/* @version: 1.6 — drop imageBig fallback; use only imageLarge and imageSmall */
+// @file: src/modules/map/marker/icons/createCustomIcon.js
+// @version: 1.7 — apply NPC disposition/tier logic for marker borders
 
 const L = window.L;
 
-import { defaultNameColor }    from "../../../../shared/utils/color/colorPresets.js";
-import { getBestImageUrl }     from "../utils.js";
+import { defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
+import { getBestImageUrl }  from "../utils.js";
 import { CHEST_RARITY, rarityColors } from "../../markerManager.js";
+import {
+  dispositionColors,
+  tierColors
+} from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Creates a Leaflet divIcon for a marker,
@@ -16,21 +20,36 @@ import { CHEST_RARITY, rarityColors } from "../../markerManager.js";
  * @returns {L.DivIcon}
  */
 export function createCustomIcon(m) {
-  // Pick only large then small
+  // 1) Pick only large then small
   const imgUrl = getBestImageUrl(m, "imageLarge", "imageSmall");
   const size   = 32;
 
-  // Determine border color: chest logic first, then item/NPC
+  // 2) Determine border color:
+  //    - Chest by rarity
+  //    - NPC: friendly → dispositionColors.Friendly
+  //           else → m.tierColor or tierColors[m.tier]
+  //    - Otherwise items or default: m.rarityColor
   let borderColor = defaultNameColor;
+
   if (m.type === "Chest") {
     const catMap = CHEST_RARITY[m.category] || {};
     const key    = catMap[m.size]    || "common";
     borderColor  = rarityColors[key] || defaultNameColor;
+
+  } else if (m.type === "NPC") {
+    if (m.disposition === "Friendly") {
+      borderColor = dispositionColors.Friendly;
+    } else {
+      borderColor = m.tierColor
+        || tierColors[m.tier]
+        || defaultNameColor;
+    }
+
   } else if (m.rarityColor) {
     borderColor = m.rarityColor;
   }
 
-  // wrapper div to hold image and border
+  // 3) Build wrapper div
   const wrap = document.createElement("div");
   wrap.className = "custom-marker";
   Object.assign(wrap.style, {
@@ -43,7 +62,7 @@ export function createCustomIcon(m) {
     transition:   "transform 0.12s ease-out"
   });
 
-  // colored border
+  // 4) Colored border circle
   const border = document.createElement("div");
   border.className = "marker-border";
   Object.assign(border.style, {
@@ -56,7 +75,7 @@ export function createCustomIcon(m) {
   });
   wrap.appendChild(border);
 
-  // optional image
+  // 5) Optional image
   if (imgUrl) {
     const img = document.createElement("img");
     img.src = imgUrl;
@@ -70,6 +89,7 @@ export function createCustomIcon(m) {
     wrap.appendChild(img);
   }
 
+  // 6) Return a Leaflet divIcon
   return L.divIcon({
     html:       wrap.outerHTML,
     className:  "",
