@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.3.1 — fixed NPC checkbox selector for toggles
+// @version: 1.3.2 — use data.id for NPC filter matching
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -41,16 +41,18 @@ export async function setupSidebarFilters(params) {
 
   // Core filter function
   function filterMarkers() {
+    // Read search and PvE toggles
     const searchBar = document.querySelector(searchBarSelector);
     const pveToggle = document.querySelector(pveToggleSelector);
     const nameQuery = (searchBar?.value || "").toLowerCase();
     const pveOn     = pveToggle?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      const matchesPvE  = pveOn || data.type !== "Item";
-      const matchesName = data.name?.toLowerCase().includes(nameQuery);
+      // Basic filters
+      const matchesPvE   = pveOn || data.type !== "Item";
+      const matchesName  = data.name?.toLowerCase().includes(nameQuery);
 
-      // Main-layer filters
+      // Main-layer toggles
       let mainVisible = true;
       document
         .querySelectorAll(mainFiltersSelector + " input[type=checkbox]")
@@ -90,7 +92,7 @@ export async function setupSidebarFilters(params) {
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
-        const defId = data.npcDefinitionId ?? data.id;
+        const defId = data.id;
         document
           .querySelectorAll(
             `${npcHostileListSelector} input[data-npc-id], ` +
@@ -103,7 +105,7 @@ export async function setupSidebarFilters(params) {
           });
       }
 
-      // Final decision
+      // Determine final visibility
       const shouldShow =
         matchesPvE &&
         matchesName &&
