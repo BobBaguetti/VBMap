@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/npcFilters.js
-// @version: 1.2 — group by disposition, not faction
+// @version: 1.1 — definition-driven friendly/hostile NPC toggles
 
 import { loadNpcDefinitions } from "../../services/npcDefinitionsService.js";
 
@@ -28,38 +28,35 @@ export async function setupNpcFilters(
 
   // Load only defs flagged showInFilters
   const defs = await loadNpcDefinitions(db);
-  defs
-    .filter(d => d.showInFilters)
-    .forEach(def => {
-      const lbl = document.createElement("label");
-      lbl.className = "filter-entry filter-npc-entry";
+  defs.filter(d => d.showInFilters).forEach(def => {
+    const lbl = document.createElement("label");
+    lbl.className = "filter-entry filter-npc-entry";
 
-      // Checkbox
-      const cb = document.createElement("input");
-      cb.type           = "checkbox";
-      cb.checked        = true;
-      cb.dataset.npcId  = def.id;
-      cb.addEventListener("change", onChange);
+    // Checkbox
+    const cb = document.createElement("input");
+    cb.type           = "checkbox";
+    cb.checked        = true;
+    cb.dataset.npcId  = def.id;
+    cb.addEventListener("change", onChange);
 
-      // Thumbnail
-      const img = document.createElement("img");
-      img.src       = def.imageSmall || "";
-      img.alt       = def.name;
-      img.className = "filter-icon";
-      img.width     = 20;
-      img.height    = 20;
+    // Thumbnail
+    const img = document.createElement("img");
+    img.src       = def.imageSmall;
+    img.alt       = def.name;
+    img.className = "filter-icon";
+    img.width     = 20;
+    img.height    = 20;
 
-      // Label
-      const span = document.createElement("span");
-      span.textContent = def.name;
+    // Label
+    const span = document.createElement("span");
+    span.textContent = def.name;
 
-      lbl.append(cb, img, span);
+    lbl.append(cb, img, span);
 
-      // Group by disposition, not faction
-      if (def.disposition === "Friendly") {
-        friendlyContainer.appendChild(lbl);
-      } else {
-        hostileContainer.appendChild(lbl);
-      }
-    });
+    if (def.faction === "Friendly") {
+      friendlyContainer.appendChild(lbl);
+    } else {
+      hostileContainer.appendChild(lbl);
+    }
+  });
 }
