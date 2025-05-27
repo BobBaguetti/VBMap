@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.2 — async sidebar init & NPC filter fix
+// @version: 1.3 — fix NPC filter matching to use marker data’s `id`
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -10,16 +10,7 @@ import { setupItemFilters }  from "./itemFilters.js";
  * Wires up all sidebar filters and exposes the core APIs.
  *
  * @param {object} params
- *   - searchBarSelector
- *   - mainFiltersSelector
- *   - pveToggleSelector
- *   - itemFilterListSelector
- *   - chestFilterListSelector
- *   - npcHostileListSelector
- *   - npcFriendlyListSelector
- *   - layers
- *   - allMarkers
- *   - db
+ *   - … (same as before)
  * @returns {{
  *   filterMarkers: () => void,
  *   loadItemFilters: () => Promise<void>
@@ -39,7 +30,6 @@ export async function setupSidebarFilters(params) {
     db
   } = params;
 
-  // Core filter function
   function filterMarkers() {
     const searchBar = document.querySelector(searchBarSelector);
     const pveToggle = document.querySelector(pveToggleSelector);
@@ -47,10 +37,11 @@ export async function setupSidebarFilters(params) {
     const pveOn     = pveToggle?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      const matchesPvE   = pveOn || data.type !== "Item";
-      const matchesName  = data.name?.toLowerCase().includes(nameQuery);
+      // PvE & name filters
+      const matchesPvE  = pveOn || data.type !== "Item";
+      const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
-      // Main-layer toggles
+      // Main layer toggles
       let mainVisible = true;
       document
         .querySelectorAll(mainFiltersSelector + " input[type=checkbox]")
@@ -60,7 +51,7 @@ export async function setupSidebarFilters(params) {
           }
         });
 
-      // Item-specific
+      // Item filters (unchanged)…
       let itemVisible = true;
       if (data.predefinedItemId) {
         const cb = document.querySelector(
@@ -69,7 +60,7 @@ export async function setupSidebarFilters(params) {
         if (cb && !cb.checked) itemVisible = false;
       }
 
-      // Chest-specific
+      // Chest filters (unchanged)…
       let chestVisible = true;
       if (data.type === "Chest") {
         chestVisible = false;
@@ -84,22 +75,24 @@ export async function setupSidebarFilters(params) {
           });
       }
 
-      // NPC-specific (updated!)
+      // NPC filters: match on data.id (the NPC definition’s id)
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
+        // both friendly and hostile lists share data-npc-id
         document
           .querySelectorAll(
-            `${npcHostileListSelector}, ${npcFriendlyListSelector} input[data-npc-id]`
+            `${npcHostileListSelector} input[data-npc-id],
+             ${npcFriendlyListSelector} input[data-npc-id]`
           )
           .forEach(cb => {
-            if (cb.dataset.npcId === data.npcDefinitionId && cb.checked) {
+            if (cb.dataset.npcId === data.id && cb.checked) {
               npcVisible = true;
             }
           });
       }
 
-      // Final decision
+      // Decide final visibility
       const shouldShow =
         matchesPvE &&
         matchesName &&
@@ -115,11 +108,10 @@ export async function setupSidebarFilters(params) {
     });
   }
 
-  // Wire the static filters
+  // Wire up filters
   setupMainFilters(mainFiltersSelector, filterMarkers);
   setupChestFilters(chestFilterListSelector, filterMarkers);
 
-  // ← await here so we can pass `db` into npcFilters
   await setupNpcFilters(
     npcHostileListSelector,
     npcFriendlyListSelector,
@@ -127,7 +119,6 @@ export async function setupSidebarFilters(params) {
     filterMarkers
   );
 
-  // Expose loadItemFilters as an async function
   async function loadItemFilters() {
     await setupItemFilters(itemFilterListSelector, db, filterMarkers);
   }
