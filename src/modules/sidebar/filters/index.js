@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.2 — async sidebar init & NPC filter fix
+// @version: 1.3 — fix NPC checkbox selector and ID matching
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -84,16 +84,19 @@ export async function setupSidebarFilters(params) {
           });
       }
 
-      // NPC-specific (updated!)
+      // NPC-specific
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
+        // select all checked NPC checkboxes in both groups
         document
           .querySelectorAll(
-            `${npcHostileListSelector}, ${npcFriendlyListSelector} input[data-npc-id]`
+            `${npcHostileListSelector} input[data-npc-id], ` +
+            `${npcFriendlyListSelector} input[data-npc-id]`
           )
           .forEach(cb => {
-            if (cb.dataset.npcId === data.npcDefinitionId && cb.checked) {
+            // match against data.id (your NPC definition id)
+            if (cb.dataset.npcId === data.id && cb.checked) {
               npcVisible = true;
             }
           });
@@ -111,7 +114,8 @@ export async function setupSidebarFilters(params) {
       const group = layers[data.type];
       if (!group) return;
 
-      shouldShow ? group.addLayer(markerObj) : group.removeLayer(markerObj);
+      if (shouldShow) group.addLayer(markerObj);
+      else           group.removeLayer(markerObj);
     });
   }
 
@@ -119,7 +123,7 @@ export async function setupSidebarFilters(params) {
   setupMainFilters(mainFiltersSelector, filterMarkers);
   setupChestFilters(chestFilterListSelector, filterMarkers);
 
-  // ← await here so we can pass `db` into npcFilters
+  // Await real-time NPC filters
   await setupNpcFilters(
     npcHostileListSelector,
     npcFriendlyListSelector,
