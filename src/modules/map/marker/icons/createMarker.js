@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/icons/createMarker.js
-// @version: 1.4 — apply NPC dispositionColor as border
+// @version: 1.5 — Friendly uses dispositionColor, Hostile/Neutral use tierColor
 
 // Assumes Leaflet is loaded via a <script> tag and exposes window.L
 const L = window.L;
@@ -8,7 +8,12 @@ import { renderItemPopup }  from "../popups/itemPopup.js";
 import { renderChestPopup } from "../popups/chestPopup.js";
 import { createCustomIcon } from "./createCustomIcon.js";
 import { CHEST_RARITY }     from "../utils.js";
-import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/colorPresets.js";
+import {
+  rarityColors,
+  defaultNameColor,
+  dispositionColors,
+  tierColors
+} from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Create a Leaflet marker with custom icon, popup, drag, and context menu.
@@ -22,7 +27,7 @@ import { rarityColors, defaultNameColor } from "../../../../shared/utils/color/c
  * @returns {L.Marker}
  */
 export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = false) {
-  // 1) If this is a chest, compute and inject its rarityColor
+  // 1) Chest logic: compute and inject rarityColor
   if (m.chestDefFull) {
     const cat  = m.chestDefFull.category || "Normal";
     const size = m.chestDefFull.size     || "Small";
@@ -31,29 +36,34 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
     m.rarityColor = rarityColors[key] || defaultNameColor;
   }
 
-  // 1a) If this is an NPC, use dispositionColor for the marker border
+  // 2) NPC logic: Friendly → dispositionColor; Hostile/Neutral → tierColor
   if (m.type === "NPC") {
-    m.rarityColor = m.dispositionColor || m.rarityColor || defaultNameColor;
+    if (m.disposition === "Friendly") {
+      m.rarityColor = dispositionColors.Friendly;
+    } else {
+      m.rarityColor = m.tierColor
+        || tierColors[m.tier] 
+        || defaultNameColor;
+    }
   }
 
-  // 2) Instantiate the Leaflet marker with our custom icon
+  // 3) Instantiate the Leaflet marker with our custom icon
   const markerObj = L.marker(m.coords, {
     icon:      createCustomIcon(m),
     draggable: false
   });
 
-  // 3) Wire up dragend if admin toggles dragging on
+  // 4) Wire up dragend if admin toggles dragging on
   markerObj.on("dragend", ev => {
     const { lat, lng } = ev.target.getLatLng();
     m.coords = [lat, lng];
     callbacks.onDragEnd?.(markerObj, m);
   });
 
-  // 4) Bind popup using the appropriate renderer
+  // 5) Bind popup using the appropriate renderer
   const html = (m.type === "Chest" && m.chestDefFull)
     ? renderChestPopup(m.chestDefFull)
     : renderItemPopup(m);
-
   markerObj.bindPopup(html, {
     className:   "custom-popup-wrapper",
     maxWidth:    350,
@@ -61,11 +71,13 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
     offset:      [0, -35]
   });
 
-  // 5) When popup opens, wire close button and chest‐slot previews
+  // 6) When popup opens, wire close button and chest‐slot previews
   markerObj.on("popupopen", () => {
+    // Close button
     document.querySelector(".custom-popup .popup-close-btn")
       ?.addEventListener("click", () => markerObj.closePopup());
 
+    // Chest slot hover previews
     document.querySelectorAll(".custom-popup .chest-slot[data-index]")
       .forEach(el => {
         el.removeAttribute("title");
@@ -92,15 +104,15 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
       });
   });
 
-  // 6) Clean up any floating previews on close
+  // 7) Clean up any floating previews on close
   markerObj.on("popupclose", () => {
     document.querySelectorAll(".chest-item-preview").forEach(el => el.remove());
   });
 
-  // 7) Add to its layer
+  // 8) Add the marker to its layer
   layers[m.type]?.addLayer(markerObj);
 
-  // 8) Context menu for admin actions
+  // 9) Context menu for admin actions
   markerObj.on("contextmenu", ev => {
     ev.originalEvent.preventDefault();
     const opts = [];
