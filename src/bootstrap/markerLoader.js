@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.15 — using enrichLootPool from lootUtils.js
+// @version: 1.16 — preserve NPC definition ID for sidebar filtering
 
 import {
   subscribeMarkers,
@@ -7,11 +7,11 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "../modules/services/firebaseService.js";
 import definitionsManager from "./definitionsManager.js";
-import { markerTypes } from "../modules/marker/types.js";
-import { createMarker } from "../modules/map/markerManager.js";
+import { markerTypes }   from "../modules/marker/types.js";
+import { createMarker }  from "../modules/map/markerManager.js";
 import { showContextMenu, hideContextMenu }
   from "../modules/context-menu/index.js";
-import { enrichLootPool } from "./lootUtils.js";  // new helper
+import { enrichLootPool } from "./lootUtils.js";
 
 /** @type {{ markerObj: L.Marker, data: object }[]} */
 export const allMarkers = [];
@@ -48,15 +48,20 @@ export async function init(
 
       // Merge definition fields
       const defMap = definitionsManager.getDefinitions(data.type);
-      const defKey = cfg.defIdKey;
+      const defKey = cfg.defIdKey; // e.g. 'predefinedItemId' or 'npcDefId'
       if (defKey && defMap[data[defKey]]) {
+        // **Preserve the definition ID for filtering**
+        data.npcDefinitionId = data[defKey];
+
+        // Merge in all other fields (but skip their 'id')
         const { id: _ignore, ...fields } = defMap[data[defKey]];
         Object.assign(data, fields);
+
         // Enrich loot pool for Chest and NPC
         enrichLootPool(data, "Item");
       }
 
-      // Context-menu callbacks
+      // Context‐menu callbacks
       const cb = {
         onEdit: (markerObj, originalData, e) =>
           markerForm.openEdit(markerObj, originalData, e, payload => {
@@ -115,6 +120,7 @@ export async function init(
         const defMap = definitionsManager.getDefinitions(type);
         const defKey = cfg.defIdKey;
         if (defKey && defMap[data[defKey]]) {
+          data.npcDefinitionId = data[defKey];      // keep it updated
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
           enrichLootPool(data, "Item");
