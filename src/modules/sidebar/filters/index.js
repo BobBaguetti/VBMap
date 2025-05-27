@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.5 — fix NPC filter to match on data.id
+// @version: 1.6 — fixed NPC matching with string coercion on npcDefinitionId
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -8,22 +8,6 @@ import { setupItemFilters }  from "./itemFilters.js";
 
 /**
  * Wires up all sidebar filters and exposes the core APIs.
- *
- * @param {object} params
- *   - searchBarSelector
- *   - mainFiltersSelector
- *   - pveToggleSelector
- *   - itemFilterListSelector
- *   - chestFilterListSelector
- *   - npcHostileListSelector
- *   - npcFriendlyListSelector
- *   - layers
- *   - allMarkers
- *   - db
- * @returns {{
- *   filterMarkers: () => void,
- *   loadItemFilters: () => Promise<void>
- * }}
  */
 export async function setupSidebarFilters(params) {
   const {
@@ -84,7 +68,7 @@ export async function setupSidebarFilters(params) {
           });
       }
 
-      // NPC-specific filters (match on data.id)
+      // NPC-specific filters (match on npcDefinitionId with string coercion)
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
@@ -94,7 +78,10 @@ export async function setupSidebarFilters(params) {
              ${npcFriendlyListSelector} input[data-npc-id]`
           )
           .forEach(cb => {
-            if (cb.dataset.npcId === data.id && cb.checked) {
+            if (
+              String(cb.dataset.npcId) === String(data.npcDefinitionId) &&
+              cb.checked
+            ) {
               npcVisible = true;
             }
           });
@@ -111,12 +98,7 @@ export async function setupSidebarFilters(params) {
 
       const group = layers[data.type];
       if (!group) return;
-
-      if (shouldShow) {
-        group.addLayer(markerObj);
-      } else {
-        group.removeLayer(markerObj);
-      }
+      shouldShow ? group.addLayer(markerObj) : group.removeLayer(markerObj);
     });
   }
 
