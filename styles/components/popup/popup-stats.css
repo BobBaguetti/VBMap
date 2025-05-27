@@ -1,5 +1,5 @@
 /* @file: styles/components/popup/popup-stats.css */
-/* @version: 1.3.1 — correct heart fill override */
+/* @version: 1.3.2 — force font-icons and SVGs to same size/alignment; style heart-icon */
 
 @import "../../tokens/popup.css";
 
@@ -25,20 +25,27 @@
   height: var(--popup-close-icon-size);
 }
 
-/* Gold fill only on coins (and any other non-heart SVGs) */
+/* Gold fill only on non-heart SVGs */
 .popup-value-icon svg:not(.heart-icon) {
   fill: #d4af37;
 }
 
-/* Heart SVG: no fill, only stroke */
+/* Style the heart SVG outline */
 .popup-value-icon svg.heart-icon {
+  /* match number font size and align vertically */
+  width: 1em;
+  height: 1em;
+  vertical-align: middle;
+
+  /* use no fill and stroke in currentColor */
   fill: none !important;
   stroke: currentColor;
+  stroke-width: 3 !important;
 }
 
-/* Color the heart outline via currentColor */
+/* Set the heart outline color via currentColor */
 .popup-value-icon .heart-icon {
-  color: #e05252;  /* your healthColor */
+  color: #e05252;
 }
 
 /* Number next to icon */
