@@ -1,5 +1,5 @@
 /* @file: styles/components/popup/popup-stats.css */
-/* @version: 1.1 — force font-icons and SVGs to same size/alignment */
+/* @version: 1.2 — force font-icons and SVGs to same size/alignment; color heart glyph */
 
 @import "../../tokens/popup.css";
 
@@ -17,7 +17,7 @@
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.5);
 }
 
-/* Icon sizing and color for both SVGs and font-icons */
+/* Icon sizing for both SVGs and font-icons */
 .popup-value-icon svg,
 .popup-value-icon i {
   display: inline-block;
@@ -34,4 +34,9 @@
 .popup-value-number {
   display: inline-block;
   margin-right: 0.2em;
+}
+
+/* Only the heart font-icon gets the health color */
+.popup-value-icon i.ph-heart {
+  color: #e05252;
 }
