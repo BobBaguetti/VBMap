@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.3 — fix NPC filter to use data.id fallback
+// @version: 1.3.1 — fixed NPC checkbox selector for toggles
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -47,10 +47,10 @@ export async function setupSidebarFilters(params) {
     const pveOn     = pveToggle?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      const matchesPvE   = pveOn || data.type !== "Item";
-      const matchesName  = data.name?.toLowerCase().includes(nameQuery);
+      const matchesPvE  = pveOn || data.type !== "Item";
+      const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
-      // Main-layer toggles
+      // Main-layer filters
       let mainVisible = true;
       document
         .querySelectorAll(mainFiltersSelector + " input[type=checkbox]")
@@ -60,7 +60,7 @@ export async function setupSidebarFilters(params) {
           }
         });
 
-      // Item-specific
+      // Item-specific filters
       let itemVisible = true;
       if (data.predefinedItemId) {
         const cb = document.querySelector(
@@ -69,7 +69,7 @@ export async function setupSidebarFilters(params) {
         if (cb && !cb.checked) itemVisible = false;
       }
 
-      // Chest-specific
+      // Chest-specific filters
       let chestVisible = true;
       if (data.type === "Chest") {
         chestVisible = false;
@@ -80,19 +80,21 @@ export async function setupSidebarFilters(params) {
             if (
               (f === "size"     && data.size     === cb.dataset.chestSize && cb.checked) ||
               (f === "category" && data.category === cb.dataset.chestCategory && cb.checked)
-            ) chestVisible = true;
+            ) {
+              chestVisible = true;
+            }
           });
       }
 
-      // NPC-specific
+      // NPC-specific filters
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
-        // Determine the definition ID on the marker data
         const defId = data.npcDefinitionId ?? data.id;
         document
           .querySelectorAll(
-            `${npcHostileListSelector}, ${npcFriendlyListSelector} input[data-npc-id]`
+            `${npcHostileListSelector} input[data-npc-id], ` +
+            `${npcFriendlyListSelector} input[data-npc-id]`
           )
           .forEach(cb => {
             if (cb.dataset.npcId === defId && cb.checked) {
@@ -113,11 +115,15 @@ export async function setupSidebarFilters(params) {
       const group = layers[data.type];
       if (!group) return;
 
-      shouldShow ? group.addLayer(markerObj) : group.removeLayer(markerObj);
+      if (shouldShow) {
+        group.addLayer(markerObj);
+      } else {
+        group.removeLayer(markerObj);
+      }
     });
   }
 
-  // Wire the static filters
+  // Wire up static filters
   setupMainFilters(mainFiltersSelector, filterMarkers);
   setupChestFilters(chestFilterListSelector, filterMarkers);
 
