@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.6 — fixed NPC matching with string coercion on npcDefinitionId
+// @version: 1.2 — async sidebar init & NPC filter fix
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -8,6 +8,22 @@ import { setupItemFilters }  from "./itemFilters.js";
 
 /**
  * Wires up all sidebar filters and exposes the core APIs.
+ *
+ * @param {object} params
+ *   - searchBarSelector
+ *   - mainFiltersSelector
+ *   - pveToggleSelector
+ *   - itemFilterListSelector
+ *   - chestFilterListSelector
+ *   - npcHostileListSelector
+ *   - npcFriendlyListSelector
+ *   - layers
+ *   - allMarkers
+ *   - db
+ * @returns {{
+ *   filterMarkers: () => void,
+ *   loadItemFilters: () => Promise<void>
+ * }}
  */
 export async function setupSidebarFilters(params) {
   const {
@@ -23,6 +39,7 @@ export async function setupSidebarFilters(params) {
     db
   } = params;
 
+  // Core filter function
   function filterMarkers() {
     const searchBar = document.querySelector(searchBarSelector);
     const pveToggle = document.querySelector(pveToggleSelector);
@@ -30,11 +47,10 @@ export async function setupSidebarFilters(params) {
     const pveOn     = pveToggle?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      // PvE & name filters
-      const matchesPvE  = pveOn || data.type !== "Item";
-      const matchesName = data.name?.toLowerCase().includes(nameQuery);
+      const matchesPvE   = pveOn || data.type !== "Item";
+      const matchesName  = data.name?.toLowerCase().includes(nameQuery);
 
-      // Main layer toggles
+      // Main-layer toggles
       let mainVisible = true;
       document
         .querySelectorAll(mainFiltersSelector + " input[type=checkbox]")
@@ -44,7 +60,7 @@ export async function setupSidebarFilters(params) {
           }
         });
 
-      // Item-specific filters
+      // Item-specific
       let itemVisible = true;
       if (data.predefinedItemId) {
         const cb = document.querySelector(
@@ -53,7 +69,7 @@ export async function setupSidebarFilters(params) {
         if (cb && !cb.checked) itemVisible = false;
       }
 
-      // Chest-specific filters
+      // Chest-specific
       let chestVisible = true;
       if (data.type === "Chest") {
         chestVisible = false;
@@ -68,26 +84,22 @@ export async function setupSidebarFilters(params) {
           });
       }
 
-      // NPC-specific filters (match on npcDefinitionId with string coercion)
+      // NPC-specific (updated!)
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
         document
           .querySelectorAll(
-            `${npcHostileListSelector} input[data-npc-id],
-             ${npcFriendlyListSelector} input[data-npc-id]`
+            `${npcHostileListSelector}, ${npcFriendlyListSelector} input[data-npc-id]`
           )
           .forEach(cb => {
-            if (
-              String(cb.dataset.npcId) === String(data.npcDefinitionId) &&
-              cb.checked
-            ) {
+            if (cb.dataset.npcId === data.npcDefinitionId && cb.checked) {
               npcVisible = true;
             }
           });
       }
 
-      // Final visibility decision
+      // Final decision
       const shouldShow =
         matchesPvE &&
         matchesName &&
@@ -98,14 +110,16 @@ export async function setupSidebarFilters(params) {
 
       const group = layers[data.type];
       if (!group) return;
+
       shouldShow ? group.addLayer(markerObj) : group.removeLayer(markerObj);
     });
   }
 
-  // Wire up filters
+  // Wire the static filters
   setupMainFilters(mainFiltersSelector, filterMarkers);
   setupChestFilters(chestFilterListSelector, filterMarkers);
 
+  // ← await here so we can pass `db` into npcFilters
   await setupNpcFilters(
     npcHostileListSelector,
     npcFriendlyListSelector,
@@ -113,6 +127,7 @@ export async function setupSidebarFilters(params) {
     filterMarkers
   );
 
+  // Expose loadItemFilters as an async function
   async function loadItemFilters() {
     await setupItemFilters(itemFilterListSelector, db, filterMarkers);
   }
