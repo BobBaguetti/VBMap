@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.2 — async sidebar init & NPC filter fix
+// @version: 1.3 — fix NPC filter to use data.id fallback
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -84,16 +84,18 @@ export async function setupSidebarFilters(params) {
           });
       }
 
-      // NPC-specific (updated!)
+      // NPC-specific
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
+        // Determine the definition ID on the marker data
+        const defId = data.npcDefinitionId ?? data.id;
         document
           .querySelectorAll(
             `${npcHostileListSelector}, ${npcFriendlyListSelector} input[data-npc-id]`
           )
           .forEach(cb => {
-            if (cb.dataset.npcId === data.npcDefinitionId && cb.checked) {
+            if (cb.dataset.npcId === defId && cb.checked) {
               npcVisible = true;
             }
           });
@@ -119,7 +121,7 @@ export async function setupSidebarFilters(params) {
   setupMainFilters(mainFiltersSelector, filterMarkers);
   setupChestFilters(chestFilterListSelector, filterMarkers);
 
-  // ← await here so we can pass `db` into npcFilters
+  // Async NPC filters (real-time)
   await setupNpcFilters(
     npcHostileListSelector,
     npcFriendlyListSelector,
