@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.4 — fixed NPC filter matching using npcDefinitionId
+// @version: 1.5 — fix NPC filter to match on data.id
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -84,7 +84,7 @@ export async function setupSidebarFilters(params) {
           });
       }
 
-      // NPC-specific filters (match on npcDefinitionId)
+      // NPC-specific filters (match on data.id)
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
@@ -94,10 +94,7 @@ export async function setupSidebarFilters(params) {
              ${npcFriendlyListSelector} input[data-npc-id]`
           )
           .forEach(cb => {
-            if (
-              cb.dataset.npcId === data.npcDefinitionId &&
-              cb.checked
-            ) {
+            if (cb.dataset.npcId === data.id && cb.checked) {
               npcVisible = true;
             }
           });
