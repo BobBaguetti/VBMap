@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.3 — fix NPC filter selector so hostile and friendly inputs are both queried
+// @version: 1.3 — fix NPC filter selector so it targets inputs in both containers
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -80,7 +80,9 @@ export async function setupSidebarFilters(params) {
             if (
               (f === "size"     && data.size     === cb.dataset.chestSize && cb.checked) ||
               (f === "category" && data.category === cb.dataset.chestCategory && cb.checked)
-            ) chestVisible = true;
+            ) {
+              chestVisible = true;
+            }
           });
       }
 
@@ -88,7 +90,6 @@ export async function setupSidebarFilters(params) {
       let npcVisible = true;
       if (data.type === "NPC") {
         npcVisible = false;
-        // Query inputs under both hostile and friendly containers
         document
           .querySelectorAll(
             `${npcHostileListSelector} input[data-npc-id], ` +
@@ -113,7 +114,11 @@ export async function setupSidebarFilters(params) {
       const group = layers[data.type];
       if (!group) return;
 
-      shouldShow ? group.addLayer(markerObj) : group.removeLayer(markerObj);
+      if (shouldShow) {
+        group.addLayer(markerObj);
+      } else {
+        group.removeLayer(markerObj);
+      }
     });
   }
 
