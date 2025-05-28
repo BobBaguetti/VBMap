@@ -9,6 +9,7 @@
   grid-template-columns: min-content auto min-content min-content;
   align-items: center;        /* vertical centering */
   column-gap: 0.5em;          /* uniform spacing */
+  white-space: nowrap;        /* prevent wrapping of eye below text */
   position: relative;         /* anchor for any absolute elements if still needed */
   padding: 0.4em 0.6em;
   margin: 0;
@@ -26,13 +27,14 @@
 .filter-group > h4 > i {
   font-size: 1em;
   transition: color 0.2s ease;
-  margin: 0 !important;      /* override inline JS margins */
+  margin: 0 !important;      /* override any inline JS margins */
 }
 
-/* Place the eye-toggle in column 3 */
+/* Place the eye-toggle in column 3, top-aligned */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye {
   grid-column: 3;
+  grid-row: 1;
 }
 
 /* Place the collapse chevron in column 4 and push it to the right */
@@ -40,6 +42,7 @@
 .filter-group > h4 > .group-toggle {
   grid-column: 4;
   justify-self: end;
+  grid-row: 1;
 }
 
 /* Hover states */
