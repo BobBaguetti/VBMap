@@ -1,5 +1,5 @@
-/* @file: styles\components\sidebar\filters\header.css */
-/* @version: 1.7 — original group‐header styles, plus master‐eye slot fix */
+/* @file: styles/components/sidebar/filters/header.css */
+/* @version: 1.8 — add flex centering and uniform spacing for glyphs and toggles */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -16,6 +16,7 @@
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  gap: 0.5em;           /* uniform horizontal spacing between icon, text, and toggles */
 
   /* thinner, mid-tone underline for balanced separation */
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
@@ -25,10 +26,12 @@
   color: var(--text-secondary); /* default muted text & icons */
 }
 
-/* Layout for icons appended via JS */
+/* Layout for icons (glyphs, eye, chevron) appended or prepended */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
-  margin-right: 0.5em;
+  display: inline-flex;
+  align-items: center;    /* ensure the glyph/svg is centered */
+  line-height: 1;         /* remove extra font leading */
   font-size: 1em;
   transition: color 0.2s ease;
 }
@@ -71,7 +74,6 @@
 .filter-group > h4 > .filter-eye:hover {
   color: var(--text-primary) !important;
 }
-
 
 /* ── Master-Eye Fix ─────────────────────────────────────────────────── */
 /* Only lock the master eye in the Filters <h2> without altering spacing */
