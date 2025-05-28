@@ -1,18 +1,17 @@
 /* @file: styles/components/sidebar/section-headers.css */
-/* @version: 2.4 — switch to grid layout and pixel-perfect metrics for icon/text alignment */
+/* @version: 2.5 — grid layout & pixel-perfect metrics for Icon > Text > Eye > Space > Chevron */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* ── Top-level Sidebar Section Headers ───────────────────────────────── */
-
-/* H2 bands that introduce each section */
 .sidebar-section > h2 {
   display: grid;
-  /* Columns: [icon] [title] [eye-toggle] */
-  grid-template-columns: min-content auto min-content;
-  align-items: center;        /* vertical-centering for everything */
+  /* Columns: [icon] [title] [eye-toggle] [flex-space] [collapse-chevron] */
+  grid-template-columns: min-content auto min-content 1fr min-content;
+  align-items: center;        /* vertical centering */
   column-gap: 0.5em;           /* uniform spacing */
-  white-space: nowrap;         /* keep icon+text+eye on one line */
+  white-space: nowrap;         /* keep everything on one line */
+  position: relative;          /* in case you need absolute children */
 
   background-color: var(--bg-20);
   padding: 0.5em 0.8em;
@@ -20,13 +19,14 @@
   border-radius: 4px;
 
   font-size: 18px;             /* whole-pixel font size */
-  line-height: 18px;           /* match exactly for no sub-pixel jitter */
+  line-height: 18px;           /* match exactly to avoid jitter */
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;         /* whole-pixel letter spacing */
   color: var(--text-primary);
 
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  cursor: pointer;             /* if you’re making it collapsible */
 }
 
 /* Ensure any <i> icons inside the H2 share the exact same box */
@@ -34,10 +34,25 @@
   font-size: 18px;
   line-height: 18px;
   margin: 0 !important;       /* override any inline JS margins */
-  align-self: center;         /* reinforce centering in grid cell */
+  transition: color 0.2s ease;
+  align-self: center;
 }
 
-/* Maintain the original push-down for section content */
+/* Place the eye-toggle in column 3 */
+.sidebar-section > h2 > .filter-eye {
+  grid-column: 3;
+  grid-row: 1;
+}
+
+/* Place the collapse chevron in column 5 and push it to the far right */
+.sidebar-section > h2 > .group-toggle,
+.sidebar-section > h2 > .section-toggle {
+  grid-column: 5;
+  justify-self: end;
+  grid-row: 1;
+}
+
+/* Keep the original push-down for section content */
 .sidebar-section {
   margin-top: 1.2em;          /* matches the H2’s top margin */
 }
