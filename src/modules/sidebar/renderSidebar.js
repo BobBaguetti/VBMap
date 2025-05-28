@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.9 — wrap header text in span.header-label for fixed-slot flex layout
+// @version: 1.2 — removed Settings section (will use toolbar button instead)
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -32,10 +32,7 @@ export function renderSidebarShell() {
 
     <!-- SEARCH -->
     <div id="sidebar-search" class="sidebar-section">
-      <h2>
-        <i class="fas fa-search"></i>
-        <span class="header-label">Search</span>
-      </h2>
+      <h2><i class="fas fa-search"></i> Search</h2>
       <div class="search-wrapper">
         <input type="search" id="search-bar" placeholder="Search items/locations…"/>
         <button id="search-clear" aria-label="Clear search">&times;</button>
@@ -44,61 +41,40 @@ export function renderSidebarShell() {
 
     <!-- FILTERS -->
     <div class="sidebar-section" id="filters-section">
-      <h2>
-        <i class="fas fa-filter"></i>
-        <span class="header-label">Filters</span>
-      </h2>
+      <h2><i class="fas fa-filter"></i> Filters</h2>
 
       <!-- Main layer toggles -->
       <div class="filter-group" id="main-filters">
-        <h3>
-          <i class="fas fa-layer-group group-icon-svg"></i>
-          <span class="header-label">Main</span>
-        </h3>
+        <h3><i class="fas fa-layer-group group-icon"></i>Main</h3>
         <div class="toggle-group"></div>
       </div>
 
       <!-- Item filters -->
       <div class="filter-group" id="item-filters">
-        <h3>
-          <i class="fas fa-box-open group-icon-svg"></i>
-          <span class="header-label">Items</span>
-        </h3>
+        <h3><i class="fas fa-box-open group-icon"></i>Items</h3>
         <div class="toggle-group" id="item-filter-list"></div>
       </div>
 
       <!-- Chest filters -->
       <div class="filter-group" id="chest-filters">
-        <h3>
-          <i class="fas fa-boxes-packing group-icon-svg"></i>
-          <span class="header-label">Chests</span>
-        </h3>
+        <h3><i class="fas fa-dungeon group-icon"></i>Chests</h3>
         <div class="toggle-group" id="chest-filter-list"></div>
       </div>
 
       <!-- NPC filters -->
       <div class="filter-group" id="npc-hostile-filters">
-        <h3>
-          <i class="fas fa-skull-crossbones group-icon-svg"></i>
-          <span class="header-label">Hostile NPCs</span>
-        </h3>
+        <h3><i class="fas fa-skull-crossbones group-icon"></i>Hostile NPCs</h3>
         <div class="toggle-group" id="npc-hostile-list"></div>
       </div>
       <div class="filter-group" id="npc-friendly-filters">
-        <h3>
-          <i class="fas fa-user-friends group-icon-svg"></i>
-          <span class="header-label">Friendly NPCs</span>
-        </h3>
+        <h3><i class="fas fa-user-friends group-icon"></i>Friendly NPCs</h3>
         <div class="toggle-group" id="npc-friendly-list"></div>
       </div>
     </div>
 
     <!-- ADMIN TOOLS -->
     <div class="sidebar-section" id="admin-tools-section">
-      <h2>
-        <i class="fas fa-tools"></i>
-        <span class="header-label">Admin Tools</span>
-      </h2>
+      <h2><i class="fas fa-tools"></i> Admin Tools</h2>
       <div class="toggle-group">
         <button id="manage-items-btn">Manage Items</button>
         <button id="manage-chests-btn">Manage Chests</button>

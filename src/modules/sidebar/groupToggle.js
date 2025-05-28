@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/groupToggle.js
-// @version: 1.7 — delegated click handling to survive inline-SVG replacement
+// @version: 1.6 — observe dynamic additions of checkboxes and re-sync eye
 
 /**
  * Initialize per-group collapse/expand chevrons and eye toggles.
@@ -29,11 +29,10 @@ export function setupGroupToggle({
     container.style.maxHeight  = isCollapsed
       ? "0px"
       : `${container.scrollHeight}px`;
-    container.offsetHeight; // force reflow
+    container.offsetHeight;
     container.style.transition = `max-height ${collapseDuration}ms ease-in-out`;
 
     if (isCollapsed) {
-      // expanding
       container.style.visibility = "hidden";
       group.classList.remove("collapsed");
       container.style.maxHeight = `${container.scrollHeight}px`;
@@ -42,7 +41,6 @@ export function setupGroupToggle({
         container._reappearTimer = null;
       }, reappearOffset);
     } else {
-      // collapsing
       container.style.removeProperty("visibility");
       group.classList.add("collapsed");
       container.style.maxHeight = "0px";
@@ -53,85 +51,78 @@ export function setupGroupToggle({
     }
   }
 
-  function syncEye(eye, group, container) {
-    const anyOn = Array.from(container.querySelectorAll("input[type=checkbox]"))
-      .some(cb => cb.checked);
-    eye.classList.toggle("fa-eye", anyOn);
-    eye.classList.toggle("fa-eye-slash", !anyOn);
-    onUpdateMasterEye();
-  }
-
   document.querySelectorAll(filterGroupSelector).forEach(group => {
     const header    = group.querySelector("h3, h4");
     const container = group.querySelector(".toggle-group");
     if (!header || !container) return;
 
-    // create collapse chevron
+    // collapse chevron
     const toggleIcon = document.createElement("i");
     toggleIcon.classList.add(
       "fas",
       group.classList.contains("collapsed") ? "fa-chevron-right" : "fa-chevron-down",
       "group-toggle"
     );
-    toggleIcon.style.cursor = "pointer";
+    toggleIcon.style.cursor     = "pointer";
+    toggleIcon.style.marginLeft = "0.5em";
     header.appendChild(toggleIcon);
 
-    // create eye-toggle
+    // eye-toggle (default on)
     const eye = document.createElement("i");
     eye.classList.add("fas", "filter-eye", "fa-eye");
-    eye.style.cursor = "pointer";
+    eye.style.cursor     = "pointer";
+    eye.style.marginLeft = "0.5em";
     header.appendChild(eye);
 
-    // initial eye state
-    if (window.requestAnimationFrame) {
-      requestAnimationFrame(() => syncEye(eye, group, container));
-    } else {
-      setTimeout(() => syncEye(eye, group, container), 0);
+    // sync helper
+    function syncEye() {
+      const anyOn = Array.from(container.querySelectorAll("input[type=checkbox]"))
+        .some(cb => cb.checked);
+      eye.classList.toggle("fa-eye", anyOn);
+      eye.classList.toggle("fa-eye-slash", !anyOn);
+      onUpdateMasterEye();
     }
 
-    // keep eye in sync on dynamic checkbox changes
-    new MutationObserver(() => syncEye(eye, group, container))
-      .observe(container, { childList: true, subtree: true });
+    // defer initial sync
+    if (window.requestAnimationFrame) {
+      requestAnimationFrame(syncEye);
+    } else {
+      setTimeout(syncEye, 0);
+    }
 
-    // delegated click handler on header
-    header.addEventListener("click", e => {
-      const clickedToggle = e.target.closest(".group-toggle");
-      const clickedEye    = e.target.closest(".filter-eye");
+    // observe additions/removals of checkboxes
+    const observer = new MutationObserver(syncEye);
+    observer.observe(container, { childList: true, subtree: true });
 
-      if (clickedToggle) {
-        // collapse/expand
-        e.stopPropagation();
-        animateToggle(group);
-        onUpdateMasterCollapse();
-        toggleIcon.classList.toggle("fa-chevron-right");
-        toggleIcon.classList.toggle("fa-chevron-down");
+    // collapse toggles
+    const doToggle = e => {
+      if (e) e.stopPropagation();
+      animateToggle(group);
+      onUpdateMasterCollapse();
+      toggleIcon.classList.toggle("fa-chevron-right");
+      toggleIcon.classList.toggle("fa-chevron-down");
+    };
+    header.addEventListener("click", doToggle);
+    toggleIcon.addEventListener("click", doToggle);
 
-      } else if (clickedEye) {
-        // toggle all checkboxes in group
-        e.stopPropagation();
-        const inputs = container.querySelectorAll("input[type=checkbox]");
-        const anyOff = Array.from(inputs).some(cb => !cb.checked);
-        inputs.forEach(cb => {
-          cb.checked = anyOff;
-          cb.dispatchEvent(new Event("change", { bubbles: true }));
-        });
-        group.classList.toggle("disabled", !anyOff);
-        syncEye(eye, group, container);
-        onUpdateMasterCollapse();
-
-      } else {
-        // click anywhere else on header also collapses
-        animateToggle(group);
-        onUpdateMasterCollapse();
-        toggleIcon.classList.toggle("fa-chevron-right");
-        toggleIcon.classList.toggle("fa-chevron-down");
-      }
+    // eye-click toggles all filters in group
+    eye.addEventListener("click", e => {
+      e.stopPropagation();
+      const inputs = container.querySelectorAll("input[type=checkbox]");
+      const anyOff = Array.from(inputs).some(cb => !cb.checked);
+      inputs.forEach(cb => {
+        cb.checked = anyOff;
+        cb.dispatchEvent(new Event("change", { bubbles: true }));
+      });
+      group.classList.toggle("disabled", !anyOff);
+      syncEye();
+      onUpdateMasterCollapse();
     });
 
-    // keep eye icon updated when individual checkboxes change
+    // delegate change events for real-time sync
     container.addEventListener("change", e => {
       if (e.target.matches("input[type=checkbox]")) {
-        syncEye(eye, group, container);
+        syncEye();
       }
     });
   });
