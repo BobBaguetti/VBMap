@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.6 — switch group-icon SVGs to jsDelivr URLs
+// @version: 1.7 — item → box-open.svg; chest → boxes-packing.svg
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -60,7 +60,7 @@ export function renderSidebarShell() {
       <div class="filter-group" id="item-filters">
         <h3>
           <img
-            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/gem.svg"
+            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/box-open.svg"
             alt=""
             class="group-icon-svg"
           />
@@ -73,7 +73,7 @@ export function renderSidebarShell() {
       <div class="filter-group" id="chest-filters">
         <h3>
           <img
-            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/boxes.svg"
+            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/boxes-packing.svg"
             alt=""
             class="group-icon-svg"
           />
