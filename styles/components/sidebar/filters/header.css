@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 2.1 — slightly reduce gap between icon and text */
+/* @version: 2.2 — style inline SVGs for eye and chevron toggles */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -15,7 +15,7 @@
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  gap: 0.5em;  /* spacing between icon, text & toggles */
+  gap: 0.5em;  /* uniform spacing between icon/text/toggles */
 
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
@@ -23,29 +23,34 @@
   color: var(--text-secondary);
 }
 
-/* ── Glyph icons (eye, chevron, etc.) ───────────────────────────────── */
-.filter-group > h3 > i,
-.filter-group > h4 > i {
-  display: inline-flex;
-  align-items: center;
-  line-height: 1;
-  font-size: 1em;
-  transition: color 0.2s ease;
-}
-
-/* ── Inline-SVG group icons (the <i class="… group-icon-svg"> tags) ─── */
+/* ── Group-icon SVGs (previously .group-icon-svg) ──────────────────── */
 .filter-group > h3 > .group-icon-svg,
 .filter-group > h4 > .group-icon-svg {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.25em;      /* keep the larger size */
+  width: 1.25em;    /* match your chosen size */
   height: 1.25em;
-  margin-right: 0.4em; /* reduced from 0.5em for a tighter look */
+  margin-right: 0.4em; /* slightly tighter than before */
   flex-shrink: 0;
 }
 
-/* ── Collapse-chevron positioning ─────────────────────────────────── */
+/* ── Eye & Chevron toggles (inline-SVGs via FontAwesome JS kit) ────── */
+.filter-group > h3 > .filter-eye,
+.filter-group > h4 > .filter-eye,
+.filter-group > h3 > .group-toggle,
+.filter-group > h4 > .group-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;      /* standard icon size */
+  height: 1em;
+  flex-shrink: 0;
+  /* margin is handled by the container’s gap */
+  transition: color 0.2s ease;
+}
+
+/* ── Collapse-chevron positioning ──────────────────────────────────── */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   position: absolute;
@@ -54,7 +59,7 @@
   transform: translateY(-50%);
 }
 
-/* ── Hover states ───────────────────────────────────────────────────── */
+/* ── Hover & active states ─────────────────────────────────────────── */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
@@ -63,14 +68,10 @@
 .filter-group > h4:hover > i:first-child {
   color: var(--text-primary);
 }
-.filter-group > h3:hover > i:not(:first-child),
-.filter-group > h4:hover > i:not(:first-child) {
-  color: var(--text-secondary);
-}
-.filter-group > h3 > i:hover,
-.filter-group > h4 > i:hover,
-.filter-group > .group-toggle:hover,
-.filter-group > .filter-eye:hover {
+.filter-group > h3:hover > .filter-eye,
+.filter-group > h3:hover > .group-toggle,
+.filter-group > h4:hover > .filter-eye,
+.filter-group > h4:hover > .group-toggle {
   color: var(--text-primary) !important;
 }
 
