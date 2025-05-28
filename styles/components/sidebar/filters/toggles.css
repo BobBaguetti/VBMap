@@ -1,5 +1,7 @@
-/* @file: styles\components\sidebar\filters\toggles.css */
-/* @version: 1.0 — Core grid layout and toggle label styles */
+/* @file: styles/components/sidebar/filters/toggles.css */
+/* @version: 1.1 — Pill-style buttons for filter entries */
+
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 .toggle-group {
   padding: 0.4em 0.8em;
@@ -9,35 +11,54 @@
   font-size: 13px;
 }
 
+/* Hide the actual checkbox input */
 .filter-group .toggle-group input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
+/* Base label styling as a pill */
 .filter-group .toggle-group label {
-  position: relative;
-  padding: 3px 6px;
-  border-radius: 3px;
-  transition: background 0.2s, color 0.2s, text-decoration 0.2s;
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: transparent;
   cursor: pointer;
-  display: flex;
+  transition: background 0.2s, color 0.2s, transform 0.1s;
+  position: relative;
+}
+
+/* Thumbnail icon (if present) keeps its margin */
+.filter-group .toggle-group label .filter-icon {
+  margin-right: 0.5em;
+}
+
+/* Hover & focus states */
+.filter-group .toggle-group label:hover,
+.filter-group .toggle-group label:focus-within {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* Pressed (active) feedback */
+.filter-group .toggle-group label:active {
+  transform: scale(0.97);
+}
+
+/* Checked state – style the text span inside the pill */
+.filter-group .toggle-group input:checked + span {
+  background: var(--accent-primary);
+  color: #fff;
+  padding: 4px 12px;
+  border-radius: 999px;
+  display: inline-flex;
   align-items: center;
 }
 
-/* Hover tint */
-.filter-group .toggle-group label:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
-
-.filter-group .toggle-group input:checked + span {
-  color: var(--text-primary);
-  text-decoration: none;
-  font-weight: 500;
-}
-
+/* Disabled state – keep pill outline but mute text/icon */
 .filter-group .toggle-group input:not(:checked) + span {
   color: var(--text-disabled);
   text-decoration: line-through;
-  font-weight: 400;
 }
