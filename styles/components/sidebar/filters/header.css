@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.11 — restore absolute positioning for chevrons; keep icon/text centered */
+/* @version: 1.11 — fix filter-group chevron placement and keep eye next to text */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -20,7 +20,23 @@
   color: var(--text-secondary);
 }
 
+/* ── Icon & Eye Ordering ───────────────────────────────────────────── */
+/* Put the eye immediately after the text, then the chevron last */
+.filter-group > h3 > .filter-eye,
+.filter-group > h4 > .filter-eye {
+  order: 1;
+  margin-right: 0.5em;  /* space between eye and subsequent text (if any) */
+}
+
+.filter-group > h3 > .group-toggle,
+.filter-group > h4 > .group-toggle {
+  order: 2;
+  margin-left: auto;    /* push the chevron to the far right */
+  margin-right: 0.6em;  /* maintain your right padding */
+}
+
 /* ── Icons in Group Headers ─────────────────────────────────────────── */
+/* Ensure all <i> icons are flex-centered */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   display: inline-flex;
@@ -28,19 +44,8 @@
   justify-content: center;
   width: 1em;
   height: auto;
-  margin-right: 0.5em;
   font-size: 1em;
   transition: color 0.2s ease;
-}
-
-/* ── Restore absolute positioning for chevrons ───────────────────────── */
-.filter-group > h3 > .group-toggle,
-.filter-group > h4 > .group-toggle {
-  position: absolute;
-  right: 0.6em;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-right: 0;
 }
 
 /* ── Hover & Active States ──────────────────────────────────────────── */
