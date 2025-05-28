@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 1.9 — grid layout with chevron on far right */
+/* @version: 1.8 — grid layout for icons, text, eye, spacer, chevron */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -8,53 +8,53 @@
 .filter-group > h3,
 .filter-group > h4 {
   display: grid;
-  /* columns: [prefix-icon] [label (fills)] [eye] [chevron] */
-  grid-template-columns: min-content auto min-content min-content;
-  align-items: center;        /* vertical centering */
-  column-gap: 0.5em;          /* uniform spacing */
+  /* columns: [icon] [label] [eye] [spacer] [chevron] */
+  grid-template-columns: min-content auto min-content 1fr min-content;
+  column-gap: 0.5em;
+  align-items: center;
+
+  position: relative;  /* keep for any anchored positioning if needed */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
   cursor: pointer;
-  color: var(--text-secondary); /* muted by default */
+  color: var(--text-secondary); /* default muted text & icons */
 }
 
-/* ── Position each icon into its own column ────────────────────────── */
-/* Any prefix icon (if you have one) */
-.filter-group > h3 > i:not(.filter-eye):not(.group-toggle),
-.filter-group > h4 > i:not(.filter-eye):not(.group-toggle) {
-  grid-column: 1;
+/* Remove all default margins on the <i> so we rely on grid-gap entirely */
+.filter-group > h3 > i,
+.filter-group > h4 > i {
+  margin: 0;
+  font-size: 1em;
+  transition: color 0.2s ease;
 }
 
-/* Eye toggle sits right after the label */
+/* Place the eye-toggle in column 3 */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye {
   grid-column: 3;
+  justify-self: start;
+  /* override the inline margin-left coming from JS */
+  margin: 0 !important;
 }
 
-/* Chevron always at the far right */
+/* Place the collapse chevron in column 5 (far right) */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
-  grid-column: 4;
+  grid-column: 5;
   justify-self: end;
+  /* undo inline absolute positioning & margins */
+  position: static;
+  margin: 0 !important;
 }
 
-/* ── Generic icon styling ────────────────────────────────────────────── */
-.filter-group > h3 > i,
-.filter-group > h4 > i {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1em;
-  transition: color 0.2s ease;
-  margin: 0; /* spacing is handled by column-gap */
-}
-
-/* ── Hover & active states (unchanged) ──────────────────────────────── */
+/* ── Hover & Color States ───────────────────────────────────────────── */
+/* When hovering the header, only text & the very first icon light up */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
@@ -63,14 +63,17 @@
 .filter-group > h4:hover > i:first-child {
   color: var(--text-primary);
 }
+/* Keep the eye & chevron muted on header hover */
 .filter-group > h3:hover > i:not(:first-child),
 .filter-group > h4:hover > i:not(:first-child) {
   color: var(--text-secondary);
 }
+/* But allow each icon itself to light up on its own hover */
 .filter-group > h3 > i:hover,
 .filter-group > h4 > i:hover {
   color: var(--text-primary);
 }
+/* And force-light the eye & chevron when you hover them specifically */
 .filter-group > h3 > .group-toggle:hover,
 .filter-group > h4 > .group-toggle:hover,
 .filter-group > h3 > .filter-eye:hover,
@@ -79,12 +82,12 @@
 }
 
 /* ── Master-Eye Fix ─────────────────────────────────────────────────── */
-/* Lock the master eye in the Filters <h2> without altering spacing */
+/* Only lock the master eye in the Filters <h2> without altering spacing */
 #filters-section h2 > .filter-eye {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.2em;    /* both eye states fit */
-  height: 1em;     /* matches font-size */
+  width: 1.2em;    /* accommodates both eye and eye-slash */
+  height: 1em;     /* match the icon font-size */
   text-align: center;
 }
