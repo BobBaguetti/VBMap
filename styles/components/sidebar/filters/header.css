@@ -1,16 +1,14 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.7 — make each group header a flex row */
+/* @version: 1.7 — flex-based alignment for each filter-group header */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* ── Group Headers (h3 & h4) ──────────────────────────────────── */
+/* make each group header a flex row */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
   align-items: center;
-  justify-content: space-between;  /* left‐align icon+text, push chevron to right */
-  gap: 0.5rem;                     /* space between icon/text and eye */
-  line-height: 1;                  /* collapse to single‐line height */
+  position: relative;
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
@@ -20,27 +18,29 @@
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary);
+  line-height: 1;
 }
 
 /* icon before the group name */
 .filter-group > h3 > i:first-child,
 .filter-group > h4 > i:first-child {
-  margin-right: 0.5em;
+  margin-right: 0.5rem;
   font-size: 1em;
   transition: color 0.2s ease;
 }
 
-/* eye toggle next to the text */
+/* if you have an “eye” toggle in your group header */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye {
-  margin-left: 0.5em;
+  margin: 0 0.5rem;
   font-size: 1em;
   transition: color 0.2s;
 }
 
-/* collapse chevron at the end */
+/* collapse chevron now in-flow, pushed to the right */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
+  position: static !important;
   margin-left: auto;
   font-size: 1em;
   transition: color 0.2s;
@@ -59,7 +59,7 @@
 .filter-group > h4:hover > .filter-eye {
   color: var(--text-primary);
 }
-/* force hover color on the toggles */
+/* force-hover color on toggles */
 .filter-group > h3 > .group-toggle:hover,
 .filter-group > h4 > .group-toggle:hover,
 .filter-group > h3 > .filter-eye:hover,

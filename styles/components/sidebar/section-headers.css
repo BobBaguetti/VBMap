@@ -1,25 +1,35 @@
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 2.3 — flexify for vertical centering */
+/* @version: 2.3 — flexify top-level headers for perfect centering */
 
 .sidebar-section > h2 {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 0.5rem;            /* space between icon/text and collapse icon */
-  line-height: 1;         /* ensure a single‐line box */
-  background-color: var(--bg-20);   /* container tone */
-  padding: 0.5em 0.8em;    /* uniform horizontal padding */
-  margin: 1.2em 0 0.5em;   /* breathing room above & below */
+  /* leave children in normal source order, but allow last child to push right */
+  padding: 0.5em 0.8em;
+  margin: 1.2em 0 0.5em;
+  background-color: var(--bg-20);
   border-radius: 4px;
   font-size: 1.1em;
-  font-weight: 700;        /* heavy for clear hierarchy */
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.08em;  /* tight tracking */
+  letter-spacing: 0.08em;
   color: var(--text-primary);
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);  /* subtle drop shadow */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  line-height: 1;    /* collapse to single-line height */
 }
 
-/* Push the section content neatly below the header band */
-.sidebar-section {
-  margin-top: 1.2em;       /* matches the H2 top-margin */
+/* spacing between the very first icon and the label text */
+.sidebar-section > h2 > i:first-child {
+  margin-right: 0.5rem;
+}
+
+/* if you have an “eye” toggle in your <h2>, space it from the text */
+.sidebar-section > h2 > .filter-eye {
+  margin: 0 0.5rem;
+}
+
+/* override the absolute-positioned chevron so it lives in the flexflow */
+.sidebar-section > h2 > .collapse-all {
+  position: static !important;
+  margin-left: auto;
 }
