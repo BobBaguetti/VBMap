@@ -1,18 +1,22 @@
 // @file: src/modules/sidebar/filters/npcFilters.js
-// @version: 1.1 — definition-driven friendly/hostile NPC toggles
+// @version: 1.3 — use disposition (not faction) to split into Friendly vs Hostile
 
-import { loadNpcDefinitions } from "../../services/npcDefinitionsService.js";
+import {
+  loadNpcDefinitions,
+  subscribeNpcDefinitions
+} from "../../services/npcDefinitionsService.js";
 
 /**
- * Build checkbox filters for NPC definitions, split into
- * a “Hostile” container and a “Friendly” container.
+ * Build and keep updated checkbox filters for NPC definitions,
+ * split into “Hostile” and “Friendly” containers.
  *
- * @param {string} hostileSelector   – DOM selector for the hostile-NPC filter container
- * @param {string} friendlySelector  – DOM selector for the friendly-NPC filter container
+ * @param {string} hostileSelector   – DOM selector for hostile-NPC filter container
+ * @param {string} friendlySelector  – DOM selector for friendly-NPC filter container
  * @param {import('firebase/firestore').Firestore} db
  * @param {() => void} onChange     – callback to re-apply filters
+ * @returns {() => void} unsubscribe – call to tear down the listener
  */
-export async function setupNpcFilters(
+export function setupNpcFilters(
   hostileSelector,
   friendlySelector,
   db,
@@ -20,43 +24,53 @@ export async function setupNpcFilters(
 ) {
   const hostileContainer  = document.querySelector(hostileSelector);
   const friendlyContainer = document.querySelector(friendlySelector);
-  if (!hostileContainer || !friendlyContainer) return;
+  if (!hostileContainer || !friendlyContainer) return () => {};
 
-  // Clear any existing filters
-  hostileContainer.innerHTML  = "";
-  friendlyContainer.innerHTML = "";
+  function render(defs) {
+    hostileContainer.innerHTML  = "";
+    friendlyContainer.innerHTML = "";
 
-  // Load only defs flagged showInFilters
-  const defs = await loadNpcDefinitions(db);
-  defs.filter(d => d.showInFilters).forEach(def => {
-    const lbl = document.createElement("label");
-    lbl.className = "filter-entry filter-npc-entry";
+    defs
+      .filter(d => d.showInFilters)
+      .forEach(def => {
+        const lbl = document.createElement("label");
+        lbl.className = "filter-entry filter-npc-entry";
 
-    // Checkbox
-    const cb = document.createElement("input");
-    cb.type           = "checkbox";
-    cb.checked        = true;
-    cb.dataset.npcId  = def.id;
-    cb.addEventListener("change", onChange);
+        const cb = document.createElement("input");
+        cb.type           = "checkbox";
+        cb.checked        = true;
+        cb.dataset.npcId  = def.id;
+        cb.addEventListener("change", onChange);
 
-    // Thumbnail
-    const img = document.createElement("img");
-    img.src       = def.imageSmall;
-    img.alt       = def.name;
-    img.className = "filter-icon";
-    img.width     = 20;
-    img.height    = 20;
+        const img = document.createElement("img");
+        img.src       = def.imageSmall || "";
+        img.alt       = def.name;
+        img.className = "filter-icon";
+        img.width     = 20;
+        img.height    = 20;
 
-    // Label
-    const span = document.createElement("span");
-    span.textContent = def.name;
+        const span = document.createElement("span");
+        span.textContent = def.name;
 
-    lbl.append(cb, img, span);
+        lbl.append(cb, img, span);
 
-    if (def.faction === "Friendly") {
-      friendlyContainer.appendChild(lbl);
-    } else {
-      hostileContainer.appendChild(lbl);
-    }
+        // Split by disposition rather than faction
+        if (def.disposition === "Friendly") {
+          friendlyContainer.appendChild(lbl);
+        } else {
+          hostileContainer.appendChild(lbl);
+        }
+      });
+  }
+
+  // initial load
+  loadNpcDefinitions(db).then(render);
+
+  // live updates
+  const unsubscribe = subscribeNpcDefinitions(db, docs => {
+    render(docs);
+    onChange();
   });
+
+  return unsubscribe;
 }
