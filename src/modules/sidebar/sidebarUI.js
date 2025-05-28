@@ -32,7 +32,7 @@ export function setupSidebarUI({
   setupSidebarMobileToggle({
     sidebarSelector,
     toggleSelector
-  });
+  }); 
 
   /* ── Sticky Filters header ──────────────────────────────────── */
   setupStickyHeader({
