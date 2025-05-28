@@ -1,52 +1,59 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.10 — eye next to text, chevron locked to the right edge */
+/* @version: 1.11 — restore chevron absolute positioning; ensure all icons are vertically centered */
 
-/* Import Font Awesome for icons */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* ── Group Header Bars (h3 & h4) ─────────────────────────────────────── */
 .filter-group > h3,
 .filter-group > h4 {
+  position: relative;               /* for absolute chevron */
   display: flex;
-  align-items: center;
+  align-items: center;              /* vertical center all children */
+  justify-content: flex-start;
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
+  line-height: 1.2em;               /* ensures enough height for icons */
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(0,0,0,0.4);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary);
-  position: relative;
 }
 
-/* ── Icon Order ───────────────────────────────────────────────────────── */
-/* 1) Text (implicit)  2) Eye toggle  3) Chevron toggle */
-.filter-group > h3 > .filter-eye,
-.filter-group > h4 > .filter-eye {
-  order: 1;
-  margin-left: 0.5em;
-}
-.filter-group > h3 > .group-toggle,
-.filter-group > h4 > .group-toggle {
-  order: 2;
-  margin-left: auto;    /* push to rightmost */
-  margin-right: 0.6em;  /* match your desired right gap */
-}
-
-/* ── Icon Sizing & Centering ─────────────────────────────────────────── */
-/* All icons sit centered next to the text, using natural heights */
+/* ── Icons in Group Headers ─────────────────────────────────────────── */
+/* All icons (glyph, eye, chevron) are inline-flex and center‐aligned */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1em;        /* keeps space consistent */
-  height: auto;
   margin-right: 0.5em;
   font-size: 1em;
+  line-height: 1;                   /* prevent extra height */
   transition: color 0.2s ease;
+}
+
+/* ── Chevron: absolute at right edge ───────────────────────────────── */
+.filter-group > h3 > .group-toggle,
+.filter-group > h4 > .group-toggle {
+  position: absolute;
+  right: 0.6em;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* ── Filter‐Eye: inline after first glyph ───────────────────────────── */
+.filter-group > h3 > .filter-eye,
+.filter-group > h4 > .filter-eye {
+  /* keep it inline with text and glyphs */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 0.5em;
+  font-size: 1em;
+  line-height: 1;
 }
 
 /* ── Hover & Active States ───────────────────────────────────────────── */
