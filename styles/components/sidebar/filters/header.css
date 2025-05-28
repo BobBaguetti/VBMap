@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.9 — refine group‐header icon centering, remove fixed icon height */
+/* @version: 1.10 — switch chevrons from absolute to flex layout; keep icons perfectly centered */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -9,16 +9,11 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-
-  /* let the default line-height govern text height */
-  line-height: normal;
-
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
   cursor: pointer;
@@ -26,29 +21,33 @@
 }
 
 /* ── Icons in Group Headers ─────────────────────────────────────────── */
-/* make every <i> in the header a flex‐centered box, natural height */
+/* Center all icons alongside the text */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-
-  width: 1em;        /* keep horizontal space consistent */
-  height: auto;      /* allow icon’s own height */
-  line-height: normal;
-
+  width: 1em;
+  height: auto;
   margin-right: 0.5em;
   font-size: 1em;
   transition: color 0.2s ease;
 }
 
-/* ── Collapse Chevron Position ─────────────────────────────────────── */
+/* ── Collapse Chevron (group-toggle) ───────────────────────────────── */
+/* Let chevron flow in flex and push to the right */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
-  position: absolute;
-  right: 0.6em;
-  top: 50%;
-  transform: translateY(-50%);
+  position: static;
+  margin-left: auto;
+  margin-right: 0.6em; /* match previous right spacing */
+  order: 1;
+}
+
+/* Ensure the eye toggle follows the chevron */
+.filter-group > h3 > .filter-eye,
+.filter-group > h4 > .filter-eye {
+  order: 2;
 }
 
 /* ── Hover & Active States ──────────────────────────────────────────── */
