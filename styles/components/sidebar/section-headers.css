@@ -9,7 +9,7 @@
   /* Columns: [icon] [title] [eye-toggle] [flex-space] [collapse-chevron] */
   grid-template-columns: min-content auto min-content 1fr min-content;
   align-items: center;        /* vertical centering */
-  column-gap: 0.15em;          /* reduced spacing between grid items */
+  column-gap: 2.15em;          /* reduced spacing between grid items */
   white-space: nowrap;         /* keep everything on one line */
   position: relative;          /* in case of absolute children */
 
