@@ -1,50 +1,50 @@
 /* @file: styles/components/sidebar/section-headers.css */
-/* @version: 2.9 — unified, center-pivot eye-click animation */
+/* @version: 2.8 — restore fine-tuned icon/text/eye spacing & unified eye-click animation */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* ── Top-level Sidebar Section Headers ───────────────────────────────── */
 .sidebar-section > h2 {
   display: grid;
-  /* Columns: [icon] [title] [eye-toggle] [flex-space] [collapse-chevron] */
+  /* Columns: [icon] [title] [eye-toggle] [flex-space] [chevron] */
   grid-template-columns: min-content auto min-content 1fr min-content;
-  align-items: center;
-  column-gap: 0.5em;
-  white-space: nowrap;
+  align-items: center;        /* vertical centering */
+  column-gap: 0;              /* manual per-item margins below */
+  white-space: nowrap;        /* keep everything on one line */
   position: relative;
-  
+
   background-color: var(--bg-20);
   padding: 0.5em 0.8em;
   margin: 1.2em 0 0.5em;
   border-radius: 4px;
-  
-  font-size: 18px;
-  line-height: 18px;
+
+  font-size: 18px;             /* whole-pixel font size */
+  line-height: 18px;           /* exact match to avoid jitter */
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 1px;         /* whole-pixel letter spacing */
   color: var(--text-primary);
-  
+
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   cursor: pointer;
 }
 
-/* Ensure all icons share the same height & add transition */
+/* Ensure all icons share the same dimensions & add transition */
 .sidebar-section > h2 > i {
   font-size: 18px;
   line-height: 18px;
-  margin: 0 !important;
+  margin: 0 !important;       /* override any inline JS margins */
   align-self: center;
-  transition: color 0.2s ease, transform 0.15s ease;
+  transition: color 0.2s ease, transform 0.12s ease-out;
   transform-origin: center center;
 }
 
-/* Icon to text gap: 9px */
+/* Icon → text gap: 9px */
 .sidebar-section > h2 > i:first-child {
   margin-right: 9px !important;
 }
 
-/* Place the eye-toggle in column 3 and apply 4px gap from text */
+/* Text → eye gap: 4px */
 .sidebar-section > h2 > .filter-eye {
   grid-column: 3;
   grid-row: 1;
@@ -53,10 +53,10 @@
 
 /* Smooth grow-on-click for section-eye */
 .sidebar-section > h2 > .filter-eye:active {
-  transform: scale(1.15);
+  transform: scale(1.1);
 }
 
-/* Place the collapse chevron in column 5 and push it to the far right */
+/* Chevron pinned to the far right */
 .sidebar-section > h2 > .group-toggle,
 .sidebar-section > h2 > .section-toggle {
   grid-column: 5;
@@ -66,5 +66,5 @@
 
 /* Maintain the original push-down for section content */
 .sidebar-section {
-  margin-top: 1.2em;
+  margin-top: 1.2em;          /* matches the H2’s top margin */
 }
