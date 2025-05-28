@@ -8,44 +8,44 @@
 .filter-group > h3,
 .filter-group > h4 {
   display: grid;
-  /* Columns: [icon] [text] [eye] [flex-space] */
+  /* Columns: [glyph] [label] [eye] [spacer for chevron] */
   grid-template-columns: min-content auto min-content 1fr;
-  align-items: center;        /* vertical centering */
-  column-gap: 8px;            /* whole‐pixel spacing */
-  white-space: nowrap;        /* prevent wrapping */
-  padding: 6px 12px;          /* integer-pixel padding */
+  align-items: center;       /* vertical centering */
+  column-gap: 8px;           /* 0.5em ≈ 8px at 16px base */
+  white-space: nowrap;       /* keep everything on one line */
+  padding: 6px 10px;         /* 0.4em ≈6px, 0.6em ≈10px */
   margin: 0;
-  font-size: 14px;            /* whole-pixel font size */
-  line-height: 20px;          /* explicit integer line-height */
+  font-size: 14px;           /* replace 0.9em if your base is 16px */
+  line-height: 1;            /* exactly 14px tall */
   text-transform: uppercase;
-  letter-spacing: 1px;        /* whole-pixel letter-spacing */
+  letter-spacing: 0.8px;     /* 0.05em ≈0.8px */
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary);
 }
 
-/* Reset any inline margins (from JS) and standardize icon size */
+/* Icons (glyph, eye, chevron) inherit the header’s size and line-height */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
-  font-size: 16px;            /* whole-pixel icon size */
+  font-size: inherit;
+  line-height: 1;
   transition: color 0.2s ease;
-  margin: 0 !important;       /* override any inline JS margins */
+  margin: 0 !important;      /* override any inline JS margins */
+  align-self: center;        /* ensure vertical centering */
 }
 
-/* Place the eye-toggle in column 3 */
+/* Eye in column 3 */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye {
   grid-column: 3;
-  grid-row: 1;
 }
 
-/* Place the collapse chevron in column 4 and push it to the far right */
+/* Chevron in column 4, pushed to the right */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   grid-column: 4;
   justify-self: end;
-  grid-row: 1;
 }
 
 /* Hover states */
@@ -61,28 +61,22 @@
 .filter-group > h4:hover > i:not(:first-child) {
   color: var(--text-secondary);
 }
-
-/* Icon hover */
 .filter-group > h3 > i:hover,
-.filter-group > h4 > i:hover {
-  color: var(--text-primary);
-}
-
-/* Force-hover on chevrons & eyes */
-.filter-group > h3 > .group-toggle:hover,
-.filter-group > h4 > .group-toggle:hover,
+.filter-group > h4 > i:hover,
 .filter-group > h3 > .filter-eye:hover,
-.filter-group > h4 > .filter-eye:hover {
+.filter-group > h4 > .filter-eye:hover,
+.filter-group > h3 > .group-toggle:hover,
+.filter-group > h4 > .group-toggle:hover {
   color: var(--text-primary) !important;
 }
 
 /* ── Master-Eye Fix ─────────────────────────────────────────────────── */
-/* Only lock the master eye in the Filters <h2> without altering spacing */
+/* Keep the master eye in the <h2> perfectly center-aligned */
 #filters-section h2 > .filter-eye {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 18px;     /* whole-pixel width */
-  height: 16px;    /* whole-pixel height */
+  width: 1em;    /* exactly 14px now */
+  height: 1em;   /* exactly 14px */
   text-align: center;
 }
