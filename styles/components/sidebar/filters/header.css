@@ -1,24 +1,14 @@
-/* @file: styles/components/sidebar/filters/header.css */
-/* @version: 1.7 — original + true vertical-align fix */
+/* @file: styles/sidebar/filters/header.css */
+/* @version: 1.7 — original group‐header styles, plus master‐eye slot fix */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
-
-/* ── FORCE FLEX & CENTER ALL CHILDREN ─────────────────────────────── */
-.filter-group > h3,
-.filter-group > h4 {
-  display: flex !important;
-  align-items: center !important;
-  line-height: 1 !important;
-}
-.filter-group > h3 > *,
-.filter-group > h4 > * {
-  align-self: center !important;
-}
 
 /* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
 /* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
+  display: flex;
+  align-items: center;
   justify-content: flex-start;
   position: relative;  /* anchor for toggle icons */
   padding: 0.4em 0.6em;
@@ -81,6 +71,7 @@
 .filter-group > h4 > .filter-eye:hover {
   color: var(--text-primary) !important;
 }
+
 
 /* ── Master-Eye Fix ─────────────────────────────────────────────────── */
 /* Only lock the master eye in the Filters <h2> without altering spacing */

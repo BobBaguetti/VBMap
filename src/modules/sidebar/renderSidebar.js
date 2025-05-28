@@ -1,33 +1,7 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.3 — added CSS injection for vertical alignment
-
-// Injects a <style> that forces true vertical centering on all filter-group headers
-const injectFilterHeaderStyles = () => {
-  const css = `
-    /* Force every filter-group header into a flex row, center all children */
-    .filter-group > h3,
-    .filter-group > h4 {
-      display: flex !important;
-      align-items: center !important;
-      /* preserve your existing vertical padding */
-      padding-top: 0.4em !important;
-      padding-bottom: 0.4em !important;
-    }
-    /* Center any element inside them (icon, text, chevron, eye, etc) */
-    .filter-group > h3 > *,
-    .filter-group > h4 > * {
-      align-self: center !important;
-    }
-  `;
-  const style = document.createElement('style');
-  style.textContent = css;
-  document.head.appendChild(style);
-};
+// @version: 1.2 — removed Settings section (will use toolbar button instead)
 
 export function renderSidebarShell() {
-  // Ensure our centering rules run last
-  injectFilterHeaderStyles();
-
   const sidebar = document.getElementById("sidebar");
   if (!sidebar) {
     console.warn("[renderSidebarShell] #sidebar element not found");
