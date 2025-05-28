@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.2 — removed Settings section (will use toolbar button instead)
+// @version: 1.3 — removed filter-group glyphs for alignment testing
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -45,29 +45,29 @@ export function renderSidebarShell() {
 
       <!-- Main layer toggles -->
       <div class="filter-group" id="main-filters">
-        <h3><i class="fas fa-layer-group group-icon"></i>Main</h3>
+        <h3>Main</h3>
         <div class="toggle-group"></div>
       </div>
 
       <!-- Item filters -->
       <div class="filter-group" id="item-filters">
-        <h3><i class="fas fa-box-open group-icon"></i>Items</h3>
+        <h3>Items</h3>
         <div class="toggle-group" id="item-filter-list"></div>
       </div>
 
       <!-- Chest filters -->
       <div class="filter-group" id="chest-filters">
-        <h3><i class="fas fa-dungeon group-icon"></i>Chests</h3>
+        <h3>Chests</h3>
         <div class="toggle-group" id="chest-filter-list"></div>
       </div>
 
       <!-- NPC filters -->
       <div class="filter-group" id="npc-hostile-filters">
-        <h3><i class="fas fa-skull-crossbones group-icon"></i>Hostile NPCs</h3>
+        <h3>Hostile NPCs</h3>
         <div class="toggle-group" id="npc-hostile-list"></div>
       </div>
       <div class="filter-group" id="npc-friendly-filters">
-        <h3><i class="fas fa-user-friends group-icon"></i>Friendly NPCs</h3>
+        <h3>Friendly NPCs</h3>
         <div class="toggle-group" id="npc-friendly-list"></div>
       </div>
     </div>
