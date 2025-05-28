@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.7 — original group‐header styles, plus master‐eye slot fix */
+/* @version: 1.8 — force hover color; lock master-eye slot; ensure header icons center */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -25,15 +25,21 @@
   color: var(--text-secondary); /* default muted text & icons */
 }
 
-/* Layout for icons appended via JS */
+/* Icons in Group Headers */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: center;   /* force vertical centering within the flex line */
   margin-right: 0.5em;
   font-size: 1em;
+  line-height: 1;
+  height: 1em;
   transition: color 0.2s ease;
 }
 
-/* Position the collapse chevron at the far right */
+/* Collapse chevron at far right */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   position: absolute;
@@ -43,7 +49,7 @@
   margin-right: 0;
 }
 
-/* Header hover: only text & first icon light up */
+/* Hover: only text & first icon light up */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
@@ -52,18 +58,17 @@
 .filter-group > h4:hover > i:first-child {
   color: var(--text-primary);
 }
-/* Keep other icons muted on header hover */
+/* Keep other icons muted */
 .filter-group > h3:hover > i:not(:first-child),
 .filter-group > h4:hover > i:not(:first-child) {
   color: var(--text-secondary);
 }
 
-/* Restore default icon hover (without specificity conflicts) */
+/* Restore default icon hover */
 .filter-group > h3 > i:hover,
 .filter-group > h4 > i:hover {
   color: var(--text-primary);
 }
-
 /* Force-hover on chevrons & eyes */
 .filter-group > h3 > .group-toggle:hover,
 .filter-group > h4 > .group-toggle:hover,
@@ -73,7 +78,7 @@
 }
 
 
-/* ── Master-Eye Fix ─────────────────────────────────────────────────── */
+/* ── Master-Eye Slot Fix ────────────────────────────────────────── */
 /* Only lock the master eye in the Filters <h2> without altering spacing */
 #filters-section h2 > .filter-eye {
   display: inline-flex;
