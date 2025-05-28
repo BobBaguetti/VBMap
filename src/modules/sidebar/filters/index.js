@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.4 — unified NPC filter logic to mirror item filters
+// @version: 1.5 — enforce category toggle overrides individual sizes
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -39,7 +39,6 @@ export async function setupSidebarFilters(params) {
     db
   } = params;
 
-  // Core filter function
   function filterMarkers() {
     const searchBar = document.querySelector(searchBarSelector);
     const pveToggle = document.querySelector(pveToggleSelector);
@@ -72,29 +71,28 @@ export async function setupSidebarFilters(params) {
       // Chest-specific
       let chestVisible = true;
       if (data.type === "Chest") {
-        chestVisible = false;
-        document
-          .querySelectorAll(`${chestFilterListSelector} input[type=checkbox]`)
-          .forEach(cb => {
-            const f = cb.dataset.chestFilter;
-            if (
-              (f === "size"     && data.size     === cb.dataset.chestSize && cb.checked) ||
-              (f === "category" && data.category === cb.dataset.chestCategory && cb.checked)
-            ) {
-              chestVisible = true;
-            }
-          });
+        // If the category is unchecked, hide all regardless of size
+        const catCb = document.querySelector(
+          `${chestFilterListSelector} input[data-chest-filter="category"][data-chest-category="${data.category}"]`
+        );
+        if (catCb && !catCb.checked) {
+          chestVisible = false;
+        } else {
+          // Category is allowed—now respect the size toggle
+          const sizeCb = document.querySelector(
+            `${chestFilterListSelector} input[data-chest-filter="size"][data-chest-size="${data.size}"]`
+          );
+          chestVisible = sizeCb ? sizeCb.checked : true;
+        }
       }
 
       // NPC-specific
       let npcVisible = true;
       if (data.type === "NPC") {
-        // Mirror item logic: find the single matching checkbox
         const selector =
           `${npcHostileListSelector} input[data-npc-id="${data.npcDefinitionId}"],` +
           `${npcFriendlyListSelector} input[data-npc-id="${data.npcDefinitionId}"]`;
         const cb = document.querySelector(selector);
-        // If a checkbox exists and is unchecked, hide this NPC
         if (cb && !cb.checked) {
           npcVisible = false;
         }
@@ -112,11 +110,8 @@ export async function setupSidebarFilters(params) {
       const group = layers[data.type];
       if (!group) return;
 
-      if (shouldShow) {
-        group.addLayer(markerObj);
-      } else {
-        group.removeLayer(markerObj);
-      }
+      if (shouldShow) group.addLayer(markerObj);
+      else           group.removeLayer(markerObj);
     });
   }
 
