@@ -1,20 +1,24 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 2.4 — uniform icon slot width for perfect text alignment */
+/* @version: 2.4 — uniform fixed slots for icon, text, eye, and chevron */
 
-@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+/* CSS variables for easy tuning */
+:root {
+  --icon-size: 1.25em;
+  --toggle-size: 1em;
+  --gap-size: 0.3em;
+}
 
-/* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
+/* ── Group Headers ──────────────────────────────────────────────────── */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
-  align-items: center;
-  position: relative;
+  align-items: center;       /* vertical centering of all slots */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  gap: 0.3em;  /* uniform spacing between icon, text & toggles */
+  gap: var(--gap-size);       /* uniform space between slots */
 
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
@@ -22,40 +26,50 @@
   color: var(--text-secondary);
 }
 
-/* ── Group-icon slot ───────────────────────────────────────────────── */
-/* Reserve exactly 1.25em for every group-icon, center the SVG inside */
+/* ── Icon slot ─────────────────────────────────────────────────────── */
 .filter-group > h3 > .group-icon-svg,
 .filter-group > h4 > .group-icon-svg {
-  flex: 0 0 1.25em;         /* fixed width slot */
+  flex: 0 0 var(--icon-size);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.25em;
-  height: 1.25em;
+  width: var(--icon-size);
+  height: var(--icon-size);
 }
 
-/* ── Eye & Chevron toggles (inline-SVGs via JS kit) ───────────────── */
+/* ── Text slot ─────────────────────────────────────────────────────── */
+.filter-group > h3 > .header-label,
+.filter-group > h4 > .header-label {
+  flex: 1 1 auto;
+  display: inline-flex;
+  align-items: center;        /* center the text vertically */
+  height: var(--icon-size);
+  line-height: var(--icon-size);
+}
+
+/* ── Eye & Chevron slots ───────────────────────────────────────────── */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye,
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
-  flex: 0 0 1em;           /* fixed 1em slot for toggles */
+  flex: 0 0 var(--toggle-size);
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: var(--toggle-size);
+  height: var(--toggle-size);
   transition: color 0.2s ease;
 }
 
-/* ── Collapse-chevron positioning ──────────────────────────────────── */
+/* Remove old absolute positioning and push chevron to edge */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
-  position: absolute;
-  right: 0.6em;
-  top: 50%;
-  transform: translateY(-50%);
+  position: static;
+  transform: none;
+  margin-left: auto;           /* sends chevron to far right */
 }
 
-/* ── Hover & active states ─────────────────────────────────────────── */
+/* ── Hover & Active states ─────────────────────────────────────────── */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
