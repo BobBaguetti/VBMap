@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/section-headers.css */
-/* @version: 2.6 — reduced horizontal gap between text and eye for tighter spacing */
+/* @version: 2.7 — fine-tune spacing: 9px icon-text, 4px text-eye */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -9,9 +9,9 @@
   /* Columns: [icon] [title] [eye-toggle] [flex-space] [collapse-chevron] */
   grid-template-columns: min-content auto min-content 1fr min-content;
   align-items: center;        /* vertical centering */
-  column-gap: 0.25em;          /* reduced spacing between grid items */
-  white-space: nowrap;         /* keep everything on one line */
-  position: relative;          /* in case of absolute children */
+  column-gap: 0;              /* manual spacing per-item */
+  white-space: nowrap;        /* keep everything on one line */
+  position: relative;
 
   background-color: var(--bg-20);
   padding: 0.5em 0.8em;
@@ -19,29 +19,35 @@
   border-radius: 4px;
 
   font-size: 18px;             /* whole-pixel font size */
-  line-height: 18px;           /* match exactly to avoid jitter */
+  line-height: 18px;           /* exact match to avoid jitter */
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;         /* whole-pixel letter spacing */
   color: var(--text-primary);
 
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  cursor: pointer;             /* if collapsible */
+  cursor: pointer;
 }
 
-/* Ensure any <i> icons inside the H2 share the exact same box */
+/* Base icon styling */
 .sidebar-section > h2 > i {
   font-size: 18px;
   line-height: 18px;
-  margin: 0 !important;       /* override inline JS margins */
+  margin: 0 !important;       /* clear inline JS margins */
   transition: color 0.2s ease;
   align-self: center;
 }
 
-/* Place the eye-toggle in column 3 */
+/* Icon to text gap: 9px */
+.sidebar-section > h2 > i:first-child {
+  margin-right: 9px !important;
+}
+
+/* Place the eye-toggle in column 3 and apply 4px gap from text */
 .sidebar-section > h2 > .filter-eye {
   grid-column: 3;
   grid-row: 1;
+  margin-left: 4px !important;
 }
 
 /* Place the collapse chevron in column 5 and push it to the far right */
