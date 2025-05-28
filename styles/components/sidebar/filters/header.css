@@ -1,33 +1,42 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.7 — original group‐header styles, plus master‐eye slot fix */
+/* @version: 1.8 — ensure filter-group header icons and text truly center-aligned; master-eye slot remains locked elsewhere */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
-/* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;  /* anchor for toggle icons */
+
+  /* Force text height to exactly 1em so icons match it */
+  line-height: 1em;
+
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 
-  /* thinner, mid-tone underline for balanced separation */
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
-
   background-color: var(--bg-20);
   cursor: pointer;
-  color: var(--text-secondary); /* default muted text & icons */
+  color: var(--text-secondary);
 }
 
-/* Layout for icons appended via JS */
+/* ── Icons in Group Headers ─────────────────────────────────────────── */
+/* Make every <i> in the header a 1em×1em flex box centered both axes */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 1em;
+  height: 1em;
+  line-height: 1em;
+
   margin-right: 0.5em;
   font-size: 1em;
   transition: color 0.2s ease;
@@ -40,10 +49,9 @@
   right: 0.6em;
   top: 50%;
   transform: translateY(-50%);
-  margin-right: 0;
 }
 
-/* Header hover: only text & first icon light up */
+/* ── Hover & Active States ──────────────────────────────────────────── */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
@@ -52,34 +60,13 @@
 .filter-group > h4:hover > i:first-child {
   color: var(--text-primary);
 }
-/* Keep other icons muted on header hover */
 .filter-group > h3:hover > i:not(:first-child),
 .filter-group > h4:hover > i:not(:first-child) {
   color: var(--text-secondary);
 }
-
-/* Restore default icon hover (without specificity conflicts) */
 .filter-group > h3 > i:hover,
-.filter-group > h4 > i:hover {
-  color: var(--text-primary);
-}
-
-/* Force-hover on chevrons & eyes */
-.filter-group > h3 > .group-toggle:hover,
-.filter-group > h4 > .group-toggle:hover,
+.filter-group > h4 > i:hover,
 .filter-group > h3 > .filter-eye:hover,
 .filter-group > h4 > .filter-eye:hover {
   color: var(--text-primary) !important;
-}
-
-
-/* ── Master-Eye Fix ─────────────────────────────────────────────────── */
-/* Only lock the master eye in the Filters <h2> without altering spacing */
-#filters-section h2 > .filter-eye {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.2em;    /* accommodates both eye and eye-slash */
-  height: 1em;     /* match the icon font-size */
-  text-align: center;
 }
