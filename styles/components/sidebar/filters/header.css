@@ -1,29 +1,30 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 2.4 — uniform fixed slots for icon, text, eye, and chevron */
+/* @version: 2.5 — pixel-perfect fixed slots for icon, text, eye, and chevron */
 
-/* CSS variables for easy tuning */
 :root {
-  --icon-size: 1.25em;
-  --toggle-size: 1em;
-  --gap-size: 0.3em;
+  --header-height: 36px;
+  --icon-size:     20px;
+  --toggle-size:   20px;
+  --gap-size:      8px;
 }
 
-/* ── Group Headers ──────────────────────────────────────────────────── */
+/* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
-  align-items: center;       /* vertical centering of all slots */
-  padding: 0.4em 0.6em;
+  align-items: center;
+  height: var(--header-height);
+  padding: 0 var(--gap-size);
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  gap: var(--gap-size);       /* uniform space between slots */
-
+  gap: var(--gap-size);
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary);
+  box-sizing: border-box;
 }
 
 /* ── Icon slot ─────────────────────────────────────────────────────── */
@@ -40,11 +41,11 @@
 /* ── Text slot ─────────────────────────────────────────────────────── */
 .filter-group > h3 > .header-label,
 .filter-group > h4 > .header-label {
-  flex: 1 1 auto;
+  flex: 1;
   display: inline-flex;
-  align-items: center;        /* center the text vertically */
-  height: var(--icon-size);
-  line-height: var(--icon-size);
+  align-items: center;
+  height: var(--header-height);
+  line-height: var(--header-height);
 }
 
 /* ── Eye & Chevron slots ───────────────────────────────────────────── */
@@ -61,12 +62,12 @@
   transition: color 0.2s ease;
 }
 
-/* Remove old absolute positioning and push chevron to edge */
+/* Push chevron to the far right */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
+  margin-left: auto;
   position: static;
   transform: none;
-  margin-left: auto;           /* sends chevron to far right */
 }
 
 /* ── Hover & Active states ─────────────────────────────────────────── */
