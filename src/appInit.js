@@ -41,3 +41,4 @@ Object.entries(layers).forEach(([type, layer]) => {
 
 // show clustered items (and NPCs, since they share flatItemLayer)
 flatItemLayer.addTo(map);
+ 
