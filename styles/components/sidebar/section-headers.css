@@ -3,9 +3,6 @@
 
 /* Top-level sidebar section headers */
 .sidebar-section > h2 {
-  display: flex;
-  align-items: center;
-
   background-color: var(--bg-20);               /* container tone */
   padding: 0.5em 0.8em;                         /* uniform horizontal padding */
   margin: 1.2em 0 0.5em;                        /* breathing room above & below */

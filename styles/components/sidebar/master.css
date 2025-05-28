@@ -10,8 +10,6 @@
 
 /* Ensure the H2 is a positioning context for the collapse chevron */
 #filters-section > h2 {
-  display: flex;
-  align-items: center;
   position: relative;
   padding-right: 2em;           /* reserve space for the chevron */
 }

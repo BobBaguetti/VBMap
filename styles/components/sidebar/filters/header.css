@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.7 — original group‐header styles, plus master‐eye slot fix, plus vertical alignment fix */
+/* @version: 1.7 — original group‐header styles, plus vertical-align fix */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -7,8 +7,12 @@
 /* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
+  /* ── NEW: ensure the text node is on the same flex-item baseline ── */
   display: flex;
   align-items: center;
+  /* ── NEW: collapse the line-height so the title text can be centered ── */
+  line-height: 1;
+
   justify-content: flex-start;
   position: relative;  /* anchor for toggle icons */
   padding: 0.4em 0.6em;
@@ -23,14 +27,6 @@
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary); /* default muted text & icons */
-}
-
-/* ── New: Force all direct child icons/text to center vertically ───────────────── */
-.filter-group > h3 > i,
-.filter-group > h4 > i,
-.filter-group > h3 > .filter-eye,
-.filter-group > h4 > .filter-eye {
-  align-self: center;
 }
 
 /* Layout for icons appended via JS */
