@@ -4,11 +4,10 @@
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
-/* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
   display: grid;
-  /* Columns: [glyph-icon] [group-label] [eye-toggle] [chevron-space] */
+  /* Columns: [icon] [label] [eye] [spacer] */
   grid-template-columns: min-content auto min-content 1fr;
   align-items: center;        /* vertical centering */
   column-gap: 0.5em;          /* uniform spacing */
@@ -16,6 +15,7 @@
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
+  line-height: 1;             /* lock container height to font-size */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
@@ -24,22 +24,23 @@
   color: var(--text-secondary);
 }
 
-/* Reset any inline margins (from JS) and style icons uniformly */
+/* Icons now inherit the header’s font-size and are locked to 1em tall */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
-  font-size: 1em;
+  font-size: inherit;         /* match the 0.9em above */
+  line-height: 1;             /* no extra leading */
   transition: color 0.2s ease;
-  margin: 0 !important;      /* override inline JS margins */
+  margin: 0 !important;       /* override any inline-js margins */
 }
 
-/* Place the eye-toggle in column 3 */
+/* Eye in column 3 */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye {
   grid-column: 3;
   grid-row: 1;
 }
 
-/* Place the collapse chevron in column 4 and push it to the far right */
+/* Chevron in column 4, forced to the right edge */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   grid-column: 4;
@@ -47,7 +48,7 @@
   grid-row: 1;
 }
 
-/* Hover states */
+/* Hover states (unchanged) */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
@@ -60,14 +61,10 @@
 .filter-group > h4:hover > i:not(:first-child) {
   color: var(--text-secondary);
 }
-
-/* Icon hover */
 .filter-group > h3 > i:hover,
 .filter-group > h4 > i:hover {
   color: var(--text-primary);
 }
-
-/* Force-hover on chevrons & eyes */
 .filter-group > h3 > .group-toggle:hover,
 .filter-group > h4 > .group-toggle:hover,
 .filter-group > h3 > .filter-eye:hover,
@@ -75,14 +72,14 @@
   color: var(--text-primary) !important;
 }
 
-/* ── Master-Eye Fix ─────────────────────────────────────────────────── */
-/* Only lock the master eye in the Filters <h2> without altering spacing */
+/* ── Master-Eye Fix in the H2 (unchanged, plus line-height) ───────── */
 #filters-section h2 > .filter-eye {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.2em;    /* accommodates both eye and eye-slash */
-  height: 1em;     /* match the icon font-size */
+  width: 1.2em;    /* accommodates eye / eye-slash */
+  height: 1em;     /* match the 1em font-size */
   text-align: center;
+  font-size: inherit;
+  line-height: 1;
 }
- 
