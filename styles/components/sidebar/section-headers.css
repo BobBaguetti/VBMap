@@ -1,8 +1,13 @@
 /* @file: styles/sidebar/section-headers.css */
-/* @version: 2.3 — remove accent rail, add depth via shadow */
+/* @version: 2.4 — added flex layout for vertical alignment */
 
-/* Top-level sidebar section headers */
+ /* Top-level sidebar section headers */
 .sidebar-section > h2 {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.5em;
+
   background-color: var(--bg-20);               /* container tone */
   padding: 0.5em 0.8em;                         /* uniform horizontal padding */
   margin: 1.2em 0 0.5em;                        /* breathing room above & below */
