@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/master.css */
-/* @version: 1.0 — overrides for the Filters <h2> */
+/* @version: 1.0 — Styles for the master Filters header controls */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -8,34 +8,39 @@
   display: none !important;
 }
 
-/* make the Filters header a flex container */
+/* Ensure the H2 is a positioning context for the collapse chevron */
 #filters-section > h2 {
   display: flex;
   align-items: center;
-  position: relative;    /* keep for any existing padding-right */
-  padding-right: 2em;    /* reserve space if needed for collapse icon */
+  position: relative;
+  padding-right: 2em;           /* reserve space for the chevron */
 }
 
-/* keep the eye static but add spacing */
+/* Inline master “eye” icon next to the “Filters” text */
 #filters-section > h2 .filter-eye {
-  position: static !important;
-  margin: 0 0.5rem !important;
+  position: static !important;  /* override any absolute positioning */
+  margin-left: 0.5em !important;/* same spacing as group-level eyes */
+  color: var(--text-secondary);
   font-size: 0.9em;
   cursor: pointer;
-  color: var(--text-secondary);
   transition: color 0.2s;
 }
+#filters-section > h2 .filter-eye:hover,
+#filters-section > h2 .filter-eye:focus-visible {
+  color: var(--text-primary);
+}
 
-/* pull the collapse chevron into the flex flow and push it to the right */
+/* Position the JS-injected collapse button (<i class="collapse-all">) */
 #filters-section > h2 .collapse-all {
-  position: static !important;
-  margin-left: auto;
-  font-size: 0.9em;
+  position: absolute;
+  right: 0.6em;
+  top: 50%;
+  transform: translateY(-50%);
   color: var(--text-secondary);
+  font-size: 0.9em;
   cursor: pointer;
   transition: color 0.2s;
 }
-
 #filters-section > h2 .collapse-all:hover {
   color: var(--text-primary);
 }
