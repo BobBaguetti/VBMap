@@ -1,19 +1,20 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.9 — lock eye slots; ensure all header flex items share the same height */
+/* @version: 1.9 — ensure perfect vertical centering by locking header line-height */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
+/* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;
+  position: relative;  /* anchor for toggle icons */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
-  line-height: 1em;             /* unify text height with icon box */
+  line-height: 1;              /* lock line-height to match icon height */
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
@@ -22,17 +23,17 @@
   color: var(--text-secondary);
 }
 
-/* ── Icons in Group Headers ────────────────────────────────────────── */
+/* Icons in Group Headers */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  align-self: center;
+  align-self: center;   
   margin-right: 0.5em;
   font-size: 1em;
-  line-height: 1;
-  height: 1em;                  /* match the line-height above */
+  height: 1em;                /* match line-height above */
+  line-height: 1;             /* ensure the glyph itself is centered */
   transition: color 0.2s ease;
 }
 
@@ -74,13 +75,14 @@
   color: var(--text-primary) !important;
 }
 
-/* ── Master-Eye Slot Fix ────────────────────────────────────────────── */
+
+/* ── Master-Eye Slot Fix ────────────────────────────────────────── */
 /* Only lock the master eye in the Filters <h2> without altering spacing */
 #filters-section h2 > .filter-eye {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.2em;                /* accommodates both eye and eye-slash */
-  height: 1em;                 /* match the icon font-size */
+  width: 1.2em;   
+  height: 1em;    
   text-align: center;
 }
