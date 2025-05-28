@@ -1,18 +1,25 @@
-/* @file: styles/sidebar/filters/header.css */
-/* @version: 1.7 — original group‐header styles, plus vertical-align fix */
+/* @file: styles/components/sidebar/filters/header.css */
+/* @version: 1.7 — original + vertical-align fix */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+
+/* ── NEW: enforce vertical centering of all header children ── */
+.filter-group > h3,
+.filter-group > h4 {
+  display: flex !important;
+  align-items: center !important;
+  line-height: 1 !important;
+}
+.filter-group > h3 > *,
+.filter-group > h4 > * {
+  align-self: center !important;
+}
 
 /* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
 /* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
-  /* ── NEW: ensure the text node is on the same flex-item baseline ── */
-  display: flex;
-  align-items: center;
-  /* ── NEW: collapse the line-height so the title text can be centered ── */
-  line-height: 1;
-
+  /* everything below is your original code */
   justify-content: flex-start;
   position: relative;  /* anchor for toggle icons */
   padding: 0.4em 0.6em;
