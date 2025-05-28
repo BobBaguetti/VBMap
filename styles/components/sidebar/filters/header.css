@@ -1,56 +1,60 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 2.3 — add fixed sizing for filter-eye to prevent horizontal shift */
+/* @version: 2.4 — unified, center-pivot eye-click animation */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
-/* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
   display: grid;
-  /* Columns: [glyph-icon] [group-label] [eye-toggle] [flex-space] */
   grid-template-columns: min-content auto min-content 1fr;
-  align-items: center;        /* vertical centering */
-  column-gap: 0.5em;           /* uniform spacing */
-  white-space: nowrap;         /* prevent wrapping */
+  align-items: center;
+  column-gap: 0.5em;
+  white-space: nowrap;
   padding: 0.4em 0.6em;
   margin: 0;
-  font-size: 14px;             /* whole-pixel font size */
-  line-height: 14px;           /* exact match to font-size */
+  font-size: 14px;
+  line-height: 14px;
   text-transform: uppercase;
-  letter-spacing: 1px;         /* whole-pixel letter spacing */
+  letter-spacing: 1px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary);
 }
 
-/* Reset any inline margins (from JS) and style icons uniformly */
+/* Reset inline JS margins & size icons */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
-  font-size: 14px;             /* match header text */
-  line-height: 14px;           /* ensure icon box matches text height */
-  transition: color 0.2s ease;
-  margin: 0 !important;        /* override inline JS margins */
-  align-self: center;          /* reinforce vertical centering */
+  font-size: 14px;
+  line-height: 14px;
+  margin: 0 !important;
+  align-self: center;
+  transition: color 0.2s ease;  /* keep the color fade */
 }
 
-/* Place the eye-toggle in column 3 and lock its box size */
+/* Lock eye box & add new scale animation */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye {
   grid-column: 3;
   grid-row: 1;
-
-  /* prevent width shifts when toggling between eye / eye-slash */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.2em;    /* accommodates both eye and eye-slash */
-  height: 1em;     /* match the icon font-size */
+  width: 1.2em;                   /* same box for eye & eye-slash */
+  height: 1em;
   text-align: center;
+  transition: color 0.2s ease, transform 0.15s ease;
+  transform-origin: center center;
 }
 
-/* Place the collapse chevron in column 4 and push it to the far right */
+/* Smooth grow-on-click */
+.filter-group > h3 > .filter-eye:active,
+.filter-group > h4 > .filter-eye:active {
+  transform: scale(1.15);
+}
+
+/* Chevron stays pinned right */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   grid-column: 4;

@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/section-headers.css */
-/* @version: 2.8 — add click animation to the eye toggle */
+/* @version: 2.9 — unified, center-pivot eye-click animation */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -8,34 +8,35 @@
   display: grid;
   /* Columns: [icon] [title] [eye-toggle] [flex-space] [collapse-chevron] */
   grid-template-columns: min-content auto min-content 1fr min-content;
-  align-items: center;        /* vertical centering */
-  column-gap: 0;              /* manual per-item margins */
-  white-space: nowrap;         /* keep everything on one line */
+  align-items: center;
+  column-gap: 0.5em;
+  white-space: nowrap;
   position: relative;
-
+  
   background-color: var(--bg-20);
   padding: 0.5em 0.8em;
   margin: 1.2em 0 0.5em;
   border-radius: 4px;
-
-  font-size: 18px;             /* whole-pixel font size */
-  line-height: 18px;           /* exact match to avoid jitter */
+  
+  font-size: 18px;
+  line-height: 18px;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 1px;         /* whole-pixel letter spacing */
+  letter-spacing: 1px;
   color: var(--text-primary);
-
+  
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
   cursor: pointer;
 }
 
-/* Base icon styling */
+/* Ensure all icons share the same height & add transition */
 .sidebar-section > h2 > i {
   font-size: 18px;
   line-height: 18px;
-  margin: 0 !important;       /* clear inline JS margins */
-  transition: color 0.2s ease, transform 0.2s ease;  /* add transform transition */
+  margin: 0 !important;
   align-self: center;
+  transition: color 0.2s ease, transform 0.15s ease;
+  transform-origin: center center;
 }
 
 /* Icon to text gap: 9px */
@@ -50,9 +51,9 @@
   margin-left: 4px !important;
 }
 
-/* Click animation for the eye */
+/* Smooth grow-on-click for section-eye */
 .sidebar-section > h2 > .filter-eye:active {
-  transform: scale(1.2) rotate(15deg);
+  transform: scale(1.15);
 }
 
 /* Place the collapse chevron in column 5 and push it to the far right */
@@ -65,5 +66,5 @@
 
 /* Maintain the original push-down for section content */
 .sidebar-section {
-  margin-top: 1.2em;          /* matches the H2’s top margin */
+  margin-top: 1.2em;
 }
