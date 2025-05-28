@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.6 — force hover color with highest specificity */
+/* @version: 1.7 — force hover color with highest specificity; lock eye toggle slot */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -69,4 +69,15 @@
 .filter-group > h3 > .filter-eye:hover,
 .filter-group > h4 > .filter-eye:hover {
   color: var(--text-primary) !important;
+}
+
+/* Lock the eye toggle into a fixed-width slot */
+.filter-group > h3 > .filter-eye,
+.filter-group > h4 > .filter-eye {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2em;   /* accommodates both eye and eye-slash */
+  height: 1em;    /* match the icon font-size */
+  text-align: center;
 }
