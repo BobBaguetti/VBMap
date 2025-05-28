@@ -1,45 +1,59 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.8 — force hover color; lock master-eye slot; ensure header icons center */
+/* @version: 1.9 — ensure text and icons share the same vertical center */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+
+/* ── Section Header (h2) ─────────────────────────────────────────────── */
+/* (Leave your existing h2 styling untouched so spacing stays the same) */
+#filters-section > h2 {
+  /* your original rules here… */
+}
+
+/* Lock the master eye into a fixed-width slot */
+#filters-section h2 > .filter-eye {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2em;    /* accommodates both eye and eye-slash */
+  height: 1em;     /* match the icon font-size */
+  text-align: center;
+}
 
 /* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
 /* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
-  align-items: center;
+  align-items: center;      /* center all children vertically */
   justify-content: flex-start;
-  position: relative;  /* anchor for toggle icons */
+  position: relative;       /* anchor for toggle icons */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-
-  /* thinner, mid-tone underline for balanced separation */
+  line-height: 1em;         /* match icon height so text and icons align */
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
-
   background-color: var(--bg-20);
   cursor: pointer;
-  color: var(--text-secondary); /* default muted text & icons */
+  color: var(--text-secondary);
 }
 
 /* Icons in Group Headers */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   display: inline-flex;
-  align-items: center;
+  align-items: center;      /* center icon content vertically */
   justify-content: center;
-  align-self: center;   /* force vertical centering within the flex line */
+  align-self: center;       /* enforce vertical centering in the flex line */
   margin-right: 0.5em;
   font-size: 1em;
-  line-height: 1;
-  height: 1em;
+  line-height: 1em;         /* ensure the icon’s glyph is centered */
+  height: 1em;              /* match the line-height */
   transition: color 0.2s ease;
 }
 
-/* Collapse chevron at far right */
+/* Position the collapse chevron at the far right */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   position: absolute;
@@ -49,7 +63,7 @@
   margin-right: 0;
 }
 
-/* Hover: only text & first icon light up */
+/* Hover & active states for group headers */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
@@ -58,33 +72,13 @@
 .filter-group > h4:hover > i:first-child {
   color: var(--text-primary);
 }
-/* Keep other icons muted */
 .filter-group > h3:hover > i:not(:first-child),
 .filter-group > h4:hover > i:not(:first-child) {
   color: var(--text-secondary);
 }
-
-/* Restore default icon hover */
 .filter-group > h3 > i:hover,
-.filter-group > h4 > i:hover {
-  color: var(--text-primary);
-}
-/* Force-hover on chevrons & eyes */
-.filter-group > h3 > .group-toggle:hover,
-.filter-group > h4 > .group-toggle:hover,
+.filter-group > h4 > i:hover,
 .filter-group > h3 > .filter-eye:hover,
 .filter-group > h4 > .filter-eye:hover {
   color: var(--text-primary) !important;
-}
-
-
-/* ── Master-Eye Slot Fix ────────────────────────────────────────── */
-/* Only lock the master eye in the Filters <h2> without altering spacing */
-#filters-section h2 > .filter-eye {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.2em;    /* accommodates both eye and eye-slash */
-  height: 1em;     /* match the icon font-size */
-  text-align: center;
 }
