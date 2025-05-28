@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 2.0 — increase inline-SVG group-icon size to match old glyphs */
+/* @version: 2.1 — slightly reduce gap between icon and text */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -33,19 +33,19 @@
   transition: color 0.2s ease;
 }
 
-/* ── Inline-SVG group icons (the <i class="... group-icon-svg"> tags) ── */
+/* ── Inline-SVG group icons (the <i class="… group-icon-svg"> tags) ─── */
 .filter-group > h3 > .group-icon-svg,
 .filter-group > h4 > .group-icon-svg {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.25em;    /* bumped up from 1em */
+  width: 1.25em;      /* keep the larger size */
   height: 1.25em;
-  margin-right: 0.5em;
+  margin-right: 0.4em; /* reduced from 0.5em for a tighter look */
   flex-shrink: 0;
 }
 
-/* ── Collapse-chevron positioning ──────────────────────────────────── */
+/* ── Collapse-chevron positioning ─────────────────────────────────── */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   position: absolute;
