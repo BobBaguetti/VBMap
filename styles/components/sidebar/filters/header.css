@@ -1,59 +1,63 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.8 — lock master eye slot; force hover color with highest specificity */
+/* @version: 1.9 — restored spacing under Filters header; locked eye toggle slots */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* Filters section header (h2) */
+/* ── Section Header (h2) ─────────────────────────────────────────────── */
+/* Filters section title with master controls */
 #filters-section > h2 {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   position: relative;
   padding: 0.6em 0.8em;
   margin: 0;
-  font-size: 1.1em;
+  margin-bottom: 0.8em;    /* restored space below the Filters header */
+  font-size: 1em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
-  cursor: default;
   color: var(--text-secondary);
 }
 
-/* Layout for icons appended via JS under h2 */
+/* Icons appended to the section header */
 #filters-section > h2 > i {
-  margin-right: 0.5em;
+  margin-left: 0.5em;
   font-size: 1em;
   transition: color 0.2s ease;
 }
 
-/* Force-hover on master chevron & eye */
-#filters-section > h2 > .collapse-all:hover,
+/* Lock the master eye into a fixed-width slot */
+#filters-section > h2 > .filter-eye {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.2em;    /* accommodates both eye and eye-slash */
+  height: 1em;     /* match the icon font-size */
+  text-align: center;
+}
+
+/* Force-hover on master eye */
 #filters-section > h2 > .filter-eye:hover {
   color: var(--text-primary) !important;
 }
 
-/* ----------------------------------------------- */
-/* Existing group header rules follow for h3 & h4: */
-/* Header bars (h3 & h4) for each filter group */
+/* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
+/* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;  /* anchor for toggle icons */
+  position: relative;
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-
-  /* thinner, mid-tone underline for balanced separation */
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
-
   background-color: var(--bg-20);
   cursor: pointer;
-  color: var(--text-secondary); /* default muted text & icons */
+  color: var(--text-secondary);
 }
 
 /* Layout for icons appended via JS */
@@ -89,30 +93,27 @@
   color: var(--text-secondary);
 }
 
-/* Restore default icon hover (without specificity conflicts) */
+/* Restore default icon hover */
 .filter-group > h3 > i:hover,
 .filter-group > h4 > i:hover {
   color: var(--text-primary);
 }
 
-/* Lock per-group eye toggle into a fixed-width slot */
+/* Force-hover on chevrons & eyes */
+.filter-group > h3 > .group-toggle:hover,
+.filter-group > h4 > .group-toggle:hover,
+.filter-group > h3 > .filter-eye:hover,
+.filter-group > h4 > .filter-eye:hover {
+  color: var(--text-primary) !important;
+}
+
+/* Lock the group eye into a fixed-width slot */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.2em;   /* accommodates both eye and eye-slash */
-  height: 1em;    /* match the icon font-size */
-  text-align: center;
-}
-
-/* ----------------------------------------------- */
-/* New addition: lock master eye toggle slot */
-#filters-section > h2 > .filter-eye {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.2em;   /* accommodates both eye and eye-slash */
-  height: 1em;    /* match the icon font-size */
+  width: 1.2em;    /* accommodates both eye and eye-slash */
+  height: 1em;     /* match the icon font-size */
   text-align: center;
 }
