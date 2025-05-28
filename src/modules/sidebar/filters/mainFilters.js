@@ -1,13 +1,21 @@
 // @file: src/modules/sidebar/filters/mainFilters.js
-// @version: 1.0 — main layer toggles (Chest, NPC, Quest, Misc)
+// @version: 1.1 — added “Item” to main layer toggles
 
 export function setupMainFilters(containerSelector, onChange) {
   const container = document.querySelector(containerSelector);
   if (!container) return;
-  ["Chest","NPC","Quest","Misc"].forEach(type => {
+
+  // Include “Item” alongside the other layer types
+  ["Item", "Chest", "NPC", "Quest", "Misc"].forEach(type => {
+    // Avoid duplicating toggles if they already exist
     if (!container.querySelector(`input[data-layer="${type}"]`)) {
       const lbl = document.createElement("label");
-      lbl.innerHTML = `<input type="checkbox" checked data-layer="${type}"/><span>${type}${type==="NPC"?"s":""}</span>`;
+      // Pluralize label for Item → Items, NPC → NPCs
+      const labelText = type === "Item" ? "Items"
+                        : type === "NPC"  ? "NPCs"
+                        : type;
+      lbl.innerHTML = `<input type="checkbox" checked data-layer="${type}" />
+                       <span>${labelText}</span>`;
       container.appendChild(lbl);
       lbl.querySelector("input").addEventListener("change", onChange);
     }
