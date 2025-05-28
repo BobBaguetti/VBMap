@@ -1,5 +1,5 @@
-/* @file: styles\components\sidebar\filters\header.css */
-/* @version: 1.7 — original group‐header styles, plus master‐eye slot fix */
+/* @file: styles/components/sidebar/filters/header.css */
+/* @version: 1.9 — flex centering, uniform spacing, inline-SVG icon centering */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -16,6 +16,7 @@
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+  gap: 0.5em;           /* uniform horizontal spacing between icon, text & toggles */
 
   /* thinner, mid-tone underline for balanced separation */
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
@@ -25,12 +26,27 @@
   color: var(--text-secondary); /* default muted text & icons */
 }
 
-/* Layout for icons appended via JS */
+/* ── Icon Layout ─────────────────────────────────────────────────────── */
+/* Layout for <i> glyph icons appended via JS (eye, chevron, etc.) */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
-  margin-right: 0.5em;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
   font-size: 1em;
   transition: color 0.2s ease;
+}
+
+/* Inline-SVG group icons (the <img> tags with class .group-icon-svg) */
+.filter-group > h3 > .group-icon-svg,
+.filter-group > h4 > .group-icon-svg {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1em;       /* match the surrounding text size */
+  height: 1em;
+  margin-right: 0.5em;
+  flex-shrink: 0;
 }
 
 /* Position the collapse chevron at the far right */
@@ -72,9 +88,8 @@
   color: var(--text-primary) !important;
 }
 
-
 /* ── Master-Eye Fix ─────────────────────────────────────────────────── */
-/* Only lock the master eye in the Filters <h2> without altering spacing */
+/* Lock the master eye in the Filters <h2> without altering spacing */
 #filters-section h2 > .filter-eye {
   display: inline-flex;
   align-items: center;
