@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.5 — updated group‐icons: gem.svg for Items, boxes.svg for Chests
+// @version: 1.6 — switch group-icon SVGs to jsDelivr URLs
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -47,7 +47,7 @@ export function renderSidebarShell() {
       <div class="filter-group" id="main-filters">
         <h3>
           <img
-            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/layer-group.svg"
+            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/layer-group.svg"
             alt=""
             class="group-icon-svg"
           />
@@ -60,7 +60,7 @@ export function renderSidebarShell() {
       <div class="filter-group" id="item-filters">
         <h3>
           <img
-            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/gem.svg"
+            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/gem.svg"
             alt=""
             class="group-icon-svg"
           />
@@ -73,7 +73,7 @@ export function renderSidebarShell() {
       <div class="filter-group" id="chest-filters">
         <h3>
           <img
-            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/boxes.svg"
+            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/boxes.svg"
             alt=""
             class="group-icon-svg"
           />
@@ -86,7 +86,7 @@ export function renderSidebarShell() {
       <div class="filter-group" id="npc-hostile-filters">
         <h3>
           <img
-            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/skull-crossbones.svg"
+            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/skull-crossbones.svg"
             alt=""
             class="group-icon-svg"
           />
@@ -97,7 +97,7 @@ export function renderSidebarShell() {
       <div class="filter-group" id="npc-friendly-filters">
         <h3>
           <img
-            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/user-friends.svg"
+            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/user-friends.svg"
             alt=""
             class="group-icon-svg"
           />
