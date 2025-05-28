@@ -1,49 +1,56 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 2.5 — pixel-perfect fixed slots for icon, text, eye, and chevron */
+/* @version: 3.0 — switch to CSS Grid for pixel-perfect header slots */
 
+@import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
+
+/* CSS variables for precise pixel dimensions */
 :root {
   --header-height: 36px;
-  --icon-size:     20px;
-  --toggle-size:   20px;
-  --gap-size:      8px;
+  --icon-size: 20px;
+  --toggle-size: 18px;
+  --gap-size: 8px;
 }
 
 /* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
 .filter-group > h3,
 .filter-group > h4 {
-  display: flex;
+  display: grid;
+  grid-template-columns: 
+    var(--icon-size)   /* icon slot */
+    1fr                /* text slot */
+    var(--toggle-size) /* eye slot */
+    var(--toggle-size) /* chevron slot */;
   align-items: center;
   height: var(--header-height);
+  column-gap: var(--gap-size);
   padding: 0 var(--gap-size);
   margin: 0;
-  font-size: 0.9em;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  gap: var(--gap-size);
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary);
+  font-size: 0.9em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   box-sizing: border-box;
 }
 
 /* ── Icon slot ─────────────────────────────────────────────────────── */
 .filter-group > h3 > .group-icon-svg,
 .filter-group > h4 > .group-icon-svg {
-  flex: 0 0 var(--icon-size);
+  width: var(--icon-size);
+  height: var(--icon-size);
+  justify-self: start;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--icon-size);
-  height: var(--icon-size);
 }
 
 /* ── Text slot ─────────────────────────────────────────────────────── */
 .filter-group > h3 > .header-label,
 .filter-group > h4 > .header-label {
-  flex: 1;
-  display: inline-flex;
-  align-items: center;
+  justify-self: start;
+  align-self: center;
   height: var(--header-height);
   line-height: var(--header-height);
 }
@@ -53,21 +60,14 @@
 .filter-group > h4 > .filter-eye,
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
-  flex: 0 0 var(--toggle-size);
+  width: var(--toggle-size);
+  height: var(--toggle-size);
+  justify-self: end;
+  align-self: center;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: var(--toggle-size);
-  height: var(--toggle-size);
   transition: color 0.2s ease;
-}
-
-/* Push chevron to the far right */
-.filter-group > h3 > .group-toggle,
-.filter-group > h4 > .group-toggle {
-  margin-left: auto;
-  position: static;
-  transform: none;
 }
 
 /* ── Hover & Active states ─────────────────────────────────────────── */
