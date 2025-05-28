@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/toggles.css */
-/* @version: 2.2 — use bg-20 for cards, bg-40 on hover for better contrast */
+/* @version: 2.3 — correct brightness steps: base bg-40, hover bg-50, active bg-30 */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -20,14 +20,14 @@
 }
 
 /* ─── Elevation card styling ─────────────────────────────────────────── */
-/* Base card: one step lighter than container */
+/* Base card: one step brighter than container */
 .filter-group .toggle-group label {
   position: relative;
   display: flex;
   align-items: center;
   padding: 6px 10px;
   border-radius: 4px;
-  background: var(--bg-20);           /* was bg-25, now real bg-20 */
+  background: var(--bg-40);           /* brighter base */
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   transition: 
     transform 0.1s ease,
@@ -37,21 +37,21 @@
   cursor: pointer;
 }
 
-/* Hover: brighter step for clear feedback */
+/* Hover: brightest step for clear feedback */
 .filter-group .toggle-group label:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-  background: var(--bg-40);          /* brighter on hover */
+  background: var(--bg-50);           /* lightest */
 }
 
-/* Active (pressed): depress back down */
+/* Active (pressed): settle back down to container shade */
 .filter-group .toggle-group label:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  background: var(--bg-30);          /* subtle mid-step on press */
+  background: var(--bg-30);           /* default container */
 }
 
-/* Checked state: keep the strong bg-50 but add slight lift */
+/* Checked state: strong bg-50 + slight lift */
 .filter-group .toggle-group input:checked + span {
   background: var(--bg-50);
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -59,13 +59,13 @@
   color: var(--text-primary);
 }
 
-/* Unchecked labels remain muted */
+/* Unchecked labels: muted text & strikethrough */
 .filter-group .toggle-group input:not(:checked) + span {
   color: var(--text-disabled);
   text-decoration: line-through;
 }
 
-/* Icon handling inside labels */
+/* Icon in label (if present) */
 .filter-group .toggle-group label .filter-icon {
   margin-right: 0.5em;
   transition: filter 0.2s ease, transform 0.1s ease;
