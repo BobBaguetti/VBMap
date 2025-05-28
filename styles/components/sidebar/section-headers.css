@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/section-headers.css */
-/* @version: 2.7 — fine-tune spacing: 9px icon-text, 4px text-eye */
+/* @version: 2.8 — add click animation to the eye toggle */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -9,8 +9,8 @@
   /* Columns: [icon] [title] [eye-toggle] [flex-space] [collapse-chevron] */
   grid-template-columns: min-content auto min-content 1fr min-content;
   align-items: center;        /* vertical centering */
-  column-gap: 0;              /* manual spacing per-item */
-  white-space: nowrap;        /* keep everything on one line */
+  column-gap: 0;              /* manual per-item margins */
+  white-space: nowrap;         /* keep everything on one line */
   position: relative;
 
   background-color: var(--bg-20);
@@ -34,7 +34,7 @@
   font-size: 18px;
   line-height: 18px;
   margin: 0 !important;       /* clear inline JS margins */
-  transition: color 0.2s ease;
+  transition: color 0.2s ease, transform 0.2s ease;  /* add transform transition */
   align-self: center;
 }
 
@@ -48,6 +48,11 @@
   grid-column: 3;
   grid-row: 1;
   margin-left: 4px !important;
+}
+
+/* Click animation for the eye */
+.sidebar-section > h2 > .filter-eye:active {
+  transform: scale(1.2) rotate(15deg);
 }
 
 /* Place the collapse chevron in column 5 and push it to the far right */
