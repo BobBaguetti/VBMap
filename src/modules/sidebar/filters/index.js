@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.3 — fix NPC filter selector so it targets inputs in both containers
+// @version: 1.4 — unified NPC filter logic to mirror item filters
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -47,13 +47,13 @@ export async function setupSidebarFilters(params) {
     const pveOn     = pveToggle?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      const matchesPvE   = pveOn || data.type !== "Item";
-      const matchesName  = data.name?.toLowerCase().includes(nameQuery);
+      const matchesPvE  = pveOn || data.type !== "Item";
+      const matchesName = data.name?.toLowerCase().includes(nameQuery);
 
       // Main-layer toggles
       let mainVisible = true;
       document
-        .querySelectorAll(mainFiltersSelector + " input[type=checkbox]")
+        .querySelectorAll(`${mainFiltersSelector} input[type=checkbox]`)
         .forEach(cb => {
           if (data.type === cb.dataset.layer && !cb.checked) {
             mainVisible = false;
@@ -74,7 +74,7 @@ export async function setupSidebarFilters(params) {
       if (data.type === "Chest") {
         chestVisible = false;
         document
-          .querySelectorAll(chestFilterListSelector + " input[type=checkbox]")
+          .querySelectorAll(`${chestFilterListSelector} input[type=checkbox]`)
           .forEach(cb => {
             const f = cb.dataset.chestFilter;
             if (
@@ -89,17 +89,15 @@ export async function setupSidebarFilters(params) {
       // NPC-specific
       let npcVisible = true;
       if (data.type === "NPC") {
-        npcVisible = false;
-        document
-          .querySelectorAll(
-            `${npcHostileListSelector} input[data-npc-id], ` +
-            `${npcFriendlyListSelector} input[data-npc-id]`
-          )
-          .forEach(cb => {
-            if (cb.dataset.npcId === data.npcDefinitionId && cb.checked) {
-              npcVisible = true;
-            }
-          });
+        // Mirror item logic: find the single matching checkbox
+        const selector =
+          `${npcHostileListSelector} input[data-npc-id="${data.npcDefinitionId}"],` +
+          `${npcFriendlyListSelector} input[data-npc-id="${data.npcDefinitionId}"]`;
+        const cb = document.querySelector(selector);
+        // If a checkbox exists and is unchecked, hide this NPC
+        if (cb && !cb.checked) {
+          npcVisible = false;
+        }
       }
 
       // Final decision
