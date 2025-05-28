@@ -1,45 +1,7 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.9 — restored spacing under Filters header; locked eye toggle slots */
+/* @version: 1.7 — original group‐header styles, plus master‐eye slot fix */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
-
-/* ── Section Header (h2) ─────────────────────────────────────────────── */
-/* Filters section title with master controls */
-#filters-section > h2 {
-  display: flex;
-  align-items: center;
-  position: relative;
-  padding: 0.6em 0.8em;
-  margin: 0;
-  margin-bottom: 0.8em;    /* restored space below the Filters header */
-  font-size: 1em;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  background-color: var(--bg-20);
-  color: var(--text-secondary);
-}
-
-/* Icons appended to the section header */
-#filters-section > h2 > i {
-  margin-left: 0.5em;
-  font-size: 1em;
-  transition: color 0.2s ease;
-}
-
-/* Lock the master eye into a fixed-width slot */
-#filters-section > h2 > .filter-eye {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.2em;    /* accommodates both eye and eye-slash */
-  height: 1em;     /* match the icon font-size */
-  text-align: center;
-}
-
-/* Force-hover on master eye */
-#filters-section > h2 > .filter-eye:hover {
-  color: var(--text-primary) !important;
-}
 
 /* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
 /* Header bars for each filter group */
@@ -48,16 +10,19 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  position: relative;
+  position: relative;  /* anchor for toggle icons */
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
+
+  /* thinner, mid-tone underline for balanced separation */
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+
   background-color: var(--bg-20);
   cursor: pointer;
-  color: var(--text-secondary);
+  color: var(--text-secondary); /* default muted text & icons */
 }
 
 /* Layout for icons appended via JS */
@@ -93,7 +58,7 @@
   color: var(--text-secondary);
 }
 
-/* Restore default icon hover */
+/* Restore default icon hover (without specificity conflicts) */
 .filter-group > h3 > i:hover,
 .filter-group > h4 > i:hover {
   color: var(--text-primary);
@@ -107,9 +72,10 @@
   color: var(--text-primary) !important;
 }
 
-/* Lock the group eye into a fixed-width slot */
-.filter-group > h3 > .filter-eye,
-.filter-group > h4 > .filter-eye {
+
+/* ── Master-Eye Fix ─────────────────────────────────────────────────── */
+/* Only lock the master eye in the Filters <h2> without altering spacing */
+#filters-section h2 > .filter-eye {
   display: inline-flex;
   align-items: center;
   justify-content: center;
