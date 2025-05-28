@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/toggles.css */
-/* @version: 2.5 — soft overlay tint on hover via pseudo-element */
+/* @version: 2.6 — use hover-light for overlay tint on hover */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -47,21 +47,21 @@
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
 }
 
-/* Soft overlay tint */
+/* Soft overlay tint using hover-light token */
 .filter-group .toggle-group label::after {
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--accent-primary);
+  background: var(--hover-light);
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
 }
 .filter-group .toggle-group label:hover::after {
-  opacity: 0.1;
+  opacity: 1; /* full hover-light opacity */
 }
 
-/* Checked state: style full label */
+/* CHECKED STATE: style full label */
 .filter-group .toggle-group label:has(input:checked) {
   background: var(--bg-50);
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
