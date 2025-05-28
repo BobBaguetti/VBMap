@@ -1,9 +1,9 @@
 /* @file: styles/components/sidebar/filters/toggles.css */
-/* @version: 2.0 — Elevation cards: shadows, hover‐lift, pressed feedback */
+/* @version: 2.2 — use bg-20 for cards, bg-40 on hover for better contrast */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* Container layout remains the same */
+/* Container layout unchanged */
 .toggle-group {
   padding: 0.4em 0.8em;
   display: grid;
@@ -19,14 +19,15 @@
   pointer-events: none;
 }
 
-/* ------- Elevation card styling for each label ------- */
+/* ─── Elevation card styling ─────────────────────────────────────────── */
+/* Base card: one step lighter than container */
 .filter-group .toggle-group label {
   position: relative;
   display: flex;
   align-items: center;
   padding: 6px 10px;
   border-radius: 4px;
-  background: var(--bg-30);
+  background: var(--bg-20);           /* was bg-25, now real bg-20 */
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   transition: 
     transform 0.1s ease,
@@ -36,19 +37,21 @@
   cursor: pointer;
 }
 
-/* Lift up on hover */
+/* Hover: brighter step for clear feedback */
 .filter-group .toggle-group label:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  background: var(--bg-40);          /* brighter on hover */
 }
 
-/* Depress on click */
+/* Active (pressed): depress back down */
 .filter-group .toggle-group label:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  background: var(--bg-30);          /* subtle mid-step on press */
 }
 
-/* Checked state: slightly darker background + stronger shadow + bold text */
+/* Checked state: keep the strong bg-50 but add slight lift */
 .filter-group .toggle-group input:checked + span {
   background: var(--bg-50);
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -56,20 +59,18 @@
   color: var(--text-primary);
 }
 
-/* Unchecked labels: muted text & strikethrough as before */
+/* Unchecked labels remain muted */
 .filter-group .toggle-group input:not(:checked) + span {
   color: var(--text-disabled);
   text-decoration: line-through;
 }
 
-/* Icon in label (if present) still sits before text */
+/* Icon handling inside labels */
 .filter-group .toggle-group label .filter-icon {
   margin-right: 0.5em;
   transition: filter 0.2s ease, transform 0.1s ease;
   flex-shrink: 0;
 }
-
-/* Icon hover for freshening up the look */
 .filter-group .toggle-group label:hover .filter-icon {
   filter: brightness(1.2);
 }
