@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.8 — ensure filter-group header icons and text truly center-aligned; master-eye slot remains locked elsewhere */
+/* @version: 1.9 — refine group‐header icon centering, remove fixed icon height */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -10,8 +10,8 @@
   align-items: center;
   justify-content: flex-start;
 
-  /* Force text height to exactly 1em so icons match it */
-  line-height: 1em;
+  /* let the default line-height govern text height */
+  line-height: normal;
 
   padding: 0.4em 0.6em;
   margin: 0;
@@ -26,23 +26,23 @@
 }
 
 /* ── Icons in Group Headers ─────────────────────────────────────────── */
-/* Make every <i> in the header a 1em×1em flex box centered both axes */
+/* make every <i> in the header a flex‐centered box, natural height */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 
-  width: 1em;
-  height: 1em;
-  line-height: 1em;
+  width: 1em;        /* keep horizontal space consistent */
+  height: auto;      /* allow icon’s own height */
+  line-height: normal;
 
   margin-right: 0.5em;
   font-size: 1em;
   transition: color 0.2s ease;
 }
 
-/* Position the collapse chevron at the far right */
+/* ── Collapse Chevron Position ─────────────────────────────────────── */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   position: absolute;
