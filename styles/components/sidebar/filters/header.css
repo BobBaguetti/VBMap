@@ -1,5 +1,5 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.11 — refine chevron & eye placement so chevron sits on the far right */
+/* @version: 1.11 — restore absolute positioning for chevrons; keep icon/text centered */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -9,49 +9,41 @@
   display: flex;
   align-items: center;
   justify-content: flex-start;
-
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary);
 }
 
-/* ── Icons & Text in Headers ───────────────────────────────────────── */
+/* ── Icons in Group Headers ─────────────────────────────────────────── */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 1em;
+  height: auto;
   margin-right: 0.5em;
   font-size: 1em;
   transition: color 0.2s ease;
 }
 
-/* ── Collapse Chevron ──────────────────────────────────────────────── */
-/* Push collapse chevron (and subsequent eye) to the very right */
+/* ── Restore absolute positioning for chevrons ───────────────────────── */
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
-  position: static;
-  margin-left: auto;
-  margin-right: 0.6em;  /* gap between chevron and container edge */
+  position: absolute;
+  right: 0.6em;
+  top: 50%;
+  transform: translateY(-50%);
+  margin-right: 0;
 }
 
-/* ── Eye Toggle ───────────────────────────────────────────────────── */
-/* Override inline margin-left, and add right spacing */
-.filter-group > h3 > .filter-eye,
-.filter-group > h4 > .filter-eye {
-  margin-left: 0 !important;
-  margin-right: 0.6em !important;
-}
-
-/* ── Hover & Active States ─────────────────────────────────────────── */
+/* ── Hover & Active States ──────────────────────────────────────────── */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
