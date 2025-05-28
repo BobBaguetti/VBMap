@@ -1,54 +1,55 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.11 — fix filter-group chevron placement and keep eye next to text */
+/* @version: 1.10 — eye next to text, chevron locked to the right edge */
 
+/* Import Font Awesome for icons */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
+/* ── Group Header Bars (h3 & h4) ─────────────────────────────────────── */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  border-bottom: 1px solid rgba(0,0,0,0.4);
   background-color: var(--bg-20);
   cursor: pointer;
   color: var(--text-secondary);
+  position: relative;
 }
 
-/* ── Icon & Eye Ordering ───────────────────────────────────────────── */
-/* Put the eye immediately after the text, then the chevron last */
+/* ── Icon Order ───────────────────────────────────────────────────────── */
+/* 1) Text (implicit)  2) Eye toggle  3) Chevron toggle */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye {
   order: 1;
-  margin-right: 0.5em;  /* space between eye and subsequent text (if any) */
+  margin-left: 0.5em;
 }
-
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
   order: 2;
-  margin-left: auto;    /* push the chevron to the far right */
-  margin-right: 0.6em;  /* maintain your right padding */
+  margin-left: auto;    /* push to rightmost */
+  margin-right: 0.6em;  /* match your desired right gap */
 }
 
-/* ── Icons in Group Headers ─────────────────────────────────────────── */
-/* Ensure all <i> icons are flex-centered */
+/* ── Icon Sizing & Centering ─────────────────────────────────────────── */
+/* All icons sit centered next to the text, using natural heights */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1em;
+  width: 1em;        /* keeps space consistent */
   height: auto;
+  margin-right: 0.5em;
   font-size: 1em;
   transition: color 0.2s ease;
 }
 
-/* ── Hover & Active States ──────────────────────────────────────────── */
+/* ── Hover & Active States ───────────────────────────────────────────── */
 .filter-group > h3:hover,
 .filter-group > h4:hover {
   color: var(--text-primary);
