@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/toggles.css */
-/* @version: 2.4 — unify checked state on <label> instead of <span> */
+/* @version: 2.5 — removed bg-50 swap, use inset accent border for checked */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -51,10 +51,12 @@
   background: var(--bg-30);
 }
 
-/* CHECKED STATE: style the entire label, not just the span */
+/* CHECKED STATE: inset accent border, keep bg-40 */
 .filter-group .toggle-group label:has(input:checked) {
-  background: var(--bg-50);
-  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  background: var(--bg-40);
+  box-shadow:
+    0 2px 4px rgba(0,0,0,0.3),              /* outer card shadow */
+    inset 0 0 0 2px var(--accent-primary);  /* inner accent border */
   font-weight: 500;
   color: var(--text-primary);
 }
