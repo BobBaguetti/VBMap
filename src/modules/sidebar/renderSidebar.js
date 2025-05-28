@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.3 — removed filter-group glyphs for alignment testing
+// @version: 1.5 — updated group‐icons: gem.svg for Items, boxes.svg for Chests
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -45,29 +45,64 @@ export function renderSidebarShell() {
 
       <!-- Main layer toggles -->
       <div class="filter-group" id="main-filters">
-        <h3>Main</h3>
+        <h3>
+          <img
+            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/layer-group.svg"
+            alt=""
+            class="group-icon-svg"
+          />
+          Main
+        </h3>
         <div class="toggle-group"></div>
       </div>
 
       <!-- Item filters -->
       <div class="filter-group" id="item-filters">
-        <h3>Items</h3>
+        <h3>
+          <img
+            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/gem.svg"
+            alt=""
+            class="group-icon-svg"
+          />
+          Items
+        </h3>
         <div class="toggle-group" id="item-filter-list"></div>
       </div>
 
       <!-- Chest filters -->
       <div class="filter-group" id="chest-filters">
-        <h3>Chests</h3>
+        <h3>
+          <img
+            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/boxes.svg"
+            alt=""
+            class="group-icon-svg"
+          />
+          Chests
+        </h3>
         <div class="toggle-group" id="chest-filter-list"></div>
       </div>
 
       <!-- NPC filters -->
       <div class="filter-group" id="npc-hostile-filters">
-        <h3>Hostile NPCs</h3>
+        <h3>
+          <img
+            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/skull-crossbones.svg"
+            alt=""
+            class="group-icon-svg"
+          />
+          Hostile NPCs
+        </h3>
         <div class="toggle-group" id="npc-hostile-list"></div>
       </div>
       <div class="filter-group" id="npc-friendly-filters">
-        <h3>Friendly NPCs</h3>
+        <h3>
+          <img
+            src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/svgs/solid/user-friends.svg"
+            alt=""
+            class="group-icon-svg"
+          />
+          Friendly NPCs
+        </h3>
         <div class="toggle-group" id="npc-friendly-list"></div>
       </div>
     </div>
