@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 2.3 — narrow gap between header icon and text */
+/* @version: 2.4 — uniform icon slot width for perfect text alignment */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -8,14 +8,13 @@
 .filter-group > h4 {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   position: relative;
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  gap: 0.3em;  /* tightened from 0.5em */
+  gap: 0.3em;  /* uniform spacing between icon, text & toggles */
 
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
@@ -23,29 +22,27 @@
   color: var(--text-secondary);
 }
 
-/* ── Group-icon SVGs (inline-SVG via JS kit) ───────────────────────── */
+/* ── Group-icon slot ───────────────────────────────────────────────── */
+/* Reserve exactly 1.25em for every group-icon, center the SVG inside */
 .filter-group > h3 > .group-icon-svg,
 .filter-group > h4 > .group-icon-svg {
+  flex: 0 0 1.25em;         /* fixed width slot */
   display: inline-flex;
   align-items: center;
   justify-content: center;
   width: 1.25em;
   height: 1.25em;
-  margin-right: 0.3em; /* tightened from 0.4em */
-  flex-shrink: 0;
 }
 
-/* ── Eye & Chevron toggles (inline-SVGs via FontAwesome JS kit) ───── */
+/* ── Eye & Chevron toggles (inline-SVGs via JS kit) ───────────────── */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye,
 .filter-group > h3 > .group-toggle,
 .filter-group > h4 > .group-toggle {
+  flex: 0 0 1em;           /* fixed 1em slot for toggles */
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1em;
-  height: 1em;
-  flex-shrink: 0;
   transition: color 0.2s ease;
 }
 
