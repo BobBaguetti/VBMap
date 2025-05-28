@@ -1,9 +1,9 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 1.7 — original + vertical-align fix */
+/* @version: 1.7 — original + true vertical-align fix */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* ── NEW: enforce vertical centering of all header children ── */
+/* ── FORCE FLEX & CENTER ALL CHILDREN ─────────────────────────────── */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex !important;
@@ -19,7 +19,6 @@
 /* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
-  /* everything below is your original code */
   justify-content: flex-start;
   position: relative;  /* anchor for toggle icons */
   padding: 0.4em 0.6em;
