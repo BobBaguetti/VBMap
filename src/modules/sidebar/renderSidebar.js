@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.7 — item → box-open.svg; chest → boxes-packing.svg
+// @version: 1.8 — use inline‐<i> for group icons so JS kit inlines SVGs
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -46,11 +46,7 @@ export function renderSidebarShell() {
       <!-- Main layer toggles -->
       <div class="filter-group" id="main-filters">
         <h3>
-          <img
-            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/layer-group.svg"
-            alt=""
-            class="group-icon-svg"
-          />
+          <i class="fas fa-layer-group group-icon-svg"></i>
           Main
         </h3>
         <div class="toggle-group"></div>
@@ -59,11 +55,7 @@ export function renderSidebarShell() {
       <!-- Item filters -->
       <div class="filter-group" id="item-filters">
         <h3>
-          <img
-            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/box-open.svg"
-            alt=""
-            class="group-icon-svg"
-          />
+          <i class="fas fa-box-open group-icon-svg"></i>
           Items
         </h3>
         <div class="toggle-group" id="item-filter-list"></div>
@@ -72,11 +64,7 @@ export function renderSidebarShell() {
       <!-- Chest filters -->
       <div class="filter-group" id="chest-filters">
         <h3>
-          <img
-            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/boxes-packing.svg"
-            alt=""
-            class="group-icon-svg"
-          />
+          <i class="fas fa-boxes-packing group-icon-svg"></i>
           Chests
         </h3>
         <div class="toggle-group" id="chest-filter-list"></div>
@@ -85,22 +73,14 @@ export function renderSidebarShell() {
       <!-- NPC filters -->
       <div class="filter-group" id="npc-hostile-filters">
         <h3>
-          <img
-            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/skull-crossbones.svg"
-            alt=""
-            class="group-icon-svg"
-          />
+          <i class="fas fa-skull-crossbones group-icon-svg"></i>
           Hostile NPCs
         </h3>
         <div class="toggle-group" id="npc-hostile-list"></div>
       </div>
       <div class="filter-group" id="npc-friendly-filters">
         <h3>
-          <img
-            src="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.4.0/svgs/solid/user-friends.svg"
-            alt=""
-            class="group-icon-svg"
-          />
+          <i class="fas fa-user-friends group-icon-svg"></i>
           Friendly NPCs
         </h3>
         <div class="toggle-group" id="npc-friendly-list"></div>
