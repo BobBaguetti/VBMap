@@ -1,8 +1,9 @@
 /* @file: styles/components/sidebar/filters/toggles.css */
-/* @version: 1.1 — Pill-style buttons for filter entries */
+/* @version: 2.0 — Elevation cards: shadows, hover‐lift, pressed feedback */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
+/* Container layout remains the same */
 .toggle-group {
   padding: 0.4em 0.8em;
   display: grid;
@@ -11,54 +12,64 @@
   font-size: 13px;
 }
 
-/* Hide the actual checkbox input */
+/* Hide native checkboxes */
 .filter-group .toggle-group input {
   position: absolute;
   opacity: 0;
   pointer-events: none;
 }
 
-/* Base label styling as a pill */
+/* ------- Elevation card styling for each label ------- */
 .filter-group .toggle-group label {
-  display: inline-flex;
-  align-items: center;
-  padding: 4px 12px;
-  border-radius: 999px;
-  background: transparent;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s, transform 0.1s;
   position: relative;
+  display: flex;
+  align-items: center;
+  padding: 6px 10px;
+  border-radius: 4px;
+  background: var(--bg-30);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  transition: 
+    transform 0.1s ease,
+    box-shadow 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease;
+  cursor: pointer;
 }
 
-/* Thumbnail icon (if present) keeps its margin */
-.filter-group .toggle-group label .filter-icon {
-  margin-right: 0.5em;
+/* Lift up on hover */
+.filter-group .toggle-group label:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
 
-/* Hover & focus states */
-.filter-group .toggle-group label:hover,
-.filter-group .toggle-group label:focus-within {
-  background: rgba(255, 255, 255, 0.1);
+/* Depress on click */
+.filter-group .toggle-group label:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+}
+
+/* Checked state: slightly darker background + stronger shadow + bold text */
+.filter-group .toggle-group input:checked + span {
+  background: var(--bg-50);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  font-weight: 500;
   color: var(--text-primary);
 }
 
-/* Pressed (active) feedback */
-.filter-group .toggle-group label:active {
-  transform: scale(0.97);
-}
-
-/* Checked state – style the text span inside the pill */
-.filter-group .toggle-group input:checked + span {
-  background: var(--accent-primary);
-  color: #fff;
-  padding: 4px 12px;
-  border-radius: 999px;
-  display: inline-flex;
-  align-items: center;
-}
-
-/* Disabled state – keep pill outline but mute text/icon */
+/* Unchecked labels: muted text & strikethrough as before */
 .filter-group .toggle-group input:not(:checked) + span {
   color: var(--text-disabled);
   text-decoration: line-through;
+}
+
+/* Icon in label (if present) still sits before text */
+.filter-group .toggle-group label .filter-icon {
+  margin-right: 0.5em;
+  transition: filter 0.2s ease, transform 0.1s ease;
+  flex-shrink: 0;
+}
+
+/* Icon hover for freshening up the look */
+.filter-group .toggle-group label:hover .filter-icon {
+  filter: brightness(1.2);
 }
