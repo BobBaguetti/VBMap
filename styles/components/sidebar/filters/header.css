@@ -1,50 +1,49 @@
 /* @file: styles/sidebar/filters/header.css */
-/* @version: 1.8.1 — fix master-eye spacing; lock its slot, preserve original header layout */
+/* @version: 1.8 — force hover color with highest specificity; lock eye toggle slots */
 
+/* Import Font Awesome for the eye icons */
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* — Filters section header (h2) — */
+/* ── Section Header (h2) ─────────────────────────────────────────────── */
+/* Filters section title with master controls */
 #filters-section > h2 {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
   position: relative;
   padding: 0.6em 0.8em;
   margin: 0;
-  font-size: 1.1em;
+  font-size: 1em;
   text-transform: uppercase;
   letter-spacing: 0.05em;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.4);
   background-color: var(--bg-20);
-  cursor: default;
   color: var(--text-secondary);
 }
 
-/* Only give the first icon (master eye) a right margin */
-#filters-section > h2 > i:first-child {
-  margin-right: 0.5em;
+/* Icons appended to the section header */
+#filters-section > h2 > i {
+  margin-left: 0.5em;
+  font-size: 1em;
+  transition: color 0.2s ease;
 }
 
-/* Force-hover on master chevron & eye */
-#filters-section > h2 > .collapse-all:hover,
-#filters-section > h2 > .filter-eye:hover {
-  color: var(--text-primary) !important;
-}
-
-/* Lock the master eye toggle into a fixed-width slot */
+/* Lock the master eye into a fixed-width slot */
 #filters-section > h2 > .filter-eye {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.2em;      /* accommodates both eye and eye-slash */
-  height: 1em;       /* match the icon font-size */
+  width: 1.2em;    /* accommodates both eye and eye-slash */
+  height: 1em;     /* match the icon font-size */
   text-align: center;
-  /* reset margin so it doesn’t add extra space on the right */
-  margin-right: 0;
-  /* keep the left gap from the first-child rule */
 }
 
-/* — Group headers (h3 & h4) — */
+/* Force-hover on master eye */
+#filters-section > h2 > .filter-eye:hover {
+  color: var(--text-primary) !important;
+}
+
+
+/* ── Group Headers (h3 & h4) ────────────────────────────────────────── */
+/* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
   display: flex;
@@ -62,7 +61,7 @@
   color: var(--text-secondary);
 }
 
-/* Layout for icons in group headers */
+/* Layout for icons appended via JS */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
   margin-right: 0.5em;
@@ -101,13 +100,21 @@
   color: var(--text-primary);
 }
 
-/* Lock per-group eye toggle into a fixed-width slot */
+/* Force-hover on chevrons & eyes */
+.filter-group > h3 > .group-toggle:hover,
+.filter-group > h4 > .group-toggle:hover,
+.filter-group > h3 > .filter-eye:hover,
+.filter-group > h4 > .filter-eye:hover {
+  color: var(--text-primary) !important;
+}
+
+/* Lock the group eye into a fixed-width slot */
 .filter-group > h3 > .filter-eye,
 .filter-group > h4 > .filter-eye {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.2em;
-  height: 1em;
+  width: 1.2em;    /* accommodates both eye and eye-slash */
+  height: 1em;     /* match the icon font-size */
   text-align: center;
 }
