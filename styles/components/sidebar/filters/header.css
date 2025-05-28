@@ -1,5 +1,5 @@
-/* @file: styles/sidebar/filters/header.css */
-/* @version: 1.7 — original group‐header styles, plus master‐eye slot fix */
+/* @file: styles\components\sidebar\filters\header.css */
+/* @version: 1.8 — use CSS Grid for header alignment */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -7,10 +7,12 @@
 /* Header bars for each filter group */
 .filter-group > h3,
 .filter-group > h4 {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  position: relative;  /* anchor for toggle icons */
+  display: grid;
+  /* four columns: [prefix-icon] [label] [eye-toggle] [chevron-toggle] */
+  grid-template-columns: min-content auto min-content min-content;
+  align-items: center;        /* vertical centering */
+  column-gap: 0.5em;          /* uniform horizontal spacing */
+  position: relative;
   padding: 0.4em 0.6em;
   margin: 0;
   font-size: 0.9em;
@@ -25,22 +27,15 @@
   color: var(--text-secondary); /* default muted text & icons */
 }
 
-/* Layout for icons appended via JS */
+/* Layout for any icon (prefix or toggles) within header */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
-  margin-right: 0.5em;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   font-size: 1em;
   transition: color 0.2s ease;
-}
-
-/* Position the collapse chevron at the far right */
-.filter-group > h3 > .group-toggle,
-.filter-group > h4 > .group-toggle {
-  position: absolute;
-  right: 0.6em;
-  top: 50%;
-  transform: translateY(-50%);
-  margin-right: 0;
+  margin: 0; /* spacing handled by grid-gap */
 }
 
 /* Header hover: only text & first icon light up */
@@ -71,7 +66,6 @@
 .filter-group > h4 > .filter-eye:hover {
   color: var(--text-primary) !important;
 }
-
 
 /* ── Master-Eye Fix ─────────────────────────────────────────────────── */
 /* Only lock the master eye in the Filters <h2> without altering spacing */
