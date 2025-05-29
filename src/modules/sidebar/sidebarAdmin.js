@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarAdmin.js
-// @version: 1.2 — wrap in .sidebar-section for consistent styling
+// @version: 1.2.1 — use admin-tools-panel instead of toggle-group
 
 import { initDefinitionModal } from "../definition/modal/definitionModal.js";
 
@@ -23,9 +23,9 @@ export function setupSidebarAdmin(sidebarEl, db) {
   header.innerHTML = `<i class="fas fa-tools"></i> Admin Tools`;
   section.appendChild(header);
 
-  // Button container (toggle-group gives you the card look)
+  // Button container (always visible admin panel)
   const buttonWrap = document.createElement("div");
-  buttonWrap.className = "toggle-group";
+  buttonWrap.className = "admin-tools-panel";
 
   // Initialize the unified definition modal
   const definitionModal = initDefinitionModal(db);
