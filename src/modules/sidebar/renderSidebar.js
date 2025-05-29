@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.2 — removed Settings section (will use toolbar button instead)
+// @version: 1.3 — use treasure-chest icon for Chests header
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -57,7 +57,7 @@ export function renderSidebarShell() {
 
       <!-- Chest filters -->
       <div class="filter-group" id="chest-filters">
-        <h3><i class="fas fa-dungeon group-icon"></i>Chests</h3>
+        <h3><i class="filter-icon ph-fill ph-treasure-chest group-icon"></i>Chests</h3>
         <div class="toggle-group" id="chest-filter-list"></div>
       </div>
 
