@@ -27,13 +27,10 @@ export function setupAboutModal({ buttonSelector }) {
       </header>
       <section class="modal-body">
         <p><strong>Vaultbreakers Map</strong> is an unofficial community tool that
-           helps you locate loot, quests, NPCs, and more. Data is synced in real-time
-           from Firebase and curated by volunteer admins.</p>
+           helps you locate loot, quests, NPCs, and more. Lorem Ipsum and all that</p>
         <p>
           <em>Version:</em> 0.9.0<br/>
-          <em>Maintainer:</em> Vibecoder<br/>
-          <em>GitHub:</em>
-          <a href="https://github.com/Vibecoder/VBMap" target="_blank">VBMap&nbsp;repo</a>
+          <em>Maintainer:</em> Bobber Baguetter<br/>
         </p>
       </section>
     </div>
