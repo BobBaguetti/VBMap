@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.3 — use treasure-chest icon for Chests header
+// @version: 1.4 — removed legacy Admin Tools stub
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -69,15 +69,6 @@ export function renderSidebarShell() {
       <div class="filter-group" id="npc-friendly-filters">
         <h3><i class="fas fa-user-friends group-icon"></i>Friendly NPCs</h3>
         <div class="toggle-group" id="npc-friendly-list"></div>
-      </div>
-    </div>
-
-    <!-- ADMIN TOOLS -->
-    <div class="sidebar-section" id="admin-tools-section">
-      <h2><i class="fas fa-tools"></i> Admin Tools</h2>
-      <div class="toggle-group">
-        <button id="manage-items-btn">Manage Items</button>
-        <button id="manage-chests-btn">Manage Chests</button>
       </div>
     </div>
   `.trim();

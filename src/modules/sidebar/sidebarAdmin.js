@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/sidebarAdmin.js
-// @version: 1.1 — unified “Manage Definitions” button using definitionModal
+// @version: 1.2 — wrap in .sidebar-section for consistent styling
 
 import { initDefinitionModal } from "../definition/modal/definitionModal.js";
 
@@ -10,20 +10,22 @@ import { initDefinitionModal } from "../definition/modal/definitionModal.js";
  * @param {firebase.firestore.Firestore} db
  */
 export function setupSidebarAdmin(sidebarEl, db) {
-  // Remove any existing admin header or tools
-  sidebarEl.querySelector(".admin-header")?.remove();
-  sidebarEl.querySelector("#sidebar-admin-tools")?.remove();
+  // Remove any existing admin section
+  sidebarEl.querySelector(".sidebar-section.admin-tools")?.remove();
 
-  // Admin header
-  const adminHeader = document.createElement("h2");
-  adminHeader.className = "admin-header";
-  adminHeader.textContent = "🛠 Admin Tools";
-  sidebarEl.appendChild(adminHeader);
+  // Create the section wrapper
+  const section = document.createElement("div");
+  section.className = "sidebar-section admin-tools";
+  section.id = "sidebar-admin-section";
 
-  // Container for buttons
-  const adminWrap = document.createElement("div");
-  adminWrap.id = "sidebar-admin-tools";
-  sidebarEl.appendChild(adminWrap);
+  // Section header
+  const header = document.createElement("h2");
+  header.innerHTML = `<i class="fas fa-tools"></i> Admin Tools`;
+  section.appendChild(header);
+
+  // Button container (toggle-group gives you the card look)
+  const buttonWrap = document.createElement("div");
+  buttonWrap.className = "toggle-group";
 
   // Initialize the unified definition modal
   const definitionModal = initDefinitionModal(db);
@@ -31,12 +33,14 @@ export function setupSidebarAdmin(sidebarEl, db) {
   // Single “Manage Definitions” button
   const btnManage = document.createElement("button");
   btnManage.textContent = "Manage Definitions";
-  btnManage.onclick = e => definitionModal.openCreate(e, "Item");
-  adminWrap.appendChild(btnManage);
+  btnManage.addEventListener("click", e => definitionModal.openCreate(e, "Item"));
+  buttonWrap.appendChild(btnManage);
 
-  // Only show for admins
+  section.appendChild(buttonWrap);
+  sidebarEl.appendChild(section);
+
+  // Hide for non-admins
   if (!document.body.classList.contains("is-admin")) {
-    adminHeader.style.display = "none";
-    adminWrap.style.display   = "none";
+    section.style.display = "none";
   }
 }
