@@ -95,15 +95,15 @@
 /* ─── Chest size-specific icon adjustments ───────────────────────────── */
 /* Small chests: slightly smaller icon */
 .filter-group .toggle-group label input[data-chest-size="Small"] + .filter-icon {
-  font-size: 12px;
+  font-size: 11px;
 }
 
 /* Medium chests: moderate icon size */
 .filter-group .toggle-group label input[data-chest-size="Medium"] + .filter-icon {
-  font-size: 14px;
+  font-size: 13px;
 }
 
 /* Large chests: slightly larger icon */
 .filter-group .toggle-group label input[data-chest-size="Large"] + .filter-icon {
-  font-size: 16px;
+  font-size: 15px;
 }
