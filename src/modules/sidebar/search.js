@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.1 — move suggestions outside wrapper and wire live suggestions
+// @version: 2.2 — floating suggestion list outside sidebar
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -23,7 +23,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // Style and clear handler
+  // Keep original styling & clear behavior
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -31,28 +31,46 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
-  // Build suggestions <ul> if missing, and insert it just after the wrapper
+  const searchWrapper = searchBar.parentNode;
+
+  // Create or reuse floating <ul> in the body
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
     suggestionsList.id = suggestionsListSelector.slice(1);
     suggestionsList.classList.add("search-suggestions");
-    const searchWrapper = searchBar.parentNode;
-    searchWrapper.insertAdjacentElement("afterend", suggestionsList);
+    // float above everything
+    suggestionsList.style.position = "absolute";
+    suggestionsList.style.zIndex    = "2000";
+    suggestionsList.style.boxSizing = "border-box";
+    suggestionsList.style.maxHeight = "200px";
+    suggestionsList.style.overflowY = "auto";
+
+    document.body.appendChild(suggestionsList);
+
+    // Reposition on scroll/resize/input
+    const reposition = () => {
+      const rect = searchWrapper.getBoundingClientRect();
+      suggestionsList.style.width = `${rect.width}px`;
+      suggestionsList.style.left  = `${rect.left}px`;
+      suggestionsList.style.top   = `${rect.bottom + window.scrollY}px`;
+    };
+    window.addEventListener("scroll",  reposition, { passive: true });
+    window.addEventListener("resize",  reposition);
+    searchBar.addEventListener("input", reposition);
   }
 
-  // On each keystroke, filter definitions and render up to 10 matches
+  // Render matches on each keystroke
   searchBar.addEventListener("input", () => {
-    const query = searchBar.value.trim().toLowerCase();
-    if (!query) {
+    const q = searchBar.value.trim().toLowerCase();
+    if (!q) {
       suggestionsList.innerHTML = "";
       return;
     }
 
-    const defsMap = definitionsManager.getItemDefMap();
-    const defs = Object.values(defsMap);
+    const defs = Object.values(definitionsManager.getItemDefMap());
     const matches = defs
-      .filter(d => d.name?.toLowerCase().includes(query))
+      .filter(d => d.name && d.name.toLowerCase().includes(q))
       .slice(0, 10);
 
     suggestionsList.innerHTML = matches.map(def => `
@@ -62,5 +80,12 @@ export function setupSidebarSearch({
         <button class="suggestion-action hide-all">Hide All</button>
       </li>
     `).join("");
+  });
+
+  // Hide suggestions when clicking outside
+  document.addEventListener("click", e => {
+    if (!searchWrapper.contains(e.target) && !suggestionsList.contains(e.target)) {
+      suggestionsList.innerHTML = "";
+    }
   });
 }

@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search.css */
-/* @version: 2.2 — fully hide native clear controls, keep custom #search-clear, style search suggestions */
+/* @version: 2.3 — floating search suggestions, original searchbar styling unchanged */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -47,14 +47,12 @@
   font-size: 13px;
   font-family: 'Satoshi', sans-serif;
   outline: none;
-
-  /* disable all native search decorations */
   appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
 }
 
-/* hide built-in clear button and decorations in WebKit/Blink */
+/* hide built-in clear button in WebKit/Blink */
 #sidebar-search #search-bar::-webkit-search-decoration,
 #sidebar-search #search-bar::-webkit-search-cancel-button,
 #sidebar-search #search-bar::-webkit-search-results-decoration {
@@ -103,11 +101,18 @@
   border-bottom-color: var(--accent-primary);
 }
 
-/* ── Search suggestions list ───────────────────────────────────────── */
+/* ── Floating Search Suggestions ───────────────────────────────────────── */
 .search-suggestions {
+  position: absolute; /* final coords set via JS */
   list-style: none;
-  margin: 0.4em 0 0;
-  padding: 0;
+  margin: 0;
+  padding: 0.4em 0.8em;
+  background-color: var(--bg-20);
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 2000;
 }
 
 /* Card-style suggestion entries */
