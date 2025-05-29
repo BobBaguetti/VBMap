@@ -1,10 +1,10 @@
 // @file: src/modules/sidebar/filters/mainFilters.js
-// @version: 1.3 — swap “Chest” icon to Phosphor
+// @version: 1.3.1 — use correct Phosphor class for Chest
 
 export function setupMainFilters(containerSelector, onChange) {
   const iconMap = {
     Item:      "fas fa-box-open",
-    Chest:     "ph-regular ph-chest",    // <-- Phosphor chest
+    Chest:     "ph ph-chest",     // <---- use `ph ph-chest`
     NPC:       "fas fa-user",
     Quest:     "fas fa-flag",
     Misc:      "fas fa-ellipsis-h"
