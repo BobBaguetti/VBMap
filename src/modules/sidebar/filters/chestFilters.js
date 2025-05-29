@@ -1,20 +1,20 @@
 // @file: src/modules/sidebar/filters/chestFilters.js
-// @version: 1.2.4 — use ph ph-treasure-chest for “Normal” entries
+// @version: 1.2.5 — use ph-fill for package icons and treasure-chest
 
 export function setupChestFilters(containerSelector, onChange) {
   const iconMap = {
-    Small:       "ph ph-package",
-    Medium:      "ph ph-package",
-    Large:       "ph ph-package",
-    Dragonvault: "fas fa-dragon",
-    Normal:      "ph ph-treasure-chest"  
+    Small:       "ph-fill ph-package",         // fill package
+    Medium:      "ph-fill ph-package",
+    Large:       "ph-fill ph-package",
+    Dragonvault: "fas fa-dragon",              // remains FA
+    Normal:      "ph-fill ph-treasure-chest"   // fill treasure-chest
   };
 
   const container = document.querySelector(containerSelector);
   if (!container || container.querySelector("input")) return;
   const opts = [
     { lbl: "Small",       filter: "size",     key: "Small" },
-    { lbl: "Normal",      filter: "category", key: "Normal" },       
+    { lbl: "Normal",      filter: "category", key: "Normal" },
     { lbl: "Medium",      filter: "size",     key: "Medium" },
     { lbl: "Dragonvault", filter: "category", key: "Dragonvault" },
     { lbl: "Large",       filter: "size",     key: "Large" }

@@ -1,10 +1,10 @@
 // @file: src/modules/sidebar/filters/mainFilters.js
-// @version: 1.4 — use ph ph-treasure-chest for “Chest” now that we’re on v2.1+
+// @version: 1.5 — use ph-fill for “Chest” icon
 
 export function setupMainFilters(containerSelector, onChange) {
   const iconMap = {
-    Item:  "fas fa-box-open",
-    Chest: "ph ph-treasure-chest",  // ← treasure chest
+    Item:  "fas fa-box-open",          // stays FA fill
+    Chest: "ph-fill ph-treasure-chest",// now Phosphor Fill
     NPC:   "fas fa-user",
     Quest: "fas fa-flag",
     Misc:  "fas fa-ellipsis-h"
