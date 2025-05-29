@@ -30,7 +30,7 @@ export function setupAboutModal({ buttonSelector }) {
            helps you locate loot, quests, NPCs, and more. Lorem Ipsum and all that</p>
         <p>
           <em>Version:</em> 0.9.0<br/>
-          <em>Maintainer:</em> Bobber Baguetter<br/>
+          <em>-</em> Bobber Baguetter<br/>
         </p>
       </section>
     </div>
