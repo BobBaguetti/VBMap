@@ -1,13 +1,13 @@
 // @file: src/modules/sidebar/filters/mainFilters.js
-// @version: 1.3.1 — use correct Phosphor class for Chest
+// @version: 1.3.3 — use ph ph-package for “Chest”
 
 export function setupMainFilters(containerSelector, onChange) {
   const iconMap = {
-    Item:      "fas fa-box-open",
-    Chest:     "ph ph-treasure-chest",     // <---- use `ph ph-chest`
-    NPC:       "fas fa-user",
-    Quest:     "fas fa-flag",
-    Misc:      "fas fa-ellipsis-h"
+    Item:  "fas fa-box-open",
+    Chest: "ph ph-package",    // Phosphor Regular “package” icon
+    NPC:   "fas fa-user",
+    Quest: "fas fa-flag",
+    Misc:  "fas fa-ellipsis-h"
   };
 
   const container = document.querySelector(containerSelector);

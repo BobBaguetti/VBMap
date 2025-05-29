@@ -1,13 +1,13 @@
 // @file: src/modules/sidebar/filters/chestFilters.js
-// @version: 1.2.1 — correct Phosphor class for chests
+// @version: 1.2.2 — use ph ph-package for chest entries
 
 export function setupChestFilters(containerSelector, onChange) {
   const iconMap = {
-    Small:       "ph ph-chest",    // all chest sizes use ph-chest
-    Medium:      "ph ph-chest",
-    Large:       "ph ph-chest",
-    Dragonvault: "fas fa-dragon", // keep FA for Dragonvault if you like
-    Normal:      "ph ph-chest"
+    Small:       "ph ph-package",
+    Medium:      "ph ph-package",
+    Large:       "ph ph-package",
+    Dragonvault: "fas fa-dragon",
+    Normal:      "ph ph-package"
   };
 
   const container = document.querySelector(containerSelector);
