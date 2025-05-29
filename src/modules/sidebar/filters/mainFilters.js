@@ -4,7 +4,7 @@
 export function setupMainFilters(containerSelector, onChange) {
   const iconMap = {
     Item:      "fas fa-box-open",
-    Chest:     "ph ph-chest",     // <---- use `ph ph-chest`
+    Chest:     "ph ph-treasure-chest",     // <---- use `ph ph-chest`
     NPC:       "fas fa-user",
     Quest:     "fas fa-flag",
     Misc:      "fas fa-ellipsis-h"
