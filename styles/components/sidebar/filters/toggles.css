@@ -1,9 +1,9 @@
 /* @file: styles/components/sidebar/filters/toggles.css */
-/* @version: 2.6.1 — center filter-icon glyphs vertically */
+/* @version: 2.7 — adjust icon sizes for Small, Medium, and Large chest entries */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* Container layout unchanged */
+/* Container layout */
 .toggle-group {
   padding: 0.4em 0.8em;
   display: grid;
@@ -20,10 +20,11 @@
 }
 
 /* ─── Elevation card styling ─────────────────────────────────────────── */
+/* Base card */
 .filter-group .toggle-group label {
   position: relative;
   display: flex;
-  align-items: center;       /* ensure children are centered */
+  align-items: center;
   padding: 6px 10px;
   border-radius: 4px;
   background: var(--bg-40);
@@ -40,6 +41,7 @@
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
 }
+
 .filter-group .toggle-group label:active {
   transform: translateY(0);
   box-shadow: 0 1px 2px rgba(0,0,0,0.2);
@@ -59,7 +61,7 @@
   opacity: 1;
 }
 
-/* Checked state (full-label styling) */
+/* Checked state */
 .filter-group .toggle-group label:has(input:checked) {
   background: var(--bg-50);
   box-shadow: 0 2px 4px rgba(0,0,0,0.3);
@@ -67,23 +69,41 @@
   color: var(--text-primary);
 }
 
-/* Unchecked labels (span-specific) */
+/* Unchecked labels */
 .filter-group .toggle-group input:not(:checked) + span {
   color: var(--text-disabled);
   text-decoration: line-through;
 }
 
-/* ─── Vertical-centering fix for icons ───────────────────────────────── */
+/* ─── Icon styling and default size ─────────────────────────────────── */
 .filter-group .toggle-group label .filter-icon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  line-height: 1;    /* reset any extra leading */
+  line-height: 1;
   margin-right: 0.5em;
   flex-shrink: 0;
   transition: filter 0.2s ease, transform 0.1s ease;
+  font-size: 13px; /* default size matching text */
 }
 
+/* Icon hover effect */
 .filter-group .toggle-group label:hover .filter-icon {
   filter: brightness(1.2);
+}
+
+/* ─── Chest size-specific icon adjustments ───────────────────────────── */
+/* Small chests: slightly smaller icon */
+.filter-group .toggle-group label input[data-chest-size="Small"] + .filter-icon {
+  font-size: 12px;
+}
+
+/* Medium chests: moderate icon size */
+.filter-group .toggle-group label input[data-chest-size="Medium"] + .filter-icon {
+  font-size: 14px;
+}
+
+/* Large chests: slightly larger icon */
+.filter-group .toggle-group label input[data-chest-size="Large"] + .filter-icon {
+  font-size: 16px;
 }
