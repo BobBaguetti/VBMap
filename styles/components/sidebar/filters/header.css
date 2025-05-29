@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 3.1 — uniform icon sizing for consistent text alignment */
+/* @version: 3.1 — bump treasure-chest icon size in group headers */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -24,17 +24,21 @@
   color: var(--text-secondary);
 }
 
-/* Reset inline JS margins & size icons uniformly */
+/* Reset inline JS margins & size icons */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 14px !important; /* match header font-size */
-  width: 1em;
-  height: 1em;
-  margin: 0 !important;       /* override inline JS margins */
-  transition: color 0.2s ease;
+  font-size: 14px;
+  line-height: 14px;
+  margin: 0 !important;
+  align-self: center;
+  transition: color 0.2s ease; /* keep the color fade */
+}
+
+/* Increase treasure-chest icon to match FA glyphs */
+.filter-group > h3 > i.ph-fill.ph-treasure-chest,
+.filter-group > h4 > i.ph-fill.ph-treasure-chest {
+  font-size: 16px; /* bump up by ~2px */
+  line-height: 16px;
 }
 
 /* Lock eye box & add gentler scale animation */
