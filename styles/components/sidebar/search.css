@@ -1,71 +1,64 @@
-/* @file: styles\components\sidebar\search.css */
-/* @version: 1.9 — add subtle underline under Search header */
+/* @file: styles/components/sidebar/search.css */
+/* @version: 2.0 — fully hide native clear controls, keep custom #search-clear */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
 /* CONTAINER: full pill shape with header and content */
 #sidebar-search {
-  margin-top: 1.2em;                            
+  margin-top: 1.2em;
   background-color: var(--bg-30);
   border-top: none;
   border-left: none;
   border-right: none;
   border-bottom: 1px solid var(--border-soft);
-
-  /* round all corners for seamless pill appearance */
-  border-top-left-radius: 4px;
-  border-top-right-radius: 4px;
-  border-bottom-left-radius: 4px;
-  border-bottom-right-radius: 4px;
-
+  border-radius: 4px 4px 0 0;
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* HEADER: match .sidebar-section > h2 for consistent typography and add underline */
+/* HEADER */
 #sidebar-search > h2 {
-  margin: 0;                                    
-  padding: 0.5em 0.8em;                         
-  background-color: var(--bg-20);               
+  margin: 0;
+  padding: 0.5em 0.8em;
+  background-color: var(--bg-20);
   font-size: 1.1em;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   color: var(--text-primary);
-
-  /* subtle underline for visual separation */
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
 }
 
-/* remove old divider */
-#sidebar-search > hr {
-  display: none;
-}
-
-/* SEARCH WRAPPER: snug padding, continuous with header */
+/* SEARCH WRAPPER */
 .search-wrapper {
   position: relative;
-  padding: 0.4em 0.8em;                          
+  padding: 0.4em 0.8em;
   background-color: var(--bg-30);
 }
 
-/* INPUT: lower height to match older style */
+/* INPUT: remove native clear & decorations */
 #sidebar-search #search-bar {
   width: 100%;
   box-sizing: border-box;
-  padding: 4px 24px 4px 8px;                    
+  padding: 4px 24px 4px 8px;
   border: none;
-  border-radius: 0;                             
   background-color: var(--bg-30);
   color: var(--text-primary);
-  font-size: 13px;                              
+  font-size: 13px;
   font-family: 'Satoshi', sans-serif;
   outline: none;
-  transition: background 0.2s, border-color 0.2s;
+
+  /* disable all native search decorations */
+  -webkit-appearance: none;
+  -moz-appearance: textfield;
 }
 
-/* hide native clear icons */
+#sidebar-search #search-bar::-webkit-search-decoration,
 #sidebar-search #search-bar::-webkit-search-cancel-button,
+#sidebar-search #search-bar::-webkit-search-results-button,
+#sidebar-search #search-bar::-webkit-search-results-decoration {
+  display: none;
+}
 #sidebar-search #search-bar::-ms-clear {
   display: none;
 }
@@ -100,4 +93,3 @@
   background-color: var(--bg-50);
   border-bottom-color: var(--accent-primary);
 }
- 
