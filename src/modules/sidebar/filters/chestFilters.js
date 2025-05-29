@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/chestFilters.js
-// @version: 1.2.2 — use ph ph-package for chest entries
+// @version: 1.2.3 — reorder opts so grid auto-fills in the desired hacky layout
 
 export function setupChestFilters(containerSelector, onChange) {
   const iconMap = {
@@ -12,12 +12,14 @@ export function setupChestFilters(containerSelector, onChange) {
 
   const container = document.querySelector(containerSelector);
   if (!container || container.querySelector("input")) return;
+
+  // Note the swapped order: Small, Normal, Medium, Dragonvault, Large
   const opts = [
     { lbl: "Small",       filter: "size",     key: "Small" },
+    { lbl: "Normal",      filter: "category", key: "Normal" },
     { lbl: "Medium",      filter: "size",     key: "Medium" },
-    { lbl: "Large",       filter: "size",     key: "Large" },
     { lbl: "Dragonvault", filter: "category", key: "Dragonvault" },
-    { lbl: "Normal",      filter: "category", key: "Normal" }
+    { lbl: "Large",       filter: "size",     key: "Large" }
   ];
 
   opts.forEach(o => {
