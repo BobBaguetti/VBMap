@@ -1,18 +1,17 @@
 // @file: src/modules/sidebar/filters/chestFilters.js
-// @version: 1.3 — size‐vary package icons; use ph-chest for Normal
+// @version: 1.2.2 — use ph ph-package for chest entries
 
 export function setupChestFilters(containerSelector, onChange) {
-  const sizeMap = {
-    Small:  "14px",
-    Medium: "18px",
-    Large:  "22px",
-    Normal: "18px",
-    Dragonvault: "18px"
+  const iconMap = {
+    Small:       "ph ph-package",
+    Medium:      "ph ph-package",
+    Large:       "ph ph-package",
+    Dragonvault: "fas fa-dragon",
+    Normal:      "ph ph-package"
   };
 
   const container = document.querySelector(containerSelector);
   if (!container || container.querySelector("input")) return;
-
   const opts = [
     { lbl: "Small",       filter: "size",     key: "Small" },
     { lbl: "Medium",      filter: "size",     key: "Medium" },
@@ -23,18 +22,6 @@ export function setupChestFilters(containerSelector, onChange) {
 
   opts.forEach(o => {
     const lbl = document.createElement("label");
-
-    // choose icon class
-    let iconClass;
-    if (o.filter === "size") {
-      iconClass = "ph ph-package";
-    } else {
-      // category: Dragonvault gets FA dragon, Normal gets phosphor chest
-      iconClass = o.key === "Dragonvault" ? "fas fa-dragon" : "ph ph-chest";
-    }
-
-    const iconSize = sizeMap[o.key] || "18px";
-
     lbl.innerHTML = `
       <input
         type="checkbox"
@@ -43,7 +30,7 @@ export function setupChestFilters(containerSelector, onChange) {
         ${o.filter==="size"     ? `data-chest-size="${o.key}"`     : ""}
         ${o.filter==="category" ? `data-chest-category="${o.key}"` : ""}
       />
-      <i class="filter-icon ${iconClass}" style="font-size:${iconSize};"></i>
+      <i class="filter-icon ${iconMap[o.key]}"></i>
       <span>${o.lbl}</span>
     `;
     container.appendChild(lbl);
