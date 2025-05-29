@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 3.1 — bump treasure-chest icon size in group headers */
+/* @version: 3.2 — fix text alignment: fixed icon column width */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -7,8 +7,8 @@
 .filter-group > h3,
 .filter-group > h4 {
   display: grid;
-  /* Columns: [icon] [label] [eye-toggle] [flex-space] */
-  grid-template-columns: min-content auto min-content 1fr;
+  /* Columns: [fixed-icon-cell] [label] [eye-toggle] [flex-space] */
+  grid-template-columns: 1.2em auto min-content 1fr;
   align-items: center;        /* vertical centering */
   column-gap: 0.5em;          /* uniform spacing */
   white-space: nowrap;        /* prevent wrapping */
@@ -30,8 +30,14 @@
   font-size: 14px;
   line-height: 14px;
   margin: 0 !important;
-  align-self: center;
   transition: color 0.2s ease; /* keep the color fade */
+}
+
+/* Center the first icon in its fixed-width cell */
+.filter-group > h3 > i:first-child,
+.filter-group > h4 > i:first-child {
+  justify-self: center;
+  align-self: center;
 }
 
 /* Increase treasure-chest icon to match FA glyphs */
