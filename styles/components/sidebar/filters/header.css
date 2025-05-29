@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/header.css */
-/* @version: 3 — reduce wobble: gentler scale, center-pivot ensured */
+/* @version: 3.1 — uniform icon sizing for consistent text alignment */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -24,14 +24,17 @@
   color: var(--text-secondary);
 }
 
-/* Reset inline JS margins & size icons */
+/* Reset inline JS margins & size icons uniformly */
 .filter-group > h3 > i,
 .filter-group > h4 > i {
-  font-size: 14px;
-  line-height: 14px;
-  margin: 0 !important;
-  align-self: center;
-  transition: color 0.2s ease; /* keep the color fade */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px !important; /* match header font-size */
+  width: 1em;
+  height: 1em;
+  margin: 0 !important;       /* override inline JS margins */
+  transition: color 0.2s ease;
 }
 
 /* Lock eye box & add gentler scale animation */
