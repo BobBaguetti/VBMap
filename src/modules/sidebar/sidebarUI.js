@@ -1,4 +1,4 @@
-// @file: src/modules/sidebar/sidebarUI.js
+// @file: src/modules/sidebar/sidebarUI.js 
 // @version: 1.34 — wire About toolbar button to draggable About modal
 
 import { setupSidebarSearch }   from "./search.js";
