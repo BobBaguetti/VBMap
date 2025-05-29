@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/filters/toggles.css */
-/* @version: 2.8 — scale up Phosphor fill icons to match other icons */
+/* @version: 2.9 — scale up Phosphor fill icons to match other icons */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -108,9 +108,8 @@
   font-size: 16px;
 }
 
-/* ─── Scale up Phosphor fill icons to match other icons ──────────────── */
-.filter-group .toggle-group label .filter-icon.ph-fill.ph-treasure-chest,
-.filter-group .toggle-group label .filter-icon.ph-fill.ph-package {
-  font-size: 16px;   /* adjust to taste */
+/* ─── Scale up only the Phosphor treasure-chest icon ───────────────── */
+.filter-group .toggle-group label .filter-icon.ph-fill.ph-treasure-chest {
+  font-size: 16px;   /* matches your other icons */
   line-height: 1;
 }
