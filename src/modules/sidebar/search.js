@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.0 — added live search suggestions
+// @version: 2.1 — move suggestions outside wrapper and wire live suggestions
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -31,33 +31,30 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
-  // Create suggestions <ul> if it doesn't exist
+  // Build suggestions <ul> if missing, and insert it just after the wrapper
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
-    suggestionsList.id = suggestionsListSelector.replace("#", "");
+    suggestionsList.id = suggestionsListSelector.slice(1);
     suggestionsList.classList.add("search-suggestions");
-    // append under the search-wrapper
-    clearBtn.parentNode.appendChild(suggestionsList);
+    const searchWrapper = searchBar.parentNode;
+    searchWrapper.insertAdjacentElement("afterend", suggestionsList);
   }
 
-  // Listen for input events and update suggestions
+  // On each keystroke, filter definitions and render up to 10 matches
   searchBar.addEventListener("input", () => {
     const query = searchBar.value.trim().toLowerCase();
-    // Clear if empty
     if (!query) {
       suggestionsList.innerHTML = "";
       return;
     }
 
-    // Pull item definitions and filter by name
     const defsMap = definitionsManager.getItemDefMap();
     const defs = Object.values(defsMap);
     const matches = defs
-      .filter(def => def.name && def.name.toLowerCase().includes(query))
+      .filter(d => d.name?.toLowerCase().includes(query))
       .slice(0, 10);
 
-    // Render suggestion items
     suggestionsList.innerHTML = matches.map(def => `
       <li class="search-suggestion-item" data-id="${def.id}">
         <span class="suggestion-name">${def.name}</span>
