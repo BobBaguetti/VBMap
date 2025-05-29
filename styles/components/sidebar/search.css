@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search.css */
-/* @version: 2.0 — fully hide native clear controls, keep custom #search-clear */
+/* @version: 2.1 — fully hide native clear controls, keep custom #search-clear */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -49,18 +49,27 @@
   outline: none;
 
   /* disable all native search decorations */
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
 }
 
+/* hide built-in clear button and decorations in WebKit/Blink */
 #sidebar-search #search-bar::-webkit-search-decoration,
 #sidebar-search #search-bar::-webkit-search-cancel-button,
-#sidebar-search #search-bar::-webkit-search-results-button,
 #sidebar-search #search-bar::-webkit-search-results-decoration {
   display: none;
 }
+
+/* hide clear button in Edge/IE */
 #sidebar-search #search-bar::-ms-clear {
   display: none;
+}
+
+/* remove inner padding in Firefox */
+#sidebar-search #search-bar::-moz-focus-inner {
+  border: 0;
+  padding: 0;
 }
 
 /* custom clear button */

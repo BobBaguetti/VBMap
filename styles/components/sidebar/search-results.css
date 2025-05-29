@@ -1,0 +1,40 @@
+/* @file: styles/components/sidebar/search-results.css */
+/* @version: 1.0 — floating search suggestion list */
+
+.search-wrapper {
+  position: relative; /* ensure wrapper is positioning context */
+}
+
+.search-results {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  max-height: 250px;
+  overflow-y: auto;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+
+  background-color: var(--bg-30);
+  border: 1px solid var(--border-soft);
+  border-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1001;
+}
+
+.search-results .search-result-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.search-results .search-result-item + .search-result-item {
+  border-top: 1px solid var(--border-soft);
+}
+
+.search-results .search-result-item:hover,
+.search-results .search-result-item:focus {
+  background-color: var(--bg-20);
+}
