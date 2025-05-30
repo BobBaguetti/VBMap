@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.4 — gradient red “U” border restored with pill-shaped bottom corners */
+/* @version: 2.5 — gradient “U” border with true rounded bottom corners via layered backgrounds */
 
 .search-suggestions {
   position: absolute;
@@ -7,23 +7,26 @@
   left: 0;
   width: 100%;
   margin-top: 4px;
-  background-color: var(--bg-30);
-
-  /* Transparent base border to receive the gradient */
+  
+  /* Layer 1: red-to-transparent gradient for the “border” (fills the border-box)
+     Layer 2: solid bg-30 for the panel interior (fills the padding-box) */
+  background-image:
+    linear-gradient(to top, red 0%, rgba(255,0,0,0) 100%),
+    var(--bg-30);
+  background-origin: border-box;
+  background-clip: border-box, padding-box;
+  
+  /* Allocate space for the “border” by using transparent border */
   border: var(--border-width-thick) solid transparent;
-
-  /* Fading red “U”-shaped border (solid at bottom, transparent at top) */
-  border-image-source: linear-gradient(to top, red 0%, rgba(255, 0, 0, 0) 100%);
-  border-image-slice: 1;
-
-  /* Pill shape on bottom corners only */
-  border-radius: 0 0 var(--radius-small) var(--radius-small) !important;
-
-  /* Strong green shadow */
+  
+  /* True pill-shape on bottom corners; top remains square */
+  border-radius: 0 0 var(--radius-small) var(--radius-small);
+  
+  /* Strong green glow */
   box-shadow:
     0 4px 12px green,
     0 0 16px rgba(0, 255, 0, 0.5);
-
+  
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
@@ -37,6 +40,7 @@
   opacity: 1;
 }
 
+/* Suggestion items (unchanged) */
 .search-suggestion-item {
   display: flex;
   align-items: center;
