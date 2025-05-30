@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 1.7 — guaranteed visible border with fallback color */
+/* @version: 1.8 — extreme 10px red border for visibility */
 
 .search-suggestions {
   position: absolute;
@@ -8,8 +8,7 @@
   width: 100%;
   margin-top: 4px;
   background-color: var(--bg-30);
-  /* use your border-soft token or fallback to a darker RGBA */
-  border: 2px solid var(--border-soft, rgba(0, 0, 0, 0.3));
+  border: 10px solid red !important;   /* extreme for confirmation */
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
   box-shadow:
@@ -23,13 +22,11 @@
   padding: 0 4px;
 }
 
-/* When visible, expand and fade in */
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
 }
 
-/* Individual suggestion “cards” */
 .search-suggestion-item {
   display: flex;
   align-items: center;
@@ -54,7 +51,6 @@
   font-size: 14px;
 }
 
-/* Buttons inside each suggestion */
 .suggestion-action {
   margin-left: 0.5em;
   padding: 0.25em 0.6em;
