@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.1 — move suggestions outside wrapper and wire live suggestions
+// @version: 2.3 — render suggestions as an absolute dropdown inside the wrapper
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -23,7 +23,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // Style and clear handler
+  // style + clear logic
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -31,28 +31,32 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
-  // Build suggestions <ul> if missing, and insert it just after the wrapper
+  // ensure the wrapper is a positioning context
+  const searchWrapper = searchBar.parentNode;
+  if (getComputedStyle(searchWrapper).position === "static") {
+    searchWrapper.style.position = "relative";
+  }
+
+  // build or re-use the suggestions <ul>, appended inside the wrapper
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
     suggestionsList.id = suggestionsListSelector.slice(1);
     suggestionsList.classList.add("search-suggestions");
-    const searchWrapper = searchBar.parentNode;
-    searchWrapper.insertAdjacentElement("afterend", suggestionsList);
+    searchWrapper.appendChild(suggestionsList);
   }
 
-  // On each keystroke, filter definitions and render up to 10 matches
+  // render matches on each input
   searchBar.addEventListener("input", () => {
-    const query = searchBar.value.trim().toLowerCase();
-    if (!query) {
+    const q = searchBar.value.trim().toLowerCase();
+    if (!q) {
       suggestionsList.innerHTML = "";
       return;
     }
 
-    const defsMap = definitionsManager.getItemDefMap();
-    const defs = Object.values(defsMap);
+    const defs = Object.values(definitionsManager.getItemDefMap());
     const matches = defs
-      .filter(d => d.name?.toLowerCase().includes(query))
+      .filter(d => d.name?.toLowerCase().includes(q))
       .slice(0, 10);
 
     suggestionsList.innerHTML = matches.map(def => `

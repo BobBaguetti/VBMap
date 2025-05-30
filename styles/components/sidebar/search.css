@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search.css */
-/* @version: 2.1 — fully hide native clear controls, keep custom #search-clear */
+/* @version: 2.3 — pill shape on the entire search container */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
@@ -11,8 +11,8 @@
   border-left: none;
   border-right: none;
   border-bottom: 1px solid var(--border-soft);
-  border-radius: 4px;           /* now rounds top and bottom corners */
-  overflow: hidden;
+  border-radius: 4px;           /* now rounds top AND bottom corners */
+  overflow: hidden;             /* let dropdown override if needed */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
@@ -47,32 +47,22 @@
   font-size: 13px;
   font-family: 'Satoshi', sans-serif;
   outline: none;
-
-  /* disable all native search decorations */
-  appearance: none;
+  appearance: none; /* disable native decorations */
   -webkit-appearance: none;
   -moz-appearance: textfield;
 }
-
-/* hide built-in clear button and decorations in WebKit/Blink */
 #sidebar-search #search-bar::-webkit-search-decoration,
 #sidebar-search #search-bar::-webkit-search-cancel-button,
-#sidebar-search #search-bar::-webkit-search-results-decoration {
-  display: none;
-}
-
-/* hide clear button in Edge/IE */
+#sidebar-search #search-bar::-webkit-search-results-decoration,
 #sidebar-search #search-bar::-ms-clear {
   display: none;
 }
-
-/* remove inner padding in Firefox */
 #sidebar-search #search-bar::-moz-focus-inner {
   border: 0;
   padding: 0;
 }
 
-/* custom clear button */
+/* Custom clear button */
 #search-clear {
   position: absolute;
   right: 8px;
@@ -94,7 +84,7 @@
   color: var(--text-primary);
 }
 
-/* placeholder & focus states */
+/* Placeholder & focus */
 #sidebar-search #search-bar::placeholder {
   color: var(--text-disabled);
 }

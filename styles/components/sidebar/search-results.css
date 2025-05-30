@@ -1,10 +1,21 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 1.0 — styles for live search suggestions */
+/* @version: 1.2 — floating dropdown for live search suggestions */
+
+#sidebar-search {
+  overflow: visible !important;  /* allow the dropdown to overflow */
+}
 
 .search-suggestions {
   list-style: none;
-  margin: 0.4em 0 0;
+  margin: 0;
   padding: 0;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  z-index: 1000;
 }
 
 .search-suggestion-item {
