@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 3.1 — map chest filters to the five size/category toggles
+// @version: 3.1.1 — reorder chest entries in search results
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -33,7 +33,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // Clear button setup
+  // Clear button (does not hide dropdown)
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -47,7 +47,7 @@ export function setupSidebarSearch({
     wrapper.style.position = "relative";
   }
 
-  // Suggestions list element
+  // Suggestions container
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
@@ -58,19 +58,20 @@ export function setupSidebarSearch({
   suggestionsList.classList.remove("visible");
 
   // Helpers to locate each filter toggle in the sidebar
-  const getItemInput  = id => document.querySelector(
-    `${itemFilterListSelector} input[data-item-id="${id}"]`
-  );
-  const getChestInput = key => document.querySelector(
-    // size toggles
-    `${chestFilterListSelector} input[data-chest-filter="size"][data-chest-size="${key}"],` +
-    // category toggles
-    `${chestFilterListSelector} input[data-chest-filter="category"][data-chest-category="${key}"]`
-  );
-  const getNpcInput   = id => document.querySelector(
-    `${npcHostileListSelector} input[data-npc-id="${id}"],` +
-    `${npcFriendlyListSelector} input[data-npc-id="${id}"]`
-  );
+  const getItemInput = id =>
+    document.querySelector(
+      `${itemFilterListSelector} input[data-item-id="${id}"]`
+    );
+  const getChestInput = key =>
+    document.querySelector(
+      `${chestFilterListSelector} input[data-chest-filter="size"][data-chest-size="${key}"],` +
+      `${chestFilterListSelector} input[data-chest-filter="category"][data-chest-category="${key}"]`
+    );
+  const getNpcInput = id =>
+    document.querySelector(
+      `${npcHostileListSelector} input[data-npc-id="${id}"],` +
+      `${npcFriendlyListSelector} input[data-npc-id="${id}"]`
+    );
 
   // Build a unified list of search entries
   function loadAllDefinitions() {
@@ -80,13 +81,13 @@ export function setupSidebarSearch({
     const npcs = Object.values(definitionsManager.getDefinitions("NPC"))
       .map(d => ({ id: d.id, name: d.name, type: "NPC" }));
 
-    // Chest “definitions” correspond to the five sidebar toggles
+    // Chest “definitions” in the desired order
     const chestKeys = [
-      { id: "Small",      name: "Small Chest" },
-      { id: "Normal",     name: "Normal Chest" },
-      { id: "Medium",     name: "Medium Chest" },
-      { id: "Dragonvault",name: "Dragonvault Chest" },
-      { id: "Large",      name: "Large Chest" }
+      { id: "Small",       name: "Small Chest" },
+      { id: "Medium",      name: "Medium Chest" },
+      { id: "Large",       name: "Large Chest" },
+      { id: "Normal",      name: "Normal Chest" },
+      { id: "Dragonvault", name: "Dragonvault Chest" }
     ].map(o => ({ ...o, type: "Chest" }));
 
     return [...items, ...chestKeys, ...npcs];
@@ -111,27 +112,25 @@ export function setupSidebarSearch({
       if (type === "Chest") input = getChestInput(id);
       if (type === "NPC")   input = getNpcInput(id);
 
-      // Toggle this filter
+      // Toggle this filter on/off
       item.querySelector(".toggle-btn")?.addEventListener("click", () => {
         if (input) input.click();
       });
 
-      // Show Only: clear all others, keep only this one on
+      // Show only this filter: uncheck all others across all types
       item.querySelector(".show-only-btn")?.addEventListener("click", () => {
-        // Main-layer: only Item on if id.type==="Item", else turn Item off
+        // Main-layer: only "Item" on if this is an Item; otherwise turn it off
         document.querySelectorAll(`${mainFiltersSelector} input[data-layer]`)
           .forEach(i => {
             const want = (type === "Item" && i.dataset.layer === "Item");
             if (i.checked !== want) i.click();
           });
-
         // Items
         document.querySelectorAll(`${itemFilterListSelector} input[data-item-id]`)
           .forEach(i => {
             const want = (type === "Item" && i.dataset.itemId === id);
             if (i.checked !== want) i.click();
           });
-
         // Chests
         document.querySelectorAll(`${chestFilterListSelector} input`)
           .forEach(i => {
@@ -139,7 +138,6 @@ export function setupSidebarSearch({
             const want = (type === "Chest" && key === id);
             if (i.checked !== want) i.click();
           });
-
         // NPCs
         document.querySelectorAll(
           `${npcHostileListSelector} input[data-npc-id],${npcFriendlyListSelector} input[data-npc-id]`
