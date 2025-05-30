@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.2 — use bg-10 for visible fading border */
+/* @version: 2.3 — increased border thickness to 4px (double) */
 
 .search-suggestions {
   position: absolute;
@@ -10,7 +10,7 @@
   background-color: var(--bg-30);
 
   /* U-shape fading border: solid bottom (bg-10), tapering transparent at top */
-  border: var(--border-width-thin) solid;
+  border: var(--border-width-thick) solid;
   border-image-source: linear-gradient(to top,
     var(--bg-10) 0%,
     rgba(21, 21, 25, 0) 100%
