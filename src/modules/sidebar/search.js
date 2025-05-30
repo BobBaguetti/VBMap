@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 3.1.1 — reorder chest entries in search results
+// @version: 3.1.2 — Smart “Show Only”: chest size vs category, per-type isolation
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -81,7 +81,7 @@ export function setupSidebarSearch({
     const npcs = Object.values(definitionsManager.getDefinitions("NPC"))
       .map(d => ({ id: d.id, name: d.name, type: "NPC" }));
 
-    // Chest “definitions” in the desired order
+    // Chest entries in desired order
     const chestKeys = [
       { id: "Small",       name: "Small Chest" },
       { id: "Medium",      name: "Medium Chest" },
@@ -117,34 +117,58 @@ export function setupSidebarSearch({
         if (input) input.click();
       });
 
-      // Show only this filter: uncheck all others across all types
+      // Show only this filter: isolate within its type
       item.querySelector(".show-only-btn")?.addEventListener("click", () => {
-        // Main-layer: only "Item" on if this is an Item; otherwise turn it off
+        // 1) Main-layer: only the clicked type remains checked
         document.querySelectorAll(`${mainFiltersSelector} input[data-layer]`)
           .forEach(i => {
-            const want = (type === "Item" && i.dataset.layer === "Item");
+            const want = (i.dataset.layer === type);
             if (i.checked !== want) i.click();
           });
-        // Items
-        document.querySelectorAll(`${itemFilterListSelector} input[data-item-id]`)
-          .forEach(i => {
-            const want = (type === "Item" && i.dataset.itemId === id);
-            if (i.checked !== want) i.click();
+
+        // 2) Items: if not an Item search, uncheck all; otherwise keep only target
+        if (type === "Item") {
+          document.querySelectorAll(`${itemFilterListSelector} input[data-item-id]`)
+            .forEach(i => {
+              const keep = (i.dataset.itemId === id);
+              if (i.checked !== keep) i.click();
+            });
+        } else {
+          document.querySelectorAll(`${itemFilterListSelector} input[data-item-id]`)
+            .forEach(i => { if (i.checked) i.click(); });
+        }
+
+        // 3) Chests: handle size vs category group
+        if (type === "Chest") {
+          const isSize     = ["Small","Medium","Large"].includes(id);
+          const filterType = isSize ? "size" : "category";
+          // Toggle others of same filterType off, keep this one on
+          document.querySelectorAll(
+            `${chestFilterListSelector} input[data-chest-filter="${filterType}"]`
+          ).forEach(i => {
+            const key = filterType === "size" ? i.dataset.chestSize : i.dataset.chestCategory;
+            const keep = (key === id);
+            if (i.checked !== keep) i.click();
           });
-        // Chests
-        document.querySelectorAll(`${chestFilterListSelector} input`)
-          .forEach(i => {
-            const key = i.dataset.chestSize || i.dataset.chestCategory;
-            const want = (type === "Chest" && key === id);
-            if (i.checked !== want) i.click();
+        } else {
+          // Uncheck all chest filters if not searching chests
+          document.querySelectorAll(`${chestFilterListSelector} input`)
+            .forEach(i => { if (i.checked) i.click(); });
+        }
+
+        // 4) NPCs: isolate or clear
+        if (type === "NPC") {
+          document.querySelectorAll(
+            `${npcHostileListSelector} input[data-npc-id],${npcFriendlyListSelector} input[data-npc-id]`
+          ).forEach(i => {
+            const keep = (i.dataset.npcId === id);
+            if (i.checked !== keep) i.click();
           });
-        // NPCs
-        document.querySelectorAll(
-          `${npcHostileListSelector} input[data-npc-id],${npcFriendlyListSelector} input[data-npc-id]`
-        ).forEach(i => {
-          const want = (type === "NPC" && i.dataset.npcId === id);
-          if (i.checked !== want) i.click();
-        });
+        } else {
+          document.querySelectorAll(
+            `${npcHostileListSelector} input[data-npc-id],${npcFriendlyListSelector} input[data-npc-id]`
+          ).forEach(i => { if (i.checked) i.click(); });
+        }
       });
     });
   }
