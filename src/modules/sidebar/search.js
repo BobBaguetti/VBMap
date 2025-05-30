@@ -1,18 +1,20 @@
 // @file: src/modules/sidebar/search.js
-// @version: 1.2 — float suggestions outside sidebar to avoid layout shift
+// @version: 2.1 — move suggestions outside wrapper and wire live suggestions
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
 /**
- * Initialize the search bar styling, clear-button behavior, and floating suggestions.
+ * Initialize the search bar styling, clear-button behavior, and live search suggestions.
  *
  * @param {object} params
- * @param {string} params.searchBarSelector    – selector for the search input
- * @param {string} params.clearButtonSelector – selector for the clear button
+ * @param {string} params.searchBarSelector        – selector for the search input
+ * @param {string} params.clearButtonSelector     – selector for the clear button
+ * @param {string} params.suggestionsListSelector – selector for the suggestions container
  */
 export function setupSidebarSearch({
-  searchBarSelector   = "#search-bar",
-  clearButtonSelector = "#search-clear"
+  searchBarSelector       = "#search-bar",
+  clearButtonSelector     = "#search-clear",
+  suggestionsListSelector = "#search-suggestions"
 }) {
   const searchBar = document.querySelector(searchBarSelector);
   const clearBtn  = document.querySelector(clearButtonSelector);
@@ -21,7 +23,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // Style & clear handler
+  // Style and clear handler
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -29,73 +31,36 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
-  // Create (or reuse) the floating suggestions container
-  let resultsEl = document.querySelector(".search-results");
-  if (!resultsEl) {
-    resultsEl = document.createElement("ul");
-    resultsEl.classList.add("search-results");
-    resultsEl.setAttribute("role", "listbox");
-    // start hidden
-    resultsEl.style.display = "none";
-    document.body.appendChild(resultsEl);
+  // Build suggestions <ul> if missing, and insert it just after the wrapper
+  let suggestionsList = document.querySelector(suggestionsListSelector);
+  if (!suggestionsList) {
+    suggestionsList = document.createElement("ul");
+    suggestionsList.id = suggestionsListSelector.slice(1);
+    suggestionsList.classList.add("search-suggestions");
+    const searchWrapper = searchBar.parentNode;
+    searchWrapper.insertAdjacentElement("afterend", suggestionsList);
   }
 
-  // Positioning helper
-  function updateResultsPosition() {
-    const rect = searchBar.getBoundingClientRect();
-    resultsEl.style.top  = `${rect.bottom + window.scrollY + 4}px`;
-    resultsEl.style.left = `${rect.left + window.scrollX}px`;
-    resultsEl.style.width = `${rect.width}px`;
-  }
-
-  // Render suggestions on input
-  function handleInput() {
-    const q = searchBar.value.trim().toLowerCase();
-    if (q.length < 2) {
-      resultsEl.style.display = "none";
-      resultsEl.innerHTML = "";
+  // On each keystroke, filter definitions and render up to 10 matches
+  searchBar.addEventListener("input", () => {
+    const query = searchBar.value.trim().toLowerCase();
+    if (!query) {
+      suggestionsList.innerHTML = "";
       return;
     }
 
-    // Re-position before drawing
-    updateResultsPosition();
-
-    // Filter definitions by name
-    const items = Object.values(definitionsManager.getItemDefMap());
-    const matches = items
-      .filter(def => def.name.toLowerCase().includes(q))
+    const defsMap = definitionsManager.getItemDefMap();
+    const defs = Object.values(defsMap);
+    const matches = defs
+      .filter(d => d.name?.toLowerCase().includes(query))
       .slice(0, 10);
 
-    // Build list
-    resultsEl.innerHTML = "";
-    for (const def of matches) {
-      const li = document.createElement("li");
-      li.classList.add("search-result-item");
-      li.tabIndex = 0;
-      li.setAttribute("role", "option");
-      li.textContent = def.name;
-      li.addEventListener("click", () => {
-        // TODO: wire “filter by” / “hide all” actions here
-        console.log("Clicked suggestion:", def);
-      });
-      resultsEl.appendChild(li);
-    }
-
-    resultsEl.style.display = matches.length ? "block" : "none";
-  }
-
-  searchBar.addEventListener("input", handleInput);
-  window.addEventListener("resize", updateResultsPosition);
-  window.addEventListener("scroll", updateResultsPosition, true);
-
-  // Close when clicking outside searchBar or resultsEl
-  document.addEventListener("click", e => {
-    if (
-      e.target !== searchBar &&
-      e.target !== clearBtn &&
-      !resultsEl.contains(e.target)
-    ) {
-      resultsEl.style.display = "none";
-    }
+    suggestionsList.innerHTML = matches.map(def => `
+      <li class="search-suggestion-item" data-id="${def.id}">
+        <span class="suggestion-name">${def.name}</span>
+        <button class="suggestion-action filter-by">Filter By</button>
+        <button class="suggestion-action hide-all">Hide All</button>
+      </li>
+    `).join("");
   });
 }
