@@ -93,3 +93,9 @@
   color: var(--text-primary);
 }
  
+.suggestion-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5em;
+  flex-shrink: 0;
+}
