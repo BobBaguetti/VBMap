@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/filters/index.js
-// @version: 1.5 — enforce category toggle overrides individual sizes
+// @version: 1.6 — remove name‐query filtering so search input doesn’t hide markers
 
 import { setupMainFilters }  from "./mainFilters.js";
 import { setupChestFilters } from "./chestFilters.js";
@@ -10,7 +10,7 @@ import { setupItemFilters }  from "./itemFilters.js";
  * Wires up all sidebar filters and exposes the core APIs.
  *
  * @param {object} params
- *   - searchBarSelector
+ *   - searchBarSelector         (now unused for filtering)
  *   - mainFiltersSelector
  *   - pveToggleSelector
  *   - itemFilterListSelector
@@ -27,7 +27,7 @@ import { setupItemFilters }  from "./itemFilters.js";
  */
 export async function setupSidebarFilters(params) {
   const {
-    searchBarSelector,
+    /* searchBarSelector, */
     mainFiltersSelector,
     pveToggleSelector,
     itemFilterListSelector,
@@ -40,14 +40,12 @@ export async function setupSidebarFilters(params) {
   } = params;
 
   function filterMarkers() {
-    const searchBar = document.querySelector(searchBarSelector);
     const pveToggle = document.querySelector(pveToggleSelector);
-    const nameQuery = (searchBar?.value || "").toLowerCase();
     const pveOn     = pveToggle?.checked ?? true;
 
     allMarkers.forEach(({ markerObj, data }) => {
-      const matchesPvE  = pveOn || data.type !== "Item";
-      const matchesName = data.name?.toLowerCase().includes(nameQuery);
+      // PvE toggle applies only to Items
+      const matchesPvE = pveOn || data.type !== "Item";
 
       // Main-layer toggles
       let mainVisible = true;
@@ -59,7 +57,7 @@ export async function setupSidebarFilters(params) {
           }
         });
 
-      // Item-specific
+      // Item‐specific
       let itemVisible = true;
       if (data.predefinedItemId) {
         const cb = document.querySelector(
@@ -68,17 +66,15 @@ export async function setupSidebarFilters(params) {
         if (cb && !cb.checked) itemVisible = false;
       }
 
-      // Chest-specific
+      // Chest‐specific
       let chestVisible = true;
       if (data.type === "Chest") {
-        // If the category is unchecked, hide all regardless of size
         const catCb = document.querySelector(
           `${chestFilterListSelector} input[data-chest-filter="category"][data-chest-category="${data.category}"]`
         );
         if (catCb && !catCb.checked) {
           chestVisible = false;
         } else {
-          // Category is allowed—now respect the size toggle
           const sizeCb = document.querySelector(
             `${chestFilterListSelector} input[data-chest-filter="size"][data-chest-size="${data.size}"]`
           );
@@ -98,10 +94,9 @@ export async function setupSidebarFilters(params) {
         }
       }
 
-      // Final decision
+      // Final decision: nameQuery removed
       const shouldShow =
         matchesPvE &&
-        matchesName &&
         mainVisible &&
         itemVisible &&
         chestVisible &&
@@ -119,7 +114,7 @@ export async function setupSidebarFilters(params) {
   setupMainFilters(mainFiltersSelector, filterMarkers);
   setupChestFilters(chestFilterListSelector, filterMarkers);
 
-  // Await NPC filter setup so we can pass `db`
+  // Await NPC filter setup to pass `db`
   await setupNpcFilters(
     npcHostileListSelector,
     npcFriendlyListSelector,

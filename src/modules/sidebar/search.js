@@ -1,17 +1,8 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.8.1 — fix selectors for item filters and Show Only behavior
+// @version: 2.9 — clear search input on action so name filtering no longer interferes
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
-/**
- * Initialize the search bar, clear-button, and live search suggestions that
- * manipulate the sidebar’s item filter checkboxes.
- *
- * @param {object} params
- * @param {string} params.searchBarSelector
- * @param {string} params.clearButtonSelector
- * @param {string} params.suggestionsListSelector
- */
 export function setupSidebarSearch({
   searchBarSelector       = "#search-bar",
   clearButtonSelector     = "#search-clear",
@@ -33,29 +24,32 @@ export function setupSidebarSearch({
   });
 
   // Positioning context
-  const searchWrapper = searchBar.parentNode;
-  if (getComputedStyle(searchWrapper).position === "static") {
-    searchWrapper.style.position = "relative";
+  const wrapper = searchBar.parentNode;
+  if (getComputedStyle(wrapper).position === "static") {
+    wrapper.style.position = "relative";
   }
 
-  // Suggestions <ul>
+  // Suggestions list
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
     suggestionsList.id = suggestionsListSelector.slice(1);
     suggestionsList.classList.add("search-suggestions");
-    searchWrapper.appendChild(suggestionsList);
+    wrapper.appendChild(suggestionsList);
   }
   suggestionsList.classList.remove("visible");
 
-  // Helper: find the item-filter checkbox by data-item-id
   function getFilterInput(id) {
     return document.querySelector(
       `#item-filter-list input[data-item-id="${id}"]`
     );
   }
 
-  // Render suggestion cards with three actions
+  function clearSearch() {
+    searchBar.value = "";
+    searchBar.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+
   function renderSuggestions(matches) {
     suggestionsList.innerHTML = matches.map(def => `
       <li class="search-suggestion-item" data-id="${def.id}">
@@ -69,39 +63,29 @@ export function setupSidebarSearch({
     suggestionsList.querySelectorAll(".search-suggestion-item").forEach(item => {
       const id = item.dataset.id;
       const input = getFilterInput(id);
-      const toggleBtn   = item.querySelector(".toggle-btn");
-      const showOnlyBtn = item.querySelector(".show-only-btn");
-      const hideAllBtn  = item.querySelector(".hide-all-btn");
 
-      // Toggle this filter on/off
-      toggleBtn?.addEventListener("click", () => {
+      item.querySelector(".toggle-btn")?.addEventListener("click", () => {
         if (input) input.click();
+        clearSearch();
       });
 
-      // Show only this filter: turn off all others, then turn on this one
-      showOnlyBtn?.addEventListener("click", () => {
+      item.querySelector(".show-only-btn")?.addEventListener("click", () => {
         document
           .querySelectorAll("#item-filter-list input[data-item-id]")
           .forEach(i => {
-            if (i.dataset.itemId !== id && i.checked) {
-              i.click();
-            }
+            if (i.dataset.itemId !== id && i.checked) i.click();
           });
-        if (input && !input.checked) {
-          input.click();
-        }
+        if (input && !input.checked) input.click();
+        clearSearch();
       });
 
-      // Hide all of this type
-      hideAllBtn?.addEventListener("click", () => {
-        if (input && input.checked) {
-          input.click();
-        }
+      item.querySelector(".hide-all-btn")?.addEventListener("click", () => {
+        if (input && input.checked) input.click();
+        clearSearch();
       });
     });
   }
 
-  // Live search logic
   searchBar.addEventListener("input", () => {
     const q = searchBar.value.trim().toLowerCase();
     if (!q) {
@@ -109,11 +93,10 @@ export function setupSidebarSearch({
       suggestionsList.classList.remove("visible");
       return;
     }
-
     const defs = Object.values(definitionsManager.getItemDefMap());
-    const matches = defs
-      .filter(d => d.name?.toLowerCase().includes(q))
-      .slice(0, 10);
+    const matches = defs.filter(d =>
+      d.name?.toLowerCase().includes(q)
+    ).slice(0, 10);
 
     if (matches.length) {
       renderSuggestions(matches);
