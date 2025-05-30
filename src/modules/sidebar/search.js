@@ -1,11 +1,11 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.8 — don’t close dropdown on action clicks
+// @version: 2.8.1 — fix selectors for item filters and Show Only behavior
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
 /**
  * Initialize the search bar, clear-button, and live search suggestions that
- * directly manipulate the sidebar’s filter checkboxes.
+ * manipulate the sidebar’s item filter checkboxes.
  *
  * @param {object} params
  * @param {string} params.searchBarSelector
@@ -38,7 +38,7 @@ export function setupSidebarSearch({
     searchWrapper.style.position = "relative";
   }
 
-  // Create or reuse the suggestions <ul>
+  // Suggestions <ul>
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
@@ -48,14 +48,14 @@ export function setupSidebarSearch({
   }
   suggestionsList.classList.remove("visible");
 
-  // Helper: find the filter checkbox for an item-definition ID
+  // Helper: find the item-filter checkbox by data-item-id
   function getFilterInput(id) {
     return document.querySelector(
-      `#item-filter-list input[value="${id}"]`
+      `#item-filter-list input[data-item-id="${id}"]`
     );
   }
 
-  // Render suggestion cards with three buttons
+  // Render suggestion cards with three actions
   function renderSuggestions(matches) {
     suggestionsList.innerHTML = matches.map(def => `
       <li class="search-suggestion-item" data-id="${def.id}">
@@ -74,33 +74,30 @@ export function setupSidebarSearch({
       const hideAllBtn  = item.querySelector(".hide-all-btn");
 
       // Toggle this filter on/off
-      if (toggleBtn && input) {
-        toggleBtn.addEventListener("click", () => {
-          input.click();
-          // no longer closing the dropdown here
-        });
-      }
+      toggleBtn?.addEventListener("click", () => {
+        if (input) input.click();
+      });
 
-      // Show only this filter (turn all others off)
-      if (showOnlyBtn) {
-        showOnlyBtn.addEventListener("click", () => {
-          document
-            .querySelectorAll("#item-filter-list input")
-            .forEach(i => {
-              if (i.value !== id && i.checked) i.click();
-            });
-          if (input && !input.checked) input.click();
-          // dropdown remains open
-        });
-      }
+      // Show only this filter: turn off all others, then turn on this one
+      showOnlyBtn?.addEventListener("click", () => {
+        document
+          .querySelectorAll("#item-filter-list input[data-item-id]")
+          .forEach(i => {
+            if (i.dataset.itemId !== id && i.checked) {
+              i.click();
+            }
+          });
+        if (input && !input.checked) {
+          input.click();
+        }
+      });
 
       // Hide all of this type
-      if (hideAllBtn && input) {
-        hideAllBtn.addEventListener("click", () => {
-          if (input.checked) input.click();
-          // dropdown remains open
-        });
-      }
+      hideAllBtn?.addEventListener("click", () => {
+        if (input && input.checked) {
+          input.click();
+        }
+      });
     });
   }
 
