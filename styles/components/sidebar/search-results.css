@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 1.10 — use text-disabled for a subtle border */
+/* @version: 1.10 — darker shadow and bottom-only border */
 
 .search-suggestions {
   position: absolute;
@@ -8,12 +8,13 @@
   width: 100%;
   margin-top: 4px;
   background-color: var(--bg-30);
-  border: var(--border-width-hair) solid var(--text-disabled);
+  /* heavier, darker shadow for stronger separation */
+  box-shadow: var(--shadow-high);
+  /* only a bottom border, using a darker background shade */
+  border: none;
+  border-bottom: var(--border-width-hair) solid var(--bg-20);
   border-bottom-left-radius: var(--radius-small);
   border-bottom-right-radius: var(--radius-small);
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.2),
-    0 8px 16px rgba(0, 0, 0, 0.15);
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
