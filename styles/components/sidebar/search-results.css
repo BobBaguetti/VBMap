@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.0 — fading red U-shaped border + strong green shadow */
+/* @version: 2.1 — pill-shaped bottom corners + fading border & green shadow */
 
 .search-suggestions {
   position: absolute;
@@ -9,13 +9,16 @@
   margin-top: 4px;
   background-color: var(--bg-30);
 
-  /* Fading red border: full at bottom, tapering to 0 at top */
-  border: var(--border-width-thick) solid;  
+  /* Fading red border via border-image */
+  border: var(--border-width-thick) solid;
   border-image-source: linear-gradient(to top, red 0%, rgba(255,0,0,0) 100%);
   border-image-slice: 1;
 
-  border-bottom-left-radius: var(--radius-small);
-  border-bottom-right-radius: var(--radius-small);
+  /* Top corners square, bottom corners pill-shaped */
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+  border-bottom-left-radius: var(--radius-large);
+  border-bottom-right-radius: var(--radius-large);
 
   /* Strong green shadow */
   box-shadow:
