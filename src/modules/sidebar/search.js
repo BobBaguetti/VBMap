@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.7 — wire Toggle, Show Only, and Hide All to sidebar filter inputs
+// @version: 2.8 — don’t close dropdown on action clicks
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -77,7 +77,7 @@ export function setupSidebarSearch({
       if (toggleBtn && input) {
         toggleBtn.addEventListener("click", () => {
           input.click();
-          suggestionsList.classList.remove("visible");
+          // no longer closing the dropdown here
         });
       }
 
@@ -90,7 +90,7 @@ export function setupSidebarSearch({
               if (i.value !== id && i.checked) i.click();
             });
           if (input && !input.checked) input.click();
-          suggestionsList.classList.remove("visible");
+          // dropdown remains open
         });
       }
 
@@ -98,7 +98,7 @@ export function setupSidebarSearch({
       if (hideAllBtn && input) {
         hideAllBtn.addEventListener("click", () => {
           if (input.checked) input.click();
-          suggestionsList.classList.remove("visible");
+          // dropdown remains open
         });
       }
     });
