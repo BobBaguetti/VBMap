@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 1.10 — darker shadow and bottom-only border */
+/* @version: 2.0 — custom bottom border and red gradient shadow test */
 
 .search-suggestions {
   position: absolute;
@@ -8,13 +8,19 @@
   width: 100%;
   margin-top: 4px;
   background-color: var(--bg-30);
-  /* heavier, darker shadow for stronger separation */
-  box-shadow: var(--shadow-high);
-  /* only a bottom border, using a darker background shade */
-  border: none;
-  border-bottom: var(--border-width-hair) solid var(--bg-20);
-  border-bottom-left-radius: var(--radius-small);
-  border-bottom-right-radius: var(--radius-small);
+
+  /* Flat bottom border */
+  border-bottom: var(--border-width-hair) solid var(--bg-10);
+
+  /* Only top corners rounded */
+  border-top-left-radius: var(--radius-small);
+  border-top-right-radius: var(--radius-small);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+
+  /* Remove previous box-shadow */
+  box-shadow: none;
+
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
@@ -23,13 +29,23 @@
   padding: 0 4px;
 }
 
-/* When visible, expand and fade in */
+/* Red gradient “shadow” fading upwards from the bottom */
+.search-suggestions::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 20px; /* adjust as needed */
+  background: linear-gradient(to top, red 100%, transparent 0%);
+  pointer-events: none;
+}
+
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
 }
 
-/* Individual suggestion “cards” */
 .search-suggestion-item {
   display: flex;
   align-items: center;
@@ -54,7 +70,6 @@
   font-size: 14px;
 }
 
-/* Buttons inside each suggestion */
 .suggestion-action {
   margin-left: 0.5em;
   padding: 0.25em 0.6em;
