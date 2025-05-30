@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 1.5 — add border and caret arrow to dropdown */
+/* @version: 1.5 — added border for clearer separation */
 
 .search-suggestions {
   position: absolute;
@@ -8,7 +8,7 @@
   width: 100%;
   margin-top: 4px;
   background-color: var(--bg-30);
-  border: 1px solid var(--border-soft);
+  border: 1px solid var(--border-soft);           /* added border */
   border-bottom-left-radius: 4px;
   border-bottom-right-radius: 4px;
   box-shadow:
@@ -19,26 +19,16 @@
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0 4px;
+  padding: 0 4px; /* horizontal padding for container */
 }
 
-/* ── Caret arrow linking to the input ─────────────────────────────────── */
-.search-suggestions::before {
-  content: "";
-  position: absolute;
-  top: -8px;
-  left: 16px;
-  border: 8px solid transparent;
-  border-bottom-color: var(--bg-30);
-}
-
-/* ── Show/dropdown state ──────────────────────────────────────────────── */
+/* When visible, expand and fade in */
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
 }
 
-/* ── Suggestion cards ─────────────────────────────────────────────────── */
+/* Individual suggestion “cards” */
 .search-suggestion-item {
   display: flex;
   align-items: center;
@@ -51,6 +41,7 @@
   cursor: pointer;
   transition: background 0.2s;
 }
+
 .search-suggestion-item:hover {
   background-color: var(--bg-50);
 }
@@ -62,7 +53,7 @@
   font-size: 14px;
 }
 
-/* ── Action buttons ───────────────────────────────────────────────────── */
+/* Buttons inside each suggestion */
 .suggestion-action {
   margin-left: 0.5em;
   padding: 0.25em 0.6em;
@@ -74,6 +65,7 @@
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .suggestion-action:hover {
   background: var(--bg-40);
   color: var(--text-primary);
