@@ -1,10 +1,10 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.4 — hide suggestions panel when no results, avoiding reserved space
+// @version: 2.5 — stronger shadow support & CSS-based animations
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
 /**
- * Initialize the search bar styling, clear-button behavior, and live search suggestions.
+ * Initialize the search bar styling, clear-button behavior, and live search suggestions with animations.
  *
  * @param {object} params
  * @param {string} params.searchBarSelector        – selector for the search input
@@ -37,7 +37,7 @@ export function setupSidebarSearch({
     searchWrapper.style.position = "relative";
   }
 
-  // Build suggestions <ul> if missing, and append inside the wrapper
+  // Create or select the suggestions <ul>
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
@@ -46,34 +46,33 @@ export function setupSidebarSearch({
     searchWrapper.appendChild(suggestionsList);
   }
 
-  // Hide suggestions panel initially
-  suggestionsList.style.display = "none";
+  // Start hidden
+  suggestionsList.classList.remove("visible");
 
-  // Handle input events to show/hide and render suggestions
+  const showSuggestions = () => suggestionsList.classList.add("visible");
+  const hideSuggestions = () => suggestionsList.classList.remove("visible");
+
+  // Handle live input
   searchBar.addEventListener("input", () => {
     const query = searchBar.value.trim().toLowerCase();
 
-    // No query → clear and hide
     if (!query) {
       suggestionsList.innerHTML = "";
-      suggestionsList.style.display = "none";
+      hideSuggestions();
       return;
     }
 
-    // Filter definitions
     const defs = Object.values(definitionsManager.getItemDefMap());
-    const matches = defs.filter(def =>
-      def.name?.toLowerCase().includes(query)
-    ).slice(0, 10);
+    const matches = defs
+      .filter(d => d.name?.toLowerCase().includes(query))
+      .slice(0, 10);
 
-    // No matches → clear and hide
     if (matches.length === 0) {
       suggestionsList.innerHTML = "";
-      suggestionsList.style.display = "none";
+      hideSuggestions();
       return;
     }
 
-    // Render matches and show panel
     suggestionsList.innerHTML = matches.map(def => `
       <li class="search-suggestion-item" data-id="${def.id}">
         <span class="suggestion-name">${def.name}</span>
@@ -81,6 +80,7 @@ export function setupSidebarSearch({
         <button class="suggestion-action hide-all">Hide All</button>
       </li>
     `).join("");
-    suggestionsList.style.display = "block";
+
+    showSuggestions();
   });
 }
