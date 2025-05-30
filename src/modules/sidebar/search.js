@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 3.2 — use filterActions.js for toggle and show-only logic
+// @version: 3.3 — prepend per-type icons in suggestion rows
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 import {
@@ -64,34 +64,46 @@ export function setupSidebarSearch({
   // Build unified list of definitions and chest keys
   function loadAllDefinitions() {
     const items = Object.values(definitionsManager.getDefinitions("Item"))
-      .map(d => ({ id: d.id, name: d.name, type: "Item" }));
+      .map(d => ({ id: d.id, name: d.name, type: "Item", icon: d.imageSmall }));
     const npcs = Object.values(definitionsManager.getDefinitions("NPC"))
-      .map(d => ({ id: d.id, name: d.name, type: "NPC" }));
+      .map(d => ({ id: d.id, name: d.name, type: "NPC", icon: d.imageSmall }));
     const chestKeys = [
-      { id: "Small",       name: "Small Chest", type: "Chest" },
-      { id: "Medium",      name: "Medium Chest", type: "Chest" },
-      { id: "Large",       name: "Large Chest", type: "Chest" },
-      { id: "Normal",      name: "Normal Chest", type: "Chest" },
-      { id: "Dragonvault", name: "Dragonvault Chest", type: "Chest" }
+      { id: "Small",       name: "Small Chest", type: "Chest", iconClass: "ph-fill ph-package" },
+      { id: "Medium",      name: "Medium Chest", type: "Chest", iconClass: "ph-fill ph-package" },
+      { id: "Large",       name: "Large Chest", type: "Chest", iconClass: "ph-fill ph-package" },
+      { id: "Normal",      name: "Normal Chest", type: "Chest", iconClass: "ph-fill ph-treasure-chest" },
+      { id: "Dragonvault", name: "Dragonvault Chest", type: "Chest", iconClass: "ph-fill ph-treasure-chest" }
     ];
-    return [...items, ...chestKeys, ...npcs];
+    return [
+      ...items,
+      ...chestKeys,
+      ...npcs
+    ];
   }
 
-  // Render suggestions
+  // Render suggestions with icons
   function renderSuggestions(matches) {
-    suggestionsList.innerHTML = matches.map(def => `
-      <li class="search-suggestion-item" data-id="${def.id}" data-type="${def.type}">
-        <span class="suggestion-name">${def.name}</span>
-        <button class="suggestion-action toggle-btn">Toggle</button>
-        <button class="suggestion-action show-only-btn">Show Only</button>
-      </li>
-    `).join("");
+    suggestionsList.innerHTML = matches.map(def => {
+      let iconHtml;
+      if (def.type === "Item" || def.type === "NPC") {
+        iconHtml = `<img src="${def.icon}" class="suggestion-icon" alt="" />`;
+      } else if (def.type === "Chest") {
+        iconHtml = `<i class="suggestion-icon ${def.iconClass}"></i>`;
+      }
+      return `
+        <li class="search-suggestion-item" data-id="${def.id}" data-type="${def.type}">
+          ${iconHtml}
+          <span class="suggestion-name">${def.name}</span>
+          <button class="suggestion-action toggle-btn">Toggle</button>
+          <button class="suggestion-action show-only-btn">Show Only</button>
+        </li>
+      `;
+    }).join("");
 
     suggestionsList.querySelectorAll(".search-suggestion-item").forEach(item => {
       const id   = item.dataset.id;
       const type = item.dataset.type;
 
-      // Toggle action
       item.querySelector(".toggle-btn")?.addEventListener("click", () => {
         toggleFilter(type, id, {
           itemFilterListSelector,
@@ -101,7 +113,6 @@ export function setupSidebarSearch({
         });
       });
 
-      // Show Only action
       item.querySelector(".show-only-btn")?.addEventListener("click", () => {
         showOnlyFilter(
           type,
