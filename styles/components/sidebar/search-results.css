@@ -1,52 +1,51 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.0 — U-shaped gradient border and red shadow test */
+/* @version: 2.1 — red U-border, green shadow, full-width alignment */
 
 .search-suggestions {
   position: absolute;
   top: 100%;
-  left: 0;
-  width: 100%;
+  left: -0.8em;                                      /* undo wrapper padding */
+  width: calc(100% + 1.6em);                        /* full width plus both paddings */
   margin-top: 4px;
-  max-height: 0;
-  overflow: hidden;
-  z-index: 1000;
-  opacity: 0;
-  transition: max-height 0.2s ease, opacity 0.2s ease;
-
-  /* Base background */
   background-color: var(--bg-30);
 
   /* Top corners rounded, bottom flat */
   border-radius: var(--radius-small) var(--radius-small) 0 0;
 
-  /* U-shaped “border” via background gradients */
+  /* U-shaped red border via gradients */
   background-image:
-    /* Bottom border: full width */
+    /* bottom border */
     linear-gradient(to top, red 100%, transparent 0%),
-    /* Left border: full height */
+    /* left side */
     linear-gradient(to top, red 100%, transparent 0%),
-    /* Right border: full height */
+    /* right side */
     linear-gradient(to top, red 100%, transparent 0%);
   background-repeat: no-repeat;
   background-position:
-    center bottom, /* bottom border */
-    left bottom,   /* left side */
-    right bottom;  /* right side */
+    center bottom,
+    left bottom,
+    right bottom;
   background-size:
-    100% var(--border-width-thick), /* bottom thickness */
-    var(--border-width-thick) 100%, /* left thickness */
-    var(--border-width-thick) 100%; /* right thickness */
+    100% var(--border-width-thick),
+    var(--border-width-thick) 100%,
+    var(--border-width-thick) 100%;
 
-  /* Red shadow: heaviest at bottom, fading up the sides */
+  /* Green shadow: heaviest at bottom, lighter on sides */
   box-shadow:
-    /* bottom-heavy */
-    0 8px 16px red,
-    /* sides, a bit lighter */
-    -4px 8px 16px rgba(255, 0, 0, 0.75),
-    4px 8px 16px rgba(255, 0, 0, 0.75);
+    0 8px 16px green,
+    -4px 8px 16px rgba(0,255,0,0.75),
+    4px 8px 16px rgba(0,255,0,0.75);
+
+  max-height: 0;
+  overflow: hidden;
+  z-index: 1000;
+  transition: max-height 0.2s ease, opacity 0.2s ease;
+  opacity: 0;
+
+  /* Restore content inset */
+  padding: 0 0.8em;
 }
 
-/* When visible, expand and fade in */
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
