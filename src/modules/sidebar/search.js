@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 3.1.3 — Show Only now checks opposite chest group for “all”
+// @version: 3.1.4 — ensure Main layer toggles on for the target type
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -33,7 +33,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // Clear button
+  // Clear button (does not hide dropdown)
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -104,14 +104,23 @@ export function setupSidebarSearch({
       if (type === "Chest") input = getChestInput(id);
       if (type === "NPC")   input = getNpcInput(id);
 
+      // Helper to ensure main toggle for this type is on
+      const ensureMainOn = () => {
+        const mainToggle = document.querySelector(
+          `${mainFiltersSelector} input[data-layer="${type}"]`
+        );
+        if (mainToggle && !mainToggle.checked) mainToggle.click();
+      };
+
       // Toggle action
       toggleBtn?.addEventListener("click", () => {
         if (input) input.click();
+        ensureMainOn();
       });
 
       // Show Only action
       showOnlyBtn?.addEventListener("click", () => {
-        // 1) Main layers: only this type
+        // 1) Main layers
         document.querySelectorAll(`${mainFiltersSelector} input[data-layer]`)
           .forEach(i => {
             const want = (i.dataset.layer === type);
@@ -136,30 +145,25 @@ export function setupSidebarSearch({
         if (type === "Chest") {
           const isSize = sizeKeys.includes(id);
           if (isSize) {
-            // sizes: only id on
             sizeKeys.forEach(key => {
               const inp = getChestInput(key);
               if (inp.checked !== (key === id)) inp.click();
             });
-            // categories: all on
             catKeys.forEach(key => {
               const inp = getChestInput(key);
               if (!inp.checked) inp.click();
             });
           } else {
-            // category case: only this category on
             catKeys.forEach(key => {
               const inp = getChestInput(key);
               if (inp.checked !== (key === id)) inp.click();
             });
-            // sizes: all on
             sizeKeys.forEach(key => {
               const inp = getChestInput(key);
               if (!inp.checked) inp.click();
             });
           }
         } else {
-          // not chest: uncheck all
           [...sizeKeys, ...catKeys].forEach(key => {
             const inp = getChestInput(key);
             if (inp.checked) inp.click();
@@ -179,11 +183,13 @@ export function setupSidebarSearch({
             `${npcHostileListSelector} input[data-npc-id],${npcFriendlyListSelector} input[data-npc-id]`
           ).forEach(i => { if (i.checked) i.click(); });
         }
+
+        ensureMainOn();
       });
     });
   }
 
-  // Live search → render
+  // Live-search handler
   searchBar.addEventListener("input", () => {
     const q = searchBar.value.trim().toLowerCase();
     if (!q) {
