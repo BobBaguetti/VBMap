@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.11 — refine Show Only to isolate a single item
+// @version: 2.12 — removed Hide All, keeping Toggle and Show Only
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -78,7 +78,6 @@ export function setupSidebarSearch({
         <span class="suggestion-name">${def.name}</span>
         <button class="suggestion-action toggle-btn">Toggle</button>
         <button class="suggestion-action show-only-btn">Show Only</button>
-        <button class="suggestion-action hide-all-btn">Hide All</button>
       </li>
     `).join("");
 
@@ -107,11 +106,6 @@ export function setupSidebarSearch({
           if (i.dataset.itemId !== id && i.checked) i.click();
         });
         if (itemInput && !itemInput.checked) itemInput.click();
-      });
-
-      // Hide All of this item: uncheck only this one
-      item.querySelector(".hide-all-btn")?.addEventListener("click", () => {
-        if (itemInput && itemInput.checked) itemInput.click();
       });
     });
   }
