@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 3.3 — prepend per-type icons in suggestion rows
+// @version: 3.4 — group results under “Chests”, “Items”, “NPCs” headers
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 import {
@@ -37,7 +37,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // Clear button setup
+  // Clear button
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -45,7 +45,7 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
-  // Positioning context
+  // Ensure wrapper is positioned
   const wrapper = searchBar.parentNode;
   if (getComputedStyle(wrapper).position === "static") {
     wrapper.style.position = "relative";
@@ -74,31 +74,34 @@ export function setupSidebarSearch({
       { id: "Normal",      name: "Normal Chest", type: "Chest", iconClass: "ph-fill ph-treasure-chest" },
       { id: "Dragonvault", name: "Dragonvault Chest", type: "Chest", iconClass: "ph-fill ph-treasure-chest" }
     ];
-    return [
-      ...items,
-      ...chestKeys,
-      ...npcs
-    ];
+    return [...chestKeys, ...items, ...npcs];
   }
 
-  // Render suggestions with icons
+  // Render suggestions with category headers
   function renderSuggestions(matches) {
-    suggestionsList.innerHTML = matches.map(def => {
-      let iconHtml;
-      if (def.type === "Item" || def.type === "NPC") {
-        iconHtml = `<img src="${def.icon}" class="suggestion-icon" alt="" />`;
-      } else if (def.type === "Chest") {
-        iconHtml = `<i class="suggestion-icon ${def.iconClass}"></i>`;
-      }
-      return `
-        <li class="search-suggestion-item" data-id="${def.id}" data-type="${def.type}">
-          ${iconHtml}
-          <span class="suggestion-name">${def.name}</span>
-          <button class="suggestion-action toggle-btn">Toggle</button>
-          <button class="suggestion-action show-only-btn">Show Only</button>
-        </li>
-      `;
-    }).join("");
+    const byType = {
+      Chest:  [],
+      Item:   [],
+      NPC:    []
+    };
+    matches.forEach(m => byType[m.type].push(m));
+
+    let html = "";
+    // order: Chests, Items, NPCs
+    if (byType.Chest.length) {
+      html += `<li class="search-header">Chests</li>`;
+      byType.Chest.forEach(def => appendItem(def));
+    }
+    if (byType.Item.length) {
+      html += `<li class="search-header">Items</li>`;
+      byType.Item.forEach(def => appendItem(def));
+    }
+    if (byType.NPC.length) {
+      html += `<li class="search-header">NPCs</li>`;
+      byType.NPC.forEach(def => appendItem(def));
+    }
+
+    suggestionsList.innerHTML = html;
 
     suggestionsList.querySelectorAll(".search-suggestion-item").forEach(item => {
       const id   = item.dataset.id;
@@ -127,9 +130,27 @@ export function setupSidebarSearch({
         );
       });
     });
+
+    // helper to build each line
+    function appendItem(def) {
+      let iconHtml;
+      if (def.type === "Item" || def.type === "NPC") {
+        iconHtml = `<img src="${def.icon}" class="suggestion-icon" alt="" />`;
+      } else {
+        iconHtml = `<i class="suggestion-icon ${def.iconClass}"></i>`;
+      }
+      html += `
+        <li class="search-suggestion-item" data-id="${def.id}" data-type="${def.type}">
+          ${iconHtml}
+          <span class="suggestion-name">${def.name}</span>
+          <button class="suggestion-action toggle-btn">Toggle</button>
+          <button class="suggestion-action show-only-btn">Show Only</button>
+        </li>
+      `;
+    }
   }
 
-  // Live search handler
+  // Live search → render
   searchBar.addEventListener("input", () => {
     const q = searchBar.value.trim().toLowerCase();
     if (!q) {
@@ -140,7 +161,7 @@ export function setupSidebarSearch({
     const allDefs = loadAllDefinitions();
     const matches = allDefs
       .filter(d => d.name.toLowerCase().includes(q))
-      .slice(0, 10);
+      .slice(0, 50); // you can slice higher, headers will adjust
 
     if (matches.length) {
       renderSuggestions(matches);
