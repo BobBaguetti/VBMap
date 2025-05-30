@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 1.1 — add floating search suggestions UI
+// @version: 1.2 — float suggestions outside sidebar to avoid layout shift
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -21,7 +21,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // style and clear handler
+  // Style & clear handler
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -29,24 +29,27 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
-  // ≡ Suggestions UI
-  const wrapper = searchBar.closest(".search-wrapper");
-  if (!wrapper) {
-    console.warn("[sidebarSearch] .search-wrapper not found");
-    return;
-  }
-
-  // create (or reuse) the suggestions container
-  let resultsEl = wrapper.querySelector(".search-results");
+  // Create (or reuse) the floating suggestions container
+  let resultsEl = document.querySelector(".search-results");
   if (!resultsEl) {
     resultsEl = document.createElement("ul");
     resultsEl.classList.add("search-results");
-    wrapper.appendChild(resultsEl);
+    resultsEl.setAttribute("role", "listbox");
+    // start hidden
+    resultsEl.style.display = "none";
+    document.body.appendChild(resultsEl);
   }
-  resultsEl.style.display = "none";
 
-  // handle input events
-  const handleInput = () => {
+  // Positioning helper
+  function updateResultsPosition() {
+    const rect = searchBar.getBoundingClientRect();
+    resultsEl.style.top  = `${rect.bottom + window.scrollY + 4}px`;
+    resultsEl.style.left = `${rect.left + window.scrollX}px`;
+    resultsEl.style.width = `${rect.width}px`;
+  }
+
+  // Render suggestions on input
+  function handleInput() {
     const q = searchBar.value.trim().toLowerCase();
     if (q.length < 2) {
       resultsEl.style.display = "none";
@@ -54,37 +57,44 @@ export function setupSidebarSearch({
       return;
     }
 
-    // get all item definitions and filter by name
+    // Re-position before drawing
+    updateResultsPosition();
+
+    // Filter definitions by name
     const items = Object.values(definitionsManager.getItemDefMap());
     const matches = items
       .filter(def => def.name.toLowerCase().includes(q))
       .slice(0, 10);
 
+    // Build list
     resultsEl.innerHTML = "";
     for (const def of matches) {
       const li = document.createElement("li");
       li.classList.add("search-result-item");
       li.tabIndex = 0;
+      li.setAttribute("role", "option");
       li.textContent = def.name;
       li.addEventListener("click", () => {
-        console.log(`Clicked suggestion: ${def.name} (id: ${def.id})`);
         // TODO: wire “filter by” / “hide all” actions here
+        console.log("Clicked suggestion:", def);
       });
       resultsEl.appendChild(li);
     }
 
-    if (matches.length) {
-      resultsEl.style.display = "block";
-    } else {
-      resultsEl.style.display = "none";
-    }
-  };
+    resultsEl.style.display = matches.length ? "block" : "none";
+  }
 
   searchBar.addEventListener("input", handleInput);
+  window.addEventListener("resize", updateResultsPosition);
+  window.addEventListener("scroll", updateResultsPosition, true);
 
-  // clicking outside closes the suggestions
+  // Close when clicking outside searchBar or resultsEl
   document.addEventListener("click", e => {
-    if (!wrapper.contains(e.target)) {
+    if (
+      e.target !== searchBar &&
+      e.target !== clearBtn &&
+      !resultsEl.contains(e.target)
+    ) {
       resultsEl.style.display = "none";
     }
   });
