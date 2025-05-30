@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/index.js
-// @version: 12.2 — wire search callbacks for Filter By / Hide All
+// @version: 12.3 — pass full filter selectors into setupSidebarSearch
 
 import { setupSidebarUI }      from "./sidebarUI.js";
 import { setupSidebarFilters } from "./sidebarFilters.js";
@@ -33,7 +33,7 @@ export async function initSidebar(
   setupSidebarUI({ map });
 
   // 2) Filtering Section
-  const { filterMarkers, loadItemFilters } = 
+  const { filterMarkers, loadItemFilters } =
     await setupSidebarFilters({
       searchBarSelector:      "#search-bar",
       mainFiltersSelector:    "#main-filters .toggle-group",
@@ -49,31 +49,17 @@ export async function initSidebar(
 
   // Initial load of item filters and markers
   await loadItemFilters();
+  filterMarkers();
 
-  // State to track active definitions selected via search
-  let activeDefinitions = [];
-
-  function setActiveDefinitions(ids) {
-    activeDefinitions = ids;
-  }
-
-  function removeActiveDefinition(id) {
-    activeDefinitions = activeDefinitions.filter(i => i !== id);
-  }
-
-  // 2a) Wire search with callbacks to toggle markers by definition ID
+  // 2a) Wire search with callbacks (selectors for all filter groups)
   setupSidebarSearch({
     searchBarSelector:       "#search-bar",
     clearButtonSelector:     "#search-clear",
     suggestionsListSelector: "#search-suggestions",
-    onFilterBy: id => {
-      setActiveDefinitions([id]);
-      loadItemFilters().then(filterMarkers);
-    },
-    onHideAll: id => {
-      removeActiveDefinition(id);
-      loadItemFilters().then(filterMarkers);
-    }
+    mainFiltersSelector:     "#main-filters .toggle-group",
+    chestFilterListSelector: "#chest-filter-list",
+    npcHostileListSelector:  "#npc-hostile-list",
+    npcFriendlyListSelector: "#npc-friendly-list"
   });
 
   // 3) Admin Tools
