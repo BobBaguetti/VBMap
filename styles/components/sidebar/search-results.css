@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.4 — suggestion cards match filter buttons’ colors */
+/* @version: 2.2 — removed border, kept shadow */
 
 .search-suggestions {
   position: absolute;
@@ -9,18 +9,13 @@
   margin-top: 4px;
   background-color: var(--bg-30);
 
-  /* U-shape fading border */
-  border: var(--border-width-thin) solid;
-  border-image-source: linear-gradient(to top,
-    var(--bg-10) 0%,
-    rgba(21,21,25,0) 100%
-  );
-  border-image-slice: 1;
+  /* No border */
 
+  /* bottom corners pill-shaped */
   border-bottom-left-radius: var(--radius-small);
   border-bottom-right-radius: var(--radius-small);
 
-  /* shadows */
+  /* layered shadow using your tokens */
   box-shadow:
     var(--shadow-medium),
     var(--shadow-low);
@@ -33,30 +28,27 @@
   padding: 0 4px;
 }
 
+/* When visible, expand and fade in */
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
 }
 
-/* ── Suggestion cards ──────────────────────────────────────────── */
+/* Suggestion cards */
 .search-suggestion-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-
-  /* Match filter-panel button default */
   background-color: var(--bg-40);
   border-radius: var(--radius-small);
-  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
-
   padding: 0.5em 0.8em;
   margin: 4px 0;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
   cursor: pointer;
-  transition: background-color 0.2s;
+  transition: background 0.2s;
 }
 
 .search-suggestion-item:hover {
-  /* Match filter-panel button hover */
   background-color: var(--bg-50);
 }
 
