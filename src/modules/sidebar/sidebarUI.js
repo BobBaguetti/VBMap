@@ -1,19 +1,30 @@
-// @file: src/modules/sidebar/sidebarUI.js 
-// @version: 1.34 — wire About toolbar button to draggable About modal
+// @file: src/modules/sidebar/sidebarUI.js
+// @version: 1.35 — removed inline setupSidebarSearch call
 
-import { setupSidebarSearch }   from "./search.js";
 import { setupSidebarMobileToggle } from "./mobileToggle.js";
-import { setupStickyHeader }    from "./stickyHeader.js";
-import { setupGroupToggle }     from "./groupToggle.js";
-import { setupMasterControls }  from "./masterToggle.js";
-import { setupSettingsModal }   from "./settingsModal.js";
-import { setupAboutModal }      from "./aboutModal.js";     // NEW
+import { setupStickyHeader }      from "./stickyHeader.js";
+import { setupGroupToggle }       from "./groupToggle.js";
+import { setupMasterControls }    from "./masterToggle.js";
+import { setupSettingsModal }     from "./settingsModal.js";
+import { setupAboutModal }        from "./aboutModal.js";
 
+/**
+ * Wire up the static sidebar UI (minus search, which is now handled in initSidebar).
+ *
+ * @param {object} params
+ * @param {L.Map}    params.map
+ * @param {string}   [params.sidebarSelector="#sidebar"]
+ * @param {string}   [params.toggleSelector="#sidebar-toggle"]
+ * @param {string}   [params.searchBarSelector="#search-bar"]
+ * @param {string}   [params.filterGroupSelector=".filter-group"]
+ * @param {string}   [params.settingsButtonSelector="#btn-settings"]
+ * @param {string}   [params.aboutButtonSelector="#btn-about"]
+ */
 export function setupSidebarUI({
   map,
   sidebarSelector         = "#sidebar",
   toggleSelector          = "#sidebar-toggle",
-  searchBarSelector       = "#search-bar",
+  // searchBarSelector, // no longer needed here
   filterGroupSelector     = ".filter-group",
   settingsButtonSelector  = "#btn-settings",
   aboutButtonSelector     = "#btn-about"
@@ -21,12 +32,6 @@ export function setupSidebarUI({
   const COLLAPSE_DURATION = 300;
   const PREHIDE_OFFSET    = 68;
   const REAPPEAR_OFFSET   = 25;
-
-  /* ── Search bar ─────────────────────────────────────────────── */
-  setupSidebarSearch({
-    searchBarSelector,
-    clearButtonSelector: "#search-clear"
-  });
 
   /* ── Mobile sidebar toggle ──────────────────────────────────── */
   setupSidebarMobileToggle({
