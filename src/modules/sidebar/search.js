@@ -1,39 +1,18 @@
 // @file: src/modules/sidebar/search.js
-// @version: 3.1.4 — ensure Main layer toggles on for the target type
+// @version: 4.0 — leverage shared filterActions for Toggle & Show Only
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
+import { toggleFilter, showOnlyFilter } from "./filterActions.js";
 
-/**
- * Initialize search suggestions that drive the sidebar’s filters.
- *
- * @param {object} params
- * @param {string} params.searchBarSelector
- * @param {string} params.clearButtonSelector
- * @param {string} params.suggestionsListSelector
- * @param {string} params.mainFiltersSelector
- * @param {string} params.itemFilterListSelector
- * @param {string} params.chestFilterListSelector
- * @param {string} params.npcHostileListSelector
- * @param {string} params.npcFriendlyListSelector
- */
 export function setupSidebarSearch({
   searchBarSelector       = "#search-bar",
   clearButtonSelector     = "#search-clear",
-  suggestionsListSelector = "#search-suggestions",
-  mainFiltersSelector     = "#main-filters .toggle-group",
-  itemFilterListSelector  = "#item-filter-list",
-  chestFilterListSelector = "#chest-filter-list",
-  npcHostileListSelector  = "#npc-hostile-list",
-  npcFriendlyListSelector = "#npc-friendly-list"
+  suggestionsListSelector = "#search-suggestions"
 }) {
   const searchBar = document.querySelector(searchBarSelector);
   const clearBtn  = document.querySelector(clearButtonSelector);
-  if (!searchBar || !clearBtn) {
-    console.warn("[sidebarSearch] Missing elements");
-    return;
-  }
+  if (!searchBar || !clearBtn) return;
 
-  // Clear button (does not hide dropdown)
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -41,13 +20,11 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
-  // Ensure wrapper is positioned
   const wrapper = searchBar.parentNode;
   if (getComputedStyle(wrapper).position === "static") {
     wrapper.style.position = "relative";
   }
 
-  // Suggestions container
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
@@ -57,18 +34,6 @@ export function setupSidebarSearch({
   }
   suggestionsList.classList.remove("visible");
 
-  // Helpers for filter inputs
-  const getItemInput  = id => document.querySelector(`${itemFilterListSelector} input[data-item-id="${id}"]`);
-  const getChestInput = key => document.querySelector(
-    `${chestFilterListSelector} input[data-chest-filter="size"][data-chest-size="${key}"],` +
-    `${chestFilterListSelector} input[data-chest-filter="category"][data-chest-category="${key}"]`
-  );
-  const getNpcInput   = id => document.querySelector(
-    `${npcHostileListSelector} input[data-npc-id="${id}"],` +
-    `${npcFriendlyListSelector} input[data-npc-id="${id}"]`
-  );
-
-  // Build unified list
   function loadAllDefinitions() {
     const items = Object.values(definitionsManager.getDefinitions("Item"))
       .map(d => ({ id: d.id, name: d.name, type: "Item" }));
@@ -96,100 +61,17 @@ export function setupSidebarSearch({
     suggestionsList.querySelectorAll(".search-suggestion-item").forEach(item => {
       const id   = item.dataset.id;
       const type = item.dataset.type;
-      const toggleBtn   = item.querySelector(".toggle-btn");
-      const showOnlyBtn = item.querySelector(".show-only-btn");
-      let input;
 
-      if (type === "Item")  input = getItemInput(id);
-      if (type === "Chest") input = getChestInput(id);
-      if (type === "NPC")   input = getNpcInput(id);
-
-      // Helper to ensure main toggle for this type is on
-      const ensureMainOn = () => {
-        const mainToggle = document.querySelector(
-          `${mainFiltersSelector} input[data-layer="${type}"]`
-        );
-        if (mainToggle && !mainToggle.checked) mainToggle.click();
-      };
-
-      // Toggle action
-      toggleBtn?.addEventListener("click", () => {
-        if (input) input.click();
-        ensureMainOn();
+      item.querySelector(".toggle-btn")?.addEventListener("click", () => {
+        toggleFilter(type, id);
       });
 
-      // Show Only action
-      showOnlyBtn?.addEventListener("click", () => {
-        // 1) Main layers
-        document.querySelectorAll(`${mainFiltersSelector} input[data-layer]`)
-          .forEach(i => {
-            const want = (i.dataset.layer === type);
-            if (i.checked !== want) i.click();
-          });
-
-        // 2) Items
-        if (type === "Item") {
-          document.querySelectorAll(`${itemFilterListSelector} input[data-item-id]`)
-            .forEach(i => {
-              const keep = (i.dataset.itemId === id);
-              if (i.checked !== keep) i.click();
-            });
-        } else {
-          document.querySelectorAll(`${itemFilterListSelector} input[data-item-id]`)
-            .forEach(i => { if (i.checked) i.click(); });
-        }
-
-        // 3) Chests
-        const sizeKeys = ["Small","Medium","Large"];
-        const catKeys  = ["Normal","Dragonvault"];
-        if (type === "Chest") {
-          const isSize = sizeKeys.includes(id);
-          if (isSize) {
-            sizeKeys.forEach(key => {
-              const inp = getChestInput(key);
-              if (inp.checked !== (key === id)) inp.click();
-            });
-            catKeys.forEach(key => {
-              const inp = getChestInput(key);
-              if (!inp.checked) inp.click();
-            });
-          } else {
-            catKeys.forEach(key => {
-              const inp = getChestInput(key);
-              if (inp.checked !== (key === id)) inp.click();
-            });
-            sizeKeys.forEach(key => {
-              const inp = getChestInput(key);
-              if (!inp.checked) inp.click();
-            });
-          }
-        } else {
-          [...sizeKeys, ...catKeys].forEach(key => {
-            const inp = getChestInput(key);
-            if (inp.checked) inp.click();
-          });
-        }
-
-        // 4) NPCs
-        if (type === "NPC") {
-          document.querySelectorAll(
-            `${npcHostileListSelector} input[data-npc-id],${npcFriendlyListSelector} input[data-npc-id]`
-          ).forEach(i => {
-            const keep = (i.dataset.npcId === id);
-            if (i.checked !== keep) i.click();
-          });
-        } else {
-          document.querySelectorAll(
-            `${npcHostileListSelector} input[data-npc-id],${npcFriendlyListSelector} input[data-npc-id]`
-          ).forEach(i => { if (i.checked) i.click(); });
-        }
-
-        ensureMainOn();
+      item.querySelector(".show-only-btn")?.addEventListener("click", () => {
+        showOnlyFilter(type, id);
       });
     });
   }
 
-  // Live-search handler
   searchBar.addEventListener("input", () => {
     const q = searchBar.value.trim().toLowerCase();
     if (!q) {
