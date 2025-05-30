@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.4 — suggestion cards match filter button colors (bg-40 default, bg-50 on hover) */
+/* @version: 2.4 — match toggle-card styling & hover highlight */
 
 .search-suggestions {
   position: absolute;
@@ -8,23 +8,17 @@
   width: 100%;
   margin-top: 4px;
   background-color: var(--bg-30);
-
-  /* U-shaped fading border */
-  border: var(--border-width-thick) solid;
+  border: var(--border-width-thin) solid;
   border-image-source: linear-gradient(to top,
     var(--bg-10) 0%,
     rgba(21, 21, 25, 0) 100%
   );
   border-image-slice: 1;
-
   border-bottom-left-radius: var(--radius-small);
   border-bottom-right-radius: var(--radius-small);
-
-  /* layered shadow */
   box-shadow:
     var(--shadow-medium),
     var(--shadow-low);
-
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
@@ -38,23 +32,44 @@
   opacity: 1;
 }
 
+/* ─── Suggestion “cards” mirror toggle-group label ────────────────────── */
 .search-suggestion-item {
+  position: relative;              /* for overlay */
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background-color: var(--bg-40);      /* match filter button default */
+  padding: 6px 10px;               /* match toggles.css */
   border-radius: var(--radius-small);
-  padding: 0.5em 0.8em;
-  margin: 4px 0;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
+  background: var(--bg-40);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
   cursor: pointer;
-  transition: background 0.2s;
+  overflow: hidden;
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease;
 }
 
+/* overlay tint */
+.search-suggestion-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--hover-light);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+/* hover state */
 .search-suggestion-item:hover {
-  background-color: var(--bg-50);      /* match filter button hover */
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+}
+.search-suggestion-item:hover::after {
+  opacity: 1;
 }
 
+/* ─── Inner content ───────────────────────────────────────────────────── */
 .suggestion-name {
   flex: 1;
   margin-right: 1em;
@@ -73,7 +88,6 @@
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
-
 .suggestion-action:hover {
   background: var(--bg-40);
   color: var(--text-primary);
