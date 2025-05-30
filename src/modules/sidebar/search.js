@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.10 — correct Show Only across all categories & keep dropdown open
+// @version: 2.11 — refine Show Only to isolate a single item
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -31,7 +31,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // Clear button (just empties input, doesn’t hide dropdown)
+  // Clear button
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -56,6 +56,9 @@ export function setupSidebarSearch({
   suggestionsList.classList.remove("visible");
 
   // Helpers to find filter inputs
+  const getItemInputs   = () => document.querySelectorAll(
+    `#item-filter-list input[data-item-id]`
+  );
   const getItemInput    = id => document.querySelector(
     `#item-filter-list input[data-item-id="${id}"]`
   );
@@ -88,21 +91,25 @@ export function setupSidebarSearch({
         if (itemInput) itemInput.click();
       });
 
-      // Show Only this item: uncheck everything else
+      // Show only this item: uncheck all others across categories
       item.querySelector(".show-only-btn")?.addEventListener("click", () => {
-        // 1) Main-layer: only keep “Item” on
+        // 1) Main-layer: keep only Item on
         getMainInputs().forEach(i => {
           if (i.dataset.layer !== "Item" && i.checked) i.click();
+          else if (i.dataset.layer === "Item" && !i.checked) i.click();
         });
         // 2) Chest filters: uncheck all
         getChestInputs().forEach(i => { if (i.checked) i.click(); });
         // 3) NPC filters: uncheck all
         getNpcInputs().forEach(i => { if (i.checked) i.click(); });
-        // 4) Ensure this item is checked
+        // 4) Item filters: uncheck all except target, then ensure target is on
+        getItemInputs().forEach(i => {
+          if (i.dataset.itemId !== id && i.checked) i.click();
+        });
         if (itemInput && !itemInput.checked) itemInput.click();
       });
 
-      // Hide All of this item: just uncheck this one
+      // Hide All of this item: uncheck only this one
       item.querySelector(".hide-all-btn")?.addEventListener("click", () => {
         if (itemInput && itemInput.checked) itemInput.click();
       });
