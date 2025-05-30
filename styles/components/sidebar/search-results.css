@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.1 — production border & shadow */
+/* @version: 2.2 — use bg-10 for visible fading border */
 
 .search-suggestions {
   position: absolute;
@@ -9,19 +9,18 @@
   margin-top: 4px;
   background-color: var(--bg-30);
 
-  /* U-shape fading border: solid bottom, tapering to transparent at top */
+  /* U-shape fading border: solid bottom (bg-10), tapering transparent at top */
   border: var(--border-width-thin) solid;
   border-image-source: linear-gradient(to top,
-    var(--border-soft) 0%,
-    rgba(35, 35, 40, 0) 100%
+    var(--bg-10) 0%,
+    rgba(21, 21, 25, 0) 100%
   );
   border-image-slice: 1;
 
-  /* bottom corners pill-shaped */
   border-bottom-left-radius: var(--radius-small);
   border-bottom-right-radius: var(--radius-small);
 
-  /* layered shadow using your tokens */
+  /* layered shadow */
   box-shadow:
     var(--shadow-medium),
     var(--shadow-low);
@@ -40,7 +39,7 @@
   opacity: 1;
 }
 
-/* Suggestion cards */
+/* Individual suggestion “cards” */
 .search-suggestion-item {
   display: flex;
   align-items: center;
