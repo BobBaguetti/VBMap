@@ -1,23 +1,23 @@
 /* @file: styles/components/sidebar/search.css */
-/* @version: 2.7 — absolutely hide native clear controls */
+/* @version: 2.8 — kill every native clear icon, regardless of browser */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* ── Force-hide every native clear/control pseudo-element ───────────────── */
-#sidebar-search #search-bar::-webkit-search-decoration,
-#sidebar-search #search-bar::-webkit-search-cancel-button,
-#sidebar-search #search-bar::-webkit-search-results-decoration,
-#sidebar-search #search-bar::-webkit-clear-button,
-#sidebar-search #search-bar::-webkit-contacts-auto-fill-button,
-#sidebar-search #search-bar::-webkit-credentials-auto-fill-button,
-#sidebar-search #search-bar::-ms-clear,
-#sidebar-search #search-bar::-ms-reveal,
-#sidebar-search #search-bar::-moz-search-cancel-button {
+/* ── Brutally hide every native clear/cancel UI ─────────────────────────── */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-decoration,
+input[type="search"]::-webkit-clear-button,
+input[type="search"]::-webkit-contacts-auto-fill-button,
+input[type="search"]::-webkit-credentials-auto-fill-button,
+input[type="search"]::-ms-clear,
+input[type="search"]::-ms-reveal,
+input[type="search"]::-moz-search-cancel-button {
   display: none !important;
-  width: 0;
-  height: 0;
-  margin: 0;
-  padding: 0;
+  width: 0 !important;
+  height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
 }
 
 /* ── Container: full pill shape with enhanced shadow ───────────────────── */
