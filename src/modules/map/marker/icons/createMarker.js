@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/icons/createMarker.js
-// @version: 1.5 — Friendly uses dispositionColor, Hostile/Neutral use tierColor
+// @version: 1.6 — add Show Only & Hide All to marker context menu
 
 // Assumes Leaflet is loaded via a <script> tag and exposes window.L
 const L = window.L;
@@ -14,6 +14,12 @@ import {
   dispositionColors,
   tierColors
 } from "../../../../shared/utils/color/colorPresets.js";
+
+// New imports for filter actions
+import {
+  toggleFilter,
+  showOnlyFilter
+} from "../../../sidebar/filterActions.js";
 
 /**
  * Create a Leaflet marker with custom icon, popup, drag, and context menu.
@@ -112,10 +118,55 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
   // 8) Add the marker to its layer
   layers[m.type]?.addLayer(markerObj);
 
-  // 9) Context menu for admin actions
+  // 9) Context menu for marker actions
   markerObj.on("contextmenu", ev => {
     ev.originalEvent.preventDefault();
-    const opts = [];
+
+    // Determine filter type/key for this marker
+    let filterType, filterKey;
+    if (m.type === "Item") {
+      filterType = "Item";
+      filterKey  = m.predefinedItemId;
+    } else if (m.type === "Chest") {
+      filterType = "Chest";
+      filterKey  = m.chestDefFull?.size || "Small";
+    } else if (m.type === "NPC") {
+      filterType = "NPC";
+      filterKey  = m.npcDefinitionId;
+    }
+
+    const opts = [
+      // Always-available actions
+      {
+        text: `Show Only “${m.name}”`,
+        action: () => showOnlyFilter(
+          filterType,
+          filterKey,
+          {
+            itemFilterListSelector:  "#item-filter-list",
+            chestFilterListSelector: "#chest-filter-list",
+            npcHostileListSelector:  "#npc-hostile-list",
+            npcFriendlyListSelector: "#npc-friendly-list"
+          },
+          "#main-filters .toggle-group"
+        )
+      },
+      {
+        text: `Hide All “${m.name}”`,
+        action: () => toggleFilter(
+          filterType,
+          filterKey,
+          {
+            itemFilterListSelector:  "#item-filter-list",
+            chestFilterListSelector: "#chest-filter-list",
+            npcHostileListSelector:  "#npc-hostile-list",
+            npcFriendlyListSelector: "#npc-friendly-list"
+          }
+        )
+      }
+    ];
+
+    // Admin-only actions
     if (isAdmin) {
       opts.push(
         { text: "Edit Marker",   action: () => callbacks.onEdit?.(markerObj, m, ev.originalEvent) },
@@ -129,6 +180,8 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
         { text: "Delete Marker", action: () => callbacks.onDelete?.(markerObj, m) }
       );
     }
+
+    // Show the context menu
     ctxMenu(ev.originalEvent.pageX, ev.originalEvent.pageY, opts);
   });
 
