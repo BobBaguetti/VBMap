@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 2.2 — move suggestions outside overflow:hidden, add debug logs
+// @version: 2.1 — move suggestions outside wrapper and wire live suggestions
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 
@@ -8,8 +8,8 @@ import definitionsManager from "../../bootstrap/definitionsManager.js";
  *
  * @param {object} params
  * @param {string} params.searchBarSelector        – selector for the search input
- * @param {string} params.clearButtonSelector      – selector for the clear button
- * @param {string} params.suggestionsListSelector  – selector for the suggestions container
+ * @param {string} params.clearButtonSelector     – selector for the clear button
+ * @param {string} params.suggestionsListSelector – selector for the suggestions container
  */
 export function setupSidebarSearch({
   searchBarSelector       = "#search-bar",
@@ -23,7 +23,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // style + clear handler
+  // Style and clear handler
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -31,34 +31,29 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
-  // build the <ul> if it doesn't exist
+  // Build suggestions <ul> if missing, and insert it just after the wrapper
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
     suggestionsList.id = suggestionsListSelector.slice(1);
     suggestionsList.classList.add("search-suggestions");
-    // insert it *after* the sidebar-search container itself
-    const sidebarSearch = document.getElementById("sidebar-search");
-    sidebarSearch.insertAdjacentElement("afterend", suggestionsList);
-    console.log("[sidebarSearch] created suggestionsList");
+    const searchWrapper = searchBar.parentNode;
+    searchWrapper.insertAdjacentElement("afterend", suggestionsList);
   }
 
-  // on each keystroke, filter and render up to 10 matches
+  // On each keystroke, filter definitions and render up to 10 matches
   searchBar.addEventListener("input", () => {
-    const q = searchBar.value.trim().toLowerCase();
-    console.log("[sidebarSearch] input:", q);
-    if (!q) {
+    const query = searchBar.value.trim().toLowerCase();
+    if (!query) {
       suggestionsList.innerHTML = "";
       return;
     }
 
-    // grab all Item defs
-    const defs = Object.values(definitionsManager.getItemDefMap());
+    const defsMap = definitionsManager.getItemDefMap();
+    const defs = Object.values(defsMap);
     const matches = defs
-      .filter(d => d.name?.toLowerCase().includes(q))
+      .filter(d => d.name?.toLowerCase().includes(query))
       .slice(0, 10);
-
-    console.log("[sidebarSearch] matches:", matches.map(d => d.name));
 
     suggestionsList.innerHTML = matches.map(def => `
       <li class="search-suggestion-item" data-id="${def.id}">

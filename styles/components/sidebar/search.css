@@ -11,7 +11,7 @@
   border-left: none;
   border-right: none;
   border-bottom: 1px solid var(--border-soft);
-  border-radius: 4px;           /* now rounds both top and bottom corners */
+  border-radius: 4px;           /* now rounds top and bottom corners */
   overflow: hidden;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
