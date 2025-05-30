@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.3 — increased border thickness to 4px (double) */
+/* @version: 2.4 — suggestion cards match filter button colors (bg-40 default, bg-50 on hover) */
 
 .search-suggestions {
   position: absolute;
@@ -9,7 +9,7 @@
   margin-top: 4px;
   background-color: var(--bg-30);
 
-  /* U-shape fading border: solid bottom (bg-10), tapering transparent at top */
+  /* U-shaped fading border */
   border: var(--border-width-thick) solid;
   border-image-source: linear-gradient(to top,
     var(--bg-10) 0%,
@@ -33,18 +33,16 @@
   padding: 0 4px;
 }
 
-/* When visible, expand and fade in */
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
 }
 
-/* Individual suggestion “cards” */
 .search-suggestion-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--bg-40);
+  background-color: var(--bg-40);      /* match filter button default */
   border-radius: var(--radius-small);
   padding: 0.5em 0.8em;
   margin: 4px 0;
@@ -54,7 +52,7 @@
 }
 
 .search-suggestion-item:hover {
-  background-color: var(--bg-50);
+  background-color: var(--bg-50);      /* match filter button hover */
 }
 
 .suggestion-name {
