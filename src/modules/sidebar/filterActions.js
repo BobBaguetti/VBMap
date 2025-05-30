@@ -1,110 +1,128 @@
 // @file: src/modules/sidebar/filterActions.js
-// @version: 1.0 — shared Toggle and Show Only logic for Items, Chests, and NPCs
+// @version: 1.0 — centralize checkbox lookup and toggle/show-only logic
 
 /**
- * Toggle the individual filter checkbox for the given type/id,
- * and ensure the corresponding Main layer toggle is on.
+ * Locate the sidebar filter checkbox for a given type+key.
  *
- * @param {"Item"|"Chest"|"NPC"} type
- * @param {string} id
+ * @param {string} type  – "Item" | "Chest" | "NPC"
+ * @param {string} key   – definition ID, or chest size/category key
+ * @param {object} selectors
+ * @param {string} selectors.itemFilterListSelector
+ * @param {string} selectors.chestFilterListSelector
+ * @param {string} selectors.npcHostileListSelector
+ * @param {string} selectors.npcFriendlyListSelector
+ * @returns {HTMLInputElement|null}
  */
-export function toggleFilter(type, id) {
-  const selectors = {
-    Item:  `#item-filter-list input[data-item-id="${id}"]`,
-    Chest: `${[ "size","category" ]
-               .map(f => `[data-chest-filter="${f}"][data-chest-${f}="${id}"]`)
-               .join(`],${"#chest-filter-list input"}`)}`,
-    NPC:   `#npc-hostile-list input[data-npc-id="${id}"],#npc-friendly-list input[data-npc-id="${id}"]`
-  };
-  const input = document.querySelector(
-    `${type === "Chest" ? "#chest-filter-list input" : type === "Item" ? selectors.Item : selectors.NPC}`
-      .replace(/^#chest-filter-list input/, selectors.Chest)
-  );
-
-  if (input) input.click();
-
-  // Ensure the Main layer toggle for this type is on
-  const mainToggle = document.querySelector(
-    `#main-filters .toggle-group input[data-layer="${type}"]`
-  );
-  if (mainToggle && !mainToggle.checked) mainToggle.click();
+export function getFilterInput(type, key, {
+  itemFilterListSelector,
+  chestFilterListSelector,
+  npcHostileListSelector,
+  npcFriendlyListSelector
+}) {
+  if (type === "Item") {
+    return document.querySelector(
+      `${itemFilterListSelector} input[data-item-id="${key}"]`
+    );
+  }
+  if (type === "Chest") {
+    return document.querySelector(
+      `${chestFilterListSelector} input[data-chest-filter="size"][data-chest-size="${key}"],` +
+      `${chestFilterListSelector} input[data-chest-filter="category"][data-chest-category="${key}"]`
+    );
+  }
+  if (type === "NPC") {
+    return document.querySelector(
+      `${npcHostileListSelector} input[data-npc-id="${key}"],` +
+      `${npcFriendlyListSelector} input[data-npc-id="${key}"]`
+    );
+  }
+  return null;
 }
 
 /**
- * “Show Only” this filter: 
- *   • turn off all other filters of the same type
- *   • for Chests, turn on the opposite group (all sizes if category chosen, or all categories if size chosen)
- *   • turn off every filter of the other two types
- *   • ensure the Main layer toggle is on for this type
- *
- * @param {"Item"|"Chest"|"NPC"} type
- * @param {string} id
+ * Toggle a single filter checkbox.
  */
-export function showOnlyFilter(type, id) {
-  const sizeKeys = ["Small","Medium","Large"];
-  const catKeys  = ["Normal","Dragonvault"];
+export function toggleFilter(type, key, selectors) {
+  const input = getFilterInput(type, key, selectors);
+  if (input) input.click();
+}
 
-  // 1) Main layers: only this type on
-  document.querySelectorAll(
-    `#main-filters .toggle-group input[data-layer]`
-  ).forEach(i => {
-    const want = (i.dataset.layer === type);
-    if (i.checked !== want) i.click();
-  });
-
-  // 2) Item filters
-  document.querySelectorAll(`#item-filter-list input[data-item-id]`)
+/**
+ * “Show only” this filter: uncheck everything else, check this one, and
+ * leave the complementary group on for chests.
+ *
+ * @param {string} type
+ * @param {string} key
+ * @param {object} selectors same as getFilterInput
+ * @param {string} mainFiltersSelector
+ */
+export function showOnlyFilter(type, key, selectors, mainFiltersSelector) {
+  // 1) Main layers: only this type
+  document.querySelectorAll(`${mainFiltersSelector} input[data-layer]`)
     .forEach(i => {
-      const keep = (type === "Item" && i.dataset.itemId === id);
-      if (i.checked !== keep) i.click();
+      const want = (i.dataset.layer === type);
+      if (i.checked !== want) i.click();
     });
 
-  // 3) Chest filters
-  if (type === "Chest") {
-    const isSize = sizeKeys.includes(id);
-    if (isSize) {
-      // sizes: only id on
-      sizeKeys.forEach(key => {
-        const inp = document.querySelector(
-          `#chest-filter-list input[data-chest-filter="size"][data-chest-size="${key}"]`
-        );
-        if (inp.checked !== (key === id)) inp.click();
+  // 2) Item filters
+  if (type === "Item") {
+    document.querySelectorAll(`${selectors.itemFilterListSelector} input[data-item-id]`)
+      .forEach(i => {
+        const keep = (i.dataset.itemId === key);
+        if (i.checked !== keep) i.click();
       });
-      // categories: all on
-      catKeys.forEach(key => {
-        const inp = document.querySelector(
-          `#chest-filter-list input[data-chest-filter="category"][data-chest-category="${key}"]`
-        );
+  } else {
+    document.querySelectorAll(`${selectors.itemFilterListSelector} input[data-item-id]`)
+      .forEach(i => { if (i.checked) i.click(); });
+  }
+
+  // 3) Chest filters
+  const sizeKeys = ["Small","Medium","Large"];
+  const catKeys  = ["Normal","Dragonvault"];
+  if (type === "Chest") {
+    const isSize = sizeKeys.includes(key);
+    if (isSize) {
+      // sizes: only key on; categories: all on
+      sizeKeys.forEach(k => {
+        const inp = getFilterInput("Chest", k, selectors);
+        if (inp.checked !== (k === key)) inp.click();
+      });
+      catKeys.forEach(k => {
+        const inp = getFilterInput("Chest", k, selectors);
         if (!inp.checked) inp.click();
       });
     } else {
-      // category case: only this category on
-      catKeys.forEach(key => {
-        const inp = document.querySelector(
-          `#chest-filter-list input[data-chest-filter="category"][data-chest-category="${key}"]`
-        );
-        if (inp.checked !== (key === id)) inp.click();
+      // categories: only key on; sizes: all on
+      catKeys.forEach(k => {
+        const inp = getFilterInput("Chest", k, selectors);
+        if (inp.checked !== (k === key)) inp.click();
       });
-      // sizes: all on
-      sizeKeys.forEach(key => {
-        const inp = document.querySelector(
-          `#chest-filter-list input[data-chest-filter="size"][data-chest-size="${key}"]`
-        );
+      sizeKeys.forEach(k => {
+        const inp = getFilterInput("Chest", k, selectors);
         if (!inp.checked) inp.click();
       });
     }
   } else {
-    // if not Chest, uncheck all chest filters
-    document.querySelectorAll(`#chest-filter-list input`).forEach(i => {
-      if (i.checked) i.click();
+    // none of this type: clear all chest filters
+    [...sizeKeys, ...catKeys].forEach(k => {
+      const inp = getFilterInput("Chest", k, selectors);
+      if (inp && inp.checked) inp.click();
     });
   }
 
   // 4) NPC filters
-  document.querySelectorAll(
-    `#npc-hostile-list input[data-npc-id],#npc-friendly-list input[data-npc-id]`
-  ).forEach(i => {
-    const keep = (type === "NPC" && i.dataset.npcId === id);
-    if (i.checked !== keep) i.click();
-  });
+  if (type === "NPC") {
+    document.querySelectorAll(
+      `${selectors.npcHostileListSelector} input[data-npc-id],` +
+      `${selectors.npcFriendlyListSelector} input[data-npc-id]`
+    ).forEach(i => {
+      const keep = (i.dataset.npcId === key);
+      if (i.checked !== keep) i.click();
+    });
+  } else {
+    document.querySelectorAll(
+      `${selectors.npcHostileListSelector} input[data-npc-id],` +
+      `${selectors.npcFriendlyListSelector} input[data-npc-id]`
+    ).forEach(i => { if (i.checked) i.click(); });
+  }
 }

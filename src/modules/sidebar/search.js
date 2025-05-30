@@ -1,18 +1,43 @@
 // @file: src/modules/sidebar/search.js
-// @version: 4.0 — leverage shared filterActions for Toggle & Show Only
+// @version: 3.2 — use filterActions.js for toggle and show-only logic
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
-import { toggleFilter, showOnlyFilter } from "./filterActions.js";
+import {
+  toggleFilter,
+  showOnlyFilter
+} from "./filterActions.js";
 
+/**
+ * Initialize search suggestions that drive the sidebar’s filters.
+ *
+ * @param {object} params
+ * @param {string} params.searchBarSelector
+ * @param {string} params.clearButtonSelector
+ * @param {string} params.suggestionsListSelector
+ * @param {string} params.mainFiltersSelector
+ * @param {string} params.itemFilterListSelector
+ * @param {string} params.chestFilterListSelector
+ * @param {string} params.npcHostileListSelector
+ * @param {string} params.npcFriendlyListSelector
+ */
 export function setupSidebarSearch({
   searchBarSelector       = "#search-bar",
   clearButtonSelector     = "#search-clear",
-  suggestionsListSelector = "#search-suggestions"
+  suggestionsListSelector = "#search-suggestions",
+  mainFiltersSelector     = "#main-filters .toggle-group",
+  itemFilterListSelector  = "#item-filter-list",
+  chestFilterListSelector = "#chest-filter-list",
+  npcHostileListSelector  = "#npc-hostile-list",
+  npcFriendlyListSelector = "#npc-friendly-list"
 }) {
   const searchBar = document.querySelector(searchBarSelector);
   const clearBtn  = document.querySelector(clearButtonSelector);
-  if (!searchBar || !clearBtn) return;
+  if (!searchBar || !clearBtn) {
+    console.warn("[sidebarSearch] Missing elements");
+    return;
+  }
 
+  // Clear button setup
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -20,11 +45,13 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
+  // Positioning context
   const wrapper = searchBar.parentNode;
   if (getComputedStyle(wrapper).position === "static") {
     wrapper.style.position = "relative";
   }
 
+  // Suggestions container
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
@@ -34,21 +61,23 @@ export function setupSidebarSearch({
   }
   suggestionsList.classList.remove("visible");
 
+  // Build unified list of definitions and chest keys
   function loadAllDefinitions() {
     const items = Object.values(definitionsManager.getDefinitions("Item"))
       .map(d => ({ id: d.id, name: d.name, type: "Item" }));
     const npcs = Object.values(definitionsManager.getDefinitions("NPC"))
       .map(d => ({ id: d.id, name: d.name, type: "NPC" }));
     const chestKeys = [
-      { id: "Small",       name: "Small Chest" },
-      { id: "Medium",      name: "Medium Chest" },
-      { id: "Large",       name: "Large Chest" },
-      { id: "Normal",      name: "Normal Chest" },
-      { id: "Dragonvault", name: "Dragonvault Chest" }
-    ].map(o => ({ ...o, type: "Chest" }));
+      { id: "Small",       name: "Small Chest", type: "Chest" },
+      { id: "Medium",      name: "Medium Chest", type: "Chest" },
+      { id: "Large",       name: "Large Chest", type: "Chest" },
+      { id: "Normal",      name: "Normal Chest", type: "Chest" },
+      { id: "Dragonvault", name: "Dragonvault Chest", type: "Chest" }
+    ];
     return [...items, ...chestKeys, ...npcs];
   }
 
+  // Render suggestions
   function renderSuggestions(matches) {
     suggestionsList.innerHTML = matches.map(def => `
       <li class="search-suggestion-item" data-id="${def.id}" data-type="${def.type}">
@@ -62,16 +91,34 @@ export function setupSidebarSearch({
       const id   = item.dataset.id;
       const type = item.dataset.type;
 
+      // Toggle action
       item.querySelector(".toggle-btn")?.addEventListener("click", () => {
-        toggleFilter(type, id);
+        toggleFilter(type, id, {
+          itemFilterListSelector,
+          chestFilterListSelector,
+          npcHostileListSelector,
+          npcFriendlyListSelector
+        });
       });
 
+      // Show Only action
       item.querySelector(".show-only-btn")?.addEventListener("click", () => {
-        showOnlyFilter(type, id);
+        showOnlyFilter(
+          type,
+          id,
+          {
+            itemFilterListSelector,
+            chestFilterListSelector,
+            npcHostileListSelector,
+            npcFriendlyListSelector
+          },
+          mainFiltersSelector
+        );
       });
     });
   }
 
+  // Live search handler
   searchBar.addEventListener("input", () => {
     const q = searchBar.value.trim().toLowerCase();
     if (!q) {
