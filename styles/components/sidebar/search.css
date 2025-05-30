@@ -1,20 +1,26 @@
 /* @file: styles/components/sidebar/search.css */
-/* @version: 2.6 — force-hide any native clear controls */
+/* @version: 2.7 — absolutely hide native clear controls */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* Fully hide any native search clear/UI in all browsers */
+/* ── Force-hide every native clear/control pseudo-element ───────────────── */
 #sidebar-search #search-bar::-webkit-search-decoration,
 #sidebar-search #search-bar::-webkit-search-cancel-button,
 #sidebar-search #search-bar::-webkit-search-results-decoration,
 #sidebar-search #search-bar::-webkit-clear-button,
+#sidebar-search #search-bar::-webkit-contacts-auto-fill-button,
+#sidebar-search #search-bar::-webkit-credentials-auto-fill-button,
 #sidebar-search #search-bar::-ms-clear,
 #sidebar-search #search-bar::-ms-reveal,
 #sidebar-search #search-bar::-moz-search-cancel-button {
   display: none !important;
+  width: 0;
+  height: 0;
+  margin: 0;
+  padding: 0;
 }
 
-/* Container: full pill shape with enhanced shadow */
+/* ── Container: full pill shape with enhanced shadow ───────────────────── */
 #sidebar-search {
   margin-top: 1.2em;
   background-color: var(--bg-30);
@@ -26,7 +32,7 @@
     0 4px 8px rgba(0,0,0,0.2);
 }
 
-/* Header: top rounding + bottom separator */
+/* ── Header: top rounding + bottom separator ───────────────────────────── */
 #sidebar-search > h2 {
   margin: 0;
   padding: 0.5em 0.8em;
@@ -41,7 +47,7 @@
   border-top-right-radius: 4px;
 }
 
-/* Search wrapper: bottom rounding + inner shadow */
+/* ── Search wrapper: bottom rounding + inner shadow ───────────────────── */
 .search-wrapper {
   position: relative;
   padding: 0.4em 0.8em;
@@ -51,7 +57,7 @@
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
-/* Input: no native decorations */
+/* ── Input: no native decorations ─────────────────────────────────────── */
 #sidebar-search #search-bar {
   width: 100%;
   box-sizing: border-box;
@@ -67,7 +73,7 @@
   -moz-appearance: textfield;
 }
 
-/* Custom clear button */
+/* ── Custom clear button ───────────────────────────────────────────────── */
 #search-clear {
   position: absolute;
   right: 8px;
@@ -89,7 +95,7 @@
   color: var(--text-primary);
 }
 
-/* Placeholder & focus states */
+/* ── Placeholder & focus states ───────────────────────────────────────── */
 #sidebar-search #search-bar::placeholder {
   color: var(--text-disabled);
 }
