@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.2 — removed border, kept shadow */
+/* @version: 2.1 — production border & shadow */
 
 .search-suggestions {
   position: absolute;
@@ -9,7 +9,13 @@
   margin-top: 4px;
   background-color: var(--bg-30);
 
-  /* No border */
+  /* U-shape fading border: solid bottom, tapering to transparent at top */
+  border: var(--border-width-thin) solid;
+  border-image-source: linear-gradient(to top,
+    var(--border-soft) 0%,
+    rgba(35, 35, 40, 0) 100%
+  );
+  border-image-slice: 1;
 
   /* bottom corners pill-shaped */
   border-bottom-left-radius: var(--radius-small);
