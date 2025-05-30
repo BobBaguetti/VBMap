@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.5 — gradient “U” border with true rounded bottom corners via layered backgrounds */
+/* @version: 2.5 — flat bottom with fading red “U” border + gradient green “shadow” */
 
 .search-suggestions {
   position: absolute;
@@ -7,40 +7,47 @@
   left: 0;
   width: 100%;
   margin-top: 4px;
-  
-  /* Layer 1: red-to-transparent gradient for the “border” (fills the border-box)
-     Layer 2: solid bg-30 for the panel interior (fills the padding-box) */
-  background-image:
-    linear-gradient(to top, red 0%, rgba(255,0,0,0) 100%),
-    var(--bg-30);
-  background-origin: border-box;
-  background-clip: border-box, padding-box;
-  
-  /* Allocate space for the “border” by using transparent border */
+  background-color: var(--bg-30);
+
+  /* Fading red “U” border (strong at bottom, transparent at top) */
   border: var(--border-width-thick) solid transparent;
-  
-  /* True pill-shape on bottom corners; top remains square */
-  border-radius: 0 0 var(--radius-small) var(--radius-small);
-  
-  /* Strong green glow */
-  box-shadow:
-    0 4px 12px green,
-    0 0 16px rgba(0, 255, 0, 0.5);
-  
+  border-image-source: linear-gradient(to top, red 0%, rgba(255,0,0,0) 100%);
+  border-image-slice: 1;
+
+  /* Flat (non-rounded) corners all around */
+  border-radius: 0;
+
+  /* ensure overflow is visible so our faux-shadow can show */
+  overflow: visible;
+
   max-height: 0;
-  overflow: hidden;
+  overflow-y: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
   padding: 0 4px;
 }
 
+/* “Shadow” via a pseudo-element: gradient green, blurred */
+.search-suggestions::before {
+  content: "";
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 0; right: 0;
+  /* extend beyond the border by the border width to fill out */
+  margin: calc(-1 * var(--border-width-thick));
+  background: linear-gradient(to top, rgba(0,255,0,1) 0%, rgba(0,255,0,0.2) 100%);
+  filter: blur(12px);
+  z-index: -1;
+}
+
+/* When visible, expand and fade in */
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
 }
 
-/* Suggestion items (unchanged) */
+/* Individual suggestion “cards” */
 .search-suggestion-item {
   display: flex;
   align-items: center;
