@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.1 — U-shaped green glow via box-shadow + gradient pseudo-element */
+/* @version: 2.1 — production border & shadow */
 
 .search-suggestions {
   position: absolute;
@@ -9,46 +9,29 @@
   margin-top: 4px;
   background-color: var(--bg-30);
 
-  /* Strong bottom glow + ambient glow */
-  box-shadow:
-    0 8px 16px green,
-    0 0 8px rgba(0, 255, 0, 0.3);
-
-  /* U-shaped border (red) */
-  border: var(--border-width-thick) solid;
-  border-image-source: linear-gradient(to top, red 0%, rgba(255,0,0,0) 100%);
+  /* U-shape fading border: solid bottom, tapering to transparent at top */
+  border: var(--border-width-thin) solid;
+  border-image-source: linear-gradient(to top,
+    var(--border-soft) 0%,
+    rgba(35, 35, 40, 0) 100%
+  );
   border-image-slice: 1;
 
+  /* bottom corners pill-shaped */
   border-bottom-left-radius: var(--radius-small);
   border-bottom-right-radius: var(--radius-small);
+
+  /* layered shadow using your tokens */
+  box-shadow:
+    var(--shadow-medium),
+    var(--shadow-low);
+
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
   padding: 0 4px;
-
-  /* create stacking context for pseudo-element */
-  isolation: isolate;
-}
-
-/* Gradient pseudo-element for U-shaped glow */
-.search-suggestions::before {
-  content: "";
-  position: absolute;
-  bottom: -4px;      /* extend glow below panel */
-  left: 0;
-  right: 0;
-  height: 50%;       /* cover lower half */
-  background: linear-gradient(
-    to top,
-    rgba(0,255,0,0.6) 0%,
-    rgba(0,255,0,0.2) 40%,
-    rgba(0,255,0,0) 100%
-  );
-  filter: blur(8px);
-  pointer-events: none;
-  z-index: -1;       /* behind the panel */
 }
 
 /* When visible, expand and fade in */
@@ -57,7 +40,7 @@
   opacity: 1;
 }
 
-/* Individual suggestion “cards” */
+/* Suggestion cards */
 .search-suggestion-item {
   display: flex;
   align-items: center;
@@ -66,7 +49,7 @@
   border-radius: var(--radius-small);
   padding: 0.5em 0.8em;
   margin: 4px 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.15);
   cursor: pointer;
   transition: background 0.2s;
 }
