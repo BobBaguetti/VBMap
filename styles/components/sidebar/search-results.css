@@ -1,32 +1,38 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 1.2 — floating dropdown for live search suggestions */
-
-#sidebar-search {
-  overflow: visible !important;  /* allow the dropdown to overflow */
-}
+/* @version: 1.3 — floating dropdown styling to seamlessly extend the search bar */
 
 .search-suggestions {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
+  margin-top: 4px;                          /* small gap from input */
+  background-color: var(--bg-30);           /* match sidebar-search wrapper */
+  border-bottom-left-radius: 4px;           /* mirror search-wrapper rounding */
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* subtle floating effect */
   max-height: 300px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 1000;                             /* above other sidebar content */
+  padding: 4px 0;                            /* vertical padding for container */
 }
 
+/* Individual suggestion “cards” */
 .search-suggestion-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--bg-20);
+  background-color: var(--bg-40);           /* match sidebar buttons */
   border-radius: 4px;
   padding: 0.5em 0.8em;
-  margin-bottom: 0.4em;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  margin: 0 8px 4px;                        /* horizontal inset + bottom spacing */
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.search-suggestion-item:hover {
+  background-color: var(--bg-50);           /* subtle hover highlight */
 }
 
 .suggestion-name {
@@ -36,9 +42,10 @@
   font-size: 14px;
 }
 
+/* Buttons inside each suggestion */
 .suggestion-action {
   margin-left: 0.5em;
-  padding: 0.2em 0.6em;
+  padding: 0.25em 0.6em;
   font-size: 12px;
   border: none;
   border-radius: 3px;
@@ -47,6 +54,7 @@
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .suggestion-action:hover {
   background: var(--bg-40);
   color: var(--text-primary);

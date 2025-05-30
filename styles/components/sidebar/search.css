@@ -1,22 +1,30 @@
 /* @file: styles/components/sidebar/search.css */
-/* @version: 2.3 — pill shape on the entire search container */
+/* @version: 2.4 — restore pill shape, hide native clear thoroughly */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
 
-/* CONTAINER: full pill shape with header and content */
+/* ── Hide native search clear controls across browsers ───────────────────── */
+#sidebar-search #search-bar::-webkit-search-decoration,
+#sidebar-search #search-bar::-webkit-search-cancel-button,
+#sidebar-search #search-bar::-webkit-search-results-decoration,
+#sidebar-search #search-bar::-webkit-clear-button,
+#sidebar-search #search-bar::-ms-clear,
+#sidebar-search #search-bar::-ms-reveal,
+#sidebar-search #search-bar::-moz-search-cancel-button {
+  display: none;
+}
+
+/* ── Container: full pill shape with drop shadow ───────────────────────── */
 #sidebar-search {
   margin-top: 1.2em;
   background-color: var(--bg-30);
-  border-top: none;
-  border-left: none;
-  border-right: none;
-  border-bottom: 1px solid var(--border-soft);
-  border-radius: 4px;           /* now rounds top AND bottom corners */
-  overflow: hidden;             /* let dropdown override if needed */
+  border: none;               /* remove individual borders */
+  border-radius: 4px;         /* round all corners */
+  overflow: visible;          /* allow floating dropdown */
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
-/* HEADER */
+/* ── Header: top rounding + bottom separator ───────────────────────────── */
 #sidebar-search > h2 {
   margin: 0;
   padding: 0.5em 0.8em;
@@ -27,16 +35,20 @@
   letter-spacing: 0.08em;
   color: var(--text-primary);
   border-bottom: 1px solid rgba(0, 0, 0, 0.4);
+  border-top-left-radius: 4px;
+  border-top-right-radius: 4px;
 }
 
-/* SEARCH WRAPPER */
+/* ── Search wrapper: bottom rounding ───────────────────────────────────── */
 .search-wrapper {
   position: relative;
   padding: 0.4em 0.8em;
   background-color: var(--bg-30);
+  border-bottom-left-radius: 4px;
+  border-bottom-right-radius: 4px;
 }
 
-/* INPUT: remove native clear & decorations */
+/* ── Input: full width, no native chrome decorations ───────────────────── */
 #sidebar-search #search-bar {
   width: 100%;
   box-sizing: border-box;
@@ -47,22 +59,12 @@
   font-size: 13px;
   font-family: 'Satoshi', sans-serif;
   outline: none;
-  appearance: none; /* disable native decorations */
+  appearance: none;
   -webkit-appearance: none;
   -moz-appearance: textfield;
 }
-#sidebar-search #search-bar::-webkit-search-decoration,
-#sidebar-search #search-bar::-webkit-search-cancel-button,
-#sidebar-search #search-bar::-webkit-search-results-decoration,
-#sidebar-search #search-bar::-ms-clear {
-  display: none;
-}
-#sidebar-search #search-bar::-moz-focus-inner {
-  border: 0;
-  padding: 0;
-}
 
-/* Custom clear button */
+/* ── Custom clear button ───────────────────────────────────────────────── */
 #search-clear {
   position: absolute;
   right: 8px;
@@ -84,11 +86,10 @@
   color: var(--text-primary);
 }
 
-/* Placeholder & focus */
+/* ── Placeholder & focus states ───────────────────────────────────────── */
 #sidebar-search #search-bar::placeholder {
   color: var(--text-disabled);
 }
 #sidebar-search #search-bar:focus {
   background-color: var(--bg-50);
-  border-bottom-color: var(--accent-primary);
 }
