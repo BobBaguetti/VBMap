@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.1 — restore bottom pill shape on panel */
+/* @version: 2.2 — enforce pill-shaped bottom corners with fading red border and green shadow */
 
 .search-suggestions {
   position: absolute;
@@ -11,15 +11,11 @@
 
   /* Fading red “U”-shaped border */
   border: var(--border-width-thick) solid;
-  border-image-source: linear-gradient(to top, red 0%, rgba(255,0,0,0) 100%);
+  border-image-source: linear-gradient(to top, red 0%, rgba(255, 0, 0, 0) 100%);
   border-image-slice: 1;
 
-  /* Pill shape on the bottom corners */
-  border-bottom-left-radius: var(--radius-small);
-  border-bottom-right-radius: var(--radius-small);
-  /* Keep top corners square */
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
+  /* Force pill shape on bottom corners */
+  border-radius: 0 0 var(--radius-small) var(--radius-small) !important;
 
   /* Strong green shadow */
   box-shadow:
@@ -34,11 +30,13 @@
   padding: 0 4px;
 }
 
+/* When visible, expand and fade in */
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
 }
 
+/* Individual suggestion “cards” */
 .search-suggestion-item {
   display: flex;
   align-items: center;
@@ -63,19 +61,20 @@
   font-size: 14px;
 }
 
+/* Buttons inside each suggestion */
 .suggestion-action {
   margin-left: 0.5em;
   padding: 0.25em 0.6em;
   font-size: 12px;
   border: none;
   border-radius: 3px;
-  background: var(--bg-30);
+  background-color: var(--bg-30);
   color: var(--text-secondary);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
 
 .suggestion-action:hover {
-  background: var(--bg-40);
+  background-color: var(--bg-40);
   color: var(--text-primary);
 }
