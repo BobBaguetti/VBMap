@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/renderSidebar.js
-// @version: 1.4 — removed legacy Admin Tools stub
+// @version: 1.5 — switch search input to text with ARIA role and label
 
 export function renderSidebarShell() {
   const sidebar = document.getElementById("sidebar");
@@ -34,7 +34,13 @@ export function renderSidebarShell() {
     <div id="sidebar-search" class="sidebar-section">
       <h2><i class="fas fa-search"></i> Search</h2>
       <div class="search-wrapper">
-        <input type="search" id="search-bar" placeholder="Search items/locations…"/>
+        <input
+          type="text"
+          role="searchbox"
+          aria-label="Search"
+          id="search-bar"
+          placeholder="Search items/locations…"
+        />
         <button id="search-clear" aria-label="Clear search">&times;</button>
       </div>
     </div>

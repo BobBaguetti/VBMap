@@ -1,31 +1,7 @@
 /* @file: styles/components/sidebar/search.css */
-/* @version: 2.9 — absolutely kill native clears on #search-bar */
+/* @version: 2.10 — simplified after switching to text input */
 
 @import url("https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css");
-
-/* ── Brutally hide every native clear/cancel control on our input ─────────────── */
-#search-bar[type="search"]::-webkit-search-decoration,
-#search-bar[type="search"]::-webkit-search-cancel-button,
-#search-bar[type="search"]::-webkit-search-results-decoration,
-#search-bar[type="search"]::-webkit-clear-button,
-#search-bar[type="search"]::-webkit-contacts-auto-fill-button,
-#search-bar[type="search"]::-webkit-credentials-auto-fill-button,
-#search-bar[type="search"]::-ms-clear,
-#search-bar[type="search"]::-ms-reveal,
-#search-bar[type="search"]::-moz-search-cancel-button,
-input[type="search"]::-webkit-search-decoration,
-input[type="search"]::-webkit-search-cancel-button,
-input[type="search"]::-webkit-search-results-decoration,
-input[type="search"]::-webkit-clear-button,
-input[type="search"]::-ms-clear,
-input[type="search"]::-ms-reveal,
-input[type="search"]::-moz-search-cancel-button {
-  display: none !important;
-  width: 0 !important;
-  height: 0 !important;
-  margin: 0 !important;
-  padding: 0 !important;
-}
 
 /* ── Container: full pill shape with enhanced shadow ───────────────────────── */
 #sidebar-search {
@@ -39,7 +15,7 @@ input[type="search"]::-moz-search-cancel-button {
     0 4px 8px rgba(0,0,0,0.2);
 }
 
-/* ── Header: top rounding + bottom separator ───────────────────────────── */
+/* ── Header: top rounding + bottom separator ─────────────────────────────── */
 #sidebar-search > h2 {
   margin: 0;
   padding: 0.5em 0.8em;
@@ -54,7 +30,7 @@ input[type="search"]::-moz-search-cancel-button {
   border-top-right-radius: 4px;
 }
 
-/* ── Search wrapper: bottom rounding + inner shadow ───────────────────────── */
+/* ── Search wrapper: bottom rounding + inner shadow ─────────────────────── */
 .search-wrapper {
   position: relative;
   padding: 0.4em 0.8em;
@@ -64,7 +40,7 @@ input[type="search"]::-moz-search-cancel-button {
   box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
 }
 
-/* ── Input: no native decorations ─────────────────────────────────────────── */
+/* ── Input: plain text, full width ──────────────────────────────────────── */
 #sidebar-search #search-bar {
   width: 100%;
   box-sizing: border-box;
@@ -75,9 +51,6 @@ input[type="search"]::-moz-search-cancel-button {
   font-size: 13px;
   font-family: 'Satoshi', sans-serif;
   outline: none;
-  appearance: none;
-  -webkit-appearance: none;
-  -moz-appearance: textfield;
 }
 
 /* ── Custom clear button ─────────────────────────────────────────────────── */
@@ -102,7 +75,7 @@ input[type="search"]::-moz-search-cancel-button {
   color: var(--text-primary);
 }
 
-/* ── Placeholder & focus states ─────────────────────────────────────────── */
+/* ── Placeholder & focus states ───────────────────────────────────────── */
 #sidebar-search #search-bar::placeholder {
   color: var(--text-disabled);
 }
