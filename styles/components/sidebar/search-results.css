@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.0 — custom bottom border and red gradient shadow test */
+/* @version: 2.0 — U-shaped gradient border and red shadow test */
 
 .search-suggestions {
   position: absolute;
@@ -7,45 +7,52 @@
   left: 0;
   width: 100%;
   margin-top: 4px;
-  background-color: var(--bg-30);
-
-  /* Flat bottom border */
-  border-bottom: var(--border-width-hair) solid var(--bg-10);
-
-  /* Only top corners rounded */
-  border-top-left-radius: var(--radius-small);
-  border-top-right-radius: var(--radius-small);
-  border-bottom-left-radius: 0;
-  border-bottom-right-radius: 0;
-
-  /* Remove previous box-shadow */
-  box-shadow: none;
-
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
-  transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0 4px;
+  transition: max-height 0.2s ease, opacity 0.2s ease;
+
+  /* Base background */
+  background-color: var(--bg-30);
+
+  /* Top corners rounded, bottom flat */
+  border-radius: var(--radius-small) var(--radius-small) 0 0;
+
+  /* U-shaped “border” via background gradients */
+  background-image:
+    /* Bottom border: full width */
+    linear-gradient(to top, red 100%, transparent 0%),
+    /* Left border: full height */
+    linear-gradient(to top, red 100%, transparent 0%),
+    /* Right border: full height */
+    linear-gradient(to top, red 100%, transparent 0%);
+  background-repeat: no-repeat;
+  background-position:
+    center bottom, /* bottom border */
+    left bottom,   /* left side */
+    right bottom;  /* right side */
+  background-size:
+    100% var(--border-width-thick), /* bottom thickness */
+    var(--border-width-thick) 100%, /* left thickness */
+    var(--border-width-thick) 100%; /* right thickness */
+
+  /* Red shadow: heaviest at bottom, fading up the sides */
+  box-shadow:
+    /* bottom-heavy */
+    0 8px 16px red,
+    /* sides, a bit lighter */
+    -4px 8px 16px rgba(255, 0, 0, 0.75),
+    4px 8px 16px rgba(255, 0, 0, 0.75);
 }
 
-/* Red gradient “shadow” fading upwards from the bottom */
-.search-suggestions::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  width: 100%;
-  height: 20px; /* adjust as needed */
-  background: linear-gradient(to top, red 100%, transparent 0%);
-  pointer-events: none;
-}
-
+/* When visible, expand and fade in */
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
 }
 
+/* Suggestion items (unchanged) */
 .search-suggestion-item {
   display: flex;
   align-items: center;
