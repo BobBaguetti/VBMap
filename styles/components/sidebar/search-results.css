@@ -1,32 +1,26 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.2 — 1px super-dark fading border */
+/* @version: 2.3 — use bg-50 base and hover-light overlay for hover */
 
 .search-suggestions {
+  /* unchanged */
   position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
   margin-top: 4px;
   background-color: var(--bg-30);
-
-  /* 1px “U”-shaped border: super dark at bottom, fading to transparent at top */
-  border: var(--border-width-hair) solid;
+  border: var(--border-width-hair) solid rgba(0,0,0,0.9);
   border-image-source: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.9) 0%,
     rgba(0, 0, 0, 0) 100%
   );
   border-image-slice: 1;
-
-  /* bottom corners pill-shaped */
   border-bottom-left-radius: var(--radius-small);
   border-bottom-right-radius: var(--radius-small);
-
-  /* subtle layered shadows */
   box-shadow:
     var(--shadow-medium),
     var(--shadow-low);
-
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
@@ -35,26 +29,42 @@
   padding: 0 4px;
 }
 
-/* When visible, expand and fade in */
 .search-suggestions.visible {
   max-height: 300px;
   opacity: 1;
 }
 
-/* Suggestion cards (unchanged) */
 .search-suggestion-item {
+  position: relative;               /* for the overlay */
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--bg-40);
+  background-color: var(--bg-50);   /* updated base color */
   border-radius: var(--radius-small);
   padding: 0.5em 0.8em;
   margin: 4px 0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s;      /* retains existing transition */
 }
 
+/* Hover overlay matching filter buttons */
+.search-suggestion-item::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--hover-light);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  border-radius: var(--radius-small);
+}
+
+.search-suggestion-item:hover::after {
+  opacity: 1;
+}
+
+/* Remove old hover background rule */
 .search-suggestion-item:hover {
   background-color: var(--bg-50);
 }
