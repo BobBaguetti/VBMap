@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 4.1 — fix vertical alignment and sizing for chest icons; center all icons */
+/* @version: 4.2 — Option 2: gradient‐fade hints for scrollable content */
 
 .search-suggestions {
   position: absolute;
@@ -19,6 +19,40 @@
   transition: opacity 0.2s ease;
   opacity: 0;
   padding: 0;                  /* cards handle their own gutters */
+}
+
+/* When content overflows, this class enables the bottom gradient */
+.search-suggestions.scrollable::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 24px; /* height of fade area at bottom */
+  background: linear-gradient(
+    to bottom,
+    rgba(35, 35, 40, 0) 0%,
+    var(--bg-30) 100%
+  );
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* When scrolled down, show a top gradient hint */
+.search-suggestions.shadow-top::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 24px; /* height of fade area at top */
+  background: linear-gradient(
+    to top,
+    rgba(35, 35, 40, 0) 0%,
+    var(--bg-30) 100%
+  );
+  pointer-events: none;
+  z-index: 10;
 }
 
 /* Reveal when visible */
