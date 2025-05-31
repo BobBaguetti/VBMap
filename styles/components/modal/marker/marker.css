@@ -1,5 +1,5 @@
 /* @file: styles/modals/marker.css */
-/* @version: 1.1 — added marker highlight/dim styling */
+/* @version: 1.2 — refined glow + added transition for smooth in/out */
 
 /* Hide when .hidden */
 #marker-modal.hidden {
@@ -108,17 +108,26 @@
   outline: 2px solid var(--focus-ring);
 }
 
-/* ─── New marker highlight/dim styles ─── */
+/* ─── Updated marker highlight/dim styles ─── */
+
+/* Base transition on ALL marker icons so that adding/removing highlight/dim interpolates */
+.leaflet-marker-icon {
+  transition: filter 0.3s ease, transform 0.3s ease, opacity 0.3s ease;
+}
 
 /* Dimmed: when the marker’s own element has class "marker-dimmed" */
 .leaflet-marker-icon.marker-dimmed {
   opacity: 0.4 !important;
+  /* remove any glow/scale if present */
+  filter: none !important;
+  transform: scale(1) !important;
 }
 
 /* Highlighted: when the marker’s own element has class "marker-highlighted" */
 .leaflet-marker-icon.marker-highlighted {
-  filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
-  transform: scale(1.1);
+  /* reduced-intensity glow */
+  filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.6)) !important;
+  transform: scale(1.05) !important;
   z-index: 1000 !important;
   opacity: 1 !important;
 }
