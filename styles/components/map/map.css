@@ -1,5 +1,5 @@
-/* @file: styles/components/map.css */
-/* @version: 1.0 — map container and marker sizing */
+/* @file: styles/components/map/map.css */
+/* @version: 1.1 — simplified “small markers” rule */
 
 #map {
   position: absolute;
@@ -10,8 +10,7 @@
   background-color: var(--bg-00);
 }
 
-#map.small-markers .leaflet-marker-icon,
-#map.small-markers .custom-marker-container {
-  transform: scale(0.5);
+#map.small-markers .leaflet-marker-icon {
+  transform: scale(var(--marker-small-scale));
   transform-origin: center center;
 }

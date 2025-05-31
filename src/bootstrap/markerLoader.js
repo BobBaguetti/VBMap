@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.15 — using enrichLootPool from lootUtils.js
+// @version: 1.16 — added grouping toggle logic
 
 import {
   subscribeMarkers,
@@ -13,11 +13,36 @@ import { showContextMenu, hideContextMenu }
   from "../modules/context-menu/index.js";
 import { enrichLootPool } from "./lootUtils.js";  // new helper
 
+/** 
+ * Keeps track of whether “marker grouping” (clustering) is currently enabled.
+ * Defaults to false (i.e. flat markers).
+ */
+let groupingEnabled = false;
+
+/**
+ * Toggle marker grouping on/off. When true, new markers are added
+ * into the clusterItemLayer; when false, they go into flatItemLayer.
+ *
+ * @param {boolean} enabled
+ */
+export function setGrouping(enabled) {
+  groupingEnabled = enabled;
+}
+
 /** @type {{ markerObj: L.Marker, data: object }[]} */
 export const allMarkers = [];
 
 /**
  * Initialize marker subscriptions, creation, and hydration.
+ *
+ * @param {object}   db              – Firestore instance
+ * @param {L.Map}    map             – Leaflet map object
+ * @param {L.LayerGroup} clusterItemLayer – MarkerClusterGroup for items
+ * @param {L.LayerGroup} flatItemLayer    – Regular LayerGroup for items
+ * @param {Function} filterMarkers   – Function to re-apply active filters
+ * @param {Function} loadItemFilters – Function to populate sidebar filters
+ * @param {boolean}  isAdmin         – Whether the user is in admin mode
+ * @param {object}   callbacks       – { markerForm, copyMgr }, etc.
  */
 export async function init(
   db,
@@ -33,7 +58,7 @@ export async function init(
 
   // 1) Marker data subscription
   subscribeMarkers(db, markers => {
-    // Clear existing
+    // Clear out every existing marker from both layers and remove from map
     allMarkers.forEach(({ markerObj }) => {
       markerObj.remove();
       clusterItemLayer.removeLayer(markerObj);
@@ -41,12 +66,12 @@ export async function init(
     });
     allMarkers.length = 0;
 
-    // Rebuild all markers
+    // Rebuild all markers from Firestore docs
     markers.forEach(data => {
       const cfg = markerTypes[data.type];
       if (!cfg) return;
 
-      // Merge definition fields
+      // Merge definition fields (e.g., item/chest/NPC data)
       const defMap = definitionsManager.getDefinitions(data.type);
       const defKey = cfg.defIdKey;
       if (defKey && defMap[data[defKey]]) {
@@ -56,11 +81,12 @@ export async function init(
         enrichLootPool(data, "Item");
       }
 
-      // Context-menu callbacks
+      // Context‐menu callbacks
       const cb = {
         onEdit: (markerObj, originalData, e) =>
           markerForm.openEdit(markerObj, originalData, e, payload => {
             const updated = { ...originalData, ...payload };
+            // Update icon & popup in place:
             markerObj.setIcon(cfg.iconFactory(updated));
             markerObj.setPopupContent(cfg.popupRenderer(updated));
             firebaseUpdateMarker(db, updated);
@@ -79,7 +105,7 @@ export async function init(
         }
       };
 
-      // Create the Leaflet marker
+      // Create a new Leaflet marker with our custom icon/popup/etc.
       const markerObj = createMarker(
         data,
         map,
@@ -89,24 +115,24 @@ export async function init(
         isAdmin
       );
 
-      // Set its popup
+      // Ensure its popup is up‐to‐date
       if (cfg.popupRenderer) {
         markerObj.setPopupContent(cfg.popupRenderer(data));
       }
 
-      // Add to layer
-      const layer = clusterItemLayer.hasLayer(markerObj)
-        ? clusterItemLayer
-        : flatItemLayer;
+      // 2) Add to the correct layer based on the groupingEnabled flag
+      const layer = groupingEnabled ? clusterItemLayer : flatItemLayer;
       layer.addLayer(markerObj);
 
       allMarkers.push({ markerObj, data });
     });
 
+    // Re‐apply any active filters (so that hidden markers stay hidden)
     filterMarkers();
   });
 
-  // 2) Re-apply icon & popup when definitions update
+  // 3) Whenever definitions update (e.g. a chest loot table changes),
+  //    re‐render icons & popups for all markers of that type
   Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
