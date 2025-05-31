@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 4.3 — add a sticky “scroll-footer” element instead of pseudo‐element so gradient stays fixed
+// @version: 4.4 — limit suggestions to definitions present in sidebar filters
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 import {
@@ -93,6 +93,35 @@ export function setupSidebarSearch({
       { id: "Dragonvault", name: "Dragonvault Chest", type: "Chest", iconClass: "ph-fill ph-treasure-chest" }
     ];
     return [...chestKeys, ...items, ...npcs];
+  }
+
+  // Build sets of IDs that currently have toggles in the sidebar
+  function getAvailableIds() {
+    const itemEls = Array.from(
+      document.querySelectorAll(`${itemFilterListSelector} [data-id]`)
+    );
+    const chestEls = Array.from(
+      document.querySelectorAll(`${chestFilterListSelector} [data-id]`)
+    );
+    const npcHostileEls = Array.from(
+      document.querySelectorAll(`${npcHostileListSelector} [data-id]`)
+    );
+    const npcFriendlyEls = Array.from(
+      document.querySelectorAll(`${npcFriendlyListSelector} [data-id]`)
+    );
+
+    const itemIds = itemEls.map(el => el.getAttribute("data-id"));
+    const chestIds = chestEls.map(el => el.getAttribute("data-id"));
+    const npcIds = [
+      ...npcHostileEls.map(el => el.getAttribute("data-id")),
+      ...npcFriendlyEls.map(el => el.getAttribute("data-id"))
+    ];
+
+    return {
+      Item: new Set(itemIds),
+      Chest: new Set(chestIds),
+      NPC: new Set(npcIds)
+    };
   }
 
   // Create (or return existing) sticky footer element for gradient‐fade
@@ -220,7 +249,13 @@ export function setupSidebarSearch({
       removeScrollFooter();
       return;
     }
-    const allDefs = loadAllDefinitions();
+
+    // Get only definitions that have toggles present in sidebar
+    const availableIds = getAvailableIds();
+    const allDefs = loadAllDefinitions().filter(def => {
+      return availableIds[def.type] && availableIds[def.type].has(def.id);
+    });
+
     const matches = allDefs
       .filter(d => d.name.toLowerCase().includes(q))
       .slice(0, 50);
