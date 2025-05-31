@@ -1,5 +1,5 @@
 // @file: src/appInit.js
-// @version: 1.2 — force Chest into cluster layer
+// @version: 1.2 — have Chest default to flat layer
 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
@@ -25,10 +25,10 @@ export const npcLayer = flatItemLayer;
 export const layers = {
   Door:                L.layerGroup(),
   "Extraction Portal": L.layerGroup(),
-  Item:                flatItemLayer,        // Items remain in the flat layer by default
+  Item:                flatItemLayer,
   Teleport:            L.layerGroup(),
   "Spawn Point":       L.layerGroup(),
-  Chest:               clusterItemLayer,     // ← Chest now uses the cluster group
+  Chest:               flatItemLayer,   // ← Chest now points at flat layer by default
   NPC:                 npcLayer
 };
 
@@ -41,6 +41,3 @@ Object.entries(layers).forEach(([type, layer]) => {
 
 // show flat items (and NPCs, since they share flatItemLayer)
 flatItemLayer.addTo(map);
-
-// ensure chest clusters render on load
-clusterItemLayer.addTo(map);
