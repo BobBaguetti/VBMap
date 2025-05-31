@@ -1,7 +1,6 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.4 — use inset box‐shadow for hover accent bar, smoother animation */
+/* @version: 3.4 — use pseudo-element for hover accent bar (smooth, no content shift) */
 
-/* Container */
 .search-suggestions {
   position: absolute;
   top: 100%;
@@ -27,7 +26,6 @@
 }
 
 /* ── Category Header ───────────────────────────────────────── */
-/* Uses a subtle vertical gradient from bg-20 → bg-25 */
 .search-suggestions .search-header {
   display: block;
   width: 100%;
@@ -47,7 +45,7 @@
 }
 
 /* ── Suggestion Rows ───────────────────────────────────────── */
-/* All rows now use the same background */
+/* All rows use the same background */
 .search-suggestions .search-suggestion-item {
   position: relative;
   display: flex;
@@ -57,17 +55,31 @@
   padding: 0.5em 1em;
   margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
-  transition: background 0.2s ease, box-shadow 0.3s ease; /* animate box-shadow instead of border */
+  transition: background 0.2s ease; /* keep highlight transition */
   cursor: pointer;
+  overflow: hidden; /* contain the pseudo-element */
 }
 
-/* Hover: inset accent bar and slightly darken the bg */
-.search-suggestions .search-suggestion-item:hover {
-  background-color: var(--bg-55);
-  box-shadow: inset 4px 0 0 0 var(--accent-primary);
+/* 1) Create the left accent bar via ::before, initially width=0 */
+.search-suggestions .search-suggestion-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 0;
+  background-color: var(--accent-primary);
+  border-top-left-radius: var(--radius-small);   /* match row’s rounding */
+  border-bottom-left-radius: var(--radius-small);
+  transition: width 0.3s ease; /* smooth expand */
 }
 
-/* Hover overlay matching filter-group toggles */
+/* 2) On hover, expand that bar to 4px */
+.search-suggestions .search-suggestion-item:hover::before {
+  width: 4px;
+}
+
+/* 3) Overlay effect for hover (matching filter-group toggles) */
 .search-suggestion-item::after {
   content: "";
   position: absolute;
@@ -78,6 +90,7 @@
   pointer-events: none;
   border-radius: var(--radius-small);
 }
+
 .search-suggestion-item:hover::after {
   opacity: 1;
 }
@@ -110,6 +123,7 @@
   cursor: pointer;
   transition: background 0.2s ease, color 0.2s ease;
 }
+
 .suggestion-action:hover {
   background: var(--bg-40);
   color: var(--text-primary);
