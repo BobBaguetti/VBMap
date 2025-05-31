@@ -1,23 +1,21 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.3 — use bg-50 base and hover-light overlay for hover */
+/* @version: 2.4 — suggestion rows on bg-40; rounded all corners */
 
 .search-suggestions {
-  /* unchanged */
   position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
   margin-top: 4px;
   background-color: var(--bg-30);
-  border: var(--border-width-hair) solid rgba(0,0,0,0.9);
+  border: var(--border-width-hair) solid rgba(0, 0, 0, 0.9);
   border-image-source: linear-gradient(
     to top,
     rgba(0, 0, 0, 0.9) 0%,
     rgba(0, 0, 0, 0) 100%
   );
   border-image-slice: 1;
-  border-bottom-left-radius: var(--radius-small);
-  border-bottom-right-radius: var(--radius-small);
+  border-radius: var(--radius-small); /* now rounds all 4 corners */
   box-shadow:
     var(--shadow-medium),
     var(--shadow-low);
@@ -35,17 +33,17 @@
 }
 
 .search-suggestion-item {
-  position: relative;               /* for the overlay */
+  position: relative;               
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--bg-50);   /* updated base color */
+  background-color: var(--bg-40);   /* switched from bg-50 to bg-40 */
   border-radius: var(--radius-small);
   padding: 0.5em 0.8em;
   margin: 4px 0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: background 0.2s;      /* retains existing transition */
+  transition: background 0.2s;
 }
 
 /* Hover overlay matching filter buttons */
@@ -62,11 +60,6 @@
 
 .search-suggestion-item:hover::after {
   opacity: 1;
-}
-
-/* Remove old hover background rule */
-.search-suggestion-item:hover {
-  background-color: var(--bg-50);
 }
 
 .suggestion-name {
@@ -92,7 +85,7 @@
   background: var(--bg-40);
   color: var(--text-primary);
 }
- 
+
 .suggestion-icon {
   width: 20px;
   height: 20px;
@@ -107,5 +100,6 @@
   color: var(--text-secondary);
   background: var(--bg-30);
   margin-top: 0.5em;
-  border-radius: 4px;
+  /* leave headers rounded if you like, or remove: */
+  border-radius: var(--radius-small);
 }
