@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.9 — remove background‐darkening, rely solely on overlay tint matching filter toggles */
+/* @version: 4.0 — enable scrolling with invisible scrollbar */
 
 .search-suggestions {
   position: absolute;
@@ -12,17 +12,29 @@
   border-bottom: 4px solid var(--bg-10);
   border-radius: var(--radius-small);
   box-shadow: var(--shadow-high);
-  max-height: 0;
-  overflow: hidden;
+  max-height: 300px;           /* fixed max-height to allow scrolling */
+  overflow-y: auto;            /* enable vertical scroll */
+  overflow-x: hidden;          /* no horizontal scroll */
   z-index: 1000;
-  transition: max-height 0.2s ease, opacity 0.2s ease;
+  transition: opacity 0.2s ease;
   opacity: 0;
-  padding: 0;
+  padding: 0;                  /* cards handle their own gutters */
 }
 
+/* Reveal when visible */
 .search-suggestions.visible {
-  max-height: 300px;
   opacity: 1;
+}
+
+/* Hide scrollbar in Firefox */
+.search-suggestions {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar in WebKit browsers */
+.search-suggestions::-webkit-scrollbar {
+  width: 0;
+  height: 0;
 }
 
 /* ── Category Header ───────────────────────────────────────── */
@@ -40,7 +52,7 @@
     var(--bg-25) 100%
   );
   border-bottom: 1px solid var(--border-soft);
-  margin: 0;
+  margin: 0;     /* collapse any extra gaps */
   border-radius: var(--radius-small) var(--radius-small) 0 0;
 }
 
@@ -53,11 +65,11 @@
   justify-content: space-between;
   background-color: var(--bg-50);
   padding: 0.5em 1em;
-  margin: 4px 0 0 0;
+  margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
-  transition: background 0.2s ease;    /* background no longer changes on hover */
+  transition: background 0.2s ease;    /* no transform here */
   cursor: pointer;
-  overflow: hidden;
+  overflow: hidden;                     /* contain pseudo-element */
 }
 
 /* Accent bar using ::before; fixed in place */
@@ -71,8 +83,8 @@
   background-color: var(--accent-primary);
   border-top-left-radius: var(--radius-small);
   border-bottom-left-radius: var(--radius-small);
-  transform: translateX(-4px);
-  transition: transform 0.24s ease;
+  transform: translateX(-4px);        /* hide off-screen */
+  transition: transform 0.24s ease;     /* animate entry/exit */
   pointer-events: none;
 }
 
@@ -85,7 +97,7 @@
 .search-suggestion-item:hover .suggestion-icon,
 .search-suggestion-item:hover .suggestion-name {
   transform: translateX(4px);
-  transition: transform 0.24s ease;
+  transition: transform 0.24s ease;    /* faster nudge/un-nudge */
 }
 
 /* Hover overlay matching filter-group toggles */
@@ -147,4 +159,3 @@
   border-bottom-left-radius: var(--radius-small);
   border-bottom-right-radius: var(--radius-small);
 }
- 
