@@ -1,7 +1,6 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.6 — use transform for smooth nudge + pseudo‐element for accent bar */
+/* @version: 3.7 — accent bar stays put; icon+name nudge on hover; buttons fixed */
 
-/* Container */
 .search-suggestions {
   position: absolute;
   top: 100%;
@@ -56,34 +55,42 @@
   padding: 0.5em 1em;
   margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
-  transition: background 0.2s ease, transform 0.3s ease; /* added transform */
+  transition: background 0.2s ease;    /* no transform here */
   cursor: pointer;
-  overflow: hidden;  /* contain pseudo-elements */
+  overflow: hidden;                     /* contain pseudo-element */
 }
 
-/* Accent bar via ::before, starts hidden */
+/* Accent bar using ::before; fixed in place */
 .search-suggestion-item::before {
   content: "";
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
-  width: 4px;                   /* full width but hidden by transform */
+  width: 4px;
   background-color: var(--accent-primary);
   border-top-left-radius: var(--radius-small);
   border-bottom-left-radius: var(--radius-small);
-  pointer-events: none;
-  transform: translateX(-4px);  /* hide the bar to the left initially */
+  transform: translateX(-4px);         /* hidden off-screen left */
   transition: transform 0.3s ease;
+  pointer-events: none;
 }
 
-/* Hover: reveal accent bar and nudge content */
-.search-suggestions .search-suggestion-item:hover::before {
-  transform: translateX(0);      /* slide bar into view */
+/* On hover, show accent bar (no layout shift for item container) */
+.search-suggestion-item:hover::before {
+  transform: translateX(0);
 }
+
+/* Background darkening on hover */
 .search-suggestions .search-suggestion-item:hover {
   background-color: var(--bg-55);
-  transform: translateX(4px);    /* nudge the entire row to the right */
+}
+
+/* Nudge only icon + text on hover; buttons remain fixed */
+.search-suggestion-item:hover .suggestion-icon,
+.search-suggestion-item:hover .suggestion-name {
+  transform: translateX(4px);
+  transition: transform 0.3s ease;
 }
 
 /* Hover overlay matching filter-group toggles */
@@ -108,13 +115,16 @@
   margin-right: 0.75em;
   flex-shrink: 0;
   filter: brightness(1.1);
+  transform: translateX(0);
 }
 
+/* Ensure name also has its own transform context */
 .suggestion-name {
   flex: 1;
   margin-right: 1em;
   color: var(--text-primary);
   font-size: 14px;
+  transform: translateX(0);
 }
 
 /* ── Action Buttons ─────────────────────────────────────────── */
