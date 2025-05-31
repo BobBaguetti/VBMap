@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.0 — Style D: gradient headers, alternating rows, accent hover */
+/* @version: 3.1 — uniform row color and darker container shadow */
 
 .search-suggestions {
   position: absolute;
@@ -10,13 +10,14 @@
   background-color: var(--bg-30);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-small);
-  box-shadow: var(--shadow-medium);
+  /* Darker shadow for stronger contrast */
+  box-shadow: var(--shadow-high);
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0; /* no inner padding—cards will handle their own gutters */
+  padding: 0; /* cards handle their own gutters */
 }
 
 .search-suggestions.visible {
@@ -44,22 +45,15 @@
 }
 
 /* ── Suggestion Rows ───────────────────────────────────────── */
-/* We’ll alternate even/odd rows for subtle contrast */
-.search-suggestions .search-suggestion-item:nth-child(2n + 1) {
-  background-color: var(--bg-40);
-}
-.search-suggestions .search-suggestion-item:nth-child(2n) {
-  background-color: var(--bg-50);
-}
-
-/* Common row styling */
+/* All rows now use the same background */
 .search-suggestions .search-suggestion-item {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background-color: var(--bg-50);
   padding: 0.5em 1em;
-  margin: 4px 0 0 0;  /* only top margin, so they stack flush under header */
+  margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
   transition: background 0.2s, border-left 0.2s;
   cursor: pointer;
@@ -68,15 +62,10 @@
 /* Hover: accent‐colored left border and slightly darken the bg */
 .search-suggestions .search-suggestion-item:hover {
   border-left: 4px solid var(--accent-primary);
-}
-.search-suggestions .search-suggestion-item:hover:nth-child(2n + 1) {
-  background-color: var(--bg-45);
-}
-.search-suggestions .search-suggestion-item:hover:nth-child(2n) {
   background-color: var(--bg-55);
 }
 
-/* Overlay effect to match your existing hover style */
+/* Overlay effect for hover (in addition to darker background) */
 .search-suggestion-item::after {
   content: "";
   position: absolute;
@@ -97,7 +86,7 @@
   height: 24px;
   margin-right: 0.75em;
   flex-shrink: 0;
-  filter: brightness(1.1); /* make the icon pop just a bit */
+  filter: brightness(1.1);
 }
 
 .suggestion-name {
@@ -114,13 +103,13 @@
   font-size: 12px;
   border: none;
   border-radius: 4px;
-  background: var(--bg-50);    /* the brighter 50 you liked */
+  background: var(--bg-50);
   color: var(--text-secondary);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
 .suggestion-action:hover {
-  background: var(--bg-40);     /* slightly darker on hover */
+  background: var(--bg-40);
   color: var(--text-primary);
 }
 
