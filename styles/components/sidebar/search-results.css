@@ -1,31 +1,23 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.4 — darken headers, add header border, tighten row padding */
+/* @version: A.1 — full‐width headers, flat cards, minimal gutters */
 
+/* Container */
 .search-suggestions {
   position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
-  margin-top: 4px;
-  background-color: var(--bg-30);   /* keep container on bg-30 */
-  border: var(--border-width-hair) solid rgba(0,0,0,0.9);
-  border-image-source: linear-gradient(
-    to top,
-    rgba(0, 0, 0, 0.9) 0%,
-    rgba(0, 0, 0, 0) 100%
-  );
-  border-image-slice: 1;
-  border-bottom-left-radius: var(--radius-small);
-  border-bottom-right-radius: var(--radius-small);
-  box-shadow:
-    var(--shadow-medium),
-    var(--shadow-low);
+  margin-top: 2px; /* tighter gap above headers */
+  background-color: var(--bg-30);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-small);
+  box-shadow: var(--shadow-medium);
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0 4px;
+  padding: 0; /* no inner padding—cards extend edge-to-edge */
 }
 
 .search-suggestions.visible {
@@ -33,21 +25,40 @@
   opacity: 1;
 }
 
-.search-suggestion-item {
-  position: relative;               /* for the overlay */
+/* Full-width header bar */
+.search-suggestions .search-header {
+  display: block;
+  width: 100%;
+  padding: 0.4em 0.8em;
+  font-size: 0.85em;
+  text-transform: uppercase;
+  color: var(--text-secondary);
+  background-color: var(--bg-20);
+  border-bottom: 1px solid var(--border-soft);
+  margin: 0;            /* remove extra margins */
+  border-radius: var(--radius-small) var(--radius-small) 0 0;
+}
+
+/* Cards: no shadow, just a thin border, little radius */
+.search-suggestions .search-suggestion-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: var(--bg-50);
-  border-radius: var(--radius-small);
-  padding: 0.4em 0.8em;             /* tightened from 0.5em top/bottom */
-  margin: 4px 0;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0.4em 0.8em;
   cursor: pointer;
   transition: background 0.2s;
 }
 
-/* Hover overlay matching filter buttons */
+/* Last card in a group: round bottom corners */
+.search-suggestions .search-header + .search-suggestion-item:last-of-type,
+.search-suggestions .search-suggestion-item:last-of-type {
+  border-bottom-left-radius: var(--radius-small);
+  border-bottom-right-radius: var(--radius-small);
+}
+
+/* Hover overlay (same as before) */
 .search-suggestion-item::after {
   content: "";
   position: absolute;
@@ -63,16 +74,18 @@
   opacity: 1;
 }
 
-/* Remove old hover background rule */
-.search-suggestion-item:hover {
-  background-color: var(--bg-50);
+/* Icon and text/layout unchanged */
+.suggestion-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 0.5em;
+  flex-shrink: 0;
 }
 
 .suggestion-name {
   flex: 1;
   margin-right: 1em;
   color: var(--text-primary);
-  font-size: 14px;
 }
 
 .suggestion-action {
@@ -90,23 +103,4 @@
 .suggestion-action:hover {
   background: var(--bg-40);
   color: var(--text-primary);
-}
- 
-.suggestion-icon {
-  width: 20px;
-  height: 20px;
-  margin-right: 0.5em;
-  flex-shrink: 0;
-}
-
-/* Header: darker bg and bottom border */
-.search-header {
-  font-size: 0.85em;
-  text-transform: uppercase;
-  padding: 0.4em 0.8em;
-  color: var(--text-secondary);
-  background: var(--bg-20);                    /* darkened */
-  border-bottom: 1px solid var(--border-soft); /* separator line */
-  margin-top: 0.5em;
-  border-radius: var(--radius-small) var(--radius-small) 0 0;
 }
