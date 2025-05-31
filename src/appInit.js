@@ -1,5 +1,5 @@
 // @file: src/appInit.js
-// @version: 1.1 — added NPC layer alias for filter compatibility
+// @version: 1.2 — force Chest into cluster layer
 
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
@@ -25,10 +25,10 @@ export const npcLayer = flatItemLayer;
 export const layers = {
   Door:                L.layerGroup(),
   "Extraction Portal": L.layerGroup(),
-  Item:                flatItemLayer,
+  Item:                flatItemLayer,        // Items remain in the flat layer by default
   Teleport:            L.layerGroup(),
   "Spawn Point":       L.layerGroup(),
-  Chest:               L.layerGroup(),
+  Chest:               clusterItemLayer,     // ← Chest now uses the cluster group
   NPC:                 npcLayer
 };
 
@@ -39,6 +39,8 @@ Object.entries(layers).forEach(([type, layer]) => {
   }
 });
 
-// show clustered items (and NPCs, since they share flatItemLayer)
+// show flat items (and NPCs, since they share flatItemLayer)
 flatItemLayer.addTo(map);
- 
+
+// ensure chest clusters render on load
+clusterItemLayer.addTo(map);

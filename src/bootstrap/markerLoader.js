@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.16 — added grouping toggle logic
+// @version: 1.17 — force “Chest” into cluster layer
 
 import {
   subscribeMarkers,
@@ -37,8 +37,8 @@ export const allMarkers = [];
  *
  * @param {object}   db              – Firestore instance
  * @param {L.Map}    map             – Leaflet map object
- * @param {L.LayerGroup} clusterItemLayer – MarkerClusterGroup for items
- * @param {L.LayerGroup} flatItemLayer    – Regular LayerGroup for items
+ * @param {L.LayerGroup} clusterItemLayer – MarkerClusterGroup for items (and now chests)
+ * @param {L.LayerGroup} flatItemLayer    – Regular LayerGroup for items/NPCs
  * @param {Function} filterMarkers   – Function to re-apply active filters
  * @param {Function} loadItemFilters – Function to populate sidebar filters
  * @param {boolean}  isAdmin         – Whether the user is in admin mode
@@ -120,10 +120,18 @@ export async function init(
         markerObj.setPopupContent(cfg.popupRenderer(data));
       }
 
-      // 2) Add to the correct layer based on the groupingEnabled flag
-      const layer = groupingEnabled ? clusterItemLayer : flatItemLayer;
-      layer.addLayer(markerObj);
+      // 2) Choose layer based on type and groupingEnabled:
+      //
+      //    – If this is a “Chest”, force it into clusterItemLayer (so it always clusters)
+      //    – Otherwise, use the groupingEnabled flag between clusterItemLayer vs flatItemLayer
+      let layerToUse;
+      if (data.type === "Chest") {
+        layerToUse = clusterItemLayer;
+      } else {
+        layerToUse = groupingEnabled ? clusterItemLayer : flatItemLayer;
+      }
 
+      layerToUse.addLayer(markerObj);
       allMarkers.push({ markerObj, data });
     });
 
