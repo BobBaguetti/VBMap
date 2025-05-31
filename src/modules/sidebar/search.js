@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 4.1 — removed ESC key handler (handled globally in events.js)
+// @version: 4.2 — add gradient‐fade class toggles for scroll hints
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 import {
@@ -61,7 +61,7 @@ export function setupSidebarSearch({
   }
   suggestionsList.classList.remove("visible");
 
-  // === Prevent page scroll while cursor is over suggestions ===
+  // Prevent page scroll while cursor is over suggestions
   suggestionsList.addEventListener(
     "wheel",
     e => {
@@ -93,6 +93,27 @@ export function setupSidebarSearch({
       { id: "Dragonvault", name: "Dragonvault Chest", type: "Chest", iconClass: "ph-fill ph-treasure-chest" }
     ];
     return [...chestKeys, ...items, ...npcs];
+  }
+
+  // Update gradient‐fade classes based on scroll
+  function updateGradients() {
+    const scrollTop    = suggestionsList.scrollTop;
+    const scrollHeight = suggestionsList.scrollHeight;
+    const clientHeight = suggestionsList.clientHeight;
+
+    // Toggle "scrollable" if there is overflow
+    if (scrollHeight > clientHeight) {
+      suggestionsList.classList.add("scrollable");
+    } else {
+      suggestionsList.classList.remove("scrollable");
+    }
+
+    // Toggle "shadow-top" if scrolled down from top
+    if (scrollTop > 0) {
+      suggestionsList.classList.add("shadow-top");
+    } else {
+      suggestionsList.classList.remove("shadow-top");
+    }
   }
 
   // Render suggestions with category headers
@@ -134,6 +155,7 @@ export function setupSidebarSearch({
 
     suggestionsList.innerHTML = html;
 
+    // Attach button event listeners
     suggestionsList.querySelectorAll(".search-suggestion-item").forEach(item => {
       const id   = item.dataset.id;
       const type = item.dataset.type;
@@ -161,14 +183,20 @@ export function setupSidebarSearch({
         );
       });
     });
+
+    // Once content is rendered, update gradient fades
+    updateGradients();
   }
+
+  // Listen for scroll events to update gradients in real time
+  suggestionsList.addEventListener("scroll", updateGradients);
 
   // Live search → render
   searchBar.addEventListener("input", () => {
     const q = searchBar.value.trim().toLowerCase();
     if (!q) {
       suggestionsList.innerHTML = "";
-      suggestionsList.classList.remove("visible");
+      suggestionsList.classList.remove("visible", "scrollable", "shadow-top");
       return;
     }
     const allDefs = loadAllDefinitions();
@@ -181,7 +209,7 @@ export function setupSidebarSearch({
       suggestionsList.classList.add("visible");
     } else {
       suggestionsList.innerHTML = "";
-      suggestionsList.classList.remove("visible");
+      suggestionsList.classList.remove("visible", "scrollable", "shadow-top");
     }
   });
 }
