@@ -40,7 +40,7 @@ export function setupSettingsModal({ buttonSelector }) {
         </label>
         <label>
           <input type="checkbox" id="toggle-small-markers"/>
-          Small Markers (50%)
+          Small Markers
         </label>
         <hr/>
         <div id="auth-button-container">
