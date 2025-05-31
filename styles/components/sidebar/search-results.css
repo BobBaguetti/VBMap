@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.9 — category headers one tier darker, highlight matches filter-toggle */
+/* @version: 3.8 — faster nudge/un-nudge: 0.24s ease for transform */
 
 .search-suggestions {
   position: absolute;
@@ -26,7 +26,6 @@
 }
 
 /* ── Category Header ───────────────────────────────────────── */
-/* Shifted down one tier: was bg-20→bg-25; now bg-10→bg-20 */
 .search-suggestions .search-header {
   display: block;
   width: 100%;
@@ -37,8 +36,8 @@
   color: var(--text-secondary);
   background: linear-gradient(
     to right,
-    var(--bg-10) 0%,
-    var(--bg-20) 100%
+    var(--bg-20) 0%,
+    var(--bg-25) 100%
   );
   border-bottom: 1px solid var(--border-soft);
   margin: 0;     /* collapse any extra gaps */
@@ -56,7 +55,7 @@
   padding: 0.5em 1em;
   margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
-  transition: transform 0.24s ease;    /* only transform, no background change */
+  transition: background 0.2s ease;    /* no transform here */
   cursor: pointer;
   overflow: hidden;                     /* contain pseudo-element */
 }
@@ -72,7 +71,7 @@
   background-color: var(--accent-primary);
   border-top-left-radius: var(--radius-small);
   border-bottom-left-radius: var(--radius-small);
-  transform: translateX(-4px);         /* hide off-screen */
+  transform: translateX(-4px);        /* hide off-screen */
   transition: transform 0.24s ease;     /* faster expansion */
   pointer-events: none;
 }
@@ -82,16 +81,16 @@
   transform: translateX(0);
 }
 
-/* Remove background-color change; rely on overlay for highlight */
+/* Background darkening on hover */
 .search-suggestions .search-suggestion-item:hover {
-  transform: translateX(4px);   /* nudge icon+text via child transforms */
+  background-color: var(--bg-55);
 }
 
 /* Nudge only icon + text on hover; buttons remain fixed */
 .search-suggestion-item:hover .suggestion-icon,
 .search-suggestion-item:hover .suggestion-name {
   transform: translateX(4px);
-  transition: transform 0.24s ease;    /* match nudge timing */
+  transition: transform 0.24s ease;    /* faster nudge/un-nudge */
 }
 
 /* Hover overlay matching filter-group toggles */
@@ -99,7 +98,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--hover-light);       /* same highlight as filter toggles */
+  background: var(--hover-light);
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
@@ -117,7 +116,7 @@
   flex-shrink: 0;
   filter: brightness(1.1);
   transform: translateX(0);
-  transition: transform 0.24s ease;
+  transition: transform 0.24s ease;    /* ensure initial state transition */
 }
 
 /* Ensure name also has its own transform context */
@@ -127,7 +126,7 @@
   color: var(--text-primary);
   font-size: 14px;
   transform: translateX(0);
-  transition: transform 0.24s ease;
+  transition: transform 0.24s ease;    /* ensure initial state transition */
 }
 
 /* ── Action Buttons ─────────────────────────────────────────── */
