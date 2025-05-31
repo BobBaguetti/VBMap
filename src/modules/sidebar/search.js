@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 3.4 — group results under “Chests”, “Items”, “NPCs” headers
+// @version: 3.9 — prevent page scroll while cursor is over results
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 import {
@@ -61,6 +61,23 @@ export function setupSidebarSearch({
   }
   suggestionsList.classList.remove("visible");
 
+  // === NEW: prevent page scroll when hovering over suggestions ===
+  suggestionsList.addEventListener("wheel", e => {
+    // amount scrolled by user
+    const delta = e.deltaY;
+    // how far the container can still scroll up/down
+    const atTop    = suggestionsList.scrollTop === 0;
+    const atBottom = suggestionsList.scrollTop + suggestionsList.clientHeight >= suggestionsList.scrollHeight;
+
+    // If user is scrolling up at the very top, or down at the very bottom, prevent default page scroll
+    if ((delta < 0 && atTop) || (delta > 0 && atBottom)) {
+      e.preventDefault();
+      e.stopPropagation();
+    }
+    // Otherwise, let the suggestionsList scroll normally
+  }, { passive: false });
+  // =============================================================
+
   // Build unified list of definitions and chest keys
   function loadAllDefinitions() {
     const items = Object.values(definitionsManager.getDefinitions("Item"))
@@ -79,14 +96,27 @@ export function setupSidebarSearch({
 
   // Render suggestions with category headers
   function renderSuggestions(matches) {
-    const byType = {
-      Chest:  [],
-      Item:   [],
-      NPC:    []
-    };
+    const byType = { Chest: [], Item: [], NPC: [] };
     matches.forEach(m => byType[m.type].push(m));
 
     let html = "";
+    function appendItem(def) {
+      let iconHtml;
+      if (def.type === "Item" || def.type === "NPC") {
+        iconHtml = `<img src="${def.icon}" class="suggestion-icon" alt="" />`;
+      } else {
+        iconHtml = `<i class="suggestion-icon ${def.iconClass}"></i>`;
+      }
+      html += `
+        <li class="search-suggestion-item" data-id="${def.id}" data-type="${def.type}">
+          ${iconHtml}
+          <span class="suggestion-name">${def.name}</span>
+          <button class="suggestion-action toggle-btn">Toggle</button>
+          <button class="suggestion-action show-only-btn">Show Only</button>
+        </li>
+      `;
+    }
+
     // order: Chests, Items, NPCs
     if (byType.Chest.length) {
       html += `<li class="search-header">Chests</li>`;
@@ -130,24 +160,6 @@ export function setupSidebarSearch({
         );
       });
     });
-
-    // helper to build each line
-    function appendItem(def) {
-      let iconHtml;
-      if (def.type === "Item" || def.type === "NPC") {
-        iconHtml = `<img src="${def.icon}" class="suggestion-icon" alt="" />`;
-      } else {
-        iconHtml = `<i class="suggestion-icon ${def.iconClass}"></i>`;
-      }
-      html += `
-        <li class="search-suggestion-item" data-id="${def.id}" data-type="${def.type}">
-          ${iconHtml}
-          <span class="suggestion-name">${def.name}</span>
-          <button class="suggestion-action toggle-btn">Toggle</button>
-          <button class="suggestion-action show-only-btn">Show Only</button>
-        </li>
-      `;
-    }
   }
 
   // Live search → render
@@ -161,7 +173,7 @@ export function setupSidebarSearch({
     const allDefs = loadAllDefinitions();
     const matches = allDefs
       .filter(d => d.name.toLowerCase().includes(q))
-      .slice(0, 50); // you can slice higher, headers will adjust
+      .slice(0, 50);
 
     if (matches.length) {
       renderSuggestions(matches);
