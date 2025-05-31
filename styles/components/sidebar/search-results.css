@@ -1,6 +1,7 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.3 — align hover highlight/motion with filter-group toggles */
+/* @version: 3.3 — hover highlight matches filter-group toggles (var(--hover-light)) */
 
+/* Container */
 .search-suggestions {
   position: absolute;
   top: 100%;
@@ -17,7 +18,7 @@
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0;
+  padding: 0; /* cards handle their own gutters */
 }
 
 .search-suggestions.visible {
@@ -25,13 +26,13 @@
   opacity: 1;
 }
 
-/* ── Category Header ───────────────────────────────────────── */
+/* Category Header */
 .search-suggestions .search-header {
   display: block;
   width: 100%;
   padding: 0.6em 1em;
   font-size: 0.9em;
-  font-weight: 700;
+  font-weight: 700;                     /* match sidebar filter header weight */
   text-transform: uppercase;
   color: var(--text-secondary);
   background: linear-gradient(
@@ -40,12 +41,11 @@
     var(--bg-25) 100%
   );
   border-bottom: 1px solid var(--border-soft);
-  margin: 0;
+  margin: 0;     /* collapse any extra gaps */
   border-radius: var(--radius-small) var(--radius-small) 0 0;
 }
 
-/* ── Suggestion Rows ───────────────────────────────────────── */
-/* All rows use the same background */
+/* Suggestion Rows */
 .search-suggestions .search-suggestion-item {
   position: relative;
   display: flex;
@@ -53,27 +53,15 @@
   justify-content: space-between;
   background-color: var(--bg-50);
   padding: 0.5em 1em;
-  margin: 4px 0 0 0;
+  margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
-  /* Smoother hover transition */
-  transition:
-    transform 0.1s ease,
-    box-shadow 0.2s ease,
-    border-left 0.3s ease;
+  transition: border-left 0.3s ease;    /* remove background transition */
   cursor: pointer;
 }
 
-/* Hover: lift up + stronger shadow + accent left border */
+/* Hover: accent‐colored left border; no background‐darkening */
 .search-suggestions .search-suggestion-item:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   border-left: 4px solid var(--accent-primary);
-}
-
-/* Active state: press down */
-.search-suggestions .search-suggestion-item:active {
-  transform: translateY(0);
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 /* Hover overlay matching filter-group toggles */
@@ -91,7 +79,7 @@
   opacity: 1;
 }
 
-/* ── Icons & Text ──────────────────────────────────────────── */
+/* Icons & Text */
 .suggestion-icon {
   width: 24px;
   height: 24px;
@@ -107,7 +95,7 @@
   font-size: 14px;
 }
 
-/* ── Action Buttons ─────────────────────────────────────────── */
+/* Action Buttons */
 .suggestion-action {
   margin-left: 0.5em;
   padding: 0.3em 0.7em;
@@ -124,7 +112,7 @@
   color: var(--text-primary);
 }
 
-/* ── Last Row Adjustments ──────────────────────────────────── */
+/* Last Row Adjustments */
 .search-suggestions .search-header + .search-suggestion-item:last-of-type,
 .search-suggestions .search-suggestion-item:last-of-type {
   border-bottom-left-radius: var(--radius-small);
