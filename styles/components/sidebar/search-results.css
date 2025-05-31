@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.0 — Style D: gradient headers, alternating rows, accent hover */
+/* @version: D.2 — style D tweaked: uniform row color, new hover animation, stronger shadow, bottom border */
 
 .search-suggestions {
   position: absolute;
@@ -9,14 +9,15 @@
   margin-top: 2px;
   background-color: var(--bg-30);
   border: 1px solid var(--border-soft);
+  border-bottom: 1px solid var(--border-soft);  /* darker bottom line */
   border-radius: var(--radius-small);
-  box-shadow: var(--shadow-medium);
+  box-shadow: var(--shadow-high);               /* stronger separation */
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0; /* no inner padding—cards will handle their own gutters */
+  padding: 0;
 }
 
 .search-suggestions.visible {
@@ -25,7 +26,7 @@
 }
 
 /* ── Category Header ───────────────────────────────────────── */
-/* Uses a subtle vertical gradient from bg-20 → bg-25 */
+/* Gradient background from bg-20 → bg-25, no change */
 .search-suggestions .search-header {
   display: block;
   width: 100%;
@@ -39,44 +40,33 @@
     var(--bg-25) 100%
   );
   border-bottom: 1px solid var(--border-soft);
-  margin: 0;     /* collapse any extra gaps */
+  margin: 0;
   border-radius: var(--radius-small) var(--radius-small) 0 0;
 }
 
 /* ── Suggestion Rows ───────────────────────────────────────── */
-/* We’ll alternate even/odd rows for subtle contrast */
-.search-suggestions .search-suggestion-item:nth-child(2n + 1) {
-  background-color: var(--bg-40);
-}
-.search-suggestions .search-suggestion-item:nth-child(2n) {
-  background-color: var(--bg-50);
-}
-
-/* Common row styling */
+/* All rows on the same bg-50 */
 .search-suggestions .search-suggestion-item {
   position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0.5em 1em;
-  margin: 4px 0 0 0;  /* only top margin, so they stack flush under header */
+  background-color: var(--bg-50);
   border-radius: var(--radius-small);
-  transition: background 0.2s, border-left 0.2s;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  margin: 4px 8px 0 8px;  /* inset left/right so rows look inset */
+  padding: 0.5em 1em;
   cursor: pointer;
+  transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 
-/* Hover: accent‐colored left border and slightly darken the bg */
+/* Hover: lift the row slightly and deepen its shadow */
 .search-suggestions .search-suggestion-item:hover {
-  border-left: 4px solid var(--accent-primary);
-}
-.search-suggestions .search-suggestion-item:hover:nth-child(2n + 1) {
-  background-color: var(--bg-45);
-}
-.search-suggestions .search-suggestion-item:hover:nth-child(2n) {
-  background-color: var(--bg-55);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0,0,0,0.4);
 }
 
-/* Overlay effect to match your existing hover style */
+/* Keep the subtle overlay effect */
 .search-suggestion-item::after {
   content: "";
   position: absolute;
@@ -87,6 +77,7 @@
   pointer-events: none;
   border-radius: var(--radius-small);
 }
+
 .search-suggestion-item:hover::after {
   opacity: 1;
 }
@@ -97,7 +88,7 @@
   height: 24px;
   margin-right: 0.75em;
   flex-shrink: 0;
-  filter: brightness(1.1); /* make the icon pop just a bit */
+  filter: brightness(1.1);
 }
 
 .suggestion-name {
@@ -114,18 +105,19 @@
   font-size: 12px;
   border: none;
   border-radius: 4px;
-  background: var(--bg-50);    /* the brighter 50 you liked */
+  background: var(--bg-50);
   color: var(--text-secondary);
   cursor: pointer;
   transition: background 0.2s, color 0.2s;
 }
+
 .suggestion-action:hover {
-  background: var(--bg-40);     /* slightly darker on hover */
+  background: var(--bg-40);
   color: var(--text-primary);
 }
 
 /* ── Last Row Adjustments ──────────────────────────────────── */
-/* If a row is the last one under a header, give it an extra bottom radius */
+/* If a row is the last one in its group, round the bottom corners */
 .search-suggestions .search-header + .search-suggestion-item:last-of-type,
 .search-suggestions .search-suggestion-item:last-of-type {
   border-bottom-left-radius: var(--radius-small);
