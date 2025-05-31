@@ -1,6 +1,7 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.5 — use ::before for hover accent bar to avoid artifacts */
+/* @version: 3.6 — use transform for smooth nudge + pseudo‐element for accent bar */
 
+/* Container */
 .search-suggestions {
   position: absolute;
   top: 100%;
@@ -45,7 +46,7 @@
 }
 
 /* ── Suggestion Rows ───────────────────────────────────────── */
-/* All rows now use the same background */
+/* All rows use the same background */
 .search-suggestions .search-suggestion-item {
   position: relative;
   display: flex;
@@ -55,33 +56,34 @@
   padding: 0.5em 1em;
   margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
-  transition: background 0.2s ease;    /* no box-shadow transition here */
+  transition: background 0.2s ease, transform 0.3s ease; /* added transform */
   cursor: pointer;
-  overflow: hidden;                     /* contain pseudo-element */
+  overflow: hidden;  /* contain pseudo-elements */
 }
 
-/* Hover: no layout shift, only background and accent bar via ::before */
-.search-suggestions .search-suggestion-item:hover {
-  background-color: var(--bg-55);
-}
-
-/* Accent bar using an absolutely positioned pseudo-element */
+/* Accent bar via ::before, starts hidden */
 .search-suggestion-item::before {
   content: "";
   position: absolute;
   left: 0;
   top: 0;
   bottom: 0;
-  width: 0;                        /* start hidden */
+  width: 4px;                   /* full width but hidden by transform */
   background-color: var(--accent-primary);
-  transition: width 0.3s ease;     /* animate width smoothly */
   border-top-left-radius: var(--radius-small);
   border-bottom-left-radius: var(--radius-small);
-  pointer-events: none;            /* so clicks pass through */
+  pointer-events: none;
+  transform: translateX(-4px);  /* hide the bar to the left initially */
+  transition: transform 0.3s ease;
 }
 
-.search-suggestion-item:hover::before {
-  width: 4px;                      /* expand on hover */
+/* Hover: reveal accent bar and nudge content */
+.search-suggestions .search-suggestion-item:hover::before {
+  transform: translateX(0);      /* slide bar into view */
+}
+.search-suggestions .search-suggestion-item:hover {
+  background-color: var(--bg-55);
+  transform: translateX(4px);    /* nudge the entire row to the right */
 }
 
 /* Hover overlay matching filter-group toggles */
