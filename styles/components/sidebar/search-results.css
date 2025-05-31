@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 4.0 — enable scrolling with invisible scrollbar */
+/* @version: 4.1 — fix vertical alignment and sizing for chest icons; center all icons */
 
 .search-suggestions {
   position: absolute;
@@ -116,7 +116,11 @@
 }
 
 /* ── Icons & Text ──────────────────────────────────────────── */
+/* Ensure <i> icons center vertically like images */
 .suggestion-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 24px;
   height: 24px;
   margin-right: 0.75em;
@@ -124,8 +128,33 @@
   filter: brightness(1.1);
   transform: translateX(0);
   transition: transform 0.24s ease;
+  font-size: 16px; /* base font-size, may be overridden per chest type */
+  line-height: 1;  /* ensure vertical centering of glyph */
 }
 
+/* Adjust chest icon sizes to match sidebar toggles */
+/* Small Chest → smaller icon */
+.search-suggestions .search-suggestion-item[data-type="Chest"][data-id="Small"] .suggestion-icon {
+  font-size: 12px;
+}
+
+/* Medium Chest → medium icon */
+.search-suggestions .search-suggestion-item[data-type="Chest"][data-id="Medium"] .suggestion-icon {
+  font-size: 14px;
+}
+
+/* Large Chest → slightly larger icon */
+.search-suggestions .search-suggestion-item[data-type="Chest"][data-id="Large"] .suggestion-icon {
+  font-size: 16px;
+}
+
+/* Normal & Dragonvault Chest → largest icon to match “fill” style */
+.search-suggestions .search-suggestion-item[data-type="Chest"][data-id="Normal"] .suggestion-icon,
+.search-suggestions .search-suggestion-item[data-type="Chest"][data-id="Dragonvault"] .suggestion-icon {
+  font-size: 16px;
+}
+
+/* Item & NPC icons remain square images */
 .suggestion-name {
   flex: 1;
   margin-right: 1em;
