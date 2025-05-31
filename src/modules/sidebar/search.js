@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 3.9 — prevent page scroll while cursor is over results
+// @version: 4.0 — add ESC key to close results and clear input, keep existing wheel behavior
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 import {
@@ -37,7 +37,7 @@ export function setupSidebarSearch({
     return;
   }
 
-  // Clear button
+  // Clear button functionality
   searchBar.classList.add("ui-input");
   clearBtn.addEventListener("click", () => {
     searchBar.value = "";
@@ -45,13 +45,13 @@ export function setupSidebarSearch({
     searchBar.focus();
   });
 
-  // Ensure wrapper is positioned
+  // Ensure wrapper is positioned relative
   const wrapper = searchBar.parentNode;
   if (getComputedStyle(wrapper).position === "static") {
     wrapper.style.position = "relative";
   }
 
-  // Suggestions container
+  // Suggestions container creation or reference
   let suggestionsList = document.querySelector(suggestionsListSelector);
   if (!suggestionsList) {
     suggestionsList = document.createElement("ul");
@@ -61,29 +61,42 @@ export function setupSidebarSearch({
   }
   suggestionsList.classList.remove("visible");
 
-  // === NEW: prevent page scroll when hovering over suggestions ===
-  suggestionsList.addEventListener("wheel", e => {
-    // amount scrolled by user
-    const delta = e.deltaY;
-    // how far the container can still scroll up/down
-    const atTop    = suggestionsList.scrollTop === 0;
-    const atBottom = suggestionsList.scrollTop + suggestionsList.clientHeight >= suggestionsList.scrollHeight;
+  // === Prevent page scroll while cursor is over suggestions ===
+  suggestionsList.addEventListener(
+    "wheel",
+    e => {
+      const delta = e.deltaY;
+      const atTop = suggestionsList.scrollTop === 0;
+      const atBottom =
+        suggestionsList.scrollTop + suggestionsList.clientHeight >=
+        suggestionsList.scrollHeight;
 
-    // If user is scrolling up at the very top, or down at the very bottom, prevent default page scroll
-    if ((delta < 0 && atTop) || (delta > 0 && atBottom)) {
-      e.preventDefault();
-      e.stopPropagation();
+      if ((delta < 0 && atTop) || (delta > 0 && atBottom)) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    },
+    { passive: false }
+  );
+
+  // === Close results and clear input on ESC key ===
+  searchBar.addEventListener("keydown", e => {
+    if (e.key === "Escape") {
+      suggestionsList.classList.remove("visible");
+      searchBar.value = "";
+      searchBar.dispatchEvent(new Event("input", { bubbles: true }));
+      searchBar.focus();
     }
-    // Otherwise, let the suggestionsList scroll normally
-  }, { passive: false });
-  // =============================================================
+  });
 
   // Build unified list of definitions and chest keys
   function loadAllDefinitions() {
-    const items = Object.values(definitionsManager.getDefinitions("Item"))
-      .map(d => ({ id: d.id, name: d.name, type: "Item", icon: d.imageSmall }));
-    const npcs = Object.values(definitionsManager.getDefinitions("NPC"))
-      .map(d => ({ id: d.id, name: d.name, type: "NPC", icon: d.imageSmall }));
+    const items = Object.values(definitionsManager.getDefinitions("Item")).map(
+      d => ({ id: d.id, name: d.name, type: "Item", icon: d.imageSmall })
+    );
+    const npcs = Object.values(definitionsManager.getDefinitions("NPC")).map(
+      d => ({ id: d.id, name: d.name, type: "NPC", icon: d.imageSmall })
+    );
     const chestKeys = [
       { id: "Small",       name: "Small Chest", type: "Chest", iconClass: "ph-fill ph-package" },
       { id: "Medium",      name: "Medium Chest", type: "Chest", iconClass: "ph-fill ph-package" },
@@ -117,7 +130,7 @@ export function setupSidebarSearch({
       `;
     }
 
-    // order: Chests, Items, NPCs
+    // Order: Chests, Items, NPCs
     if (byType.Chest.length) {
       html += `<li class="search-header">Chests</li>`;
       byType.Chest.forEach(def => appendItem(def));
