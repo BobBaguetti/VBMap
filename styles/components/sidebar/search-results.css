@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.3 — full file with hover matching filter-group toggles */
+/* @version: 3.3 — align hover highlight/motion with filter-group toggles */
 
 .search-suggestions {
   position: absolute;
@@ -8,18 +8,16 @@
   width: 100%;
   margin-top: 2px;
   background-color: var(--bg-30);
-  /* Outer border on three sides, heavier bottom border */
   border: 1px solid var(--border-soft);
   border-bottom: 4px solid var(--bg-10);
   border-radius: var(--radius-small);
-  /* Darker shadow for stronger contrast */
   box-shadow: var(--shadow-high);
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0; /* cards handle their own gutters */
+  padding: 0;
 }
 
 .search-suggestions.visible {
@@ -28,13 +26,12 @@
 }
 
 /* ── Category Header ───────────────────────────────────────── */
-/* Uses a subtle vertical gradient from bg-20 → bg-25 */
 .search-suggestions .search-header {
   display: block;
   width: 100%;
   padding: 0.6em 1em;
   font-size: 0.9em;
-  font-weight: 700;                     /* match sidebar filter header weight */
+  font-weight: 700;
   text-transform: uppercase;
   color: var(--text-secondary);
   background: linear-gradient(
@@ -43,12 +40,12 @@
     var(--bg-25) 100%
   );
   border-bottom: 1px solid var(--border-soft);
-  margin: 0;     /* collapse any extra gaps */
+  margin: 0;
   border-radius: var(--radius-small) var(--radius-small) 0 0;
 }
 
 /* ── Suggestion Rows ───────────────────────────────────────── */
-/* All rows now use the same background */
+/* All rows use the same background */
 .search-suggestions .search-suggestion-item {
   position: relative;
   display: flex;
@@ -56,20 +53,30 @@
   justify-content: space-between;
   background-color: var(--bg-50);
   padding: 0.5em 1em;
-  margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
+  margin: 4px 0 0 0;
   border-radius: var(--radius-small);
-  /* Smoother hover transition for lift and shadow */
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  /* Smoother hover transition */
+  transition:
+    transform 0.1s ease,
+    box-shadow 0.2s ease,
+    border-left 0.3s ease;
   cursor: pointer;
 }
 
-/* Hover now lifts and casts a stronger shadow, matching filter toggles */
+/* Hover: lift up + stronger shadow + accent left border */
 .search-suggestions .search-suggestion-item:hover {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  border-left: 4px solid var(--accent-primary);
 }
 
-/* Overlay effect for hover (matching filter group toggles) */
+/* Active state: press down */
+.search-suggestions .search-suggestion-item:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Hover overlay matching filter-group toggles */
 .search-suggestion-item::after {
   content: "";
   position: absolute;
@@ -118,7 +125,6 @@
 }
 
 /* ── Last Row Adjustments ──────────────────────────────────── */
-/* If a row is the last one under a header, give it an extra bottom radius */
 .search-suggestions .search-header + .search-suggestion-item:last-of-type,
 .search-suggestions .search-suggestion-item:last-of-type {
   border-bottom-left-radius: var(--radius-small);
