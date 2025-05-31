@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.7 — accent bar stays put; icon+name nudge on hover; buttons fixed */
+/* @version: 3.8 — faster nudge/un-nudge: 0.24s ease for transform */
 
 .search-suggestions {
   position: absolute;
@@ -71,12 +71,12 @@
   background-color: var(--accent-primary);
   border-top-left-radius: var(--radius-small);
   border-bottom-left-radius: var(--radius-small);
-  transform: translateX(-4px);         /* hidden off-screen left */
-  transition: transform 0.3s ease;
+  transform: translateX(-4px);        /* hide off-screen */
+  transition: transform 0.24s ease;     /* faster expansion */
   pointer-events: none;
 }
 
-/* On hover, show accent bar (no layout shift for item container) */
+/* On hover, slide accent bar into view */
 .search-suggestion-item:hover::before {
   transform: translateX(0);
 }
@@ -90,7 +90,7 @@
 .search-suggestion-item:hover .suggestion-icon,
 .search-suggestion-item:hover .suggestion-name {
   transform: translateX(4px);
-  transition: transform 0.3s ease;
+  transition: transform 0.24s ease;    /* faster nudge/un-nudge */
 }
 
 /* Hover overlay matching filter-group toggles */
@@ -116,6 +116,7 @@
   flex-shrink: 0;
   filter: brightness(1.1);
   transform: translateX(0);
+  transition: transform 0.24s ease;    /* ensure initial state transition */
 }
 
 /* Ensure name also has its own transform context */
@@ -125,6 +126,7 @@
   color: var(--text-primary);
   font-size: 14px;
   transform: translateX(0);
+  transition: transform 0.24s ease;    /* ensure initial state transition */
 }
 
 /* ── Action Buttons ─────────────────────────────────────────── */
