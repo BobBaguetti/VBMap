@@ -1,6 +1,7 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.2 — add a dark bottom border to the container */
+/* @version: 3.2 — add bottom border, faster hover animation, bolder header font */
 
+/* Container */
 .search-suggestions {
   position: absolute;
   top: 100%;
@@ -9,16 +10,15 @@
   margin-top: 2px;
   background-color: var(--bg-30);
   border: 1px solid var(--border-soft);
-  border-bottom: 1px solid var(--bg-10); /* darker bottom edge */
+  border-bottom: 2px solid var(--bg-10); /* very dark bottom border */
   border-radius: var(--radius-small);
-  /* Darker shadow for stronger contrast */
   box-shadow: var(--shadow-high);
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0; /* cards handle their own gutters */
+  padding: 0;
 }
 
 .search-suggestions.visible {
@@ -41,8 +41,9 @@
     var(--bg-25) 100%
   );
   border-bottom: 1px solid var(--border-soft);
-  margin: 0;     /* collapse any extra gaps */
+  margin: 0;
   border-radius: var(--radius-small) var(--radius-small) 0 0;
+  font-weight: 700; /* match filter-group header weight */
 }
 
 /* ── Suggestion Rows ───────────────────────────────────────── */
@@ -54,9 +55,10 @@
   justify-content: space-between;
   background-color: var(--bg-50);
   padding: 0.5em 1em;
-  margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
+  margin: 4px 0 0 0;
   border-radius: var(--radius-small);
-  transition: background 0.2s, border-left 0.2s;
+  /* twice as fast hover animation */
+  transition: background 0.1s, border-left 0.1s;
   cursor: pointer;
 }
 
