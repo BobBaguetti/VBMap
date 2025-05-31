@@ -1,7 +1,9 @@
 // @file: src/modules/sidebar/search.js
-// @version: 4.4 — limit suggestions to definitions present in sidebar filters
+// @version: 4.4 — only search definitions for markers present on map
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
+import { allMarkers } from "../../bootstrap/markerLoader.js";
+import { markerTypes } from "../marker/types.js";
 import {
   toggleFilter,
   showOnlyFilter
@@ -77,51 +79,41 @@ export function setupSidebarSearch({
     { passive: false }
   );
 
-  // Build unified list of definitions and chest keys
+  // Build unified list of definitions and chest keys for items/NPCs present on map
   function loadAllDefinitions() {
-    const items = Object.values(definitionsManager.getDefinitions("Item")).map(
-      d => ({ id: d.id, name: d.name, type: "Item", icon: d.imageSmall })
-    );
-    const npcs = Object.values(definitionsManager.getDefinitions("NPC")).map(
-      d => ({ id: d.id, name: d.name, type: "NPC", icon: d.imageSmall })
-    );
+    // Determine which definition IDs actually have markers on the map
+    const activeByType = { Item: new Set(), Chest: new Set(), NPC: new Set() };
+    allMarkers.forEach(({ data }) => {
+      const type = data.type;
+      const defKey = markerTypes[type]?.defIdKey;
+      if (defKey && data[defKey]) {
+        activeByType[type].add(data[defKey]);
+      }
+    });
+
+    // Only include item definitions that have at least one marker
+    const items = Object.values(definitionsManager.getDefinitions("Item"))
+      .filter(d => activeByType.Item.has(d.id))
+      .map(d => ({ id: d.id, name: d.name, type: "Item", icon: d.imageSmall }));
+
+    // Only include NPC definitions that have at least one marker
+    const npcs = Object.values(definitionsManager.getDefinitions("NPC"))
+      .filter(d => activeByType.NPC.has(d.id))
+      .map(d => ({ id: d.id, name: d.name, type: "NPC", icon: d.imageSmall }));
+
+    // Static chest category keys (still show these even if no chest markers)
     const chestKeys = [
-      { id: "Small",       name: "Small Chest", type: "Chest", iconClass: "ph-fill ph-package" },
-      { id: "Medium",      name: "Medium Chest", type: "Chest", iconClass: "ph-fill ph-package" },
-      { id: "Large",       name: "Large Chest", type: "Chest", iconClass: "ph-fill ph-package" },
-      { id: "Normal",      name: "Normal Chest", type: "Chest", iconClass: "ph-fill ph-treasure-chest" },
+      { id: "Small",       name: "Small Chest",       type: "Chest", iconClass: "ph-fill ph-package" },
+      { id: "Medium",      name: "Medium Chest",      type: "Chest", iconClass: "ph-fill ph-package" },
+      { id: "Large",       name: "Large Chest",       type: "Chest", iconClass: "ph-fill ph-package" },
+      { id: "Normal",      name: "Normal Chest",      type: "Chest", iconClass: "ph-fill ph-treasure-chest" },
       { id: "Dragonvault", name: "Dragonvault Chest", type: "Chest", iconClass: "ph-fill ph-treasure-chest" }
     ];
+
+    // Only show specific chest definitions if they have markers on map:
+    // (If you store real chest definitions elsewhere, you could include them too.
+    // For now, we keep category keys always visible and do not include actual chest definitions.)
     return [...chestKeys, ...items, ...npcs];
-  }
-
-  // Build sets of IDs that currently have toggles in the sidebar
-  function getAvailableIds() {
-    const itemEls = Array.from(
-      document.querySelectorAll(`${itemFilterListSelector} [data-id]`)
-    );
-    const chestEls = Array.from(
-      document.querySelectorAll(`${chestFilterListSelector} [data-id]`)
-    );
-    const npcHostileEls = Array.from(
-      document.querySelectorAll(`${npcHostileListSelector} [data-id]`)
-    );
-    const npcFriendlyEls = Array.from(
-      document.querySelectorAll(`${npcFriendlyListSelector} [data-id]`)
-    );
-
-    const itemIds = itemEls.map(el => el.getAttribute("data-id"));
-    const chestIds = chestEls.map(el => el.getAttribute("data-id"));
-    const npcIds = [
-      ...npcHostileEls.map(el => el.getAttribute("data-id")),
-      ...npcFriendlyEls.map(el => el.getAttribute("data-id"))
-    ];
-
-    return {
-      Item: new Set(itemIds),
-      Chest: new Set(chestIds),
-      NPC: new Set(npcIds)
-    };
   }
 
   // Create (or return existing) sticky footer element for gradient‐fade
@@ -249,13 +241,7 @@ export function setupSidebarSearch({
       removeScrollFooter();
       return;
     }
-
-    // Get only definitions that have toggles present in sidebar
-    const availableIds = getAvailableIds();
-    const allDefs = loadAllDefinitions().filter(def => {
-      return availableIds[def.type] && availableIds[def.type].has(def.id);
-    });
-
+    const allDefs = loadAllDefinitions();
     const matches = allDefs
       .filter(d => d.name.toLowerCase().includes(q))
       .slice(0, 50);
