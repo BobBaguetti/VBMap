@@ -1,14 +1,13 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 2.4 — header on bg-30, suggestions container on bg-40; rows unchanged */
+/* @version: 2.4 — darken headers, add header border, tighten row padding */
 
 .search-suggestions {
-  /* updated background from --bg-30 to --bg-40 */
   position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
   margin-top: 4px;
-  background-color: var(--bg-40);   /* changed from var(--bg-30) */
+  background-color: var(--bg-30);   /* keep container on bg-30 */
   border: var(--border-width-hair) solid rgba(0,0,0,0.9);
   border-image-source: linear-gradient(
     to top,
@@ -39,13 +38,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--bg-50);   /* unchanged */
+  background-color: var(--bg-50);
   border-radius: var(--radius-small);
-  padding: 0.5em 0.8em;
+  padding: 0.4em 0.8em;             /* tightened from 0.5em top/bottom */
   margin: 4px 0;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
   cursor: pointer;
-  transition: background 0.2s;      /* retains existing transition */
+  transition: background 0.2s;
 }
 
 /* Hover overlay matching filter buttons */
@@ -100,12 +99,14 @@
   flex-shrink: 0;
 }
 
+/* Header: darker bg and bottom border */
 .search-header {
   font-size: 0.85em;
   text-transform: uppercase;
   padding: 0.4em 0.8em;
   color: var(--text-secondary);
-  background: var(--bg-30);  /* unchanged */
+  background: var(--bg-20);                    /* darkened */
+  border-bottom: 1px solid var(--border-soft); /* separator line */
   margin-top: 0.5em;
-  border-radius: var(--radius-small);  /* use same radius token for consistency */
+  border-radius: var(--radius-small) var(--radius-small) 0 0;
 }
