@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 4.4 — only search definitions for markers present on map
+// @version: 4.4 — only search definitions for markers present on map, plus hover highlighting
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 import { allMarkers } from "../../bootstrap/markerLoader.js";
@@ -8,6 +8,10 @@ import {
   toggleFilter,
   showOnlyFilter
 } from "./filterActions.js";
+import {
+  highlightMarkers,
+  resetMarkerHighlight
+} from "./hoverHighlighter.js";
 
 /**
  * Initialize search suggestions that drive the sidebar’s filters.
@@ -110,9 +114,7 @@ export function setupSidebarSearch({
       { id: "Dragonvault", name: "Dragonvault Chest", type: "Chest", iconClass: "ph-fill ph-treasure-chest" }
     ];
 
-    // Only show specific chest definitions if they have markers on map:
-    // (If you store real chest definitions elsewhere, you could include them too.
-    // For now, we keep category keys always visible and do not include actual chest definitions.)
+    // Return only chestKeys, items, and npcs as the searchable list
     return [...chestKeys, ...items, ...npcs];
   }
 
@@ -196,7 +198,7 @@ export function setupSidebarSearch({
 
     suggestionsList.innerHTML = html;
 
-    // Attach button event listeners
+    // Attach button and hover event listeners
     suggestionsList.querySelectorAll(".search-suggestion-item").forEach(item => {
       const id   = item.dataset.id;
       const type = item.dataset.type;
@@ -222,6 +224,15 @@ export function setupSidebarSearch({
           },
           mainFiltersSelector
         );
+      });
+
+      // Hover: highlight matching markers after debounce
+      item.addEventListener("mouseenter", () => {
+        highlightMarkers(type, id);
+      });
+      // On mouse leave, reset all highlights/dims immediately
+      item.addEventListener("mouseleave", () => {
+        resetMarkerHighlight();
       });
     });
 
