@@ -46,7 +46,7 @@
 /* Small-markers mode */
 #map.small-markers .custom-marker {
   transform: scale(var(--marker-small-scale));
-  transform-origin: center bottom;
+  transform-origin: center center;
 }
 
 /* Hover effects: subtle scale, glow, and brightness */
