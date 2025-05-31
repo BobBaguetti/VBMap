@@ -1,7 +1,6 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.2 — add bottom border, faster hover animation, bolder header font */
+/* @version: 3.3 — full file with hover matching filter-group toggles */
 
-/* Container */
 .search-suggestions {
   position: absolute;
   top: 100%;
@@ -9,16 +8,18 @@
   width: 100%;
   margin-top: 2px;
   background-color: var(--bg-30);
+  /* Outer border on three sides, heavier bottom border */
   border: 1px solid var(--border-soft);
-  border-bottom: 2px solid var(--bg-10); /* very dark bottom border */
+  border-bottom: 4px solid var(--bg-10);
   border-radius: var(--radius-small);
+  /* Darker shadow for stronger contrast */
   box-shadow: var(--shadow-high);
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0;
+  padding: 0; /* cards handle their own gutters */
 }
 
 .search-suggestions.visible {
@@ -33,6 +34,7 @@
   width: 100%;
   padding: 0.6em 1em;
   font-size: 0.9em;
+  font-weight: 700;                     /* match sidebar filter header weight */
   text-transform: uppercase;
   color: var(--text-secondary);
   background: linear-gradient(
@@ -41,9 +43,8 @@
     var(--bg-25) 100%
   );
   border-bottom: 1px solid var(--border-soft);
-  margin: 0;
+  margin: 0;     /* collapse any extra gaps */
   border-radius: var(--radius-small) var(--radius-small) 0 0;
-  font-weight: 700; /* match filter-group header weight */
 }
 
 /* ── Suggestion Rows ───────────────────────────────────────── */
@@ -55,20 +56,20 @@
   justify-content: space-between;
   background-color: var(--bg-50);
   padding: 0.5em 1em;
-  margin: 4px 0 0 0;
+  margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
-  /* twice as fast hover animation */
-  transition: background 0.1s, border-left 0.1s;
+  /* Smoother hover transition for lift and shadow */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
   cursor: pointer;
 }
 
-/* Hover: accent‐colored left border and slightly darken the bg */
+/* Hover now lifts and casts a stronger shadow, matching filter toggles */
 .search-suggestions .search-suggestion-item:hover {
-  border-left: 4px solid var(--accent-primary);
-  background-color: var(--bg-55);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
-/* Overlay effect for hover (in addition to darker background) */
+/* Overlay effect for hover (matching filter group toggles) */
 .search-suggestion-item::after {
   content: "";
   position: absolute;
@@ -109,7 +110,7 @@
   background: var(--bg-50);
   color: var(--text-secondary);
   cursor: pointer;
-  transition: background 0.2s, color 0.2s;
+  transition: background 0.2s ease, color 0.2s ease;
 }
 .suggestion-action:hover {
   background: var(--bg-40);
