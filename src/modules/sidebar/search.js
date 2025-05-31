@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 4.0 — add ESC key to close results and clear input, keep existing wheel behavior
+// @version: 4.1 — removed ESC key handler (handled globally in events.js)
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 import {
@@ -66,10 +66,8 @@ export function setupSidebarSearch({
     "wheel",
     e => {
       const delta = e.deltaY;
-      const atTop = suggestionsList.scrollTop === 0;
-      const atBottom =
-        suggestionsList.scrollTop + suggestionsList.clientHeight >=
-        suggestionsList.scrollHeight;
+      const atTop    = suggestionsList.scrollTop === 0;
+      const atBottom = suggestionsList.scrollTop + suggestionsList.clientHeight >= suggestionsList.scrollHeight;
 
       if ((delta < 0 && atTop) || (delta > 0 && atBottom)) {
         e.preventDefault();
@@ -78,16 +76,6 @@ export function setupSidebarSearch({
     },
     { passive: false }
   );
-
-  // === Close results and clear input on ESC key ===
-  searchBar.addEventListener("keydown", e => {
-    if (e.key === "Escape") {
-      suggestionsList.classList.remove("visible");
-      searchBar.value = "";
-      searchBar.dispatchEvent(new Event("input", { bubbles: true }));
-      searchBar.focus();
-    }
-  });
 
   // Build unified list of definitions and chest keys
   function loadAllDefinitions() {
