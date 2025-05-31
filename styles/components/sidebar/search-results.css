@@ -1,7 +1,6 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.9 — headers lowered a color tier; hover uses same filter-toggle highlight */
+/* @version: 3.9 — category headers one tier darker, highlight matches filter-toggle */
 
-/* Container */
 .search-suggestions {
   position: absolute;
   top: 100%;
@@ -27,7 +26,7 @@
 }
 
 /* ── Category Header ───────────────────────────────────────── */
-/* Lowered one tier: use bg-30 (formerly bg-20) for header background */
+/* Shifted down one tier: was bg-20→bg-25; now bg-10→bg-20 */
 .search-suggestions .search-header {
   display: block;
   width: 100%;
@@ -36,9 +35,13 @@
   font-weight: 700;                     /* match sidebar filter header weight */
   text-transform: uppercase;
   color: var(--text-secondary);
-  background-color: var(--bg-30);       /* lowered one tier from bg-20 */
+  background: linear-gradient(
+    to right,
+    var(--bg-10) 0%,
+    var(--bg-20) 100%
+  );
   border-bottom: 1px solid var(--border-soft);
-  margin: 0;                             /* collapse any extra gaps */
+  margin: 0;     /* collapse any extra gaps */
   border-radius: var(--radius-small) var(--radius-small) 0 0;
 }
 
@@ -53,7 +56,7 @@
   padding: 0.5em 1em;
   margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
-  transition: transform 0.24s ease;    /* only nudge uses transform */
+  transition: transform 0.24s ease;    /* only transform, no background change */
   cursor: pointer;
   overflow: hidden;                     /* contain pseudo-element */
 }
@@ -69,8 +72,8 @@
   background-color: var(--accent-primary);
   border-top-left-radius: var(--radius-small);
   border-bottom-left-radius: var(--radius-small);
-  transform: translateX(-4px);        /* hide off-screen */
-  transition: transform 0.24s ease;     /* match nudge timing */
+  transform: translateX(-4px);         /* hide off-screen */
+  transition: transform 0.24s ease;     /* faster expansion */
   pointer-events: none;
 }
 
@@ -79,15 +82,16 @@
   transform: translateX(0);
 }
 
-/* Remove background darkening; rely solely on overlay for highlight */
+/* Remove background-color change; rely on overlay for highlight */
 .search-suggestions .search-suggestion-item:hover {
-  /* no background-color change */
+  transform: translateX(4px);   /* nudge icon+text via child transforms */
 }
 
-/* Nudge only icon + name on hover; buttons remain fixed */
+/* Nudge only icon + text on hover; buttons remain fixed */
 .search-suggestion-item:hover .suggestion-icon,
 .search-suggestion-item:hover .suggestion-name {
   transform: translateX(4px);
+  transition: transform 0.24s ease;    /* match nudge timing */
 }
 
 /* Hover overlay matching filter-group toggles */
@@ -95,7 +99,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: var(--hover-light);   /* same as filter-group toggle highlight */
+  background: var(--hover-light);       /* same highlight as filter toggles */
   opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
@@ -116,6 +120,7 @@
   transition: transform 0.24s ease;
 }
 
+/* Ensure name also has its own transform context */
 .suggestion-name {
   flex: 1;
   margin-right: 1em;
