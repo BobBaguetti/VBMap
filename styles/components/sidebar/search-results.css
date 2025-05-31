@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: 3.9 — category headers one tier darker, highlight matches filter-toggle */
+/* @version: 3.10 — headers span fully, no side gaps; remove header border‐radius */
 
 .search-suggestions {
   position: absolute;
@@ -26,13 +26,13 @@
 }
 
 /* ── Category Header ───────────────────────────────────────── */
-/* Shifted down one tier: was bg-20→bg-25; now bg-10→bg-20 */
+/* Fully span the container; remove header’s own rounding */
 .search-suggestions .search-header {
   display: block;
   width: 100%;
-  padding: 0.6em 1em;
+  padding: 0.6em 1em;                   /* keep horizontal padding for text */
   font-size: 0.9em;
-  font-weight: 700;                     /* match sidebar filter header weight */
+  font-weight: 700;                    /* match sidebar filter header weight */
   text-transform: uppercase;
   color: var(--text-secondary);
   background: linear-gradient(
@@ -41,8 +41,8 @@
     var(--bg-20) 100%
   );
   border-bottom: 1px solid var(--border-soft);
-  margin: 0;     /* collapse any extra gaps */
-  border-radius: var(--radius-small) var(--radius-small) 0 0;
+  margin: 0;                           /* no extra gaps */
+  border-radius: 0;                    /* let container handle its rounding */
 }
 
 /* ── Suggestion Rows ───────────────────────────────────────── */
@@ -56,7 +56,7 @@
   padding: 0.5em 1em;
   margin: 4px 0 0 0;  /* top margin to stack under header or previous card */
   border-radius: var(--radius-small);
-  transition: transform 0.24s ease;    /* only transform, no background change */
+  transition: background 0.2s ease;    /* no transform here */
   cursor: pointer;
   overflow: hidden;                     /* contain pseudo-element */
 }
@@ -73,7 +73,7 @@
   border-top-left-radius: var(--radius-small);
   border-bottom-left-radius: var(--radius-small);
   transform: translateX(-4px);         /* hide off-screen */
-  transition: transform 0.24s ease;     /* faster expansion */
+  transition: transform 0.24s ease;    /* faster expansion */
   pointer-events: none;
 }
 
@@ -82,16 +82,16 @@
   transform: translateX(0);
 }
 
-/* Remove background-color change; rely on overlay for highlight */
+/* Remove background‐color change; rely solely on overlay and nudge */
 .search-suggestions .search-suggestion-item:hover {
-  transform: translateX(4px);   /* nudge icon+text via child transforms */
+  transform: translateX(4px);           /* nudge icon+text */
 }
 
 /* Nudge only icon + text on hover; buttons remain fixed */
 .search-suggestion-item:hover .suggestion-icon,
 .search-suggestion-item:hover .suggestion-name {
   transform: translateX(4px);
-  transition: transform 0.24s ease;    /* match nudge timing */
+  transition: transform 0.24s ease;     /* match nudge/un-nudge timing */
 }
 
 /* Hover overlay matching filter-group toggles */
@@ -120,7 +120,6 @@
   transition: transform 0.24s ease;
 }
 
-/* Ensure name also has its own transform context */
 .suggestion-name {
   flex: 1;
   margin-right: 1em;
