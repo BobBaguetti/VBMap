@@ -1,23 +1,22 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: A.1 — full‐width headers, flat cards, minimal gutters */
+/* @version: B.1 — lifted cards, flush headers, extra padding */
 
-/* Container */
 .search-suggestions {
   position: absolute;
   top: 100%;
   left: 0;
   width: 100%;
-  margin-top: 2px; /* tighter gap above headers */
+  margin-top: 2px;
   background-color: var(--bg-30);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-small);
-  box-shadow: var(--shadow-medium);
+  box-shadow: var(--shadow-high);
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 0; /* no inner padding—cards extend edge-to-edge */
+  padding: 4px 0;  /* small vertical padding, cards inset */
 }
 
 .search-suggestions.visible {
@@ -25,40 +24,40 @@
   opacity: 1;
 }
 
-/* Full-width header bar */
+/* Header: flush left/right, more padding */
 .search-suggestions .search-header {
   display: block;
-  width: 100%;
-  padding: 0.4em 0.8em;
-  font-size: 0.85em;
+  width: calc(100% - 8px);
+  margin: 0 4px 4px;   /* 4px horizontal gutter, 4px bottom gap */
+  padding: 0.6em 0.8em;/* more vertical padding for emphasis */
+  font-size: 0.9em;
   text-transform: uppercase;
   color: var(--text-secondary);
   background-color: var(--bg-20);
   border-bottom: 1px solid var(--border-soft);
-  margin: 0;            /* remove extra margins */
-  border-radius: var(--radius-small) var(--radius-small) 0 0;
+  border-radius: var(--radius-small); /* round corners on header’s left/right */
 }
 
-/* Cards: no shadow, just a thin border, little radius */
+/* Card rows: inset by 4px on each side, lifted with shadow */
 .search-suggestions .search-suggestion-item {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
   background-color: var(--bg-50);
-  border-bottom: 1px solid var(--border-soft);
-  padding: 0.4em 0.8em;
+  border-radius: var(--radius-small);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  margin: 4px 4px;      /* 4px gutter on left/right and top/bottom */
+  padding: 0.5em 0.8em;  /* same as original */
   cursor: pointer;
-  transition: background 0.2s;
+  transition: background 0.2s, transform 0.1s;
 }
 
-/* Last card in a group: round bottom corners */
-.search-suggestions .search-header + .search-suggestion-item:last-of-type,
-.search-suggestions .search-suggestion-item:last-of-type {
-  border-bottom-left-radius: var(--radius-small);
-  border-bottom-right-radius: var(--radius-small);
+.search-suggestion-item:hover {
+  transform: translateY(-1px);
+  background-color: var(--bg-50);
 }
 
-/* Hover overlay (same as before) */
 .search-suggestion-item::after {
   content: "";
   position: absolute;
@@ -74,7 +73,6 @@
   opacity: 1;
 }
 
-/* Icon and text/layout unchanged */
 .suggestion-icon {
   width: 20px;
   height: 20px;
