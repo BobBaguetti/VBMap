@@ -110,13 +110,13 @@
 
 /* ─── New marker highlight/dim styles ─── */
 
-/* Dim all non-matching markers */
-.marker-dimmed .leaflet-marker-icon {
+/* Dimmed: when the marker’s own element has class "marker-dimmed" */
+.leaflet-marker-icon.marker-dimmed {
   opacity: 0.4 !important;
 }
 
-/* Highlight matching markers with glow and slight scale */
-.marker-highlighted .leaflet-marker-icon {
+/* Highlighted: when the marker’s own element has class "marker-highlighted" */
+.leaflet-marker-icon.marker-highlighted {
   filter: drop-shadow(0 0 8px rgba(255, 215, 0, 0.8));
   transform: scale(1.1);
   z-index: 1000 !important;
