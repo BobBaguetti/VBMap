@@ -1,5 +1,5 @@
 // @file: src/modules/sidebar/search.js
-// @version: 4.2 — add gradient‐fade class toggles for scroll hints
+// @version: 4.3 — add a sticky “scroll-footer” element instead of pseudo‐element so gradient stays fixed
 
 import definitionsManager from "../../bootstrap/definitionsManager.js";
 import {
@@ -95,20 +95,40 @@ export function setupSidebarSearch({
     return [...chestKeys, ...items, ...npcs];
   }
 
-  // Update gradient‐fade classes based on scroll
+  // Create (or return existing) sticky footer element for gradient‐fade
+  function ensureScrollFooter() {
+    let footer = suggestionsList.querySelector(".scroll-footer");
+    if (!footer) {
+      footer = document.createElement("li");
+      footer.className = "scroll-footer";
+      // Insert as the last child so it sticks to bottom
+      suggestionsList.appendChild(footer);
+    }
+    return footer;
+  }
+
+  // Remove the sticky footer if it exists
+  function removeScrollFooter() {
+    const footer = suggestionsList.querySelector(".scroll-footer");
+    if (footer) suggestionsList.removeChild(footer);
+  }
+
+  // Update gradient‐fade classes based on scroll, and manage the scroll-footer
   function updateGradients() {
     const scrollTop    = suggestionsList.scrollTop;
     const scrollHeight = suggestionsList.scrollHeight;
     const clientHeight = suggestionsList.clientHeight;
 
-    // Toggle "scrollable" if there is overflow
+    // If content overflows, ensure scroll-footer and add “scrollable”
     if (scrollHeight > clientHeight) {
       suggestionsList.classList.add("scrollable");
+      ensureScrollFooter();
     } else {
       suggestionsList.classList.remove("scrollable");
+      removeScrollFooter();
     }
 
-    // Toggle "shadow-top" if scrolled down from top
+    // Add “shadow-top” if scrolled down
     if (scrollTop > 0) {
       suggestionsList.classList.add("shadow-top");
     } else {
@@ -197,6 +217,7 @@ export function setupSidebarSearch({
     if (!q) {
       suggestionsList.innerHTML = "";
       suggestionsList.classList.remove("visible", "scrollable", "shadow-top");
+      removeScrollFooter();
       return;
     }
     const allDefs = loadAllDefinitions();
@@ -210,6 +231,7 @@ export function setupSidebarSearch({
     } else {
       suggestionsList.innerHTML = "";
       suggestionsList.classList.remove("visible", "scrollable", "shadow-top");
+      removeScrollFooter();
     }
   });
 }
