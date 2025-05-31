@@ -1,5 +1,5 @@
 /* @file: styles/components/sidebar/search-results.css */
-/* @version: B.1 — lifted cards, flush headers, extra padding */
+/* @version: C.1 — light‐background rows with thin dividers, simple list style */
 
 .search-suggestions {
   position: absolute;
@@ -7,16 +7,16 @@
   left: 0;
   width: 100%;
   margin-top: 2px;
-  background-color: var(--bg-30);
+  background-color: var(--bg-30);   /* container slightly darker */
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-small);
-  box-shadow: var(--shadow-high);
+  box-shadow: var(--shadow-low);
   max-height: 0;
   overflow: hidden;
   z-index: 1000;
   transition: max-height 0.2s ease, opacity 0.2s ease;
   opacity: 0;
-  padding: 4px 0;  /* small vertical padding, cards inset */
+  padding: 0;
 }
 
 .search-suggestions.visible {
@@ -24,53 +24,37 @@
   opacity: 1;
 }
 
-/* Header: flush left/right, more padding */
+/* Section headers: full width, thicker delimiter */
 .search-suggestions .search-header {
   display: block;
-  width: calc(100% - 8px);
-  margin: 0 4px 4px;   /* 4px horizontal gutter, 4px bottom gap */
-  padding: 0.6em 0.8em;/* more vertical padding for emphasis */
-  font-size: 0.9em;
+  width: 100%;
+  padding: 0.5em 0.8em;
+  font-size: 0.85em;
   text-transform: uppercase;
   color: var(--text-secondary);
   background-color: var(--bg-20);
-  border-bottom: 1px solid var(--border-soft);
-  border-radius: var(--radius-small); /* round corners on header’s left/right */
+  border-bottom: 2px solid var(--border-soft);
+  margin: 0;
 }
 
-/* Card rows: inset by 4px on each side, lifted with shadow */
+/* Rows: flush left/right, background on bg-20, thin bottom border */
 .search-suggestions .search-suggestion-item {
-  position: relative;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: var(--bg-50);
-  border-radius: var(--radius-small);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
-  margin: 4px 4px;      /* 4px gutter on left/right and top/bottom */
-  padding: 0.5em 0.8em;  /* same as original */
+  background-color: var(--bg-20);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0.4em 0.8em;
   cursor: pointer;
-  transition: background 0.2s, transform 0.1s;
+  transition: background 0.2s;
+}
+
+.search-suggestion-item:last-of-type {
+  border-bottom: none;  /* remove divider on last row of the entire dropdown */
 }
 
 .search-suggestion-item:hover {
-  transform: translateY(-1px);
-  background-color: var(--bg-50);
-}
-
-.search-suggestion-item::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--hover-light);
-  opacity: 0;
-  transition: opacity 0.2s ease;
-  pointer-events: none;
-  border-radius: var(--radius-small);
-}
-
-.search-suggestion-item:hover::after {
-  opacity: 1;
+  background-color: var(--bg-30);
 }
 
 .suggestion-icon {
