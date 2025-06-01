@@ -1,7 +1,5 @@
 // @file: src/modules/marker/modal/markerModal.js
-// @version: 22.8 — apply marker-specific CSS from styles/components/modal/marker/marker.css
-
-import { markerTypes } from "../types.js";
+// @version: 22.9 — fixed filtering of definitions (convert object to array)
 
 /**
  * Initializes the Create/Edit Marker panel.
@@ -73,10 +71,15 @@ export function initMarkerModal(db) {
       const type = fldType.value;
       if (!type) return;
       const cfg = markerTypes[type];
-      const defs = await cfg.loadDefinitions(db);
+
+      // Load definitions (could return an object keyed by ID)
+      const defsObj = (await cfg.loadDefinitions(db)) || {};
+      // Convert to array before filtering
+      const defsArray = Array.isArray(defsObj) ? defsObj : Object.values(defsObj);
+
       fldDef.innerHTML = `
         <option value="" disabled selected>Select ${type}…</option>
-        ${defs
+        ${defsArray
           .filter(cfg.showInSidebar)
           .map(d => `<option value="${d.id}">${d.name || d.id}</option>`)
           .join("")}
@@ -178,4 +181,3 @@ export function initMarkerModal(db) {
     }
   };
 }
- 
