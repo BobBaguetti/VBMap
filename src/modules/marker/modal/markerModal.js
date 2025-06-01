@@ -1,5 +1,5 @@
 // @file: src/modules/marker/modal/markerModal.js
-// @version: 22.11 — prefix devName in definition dropdown if present
+// @version: 22.12 — prefix devName and suffix category in definition dropdown if present
 
 import { markerTypes } from "../types.js";  // make sure this import is present
 
@@ -84,16 +84,19 @@ export function initMarkerModal(db) {
         ? cfg.showInSidebar
         : () => true;
 
-      // Build <option> list; prefix (devName) if that field exists on d
+      // Build <option> list; prefix with (devName) if it exists, and suffix with (category) if it exists
       fldDef.innerHTML = `
         <option value="" disabled selected>Select ${type}…</option>
         ${defsArray
           .filter(filterFn)
           .map(d => {
-            // If this definition has a devName, prefix it in parentheses
-            const labelPrefix = d.devName ? `(${d.devName}) ` : "";
+            // prefix only if devName is present
+            const prefix = d.devName ? `(${d.devName}) ` : "";
+            // suffix only if category is present
+            const suffix = d.category ? ` (${d.category})` : "";
+            // always show name (or fallback to id)
             const displayName = d.name || d.id;
-            return `<option value="${d.id}">${labelPrefix}${displayName}</option>`;
+            return `<option value="${d.id}">${prefix}${displayName}${suffix}</option>`;
           })
           .join("")}
       `;
