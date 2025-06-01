@@ -1,7 +1,11 @@
 // @file: src/modules/definition/schemas/chestSchema.js
-// @version: 1.4 — unified image labels
+// @version: 1.5 — added “Dev Name” field
 
 export const chestSchema = {
+  devName: {
+    type:      "text",
+    label:     "Dev Name"
+  },
   name: {
     type:      "text",
     label:     "Name",

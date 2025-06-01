@@ -1,5 +1,5 @@
 // @file: src/modules/marker/modal/markerModal.js
-// @version: 22.10 — handle missing showInSidebar for Chest
+// @version: 22.11 — prefix devName in definition dropdown if present
 
 import { markerTypes } from "../types.js";  // make sure this import is present
 
@@ -84,11 +84,17 @@ export function initMarkerModal(db) {
         ? cfg.showInSidebar
         : () => true;
 
+      // Build <option> list; prefix (devName) if that field exists on d
       fldDef.innerHTML = `
         <option value="" disabled selected>Select ${type}…</option>
         ${defsArray
           .filter(filterFn)
-          .map(d => `<option value="${d.id}">${d.name || d.id}</option>`)
+          .map(d => {
+            // If this definition has a devName, prefix it in parentheses
+            const labelPrefix = d.devName ? `(${d.devName}) ` : "";
+            const displayName = d.name || d.id;
+            return `<option value="${d.id}">${labelPrefix}${displayName}</option>`;
+          })
           .join("")}
       `;
       defRow.style.display = "";
