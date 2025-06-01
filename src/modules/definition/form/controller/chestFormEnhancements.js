@@ -4,7 +4,8 @@
 import { rarityColors } from "../../../../shared/utils/color/colorPresets.js";
 import { CHEST_RARITY }   from "../../../map/marker/utils.js";
 import { pickItems }       from "../builder/listPicker.js";
-import definitionsManager  from "../../../bootstrap/definitionsManager.js";
+// Corrected import path (up four levels from controller to src/bootstrap)
+import definitionsManager  from "../../../../bootstrap/definitionsManager.js";
 
 /**
  * Sets up auto-application of the nameColor pickr
@@ -87,18 +88,11 @@ export function wireChestLootPool(fields) {
     }
 
     // 2e. When pickItems resolves, update the chip-list’s backing array:
-    //     we want to store objects, not just IDs, so the chipList UI can render icons if needed.
     const newSelection = selectedIds
       .map(id => itemMap[id])
-      // only keep definitions that actually exist
       .filter(def => !!def);
 
-    // 2f. Assuming your chipList was built with renderLabel = def => def.name
-    //     and renderIcon = def => def.imageSmall, you can do:
+    // 2f. Update the chip list. Adjust this call if your chipList API is different.
     fields.lootPool.set(newSelection);
-
-    // 2g. If your setupFormData expects raw IDs instead of full objects,
-    //     do something like `fields.lootPool.setLines(selectedIds)` instead.
-    //     Adjust this line to match your chipList API.
   });
 }
