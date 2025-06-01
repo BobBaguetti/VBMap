@@ -1,7 +1,7 @@
 // @file: src/modules/marker/modal/markerModal.js
-// @version: 22.9 — fixed filtering of definitions and restored missing import
+// @version: 22.10 — handle missing showInSidebar for Chest
 
-import { markerTypes } from "../types.js";  // ← ensure this import is present
+import { markerTypes } from "../types.js";  // make sure this import is present
 
 /**
  * Initializes the Create/Edit Marker panel.
@@ -79,10 +79,15 @@ export function initMarkerModal(db) {
       // Convert to array before filtering
       const defsArray = Array.isArray(defsObj) ? defsObj : Object.values(defsObj);
 
+      // Use cfg.showInSidebar if it exists; otherwise show all
+      const filterFn = typeof cfg.showInSidebar === "function"
+        ? cfg.showInSidebar
+        : () => true;
+
       fldDef.innerHTML = `
         <option value="" disabled selected>Select ${type}…</option>
         ${defsArray
-          .filter(cfg.showInSidebar)
+          .filter(filterFn)
           .map(d => `<option value="${d.id}">${d.name || d.id}</option>`)
           .join("")}
       `;
