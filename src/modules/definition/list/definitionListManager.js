@@ -1,5 +1,5 @@
 // @file: src/modules/definition/list/definitionListManager.js
-// @version: 6.9 — sync CSS classes for entries and delete button
+// @version: 6.10 — display devName prefix in definition entries
 
 /**
  * Creates and manages a sortable, filterable definition list.
@@ -49,7 +49,7 @@ export function createDefinitionListManager({
     main.style.flex = "1";
     main.style.minWidth = "0";  // allow children to shrink
 
-    // Header: name | TYPE • RARITY
+    // Header: (devName) name | TYPE • RARITY
     const header = document.createElement("div");
     Object.assign(header.style, {
       display:       "flex",
@@ -59,7 +59,9 @@ export function createDefinitionListManager({
       minWidth:      "0"
     });
     const nameEl = document.createElement("span");
-    nameEl.textContent = def.name;
+    // If devName exists, prefix it in parentheses
+    const namePrefix = def.devName ? `(${def.devName}) ` : "";
+    nameEl.textContent = `${namePrefix}${def.name}`;
     Object.assign(nameEl.style, { fontWeight: "600", flexShrink: "1", minWidth: "0" });
     header.appendChild(nameEl);
 
