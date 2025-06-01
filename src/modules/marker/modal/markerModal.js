@@ -1,5 +1,7 @@
 // @file: src/modules/marker/modal/markerModal.js
-// @version: 22.9 — fixed filtering of definitions (convert object to array)
+// @version: 22.9 — fixed filtering of definitions and restored missing import
+
+import { markerTypes } from "../types.js";  // ← ensure this import is present
 
 /**
  * Initializes the Create/Edit Marker panel.
