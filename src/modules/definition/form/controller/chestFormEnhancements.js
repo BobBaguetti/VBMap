@@ -1,11 +1,11 @@
 // @file: src/modules/definition/form/controller/chestFormEnhancements.js
-// @version: 1.3 — load only item definitions into lootPool picker
+// @version: 1.3 
 
 import { rarityColors } from "../../../../shared/utils/color/colorPresets.js";
 import { CHEST_RARITY } from "../../../map/marker/utils.js";
 
 import { loadItemDefinitions } from "../../../services/itemDefinitionsService.js";
-import { pickItems } from "../../builder/listPicker.js";
+import { pickItems } from "../builder/listPicker.js";
 
 /**
  * 1) Sets up auto‐application of nameColor based on category+size.
@@ -14,7 +14,7 @@ import { pickItems } from "../../builder/listPicker.js";
  *
  * @param {Object}  fields  — map of fieldName → input/helper object.
  *                          In particular, `fields.lootPool` is assumed to have:
- *                            • .get(): Array of currently selected items
+ *                            • .get(): Array of currently selected item objects
  *                            • .set(arr): overwrite with new Array of full item objects
  *                            • .el: the DOM element to click to open the picker
  * @param {Object}  pickrs  — map of colorableKey → Pickr instance (unused for lootPool)
