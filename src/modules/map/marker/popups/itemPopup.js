@@ -1,8 +1,7 @@
 // @file: src/modules/map/marker/popups/itemPopup.js
-// @version: 1.3 — use “coin” icon (same as definition‐modal) instead of “coins”
+// @version: 1.4 — use <i class="fas fa-coins"> for value icon, matching definition list
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
-import { createIcon } from "../../../../shared/utils/iconUtils.js";
 import { defaultNameColor, rarityColors } from "../../../../shared/utils/color/colorPresets.js";
 import { getBestImageUrl } from "../utils.js";
 
@@ -29,11 +28,11 @@ export function renderItemPopup(m) {
        </div>`
     : "";
 
-  // valueHTML now uses the same "coin" icon as your definition‐modal entry list
+  // valueHTML now uses <i class="fas fa-coins"> to match the definition list
   const valueHTML   = m.value
     ? `<div class="popup-value-icon" title="Value">
          <span class="popup-value-number">${m.value}</span>
-         ${createIcon("coin", { inline: true }).outerHTML}
+         <i class="fas fa-coins"></i>
        </div>`
     : "";
 
@@ -50,7 +49,7 @@ export function renderItemPopup(m) {
   const qtyHTML     = m.quantity
     ? `<div class="popup-quantity-icon" title="Quantity">
          <span class="popup-quantity-number">${m.quantity}</span>
-         ${createIcon("stack", { inline: true }).outerHTML}
+         <i class="fas fa-stack"></i>
        </div>`
     : "";
 
