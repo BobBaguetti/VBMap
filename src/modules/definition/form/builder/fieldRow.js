@@ -1,8 +1,8 @@
 // @file: src/modules/definition/form/builder/fieldRow.js
-// @version: 2.1 — relocated into definition module; updated import paths
+// @version: 2.2 — pass `options` into chipList so picker isn’t empty
 
 import { createPickr, disablePickr, getPickrHexColor }
-from "../controller/pickrAdapter.js";
+  from "../controller/pickrAdapter.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
 import { createChipListField }  from "./chipListField.js";
 
@@ -14,7 +14,7 @@ import { createChipListField }  from "./chipListField.js";
  * @param {"text"|"number"|"select"|"textarea"|"imageUrl"|"extraInfo"|"chipList"|"checkbox"} opts.type
  * @param {string} opts.label     — row label
  * @param {string} [opts.id]      — id on the <input>/<select>/<textarea>
- * @param {string[]} [opts.options] — for select
+ * @param {Array<any>} [opts.options] — for select OR chipList
  * @param {boolean} [opts.colorable] — show a color picker
  * @param {boolean} [opts.withDividers] — extraInfo only
  * @param {string} [opts.idKey]   — chipList only
@@ -93,10 +93,16 @@ export function createFieldRow({
       break;
 
     case "chipList":
+      // ─── UPDATED: pass `options` here so the picker can show items ───
       const { row: tmpRow, getItems, setItems } = createChipListField(
         label,
-        [],
-        { items: [], idKey, labelKey, renderIcon }
+        [], // initialItems (will be overwritten on populate)
+        {
+          items:      options,   // ← use the array we injected into schema.lootPool.options
+          idKey,
+          labelKey,
+          renderIcon
+        }
       );
       tmpRow.classList.add("form-row");
       input = getItems;
@@ -118,7 +124,7 @@ export function createFieldRow({
       throw new Error(`Unknown field type: ${type}`);
   }
 
-  // Color swatch
+  // Color swatch (for types except extraInfo, chipList, and checkbox)
   if (colorable && !["extraInfo", "chipList", "checkbox"].includes(type)) {
     colorBtn = document.createElement("div");
     colorBtn.className = "color-btn";
