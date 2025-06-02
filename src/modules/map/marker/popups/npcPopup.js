@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.11 — move data-id onto the .chest-slot DIV so hover logic reads correctly
+// @version: 1.12 — place data-id on both <div class="chest-slot"> and its <img> so hover finds it reliably
 
 import {
   defaultNameColor,
@@ -90,12 +90,13 @@ export function renderNpcPopup(def = {}) {
     const slotImg = item.imageSmall || item.imageLarge || "";
     const clr = item.rarityColor || defaultNameColor;
 
-    // Now we put data-id on the DIV (not on the <img>)
+    // Put data-id on BOTH the <div> and its <img>
     return `
       <div class="chest-slot" data-index="${idx}" data-id="${item.id || ''}"
            style="border-color:${clr}">
         <img src="${slotImg}"
              class="chest-slot-img"
+             data-id="${item.id || ''}"
              onerror="this.style.display='none'">
         ${item.quantity > 1
           ? `<span class="chest-slot-qty">${item.quantity}</span>`
