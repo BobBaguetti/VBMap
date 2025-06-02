@@ -1,49 +1,68 @@
 // @file: src/modules/map/marker/popups/lootHoverBinder.js
-// Shared utility to bind item-preview hovers onto any slot element
-// that has a `data-item-id` attribute. Used by both Chest and NPC popups.
+// Updated to make the hover‐popup follow the cursor.
 
 import definitionsManager from "../../../../bootstrap/definitionsManager.js";
 import { renderItemPopup }  from "./itemPopup.js";
 
 /**
- * Scan `popupEl` for any elements with `data-item-id="…"`, and attach
- * mouseenter/mouseleave so that hovering shows the correct item popup.
+ * Scan `popupEl` for any elements with `data-item-id="…"`,
+ * and attach mouseenter/mousemove/mouseleave so that hovering
+ * shows a floating preview that follows the cursor.
  *
  * @param {HTMLElement} popupEl  — the root DOM node of the popup (e.g. .custom-popup)
  */
 export function attachLootHoverListeners(popupEl) {
   if (!popupEl) return;
 
-  // Find ALL elements that represent a slot, whether chest or NPC,
-  // as long as they carry data-item-id="…"
   popupEl.querySelectorAll("[data-item-id]").forEach(el => {
     const itemId = el.getAttribute("data-item-id");
     if (!itemId) return;
 
-    // Remove any title attribute (no native tooltip)
+    // Remove any native title‐tooltip
     el.removeAttribute("title");
 
-    // mouseenter → look up the full itemDef, render its popup
+    let previewEl = null;
+    let moveHandler = null;
+
     el.addEventListener("mouseenter", e => {
+      // Look up the full item definition by ID
       const itemDef = definitionsManager.getDefinitions("Item")[itemId];
       if (!itemDef) return;
 
-      const preview = document.createElement("div");
-      preview.className = "chest-item-preview"; // CSS for the floating popup
-      preview.innerHTML = renderItemPopup(itemDef);
-      Object.assign(preview.style, {
+      // Create preview element
+      previewEl = document.createElement("div");
+      previewEl.className = "chest-item-preview"; // same styling as before
+      previewEl.innerHTML = renderItemPopup(itemDef);
+      Object.assign(previewEl.style, {
         position: "absolute",
         zIndex:   "1102",
+        // Initial placement near the mouse
         left:     `${e.clientX + 8}px`,
         top:      `${e.clientY + 8}px`
       });
-      document.body.append(preview);
-      el._previewEl = preview;
+      document.body.append(previewEl);
+
+      // Define a mousemove handler to update the preview’s position
+      moveHandler = event => {
+        if (previewEl) {
+          previewEl.style.left = `${event.clientX + 8}px`;
+          previewEl.style.top  = `${event.clientY + 8}px`;
+        }
+      };
+      el.addEventListener("mousemove", moveHandler);
     });
 
-    // mouseleave → remove that floating preview
     el.addEventListener("mouseleave", () => {
-      el._previewEl?.remove();
+      // Remove the preview element
+      if (previewEl) {
+        previewEl.remove();
+        previewEl = null;
+      }
+      // Remove the mousemove listener
+      if (moveHandler) {
+        el.removeEventListener("mousemove", moveHandler);
+        moveHandler = null;
+      }
     });
   });
 }
