@@ -1,12 +1,12 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.11 — wire Loot Pool picker to actual item definitions
+// @version: 1.12 — fix lootPool ID/object mismatch on populate & save
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
 import { definitionTypes }  from "../types.js";
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
 import { createDefinitionListManager } from "../list/definitionListManager.js";
-import { pickItems } from "../form/builder/listPicker.js"; // ← needed for custom picker wiring
+import { pickItems } from "../form/builder/listPicker.js";
 
 export function initDefinitionModal(db) {
   const { modalEl, open, close } =
@@ -21,7 +21,7 @@ export function initDefinitionModal(db) {
   let currentType;
   let definitions = [];
   let definitionsUnsub = null;
-  let itemMap = {}; // will hold id→item object for lookups
+  let itemMap = {}; // id → item object for lookups
 
   // Hide preview whenever the modal closes
   modalEl.addEventListener("close", () => {
@@ -102,14 +102,18 @@ export function initDefinitionModal(db) {
         previewApi.hide();
       },
       onSubmit:  async payload => {
-        await definitionTypes[type].save(db, payload.id ?? null, payload);
+        // If Chest, convert lootPool (array of item objects) → [id, …]
+        let toSave = { ...payload };
+        if (type === "Chest" && Array.isArray(payload.lootPool)) {
+          toSave.lootPool = payload.lootPool.map(item => item.id);
+        }
+        await definitionTypes[type].save(db, toSave.id ?? null, toSave);
         formApi.reset();
         previewApi.hide();
       },
       onFieldChange: data => {
         let pd = data;
         if (type === "Chest" && Array.isArray(data.lootPool)) {
-          // convert stored IDs into full item objects for preview
           pd = {
             ...data,
             lootPool: data.lootPool
@@ -123,29 +127,17 @@ export function initDefinitionModal(db) {
 
     // If this is Chest, wire the Loot Pool “add” button:
     if (type === "Chest") {
-      // DOM-loaded form; find the chip-list add-button for lootPool
-      // There’s only one .add-chip-btn in the chest form, so:
       const btnAdd = formApi.form.querySelector(".add-chip-btn");
       if (btnAdd) {
-        // Replace the existing click listeners by cloning
         const newBtn = btnAdd.cloneNode(true);
         btnAdd.parentNode.replaceChild(newBtn, btnAdd);
 
-        // Determine currently selected item IDs from the form’s get function
-        const getCurrent = formApi.form.querySelector("form") // wrong
-          ; // We actually get the items via formApi.fields.lootPool.get()
-        // But fields for chipList were stored as { get, set } under key "lootPool"
-        // So we call formApi.fields.lootPool.get() to list current IDs
-
         newBtn.addEventListener("click", async () => {
-          // All available items (convert itemMap back to array)
           const allItems = Object.values(itemMap);
-          // Current selected IDs (fields.lootPool.get() returns an array of objects, each with an id)
           const selectedIds = formApi.fields.lootPool
             .get()
             .map(it => it.id);
 
-          // Open pickItems modal with actual items
           try {
             const pickedIds = await pickItems({
               title:    "Loot Pool",
@@ -154,19 +146,15 @@ export function initDefinitionModal(db) {
               labelKey: "name"
             });
 
-            // Map chosen IDs back to item objects
             const pickedObjects = allItems.filter(i =>
               pickedIds.includes(i.id)
             );
-            // Update the chip-list to show chosen items
             formApi.fields.lootPool.set(pickedObjects);
-
-            // Fire a synthetic “input” event to notify form-state and preview
             formApi.form.dispatchEvent(
               new Event("input", { bubbles: true })
             );
           } catch {
-            // user cancelled, do nothing
+            // user cancelled
           }
         });
       }
@@ -182,9 +170,19 @@ export function initDefinitionModal(db) {
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    // If editing an existing definition, populate fields
+    // Populate form fields: convert existing lootPool IDs → objects first
     if (def) {
-      formApi.populate(def);
+      if (type === "Chest" && Array.isArray(def.lootPool)) {
+        const defForForm = {
+          ...def,
+          lootPool: def.lootPool
+            .map(id => itemMap[id])
+            .filter(Boolean)
+        };
+        formApi.populate(defForForm);
+      } else {
+        formApi.populate(def);
+      }
     } else {
       formApi.reset();
     }
@@ -194,9 +192,11 @@ export function initDefinitionModal(db) {
     // Show preview immediately (for Chest, translate lootPool IDs → objects)
     const previewData = def
       ? (type === "Chest"
-          ? { ...def, lootPool: (def.lootPool || [])
-              .map(id => itemMap[id])
-              .filter(Boolean)
+          ? {
+              ...def,
+              lootPool: (def.lootPool || [])
+                .map(id => itemMap[id])
+                .filter(Boolean)
             }
           : def)
       : (type === "Chest" ? { lootPool: [] } : {});
