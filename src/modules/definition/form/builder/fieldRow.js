@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/builder/fieldRow.js
-// @version: 2.2 — pass `options` into chipList so picker isn’t empty
+// @version: 2.3 — chipList keeps ID strings internally
 
 import { createPickr, disablePickr, getPickrHexColor }
   from "../controller/pickrAdapter.js";
@@ -93,20 +93,24 @@ export function createFieldRow({
       break;
 
     case "chipList":
-      // ─── UPDATED: pass `options` here so the picker can show items ───
+      // ─── KEEP listArray as ID strings. 
+      // We pass `options` (full objects) into the picker so the user sees names/icons.
+      // Internally, getItems() returns an array of IDs.
       const { row: tmpRow, getItems, setItems } = createChipListField(
         label,
-        [], // initialItems (will be overwritten on populate)
+        [], // initialItems: an empty array of IDs
         {
-          items:      options,   // ← use the array we injected into schema.lootPool.options
+          // `items` is the full array of {id, name, …} so pickItems can show names/icons:
+          items:      options,
           idKey,
           labelKey,
-          renderIcon
+          renderIcon,
+          // We do NOT supply onChange here, because setItems/getItems handle IDs directly.
         }
       );
       tmpRow.classList.add("form-row");
-      input = getItems;
-      colorBtn = setItems;
+      input = getItems;   // getItems() → ["iron123","gold456",…]
+      colorBtn = setItems; // setItems(["iron123","gold456"])
       return { row: tmpRow, input, colorBtn };
 
     case "checkbox":
@@ -124,7 +128,7 @@ export function createFieldRow({
       throw new Error(`Unknown field type: ${type}`);
   }
 
-  // Color swatch (for types except extraInfo, chipList, and checkbox)
+  // Color swatch (for text/number/select/textarea/imageUrl)
   if (colorable && !["extraInfo", "chipList", "checkbox"].includes(type)) {
     colorBtn = document.createElement("div");
     colorBtn.className = "color-btn";
