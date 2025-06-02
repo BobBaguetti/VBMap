@@ -17,3 +17,4 @@ export function enrichLootPool(data, defType = "Item") {
     return defMap[id] || (typeof entry === "object" ? entry : { id });
   });
 }
+ 
