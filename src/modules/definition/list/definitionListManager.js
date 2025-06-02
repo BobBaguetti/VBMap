@@ -1,7 +1,7 @@
 // @file: src/modules/definition/list/definitionListManager.js
 // @version: 6.11 — use goldColor for coins icon in entry list
 
-import { goldColor } from "../../../../shared/utils/color/colorPresets.js";
+import { goldColor } from "../../../shared/utils/color/colorPresets.js";
 
 /**
  * Creates and manages a sortable, filterable definition list.
