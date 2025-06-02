@@ -114,3 +114,4 @@ export function renderChestPopup(typeDef) {
       ${textBox}
     </div>`;
 }
+ 
