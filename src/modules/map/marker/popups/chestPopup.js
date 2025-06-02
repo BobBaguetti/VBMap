@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.5 — apply categoryColor to Category label
+// @version: 1.6 — use data-item-id + inline hover handler instead of data-index
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import {
@@ -9,6 +9,35 @@ import {
 import { CHEST_RARITY } from "../utils.js";
 import definitionsManager from "../../../../bootstrap/definitionsManager.js";
 
+// ─── Helper to show an Item popup on hover ─────────────────────────────────
+// Assumes definitionsManager can provide/render an “Item” popup given an ID.
+// Adjust this function if your actual hover‐popup API differs.
+function showItemPopup(itemId, evt) {
+  const itemDef = definitionsManager.getDefinitions("Item")[itemId];
+  if (!itemDef) return;
+  const popupHtml = definitionsManager.getPopupHTML("Item", itemDef);
+  // `evt` is the mouse event; we’ll position a floating div near the cursor.
+  // You may already have a utility to show a tiny hover‐popup—if so, replace this:
+  let hoverDiv = document.createElement("div");
+  hoverDiv.className = "hover-popup";
+  hoverDiv.innerHTML = popupHtml;
+  Object.assign(hoverDiv.style, {
+    position: "fixed",
+    top:      `${evt.clientY + 8}px`,
+    left:     `${evt.clientX + 8}px`,
+    zIndex:   10000
+  });
+  document.body.append(hoverDiv);
+
+  // Remove on mouseleave
+  evt.target.addEventListener(
+    "mouseleave",
+    () => hoverDiv.remove(),
+    { once: true }
+  );
+}
+
+// ─── Main renderer ──────────────────────────────────────────────────────────
 export function renderChestPopup(typeDef) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
 
@@ -33,7 +62,6 @@ export function renderChestPopup(typeDef) {
   const nameHTML   = `<div class="popup-name" style="color:${titleColor};">
                         ${typeDef.name || ""}
                       </div>`;
-  // Apply the categoryColor here:
   const typeHTML   = `<div class="popup-type" style="color:${categoryColor};">
                         ${cat}
                       </div>`;
@@ -45,6 +73,8 @@ export function renderChestPopup(typeDef) {
   const COLS = 5;
   const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
   let cells = pool.map((it, idx) => {
+    // `it` might be either an item object (with fields like id, imageSmall, etc.)
+    // or just `{ id: "...", ... }`. We normalize:
     let item = it;
     if (!item.imageSmall && item.id) {
       const itemMap = definitionsManager.getDefinitions("Item");
@@ -56,20 +86,25 @@ export function renderChestPopup(typeDef) {
       || rarityColors[(item.rarity || "").toLowerCase()]
       || defaultNameColor;
 
+    // **Notice**: we now set `data-item-id="${item.id}"` instead of data-index,
+    // and attach `onmouseenter` on the <img> to call showItemPopup(item.id, event).
     return `
-      <div class="chest-slot" data-index="${idx}"
-           style="border-color:${clr}">
+      <div class="chest-slot"
+           data-item-id="${item.id}"
+           style="border-color:${clr};">
         <img src="${slotImg}"
              class="chest-slot-img"
-             onerror="this.style.display='none'">
+             onerror="this.style.display='none'"
+             onmouseenter="showItemPopup('${item.id}', event)">
         ${item.quantity > 1
           ? `<span class="chest-slot-qty">${item.quantity}</span>`
           : ""}
       </div>`;
   }).join("");
 
+  // Fill the remaining empty slots
   for (let i = pool.length; i < COLS; i++) {
-    cells += `<div class="chest-slot" data-index=""></div>`;
+    cells += `<div class="chest-slot" data-item-id="" style="border-color:transparent;"></div>`;
   }
 
   const lootBox = `
