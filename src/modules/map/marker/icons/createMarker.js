@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/icons/createMarker.js
-// @version: 1.8 — DRY hover-binding for both Chest & NPC; hydrate lootPool before rendering
+// @version: 1.9 — ensure hover listeners attach to the newly opened popup element
 
 // Assumes Leaflet is loaded via a <script> tag and exposes window.L
 const L = window.L;
@@ -93,13 +93,16 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
   });
 
   // 6) When popup opens, wire close button and loot-slot previews
-  markerObj.on("popupopen", () => {
+  markerObj.on("popupopen", e => {
     // Close button
-    document.querySelector(".custom-popup .popup-close-btn")
+    // We know the new popup’s root is e.popup.getElement()
+    const popupRoot = e.popup.getElement();
+    popupRoot
+      .querySelector(".custom-popup .popup-close-btn")
       ?.addEventListener("click", () => markerObj.closePopup());
 
-    // Attach hover listeners to any [data-item-id] slot in the popup
-    const popupEl = document.querySelector(".custom-popup");
+    // Attach hover listeners to any [data-item-id] slot inside this popup
+    const popupEl = popupRoot.querySelector(".custom-popup");
     attachLootHoverListeners(popupEl);
   });
 
