@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.11 — use chest-slot and chest-slot-img classes so NPC icons match chest sizing
+// @version: 1.12 — reintroduce damage/HP icons using createIcon
 
 import {
   defaultNameColor,
@@ -9,6 +9,7 @@ import {
 } from "../../../../shared/utils/color/colorPresets.js";
 import definitionsManager from "../../../../bootstrap/definitionsManager.js";
 import { renderItemPopup } from "./itemPopup.js";
+import { createIcon }     from "../../../../shared/utils/iconUtils.js";
 
 /**
  * Renders HTML for an NPC popup. Assumes `def.lootPool` has already been
@@ -63,18 +64,18 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 2) Stats icons (damage & HP)
+  // 2) Stats icons (damage & HP) using createIcon
   const statsItems = [];
   if (dmgText !== "") {
     statsItems.push(
       `<span class="popup-value-number">${dmgText}</span>` +
-      `<svg class="icon inline-icon"><use xlink:href="#icon-sword"></use></svg>`
+      createIcon("sword", { inline: true }).outerHTML
     );
   }
   if (hpText !== "") {
     statsItems.push(
       `<span class="popup-value-number">${hpText}</span>` +
-      `<svg class="icon inline-icon"><use xlink:href="#icon-heart"></use></svg>`
+      createIcon("heart", { inline: true }).outerHTML
     );
   }
   const statsHTML = statsItems.length
@@ -94,7 +95,7 @@ export function renderNpcPopup(def = {}) {
         || rarityColors[(item.rarity || "").toLowerCase()]
         || defaultNameColor;
 
-      // Note: use the same "chest-slot" class and "chest-slot-img" as chestPopup.js
+      // Use the same classes as chestPopup so sizing matches
       return `
         <div class="chest-slot" data-item-id="${item.id}" style="border-color:${clr}">
           <img src="${thumb}" class="chest-slot-img" onerror="this.style.display='none'">
