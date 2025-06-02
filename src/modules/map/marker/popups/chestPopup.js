@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.5 — apply categoryColor to Category label
+// @version: 1.6 — always hydrate lootPool into full item‐objects for hover/popups
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import {
@@ -33,7 +33,6 @@ export function renderChestPopup(typeDef) {
   const nameHTML   = `<div class="popup-name" style="color:${titleColor};">
                         ${typeDef.name || ""}
                       </div>`;
-  // Apply the categoryColor here:
   const typeHTML   = `<div class="popup-type" style="color:${categoryColor};">
                         ${cat}
                       </div>`;
@@ -42,34 +41,53 @@ export function renderChestPopup(typeDef) {
                       </div>`;
 
   // 3) Loot grid (5 columns)
+  // ─────────────────────────────────────────────────────────────────────────────
+  // First, “hydrate” pool into full item‐objects, whether the definition
+  // stored IDs (strings) or (older) full‐object entries.
+  const rawPool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
+  const itemMap  = definitionsManager.getDefinitions("Item");
+  const pool = rawPool
+    .map(entry => {
+      // If it’s a string → look it up in itemMap
+      if (typeof entry === "string") {
+        return itemMap[entry] || null;
+      }
+      // If it’s already an object with an .id → re‐lookup in itemMap
+      if (entry && entry.id) {
+        return itemMap[entry.id] || null;
+      }
+      // Otherwise, can’t resolve it
+      return null;
+    })
+    .filter(Boolean); // drop any nulls (unresolvable IDs)
+
   const COLS = 5;
-  const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
-  let cells = pool.map((it, idx) => {
-    let item = it;
-    if (!item.imageSmall && item.id) {
-      const itemMap = definitionsManager.getDefinitions("Item");
-      if (itemMap[item.id]) item = itemMap[item.id];
-    }
+  let cells = pool
+    .map((item, idx) => {
+      // Now `item` is guaranteed to be a full object from itemMap.
+      // We can safely read .imageSmall, .rarity, .quantity, etc.
+      const slotImg = item.imageSmall || item.imageLarge || "";
+      const clr     = item.rarityColor
+        || rarityColors[(item.rarity || "").toLowerCase()]
+        || defaultNameColor;
 
-    const slotImg = item.imageSmall || item.imageLarge || "";
-    const clr = item.rarityColor
-      || rarityColors[(item.rarity || "").toLowerCase()]
-      || defaultNameColor;
+      return `
+        <div class="chest-slot" data-index="${idx}"
+             data-item-id="${item.id}"
+             style="border-color:${clr}">
+          <img src="${slotImg}"
+               class="chest-slot-img"
+               onerror="this.style.display='none'">
+          ${item.quantity > 1
+            ? `<span class="chest-slot-qty">${item.quantity}</span>`
+            : ""}
+        </div>`;
+    })
+    .join("");
 
-    return `
-      <div class="chest-slot" data-index="${idx}"
-           style="border-color:${clr}">
-        <img src="${slotImg}"
-             class="chest-slot-img"
-             onerror="this.style.display='none'">
-        ${item.quantity > 1
-          ? `<span class="chest-slot-qty">${item.quantity}</span>`
-          : ""}
-      </div>`;
-  }).join("");
-
+  // Fill the remaining columns with empty slots
   for (let i = pool.length; i < COLS; i++) {
-    cells += `<div class="chest-slot" data-index=""></div>`;
+    cells += `<div class="chest-slot" data-index="" data-item-id=""></div>`;
   }
 
   const lootBox = `
@@ -114,4 +132,3 @@ export function renderChestPopup(typeDef) {
       ${textBox}
     </div>`;
 }
- 
