@@ -1,5 +1,7 @@
 // @file: src/modules/definition/list/definitionListManager.js
-// @version: 6.10 — display devName prefix in definition entries
+// @version: 6.11 — use goldColor for coins icon in entry list
+
+import { goldColor } from "../../../../shared/utils/color/colorPresets.js";
 
 /**
  * Creates and manages a sortable, filterable definition list.
@@ -102,7 +104,7 @@ export function createDefinitionListManager({
 
     if (def.value) {
       const valEl = document.createElement("span");
-      valEl.innerHTML = `${def.value} <i class="fas fa-coins"></i>`;
+      valEl.innerHTML = `${def.value} <i class="fas fa-coins" style="color:${goldColor};"></i>`;
       Object.assign(valEl.style, {
         fontSize:     "0.9em",
         color:        "var(--text-primary)",

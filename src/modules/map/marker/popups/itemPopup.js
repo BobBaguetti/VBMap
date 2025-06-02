@@ -1,8 +1,8 @@
 // @file: src/modules/map/marker/popups/itemPopup.js
-// @version: 1.4 — use <i class="fas fa-coins"> for value icon, matching definition list
+// @version: 1.5 — use goldColor for coins icon
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
-import { defaultNameColor, rarityColors } from "../../../../shared/utils/color/colorPresets.js";
+import { defaultNameColor, rarityColors, goldColor } from "../../../../shared/utils/color/colorPresets.js";
 import { getBestImageUrl } from "../utils.js";
 
 export function renderItemPopup(m) {
@@ -28,11 +28,11 @@ export function renderItemPopup(m) {
        </div>`
     : "";
 
-  // valueHTML now uses <i class="fas fa-coins"> to match the definition list
+  // valueHTML now uses goldColor for the coins icon
   const valueHTML   = m.value
     ? `<div class="popup-value-icon" title="Value">
          <span class="popup-value-number">${m.value}</span>
-         <i class="fas fa-coins"></i>
+         <i class="fas fa-coins" style="color:${goldColor};"></i>
        </div>`
     : "";
 
