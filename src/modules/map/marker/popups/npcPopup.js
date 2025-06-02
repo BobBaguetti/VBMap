@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.9 — add data-item-id and title to each slot, same as chestPopup
+// @version: 1.10 — add data-id attributes so hover popups map correctly
 
 import {
   defaultNameColor,
@@ -78,7 +78,7 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 4) Loot grid (5 columns), now with data-item-id and title
+  // 4) Loot grid (5 columns) — now matching chestPopup style
   const COLS = 5;
   let cells = pool.map((it, idx) => {
     let item = it;
@@ -88,19 +88,15 @@ export function renderNpcPopup(def = {}) {
     }
 
     const slotImg = item.imageSmall || item.imageLarge || "";
-    const clr = item.rarityColor
-      || defaultNameColor;
+    const clr = item.rarityColor || defaultNameColor;
 
-    const itemIdAttr = item.id ? `data-item-id="${item.id}"` : "";
-    const titleAttr  = item.name ? `title="${item.name}"` : "";
-
+    // Add data-id so hover logic finds the correct item
     return `
       <div class="chest-slot" data-index="${idx}"
-           ${itemIdAttr}
-           ${titleAttr}
            style="border-color:${clr}">
         <img src="${slotImg}"
              class="chest-slot-img"
+             data-id="${item.id || ""}"
              onerror="this.style.display='none'">
         ${item.quantity > 1
           ? `<span class="chest-slot-qty">${item.quantity}</span>`
