@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.9 — add borders and hover behavior for loot slots, matching chestPopup
+// @version: 1.9 — add data-item-id and title to each slot, same as chestPopup
 
 import {
   defaultNameColor,
@@ -78,10 +78,9 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 4) Loot grid (5 columns) — now matching chestPopup style
+  // 4) Loot grid (5 columns), now with data-item-id and title
   const COLS = 5;
   let cells = pool.map((it, idx) => {
-    // Resolve full item object (like chestPopup does)
     let item = it;
     if (!item.imageSmall && item.id) {
       const itemMap = definitionsManager.getDefinitions("Item");
@@ -92,8 +91,13 @@ export function renderNpcPopup(def = {}) {
     const clr = item.rarityColor
       || defaultNameColor;
 
+    const itemIdAttr = item.id ? `data-item-id="${item.id}"` : "";
+    const titleAttr  = item.name ? `title="${item.name}"` : "";
+
     return `
       <div class="chest-slot" data-index="${idx}"
+           ${itemIdAttr}
+           ${titleAttr}
            style="border-color:${clr}">
         <img src="${slotImg}"
              class="chest-slot-img"

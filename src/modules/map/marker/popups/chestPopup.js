@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.5 — apply categoryColor to Category label
+// @version: 1.6 — add data-item-id and title to each slot for consistent hover behavior
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import {
@@ -33,7 +33,6 @@ export function renderChestPopup(typeDef) {
   const nameHTML   = `<div class="popup-name" style="color:${titleColor};">
                         ${typeDef.name || ""}
                       </div>`;
-  // Apply the categoryColor here:
   const typeHTML   = `<div class="popup-type" style="color:${categoryColor};">
                         ${cat}
                       </div>`;
@@ -41,11 +40,12 @@ export function renderChestPopup(typeDef) {
                         ${rarityLabel}
                       </div>`;
 
-  // 3) Loot grid (5 columns)
+  // 3) Loot grid (5 columns) with data-item-id and title
   const COLS = 5;
   const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
   let cells = pool.map((it, idx) => {
     let item = it;
+    // If we only got an ID earlier, lookup full object
     if (!item.imageSmall && item.id) {
       const itemMap = definitionsManager.getDefinitions("Item");
       if (itemMap[item.id]) item = itemMap[item.id];
@@ -56,8 +56,14 @@ export function renderChestPopup(typeDef) {
       || rarityColors[(item.rarity || "").toLowerCase()]
       || defaultNameColor;
 
+    // Add data-item-id and title attributes:
+    const itemIdAttr = item.id ? `data-item-id="${item.id}"` : "";
+    const titleAttr  = item.name ? `title="${item.name}"` : "";
+
     return `
       <div class="chest-slot" data-index="${idx}"
+           ${itemIdAttr}
+           ${titleAttr}
            style="border-color:${clr}">
         <img src="${slotImg}"
              class="chest-slot-img"
