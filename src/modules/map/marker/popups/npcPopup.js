@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.10 — assume pool is already hydrated; drop data-index
+// @version: 1.11 — use chest-slot and chest-slot-img classes so NPC icons match chest sizing
 
 import {
   defaultNameColor,
@@ -11,8 +11,8 @@ import definitionsManager from "../../../../bootstrap/definitionsManager.js";
 import { renderItemPopup } from "./itemPopup.js";
 
 /**
- * Renders HTML for an NPC popup. Assumes `def.lootPool` is already
- * an array of { id, name, imageSmall, quantity, rarity, … } via enrichLootPool.
+ * Renders HTML for an NPC popup. Assumes `def.lootPool` has already been
+ * run through `enrichLootPool(...)`, so that it’s an array of full item objects.
  *
  * @param {Object} def  — NPC definition data
  * @returns {string} HTML for Leaflet popup
@@ -94,11 +94,12 @@ export function renderNpcPopup(def = {}) {
         || rarityColors[(item.rarity || "").toLowerCase()]
         || defaultNameColor;
 
+      // Note: use the same "chest-slot" class and "chest-slot-img" as chestPopup.js
       return `
-        <div class="npc-slot" data-item-id="${item.id}" style="border-color:${clr}">
-          <img src="${thumb}" class="npc-slot-img" onerror="this.style.display='none'">
+        <div class="chest-slot" data-item-id="${item.id}" style="border-color:${clr}">
+          <img src="${thumb}" class="chest-slot-img" onerror="this.style.display='none'">
           ${item.quantity > 1
-            ? `<span class="npc-slot-qty">${item.quantity}</span>`
+            ? `<span class="chest-slot-qty">${item.quantity}</span>`
             : ""}
         </div>`;
     })
@@ -106,7 +107,7 @@ export function renderNpcPopup(def = {}) {
 
   // Fill remaining slots if fewer than COLS
   for (let i = pool.length; i < COLS; i++) {
-    cells += `<div class="npc-slot" data-item-id="" style="border-color:transparent"></div>`;
+    cells += `<div class="chest-slot" data-item-id="" style="border-color:transparent"></div>`;
   }
 
   const lootBox = `
