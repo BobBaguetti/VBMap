@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.18 — explicitly convert lootPool ID arrays to item objects
+// @version: 1.19 — regenerate chest‐popups on “popupopen” so lootPool is always fresh
 
 import {
   subscribeMarkers,
@@ -32,21 +32,42 @@ export function setGrouping(enabled) {
 export const allMarkers = [];
 
 /**
- * Takes a marker's data object (which already includes fields from its chest definition),
- * and ensures that if `data.lootPool` is an array of IDs, it is replaced with an array
- * of the corresponding item-definition objects (in the same order), filtering out any missing IDs.
+ * Given a marker’s merged data (which includes its definition fields),
+ * if it’s a Chest, convert lootPool (array of ID strings) into actual item objects.
  *
- * @param {Object} data  — merged marker+definition data
+ * @param {Object} data  — merged marker+definition data 
  */
 function normalizeChestLootPool(data) {
   if (!Array.isArray(data.lootPool)) return;
-  // Grab the in-memory map of all item definitions
   const itemDefMap = definitionsManager.getDefinitions("Item") || {};
-  // Convert each ID to its object, filtering out any missing
-  const objectPool = data.lootPool
+  data.lootPool = data.lootPool
     .map(id => itemDefMap[id])
     .filter(itemObj => !!itemObj);
-  data.lootPool = objectPool;
+}
+
+/**
+ * Regenerates a marker’s popup HTML on demand. Used in our “popupopen” listener.
+ *
+ * @param {L.Marker} markerObj
+ * @param {Object}   originalData – the Firestore record plus merged fields
+ * @param {Object}   cfg          – markerTypes[data.type], contains .popupRenderer and .defIdKey
+ */
+function refreshPopupOnOpen(markerObj, originalData, cfg) {
+  const defMap = definitionsManager.getDefinitions(originalData.type);
+  const defKey = cfg.defIdKey;
+  if (defKey && defMap[originalData[defKey]]) {
+    // Merge fresh definition fields back into a shallow copy of originalData
+    const { id: _ignore, ...freshFields } = defMap[originalData[defKey]];
+    const merged = { ...originalData, ...freshFields };
+
+    // If it’s a Chest, normalize lootPool now
+    if (merged.type === "Chest") {
+      normalizeChestLootPool(merged);
+    }
+
+    // Overwrite this marker’s popup with newly‐rendered HTML
+    markerObj.setPopupContent(cfg.popupRenderer(merged));
+  }
 }
 
 /**
@@ -75,7 +96,7 @@ export async function init(
 
   // 1) Marker data subscription
   subscribeMarkers(db, markers => {
-    // a) Clear existing markers from both layers
+    // a) Clear out any existing markers
     allMarkers.forEach(({ markerObj }) => {
       markerObj.remove();
       clusterItemLayer.removeLayer(markerObj);
@@ -88,14 +109,14 @@ export async function init(
       const cfg = markerTypes[data.type];
       if (!cfg) return;
 
-      // c) Merge definition fields into data
+      // c) Merge definition fields
       const defMap = definitionsManager.getDefinitions(data.type);
       const defKey = cfg.defIdKey;
       if (defKey && defMap[data[defKey]]) {
         const { id: _ignore, ...fields } = defMap[data[defKey]];
         Object.assign(data, fields);
 
-        // If this is a Chest, normalize its lootPool right now
+        // If it’s a Chest, immediately normalize the lootPool array
         if (data.type === "Chest") {
           normalizeChestLootPool(data);
         }
@@ -107,16 +128,16 @@ export async function init(
           markerForm.openEdit(markerObj, originalData, e, payload => {
             const updated = { ...originalData, ...payload };
 
-            // Before saving, ensure that updated.lootPool is an array of IDs
+            // Convert the chest’s lootPool (array of objects) back to [ID,…] before saving
             if (updated.type === "Chest" && Array.isArray(payload.lootPool)) {
               updated.lootPool = payload.lootPool.map(itemObj => itemObj.id);
             }
 
-            // Update the Leaflet icon and popup in-place
+            // Update this marker’s icon and popup immediately
             markerObj.setIcon(cfg.iconFactory(updated));
             markerObj.setPopupContent(cfg.popupRenderer(updated));
 
-            // Push to Firestore
+            // Persist to Firestore
             firebaseUpdateMarker(db, updated);
           }),
 
@@ -133,7 +154,7 @@ export async function init(
         }
       };
 
-      // e) Create a new Leaflet marker with our custom icon/popup, etc.
+      // e) Create the Leaflet marker and bind a popup placeholder
       const markerObj = createMarker(
         data,
         map,
@@ -143,10 +164,10 @@ export async function init(
         isAdmin
       );
 
-      // f) Ensure its popup is up‐to‐date (now that lootPool is normalized)
-      if (cfg.popupRenderer) {
-        markerObj.setPopupContent(cfg.popupRenderer(data));
-      }
+      // f) Bind the initial popup HTML (so there's something to click on)
+      //    and also set up a “popupopen” listener to refresh the content each time.
+      markerObj.bindPopup(cfg.popupRenderer(data));
+      markerObj.on("popupopen", () => refreshPopupOnOpen(markerObj, data, cfg));
 
       // g) Add to the appropriate layer
       const layerToUse = groupingEnabled ? clusterItemLayer : flatItemLayer;
@@ -154,47 +175,47 @@ export async function init(
       allMarkers.push({ markerObj, data });
     });
 
-    // h) Reapply any active marker‐filters
+    // h) Reapply any active filters
     filterMarkers();
   });
 
-  // 2) Whenever definitions (including chests) update, re-render affected markers
+  // 2) When ANY definition updates, re-render affected markers
   Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.type !== type) return;
 
-        // a) Merge updated definition fields back into data
+        // a) Merge fresh definition fields
         const defMap = definitionsManager.getDefinitions(type);
         const defKey = cfg.defIdKey;
         if (defKey && defMap[data[defKey]]) {
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
 
-          // If this is a Chest, normalize its lootPool immediately
+          // If it’s a Chest, normalize its lootPool now
           if (data.type === "Chest") {
             normalizeChestLootPool(data);
           }
         }
 
-        // b) Refresh icon & popup
+        // b) Update this marker’s icon & popup content immediately
         markerObj.setIcon(cfg.iconFactory(data));
         markerObj.setPopupContent(cfg.popupRenderer(data));
       });
 
-      // c) Reapply marker filters so updated popups/icons respect current UI state
+      // c) Reapply marker filters
       filterMarkers();
     });
   });
 
-  // 3) Load initial definitions (Item, Chest, NPC) into memory & build item filters
+  // 3) Load initial definitions (Item, Chest, NPC) into memory,
+  //    then build item filters and render markers
   for (const [type, cfg] of Object.entries(markerTypes)) {
     const defs = await cfg.loadDefinitions(db);
-    definitionsManager.getDefinitions(type); // ensures definitionsMap[type] is initialized
+    definitionsManager.getDefinitions(type); // populates definitionsMap
   }
 
-  // 4) Build item filters (once, using the initial Item definitions)
   await loadItemFilters();
   filterMarkers();
 }
