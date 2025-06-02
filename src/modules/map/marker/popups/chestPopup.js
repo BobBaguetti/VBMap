@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.6 — normalize lootPool entries (IDs → objects) so hover works correctly
+// @version: 1.5 — apply categoryColor to Category label
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import {
@@ -40,34 +40,23 @@ export function renderChestPopup(typeDef) {
                         ${rarityLabel}
                       </div>`;
 
-  // 3) Normalize lootPool: convert any ID strings to full item objects
-  const rawPool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
-  const itemDefinitionsMap = definitionsManager.getDefinitions("Item") || {};
-  const normalizedPool = rawPool
-    .map(entry => {
-      // If entry is a string, treat it as an ID and look up the item
-      if (typeof entry === "string") {
-        return itemDefinitionsMap[entry] || null;
-      }
-      // Otherwise assume it’s already an object
-      return entry;
-    })
-    .filter(item => item && (item.imageSmall || item.imageLarge));
-
-  // 4) Loot grid (5 columns)
+  // 3) Loot grid (5 columns)
   const COLS = 5;
-  let cells = "";
+  const pool = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
+  let cells = pool.map((it, idx) => {
+    let item = it;
+    if (!item.imageSmall && item.id) {
+      const itemMap = definitionsManager.getDefinitions("Item");
+      if (itemMap[item.id]) item = itemMap[item.id];
+    }
 
-  normalizedPool.forEach((item, idx) => {
-    // Determine image & border color
     const slotImg = item.imageSmall || item.imageLarge || "";
     const clr = item.rarityColor
       || rarityColors[(item.rarity || "").toLowerCase()]
       || defaultNameColor;
 
-    cells += `
-      <div class="chest-slot" data-index="${idx}"
-           data-item-id="${item.id}"
+    return `
+      <div class="chest-slot" data-item-id="${item.id}"
            style="border-color:${clr}">
         <img src="${slotImg}"
              class="chest-slot-img"
@@ -76,11 +65,10 @@ export function renderChestPopup(typeDef) {
           ? `<span class="chest-slot-qty">${item.quantity}</span>`
           : ""}
       </div>`;
-  });
+  }).join("");
 
-  // Fill remaining empty slots up to COLS
-  for (let i = normalizedPool.length; i < COLS; i++) {
-    cells += `<div class="chest-slot" data-index="" data-item-id=""></div>`;
+  for (let i = pool.length; i < COLS; i++) {
+    cells += `<div class="chest-slot" data-item-id=""></div>`;
   }
 
   const lootBox = `
@@ -90,7 +78,7 @@ export function renderChestPopup(typeDef) {
       </div>
     </div>`;
 
-  // 5) Description & extra-info
+  // 4) Description & extra-info
   const descHTML = typeDef.description
     ? `<p class="popup-desc" style="color:${typeDef.descriptionColor || defaultNameColor};">
          ${typeDef.description}
@@ -109,7 +97,7 @@ export function renderChestPopup(typeDef) {
        </div>`
     : "";
 
-  // 6) Assemble and return
+  // 5) Assemble and return
   return `
     <div class="custom-popup" style="position:relative;">
       ${closeBtn}
