@@ -1,5 +1,5 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.12 — fix preview to pass full item objects into renderChestPopup
+// @version: 1.13 — enable Loot Pool for NPC definitions as well
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
@@ -78,8 +78,8 @@ export function initDefinitionModal(db) {
     if (!listApi) setupList();
     bindDefinitionUpdates(type);
 
-    // If editing/creating a Chest, load all item definitions
-    if (type === "Chest") {
+    // If editing/creating a Chest or NPC, load all item definitions
+    if (type === "Chest" || type === "NPC") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
     } else {
@@ -107,15 +107,15 @@ export function initDefinitionModal(db) {
         previewApi.hide();
       },
       onFieldChange: data => {
-        // For Chest, data.lootPool is an array of full item objects.
-        // renderChestPopup can render directly from those objects.
+        // For Chest and NPC, data.lootPool is an array of full item objects.
+        // renderChestPopup and renderNpcPopup can render directly from those objects.
         const pd = data;
         previewApi.show(pd);
       }
     }, db);
 
-    // If this is Chest, wire the Loot Pool “add” button:
-    if (type === "Chest") {
+    // If this is Chest or NPC, wire the Loot Pool “add” button:
+    if (type === "Chest" || type === "NPC") {
       const btnAdd = formApi.form.querySelector(".add-chip-btn");
       if (btnAdd) {
         const newBtn = btnAdd.cloneNode(true);
@@ -174,9 +174,9 @@ export function initDefinitionModal(db) {
     open();
 
     // Build initial previewData:
-    // - For Chest, convert def.lootPool (IDs) → full item objects
+    // - For Chest and NPC, convert def.lootPool (IDs) → full item objects
     const previewData = def
-      ? (type === "Chest"
+      ? ((type === "Chest" || type === "NPC")
           ? {
               ...def,
               lootPool: (def.lootPool || [])
@@ -184,7 +184,7 @@ export function initDefinitionModal(db) {
                 .filter(Boolean)  // array of item objects
             }
           : def)
-      : (type === "Chest"
+      : ((type === "Chest" || type === "NPC")
           ? { lootPool: [] }   // start with empty array of objects
           : {});
     previewApi.show(previewData);
