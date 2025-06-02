@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.8 — popup image border now uses tierColor for non-friendly NPCs
+// @version: 1.9 — add borders and hover behavior for loot slots, matching chestPopup
 
 import {
   defaultNameColor,
@@ -7,14 +7,8 @@ import {
   tierColors
 } from "../../../../shared/utils/color/colorPresets.js";
 import { createIcon } from "../../../../shared/utils/iconUtils.js";
+import definitionsManager from "../../../../bootstrap/definitionsManager.js";
 
-/**
- * Renders an HTML string for NPC markers on the map
- * and in previews, with icon stats.
- *
- * @param {Object} def NPC definition data
- * @returns {string} HTML content for Leaflet popup
- */
 export function renderNpcPopup(def = {}) {
   // Safe defaults
   const nameText    = def.name        || "Unnamed";
@@ -84,20 +78,36 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 4) Loot grid
+  // 4) Loot grid (5 columns) — now matching chestPopup style
   const COLS = 5;
-  let cells = pool.map((item, idx) => {
-    const thumb = item.imageSmall || item.imageLarge || "";
+  let cells = pool.map((it, idx) => {
+    // Resolve full item object (like chestPopup does)
+    let item = it;
+    if (!item.imageSmall && item.id) {
+      const itemMap = definitionsManager.getDefinitions("Item");
+      if (itemMap[item.id]) item = itemMap[item.id];
+    }
+
+    const slotImg = item.imageSmall || item.imageLarge || "";
+    const clr = item.rarityColor
+      || defaultNameColor;
+
     return `
-      <div class="chest-slot" data-index="${idx}">
-        ${thumb
-          ? `<img src="${thumb}" class="chest-slot-img" onerror="this.style.display='none'">`
+      <div class="chest-slot" data-index="${idx}"
+           style="border-color:${clr}">
+        <img src="${slotImg}"
+             class="chest-slot-img"
+             onerror="this.style.display='none'">
+        ${item.quantity > 1
+          ? `<span class="chest-slot-qty">${item.quantity}</span>`
           : ""}
       </div>`;
   }).join("");
+
   for (let i = pool.length; i < COLS; i++) {
     cells += `<div class="chest-slot" data-index=""></div>`;
   }
+
   const lootBox = `
     <div class="popup-info-box loot-box">
       <div class="chest-grid" style="--cols:${COLS};">
