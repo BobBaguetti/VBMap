@@ -1,5 +1,5 @@
 // @file: src/modules/definition/preview/chestPreview.js
-// @version: 4.3 — convert lootPool objects → IDs for renderChestPopup
+// @version: 4.2 — preserve wrapper class so old previews get removed
 
 import { createPickr } from "../form/controller/pickrAdapter.js"; // if needed
 import { renderChestPopup } from "../../map/markerManager.js";
@@ -18,17 +18,12 @@ export function createChestPreviewPanel(container) {
       if (!def) {
         wrapper.innerHTML = "";
       } else {
-        // Ensure renderChestPopup sees an iconUrl
-        // and convert lootPool objects back to IDs
-        const lootIds = Array.isArray(def.lootPool)
-          ? def.lootPool.map(itemObj => itemObj.id)
-          : [];
-        const withIconAndIds = {
+        // ensure renderChestPopup sees an iconUrl
+        const withIcon = {
           ...def,
           iconUrl: def.imageSmall || def.imageLarge || "",
-          lootPool: lootIds
         };
-        wrapper.innerHTML = renderChestPopup(withIconAndIds);
+        wrapper.innerHTML = renderChestPopup(withIcon);
       }
     },
     show() { container.classList.add("visible"); },
