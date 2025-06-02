@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/builder/chipListField.js
-// @version: 1.7 — allow dynamic updating of “allItems” via setAllItems()
+// @version: 1.6 — avoid recursion by not using createFieldRow
 
 import { createChipList } from "./chipListManager.js";
 import { pickItems }      from "./listPicker.js";
@@ -10,26 +10,19 @@ import { pickItems }      from "./listPicker.js";
  * @param {string} labelText
  * @param {Array} initialItems
  * @param {Object} options
- * @param {Array} options.items     — initial “master list” of items to pick from
+ * @param {Array} options.items
  * @param {string} options.idKey
  * @param {string} options.labelKey
  * @param {Function} options.renderIcon
  * @param {Function} options.onChange
  * @param {string} options.addBtnContent
  * @param {Object} options.pickOptions
- *
- * @returns {{
- *   row: HTMLElement,
- *   getItems: () => Array,
- *   setItems: (newItems: Array) => void,
- *   setAllItems: (all: Array) => void
- * }}
  */
 export function createChipListField(
   labelText,
   initialItems = [],
   {
-    items     = [],        // initial “master list” of pickable items
+    items: allItems = [],
     idKey     = "id",
     labelKey  = "name",
     renderIcon,
@@ -59,11 +52,8 @@ export function createChipListField(
 
   row.append(container, btnAdd);
 
-  // 2) Maintain mutable “master list” and selected items
-  let allItems = [...items];
+  // 2) Initialize chip-list manager
   const listArray = [...initialItems];
-
-  // Initialize chip-list manager
   const chipList = createChipList({
     container,
     listArray,
@@ -103,11 +93,6 @@ export function createChipListField(
     }
   });
 
-  // Allow external injection of the full “master list”
-  function setAllItems(newItems) {
-    allItems = Array.isArray(newItems) ? [...newItems] : [];
-  }
-
   return {
     row,
     getItems: () => [...listArray],
@@ -117,7 +102,6 @@ export function createChipListField(
       row.closest("form")?.dispatchEvent(
         new Event("input", { bubbles: true })
       );
-    },
-    setAllItems
+    }
   };
 }

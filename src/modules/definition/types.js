@@ -1,5 +1,5 @@
 // @file: src/modules/definition/types.js
-// @version: 1.5 — inject allItems into lootPool chip-lists after controller creation
+// @version: 1.4 — add NPC type support
 
 import {
   loadItemDefinitions,
@@ -28,30 +28,6 @@ import { buildForm }            from "./form/definitionFormBuilder.js";
 import { createFormController } from "./form/definitionFormController.js";
 import { createPreviewController } from "./preview/previewController.js";
 
-// Helper for injecting item‐definitions into a chipList field
-async function injectItemsIntoChipList(controller, db) {
-  try {
-    const items = await loadItemDefinitions(db);
-    if (controller.fields.lootPool?.setAllItems) {
-      controller.fields.lootPool.setAllItems(items);
-    }
-  } catch (e) {
-    console.error("Failed to load item definitions for lootPool:", e);
-  }
-}
-
-// Helper for injecting chest‐definitions into NPC’s chipList (if NPC uses “lootPool”)
-async function injectChestsIntoChipList(controller, db) {
-  try {
-    const chests = await loadChestDefinitions(db);
-    if (controller.fields.lootPool?.setAllItems) {
-      controller.fields.lootPool.setAllItems(chests);
-    }
-  } catch (e) {
-    console.error("Failed to load chest definitions for NPC lootPool:", e);
-  }
-}
-
 export const definitionTypes = {
   Item: {
     schema:     itemSchema,
@@ -61,7 +37,7 @@ export const definitionTypes = {
     del:        deleteItemDefinition,
     buildForm:  () => buildForm(itemSchema),
     controller: (handlers, db) =>
-      createFormController(buildForm(itemSchema), itemSchema, handlers),
+                  createFormController(buildForm(itemSchema), itemSchema, handlers),
     previewBuilder: host =>
       createPreviewController("item", host)
   },
@@ -73,13 +49,8 @@ export const definitionTypes = {
     save:       saveChestDefinition,
     del:        deleteChestDefinition,
     buildForm:  () => buildForm(chestSchema),
-    controller: (handlers, db) => {
-      // 1) Build the form controller
-      const ctrl = createFormController(buildForm(chestSchema), chestSchema, handlers);
-      // 2) Immediately inject all item definitions into lootPool chip-list
-      injectItemsIntoChipList(ctrl, db);
-      return ctrl;
-    },
+    controller: (handlers, db) =>
+                  createFormController(buildForm(chestSchema), chestSchema, handlers),
     previewBuilder: host =>
       createPreviewController("chest", host)
   },
@@ -91,12 +62,8 @@ export const definitionTypes = {
     save:          saveNpcDefinition,
     del:           deleteNpcDefinition,
     buildForm:     () => buildForm(npcSchema),
-    controller:    (handlers, db) => {
-      const ctrl = createFormController(buildForm(npcSchema), npcSchema, handlers);
-      // If your NPC schema also uses “lootPool” (e.g. to pick chests), inject chest definitions
-      injectChestsIntoChipList(ctrl, db);
-      return ctrl;
-    },
+    controller:    (handlers, db) =>
+                      createFormController(buildForm(npcSchema), npcSchema, handlers),
     previewBuilder: host =>
       createPreviewController("npc", host)
   }

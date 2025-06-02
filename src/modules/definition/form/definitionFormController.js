@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/definitionFormController.js
-// @version: 1.9.15 — return `fields` so external code can inject into chipList
+// @version: 1.9.14 — uses formHeaderManager, formColorManager, formDataManager & formStateConfigurator
 
 import { setupFormHeader } from "../form/controller/formHeaderManager.js";
 import { wireFormEvents }  from "../form/controller/formControllerShell.js";
@@ -17,15 +17,6 @@ import { setupFormState }  from "../form/controller/formStateConfigurator.js";
  * @param {{ form: HTMLFormElement, fields: Object, colorables: Object }} buildResult
  * @param {Object} schema     — definition schema
  * @param {Object} handlers   — { title, hasFilter, onCancel, onSubmit, onDelete, onFieldChange }
- *
- * @returns {{
- *   form: HTMLFormElement,
- *   fields: Object,
- *   reset: () => void,
- *   populate: (def: Object) => Promise<void>,
- *   getPayload: () => Object,
- *   initPickrs: () => Object
- * }}
  */
 export function createFormController(buildResult, schema, handlers) {
   const { form, fields, colorables } = buildResult;
@@ -116,7 +107,6 @@ export function createFormController(buildResult, schema, handlers) {
 
   return {
     form,
-    fields,       // now exposed so callers can do things like fields.lootPool.setAllItems(...)
     reset,
     populate,
     getPayload,
