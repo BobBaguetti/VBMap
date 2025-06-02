@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.5 — restore data-id only on the <img> (not on the wrapping div)
+// @version: 1.5 — apply categoryColor to Category label
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import {
@@ -33,6 +33,7 @@ export function renderChestPopup(typeDef) {
   const nameHTML   = `<div class="popup-name" style="color:${titleColor};">
                         ${typeDef.name || ""}
                       </div>`;
+  // Apply the categoryColor here:
   const typeHTML   = `<div class="popup-type" style="color:${categoryColor};">
                         ${cat}
                       </div>`;
@@ -55,22 +56,20 @@ export function renderChestPopup(typeDef) {
       || rarityColors[(item.rarity || "").toLowerCase()]
       || defaultNameColor;
 
-    // Put data-id only on the <img> (so hover code (“e.target.dataset.id”) works)
     return `
-      <div class="chest-slot"
+      <div class="chest-slot" data-index="${idx}"
            style="border-color:${clr}">
         <img src="${slotImg}"
              class="chest-slot-img"
-             data-id="${item.id || ''}"
              onerror="this.style.display='none'">
         ${item.quantity > 1
-          ? `<span class="chest-slot-qty" data-id="${item.id || ''}">${item.quantity}</span>`
+          ? `<span class="chest-slot-qty">${item.quantity}</span>`
           : ""}
       </div>`;
   }).join("");
 
   for (let i = pool.length; i < COLS; i++) {
-    cells += `<div class="chest-slot"></div>`;
+    cells += `<div class="chest-slot" data-index=""></div>`;
   }
 
   const lootBox = `
