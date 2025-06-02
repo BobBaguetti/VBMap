@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.12 — place data-id on both <div class="chest-slot"> and its <img> so hover finds it reliably
+// @version: 1.13 — add data-id on DIV, IMG, and qty SPAN so hover detects correctly
 
 import {
   defaultNameColor,
@@ -78,7 +78,7 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 4) Loot grid (5 columns) — now matching chestPopup style
+  // 4) Loot grid (5 columns) — same style as chestPopup
   const COLS = 5;
   let cells = pool.map((it, idx) => {
     let item = it;
@@ -90,7 +90,7 @@ export function renderNpcPopup(def = {}) {
     const slotImg = item.imageSmall || item.imageLarge || "";
     const clr = item.rarityColor || defaultNameColor;
 
-    // Put data-id on BOTH the <div> and its <img>
+    // Put data-id on DIV, IMG, and qty SPAN
     return `
       <div class="chest-slot" data-index="${idx}" data-id="${item.id || ''}"
            style="border-color:${clr}">
@@ -99,7 +99,7 @@ export function renderNpcPopup(def = {}) {
              data-id="${item.id || ''}"
              onerror="this.style.display='none'">
         ${item.quantity > 1
-          ? `<span class="chest-slot-qty">${item.quantity}</span>`
+          ? `<span class="chest-slot-qty" data-id="${item.id || ''}">${item.quantity}</span>`
           : ""}
       </div>`;
   }).join("");

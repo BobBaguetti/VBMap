@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/chestPopup.js
-// @version: 1.8 — place data-id on both <div class="chest-slot"> and its <img> so hover finds it reliably
+// @version: 1.9 — add data-id on DIV, IMG, and qty SPAN to guarantee hover detection
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import {
@@ -55,7 +55,7 @@ export function renderChestPopup(typeDef) {
       || rarityColors[(item.rarity || "").toLowerCase()]
       || defaultNameColor;
 
-    // Put data-id on BOTH the <div> and the <img>
+    // Put data-id on DIV, IMG, and qty SPAN
     return `
       <div class="chest-slot" data-index="${idx}" data-id="${item.id || ''}"
            style="border-color:${clr}">
@@ -64,7 +64,7 @@ export function renderChestPopup(typeDef) {
              data-id="${item.id || ''}"
              onerror="this.style.display='none'">
         ${item.quantity > 1
-          ? `<span class="chest-slot-qty">${item.quantity}</span>`
+          ? `<span class="chest-slot-qty" data-id="${item.id || ''}">${item.quantity}</span>`
           : ""}
       </div>`;
   }).join("");
