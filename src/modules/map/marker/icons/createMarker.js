@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/icons/createMarker.js
-// @version: 1.6 — add Show Only & Hide All to marker context menu
+// @version: 1.7 — fix chest-slot hover to use data-item-id lookup
 
 // Assumes Leaflet is loaded via a <script> tag and exposes window.L
 const L = window.L;
@@ -14,6 +14,8 @@ import {
   dispositionColors,
   tierColors
 } from "../../../../shared/utils/color/colorPresets.js";
+
+import definitionsManager from "../../../../bootstrap/definitionsManager.js";
 
 // New imports for filter actions
 import {
@@ -83,18 +85,21 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
     document.querySelector(".custom-popup .popup-close-btn")
       ?.addEventListener("click", () => markerObj.closePopup());
 
-    // Chest slot hover previews
-    document.querySelectorAll(".custom-popup .chest-slot[data-index]")
+    // Chest slot hover previews: now keyed by data-item-id instead of data-index
+    document.querySelectorAll(".custom-popup .chest-slot[data-item-id]")
       .forEach(el => {
         el.removeAttribute("title");
-        const idx = el.getAttribute("data-index");
+        const itemId = el.getAttribute("data-item-id");
+        if (!itemId) return;
+
         el.addEventListener("mouseenter", e => {
-          if (!idx || !m.chestDefFull) return;
-          const item = m.chestDefFull.lootPool[idx];
-          if (!item) return;
+          // Look up the full item definition by ID
+          const itemDef = definitionsManager.getDefinitions("Item")[itemId];
+          if (!itemDef) return;
+
           const preview = document.createElement("div");
           preview.className = "chest-item-preview";
-          preview.innerHTML = renderItemPopup(item);
+          preview.innerHTML = renderItemPopup(itemDef);
           Object.assign(preview.style, {
             position: "absolute",
             zIndex:   "1102",
@@ -104,6 +109,7 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
           document.body.append(preview);
           el._previewEl = preview;
         });
+
         el.addEventListener("mouseleave", () => {
           el._previewEl?.remove();
         });
