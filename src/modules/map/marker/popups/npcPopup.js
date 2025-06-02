@@ -1,19 +1,21 @@
 // @file: src/modules/map/marker/popups/npcPopup.js
-// @version: 1.8 — popup image border now uses tierColor for non-friendly NPCs
+// @version: 1.10 — assume pool is already hydrated; drop data-index
 
 import {
   defaultNameColor,
   dispositionColors,
-  tierColors
+  tierColors,
+  rarityColors
 } from "../../../../shared/utils/color/colorPresets.js";
-import { createIcon } from "../../../../shared/utils/iconUtils.js";
+import definitionsManager from "../../../../bootstrap/definitionsManager.js";
+import { renderItemPopup } from "./itemPopup.js";
 
 /**
- * Renders an HTML string for NPC markers on the map
- * and in previews, with icon stats.
+ * Renders HTML for an NPC popup. Assumes `def.lootPool` is already
+ * an array of { id, name, imageSmall, quantity, rarity, … } via enrichLootPool.
  *
- * @param {Object} def NPC definition data
- * @returns {string} HTML content for Leaflet popup
+ * @param {Object} def  — NPC definition data
+ * @returns {string} HTML for Leaflet popup
  */
 export function renderNpcPopup(def = {}) {
   // Safe defaults
@@ -23,12 +25,11 @@ export function renderNpcPopup(def = {}) {
   const tierText    = def.tier        || "";
   const dmgText     = def.damage      != null ? def.damage : "";
   const hpText      = def.hp          != null ? def.hp : "";
-  const pool        = Array.isArray(def.lootPool) ? def.lootPool : [];
   const description = def.description || "";
   const extras      = Array.isArray(def.extraLines) ? def.extraLines : [];
   const imgUrl      = def.imageLarge || def.imageSmall || "";
 
-  // Determine text colors
+  // 1) Header image & colors
   const nameColor = def.nameColor || defaultNameColor;
   const factionColor = def.factionColor
     || dispositionColors[disposition]
@@ -37,19 +38,17 @@ export function renderNpcPopup(def = {}) {
     || tierColors[tierText]
     || defaultNameColor;
 
-  // Determine image border color: Friendly → factionColor; else → tierColor
+  // Border: Friendly → factionColor, else → tierColor
   const imageBorderColor = disposition === "Friendly"
     ? factionColor
     : tierColor;
 
-  // 1) Header image with updated border logic
   const imgHTML = imgUrl
     ? `<img src="${imgUrl}" class="popup-image"
              style="border-color:${imageBorderColor}"
              onerror="this.style.display='none'">`
     : "";
 
-  // 2) Name / faction / tier
   const nameHTML = `<div class="popup-name" style="color:${nameColor}">
                       ${nameText}
                     </div>`;
@@ -64,18 +63,18 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 3) Stats icons
+  // 2) Stats icons (damage & HP)
   const statsItems = [];
   if (dmgText !== "") {
     statsItems.push(
       `<span class="popup-value-number">${dmgText}</span>` +
-      createIcon("sword", { inline: true }).outerHTML
+      `<svg class="icon inline-icon"><use xlink:href="#icon-sword"></use></svg>`
     );
   }
   if (hpText !== "") {
     statsItems.push(
       `<span class="popup-value-number">${hpText}</span>` +
-      createIcon("heart", { inline: true }).outerHTML
+      `<svg class="icon inline-icon"><use xlink:href="#icon-heart"></use></svg>`
     );
   }
   const statsHTML = statsItems.length
@@ -84,20 +83,32 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 4) Loot grid
+  // 3) Loot grid (5 columns)
+  // Assume `def.lootPool` is already an array of full item objects
+  const pool = Array.isArray(def.lootPool) ? def.lootPool : [];
   const COLS = 5;
-  let cells = pool.map((item, idx) => {
-    const thumb = item.imageSmall || item.imageLarge || "";
-    return `
-      <div class="chest-slot" data-index="${idx}">
-        ${thumb
-          ? `<img src="${thumb}" class="chest-slot-img" onerror="this.style.display='none'">`
-          : ""}
-      </div>`;
-  }).join("");
+  let cells = pool
+    .map(item => {
+      const thumb = item.imageSmall || item.imageLarge || "";
+      const clr   = item.rarityColor
+        || rarityColors[(item.rarity || "").toLowerCase()]
+        || defaultNameColor;
+
+      return `
+        <div class="npc-slot" data-item-id="${item.id}" style="border-color:${clr}">
+          <img src="${thumb}" class="npc-slot-img" onerror="this.style.display='none'">
+          ${item.quantity > 1
+            ? `<span class="npc-slot-qty">${item.quantity}</span>`
+            : ""}
+        </div>`;
+    })
+    .join("");
+
+  // Fill remaining slots if fewer than COLS
   for (let i = pool.length; i < COLS; i++) {
-    cells += `<div class="chest-slot" data-index=""></div>`;
+    cells += `<div class="npc-slot" data-item-id="" style="border-color:transparent"></div>`;
   }
+
   const lootBox = `
     <div class="popup-info-box loot-box">
       <div class="chest-grid" style="--cols:${COLS};">
@@ -105,17 +116,17 @@ export function renderNpcPopup(def = {}) {
       </div>
     </div>`;
 
-  // 5) Description & extra info
+  // 4) Description & extra-info
   const descHTML = description
     ? `<p class="popup-desc" style="color:${def.descriptionColor || defaultNameColor};">
          ${description}
        </p>`
     : "";
-  const extraHTML = extras.map(l =>
-    `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
-       ${l.text}
-     </p>`
-  ).join("");
+  const extraHTML = extras
+    .map(l => `<p class="popup-extra-line" style="color:${l.color || defaultNameColor};">
+                 ${l.text}
+               </p>`)
+    .join("");
   const textBox = (descHTML || extraHTML)
     ? `<div class="popup-info-box">
          ${descHTML}
@@ -124,7 +135,7 @@ export function renderNpcPopup(def = {}) {
        </div>`
     : "";
 
-  // 6) Assemble and return
+  // 5) Assemble and return HTML
   return `
     <div class="custom-popup" style="position:relative;">
       <span class="popup-close-btn">✖</span>

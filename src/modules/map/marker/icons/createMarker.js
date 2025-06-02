@@ -1,13 +1,14 @@
 // @file: src/modules/map/marker/icons/createMarker.js
-// @version: 1.7 — fix chest-slot hover to use data-item-id lookup
+// @version: 1.8 — DRY hover-binding for both Chest & NPC; hydrate lootPool before rendering
 
 // Assumes Leaflet is loaded via a <script> tag and exposes window.L
 const L = window.L;
 
-import { renderItemPopup }  from "../popups/itemPopup.js";
-import { renderChestPopup } from "../popups/chestPopup.js";
-import { createCustomIcon } from "./createCustomIcon.js";
-import { CHEST_RARITY }     from "../utils.js";
+import { renderItemPopup }   from "../popups/itemPopup.js";
+import { renderChestPopup }  from "../popups/chestPopup.js";
+import { renderNpcPopup }    from "../popups/npcPopup.js";
+import { createCustomIcon }  from "./createCustomIcon.js";
+import { CHEST_RARITY }      from "../utils.js";
 import {
   rarityColors,
   defaultNameColor,
@@ -15,7 +16,9 @@ import {
   tierColors
 } from "../../../../shared/utils/color/colorPresets.js";
 
-import definitionsManager from "../../../../bootstrap/definitionsManager.js";
+import definitionsManager    from "../../../../bootstrap/definitionsManager.js";
+import { enrichLootPool }    from "../../../../bootstrap/lootUtils.js";
+import { attachLootHoverListeners } from "../popups/lootHoverBinder.js";
 
 // New imports for filter actions
 import {
@@ -42,10 +45,12 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
     const key  = CHEST_RARITY[cat]?.[size] || "common";
     m.rarity      = key;
     m.rarityColor = rarityColors[key] || defaultNameColor;
+    // Hydrate the chest's lootPool (IDs → full objects)
+    enrichLootPool(m.chestDefFull, "Item");
   }
 
   // 2) NPC logic: Friendly → dispositionColor; Hostile/Neutral → tierColor
-  if (m.type === "NPC") {
+  if (m.type === "NPC" && m.npcDefFull) {
     if (m.disposition === "Friendly") {
       m.rarityColor = dispositionColors.Friendly;
     } else {
@@ -53,6 +58,8 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
         || tierColors[m.tier] 
         || defaultNameColor;
     }
+    // Hydrate the NPC's lootPool (IDs → full objects)
+    enrichLootPool(m.npcDefFull, "Item");
   }
 
   // 3) Instantiate the Leaflet marker with our custom icon
@@ -69,9 +76,15 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
   });
 
   // 5) Bind popup using the appropriate renderer
-  const html = (m.type === "Chest" && m.chestDefFull)
-    ? renderChestPopup(m.chestDefFull)
-    : renderItemPopup(m);
+  let html;
+  if (m.type === "Chest" && m.chestDefFull) {
+    html = renderChestPopup(m.chestDefFull);
+  } else if (m.type === "NPC" && m.npcDefFull) {
+    html = renderNpcPopup(m.npcDefFull);
+  } else {
+    html = renderItemPopup(m);
+  }
+
   markerObj.bindPopup(html, {
     className:   "custom-popup-wrapper",
     maxWidth:    350,
@@ -79,41 +92,15 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
     offset:      [0, -35]
   });
 
-  // 6) When popup opens, wire close button and chest‐slot previews
+  // 6) When popup opens, wire close button and loot-slot previews
   markerObj.on("popupopen", () => {
     // Close button
     document.querySelector(".custom-popup .popup-close-btn")
       ?.addEventListener("click", () => markerObj.closePopup());
 
-    // Chest slot hover previews: now keyed by data-item-id instead of data-index
-    document.querySelectorAll(".custom-popup .chest-slot[data-item-id]")
-      .forEach(el => {
-        el.removeAttribute("title");
-        const itemId = el.getAttribute("data-item-id");
-        if (!itemId) return;
-
-        el.addEventListener("mouseenter", e => {
-          // Look up the full item definition by ID
-          const itemDef = definitionsManager.getDefinitions("Item")[itemId];
-          if (!itemDef) return;
-
-          const preview = document.createElement("div");
-          preview.className = "chest-item-preview";
-          preview.innerHTML = renderItemPopup(itemDef);
-          Object.assign(preview.style, {
-            position: "absolute",
-            zIndex:   "1102",
-            left:     `${e.clientX + 8}px`,
-            top:      `${e.clientY + 8}px`
-          });
-          document.body.append(preview);
-          el._previewEl = preview;
-        });
-
-        el.addEventListener("mouseleave", () => {
-          el._previewEl?.remove();
-        });
-      });
+    // Attach hover listeners to any [data-item-id] slot in the popup
+    const popupEl = document.querySelector(".custom-popup");
+    attachLootHoverListeners(popupEl);
   });
 
   // 7) Clean up any floating previews on close
@@ -138,7 +125,7 @@ export function createMarker(m, map, layers, ctxMenu, callbacks = {}, isAdmin = 
       filterKey  = m.chestDefFull?.size || "Small";
     } else if (m.type === "NPC") {
       filterType = "NPC";
-      filterKey  = m.npcDefinitionId;
+      filterKey  = m.npcDefFull?.npcDefinitionId || "";
     }
 
     const opts = [
