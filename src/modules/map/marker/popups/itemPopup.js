@@ -1,5 +1,5 @@
 // @file: src/modules/map/marker/popups/itemPopup.js
-// @version: 1.2 — drop imageBig fallback; use only imageLarge and imageSmall
+// @version: 1.3 — use “coin” icon (same as definition‐modal) instead of “coins”
 
 import { formatRarity } from "../../../../shared/utils/utils.js";
 import { createIcon } from "../../../../shared/utils/iconUtils.js";
@@ -28,12 +28,15 @@ export function renderItemPopup(m) {
          ${formatRarity(m.rarity)}
        </div>`
     : "";
+
+  // valueHTML now uses the same "coin" icon as your definition‐modal entry list
   const valueHTML   = m.value
     ? `<div class="popup-value-icon" title="Value">
          <span class="popup-value-number">${m.value}</span>
-         ${createIcon("coins", { inline: true }).outerHTML}
+         ${createIcon("coin", { inline: true }).outerHTML}
        </div>`
     : "";
+
   const descHTML    = m.description
     ? `<p class="popup-desc" style="color:${m.descriptionColor || defaultNameColor};">
          ${m.description}
