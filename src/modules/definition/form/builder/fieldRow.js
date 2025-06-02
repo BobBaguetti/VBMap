@@ -1,8 +1,8 @@
 // @file: src/modules/definition/form/builder/fieldRow.js
-// @version: 2.1 — relocated into definition module; updated import paths
+// @version: 2.2 — return setAllItems for chipList fields
 
 import { createPickr, disablePickr, getPickrHexColor }
-from "../controller/pickrAdapter.js";
+  from "../controller/pickrAdapter.js";
 import { createExtraInfoBlock } from "./extraInfoBlock.js";
 import { createChipListField }  from "./chipListField.js";
 
@@ -21,7 +21,12 @@ import { createChipListField }  from "./chipListField.js";
  * @param {string} [opts.labelKey]— chipList only
  * @param {Function} [opts.renderIcon] — chipList only
  *
- * @returns {{ row:HTMLElement, input:HTMLElement, colorBtn?:HTMLElement }}
+ * @returns {{
+ *   row: HTMLElement,
+ *   input: HTMLElement | function,
+ *   colorBtn?: HTMLElement,
+ *   setAllItems?: (all: Array) => void
+ * }}
  */
 export function createFieldRow({
   type,
@@ -42,7 +47,7 @@ export function createFieldRow({
   labelEl.textContent = label.endsWith(":") ? label : label + ":";
   row.append(labelEl);
 
-  let input, colorBtn;
+  let input, colorBtn, setAllItems;
 
   switch (type) {
     case "text":
@@ -93,15 +98,22 @@ export function createFieldRow({
       break;
 
     case "chipList":
-      const { row: tmpRow, getItems, setItems } = createChipListField(
+      // NOTE: we capture setAllItems so outer code can call it
+      const {
+        row: tmpRow,
+        getItems,
+        setItems,
+        setAllItems: setter
+      } = createChipListField(
         label,
-        [],
+        [],                    // initial items = []
         { items: [], idKey, labelKey, renderIcon }
       );
       tmpRow.classList.add("form-row");
       input = getItems;
       colorBtn = setItems;
-      return { row: tmpRow, input, colorBtn };
+      setAllItems = setter;
+      return { row: tmpRow, input, colorBtn, setAllItems };
 
     case "checkbox":
       const lbl = document.createElement("label");
@@ -128,5 +140,5 @@ export function createFieldRow({
     row.append(input);
   }
 
-  return { row, input, colorBtn };
+  return { row, input, colorBtn, setAllItems };
 }
