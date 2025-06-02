@@ -13,15 +13,15 @@ export function renderChestPopup(typeDef) {
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
 
   // 1) Compute chest rarity from category & size
-  const cat         = typeDef.category   || "Normal";
-  const size        = typeDef.size       || "Small";
-  const rarityKey   = CHEST_RARITY[cat]?.[size] || "common";
-  const rarityLabel = formatRarity(rarityKey);
-  const rarityColor = rarityColors[rarityKey] || defaultNameColor;
+  const cat           = typeDef.category   || "Normal";
+  const size          = typeDef.size       || "Small";
+  const rarityKey     = CHEST_RARITY[cat]?.[size] || "common";
+  const rarityLabel   = formatRarity(rarityKey);
+  const rarityColor   = rarityColors[rarityKey] || defaultNameColor;
 
   // 2) Header (icon + Name, Category, Rarity)
-  const imgUrl        = typeDef.imageLarge || typeDef.imageSmall || "";
-  const bigImg        = imgUrl
+  const imgUrl    = typeDef.imageLarge || typeDef.imageSmall || "";
+  const bigImg    = imgUrl
     ? `<img src="${imgUrl}" class="popup-image"
              style="border-color:${rarityColor}"
              onerror="this.style.display='none'">`
@@ -33,6 +33,7 @@ export function renderChestPopup(typeDef) {
   const nameHTML   = `<div class="popup-name" style="color:${titleColor};">
                         ${typeDef.name || ""}
                       </div>`;
+  // Apply the categoryColor here:
   const typeHTML   = `<div class="popup-type" style="color:${categoryColor};">
                         ${cat}
                       </div>`;
@@ -56,7 +57,7 @@ export function renderChestPopup(typeDef) {
       || defaultNameColor;
 
     return `
-      <div class="chest-slot" data-item-id="${item.id}"
+      <div class="chest-slot" data-index="${idx}"
            style="border-color:${clr}">
         <img src="${slotImg}"
              class="chest-slot-img"
@@ -68,7 +69,7 @@ export function renderChestPopup(typeDef) {
   }).join("");
 
   for (let i = pool.length; i < COLS; i++) {
-    cells += `<div class="chest-slot" data-item-id=""></div>`;
+    cells += `<div class="chest-slot" data-index=""></div>`;
   }
 
   const lootBox = `

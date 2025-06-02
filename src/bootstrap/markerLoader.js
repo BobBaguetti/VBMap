@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.21 — update only the .chest-grid innerHTML on popup open
+// @version: 1.17.1 — revert Chest to respect groupingEnabled
 
 import {
   subscribeMarkers,
@@ -7,85 +7,43 @@ import {
   deleteMarker as firebaseDeleteMarker
 } from "../modules/services/firebaseService.js";
 import definitionsManager from "./definitionsManager.js";
-import {
-  createMarker
-} from "../modules/map/markerManager.js";
 import { markerTypes } from "../modules/marker/types.js";
+import { createMarker } from "../modules/map/markerManager.js";
 import { showContextMenu, hideContextMenu }
   from "../modules/context-menu/index.js";
-import {
-  rarityColors,
-  defaultNameColor
-} from "../shared/utils/color/colorPresets.js";
+import { enrichLootPool } from "./lootUtils.js";  // new helper
 
+/** 
+ * Keeps track of whether “marker grouping” (clustering) is currently enabled.
+ * Defaults to false (i.e. flat markers on load).
+ */
 let groupingEnabled = false;
 
+/**
+ * Toggle marker grouping on/off. When true, new markers are added
+ * into the clusterItemLayer; when false, they go into flatItemLayer.
+ *
+ * @param {boolean} enabled
+ */
 export function setGrouping(enabled) {
   groupingEnabled = enabled;
 }
 
+/** @type {{ markerObj: L.Marker, data: object }[]} */
 export const allMarkers = [];
 
 /**
- * Normalize a chest’s lootPool from [id, …] → [itemObj, …].
+ * Initialize marker subscriptions, creation, and hydration.
+ *
+ * @param {object}   db              – Firestore instance
+ * @param {L.Map}    map             – Leaflet map object
+ * @param {L.LayerGroup} clusterItemLayer – MarkerClusterGroup for items & chests
+ * @param {L.LayerGroup} flatItemLayer    – Regular LayerGroup for items/NPCs
+ * @param {Function} filterMarkers   – Function to re-apply active filters
+ * @param {Function} loadItemFilters – Function to populate sidebar filters
+ * @param {boolean}  isAdmin         – Whether the user is in admin mode
+ * @param {object}   callbacks       – { markerForm, copyMgr }, etc.
  */
-function normalizeChestLootPool(data) {
-  if (!Array.isArray(data.lootPool)) return;
-  const itemDefMap = definitionsManager.getDefinitions("Item") || {};
-  data.lootPool = data.lootPool
-    .map(id => itemDefMap[id])
-    .filter(i => !!i);
-}
-
-/**
- * When a chest popup opens, fetch the very latest definition (including updated lootPool),
- * rebuild only the <div class="chest-grid"> contents (5 slots), and leave the rest untouched.
- */
-function refreshChestSlots(markerObj, originalData, cfg) {
-  const defMap = definitionsManager.getDefinitions("Chest");
-  const defKey = cfg.defIdKey;
-  const freshDef = defMap[originalData[defKey]];
-  if (!freshDef) return;
-
-  // Normalize IDs → objects
-  const itemMap = definitionsManager.getDefinitions("Item") || {};
-  const normalized = (freshDef.lootPool || [])
-    .map(id => itemMap[id])
-    .filter(it => it && (it.imageSmall || it.imageLarge));
-
-  // Find the existing chest-grid element inside the popup
-  const popupEl = markerObj.getPopup().getElement();
-  const gridContainer = popupEl.querySelector(".chest-grid");
-  if (!gridContainer) return;
-
-  // Rebuild only the slots
-  const COLS = 5;
-  let newCells = "";
-
-  normalized.forEach((item, idx) => {
-    const imgUrl = item.imageSmall || item.imageLarge || "";
-    const clr = item.rarityColor
-      || rarityColors[(item.rarity || "").toLowerCase()]
-      || defaultNameColor;
-
-    newCells += `
-      <div class="chest-slot" data-item-id="${item.id}"
-           style="border-color:${clr}">
-        <img src="${imgUrl}" class="chest-slot-img"
-             onerror="this.style.display='none'">
-        ${item.quantity > 1
-          ? `<span class="chest-slot-qty">${item.quantity}</span>`
-          : ""}
-      </div>`;
-  });
-
-  for (let i = normalized.length; i < COLS; i++) {
-    newCells += `<div class="chest-slot" data-item-id=""></div>`;
-  }
-
-  gridContainer.innerHTML = newCells;
-}
-
 export async function init(
   db,
   map,
@@ -98,9 +56,9 @@ export async function init(
 ) {
   const { markerForm, copyMgr } = callbacks;
 
-  // 1) Marker subscription
+  // 1) Marker data subscription
   subscribeMarkers(db, markers => {
-    // a) Clear existing
+    // Clear out every existing marker from both layers and remove from map
     allMarkers.forEach(({ markerObj }) => {
       markerObj.remove();
       clusterItemLayer.removeLayer(markerObj);
@@ -108,21 +66,19 @@ export async function init(
     });
     allMarkers.length = 0;
 
-    // b) Rebuild
+    // Rebuild all markers from Firestore docs
     markers.forEach(data => {
       const cfg = markerTypes[data.type];
       if (!cfg) return;
 
-      // Merge definition fields
+      // Merge definition fields (e.g., item/chest/NPC data)
       const defMap = definitionsManager.getDefinitions(data.type);
       const defKey = cfg.defIdKey;
       if (defKey && defMap[data[defKey]]) {
         const { id: _ignore, ...fields } = defMap[data[defKey]];
         Object.assign(data, fields);
-
-        if (data.type === "Chest") {
-          normalizeChestLootPool(data);
-        }
+        // Enrich loot pool for Chest and NPC
+        enrichLootPool(data, "Item");
       }
 
       // Context‐menu callbacks
@@ -130,14 +86,9 @@ export async function init(
         onEdit: (markerObj, originalData, e) =>
           markerForm.openEdit(markerObj, originalData, e, payload => {
             const updated = { ...originalData, ...payload };
-
-            if (updated.type === "Chest" && Array.isArray(payload.lootPool)) {
-              updated.lootPool = payload.lootPool.map(itemObj => itemObj.id);
-            }
-
+            // Update icon & popup in place:
             markerObj.setIcon(cfg.iconFactory(updated));
             markerObj.setPopupContent(cfg.popupRenderer(updated));
-
             firebaseUpdateMarker(db, updated);
           }),
 
@@ -154,7 +105,7 @@ export async function init(
         }
       };
 
-      // Create marker and bind popup
+      // Create a new Leaflet marker with our custom icon/popup/etc.
       const markerObj = createMarker(
         data,
         map,
@@ -164,55 +115,44 @@ export async function init(
         isAdmin
       );
 
-      markerObj.bindPopup(cfg.popupRenderer(data));
-      markerObj.on("popupopen", () =>
-        refreshChestSlots(markerObj, data, cfg)
-      );
+      // Ensure its popup is up‐to‐date
+      if (cfg.popupRenderer) {
+        markerObj.setPopupContent(cfg.popupRenderer(data));
+      }
 
-      // Add to layer
-      const layerToUse = groupingEnabled ? clusterItemLayer : flatItemLayer;
+      // 2) Use groupingEnabled for ALL types (including “Chest”):
+      const layerToUse = groupingEnabled
+        ? clusterItemLayer
+        : flatItemLayer;
+
       layerToUse.addLayer(markerObj);
       allMarkers.push({ markerObj, data });
     });
 
-    // c) Reapply filters
+    // Re‐apply any active filters (so that hidden markers stay hidden)
     filterMarkers();
   });
 
-  // 2) Definition updates (including chests)
+  // 3) Whenever definitions update (e.g. a chest loot table changes),
+  //    re‐render icons & popups for all markers of that type
   Object.entries(markerTypes).forEach(([type, cfg]) => {
     if (!cfg.subscribeDefinitions) return;
     cfg.subscribeDefinitions(db, defs => {
       allMarkers.forEach(({ markerObj, data }) => {
         if (data.type !== type) return;
-
         const defMap = definitionsManager.getDefinitions(type);
         const defKey = cfg.defIdKey;
         if (defKey && defMap[data[defKey]]) {
           const { id: _ignore, ...fields } = defMap[data[defKey]];
           Object.assign(data, fields);
-
-          if (data.type === "Chest") {
-            normalizeChestLootPool(data);
-          }
+          enrichLootPool(data, "Item");
         }
-
         markerObj.setIcon(cfg.iconFactory(data));
         markerObj.setPopupContent(cfg.popupRenderer(data));
       });
-
       filterMarkers();
     });
   });
-
-  // 3) Load initial definitions
-  for (const [type, cfg] of Object.entries(markerTypes)) {
-    const defs = await cfg.loadDefinitions(db);
-    definitionsManager.getDefinitions(type);
-  }
-
-  await loadItemFilters();
-  filterMarkers();
 }
 
 export default {

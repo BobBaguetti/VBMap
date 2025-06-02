@@ -1,12 +1,11 @@
 // @file: src/modules/definition/modal/definitionModal.js
-// @version: 1.12 — fix lootPool ID/object mismatch on populate & save
+// @version: 1.10 — fix missing import for definition list
 
 import { createModalShell } from "./lifecycle.js";
 import { buildModalUI }     from "./domBuilder.js";
 import { definitionTypes }  from "../types.js";
 import { loadItemDefinitions } from "../../services/itemDefinitionsService.js";
-import { createDefinitionListManager } from "../list/definitionListManager.js";
-import { pickItems } from "../form/builder/listPicker.js";
+import { createDefinitionListManager } from "../list/definitionListManager.js";  // ← added
 
 export function initDefinitionModal(db) {
   const { modalEl, open, close } =
@@ -21,7 +20,7 @@ export function initDefinitionModal(db) {
   let currentType;
   let definitions = [];
   let definitionsUnsub = null;
-  let itemMap = {}; // id → item object for lookups
+  let itemMap = {};
 
   // Hide preview whenever the modal closes
   modalEl.addEventListener("close", () => {
@@ -78,12 +77,9 @@ export function initDefinitionModal(db) {
     if (!listApi) setupList();
     bindDefinitionUpdates(type);
 
-    // If we're editing/creating a Chest, load all items into itemMap
     if (type === "Chest") {
       const items = await loadItemDefinitions(db);
       itemMap = Object.fromEntries(items.map(i => [i.id, i]));
-    } else {
-      itemMap = {};
     }
 
     previewApi = definitionTypes[type].previewBuilder(previewContainer);
@@ -102,12 +98,7 @@ export function initDefinitionModal(db) {
         previewApi.hide();
       },
       onSubmit:  async payload => {
-        // If Chest, convert lootPool (array of item objects) → [id, …]
-        let toSave = { ...payload };
-        if (type === "Chest" && Array.isArray(payload.lootPool)) {
-          toSave.lootPool = payload.lootPool.map(item => item.id);
-        }
-        await definitionTypes[type].save(db, toSave.id ?? null, toSave);
+        await definitionTypes[type].save(db, payload.id ?? null, payload);
         formApi.reset();
         previewApi.hide();
       },
@@ -116,51 +107,13 @@ export function initDefinitionModal(db) {
         if (type === "Chest" && Array.isArray(data.lootPool)) {
           pd = {
             ...data,
-            lootPool: data.lootPool
-              .map(i => itemMap[i])
-              .filter(Boolean)
+            lootPool: data.lootPool.map(i => itemMap[i]).filter(Boolean)
           };
         }
         previewApi.show(pd);
       }
     }, db);
 
-    // If this is Chest, wire the Loot Pool “add” button:
-    if (type === "Chest") {
-      const btnAdd = formApi.form.querySelector(".add-chip-btn");
-      if (btnAdd) {
-        const newBtn = btnAdd.cloneNode(true);
-        btnAdd.parentNode.replaceChild(newBtn, btnAdd);
-
-        newBtn.addEventListener("click", async () => {
-          const allItems = Object.values(itemMap);
-          const selectedIds = formApi.fields.lootPool
-            .get()
-            .map(it => it.id);
-
-          try {
-            const pickedIds = await pickItems({
-              title:    "Loot Pool",
-              items:    allItems,
-              selected: selectedIds,
-              labelKey: "name"
-            });
-
-            const pickedObjects = allItems.filter(i =>
-              pickedIds.includes(i.id)
-            );
-            formApi.fields.lootPool.set(pickedObjects);
-            formApi.form.dispatchEvent(
-              new Event("input", { bubbles: true })
-            );
-          } catch {
-            // user cancelled
-          }
-        });
-      }
-    }
-
-    // Insert the newly-built subheader (if any)
     const generated = formApi.form.querySelector(".modal-subheader");
     if (generated && subheader) {
       subheader.replaceWith(generated);
@@ -170,36 +123,18 @@ export function initDefinitionModal(db) {
     formContainer.append(formApi.form);
     formApi.initPickrs?.();
 
-    // Populate form fields: convert existing lootPool IDs → objects first
     if (def) {
-      if (type === "Chest" && Array.isArray(def.lootPool)) {
-        const defForForm = {
-          ...def,
-          lootPool: def.lootPool
-            .map(id => itemMap[id])
-            .filter(Boolean)
-        };
-        formApi.populate(defForForm);
-      } else {
-        formApi.populate(def);
-      }
+      formApi.populate(def);
     } else {
       formApi.reset();
     }
 
     open();
-
-    // Show preview immediately (for Chest, translate lootPool IDs → objects)
     const previewData = def
       ? (type === "Chest"
-          ? {
-              ...def,
-              lootPool: (def.lootPool || [])
-                .map(id => itemMap[id])
-                .filter(Boolean)
-            }
+          ? { ...def, lootPool: (def.lootPool||[]).map(id=>itemMap[id]).filter(Boolean) }
           : def)
-      : (type === "Chest" ? { lootPool: [] } : {});
+      : (type==="Chest" ? { lootPool: [] } : {});
     previewApi.show(previewData);
   }
 
