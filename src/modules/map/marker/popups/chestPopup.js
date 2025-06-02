@@ -9,16 +9,26 @@ import {
 import { CHEST_RARITY } from "../utils.js";
 import definitionsManager from "../../../../bootstrap/definitionsManager.js";
 
+/**
+ * Generate the HTML for a chest popup. We assume
+ *   typeDef.lootPool === Array<string> (IDs only).
+ *
+ * @param {Object} typeDef — the chest definition object from Firestore
+ *   Properties include: name, category, size, lootPool (Array of strings), imageSmall/Large, etc.
+ * @returns {string} an HTML string for the Leaflet/Map popup
+ */
 export function renderChestPopup(typeDef) {
+  // ─── Close button & rarity calculations ────────────────────────────────────
   const closeBtn = `<span class="popup-close-btn">✖</span>`;
 
-  // 1) Rarity, header, etc. (unchanged) …
+  // Determine chest rarity from category + size:
   const cat         = typeDef.category   || "Normal";
   const size        = typeDef.size       || "Small";
   const rarityKey   = CHEST_RARITY[cat]?.[size] || "common";
   const rarityLabel = formatRarity(rarityKey);
   const rarityColor = rarityColors[rarityKey] || defaultNameColor;
 
+  // Image on left (large or small), with border color = rarityColor
   const imgUrl = typeDef.imageLarge || typeDef.imageSmall || "";
   const bigImg = imgUrl
     ? `<img src="${imgUrl}"
@@ -27,6 +37,7 @@ export function renderChestPopup(typeDef) {
              onerror="this.style.display='none'">`
     : "";
 
+  // Title & category colors
   const titleColor    = typeDef.nameColor     || rarityColor;
   const categoryColor = typeDef.categoryColor || defaultNameColor;
 
@@ -45,34 +56,39 @@ export function renderChestPopup(typeDef) {
       ${rarityLabel}
     </div>`;
 
-  // 2) Build the loot grid (now assuming lootPool is Array<string>)
-  const COLS   = 5;
-  const itemMap = definitionsManager.getDefinitions("Item") || {};
+  // ─── Build the loot grid (5 columns) ──────────────────────────────────────
+  const COLS     = 5;
+  const itemMap  = definitionsManager.getDefinitions("Item") || {};
   const poolArray = Array.isArray(typeDef.lootPool) ? typeDef.lootPool : [];
 
   const cells = poolArray.map((itemId, idx) => {
-    // Directly look up the item object by its ID string
+    // Look up the item object by its ID string
     const itemObj = itemMap[itemId];
     if (!itemObj) {
-      // If the ID isn’t found (deleted or bad), render an empty slot
+      // If the ID isn’t found (deleted or missing), render an empty slot
       return `
         <div class="chest-slot" data-index="${idx}" style="border-color:transparent">
           <!-- missing item -->
         </div>`;
     }
 
+    // Determine the image to show (prefer imageSmall, fallback to imageLarge)
     const slotImg = itemObj.imageSmall || itemObj.imageLarge || "";
+
+    // Determine border-color from the item’s rarity
     const itemRarityKey = (itemObj.rarity || "").toLowerCase();
     const clr = itemObj.rarityColor
       || rarityColors[itemRarityKey]
       || defaultNameColor;
 
+    // Build the HTML for this single slot
     return `
       <div class="chest-slot" data-index="${idx}" style="border-color:${clr}">
         <img src="${slotImg}"
              class="chest-slot-img"
              onerror="this.style.display='none'">
         ${
+          // If the item has quantity > 1, show the quantity badge
           itemObj.quantity && +itemObj.quantity > 1
             ? `<span class="chest-slot-qty">${itemObj.quantity}</span>`
             : ""
@@ -80,7 +96,7 @@ export function renderChestPopup(typeDef) {
       </div>`;
   }).join("");
 
-  // Fill up remaining columns with blank slots
+  // Fill up to COLS with blank slots
   let filler = "";
   for (let i = poolArray.length; i < COLS; i++) {
     filler += `<div class="chest-slot" data-index="" style="border-color:transparent"></div>`;
@@ -93,7 +109,7 @@ export function renderChestPopup(typeDef) {
       </div>
     </div>`;
 
-  // 3) Description & extra‐info (unchanged) …
+  // ─── Description & extra‐info (unchanged) ─────────────────────────────────
   const descHTML = typeDef.description
     ? `<p class="popup-desc" style="color:${typeDef.descriptionColor || defaultNameColor};">
          ${typeDef.description}
@@ -114,7 +130,7 @@ export function renderChestPopup(typeDef) {
        </div>`
     : "";
 
-  // 4) Assemble and return full popup HTML
+  // ─── Assemble and return the full popup HTML ───────────────────────────────
   return `
     <div class="custom-popup" style="position:relative;">
       ${closeBtn}
