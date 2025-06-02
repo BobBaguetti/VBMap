@@ -1,5 +1,5 @@
 // @file: src/modules/definition/form/definitionFormController.js
-// @version: 1.9.14 — uses formHeaderManager, formColorManager, formDataManager & formStateConfigurator
+// @version: 1.9.15 — expose fields in the controller API
 
 import { setupFormHeader } from "../form/controller/formHeaderManager.js";
 import { wireFormEvents }  from "../form/controller/formControllerShell.js";
@@ -107,6 +107,7 @@ export function createFormController(buildResult, schema, handlers) {
 
   return {
     form,
+    fields,        // <-- expose fields so callers can do formApi.fields.lootPool
     reset,
     populate,
     getPayload,
