@@ -1,5 +1,5 @@
 // @file: src/bootstrap/markerLoader.js
-// @version: 1.19 — regenerate chest‐popups on “popupopen” so lootPool is always fresh
+// @version: 1.20 — re‐attach hover listeners to .chest-slot to show item popups
 
 import {
   subscribeMarkers,
@@ -8,7 +8,7 @@ import {
 } from "../modules/services/firebaseService.js";
 import definitionsManager from "./definitionsManager.js";
 import { markerTypes } from "../modules/marker/types.js";
-import { createMarker } from "../modules/map/markerManager.js";
+import { createMarker, renderItemPopup } from "../modules/map/markerManager.js";
 import { showContextMenu, hideContextMenu }
   from "../modules/context-menu/index.js";
 
@@ -46,6 +46,61 @@ function normalizeChestLootPool(data) {
 }
 
 /**
+ * Attaches hover‐to‐show listeners to each .chest-slot within the given popup element,
+ * opening a Leaflet popup showing that item’s details when hovered.
+ *
+ * @param {L.Marker} markerObj
+ * @param {HTMLElement} popupEl  — the <div> containing the chest popup HTML
+ */
+function attachSlotHoverListeners(markerObj, popupEl) {
+  let hoverPopup = null;
+
+  const onSlotMouseEnter = event => {
+    const slotEl = event.currentTarget;
+    const itemId = slotEl.getAttribute("data-item-id");
+    if (!itemId) return;
+    // Lookup the full item object
+    const itemDef = definitionsManager.getDefinitions("Item")[itemId];
+    if (!itemDef) return;
+
+    // Create a Leaflet popup at the cursor’s latlng
+    const map = markerObj._map;
+    const latlng = map.mouseEventToLatLng(event);
+    hoverPopup = L.popup({
+      offset: [10, 10],
+      closeButton: false,
+      autoClose: false,
+      closeOnClick: false
+    })
+      .setLatLng(latlng)
+      .setContent(renderItemPopup(itemDef))
+      .openOn(map);
+  };
+
+  const onSlotMouseMove = event => {
+    if (!hoverPopup) return;
+    const map = markerObj._map;
+    const latlng = map.mouseEventToLatLng(event);
+    hoverPopup.setLatLng(latlng);
+  };
+
+  const onSlotMouseLeave = () => {
+    if (hoverPopup) {
+      hoverPopup.remove();
+      hoverPopup = null;
+    }
+  };
+
+  popupEl
+    .querySelectorAll(".chest-slot[data-item-id]")
+    .forEach(slotEl => {
+      slotEl.addEventListener("mouseenter", onSlotMouseEnter);
+      slotEl.addEventListener("mousemove", onSlotMouseMove);
+      slotEl.addEventListener("mouseleave", onSlotMouseLeave);
+    });
+}
+
+/**
  * Regenerates a marker’s popup HTML on demand. Used in our “popupopen” listener.
  *
  * @param {L.Marker} markerObj
@@ -67,6 +122,15 @@ function refreshPopupOnOpen(markerObj, originalData, cfg) {
 
     // Overwrite this marker’s popup with newly‐rendered HTML
     markerObj.setPopupContent(cfg.popupRenderer(merged));
+
+    // After Leaflet inserts the new popup into the DOM, attach hover listeners
+    // We use a small timeout so that the popup element exists in the DOM
+    setTimeout(() => {
+      const popupContainer = markerObj.getPopup().getElement();
+      if (popupContainer) {
+        attachSlotHoverListeners(markerObj, popupContainer);
+      }
+    }, 0);
   }
 }
 
@@ -154,7 +218,7 @@ export async function init(
         }
       };
 
-      // e) Create the Leaflet marker and bind a popup placeholder
+      // e) Create the Leaflet marker
       const markerObj = createMarker(
         data,
         map,
@@ -164,8 +228,7 @@ export async function init(
         isAdmin
       );
 
-      // f) Bind the initial popup HTML (so there's something to click on)
-      //    and also set up a “popupopen” listener to refresh the content each time.
+      // f) Bind initial popup HTML and attach hover listeners on open
       markerObj.bindPopup(cfg.popupRenderer(data));
       markerObj.on("popupopen", () => refreshPopupOnOpen(markerObj, data, cfg));
 
