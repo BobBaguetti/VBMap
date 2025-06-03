@@ -54,7 +54,7 @@ export const questTypeColors = {
  */
 export const chestCategoryColors = {
   Normal:     "#8cb369",
-  Dragonvault:"#d45f5f",
+  Dragonvault:"#D74C4C",
   "":         "#bbb"
 };
 
@@ -64,7 +64,7 @@ export const chestCategoryColors = {
 export const dispositionColors = {
   Friendly: "#b0f0b0",
   Neutral:  "#f0f0b0",
-  Hostile:  "#f0b0b0",
+  Hostile:  "#e05252",
   "":       "#bbb"
 };
 
@@ -72,8 +72,8 @@ export const dispositionColors = {
  * NPC type colors
  */
 export const tierColors = {
-  Normal: "#b4b4b4",
-  Elite:  "#d4af37",
-  Boss:   "#e05252",
+  Normal: "#e05252",
+  Elite:  "#EF4AEC",
+  Boss:   "#d4af37",
   "":     "#bbb"
 };
